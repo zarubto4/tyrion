@@ -1036,7 +1036,7 @@ public class Controller_Finance extends Controller {
         try{
 
             // Pokud má uživatel oprávnění vracím upravený SQL
-            if(Controller_Security.get_person().permissions_keys.containsKey(Model_Tariff.permissions.Tariff_edit.name())){
+            if(Controller_Security.get_person().has_permission(Model_Tariff.permissions.Tariff_edit.name())){
 
                 return GlobalResult.result_ok(Json.toJson(Model_Tariff.find.where().order().asc("order_position").findList()));
 
@@ -2218,7 +2218,7 @@ public class Controller_Finance extends Controller {
 
             List<Model_Customer> customers = Model_Customer.find.where().eq("employees.person.id", Controller_Security.get_person_id()).findList();
 
-            return GlobalResult.result_created(Json.toJson(customers));
+            return GlobalResult.result_ok(Json.toJson(customers));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());

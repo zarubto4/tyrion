@@ -61,7 +61,10 @@ public class Model_Product extends Model {
                                  @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
                                                                     @JsonIgnore public boolean removed_by_user; // může jenom administrátor
 
-                              @JsonIgnore @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER) public Model_Customer customer;
+                                                                                public boolean client_billing;                      // Zda bude fakturováno jinému zákazníkovi
+                                                                    @JsonIgnore public String  client_billing_invoice_parameters;    // Zde je konfigurace k fakturám, které se zasílají zákazníkovi
+
+                       @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER) public Model_Customer customer;
                        @OneToOne(mappedBy="product", cascade = CascadeType.ALL) public Model_PaymentDetails payment_details;
 
     @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_Project>          projects    = new ArrayList<>();
@@ -764,9 +767,9 @@ public class Model_Product extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore  public boolean create_permission()               {  return true;  }
-    @JsonIgnore  public boolean read_permission()                 {  return ((customer.company && customer.isEmployee(Controller_Security.get_person())) || (!customer.company && customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().permissions_keys.containsKey("Product_read");  }
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()                {  return ((customer.company && customer.isEmployee(Controller_Security.get_person())) || (!customer.company && customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().permissions_keys.containsKey("Product_edit");  }
-    @JsonProperty @ApiModelProperty(required = true) public boolean act_deactivate_permission()      {  return ((customer.company && customer.isEmployee(Controller_Security.get_person())) || (!customer.company && customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().permissions_keys.containsKey("Product_act_deactivate"); }
+    @JsonIgnore  public boolean read_permission()                 {  return ((customer.company && customer.isEmployee(Controller_Security.get_person())) || (!customer.company && customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().has_permission("Product_read");  }
+    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()                {  return ((customer.company && customer.isEmployee(Controller_Security.get_person())) || (!customer.company && customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().has_permission("Product_edit");  }
+    @JsonProperty @ApiModelProperty(required = true) public boolean act_deactivate_permission()      {  return ((customer.company && customer.isEmployee(Controller_Security.get_person())) || (!customer.company && customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().has_permission("Product_act_deactivate"); }
     @JsonIgnore  public boolean delete_permission()               {  return Controller_Security.get_person().has_permission("Product_delete");}
     @JsonIgnore  public boolean financial_permission(String action){  return FinancialPermission.check(this, action);}
 

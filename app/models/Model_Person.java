@@ -83,7 +83,7 @@ public class Model_Person extends Model {
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public List<String> project_ids = new ArrayList<>();
-    @JsonIgnore @Transient public HashMap<String, Boolean> permissions_keys = new HashMap<>();
+    @JsonIgnore @Transient private HashMap<String, Boolean> permissions_keys = new HashMap<>(); // Záměrně Private! Tak aby se přistupovalo z jedné metody
     @JsonIgnore @Transient public String cache_picture_link;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -176,17 +176,7 @@ public class Model_Person extends Model {
         this.shaPassword = shaPassword;
     }
 
-    @JsonIgnore @Transient
-    public boolean has_permission(String permission){
-        try {
-
-            return Model_Permission.find.where().eq("permission_key", permission).eq("roles.persons.id", this.id).findRowCount() +
-                    Model_Permission.find.where().eq("permission_key", permission).eq("persons.id", this.id).findRowCount() > 0;
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return false;
-        }
-    }
+  
 
     @JsonIgnore @Transient
     public CloudBlobContainer get_Container(){
@@ -254,13 +244,40 @@ public class Model_Person extends Model {
 
     @JsonIgnore   @Transient public boolean create_permission()     {  return true;  }
     @JsonIgnore   @Transient public boolean read_permission()       {  return true;  }
-    @JsonProperty @Transient public boolean edit_permission()       {  return Controller_Security.get_person() != null && (Controller_Security.get_person_id().equals(this.id) || Controller_Security.get_person().permissions_keys.containsKey("Person_edit"));}
-    @JsonIgnore   @Transient public boolean activation_permission() {  return Controller_Security.get_person().permissions_keys.containsKey("Person_activation");}
-    @JsonIgnore   @Transient public boolean delete_permission()     {  return Controller_Security.get_person().permissions_keys.containsKey("Person_delete");}
-    @JsonIgnore   @Transient public boolean admin_permission()      {  return Controller_Security.get_person().permissions_keys.containsKey("Byzance_employee");}
+    @JsonProperty @Transient public boolean edit_permission()       {  return Controller_Security.get_person() != null && (Controller_Security.get_person_id().equals(this.id) || Controller_Security.get_person().has_permission("Person_edit"));}
+    @JsonIgnore   @Transient public boolean activation_permission() {  return Controller_Security.get_person().has_permission("Person_activation");}
+    @JsonIgnore   @Transient public boolean delete_permission()     {  return Controller_Security.get_person().has_permission("Person_delete");}
+    @JsonIgnore   @Transient public boolean admin_permission()      {  return Controller_Security.get_person().has_permission("Byzance_employee");}
 
     public enum permissions{ Person_edit, Person_delete, Person_activation, Byzance_employee }
 
+    @JsonIgnore @Transient
+    public boolean has_permission(String permission_key) {
+        if(permissions_keys.isEmpty()){
+            for( Model_Permission m :  Model_Permission.find.where().eq("roles.persons.id", id).findList() ) cache_permission(m.permission_key, true);
+        }
+
+        return this.permissions_keys.containsKey(permission_key);
+    }
+    @JsonIgnore @Transient
+    public void cache_permission(String permission_key, boolean value) {
+        this.permissions_keys.put(permission_key, value);
+    }
+    
+    /**
+       @JsonIgnore @Transient
+        public boolean has_permission(String permission){
+            try {
+    
+                return Model_Permission.find.where().eq("permission_key", permission).eq("roles.persons.id", this.id).findRowCount() +
+                        Model_Permission.find.where().eq("permission_key", permission).eq("persons.id", this.id).findRowCount() > 0;
+            }catch (Exception e){
+                terminal_logger.internalServerError(e);
+                return false;
+            }
+        }
+    */
+    
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     public static final String CACHE        = Model_Person.class.getSimpleName();
@@ -269,6 +286,8 @@ public class Model_Person extends Model {
     public static  Cache<String, Model_Person> cache = null; // < Person_id, Person>
     public static  Cache<String, String> token_cache = null; // < Token_Key, Person_is>
 
+
+    
     @JsonIgnore @Transient
     public static Model_Person get_byId(String id) {
 

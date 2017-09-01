@@ -230,11 +230,11 @@ public class Model_Tariff extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient public boolean create_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("Tariff_create");}
-    @JsonIgnore   @Transient public boolean read_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("Tariff_read") || active;}
-    @JsonProperty @Transient public boolean edit_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("Tariff_edit");}
-    @JsonProperty @Transient public boolean update_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("Tariff_update");}
-    @JsonProperty @Transient public boolean delete_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("Tariff_delete");}
+    @JsonIgnore   @Transient public boolean create_permission(){  return Controller_Security.get_person().has_permission("Tariff_create");}
+    @JsonIgnore   @Transient public boolean read_permission()  {  return Controller_Security.get_person().has_permission("Tariff_read") || active;}
+    @JsonProperty @Transient public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("Tariff_edit");}
+    @JsonProperty @Transient public boolean update_permission(){  return Controller_Security.get_person().has_permission("Tariff_update");}
+    @JsonProperty @Transient public boolean delete_permission(){  return Controller_Security.get_person().has_permission("Tariff_delete");}
 
     public enum permissions{Tariff_create, Tariff_read, Tariff_edit, Tariff_update, Tariff_delete,}
 

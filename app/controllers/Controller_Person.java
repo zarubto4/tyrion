@@ -1,5 +1,6 @@
 package controllers;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
 import models.*;
@@ -829,26 +830,36 @@ public class Controller_Person extends Controller {
 
                         WSResponse wsResponse = responsePromise.get(10000);
 
+                         System.out.println("Status z isvat.eu: " + wsResponse.getStatus());
                         JsonNode result = wsResponse.asJson();
 
                         terminal_logger.debug("person_validateProperty: http request: {} ", wsResponse.getStatus());
-                        terminal_logger.debug("person_validateProperty: vat_number: {} " , result);
+                        terminal_logger.debug("person_validateProperty: vat_number: {} ", result);
 
                         if (result.get("valid").asBoolean()) {
 
                             validation.valid = true;
                             try {
                                 validation.message = result.get("name").get("0").asText();
-                            }catch (Exception e){
+                            } catch (Exception e) {
                                 // do nothing
                             }
                             return GlobalResult.result_ok(Json.toJson(validation));
                         }
-                    }catch (Exception e){
+
+                    } catch (RuntimeException e) {
+
+                        validation.message = "vat_number is not valid or could not be found";
+                        validation.valid = false;
+                        return  GlobalResult.result_ok(Json.toJson(validation));
+
+                    } catch (Exception e){
                         terminal_logger.internalServerError("person_validateProperty:", e);
                         // Server_Logger.internalServerError("person_validateProperty()::", e);
                         validation.valid = false;
                         validation.message = "vat_number is not valid or could not be found";
+
+                        return  GlobalResult.result_ok(Json.toJson(validation));
                     }
 
                     break;

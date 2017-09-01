@@ -191,73 +191,73 @@ public class Model_MProject extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   @Transient                                     public boolean create_permission(){
-        if(Controller_Security.get_person().permissions_keys.containsKey("M_Project_create")) return true;
+        if(Controller_Security.get_person().has_permission("M_Project_create")) return true;
         return (project.update_permission());
     }
     @JsonProperty @Transient public boolean update_permission()  {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().permissions_keys.containsKey("m_project_update_" + id)) return Controller_Security.get_person().permissions_keys.get("m_project_update_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey("M_Project_update")) return true;
+        if(Controller_Security.get_person().has_permission("m_project_update_" + id)) return Controller_Security.get_person().has_permission("m_project_update_"+ id);
+        if(Controller_Security.get_person().has_permission("M_Project_update")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if( Model_MProject.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
-            Controller_Security.get_person().permissions_keys.put("m_project_update_" + id, true);
+            Controller_Security.get_person().cache_permission("m_project_update_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().permissions_keys.put("m_project_update_" + id, false);
+        Controller_Security.get_person().cache_permission("m_project_update_" + id, false);
         return false;
 
     }
     @JsonIgnore   @Transient public boolean read_permission()    {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().permissions_keys.containsKey("m_project_read_" + id)) return Controller_Security.get_person().permissions_keys.get("m_project_read_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey("M_Project_read")) return true;
+        if(Controller_Security.get_person().has_permission("m_project_read_" + id)) return Controller_Security.get_person().has_permission("m_project_read_"+ id);
+        if(Controller_Security.get_person().has_permission("M_Project_read")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
         if( Model_MProject.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
-            Controller_Security.get_person().permissions_keys.put("m_project_m_project_read_" + id, true);
+            Controller_Security.get_person().cache_permission("m_project_m_project_read_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().permissions_keys.put("m_project_read_" + id, false);
+        Controller_Security.get_person().cache_permission("m_project_read_" + id, false);
         return false;
 
     }
     @JsonProperty @Transient public boolean edit_permission()    {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().permissions_keys.containsKey("m_project_edit_" + id)) return Controller_Security.get_person().permissions_keys.get("m_project_edit_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey("M_Project_edit")) return true;
+        if(Controller_Security.get_person().has_permission("m_project_edit_" + id)) return Controller_Security.get_person().has_permission("m_project_edit_"+ id);
+        if(Controller_Security.get_person().has_permission("M_Project_edit")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if( Model_MProject.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
-            Controller_Security.get_person().permissions_keys.put("m_project_edit_" + id, true);
+            Controller_Security.get_person().cache_permission("m_project_edit_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().permissions_keys.put("m_project_edit_" + id, false);
+        Controller_Security.get_person().cache_permission("m_project_edit_" + id, false);
         return false;
 
     }
     @JsonProperty @Transient public boolean delete_permission()  {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().permissions_keys.containsKey("m_project_delete_" + id)) return Controller_Security.get_person().permissions_keys.get("m_project_delete_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey("M_Project_delete")) return true;
+        if(Controller_Security.get_person().has_permission("m_project_delete_" + id)) return Controller_Security.get_person().has_permission("m_project_delete_"+ id);
+        if(Controller_Security.get_person().has_permission("M_Project_delete")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if( Model_MProject.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
-            Controller_Security.get_person().permissions_keys.put("m_project_delete_" + id, true);
+            Controller_Security.get_person().cache_permission("m_project_delete_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().permissions_keys.put("m_project_delete_" + id, false);
+        Controller_Security.get_person().cache_permission("m_project_delete_" + id, false);
         return false;
 
     }

@@ -95,11 +95,11 @@ public class Model_Garfield  extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
     
-    @JsonIgnore   @Transient public boolean create_permission() {  return  Controller_Security.get_person().permissions_keys.containsKey(permissions.Garfield_Create.name());}
-    @JsonProperty @Transient public boolean edit_permission()   {  return  Controller_Security.get_person().permissions_keys.containsKey(permissions.Garfield_edit.name());}
-    @JsonProperty @Transient public boolean read_permission()   {  return  Controller_Security.get_person().permissions_keys.containsKey(permissions.Garfield_read.name());}
-    @JsonProperty @Transient public boolean delete_permission() {  return  Controller_Security.get_person().permissions_keys.containsKey(permissions.Garfield_delete.name());}
-    @JsonProperty @Transient public boolean update_permission() {  return  Controller_Security.get_person().permissions_keys.containsKey(permissions.Garfield_update.name());}
+    @JsonIgnore   @Transient public boolean create_permission() {  return  Controller_Security.get_person().has_permission(permissions.Garfield_Create.name());}
+    @JsonProperty @Transient public boolean edit_permission()   {  return  Controller_Security.get_person().has_permission(permissions.Garfield_edit.name());}
+    @JsonProperty @Transient public boolean read_permission()   {  return  Controller_Security.get_person().has_permission(permissions.Garfield_read.name());}
+    @JsonProperty @Transient public boolean delete_permission() {  return  Controller_Security.get_person().has_permission(permissions.Garfield_delete.name());}
+    @JsonProperty @Transient public boolean update_permission() {  return  Controller_Security.get_person().has_permission(permissions.Garfield_update.name());}
 
     public enum permissions {Garfield_read, Garfield_Create, Garfield_edit, Garfield_delete, Garfield_update}
 

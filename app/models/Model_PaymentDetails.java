@@ -25,7 +25,7 @@ public class Model_PaymentDetails extends Model {
                                            @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public Long id;
 
     @JsonIgnore @OneToOne                                                                           public Model_Customer customer;
-    @JsonIgnore @OneToOne()   @JoinColumn(name="productidpaymentdetails")  public Model_Product product;
+    @JsonIgnore @OneToOne() @JoinColumn(name="productidpaymentdetails")                             public Model_Product product;
 
                                                                                                     public boolean company_account; // Rozhoduji se zda jde o detaily firemní nebo osobní
 

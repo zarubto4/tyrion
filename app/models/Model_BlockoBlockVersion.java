@@ -167,10 +167,10 @@ public class Model_BlockoBlockVersion extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true) public boolean create_permission()  {  return  blocko_block.update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_create"); }
-    @JsonProperty @ApiModelProperty(required = true) public boolean read_permission()    {  return  get_blocko_block().read_permission()   ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_read");   }
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()    {  return  get_blocko_block().update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_edit");   }
-    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission()  {  return  get_blocko_block().update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("BlockoBlock_delete"); }
+    @JsonProperty @ApiModelProperty(required = true) public boolean create_permission()  {  return  blocko_block.update_permission() ||  Controller_Security.get_person().has_permission("BlockoBlock_create"); }
+    @JsonProperty @ApiModelProperty(required = true) public boolean read_permission()    {  return  get_blocko_block().read_permission()   ||  Controller_Security.get_person().has_permission("BlockoBlock_read");   }
+    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()    {  return  get_blocko_block().update_permission() ||  Controller_Security.get_person().has_permission("BlockoBlock_edit");   }
+    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission()  {  return  get_blocko_block().update_permission() ||  Controller_Security.get_person().has_permission("BlockoBlock_delete"); }
 
     public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
 

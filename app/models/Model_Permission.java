@@ -87,8 +87,8 @@ private static final Class_Logger terminal_logger = new Class_Logger(Model_Permi
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_person_permission() {  return Controller_Security.get_person() != null && Controller_Security.get_person().permissions_keys.containsKey("Permission_edit_person_permission");  }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()        {  return Controller_Security.get_person() != null && Controller_Security.get_person().permissions_keys.containsKey("Permission_edit"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_person_permission() {  return Controller_Security.get_person() != null && Controller_Security.get_person().has_permission("Permission_edit_person_permission");  }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()        {  return Controller_Security.get_person() != null && Controller_Security.get_person().has_permission("Permission_edit"); }
 
     public enum permissions{ Permission_edit_person_permission, Permission_edit }
 

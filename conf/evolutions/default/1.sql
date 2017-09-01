@@ -197,10 +197,10 @@ create table CompilationServer (
 create table Customer (
   id                        varchar(255) not null,
   created                   timestamp,
-  removed_by_user           boolean,
   company                   boolean,
   fakturoid_subject_id      varchar(255),
   person_id                 varchar(255),
+  removed_by_user           boolean,
   constraint uq_Customer_person_id unique (person_id),
   constraint pk_Customer primary key (id))
 ;
@@ -576,6 +576,8 @@ create table Product (
   financial_history         TEXT,
   configuration             TEXT,
   removed_by_user           boolean,
+  client_billing            boolean,
+  client_billing_invoice_parameters varchar(255),
   customer_id               varchar(255),
   azure_product_link        varchar(255),
   constraint ck_Product_method check (method in ('credit_card','bank_transfer','free')),

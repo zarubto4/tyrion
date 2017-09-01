@@ -112,10 +112,10 @@ public class Model_GridWidgetVersion extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean create_permission()  {  return  grid_widget.update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("GridWidgetVersion_create"); }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()    {  return  grid_widget.read_permission()   ||  Controller_Security.get_person().permissions_keys.containsKey("GridWidgetVersion_read");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()    {  return  grid_widget.update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("GridWidgetVersion_edit");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()  {  return  grid_widget.update_permission() ||  Controller_Security.get_person().permissions_keys.containsKey("GridWidgetVersion_delete"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean create_permission()  {  return  grid_widget.update_permission() ||  Controller_Security.get_person().has_permission("GridWidgetVersion_create"); }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()    {  return  grid_widget.read_permission()   ||  Controller_Security.get_person().has_permission("GridWidgetVersion_read");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()    {  return  grid_widget.update_permission() ||  Controller_Security.get_person().has_permission("GridWidgetVersion_edit");   }
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission()  {  return  grid_widget.update_permission() ||  Controller_Security.get_person().has_permission("GridWidgetVersion_delete"); }
 
     public enum permissions{GridWidgetVersion_create, GridWidgetVersion_read, GridWidgetVersion_edit, GridWidgetVersion_delete}
 

@@ -143,17 +143,9 @@ PUT       /product_extension/activate/:extension_id                     @control
 PUT       /product_extension/deactivate/:extension_id                   @controllers.Controller_Finance.productExtension_deactivate(extension_id)
 DELETE    /product_extension/:extension_id                              @controllers.Controller_Finance.productExtension_delete(extension_id)
 
-POST      /tariff_extension/:tariff_id                                  @controllers.Controller_Finance.tariffExtension_create(tariff_id)
-PUT       /tariff_extension/:extension_id                               @controllers.Controller_Finance.tariffExtension_update(extension_id)
-PUT       /tariff_extension/up/:extension_id                            @controllers.Controller_Finance.tariffExtension_up(extension_id)
-PUT       /tariff_extension/down/:extension_id                          @controllers.Controller_Finance.tariffExtension_down(extension_id)
-PUT       /tariff_extension/deactive/:extension_id                      @controllers.Controller_Finance.tariffExtension_deactivate(extension_id)
-PUT       /tariff_extension/active/:extension_id                        @controllers.Controller_Finance.tariffExtension_activate(extension_id)
-DELETE    /tariff_extension/:extension_id                               @controllers.Controller_Finance.tariffExtension_delete(extension_id)
 
 
 GET       /product/user_applicable                                      @controllers.Controller_Finance.product_getActive()
-
 POST      /product/details/:product_id                                  @controllers.Controller_Finance.paymentDetails_create(product_id)
 PUT       /product/details/:payment_details_id                          @controllers.Controller_Finance.paymentDetails_update(payment_details_id: Long)
 PUT       /product/general/:product_id                                  @controllers.Controller_Finance.product_update(product_id)
@@ -175,7 +167,7 @@ PUT       /invoice/send_remainder/:invoice_id                           @control
 DELETE    /invoice/:invoice_id                                          @controllers.Controller_Finance.invoice_delete(invoice_id)
 PUT       /invoice/refund/:invoice_id                                   @utilities.financial.goPay.GoPay.payment_refund(invoice_id)
 
-#Tarrifs
+#Tarrifs (Tvorba startovacích balíčků služeb)
 GET       /tariff                                                       @controllers.Controller_Finance.tariff_getAll()
 POST      /admin/tariff                                                 @controllers.Controller_Finance.tariff_create()
 PUT       /admin/tariff/edit/:tariff_id                                 @controllers.Controller_Finance.tariff_edit(tariff_id)
@@ -187,6 +179,13 @@ PUT       /admin/tariff/down/:tariff_id                                 @control
 DELETE    /admin/tariff/:tariff_id                                      @controllers.Controller_Finance.tariff_delete(tariff_id)
 GET       /admin/tariff/types                                           @controllers.Controller_Finance.tariff_getAllTypes()
 
+POST      /admin/tariff_extension/:tariff_id                                  @controllers.Controller_Finance.tariffExtension_create(tariff_id)
+PUT       /admin/tariff_extension/:extension_id                               @controllers.Controller_Finance.tariffExtension_update(extension_id)
+PUT       /admin/tariff_extension/up/:extension_id                            @controllers.Controller_Finance.tariffExtension_up(extension_id)
+PUT       /admin/tariff_extension/down/:extension_id                          @controllers.Controller_Finance.tariffExtension_down(extension_id)
+PUT       /admin/tariff_extension/deactive/:extension_id                      @controllers.Controller_Finance.tariffExtension_deactivate(extension_id)
+PUT       /admin/tariff_extension/active/:extension_id                        @controllers.Controller_Finance.tariffExtension_activate(extension_id)
+DELETE    /admin/tariff_extension/:extension_id                               @controllers.Controller_Finance.tariffExtension_delete(extension_id)
 
 
 ### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
@@ -266,7 +265,7 @@ GET       /blocko/all_details/:project_id                               @control
 POST      /homer_server                                                 @controllers.Controller_ExternalServer.homer_server_create()
 
 PUT       /homer_server/set_backup/:server_id                           @controllers.Controller_ExternalServer.homer_server_set_backup_server(server_id)
-PUT       /homer_server//set_main/:server_id                             @controllers.Controller_ExternalServer.homer_server_set_main_server(server_id)
+PUT       /homer_server/set_main/:server_id                             @controllers.Controller_ExternalServer.homer_server_set_main_server(server_id)
 
 GET       /homer_server/all                                             @controllers.Controller_ExternalServer.homer_server_get_all()
 DELETE    /homer_server/server/:server_id                               @controllers.Controller_ExternalServer.homer_server_delete(server_id)
@@ -385,7 +384,7 @@ PUT       /bootloader/update_device_list                                @control
 PUT       /bootloader/:boot_loader_id                                   @controllers.Controller_Board.bootLoader_update(boot_loader_id)
 DELETE    /bootloader/:boot_loader_id                                   @controllers.Controller_Board.bootLoader_delete(boot_loader_id)
 
-#File // Skryto ve swaggeru
+#File / Skryto ve swaggeru
 GET       /file/bootloader/:bootloader_id                               @controllers.Controller_Board.fileRecord_get_bootLoader(bootloader_id)
 GET       /file/cprogram_version/:version_id                            @controllers.Controller_Board.fileRecord_get_firmware(version_id)
 

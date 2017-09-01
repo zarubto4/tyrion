@@ -25,7 +25,7 @@ public class Model_Customer extends Model{
 
                                                                 @Id public String id;
                                                         @JsonIgnore public Date created;
-                                                        @JsonIgnore public boolean removed_by_user;
+
                                                         @JsonIgnore public boolean company;
                                                         @JsonIgnore public String fakturoid_subject_id;
 
@@ -34,6 +34,8 @@ public class Model_Customer extends Model{
 
        @JsonIgnore @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL) public List<Model_Product>  products  = new ArrayList<>();
        @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL) public List<Model_Employee> employees = new ArrayList<>();
+
+       @JsonIgnore public boolean removed_by_user;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 

@@ -292,15 +292,15 @@ public class Model_TypeOfBoard extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-       @JsonIgnore   @Transient public boolean create_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_create"); }
+       @JsonIgnore   @Transient public boolean create_permission(){  return Controller_Security.get_person().has_permission("TypeOfBoard_create"); }
     @JsonIgnore   @Transient public boolean read_permission()  {  return true; }
-    @JsonProperty @Transient public boolean edit_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_edit");   }
-    @JsonProperty @Transient public boolean update_permission()  {  return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_update");   }
-    @JsonProperty @Transient public boolean delete_permission(){  return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_delete"); }
-    @JsonProperty @Transient public boolean register_new_device_permission(){ return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_register_new_device"); }
-    @JsonProperty @Transient public boolean bootloader_edit_permission(){ return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_bootloader"); }
-    @JsonProperty @Transient public boolean default_c_program_edit_permission(){ return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_c_program_edit_permission"); }
-    @JsonProperty @Transient public boolean test_c_program_edit_permission(){ return Controller_Security.get_person().permissions_keys.containsKey("TypeOfBoard_test_c_program_edit_permission"); }
+    @JsonProperty @Transient public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("TypeOfBoard_edit");   }
+    @JsonProperty @Transient public boolean update_permission()  {  return Controller_Security.get_person().has_permission("TypeOfBoard_update");   }
+    @JsonProperty @Transient public boolean delete_permission(){  return Controller_Security.get_person().has_permission("TypeOfBoard_delete"); }
+    @JsonProperty @Transient public boolean register_new_device_permission(){ return Controller_Security.get_person().has_permission("TypeOfBoard_register_new_device"); }
+    @JsonProperty @Transient public boolean bootloader_edit_permission(){ return Controller_Security.get_person().has_permission("TypeOfBoard_bootloader"); }
+    @JsonProperty @Transient public boolean default_c_program_edit_permission(){ return Controller_Security.get_person().has_permission("TypeOfBoard_c_program_edit_permission"); }
+    @JsonProperty @Transient public boolean test_c_program_edit_permission(){ return Controller_Security.get_person().has_permission("TypeOfBoard_test_c_program_edit_permission"); }
 
     public enum permissions{TypeOfBoard_create, TypeOfBoard_edit, TypeOfBoard_update, TypeOfBoard_delete, TypeOfBoard_register_new_device, TypeOfBoard_bootloader,  TypeOfBoard_c_program_edit_permission, TypeOfBoard_test_c_program_edit_permission}
 

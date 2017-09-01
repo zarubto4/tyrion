@@ -2036,11 +2036,11 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient public static final String disconnection_permission_docs = "read: If user want remove Board from Project, he needs one single permission Project.update_permission, where hardware is registered. - Or user need static/dynamic permission key";
 
     // TODO Cachování oprávnění - Dá se to tu zlepšít obdobně jako třeba v C_Program
-    @JsonIgnore   @Transient public boolean create_permission() {  return  Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_Create"); }
-    @JsonProperty @Transient public boolean edit_permission()  {  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.get_person().permissions_keys.containsKey("Board_edit")) ;}
-    @JsonProperty @Transient public boolean read_permission()  {  return  Controller_Security.has_token() && ((project_id() != null && get_project().read_permission())   || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_read"));}
-    @JsonProperty @Transient public boolean delete_permission(){  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_delete"));}
-    @JsonProperty @Transient public boolean update_permission(){  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().permissions_keys.containsKey("Board_update"));}
+    @JsonIgnore   @Transient public boolean create_permission() {  return  Controller_Security.has_token() && Controller_Security.get_person().has_permission("Board_Create"); }
+    @JsonProperty @Transient public boolean edit_permission()  {  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.get_person().has_permission("Board_edit")) ;}
+    @JsonProperty @Transient public boolean read_permission()  {  return  Controller_Security.has_token() && ((project_id() != null && get_project().read_permission())   || Controller_Security.has_token() && Controller_Security.get_person().has_permission("Board_read"));}
+    @JsonProperty @Transient public boolean delete_permission(){  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().has_permission("Board_delete"));}
+    @JsonProperty @Transient public boolean update_permission(){  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().has_permission("Board_update"));}
     @JsonIgnore   @Transient public boolean first_connect_permission(){ return project_id() == null;}
 
     public enum permissions {Board_read, Board_Create, Board_edit, Board_delete, Board_update}

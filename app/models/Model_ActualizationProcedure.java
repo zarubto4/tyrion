@@ -555,7 +555,7 @@ public class Model_ActualizationProcedure extends Model {
     @JsonIgnore @Transient   public static final String read_permission_docs   = "User can read Actualization_procedure if they have ID of Actualization_procedure";
 
     @JsonIgnore @Transient   public boolean read_permission()      {
-        return Model_Project.find.where().eq("b_programs.instance.instance_history.procedures.id",id ).findUnique().read_permission() || Controller_Security.get_person().permissions_keys.containsKey("Actualization_procedure_read");
+        return Model_Project.find.where().eq("b_programs.instance.instance_history.procedures.id",id ).findUnique().read_permission() || Controller_Security.get_person().has_permission("Actualization_procedure_read");
     }
 
     public enum permissions{Actualization_procedure_read}

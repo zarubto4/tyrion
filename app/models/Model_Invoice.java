@@ -314,8 +314,8 @@ public class Model_Invoice extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean create_permission() {  return ((getProduct().customer.company && product.customer.isEmployee(Controller_Security.get_person())) || (!getProduct().customer.company && product.customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().permissions_keys.containsKey("Invoice_create");}
-    @JsonIgnore @Transient public boolean read_permission()   {  return ((getProduct().customer.company && product.customer.isEmployee(Controller_Security.get_person())) || (!getProduct().customer.company && product.customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().permissions_keys.containsKey("Invoice_read");}
+    @JsonIgnore @Transient public boolean create_permission() {  return ((getProduct().customer.company && product.customer.isEmployee(Controller_Security.get_person())) || (!getProduct().customer.company && product.customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().has_permission("Invoice_create");}
+    @JsonIgnore @Transient public boolean read_permission()   {  return ((getProduct().customer.company && product.customer.isEmployee(Controller_Security.get_person())) || (!getProduct().customer.company && product.customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().has_permission("Invoice_read");}
     @JsonIgnore @Transient public boolean remind_permission() {  return true;  }
     @JsonIgnore @Transient public boolean edit_permission()   {  return true;  }
     @JsonIgnore @Transient public boolean delete_permission() {  return true;  }

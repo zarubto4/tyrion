@@ -240,7 +240,7 @@ public class Controller_Garfield extends Controller {
     public Result get_Garfield_list(){
         try {
 
-            if(!Controller_Security.get_person().permissions_keys.containsKey(Model_Garfield.permissions.Garfield_read.name()))  return GlobalResult.result_forbidden();
+            if(!Controller_Security.get_person().has_permission(Model_Garfield.permissions.Garfield_read.name()))  return GlobalResult.result_forbidden();
 
             // Kontrola objektu
             List<Model_Garfield> garfield_s = Model_Garfield.find.where().orderBy("UPPER(name) ASC").findList();

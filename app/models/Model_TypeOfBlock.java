@@ -214,74 +214,74 @@ public class Model_TypeOfBlock extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient   public boolean create_permission()  {
-        return   (project != null && project.update_permission()) || Controller_Security.get_person().permissions_keys.containsKey("TypeOfBlock_create");
+        return   (project != null && project.update_permission()) || Controller_Security.get_person().has_permission("TypeOfBlock_create");
     }
 
     @JsonIgnore @Transient   public boolean read_permission()    {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().permissions_keys.containsKey("type_of_block_read_" + id)) return Controller_Security.get_person().permissions_keys.get("type_of_block_read_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey("TypeOfBlock_read")) return true;
+        if(Controller_Security.get_person().has_permission("type_of_block_read_" + id)) return Controller_Security.get_person().has_permission("type_of_block_read_"+ id);
+        if(Controller_Security.get_person().has_permission("TypeOfBlock_read")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if(project_id() != null && Model_Project.get_byId(project_id()).read_permission()){
-            Controller_Security.get_person().permissions_keys.put("type_of_block_read_" + id, true);
+            Controller_Security.get_person().cache_permission("type_of_block_read_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().permissions_keys.put("type_of_block_read_" + id, false);
+        Controller_Security.get_person().cache_permission("type_of_block_read_" + id, false);
         return false;
     }
     @JsonProperty @Transient public boolean update_permission()  {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().permissions_keys.containsKey("type_of_block_update_" + id)) return Controller_Security.get_person().permissions_keys.get("type_of_block_update_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey("TypeOfBlock_update")) return true;
+        if(Controller_Security.get_person().has_permission("type_of_block_update_" + id)) return Controller_Security.get_person().has_permission("type_of_block_update_"+ id);
+        if(Controller_Security.get_person().has_permission("TypeOfBlock_update")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if(project_id() != null && Model_Project.get_byId(project_id()).edit_permission()){
-            Controller_Security.get_person().permissions_keys.put("type_of_block_update_" + id, true);
+            Controller_Security.get_person().cache_permission("type_of_block_update_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().permissions_keys.put("type_of_block_edit_" + id, false);
+        Controller_Security.get_person().cache_permission("type_of_block_edit_" + id, false);
         return false;
 
     }
     @JsonProperty @Transient public boolean edit_permission()    {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().permissions_keys.containsKey("type_of_block_edit_" + id)) return Controller_Security.get_person().permissions_keys.get("type_of_block_edit_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey("TypeOfBlock_edit")) return true;
+        if(Controller_Security.get_person().has_permission("type_of_block_edit_" + id)) return Controller_Security.get_person().has_permission("type_of_block_edit_"+ id);
+        if(Controller_Security.get_person().has_permission("TypeOfBlock_edit")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if(project_id() != null && Model_Project.get_byId(project_id()).edit_permission()){
-            Controller_Security.get_person().permissions_keys.put("type_of_block_edit_" + id, true);
+            Controller_Security.get_person().cache_permission("type_of_block_edit_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().permissions_keys.put("type_of_block_edit_" + id, false);
+        Controller_Security.get_person().cache_permission("type_of_block_edit_" + id, false);
         return false;
     }
     @JsonProperty @Transient public boolean delete_permission()  {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().permissions_keys.containsKey("type_of_block_delete_" + id)) return Controller_Security.get_person().permissions_keys.get("type_of_block_delete_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey("TypeOfBlock_delete")) return true;
+        if(Controller_Security.get_person().has_permission("type_of_block_delete_" + id)) return Controller_Security.get_person().has_permission("type_of_block_delete_"+ id);
+        if(Controller_Security.get_person().has_permission("TypeOfBlock_delete")) return true;
 
 
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if(project_id() != null && Model_Project.get_byId(project_id()).edit_permission()){
-            Controller_Security.get_person().permissions_keys.put("type_of_block_delete_" + id, true);
+            Controller_Security.get_person().cache_permission("type_of_block_delete_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().permissions_keys.put("type_of_block_delete_" + id, false);
+        Controller_Security.get_person().cache_permission("type_of_block_delete_" + id, false);
         return false;
     }
 

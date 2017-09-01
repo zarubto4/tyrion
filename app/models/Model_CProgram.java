@@ -382,7 +382,7 @@ public class Model_CProgram extends Model {
 
     @JsonIgnore   @Transient  @ApiModelProperty(required = true) public boolean create_permission(){
 
-        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_create")) return true;
+        if(Controller_Security.get_person().has_permission("c_program_create")) return true;
 
         return project != null && project.update_permission();
 
@@ -391,17 +391,17 @@ public class Model_CProgram extends Model {
     @JsonProperty @Transient public boolean update_permission()  {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_update_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_update_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey(permissions.C_Program_update.name())) return true;
+        if(Controller_Security.get_person().has_permission("c_program_update_" + id)) return Controller_Security.get_person().has_permission("c_program_update_"+ id);
+        if(Controller_Security.get_person().has_permission(permissions.C_Program_update.name())) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
-            Controller_Security.get_person().permissions_keys.put("c_program_update_" + id, true);
+            Controller_Security.get_person().cache_permission("c_program_update_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().permissions_keys.put("c_program_update_" + id, false);
+        Controller_Security.get_person().cache_permission("c_program_update_" + id, false);
         return false;
 
     }
@@ -410,56 +410,56 @@ public class Model_CProgram extends Model {
         if (project_id() == null) return true; // TODO TOM - nevím, jak to máš promyšlené u public programů
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_read_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_read_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey(permissions.C_Program_read.name())) return true;
+        if(Controller_Security.get_person().has_permission("c_program_read_" + id)) return Controller_Security.get_person().has_permission("c_program_read_"+ id);
+        if(Controller_Security.get_person().has_permission(permissions.C_Program_read.name())) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
         if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).eq("id", id).findRowCount() > 0){
-            Controller_Security.get_person().permissions_keys.put("c_program_read_" + id, true);
+            Controller_Security.get_person().cache_permission("c_program_read_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().permissions_keys.put("read_" + id, false);
+        Controller_Security.get_person().cache_permission("read_" + id, false);
         return false;
 
     }
     @JsonProperty @Transient public boolean edit_permission()    {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_edit_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_edit_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey(permissions.C_Program_edit.name())) return true;
+        if(Controller_Security.get_person().has_permission("c_program_edit_" + id)) return Controller_Security.get_person().has_permission("c_program_edit_"+ id);
+        if(Controller_Security.get_person().has_permission(permissions.C_Program_edit.name())) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
-            Controller_Security.get_person().permissions_keys.put("c_program_edit_" + id, true);
+            Controller_Security.get_person().cache_permission("c_program_edit_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().permissions_keys.put("c_program_edit_" + id, false);
+        Controller_Security.get_person().cache_permission("c_program_edit_" + id, false);
         return false;
 
     }
     @JsonProperty @Transient public boolean delete_permission()  {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().permissions_keys.containsKey("c_program_delete_" + id)) return Controller_Security.get_person().permissions_keys.get("c_program_delete_"+ id);
-        if(Controller_Security.get_person().permissions_keys.containsKey(permissions.C_Program_delete.name())) return true;
+        if(Controller_Security.get_person().has_permission("c_program_delete_" + id)) return Controller_Security.get_person().has_permission("c_program_delete_"+ id);
+        if(Controller_Security.get_person().has_permission(permissions.C_Program_delete.name())) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if( Model_CProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
-            Controller_Security.get_person().permissions_keys.put("c_program_delete_" + id, true);
+            Controller_Security.get_person().cache_permission("c_program_delete_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().permissions_keys.put("c_program_delete_" + id, false);
+        Controller_Security.get_person().cache_permission("c_program_delete_" + id, false);
         return false;
 
     }
     @JsonProperty @Transient  @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        return Controller_Security.get_person().permissions_keys.containsKey(permissions.C_Program_community_publishing_permission.name()) ? true : null;
+        return Controller_Security.get_person().has_permission(permissions.C_Program_community_publishing_permission.name()) ? true : null;
     }
 
     public enum permissions{ C_Program_create,  C_Program_update, C_Program_read , C_Program_edit, C_Program_delete, C_Program_community_publishing_permission;}

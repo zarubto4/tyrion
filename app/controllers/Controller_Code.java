@@ -265,7 +265,7 @@ public class Controller_Code extends Controller{
                 // Pokud není prázdné a obsahuje enum vyžadující oprávnění kontroluji
                 }else {
                     if(help.public_states.contains(Enum_Approval_state.disapproved.name()) || help.public_states.contains(Enum_Approval_state.edited.name()) || help.public_states.contains(Enum_Approval_state.pending.name())){
-                        if(!Controller_Security.get_person().permissions_keys.containsKey(Model_CProgram.permissions.C_Program_community_publishing_permission.name())){
+                        if(!Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name())){
                             return GlobalResult.result_forbidden();
                         }
                     }
