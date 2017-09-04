@@ -536,67 +536,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             token.setDate();
             token.save();
 
-            Model_Customer customer = new Model_Customer();
-            customer.person = person;
-            customer.save();
-
-            // Vytvoří tarif
-            Model_Product product = new Model_Product();
-            product.business_model = Enum_BusinessModel.alpha;
-            product.credit = (long) 0;
-            product.name = "Pepkova velkolepá Alfa";
-            product.active  = true;  // Produkt jelikož je Aplha je aktivní - Alpha nebo Trial dojedou kvuli omezení času
-            product.method  = Enum_Payment_method.free;
-            product.customer = customer;
-            product.save();
-
-            Model_PaymentDetails payment_details = new Model_PaymentDetails();
-            payment_details.full_name = person.full_name;
-            payment_details.invoice_email = person.mail;
-            payment_details.company_account = false;
-            payment_details.street = "Karlovo náměsí";
-            payment_details.street_number = "457";
-            payment_details.city = "Praha";
-            payment_details.zip_code = "12000";
-            payment_details.country = "Czech Republic";
-            payment_details.product = product;
-            payment_details.save();
-
-             // Okopíruji všechny aktivní, které má Tarrif už v sobě
-            for (Model_ProductExtension ext : Model_Tariff.find.where().eq("identifier","alpha").findUnique().extensions_included){
-
-                if(ext.active) {
-
-                    Model_ProductExtension extension = ext.copy();
-                    extension.product = product;
-                    extension.save();
-                }
-            }
-
-            // Vytvořím Projekty
-            Model_Project project_1 = new Model_Project();
-            project_1.product = product;
-            project_1.name = "První velkolepý projekt";
-            project_1.description = "Toto je Pepkův velkolepý testovací projekt primárně určen pro testování Blocko Programu, kde už má zaregistrovaný testovací HW";
-            project_1.save();
-
-
-            Model_ProjectParticipant participant_1 = new Model_ProjectParticipant();
-            participant_1.person = person;
-            participant_1.project = project_1;
-            participant_1.state = Enum_Participant_status.owner;
-            participant_1.save();
-
-            // Zaregistruji pod ně Yody
-            Model_Board yoda_G  = Model_Board.find.where().eq("name","[Q]").findUnique();
-            yoda_G.project = project_1;
-            yoda_G.update();
-
-           for(Model_Board board :project_1.boards  ) {
-               board.project = project_1;
-               board.save();
-           }
-
             return GlobalResult.result_ok();
 
         } catch (Exception e) {

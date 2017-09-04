@@ -53,19 +53,20 @@ public class Model_Product extends Model {
                                              @ApiModelProperty(required = true) public boolean active;              // Jestli je projekt aktivní (může být zmražený, nebo třeba ještě neuhrazený platbou)
 
                                              @ApiModelProperty(required = true) public Date created;
-                                                                    @JsonIgnore public boolean on_demand;    // Jestli je povoleno a zaregistrováno, že Tyrion muže žádat o provedení platby
+                                                                    @JsonIgnore public boolean on_demand;           // Jestli je povoleno a zaregistrováno, že Tyrion muže žádat o provedení platby
 
-                                                                    @JsonIgnore public Long credit;     // Zbývající kredit pokud je typl platby per_credit - jako na Azure
+                                                                    @JsonIgnore public Long credit;                 // Zbývající kredit pokud je typl platby per_credit - jako na Azure
 
                                  @Column(columnDefinition = "TEXT") @JsonIgnore public String financial_history;
                                  @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
-                                                                    @JsonIgnore public boolean removed_by_user; // může jenom administrátor
+                                                                    @JsonIgnore public boolean removed_byinvoi_user; // může jenom administrátor
 
                                                                                 public boolean client_billing;                      // Zda bude fakturováno jinému zákazníkovi
-                                                                    @JsonIgnore public String  client_billing_invoice_parameters;    // Zde je konfigurace k fakturám, které se zasílají zákazníkovi
+                                                                    @JsonIgnore public String  client_billing_invoice_parameters;   // Zde je konfigurace k fakturám, které se zasílají zákazníkovi
 
-                       @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER) public Model_Customer customer;
-                       @OneToOne(mappedBy="product", cascade = CascadeType.ALL) public Model_PaymentDetails payment_details;
+
+                       @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER) public Model_Customer customer;               // Owner
+                       @OneToOne(mappedBy="product", cascade = CascadeType.ALL) public Model_PaymentDetails payment_details;        // Záměrně 1:1 aby bylo editovatelné separátně
 
     @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_Project>          projects    = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_Invoice>          invoices    = new ArrayList<>();
@@ -469,13 +470,7 @@ public class Model_Product extends Model {
         List<Model_Person> receivers = new ArrayList<>();
         try {
 
-            if (this.customer.company) {
-
-                this.customer.getEmployees().forEach(employee -> receivers.add(employee.person));
-
-            } else {
-                receivers.add(this.customer.getPerson());
-            }
+            this.customer.getEmployees().forEach(employee -> receivers.add(employee.person));
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
@@ -766,12 +761,12 @@ public class Model_Product extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore  public boolean create_permission()               {  return true;  }
-    @JsonIgnore  public boolean read_permission()                 {  return ((customer.company && customer.isEmployee(Controller_Security.get_person())) || (!customer.company && customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().has_permission("Product_read");  }
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()                {  return ((customer.company && customer.isEmployee(Controller_Security.get_person())) || (!customer.company && customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().has_permission("Product_edit");  }
-    @JsonProperty @ApiModelProperty(required = true) public boolean act_deactivate_permission()      {  return ((customer.company && customer.isEmployee(Controller_Security.get_person())) || (!customer.company && customer.getPerson().id.equals(Controller_Security.get_person_id()))) || Controller_Security.get_person().has_permission("Product_act_deactivate"); }
-    @JsonIgnore  public boolean delete_permission()               {  return Controller_Security.get_person().has_permission("Product_delete");}
-    @JsonIgnore  public boolean financial_permission(String action){  return FinancialPermission.check(this, action);}
+    @JsonIgnore  public boolean create_permission()                                                  {  return true;  }
+    @JsonIgnore  public boolean read_permission()                                                    {  return customer.isEmployee(Controller_Security.get_person()) || Controller_Security.get_person().has_permission("Product_read");  }
+    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()                {  return customer.isEmployee(Controller_Security.get_person()) || Controller_Security.get_person().has_permission("Product_edit");  }
+    @JsonProperty @ApiModelProperty(required = true) public boolean act_deactivate_permission()      {  return customer.isEmployee(Controller_Security.get_person()) || Controller_Security.get_person().has_permission("Product_act_deactivate"); }
+    @JsonIgnore  public boolean delete_permission()                                                  {  return Controller_Security.get_person().has_permission("Product_delete");}
+    @JsonIgnore  public boolean financial_permission(String action)                                  {  return FinancialPermission.check(this, action);}
 
     public enum permissions{Product_update, Product_read, Product_edit,Product_act_deactivate, Product_delete}
 
@@ -789,12 +784,12 @@ public class Model_Product extends Model {
 
     @JsonIgnore
     public static List<Model_Product> get_byOwner(String owner_id) {
-        return find.where().eq("customer.person.id", owner_id).findList();
+        return find.where().disjunction().eq("customer.employees.person.id", owner_id).findList();
     }
 
     @JsonIgnore
     public static List<Model_Product> get_applicableByOwner(String owner_id) {
-        return find.where().eq("active",true).eq("customer.person.id", owner_id).select("id").select("name").findList();
+        return find.where().eq("active",true).eq("customer.employees.person.id", owner_id).select("id").select("name").findList();
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

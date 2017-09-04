@@ -105,7 +105,7 @@ public class Fakturoid extends Controller {
 
             Fakturoid_Invoice fakturoid_invoice = new Fakturoid_Invoice();
             fakturoid_invoice.custom_id = invoice.getProduct().id;
-            fakturoid_invoice.client_name = invoice.getProduct().customer.company ? invoice.getProduct().payment_details.company_name : invoice.getProduct().customer.getPerson().full_name;
+            fakturoid_invoice.client_name = invoice.getProduct().payment_details.company_name;
             fakturoid_invoice.currency = Enum_Currency.USD;
             fakturoid_invoice.lines = invoice.invoice_items();
             fakturoid_invoice.proforma = true;
@@ -203,7 +203,7 @@ public class Fakturoid extends Controller {
 
             Fakturoid_Invoice fakturoid_invoice = new Fakturoid_Invoice();
             fakturoid_invoice.custom_id = product.id;
-            fakturoid_invoice.client_name = product.customer.company ? product.payment_details.company_name : product.customer.getPerson().full_name;
+            fakturoid_invoice.client_name = product.payment_details.company_name;
             fakturoid_invoice.currency = Enum_Currency.USD;
             fakturoid_invoice.lines = invoice.invoice_items;
             fakturoid_invoice.proforma = false;
@@ -446,7 +446,7 @@ public class Fakturoid extends Controller {
 
                         terminal_logger.debug("create_subject: Status: 422");
 
-                        throw new Exception("Fakturoid returned 422 - Unprocessable Entity. Response: " + result);
+                        throw new IllegalArgumentException("Fakturoid returned 422 - Unprocessable Entity. Response: " + result);
                     }
 
                     default: throw new Exception("Fakturoid returned unhandled status: " + response.getStatus() + ".");

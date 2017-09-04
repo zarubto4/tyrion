@@ -8,4 +8,5 @@ public enum Enum_Participant_status {
     @EnumValue("admin")   admin,
     @EnumValue("member")  member,
     @EnumValue("invited") invited
+
 }

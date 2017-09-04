@@ -1095,51 +1095,49 @@ public class Controller_Finance extends Controller {
             Model_Tariff tariff = Model_Tariff.get_byId(help.tariff_id);
             if(tariff == null) return GlobalResult.result_notFound("Tariff not found");
 
-            Model_Customer customer;
-            Model_Person person;
-            boolean new_customer = false;
+            Model_Customer customer = null;
+            Model_Person person = Controller_Security.get_person();
 
-            if(help.person_id == null) person = Controller_Security.get_person();
-            else person = Model_Person.get_byId(help.person_id);
+            Ebean.beginTransaction();
 
-            if (person == null) return GlobalResult.result_notFound("Person not found");
+            if(help.customer_id != null){
 
-            // Pokud chci produkt založit pod existujícím zákazníkem(firmou)
-            if (help.customer_id == null) {
-
-                terminal_logger.debug("product_create: Customer id is null");
-
-                // Pokud je to produkt pro firmu, ale customer_id bylo null, vytvořím novou firmou
-                if (tariff.company_details_required) {
-
-                    customer = new Model_Customer();
-                    customer.company = true;
-
-                    new_customer = true;
-
-                } else {
-
-                    // Pokud je to pouze fyzická osoba, zkusím najít v DB existujícího zákazníka(osobu), když nenajdu udělám nového
-                    customer = Model_Customer.find.where().eq("person.id", person.id).findUnique();
-                    if (customer == null) {
-
-                        terminal_logger.debug("product_create: Creating new customer");
-
-                        customer = new Model_Customer();
-                        customer.person = person;
-
-                        new_customer = true;
-                    }
-                }
-
-            } else {
-
-                terminal_logger.debug("product_create: Finding customer in DB");
-
-                // Pokud ho nenajdu vrátím chybu
                 customer = Model_Customer.get_byId(help.customer_id);
                 if (customer == null) return GlobalResult.result_notFound("Customer not found");
+
+            }else {
+
+                customer = new Model_Customer();
+
+                Model_PaymentDetails customer_payment_details = new Model_PaymentDetails();
+                if (help.company_name != null) {
+
+                    customer_payment_details.company_account = true;
+
+                    if (help.company_name != null)              customer_payment_details.company_name = help.company_name;
+                    if (help.company_authorized_email != null)  customer_payment_details.company_authorized_email = help.company_authorized_email;
+                    if (help.company_authorized_phone != null)  customer_payment_details.company_authorized_phone = help.company_authorized_phone;
+                    if (help.company_web != null)               customer_payment_details.company_web = help.company_web;
+                    if (help.street != null)                    customer_payment_details.street = help.street;
+                    if (help.street_number != null)             customer_payment_details.street_number = help.street_number;
+                    if (help.city != null)                      customer_payment_details.city = help.city;
+                    if (help.zip_code != null)                  customer_payment_details.zip_code = help.zip_code;
+                    if (help.country != null)                   customer_payment_details.country = help.country;
+                    if (help.zip_code != null)                  customer_payment_details.company_vat_number = help.company_vat_number;
+                    if (help.country != null)                   customer_payment_details.company_registration_no = help.company_registration_no;
+                    if (help.invoice_email != null)             customer_payment_details.invoice_email = help.invoice_email;
+                }
+
+                Model_Employee employee = new Model_Employee();
+                employee.state = Enum_Participant_status.owner;
+                employee.person = person;
+
+                employee.customer = customer;
+                customer.payment_details = customer_payment_details;
+                customer.employees.add(employee);
+                customer.save();
             }
+
 
             Model_Product product   = new Model_Product();
             product.name            = help.name;
@@ -1148,143 +1146,80 @@ public class Controller_Finance extends Controller {
             product.business_model  = tariff.business_model;
             product.credit          = tariff.credit_for_beginning;
 
+            if(customer != null) product.customer = customer;
+
+
             Model_PaymentDetails payment_details = new Model_PaymentDetails();
 
-            if (!new_customer && help.default_payment_details && customer.payment_details != null) {
+            if(help.integrator_registration) {
 
-                terminal_logger.debug("product_create: Copying payment details");
-
-                payment_details = customer.payment_details.copy();
-
-                product.fakturoid_subject_id = customer.fakturoid_subject_id;
-
-                terminal_logger.debug("product_create: Fakturoid subject id set");
-
-            } else {
-
-                if (tariff.payment_details_required) {
-
-                    if (help.street == null)            return GlobalResult.result_badRequest("street is required with this tariff");
-                    if (help.street_number == null)     return GlobalResult.result_badRequest("street_number is required with this tariff");
-                    if (help.city == null)              return GlobalResult.result_badRequest("city is required with this tariff");
-                    if (help.zip_code == null)          return GlobalResult.result_badRequest("zip_code is required with this tariff");
-                    if (help.country == null)           return GlobalResult.result_badRequest("country is required with this tariff");
-                    if (help.invoice_email == null)     return GlobalResult.result_badRequest("invoice_email is required with this tariff");
-
-                    if (tariff.company_details_required) {
-
-                        if (help.registration_no == null && help.vat_number == null) return GlobalResult.result_badRequest("registration_no or vat_number is required with this tariff");
-                        if (help.company_name == null)              return GlobalResult.result_badRequest("company_name is required with this tariff");
-                        if (help.company_authorized_email == null)  return GlobalResult.result_badRequest("company_authorized_email is required with this tariff");
-                        if (help.company_authorized_phone == null)  return GlobalResult.result_badRequest("company_authorized_phone is required with this tariff");
-
-                        try {
-                            new URL(help.company_web);
-                        } catch (MalformedURLException malformedURLException) {
-                            return GlobalResult.result_badRequest("company_web invalid value");
-                        }
-
-                        if (help.vat_number != null) payment_details.company_vat_number = help.vat_number;
-                        if (help.registration_no != null)
-                            payment_details.company_registration_no = help.registration_no;
-
-                        payment_details.company_account = true;
-                        payment_details.company_name = help.company_name;
-                        payment_details.company_authorized_email = help.company_authorized_email;
-                        payment_details.company_authorized_phone = help.company_authorized_phone;
-                        payment_details.company_web = help.company_web;
-                    }
-                }
-
-                if (help.full_name != null) payment_details.full_name = help.full_name;
-                else payment_details.full_name = person.full_name;
-
+                product.client_billing = true;
+                payment_details.company_name = help.company_name;
+                payment_details.company_authorized_email = help.company_authorized_email;
+                payment_details.company_authorized_phone = help.company_authorized_phone;
+                payment_details.company_web = help.company_web;
                 payment_details.street = help.street;
                 payment_details.street_number = help.street_number;
                 payment_details.city = help.city;
                 payment_details.zip_code = help.zip_code;
                 payment_details.country = help.country;
+                payment_details.company_vat_number = help.company_vat_number;
+                payment_details.company_registration_no = help.company_registration_no;
                 payment_details.invoice_email = help.invoice_email;
+                payment_details = customer.payment_details.copy();
+
+
+            }else {
+
+                product.client_billing = false;
+
+                if (customer.payment_details != null)       payment_details = customer.payment_details.copy();
+                if (customer.fakturoid_subject_id != null)  product.fakturoid_subject_id = customer.fakturoid_subject_id;
+
+                if (help.company_name != null)              payment_details.company_name = help.company_name;
+                if (help.company_authorized_email != null)  payment_details.company_authorized_email = help.company_authorized_email;
+                if (help.company_authorized_phone != null)  payment_details.company_authorized_phone = help.company_authorized_phone;
+                if (help.company_web != null)               payment_details.company_web = help.company_web;
+                if (help.street != null)                    payment_details.street = help.street;
+                if (help.street_number != null)             payment_details.street_number = help.street_number;
+                if (help.city != null)                      payment_details.city = help.city;
+                if (help.zip_code != null)                  payment_details.zip_code = help.zip_code;
+                if (help.country != null)                   payment_details.country = help.country;
+                if (help.zip_code != null)                  payment_details.company_vat_number = help.company_vat_number;
+                if (help.country != null)                   payment_details.company_registration_no = help.company_registration_no;
+                if (help.invoice_email != null)             payment_details.invoice_email = help.invoice_email;
+
             }
 
-            Ebean.beginTransaction();
 
-            if (new_customer) {
+            payment_details.save();
 
-                terminal_logger.debug("product_create: Saving new customer");
-                customer.save();
-
-                if (customer.company) {
-
-                    Model_Employee employee = new Model_Employee();
-                    employee.person = person;
-                    employee.state = Enum_Participant_status.owner;
-                    employee.customer = customer;
-                    employee.save();
-                }
-            }
-
-            product.customer = customer;
+            product.payment_details = payment_details;
             product.save();
 
-            terminal_logger.debug("product_create: Product saved to DB");
+            payment_details.product = product;
+            payment_details.update();
 
-            if (payment_details.isComplete() || payment_details.isCompleteCompany()) {
+            if ((payment_details.isComplete() || payment_details.isCompleteCompany()) && product.fakturoid_subject_id == null) {
 
-                if (product.fakturoid_subject_id == null) {
+                product.fakturoid_subject_id = Fakturoid.create_subject(payment_details);
 
-                    product.fakturoid_subject_id = Fakturoid.create_subject(payment_details);
+                if (product.fakturoid_subject_id == null) return GlobalResult.result_badRequest("Payment details are invalid.");
 
-                    if (product.fakturoid_subject_id == null)
-                        return GlobalResult.result_badRequest("Payment details are invalid.");
+                 product.update();
 
-                    product.update();
-                }
-
-                if (new_customer || customer.payment_details == null) {
-
-                    Model_PaymentDetails customer_details = payment_details.copy();
-
-                    customer_details.customer = customer;
-                    customer_details.save();
-
-                    customer.refresh(); // Musí zde být, jinak customer.update() smaže všechny navázané objekty
-
-                    customer.fakturoid_subject_id = product.fakturoid_subject_id;
-                    customer.update();
-
-                    terminal_logger.debug("product_create: Customer updated - Subject id = {}", customer.fakturoid_subject_id);
-                }
-
-                payment_details.product = product;
-                payment_details.save();
-
-                terminal_logger.debug("product_create: Payment details are done");
             }
 
             product.refresh();
 
             terminal_logger.debug("product_create: Adding extensions");
 
-            // Přidám ty, co vybral uživatel
-            if(help.extension_ids.size() > 0) {
+            List<Model_ProductExtension> extensions = new ArrayList<>();
 
-                for (Model_ProductExtension ext : Model_ProductExtension.find.where().in("id", help.extension_ids).eq("tariff_optional.id", tariff.id).findList()){
+            if(help.extension_ids.size() > 0) extensions.addAll( Model_ProductExtension.find.where().in("id", help.extension_ids).eq("tariff_optional.id", tariff.id).findList());
+            extensions.addAll(tariff.extensions_included);
 
-                    if(ext.active) {
-
-                        Model_ProductExtension extension = ext.copy();
-                        extension.product = product;
-
-                        if (!extension.create_permission()) return GlobalResult.result_forbidden();
-
-                        extension.save();
-                    }
-                }
-            }
-
-            // Okopíruji všechny aktivní, které má Tariff už v sobě
-            for (Model_ProductExtension ext : tariff.extensions_included){
+            for (Model_ProductExtension ext : extensions){
 
                 if(ext.active) {
 
@@ -2143,43 +2078,42 @@ public class Controller_Finance extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result customer_create_company(){
-        try{
+        try {
 
             // Zpracování Json
             final Form<Swagger_Customer_New> form = Form.form(Swagger_Customer_New.class).bindFromRequest();
-            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Customer_New help = form.get();
 
             Model_Customer customer = new Model_Customer();
-            customer.company = true;
 
             if (!customer.create_permission()) return GlobalResult.result_forbidden();
 
             customer.save();
 
             Model_Employee employee = new Model_Employee();
-            employee.person     = Controller_Security.get_person();
-            employee.state      = Enum_Participant_status.owner;
-            employee.customer   = customer;
+            employee.person = Controller_Security.get_person();
+            employee.state = Enum_Participant_status.owner;
+            employee.customer = customer;
             employee.save();
 
             customer.refresh();
 
             Model_PaymentDetails details = new Model_PaymentDetails();
-            details.street          = help.street;
-            details.street_number   = help.street_number;
-            details.city            = help.city;
-            details.zip_code        = help.zip_code;
-            details.country         = help.country;
+            details.street = help.street;
+            details.street_number = help.street_number;
+            details.city = help.city;
+            details.zip_code = help.zip_code;
+            details.country = help.country;
 
-            details.invoice_email   = help.invoice_email;
+            details.invoice_email = help.invoice_email;
 
-            details.company_name             = help.company_name;
+            details.company_name = help.company_name;
             details.company_authorized_phone = help.company_authorized_phone;
             details.company_authorized_email = help.company_authorized_email;
-            details.company_vat_number       = help.vat_number;
-            details.company_registration_no  = help.registration_no;
-            details.company_web              = help.company_web;
+            details.company_vat_number = help.company_vat_number;
+            details.company_registration_no = help.company_registration_no;
+            details.company_web = help.company_web;
 
             details.customer = customer;
             details.company_account = true;
@@ -2189,13 +2123,11 @@ public class Controller_Finance extends Controller {
 
             customer.fakturoid_subject_id = Fakturoid.create_subject(details);
 
-            if (customer.fakturoid_subject_id == null)
-                return GlobalResult.result_badRequest("Payment details are invalid.");
-
             customer.update();
 
             return GlobalResult.result_created(Json.toJson(customer));
-
+        }catch (IllegalArgumentException e){
+            return GlobalResult.result_badRequest("Payment details are invalid.");
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }
@@ -2216,7 +2148,7 @@ public class Controller_Finance extends Controller {
     public Result customer_get_all(){
         try{
 
-            List<Model_Customer> customers = Model_Customer.find.where().eq("employees.person.id", Controller_Security.get_person_id()).findList();
+            List<Model_Customer> customers = Model_Customer.find.where().eq("employees.person.id", Controller_Security.get_person_id()).eq("payment_details.company_account", true).findList();
 
             return GlobalResult.result_ok(Json.toJson(customers));
 
@@ -2277,8 +2209,8 @@ public class Controller_Finance extends Controller {
             details.company_name             = help.company_name;
             details.company_authorized_phone = help.company_authorized_phone;
             details.company_authorized_email = help.company_authorized_email;
-            details.company_vat_number       = help.vat_number;
-            details.company_registration_no  = help.registration_no;
+            details.company_vat_number       = help.company_vat_number;
+            details.company_registration_no  = help.company_registration_no;
             details.company_web              = help.company_web;
 
             details.update();

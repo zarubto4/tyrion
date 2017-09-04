@@ -27,7 +27,7 @@ public class Model_Employee extends Model{
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                            @Id public String id;
+                            @Id public UUID id;
                     @JsonIgnore public Date created;
                                 public Enum_Participant_status state;
          @JsonIgnore @ManyToOne public Model_Person person;
@@ -51,11 +51,6 @@ public class Model_Employee extends Model{
         terminal_logger.debug("save: Creating new Object");
 
         created = new Date();
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (find.byId(this.id) == null) break;
-        }
 
         super.save();
     }

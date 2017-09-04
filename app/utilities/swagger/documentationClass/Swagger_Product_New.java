@@ -22,10 +22,7 @@ public class Swagger_Product_New {
     public String customer_id;
 
     @ApiModelProperty(required = false, value =  "If product is for someone else and you are an integrator.")
-    public boolean integration;
-
-    @ApiModelProperty(required = false, value =  "If there is an existing customer with payment details, those details will be used.")
-    public boolean default_payment_details;
+    public boolean integrator_registration;
 
     @Constraints.Required
     @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters")
@@ -63,13 +60,13 @@ public class Swagger_Product_New {
     @ApiModelProperty(required = false, value = "Required: only if account is business" +
             "The registration_no must have at least 3 characters - FOR non-EU countries" +
             "for Business account is required registration_no OR vat_number")
-    public String registration_no;
+    public String company_registration_no;
 
     @Constraints.MinLength(value = 3, message = "The vat_number must have at least 3 characters")
     @ApiModelProperty(required = false, value = "Required: only if account is business & from EU!!! CZ28496639 " +
             "The vat_number must have at least 3 characters" +
             "for Business account is required registration_no OR vat_number")
-    public String vat_number;
+    public String company_vat_number;
 
     @ApiModelProperty(required = false, value = "The company_name must have at least 2 characters")
     @Constraints.MinLength(value = 2, message = "The company_name must have at least 2 characters")
@@ -94,6 +91,4 @@ public class Swagger_Product_New {
     @ApiModelProperty(required = false, value = "List of Ids of Extensions")
     public List<String> extension_ids = new ArrayList<>();
 
-    @ApiModelProperty(hidden = true)
-    public String person_id;      // For administration, when creating product for another user
 }

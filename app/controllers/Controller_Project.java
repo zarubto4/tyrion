@@ -86,27 +86,17 @@ public class Controller_Project extends Controller {
 
             project.refresh();
 
-            if (product.customer.company) {
 
-                for (Model_Employee employee : product.customer.getEmployees()) {
-
-                    Model_ProjectParticipant participant = new Model_ProjectParticipant();
-                    participant.person = employee.person;
-                    participant.project = project;
-                    participant.state = employee.state;
-
-                    participant.save();
-                }
-
-            } else {
+            for (Model_Employee employee : product.customer.getEmployees()) {
 
                 Model_ProjectParticipant participant = new Model_ProjectParticipant();
-                participant.person = product.customer.getPerson();
+                participant.person = employee.person;
                 participant.project = project;
-                participant.state = Enum_Participant_status.owner;
+                participant.state = employee.state;
 
                 participant.save();
             }
+
 
             project.refresh();
 

@@ -426,26 +426,26 @@ public class Model_ProductExtension extends Model{
 
     @JsonIgnore
     public boolean create_permission(){
-        return (product != null && ((product.customer.company && product.customer.isEmployee(Controller_Security.get_person())) || (!product.customer.company && product.customer.getPerson().id.equals(Controller_Security.get_person_id()))))
+        return (product != null && product.customer.isEmployee(Controller_Security.get_person()))
                 || Controller_Security.get_person().has_permission("ProductExtension_create");
     }
 
     @JsonIgnore
     public boolean read_permission(){
         return product == null
-                || ((product.customer.company && product.customer.isEmployee(Controller_Security.get_person())) || (!product.customer.company && product.customer.getPerson().id.equals(Controller_Security.get_person_id())))
+                ||  product.customer.isEmployee(Controller_Security.get_person())
                 || Controller_Security.get_person().has_permission("ProductExtension_read");
     }
 
     @JsonProperty @ApiModelProperty(required = true)
     public boolean edit_permission(){
-        return (product != null && ((product.customer.company && product.customer.isEmployee(Controller_Security.get_person())) || (!product.customer.company && product.customer.getPerson().id.equals(Controller_Security.get_person_id()))))
+        return (product != null && product.customer.isEmployee(Controller_Security.get_person()))
                 || Controller_Security.get_person().has_permission("ProductExtension_edit");
     }
 
     @JsonProperty @ApiModelProperty(required = true)
     public boolean act_deactivate_permission(){
-        return (product != null && ((product.customer.company && product.customer.isEmployee(Controller_Security.get_person())) || (!product.customer.company && product.customer.getPerson().id.equals(Controller_Security.get_person_id()))))
+        return (product != null && product.customer.isEmployee(Controller_Security.get_person()))
                 || Controller_Security.get_person().has_permission("ProductExtension_act_deactivate");
     }
 
@@ -473,6 +473,6 @@ public class Model_ProductExtension extends Model{
 
     @JsonIgnore
     public static List<Model_ProductExtension> get_byUser(String person_id) {
-        return find.where().eq("product.customer.person.id", person_id).eq("removed", false).findList();
+        return find.where().eq("product.customer.employees.person.id", person_id).eq("removed", false).findList();
     }
 }

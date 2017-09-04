@@ -91,11 +91,8 @@ public class Email {
 
         List<String> emails = new ArrayList<>();
 
-        if (customer.company) {
-            customer.getEmployees().forEach(employee -> emails.add(employee.person.mail));
-        } else {
-            emails.add(customer.getPerson().mail);
-        }
+        customer.getEmployees().forEach(employee -> emails.add(employee.person.mail));
+
 
         sendBulk(emails, subject);
     }

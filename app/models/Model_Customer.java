@@ -23,30 +23,21 @@ public class Model_Customer extends Model{
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                                @Id public String id;
+                                                                @Id public UUID id;
                                                         @JsonIgnore public Date created;
 
-                                                        @JsonIgnore public boolean company;
                                                         @JsonIgnore public String fakturoid_subject_id;
 
          @OneToOne(mappedBy = "customer",cascade = CascadeType.ALL) public Model_PaymentDetails payment_details;
-                                              @JsonIgnore @OneToOne public Model_Person person;
 
        @JsonIgnore @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL) public List<Model_Product>  products  = new ArrayList<>();
-       @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL) public List<Model_Employee> employees = new ArrayList<>();
+                   @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL) public List<Model_Employee> employees = new ArrayList<>();
 
        @JsonIgnore public boolean removed_by_user;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
-
-    public Model_Person getPerson(){
-
-        if (this.person == null) this.person = Model_Person.find.where().eq("customer.id", this.id).findUnique();
-
-        return this.person;
-    }
 
     public List<Model_Employee> getEmployees(){
 
@@ -57,10 +48,17 @@ public class Model_Customer extends Model{
 
     @JsonIgnore
     public boolean isEmployee(Model_Person person){
+        try {
 
-        if (employees.isEmpty()) return Model_Person.find.where().eq("employees.customer.id", this.id).findUnique() != null;
+            if (employees.isEmpty())
+                return Model_Person.find.where().eq("employees.customer.id", this.id).findUnique() != null;
 
-        return employees.stream().anyMatch(e -> e.person.id.equals(person.id));
+            return employees.stream().anyMatch(e -> e.person.id.equals(person.id));
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return false;
+        }
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -71,11 +69,6 @@ public class Model_Customer extends Model{
         terminal_logger.debug("save: Creating new Object");
 
         created = new Date();
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (find.byId(this.id) == null) break;
-        }
 
         super.save();
     }

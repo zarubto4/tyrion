@@ -62,7 +62,6 @@ public class Model_Person extends Model {
     @JsonIgnore  @OneToOne(mappedBy = "person")                 public Model_PasswordRecoveryToken passwordRecoveryToken;
     @JsonIgnore  @OneToOne(mappedBy = "person")                 public Model_ChangePropertyToken   changePropertyToken;
 
-    @JsonIgnore   @OneToOne(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Model_Customer customer;
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Employee>           employees            = new ArrayList<>();
     @JsonIgnore  @OneToMany(mappedBy="person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ProjectParticipant> projects_participant = new ArrayList<>();
 
@@ -215,9 +214,6 @@ public class Model_Person extends Model {
     public void delete() {
 
         terminal_logger.debug("delete: ID = {}", this.id);
-
-        this.customer.delete();
-
         super.delete();
     }
 

@@ -28,7 +28,7 @@ public class Swagger_Customer_New {
     public String city;
 
     @Constraints.Required
-    @Constraints.MinLength(value = 5, message = "The zip_code must have at least 5 digits")
+    @Constraints.MinLength(value = 4, message = "The zip_code must have at least 4 digits")
     @ApiModelProperty(required = true, value = "The zip_code must have at least 5 digits")
     public String zip_code;
 
@@ -37,13 +37,15 @@ public class Swagger_Customer_New {
     @ApiModelProperty(required = true, value = "The country must have at least 4 characters")
     public String country;
 
-    @ApiModelProperty(required = false, value = "The company_registration_no must have at least 4 characters - FOR non-EU countries, " +
+    @Constraints.MaxLength(value = 20, message = "The registration_no must have maximum 20 characters")
+    @Constraints.MinLength(value = 4, message = "The registration_no must have at least 4 characters")
+    @ApiModelProperty(required = false, value = "The company_registration_no must have at least 4 characters and maximum 20 characters - FOR non-EU countries, " +
             "for Business account is required registration_no OR vat_number")
-    public String registration_no;
+    public String company_registration_no;
 
     @ApiModelProperty(required = false, value =  "Required: only if account is business & from EU!!! CZ28496639 " +
             "for Business account is required registration_no OR vat_number")
-    public String vat_number;
+    public String company_vat_number;
 
     @Constraints.Required
     @ApiModelProperty(required = true, value = "The company_name must have at least 4 characters")
@@ -69,10 +71,11 @@ public class Swagger_Customer_New {
 
         List<ValidationError> errors = new ArrayList<>();
 
-        if (vat_number == null && registration_no == null) {
+        if (company_vat_number == null && company_registration_no == null) {
 
-            errors.add(new ValidationError("vat_number","Required if registration_no is null. Fill at least one."));
-            errors.add(new ValidationError("registration_no","Required if vat_number is null. Fill at least one."));
+            errors.add(new ValidationError("company_vat_number","Required if registration_no is null. Fill at least one."));
+            errors.add(new ValidationError("company_registration_no","Required if vat_number is null. Fill at least one."));
+
         }
 
         if (company_web != null) {

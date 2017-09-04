@@ -240,7 +240,7 @@ public class TestHelper extends Controller{
         try {
 
             Model_Customer customer = new Model_Customer();
-            customer.person = person;
+            // TODO vytvořit employe - kdo je vlastník
             customer.save();
 
             Model_Product product = new Model_Product();
@@ -299,7 +299,7 @@ public class TestHelper extends Controller{
             project.refresh();
 
             Model_ProjectParticipant participant = new Model_ProjectParticipant();
-            participant.person = product.customer.getPerson();
+            participant.person = null;
             participant.project = project;
             participant.state = Enum_Participant_status.owner;
 
@@ -520,7 +520,7 @@ public class TestHelper extends Controller{
             Model_VersionObject version_object = new Model_VersionObject();
             version_object.version_name        = UUID.randomUUID().toString();
             version_object.version_description = UUID.randomUUID().toString();
-            version_object.author              = c_program.project.product.customer.getPerson();
+            version_object.author              = null;
             version_object.date_of_create      = new Date();
             version_object.c_program           = c_program;
             version_object.public_version      = false;
@@ -583,7 +583,7 @@ public class TestHelper extends Controller{
             blockoBlock.name = UUID.randomUUID().toString();
             blockoBlock.description = UUID.randomUUID().toString();
             blockoBlock.type_of_block = typeOfBlock;
-            blockoBlock.author = typeOfBlock.project.product.customer.getPerson();
+            blockoBlock.author = null;
 
             blockoBlock.save();
 
@@ -673,7 +673,7 @@ public class TestHelper extends Controller{
             version.version_description = UUID.randomUUID().toString();
             version.b_program = bProgram;
             version.date_of_create = new Date();
-            version.author = bProgram.project.product.customer.getPerson();
+            version.author = null;
 
             version.save();
 
