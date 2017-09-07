@@ -33,4 +33,7 @@ public class Swagger_C_program_Short_Detail {
     @ApiModelProperty(required = true, readOnly = true)
     public boolean delete_permission;
 
+    @ApiModelProperty(required = true, readOnly = true)
+    public boolean community_publishing_permission;
+
 }

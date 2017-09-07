@@ -1107,10 +1107,12 @@ public class Controller_Finance extends Controller {
 
             }else {
 
+                if(help.integrator_registration) return GlobalResult.badRequest("Create Integrator Company First");
+
                 customer = new Model_Customer();
 
                 Model_PaymentDetails customer_payment_details = new Model_PaymentDetails();
-                if (help.company_name != null) {
+                if (help.company_name != null && help.company_name.length() > 0) {
 
                     customer_payment_details.company_account = true;
 
@@ -1166,7 +1168,6 @@ public class Controller_Finance extends Controller {
                 payment_details.company_vat_number = help.company_vat_number;
                 payment_details.company_registration_no = help.company_registration_no;
                 payment_details.invoice_email = help.invoice_email;
-                payment_details = customer.payment_details.copy();
 
 
             }else {
@@ -1199,6 +1200,24 @@ public class Controller_Finance extends Controller {
 
             payment_details.product = product;
             payment_details.update();
+
+            payment_details.refresh();
+
+            if(payment_details.isComplete()){
+                System.out.println("payment_details.isComplete()");
+            }
+
+            if(payment_details.isCompleteCompany()){
+                System.out.println("payment_details.isCompleteCompany()");
+                System.out.println(Json.toJson(payment_details).toString());
+
+            }
+
+
+            if(product.fakturoid_subject_id == null){
+                System.out.println("fakturoid_subject_id == null");
+            }
+
 
             if ((payment_details.isComplete() || payment_details.isCompleteCompany()) && product.fakturoid_subject_id == null) {
 
@@ -1261,11 +1280,42 @@ public class Controller_Finance extends Controller {
     public Result product_getAll(){
         try{
 
+            // TODO udělat short variantu!
+
             // Kontrola objektu
             List<Model_Product> products = Model_Product.get_byOwner(Controller_Security.get_person_id());
 
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson(products));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get Product",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "List of users Products",    response = Model_Product.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result product_get(String product_id){
+        try{
+
+            // Kontrola Objektu
+            Model_Product product = Model_Product.get_byId(product_id);
+            if(product == null) return GlobalResult.result_notFound("Product product_id not found");
+
+            // Vrácení seznamu
+            return GlobalResult.result_ok(Json.toJson(product));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -1571,13 +1621,13 @@ public class Controller_Finance extends Controller {
             // Pokud je účet business - jsou vyžadovány následující informace
             if (payment_details.company_account) {
 
-                if (help.vat_number != null) {
-                    if (!Model_PaymentDetails.control_vat_number(help.vat_number))
+                if (help.company_vat_number != null) {
+                    if (!Model_PaymentDetails.control_vat_number(help.company_vat_number))
                         return GlobalResult.result_badRequest("Prefix code in VatNumber is not valid");
-                    payment_details.company_vat_number   = help.vat_number;
+                    payment_details.company_vat_number   = help.company_vat_number;
                 }
 
-                payment_details.company_registration_no  = help.registration_no;
+                payment_details.company_registration_no  = help.company_registration_no;
                 payment_details.company_name             = help.company_name;
                 payment_details.company_authorized_email = help.company_authorized_email;
                 payment_details.company_authorized_phone = help.company_authorized_phone;
@@ -1671,13 +1721,13 @@ public class Controller_Finance extends Controller {
             // Pokud je účet business - jsou vyžadovány následující informace
             if(payment_details.company_account) {
 
-                if (help.vat_number != null) {
-                    if (!Model_PaymentDetails.control_vat_number(help.vat_number))
+                if (help.company_vat_number != null) {
+                    if (!Model_PaymentDetails.control_vat_number(help.company_vat_number))
                         return GlobalResult.result_badRequest("Prefix code in VatNumber is not valid");
-                    payment_details.company_vat_number   = help.vat_number;
+                    payment_details.company_vat_number   = help.company_vat_number;
                 }
 
-                payment_details.company_registration_no  = help.registration_no;
+                payment_details.company_registration_no  = help.company_registration_no;
                 payment_details.company_name             = help.company_name;
                 payment_details.company_authorized_email = help.company_authorized_email;
                 payment_details.company_authorized_phone = help.company_authorized_phone;

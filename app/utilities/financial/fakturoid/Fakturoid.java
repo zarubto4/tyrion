@@ -369,22 +369,16 @@ public class Fakturoid extends Controller {
             request.put("zip", details.zip_code);
             request.put("email", details.invoice_email);
 
-            if (details.company_account) {
-                // request.put("country", product.payment_details.country); (vyžaduje ISO code země - to zatím Tyrion nemá implementováno)
-                if (details.company_vat_number != null)
-                    request.put("vat_no", details.company_vat_number);
+            // request.put("country", product.payment_details.country); (vyžaduje ISO code země - to zatím Tyrion nemá implementováno)
 
-                if (details.company_registration_no != null)
-                    request.put("registration_no", details.company_registration_no);
+            if(details.company_vat_number != null && details.company_vat_number.length() > 0)               request.put("vat_no", details.company_vat_number);
+            if(details.company_registration_no != null  && details.company_registration_no.length() > 0)    request.put("registration_no", details.company_registration_no);
+            if(details.company_authorized_phone != null && details.company_authorized_phone.length() > 0)   request.put("phone", details.company_authorized_phone);
+            if(details.company_web != null && details.company_web.length() > 0)                             request.put("web", details.company_web);
+            if(details.company_name != null && details.company_name.length() > 0)                           request.put("name", details.company_name);
+            if(details.full_name != null && details.full_name.length() > 0)                                 request.put("full_name", details.full_name);
 
-                request.put("phone", details.company_authorized_phone);
-                request.put("web", details.company_web);
-                request.put("name", details.company_name);
-                request.put("full_name", details.full_name);
 
-            } else {
-                request.put("name", details.full_name);
-            }
 
             WSClient ws = Play.current().injector().instanceOf(WSClient.class);
 

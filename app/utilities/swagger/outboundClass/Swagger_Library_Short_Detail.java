@@ -1,8 +1,14 @@
 package utilities.swagger.outboundClass;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.models.Swagger;
+import models.Model_Tariff;
+import models.Model_TypeOfBoard;
+import utilities.swagger.documentationClass.Swagger_Board_CProgram_Pair;
 
+import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +26,7 @@ public class Swagger_Library_Short_Detail {
     public String description;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<String> type_of_board_names = new ArrayList<>();
+    public List<Swagger_Type_of_board_Short_Detail> type_of_boards = new ArrayList<>();
 
     @ApiModelProperty(required = true, readOnly = true)
     public boolean update_permission;
@@ -32,4 +38,26 @@ public class Swagger_Library_Short_Detail {
     public boolean delete_permission;
 
 
+
+    @JsonIgnore @Transient
+    public void add_board_type(Model_TypeOfBoard typeOfBoard){
+
+        Swagger_Type_of_board_Short_Detail pair = new Swagger_Type_of_board_Short_Detail();
+        pair.name = typeOfBoard.name;
+        pair.id   = typeOfBoard.id;
+
+        type_of_boards.add(pair);
+    }
+
+
+
+ // Help class ---------------------------------------------------------------------------------------------------------
+
+    @ApiModel(description = "Json Model for Library Short Detail",
+              value = "Type_of_board_Short_Detail")
+    public class Swagger_Type_of_board_Short_Detail{
+        public String id;
+        public String name;
+    }
 }
+

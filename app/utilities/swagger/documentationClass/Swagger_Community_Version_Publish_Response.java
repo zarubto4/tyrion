@@ -7,8 +7,8 @@ import play.data.validation.Constraints;
 
 
 @ApiModel(description = "Json Model for admin response for publishing C_Program",
-        value = "C_Program_Version_Publish_Response")
-public class Swagger_C_Program_Version_Publish_Response {
+        value = "Community_Version_Publish_Response")
+public class Swagger_Community_Version_Publish_Response {
 
     @Constraints.Required
     public String version_id;
@@ -20,12 +20,11 @@ public class Swagger_C_Program_Version_Publish_Response {
     public String version_description;
 
 
+    @ApiModelProperty(required = true)
+    public String program_name;
 
-    public String c_program_name;
-    public String c_program_description;
-
-
-    public String main; // Program
+    @ApiModelProperty(required = true)
+    public String program_description;
 
 
     @Constraints.Required

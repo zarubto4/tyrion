@@ -19,8 +19,7 @@ public class Swagger_C_Program_Filter {
     @ApiModelProperty(required = false, value = "Show - All Public Programs which are confirmed and approved.")
     public boolean public_programs;
 
-    @ApiModelProperty(required = false, value = "Designed for Administrators for publishing decisions of Community Codes - Without permission, the value is ignored. " +
-            "[pending, approved, disapproved, edited]")
-    public List<String> public_states = new ArrayList<>();
+    @ApiModelProperty(required = false, value = "Designed for Administrators for publishing decisions of Community Codes - Without permission, the value is ignored. ")
+    public boolean pending_programs;
 
 }

@@ -14,6 +14,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.emails.Email;
 import utilities.enums.Enum_Approval_state;
+import utilities.enums.Enum_Publishing_type;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
@@ -22,7 +23,6 @@ import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_C_Program_List;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
-import utilities.swagger.outboundClass.Swagger_C_Program_Version_For_Public_Decision;
 
 import java.util.Date;
 
@@ -85,11 +85,11 @@ public class Controller_Code extends Controller{
             if (typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Tvorba programu
-            Model_CProgram c_program             = new Model_CProgram();
+            Model_CProgram c_program        = new Model_CProgram();
             c_program.name                  = help.name;
             c_program.description           = help.description;
-            c_program.date_of_create        = new Date();
             c_program.type_of_board         = typeOfBoard;
+            c_program.publish_type          = Enum_Publishing_type.private_program;
 
             if(help.project_id != null){
                 // Ověření projektu
@@ -108,8 +108,10 @@ public class Controller_Code extends Controller{
             // Přiřadím první verzi!
             if (typeOfBoard.get_main_c_program() != null && typeOfBoard.get_main_c_program().default_main_version != null) {
 
+                System.out.println("Mám zde výchozí program!");
+
                 Model_VersionObject version_object = new Model_VersionObject();
-                version_object.version_name = typeOfBoard.get_main_c_program().name;
+                version_object.version_name = "1.0.1";
                 version_object.version_description = typeOfBoard.get_main_c_program().description;
                 version_object.author = Controller_Security.get_person();
                 version_object.date_of_create = new Date();
@@ -144,6 +146,7 @@ public class Controller_Code extends Controller{
                 }
 
                 version_object.compile_program_thread();
+
             }
 
             c_program.refresh();
@@ -155,6 +158,101 @@ public class Controller_Code extends Controller{
         }
     }
 
+    @ApiOperation(value = "make_Clone C_Program",
+            tags = {"C_Program"},
+            notes = "clone C_Program for private",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Copy",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_CProgram.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result c_program_clone() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_C_Program_Copy> form = Form.form(Swagger_C_Program_Copy.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_C_Program_Copy help = form.get();
+
+            // Vyhledám Objekt
+            Model_CProgram c_program_old = Model_CProgram.get_byId(help.c_program_id);
+            if(c_program_old == null) return GlobalResult.result_notFound("C_Program c_program not found");
+
+            // Zkontroluji oprávnění
+            if(!c_program_old.read_permission())  return GlobalResult.result_forbidden();
+
+            // Vyhledám Objekt
+            Model_Project project = Model_Project.get_byId(help.project_id);
+            if (project == null) return GlobalResult.result_notFound("Project project_id not found");
+
+            // Zkontroluji oprávnění
+            if(!project.update_permission())  return GlobalResult.result_forbidden();
+
+
+            Model_CProgram c_program_new =  new Model_CProgram();
+            c_program_new.name = help.name;
+            c_program_new.description = help.description;
+            c_program_new.type_of_board = c_program_old.get_type_of_board();
+            c_program_new.project = project;
+            c_program_new.save();
+
+            c_program_new.refresh();
+
+
+            for(Model_VersionObject version : c_program_old.getVersion_objects()){
+
+
+                Model_VersionObject copy_object = new Model_VersionObject();
+                copy_object.version_name        = version.version_name;
+                copy_object.date_of_create      = version.date_of_create;
+                copy_object.version_description = version.version_description;
+                copy_object.date_of_create      = new Date();
+                copy_object.c_program           = c_program_new;
+                copy_object.public_version      = false;
+                copy_object.author              = version.author;
+
+                // Zkontroluji oprávnění
+                copy_object.save();
+
+                // Překopíruji veškerý obsah
+                Model_FileRecord fileRecord = version.files.get(0);
+
+
+                Model_FileRecord.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program_new.get_path() ,  copy_object);
+                copy_object.update();
+
+                copy_object.compile_program_thread();
+
+            }
+
+            c_program_new.refresh();
+
+            // Vracím Objekt
+            return GlobalResult.result_ok(Json.toJson(c_program_new));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+    
     @ApiOperation(value = "get C_Program",
             tags = {"C_Program"},
             notes = "get C_Program by query = c_program_id",
@@ -179,7 +277,7 @@ public class Controller_Code extends Controller{
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result c_program_get(@ApiParam(value = "c_program_id String query", required = true) String c_program_id) {
+    public Result c_program_get(String c_program_id) {
         try {
 
             // Vyhledám Objekt
@@ -238,6 +336,8 @@ public class Controller_Code extends Controller{
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_CProgram> query = Ebean.find(Model_CProgram.class);
 
+            query.orderBy("UPPER(name) ASC");
+
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if((help.project_id != null) && !(help.project_id.equals(""))){
@@ -246,32 +346,21 @@ public class Controller_Code extends Controller{
                 if(project == null )return GlobalResult.result_notFound("Project not found");
                 if(!project.read_permission())return GlobalResult.result_forbidden();
 
-                query.where().eq("project.id", help.project_id);
+                query.where().eq("project.id", help.project_id).eq("removed_by_user", false);
             }
 
             if(!help.type_of_board_ids.isEmpty()){
                query.where().in("type_of_board.id", help.type_of_board_ids);
             }
 
+
             if(help.public_programs){
+                query.where().isNull("project").eq("removed_by_user", false).eq("publish_type", Enum_Publishing_type.public_program.name());
+            }
 
-                System.out.println("public C program");
-
-                // Pokud je public_states prázdné přidám veřejné programy
-                if(help.public_states.isEmpty()){
-
-                    help.public_states.add(Enum_Approval_state.approved.toString());
-
-                // Pokud není prázdné a obsahuje enum vyžadující oprávnění kontroluji
-                }else {
-                    if(help.public_states.contains(Enum_Approval_state.disapproved.name()) || help.public_states.contains(Enum_Approval_state.edited.name()) || help.public_states.contains(Enum_Approval_state.pending.name())){
-                        if(!Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name())){
-                            return GlobalResult.result_forbidden();
-                        }
-                    }
-                }
-
-                query.where().isNull("project").in("version_objects.approval_state", help.public_states);
+            if(help.pending_programs){
+                if(!Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name())) return GlobalResult.result_forbidden();
+                query.where().eq("version_objects.approval_state", Enum_Approval_state.pending.name());
             }
 
             // Vyvoření odchozího JSON
@@ -318,7 +407,7 @@ public class Controller_Code extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result c_program_edit(@ApiParam(value = "c_program_id String query", required = true)  String c_program_id) {
+    public Result c_program_edit( String c_program_id) {
         try {
 
             // Zpracování Json
@@ -369,7 +458,7 @@ public class Controller_Code extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result c_program_delete(@ApiParam(value = "c_program_id String query", required = true)  String c_program_id){
+    public Result c_program_delete( String c_program_id){
         try{
 
             // Ověření objektu
@@ -641,11 +730,11 @@ public class Controller_Code extends Controller{
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "The user has entered more than three channels. Or other problem :(", response = Result_BadRequest.class),
+            @ApiResponse(code = 400, message = "Bad Request",               response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result c_program_version_make_public(@ApiParam(value = "version_id String query", required = true)  String version_id){
         try {
@@ -694,7 +783,7 @@ public class Controller_Code extends Controller{
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_C_Program_Version_Publish_Response",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Community_Version_Publish_Response",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -712,37 +801,50 @@ public class Controller_Code extends Controller{
         try {
 
             // Získání Json
-            final Form<Swagger_C_Program_Version_Publish_Response> form = Form.form(Swagger_C_Program_Version_Publish_Response.class).bindFromRequest();
+            final Form<Swagger_Community_Version_Publish_Response> form = Form.form(Swagger_Community_Version_Publish_Response.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_C_Program_Version_Publish_Response help = form.get();
+            Swagger_Community_Version_Publish_Response help = form.get();
 
             // Kontrola objektu
             Model_VersionObject version_old = Model_VersionObject.get_byId(help.version_id);
             if(version_old == null) return GlobalResult.result_notFound("Version not found");
 
+            if(version_old.c_program == null){
+                return GlobalResult.result_notFound("C_Program c_program_id not found");
+            }
+
             // Ověření objektu
             Model_CProgram c_program_old = Model_CProgram.get_byId(version_old.c_program.id);
-            if(c_program_old == null) return GlobalResult.result_notFound("C_Program c_program_id not found");
+
 
             // Zkontroluji oprávnění
-
-            if(!c_program_old.community_publishing_permission()) return GlobalResult.result_forbidden();
+            if(!c_program_old.community_publishing_permission()){
+                return GlobalResult.result_forbidden();
+            }
 
             if(help.decision){
+
+                System.out.println("help.decision je true!!!");
 
                 // Odkomentuj až odzkoušíš že emaily jsou hezky naformátované - můžeš totiž Verzi hodnotit pořád dokola!!
                 version_old.approval_state = Enum_Approval_state.approved;
                 version_old.update();
 
-                Model_CProgram c_program = new Model_CProgram();
-                c_program.name = help.c_program_name;
-                c_program.description = help.c_program_description;
-                c_program.date_of_create = new Date();
-                c_program.type_of_board = c_program_old.type_of_board;
 
-                // Zkontroluji oprávnění
-                if(!c_program.create_permission()) return GlobalResult.result_forbidden();
-                c_program.save();
+                Model_CProgram c_program = Model_CProgram.find.byId(c_program_old.id + "_public_copy");
+
+                if(c_program == null) {
+                    c_program = new Model_CProgram();
+                    c_program.id = c_program_old.id + "_public_copy";
+                    c_program.name = help.program_name;
+                    c_program.description = help.program_description;
+                    c_program.date_of_create = new Date();
+                    c_program.type_of_board = c_program_old.type_of_board;
+                    c_program.publish_type  = Enum_Publishing_type.public_program;
+                    c_program.save();
+                }
+
+
 
                 Model_VersionObject version_object = new Model_VersionObject();
                 version_object.version_name        = help.version_name;
@@ -753,17 +855,15 @@ public class Controller_Code extends Controller{
                 version_object.author              = version_old.author;
 
                 // Zkontroluji oprávnění
-                if(!version_object.c_program.update_permission()) return GlobalResult.result_forbidden();
                 version_object.save();
 
-                // Nahraje do Azure a připojí do verze soubor
-                ObjectNode  content = Json.newObject();
-                content.put("main", help.main );
-                content.set("files", null);
-                content.set("library", null );
+                c_program.refresh();
+
+                // Překopíruji veškerý obsah
+                Model_FileRecord fileRecord = version_old.files.get(0);
 
 
-                Model_FileRecord.uploadAzure_Version(content.toString(), "code.json" , c_program.get_path() ,  version_object);
+                Model_FileRecord.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program.get_path() ,  version_object);
                 version_object.update();
 
                 version_object.compile_program_thread();
@@ -810,29 +910,30 @@ public class Controller_Code extends Controller{
                     }
                 }
 
-            }
+            }else {
 
-            // Odkomentuj až odzkoušíš že emaily jsou hezky naformátované - můžeš totiž Verzi hodnotit pořád dokola!!
-            version_old.approval_state = Enum_Approval_state.disapproved;
-            version_old.update();
+                version_old.approval_state = Enum_Approval_state.disapproved;
+                version_old.update();
 
-            try {
+                try {
 
-                new Email()
-                        .text("First! Thank you for publishing your program!")
-                        .text(  Email.bold("C Program Name: ") +        c_program_old.name + Email.newLine() +
-                                Email.bold("C Program Description: ") + c_program_old.name + Email.newLine() +
-                                Email.bold("Version Name: ") +          c_program_old.name + Email.newLine() +
-                                Email.bold("Version Description: ") +   c_program_old.name + Email.newLine() )
-                        .divider()
-                        .text("We are sorry, but we found some problems in your program, so we did not publish it. But do not worry and do not give up! " +
-                                "We are glad that you want to contribute to our public libraries. Here are some tips what to improve, so you can try it again.")
-                        .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
-                        .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.get_person().full_name)
-                        .send(version_old.c_program.get_project().get_product().customer, "Publishing your program" );
+                    new Email()
+                            .text("First! Thank you for publishing your program!")
+                            .text(Email.bold("C Program Name: ") + c_program_old.name + Email.newLine() +
+                                    Email.bold("C Program Description: ") + c_program_old.name + Email.newLine() +
+                                    Email.bold("Version Name: ") + c_program_old.name + Email.newLine() +
+                                    Email.bold("Version Description: ") + c_program_old.name + Email.newLine())
+                            .divider()
+                            .text("We are sorry, but we found some problems in your program, so we did not publish it. But do not worry and do not give up! " +
+                                    "We are glad that you want to contribute to our public libraries. Here are some tips what to improve, so you can try it again.")
+                            .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
+                            .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.get_person().full_name)
+                            .send(version_old.c_program.get_project().get_product().customer, "Publishing your program");
 
-            } catch (Exception e) {
-                terminal_logger.internalServerError("approve_decision:", e);
+                } catch (Exception e) {
+                    terminal_logger.internalServerError("approve_decision:", e);
+                }
+
             }
 
             // Potvrzení
@@ -842,8 +943,6 @@ public class Controller_Code extends Controller{
             return Server_Logger.result_internalServerError(e, request());
         }
     }
-
-
 
     @ApiOperation(value = "set_c_program_version_as_main Type_of_board",
             tags = {"Admin-C_Program, Type-Of-Board"},
@@ -886,6 +985,9 @@ public class Controller_Code extends Controller{
             version_object.update();
 
             version_object.c_program.refresh();
+
+
+
 
 
             // Vracím Json

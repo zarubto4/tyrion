@@ -143,6 +143,12 @@ public class Model_VersionObject extends Model {
             help.version_description = version_description;
             help.delete_permission = library.delete_permission();
             help.update_permission = library.update_permission();
+            help.author = this.author.get_short_person();
+
+            if(approval_state != null){
+                help.publish_status = approval_state;
+                help.community_publishing_permission = library.community_publishing_permission();
+            }
 
             return help;
 
@@ -169,6 +175,11 @@ public class Model_VersionObject extends Model {
                 help.status = this.c_compilation.status;
             }else {
                 help.status = Enum_Compile_status.file_with_code_not_found;
+            }
+
+            if(approval_state != null){
+                help.publish_status = approval_state;
+                help.community_publishing_permission = c_program.community_publishing_permission();
             }
 
             // Main status
@@ -527,11 +538,15 @@ public class Model_VersionObject extends Model {
             // this.author = null;
         }
 
+
+        if(date_of_create == null) {
+            date_of_create = new Date();
+        }
+
         super.save();
 
         if(library != null){
-            library.refresh();
-            Model_Library.cache.replace(library.id, library);
+            library.cache_list_version_objects_ids.add(0, id);
         }
 
         if(c_program != null){

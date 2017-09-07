@@ -2,6 +2,7 @@ package utilities.swagger.outboundClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.enums.Enum_Approval_state;
 
 @ApiModel(description = "Json Model with details of M_Program_Version>",
         value = "M_Program_Version_Short_Detail")
@@ -24,4 +25,11 @@ public class Swagger_M_Program_Version_Short_Detail {
 
     @ApiModelProperty(required = true, readOnly = true)
     public Swagger_Person_Short_Detail author;
+
+    @ApiModelProperty(required = false, readOnly = true)
+    public Enum_Approval_state publish_status;
+
+    @ApiModelProperty(required = false, readOnly = true)
+    public boolean community_publishing_permission;
+
 }

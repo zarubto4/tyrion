@@ -1,8 +1,11 @@
 package controllers;
 
+import com.itextpdf.text.pdf.qrcode.Mode;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import models.Model_CProgram;
 import models.Model_Product;
+import models.Model_VersionObject;
 import org.mindrot.jbcrypt.BCrypt;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -42,7 +45,27 @@ public class Controller_ZZZ_Tester extends Controller {
     public Result test2(){
         try {
 
-            terminal_logger.error(BCrypt.hashpw("password", BCrypt.gensalt(12)));
+            // terminal_logger.error(BCrypt.hashpw("password", BCrypt.gensalt(12)));
+
+
+            for(int i = 0; i < 100;i++){
+
+                Model_CProgram cProgram = new Model_CProgram();
+                cProgram.name = "nazev " + i;
+                cProgram.description = "popisek " + i;
+                cProgram.save();
+
+                Model_VersionObject versionObject = new Model_VersionObject();
+                versionObject.public_version = true;
+                versionObject.version_description = "verze popis" + i;
+                versionObject.version_name = "verze název" + i ;
+                versionObject.c_program = cProgram;
+                versionObject.save();
+
+                cProgram.refresh();
+            }
+
+
 
             return GlobalResult.result_ok();
 

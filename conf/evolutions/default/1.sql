@@ -142,12 +142,14 @@ create table CProgram (
   description               TEXT,
   project_id                varchar(255),
   type_of_board_id          varchar(255),
+  publish_type              varchar(20),
   date_of_create            timestamp,
   removed_by_user           boolean,
   type_of_board_default_id  varchar(255),
   type_of_board_test_id     varchar(255),
   example_library_id        varchar(255),
   azure_c_program_link      varchar(255),
+  constraint ck_CProgram_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_test_program')),
   constraint uq_CProgram_type_of_board_defaul unique (type_of_board_default_id),
   constraint uq_CProgram_type_of_board_test_i unique (type_of_board_test_id),
   constraint pk_CProgram primary key (id))
@@ -399,7 +401,10 @@ create table Library (
   description               varchar(255),
   removed_by_user           boolean,
   project_id                varchar(255),
+  date_of_create            timestamp,
+  publish_type              varchar(20),
   azure_library_link        varchar(255),
+  constraint ck_Library_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_test_program')),
   constraint pk_Library primary key (id))
 ;
 
@@ -896,66 +901,68 @@ alter table Invoice add constraint fk_Invoice_product_51 foreign key (product_id
 create index ix_Invoice_product_51 on Invoice (product_id);
 alter table InvoiceItem add constraint fk_InvoiceItem_invoice_52 foreign key (invoice_id) references Invoice (id);
 create index ix_InvoiceItem_invoice_52 on InvoiceItem (invoice_id);
-alter table Log add constraint fk_Log_file_53 foreign key (file_id) references FileRecord (id);
-create index ix_Log_file_53 on Log (file_id);
-alter table MProgram add constraint fk_MProgram_m_project_54 foreign key (m_project_id) references MProject (id);
-create index ix_MProgram_m_project_54 on MProgram (m_project_id);
-alter table MProgramInstanceParameter add constraint fk_MProgramInstanceParameter__55 foreign key (m_project_program_snapshot_id) references MProjectProgramSnapShot (id);
-create index ix_MProgramInstanceParameter__55 on MProgramInstanceParameter (m_project_program_snapshot_id);
-alter table MProgramInstanceParameter add constraint fk_MProgramInstanceParameter__56 foreign key (m_program_version_id) references VersionObject (id);
-create index ix_MProgramInstanceParameter__56 on MProgramInstanceParameter (m_program_version_id);
-alter table MProject add constraint fk_MProject_project_57 foreign key (project_id) references Project (id);
-create index ix_MProject_project_57 on MProject (project_id);
-alter table MProjectProgramSnapShot add constraint fk_MProjectProgramSnapShot_m__58 foreign key (m_project_id) references MProject (id);
-create index ix_MProjectProgramSnapShot_m__58 on MProjectProgramSnapShot (m_project_id);
-alter table Notification add constraint fk_Notification_person_59 foreign key (person_id) references Person (id);
-create index ix_Notification_person_59 on Notification (person_id);
-alter table PasswordRecoveryToken add constraint fk_PasswordRecoveryToken_pers_60 foreign key (person_id) references Person (id);
-create index ix_PasswordRecoveryToken_pers_60 on PasswordRecoveryToken (person_id);
-alter table PaymentDetails add constraint fk_PaymentDetails_customer_61 foreign key (customer_id) references Customer (id);
-create index ix_PaymentDetails_customer_61 on PaymentDetails (customer_id);
-alter table PaymentDetails add constraint fk_PaymentDetails_product_62 foreign key (productidpaymentdetails) references Product (id);
-create index ix_PaymentDetails_product_62 on PaymentDetails (productidpaymentdetails);
-alter table Person add constraint fk_Person_picture_63 foreign key (picture_id) references FileRecord (id);
-create index ix_Person_picture_63 on Person (picture_id);
-alter table Product add constraint fk_Product_customer_64 foreign key (customer_id) references Customer (id);
-create index ix_Product_customer_64 on Product (customer_id);
-alter table ProductExtension add constraint fk_ProductExtension_product_65 foreign key (product_id) references Product (id);
-create index ix_ProductExtension_product_65 on ProductExtension (product_id);
-alter table ProductExtension add constraint fk_ProductExtension_tariff_in_66 foreign key (tariff_included_id) references Tariff (id);
-create index ix_ProductExtension_tariff_in_66 on ProductExtension (tariff_included_id);
-alter table ProductExtension add constraint fk_ProductExtension_tariff_op_67 foreign key (tariff_optional_id) references Tariff (id);
-create index ix_ProductExtension_tariff_op_67 on ProductExtension (tariff_optional_id);
-alter table Project add constraint fk_Project_product_68 foreign key (product_id) references Product (id);
-create index ix_Project_product_68 on Project (product_id);
-alter table ProjectParticipant add constraint fk_ProjectParticipant_project_69 foreign key (project_id) references Project (id);
-create index ix_ProjectParticipant_project_69 on ProjectParticipant (project_id);
-alter table ProjectParticipant add constraint fk_ProjectParticipant_person_70 foreign key (person_id) references Person (id);
-create index ix_ProjectParticipant_person_70 on ProjectParticipant (person_id);
-alter table TypeOfBlock add constraint fk_TypeOfBlock_project_71 foreign key (project_id) references Project (id);
-create index ix_TypeOfBlock_project_71 on TypeOfBlock (project_id);
-alter table TypeOfBoard add constraint fk_TypeOfBoard_producer_72 foreign key (producer_id) references Producer (id);
-create index ix_TypeOfBoard_producer_72 on TypeOfBoard (producer_id);
-alter table TypeOfBoard add constraint fk_TypeOfBoard_processor_73 foreign key (processor_id) references Processor (id);
-create index ix_TypeOfBoard_processor_73 on TypeOfBoard (processor_id);
-alter table TypeOfBoard add constraint fk_TypeOfBoard_picture_74 foreign key (picture_id) references FileRecord (id);
-create index ix_TypeOfBoard_picture_74 on TypeOfBoard (picture_id);
-alter table TypeOfBoardBatch add constraint fk_TypeOfBoardBatch_type_of_b_75 foreign key (type_of_board_id) references TypeOfBoard (id);
-create index ix_TypeOfBoardBatch_type_of_b_75 on TypeOfBoardBatch (type_of_board_id);
-alter table TypeOfWidget add constraint fk_TypeOfWidget_project_76 foreign key (project_id) references Project (id);
-create index ix_TypeOfWidget_project_76 on TypeOfWidget (project_id);
-alter table VersionObject add constraint fk_VersionObject_author_77 foreign key (author_id) references Person (id);
-create index ix_VersionObject_author_77 on VersionObject (author_id);
-alter table VersionObject add constraint fk_VersionObject_library_78 foreign key (library_id) references Library (id);
-create index ix_VersionObject_library_78 on VersionObject (library_id);
-alter table VersionObject add constraint fk_VersionObject_c_program_79 foreign key (c_program_id) references CProgram (id);
-create index ix_VersionObject_c_program_79 on VersionObject (c_program_id);
-alter table VersionObject add constraint fk_VersionObject_default_prog_80 foreign key (default_program_id) references CProgram (id);
-create index ix_VersionObject_default_prog_80 on VersionObject (default_program_id);
-alter table VersionObject add constraint fk_VersionObject_b_program_81 foreign key (b_program_id) references BProgram (id);
-create index ix_VersionObject_b_program_81 on VersionObject (b_program_id);
-alter table VersionObject add constraint fk_VersionObject_m_program_82 foreign key (m_program_id) references MProgram (id);
-create index ix_VersionObject_m_program_82 on VersionObject (m_program_id);
+alter table Library add constraint fk_Library_project_53 foreign key (project_id) references Project (id);
+create index ix_Library_project_53 on Library (project_id);
+alter table Log add constraint fk_Log_file_54 foreign key (file_id) references FileRecord (id);
+create index ix_Log_file_54 on Log (file_id);
+alter table MProgram add constraint fk_MProgram_m_project_55 foreign key (m_project_id) references MProject (id);
+create index ix_MProgram_m_project_55 on MProgram (m_project_id);
+alter table MProgramInstanceParameter add constraint fk_MProgramInstanceParameter__56 foreign key (m_project_program_snapshot_id) references MProjectProgramSnapShot (id);
+create index ix_MProgramInstanceParameter__56 on MProgramInstanceParameter (m_project_program_snapshot_id);
+alter table MProgramInstanceParameter add constraint fk_MProgramInstanceParameter__57 foreign key (m_program_version_id) references VersionObject (id);
+create index ix_MProgramInstanceParameter__57 on MProgramInstanceParameter (m_program_version_id);
+alter table MProject add constraint fk_MProject_project_58 foreign key (project_id) references Project (id);
+create index ix_MProject_project_58 on MProject (project_id);
+alter table MProjectProgramSnapShot add constraint fk_MProjectProgramSnapShot_m__59 foreign key (m_project_id) references MProject (id);
+create index ix_MProjectProgramSnapShot_m__59 on MProjectProgramSnapShot (m_project_id);
+alter table Notification add constraint fk_Notification_person_60 foreign key (person_id) references Person (id);
+create index ix_Notification_person_60 on Notification (person_id);
+alter table PasswordRecoveryToken add constraint fk_PasswordRecoveryToken_pers_61 foreign key (person_id) references Person (id);
+create index ix_PasswordRecoveryToken_pers_61 on PasswordRecoveryToken (person_id);
+alter table PaymentDetails add constraint fk_PaymentDetails_customer_62 foreign key (customer_id) references Customer (id);
+create index ix_PaymentDetails_customer_62 on PaymentDetails (customer_id);
+alter table PaymentDetails add constraint fk_PaymentDetails_product_63 foreign key (productidpaymentdetails) references Product (id);
+create index ix_PaymentDetails_product_63 on PaymentDetails (productidpaymentdetails);
+alter table Person add constraint fk_Person_picture_64 foreign key (picture_id) references FileRecord (id);
+create index ix_Person_picture_64 on Person (picture_id);
+alter table Product add constraint fk_Product_customer_65 foreign key (customer_id) references Customer (id);
+create index ix_Product_customer_65 on Product (customer_id);
+alter table ProductExtension add constraint fk_ProductExtension_product_66 foreign key (product_id) references Product (id);
+create index ix_ProductExtension_product_66 on ProductExtension (product_id);
+alter table ProductExtension add constraint fk_ProductExtension_tariff_in_67 foreign key (tariff_included_id) references Tariff (id);
+create index ix_ProductExtension_tariff_in_67 on ProductExtension (tariff_included_id);
+alter table ProductExtension add constraint fk_ProductExtension_tariff_op_68 foreign key (tariff_optional_id) references Tariff (id);
+create index ix_ProductExtension_tariff_op_68 on ProductExtension (tariff_optional_id);
+alter table Project add constraint fk_Project_product_69 foreign key (product_id) references Product (id);
+create index ix_Project_product_69 on Project (product_id);
+alter table ProjectParticipant add constraint fk_ProjectParticipant_project_70 foreign key (project_id) references Project (id);
+create index ix_ProjectParticipant_project_70 on ProjectParticipant (project_id);
+alter table ProjectParticipant add constraint fk_ProjectParticipant_person_71 foreign key (person_id) references Person (id);
+create index ix_ProjectParticipant_person_71 on ProjectParticipant (person_id);
+alter table TypeOfBlock add constraint fk_TypeOfBlock_project_72 foreign key (project_id) references Project (id);
+create index ix_TypeOfBlock_project_72 on TypeOfBlock (project_id);
+alter table TypeOfBoard add constraint fk_TypeOfBoard_producer_73 foreign key (producer_id) references Producer (id);
+create index ix_TypeOfBoard_producer_73 on TypeOfBoard (producer_id);
+alter table TypeOfBoard add constraint fk_TypeOfBoard_processor_74 foreign key (processor_id) references Processor (id);
+create index ix_TypeOfBoard_processor_74 on TypeOfBoard (processor_id);
+alter table TypeOfBoard add constraint fk_TypeOfBoard_picture_75 foreign key (picture_id) references FileRecord (id);
+create index ix_TypeOfBoard_picture_75 on TypeOfBoard (picture_id);
+alter table TypeOfBoardBatch add constraint fk_TypeOfBoardBatch_type_of_b_76 foreign key (type_of_board_id) references TypeOfBoard (id);
+create index ix_TypeOfBoardBatch_type_of_b_76 on TypeOfBoardBatch (type_of_board_id);
+alter table TypeOfWidget add constraint fk_TypeOfWidget_project_77 foreign key (project_id) references Project (id);
+create index ix_TypeOfWidget_project_77 on TypeOfWidget (project_id);
+alter table VersionObject add constraint fk_VersionObject_author_78 foreign key (author_id) references Person (id);
+create index ix_VersionObject_author_78 on VersionObject (author_id);
+alter table VersionObject add constraint fk_VersionObject_library_79 foreign key (library_id) references Library (id);
+create index ix_VersionObject_library_79 on VersionObject (library_id);
+alter table VersionObject add constraint fk_VersionObject_c_program_80 foreign key (c_program_id) references CProgram (id);
+create index ix_VersionObject_c_program_80 on VersionObject (c_program_id);
+alter table VersionObject add constraint fk_VersionObject_default_prog_81 foreign key (default_program_id) references CProgram (id);
+create index ix_VersionObject_default_prog_81 on VersionObject (default_program_id);
+alter table VersionObject add constraint fk_VersionObject_b_program_82 foreign key (b_program_id) references BProgram (id);
+create index ix_VersionObject_b_program_82 on VersionObject (b_program_id);
+alter table VersionObject add constraint fk_VersionObject_m_program_83 foreign key (m_program_id) references MProgram (id);
+create index ix_VersionObject_m_program_83 on VersionObject (m_program_id);
 
 
 

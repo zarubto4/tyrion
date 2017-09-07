@@ -12,6 +12,7 @@ import org.ehcache.Cache;
 import play.data.Form;
 import play.libs.Json;
 import utilities.cache.helps_objects.TyrionCachedList;
+import utilities.enums.Enum_Publishing_type;
 import utilities.enums.Enum_Compile_status;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
@@ -46,7 +47,7 @@ public class Model_CProgram extends Model {
     @JsonIgnore @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)                       public Model_Project project;
 
     @JsonIgnore  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)                      public Model_TypeOfBoard type_of_board;
-
+                                                                                                        public Enum_Publishing_type publish_type;
 
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time in ms", example = "1466163478925") public Date date_of_create;
 
@@ -130,8 +131,7 @@ public class Model_CProgram extends Model {
         }
 
     }
-
-    @JsonProperty @Transient public List<Swagger_C_Program_Version_Short_Detail> program_versions() {
+    @JsonProperty  @Transient public List<Swagger_C_Program_Version_Short_Detail> program_versions() {
 
         try {
 
@@ -150,11 +150,13 @@ public class Model_CProgram extends Model {
         }
     }
 
+
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @Transient @JsonIgnore public Swagger_C_program_Short_Detail get_c_program_short_detail(){
 
         try {
+
             Swagger_C_program_Short_Detail help = new Swagger_C_program_Short_Detail();
 
             help.id = id;
@@ -166,6 +168,7 @@ public class Model_CProgram extends Model {
             help.edit_permission = edit_permission();
             help.delete_permission = delete_permission();
             help.update_permission = update_permission();
+            help.community_publishing_permission = community_publishing_permission();
 
             return help;
         }catch (Exception e){
@@ -291,9 +294,14 @@ public class Model_CProgram extends Model {
         }
     }
 
-    @Transient @JsonIgnore @TyrionCachedList public Model_Project get_project()           {
+    @Transient @JsonIgnore @TyrionCachedList public Model_Project get_project(){
             if(project_id() == null) return null;
             return Model_Project.get_byId(project_id());
+    }
+
+    @Transient @JsonIgnore @TyrionCachedList public Model_TypeOfBoard get_type_of_board(){
+        if(type_of_board_id() == null) return null;
+        return Model_TypeOfBoard.get_byId(type_of_board_id());
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -302,7 +310,10 @@ public class Model_CProgram extends Model {
 
         terminal_logger.debug("save :: Creating new Object");
 
-        this.id = UUID.randomUUID().toString();
+        date_of_create = new Date();
+
+        // In some case we set id manualy (for example make copy for publishing)
+        if(this.id == null) this.id = UUID.randomUUID().toString();
 
         // C_Program is Private registred under Project
         if(project != null) {
@@ -356,6 +367,15 @@ public class Model_CProgram extends Model {
         if(get_project() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
 
         this.update();
+    }
+
+    @JsonIgnore @Override public void refresh() {
+        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
+
+        this.cache_list_version_objects_ids.clear();
+        cache.remove(id);
+        super.refresh();
+
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -459,7 +479,7 @@ public class Model_CProgram extends Model {
     }
     @JsonProperty @Transient  @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        return Controller_Security.get_person().has_permission(permissions.C_Program_community_publishing_permission.name()) ? true : null;
+        return Controller_Security.get_person().has_permission(permissions.C_Program_community_publishing_permission.name());
     }
 
     public enum permissions{ C_Program_create,  C_Program_update, C_Program_read , C_Program_edit, C_Program_delete, C_Program_community_publishing_permission;}

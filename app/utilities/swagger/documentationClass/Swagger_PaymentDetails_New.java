@@ -43,11 +43,11 @@ public class Swagger_PaymentDetails_New {
 
 
     @ApiModelProperty(required = false, value =  "Required: only if company_account = true" + "The company_registration_no must have at least 4 characters")
-    public String registration_no;
+    public String company_registration_no;
 
 
     @ApiModelProperty(required = false, example = "CZ12345678", value = "Required: only if company_account = true And VAT_number is required only for EU Customers." + "The VAT_number must have at least 4 characters")
-    public String vat_number;
+    public String company_vat_number;
 
 
     @ApiModelProperty(required = false, value =  "Required: only if company_account = true" + "The company_name must have at least 4 characters")
@@ -80,7 +80,7 @@ public class Swagger_PaymentDetails_New {
         List<ValidationError> errors = new ArrayList<>();
 
         if (company_account) {
-            if(registration_no == null && vat_number == null) {
+            if(company_registration_no == null && company_vat_number == null) {
                 errors.add(new ValidationError("registration_no","Required if company_account = true and vat_number = null."));
                 errors.add(new ValidationError("vat_number","Required if company_account = true and registration_no = null."));
             }

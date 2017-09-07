@@ -39,6 +39,7 @@ public class Model_Project extends Model {
 
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BProgram>                b_programs        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_CProgram>                c_programs        = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Library>                 libraries         = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_MProject>                m_projects        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_TypeOfBlock>             type_of_blocks    = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_TypeOfWidget>            type_of_widgets   = new ArrayList<>();
@@ -70,7 +71,7 @@ public class Model_Project extends Model {
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Board_Short_Detail>         boards()             { List<Swagger_Board_Short_Detail>       l = new ArrayList<>();    if(!active()) return l; for( Model_Board m           : get_project_boards_not_deleted())         l.add(m.get_short_board());  return l;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_B_Program_Short_Detail>     b_programs()         { List<Swagger_B_Program_Short_Detail>   l = new ArrayList<>();    if(!active()) return l; for( Model_BProgram m        : get_b_programs_not_deleted()) l.add(m.get_b_program_short_detail()); return l;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_C_program_Short_Detail>     c_programs()         { List<Swagger_C_program_Short_Detail>   l = new ArrayList<>();    if(!active()) return l; for( Model_CProgram m        : get_c_programs_not_deleted()) l.add(m.get_c_program_short_detail()); return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Library_Short_Detail>       c_private_libraries(){ List<Swagger_Library_Short_Detail>     l = new ArrayList<>();    if(!active()) return l; for( Model_Library m         : get_c_privates_project_libraries_not_deleted()) l.add(m.get_short_library()); return l;}
+     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Library_Short_Detail>      libraries()          { List<Swagger_Library_Short_Detail>     l = new ArrayList<>();    if(!active()) return l; for( Model_Library m         : get_c_privates_project_libraries_not_deleted()) l.add(m.get_short_library()); return l;}
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Project_Short_Detail>     m_projects()         { List<Swagger_M_Project_Short_Detail>   l = new ArrayList<>();    if(!active()) return l; for( Model_MProject m        : get_m_projects_not_deleted()) l.add(m.get_short_m_project()); return l;}
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfBlock_Short_Detail>   type_of_blocks()     { List<Swagger_TypeOfBlock_Short_Detail> l = new ArrayList<>();    if(!active()) return l; for( Model_TypeOfBlock m     : get_type_of_blocks_not_deleted()) l.add(m.get_type_of_block_short_detail()); return l;}
@@ -248,7 +249,7 @@ public class Model_Project extends Model {
 
             if(cache_list_library_ids.isEmpty()){
 
-                List<Model_Library> libraries = Model_Library.find.where().eq("project_id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+                List<Model_Library> libraries = Model_Library.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
 
                 // Získání seznamu
                 for (Model_Library library : libraries) {

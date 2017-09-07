@@ -22,7 +22,7 @@ public class Swagger_Product_New {
     public String customer_id;
 
     @ApiModelProperty(required = false, value =  "If product is for someone else and you are an integrator.")
-    public boolean integrator_registration;
+    public boolean integrator_registration = false;
 
     @Constraints.Required
     @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters")

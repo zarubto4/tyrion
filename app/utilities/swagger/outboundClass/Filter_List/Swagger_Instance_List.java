@@ -29,7 +29,7 @@ public class Swagger_Instance_List {
     public int total;
 
     @ApiModelProperty(required = true, readOnly = true, value = "Numbers of pages, which you can call")
-    public List<Integer> pages = new ArrayList<>();
+    public int pages;
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
@@ -40,6 +40,6 @@ public class Swagger_Instance_List {
         this.total   = query.findRowCount();
         this.from   = (page_number - 1) * 25;
         this.to     = (page_number - 1) * 25 + content.size();
-        for (int i = 1; i < (total / 25) + 2; i++) pages.add(i);
+        this.pages = (total / 25);
     }
 }

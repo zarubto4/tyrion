@@ -121,6 +121,7 @@ GET       /secure/person/system_acces/:person_id                        @control
 
 POST      /company                                                      @controllers.Controller_Finance.customer_create_company()
 GET       /company                                                      @controllers.Controller_Finance.customer_get_all()
+PUT       /company/:customer_id                                         @controllers.Controller_Finance.customer_update_company(customer_id)
 
 POST      /employee                                                     @controllers.Controller_Finance.customer_add_employee()
 DELETE    /employee/:employee_id                                        @controllers.Controller_Finance.customer_remove_employee(employee_id)
@@ -128,6 +129,7 @@ DELETE    /employee/:employee_id                                        @control
 #CRUD Tarrifs
 POST      /product                                                      @controllers.Controller_Finance.product_create()
 GET       /product/all                                                  @controllers.Controller_Finance.product_getAll()
+GET       /product/:product_id                                          @controllers.Controller_Finance.product_get(product_id)
 PUT       /product/deactivate/:product_id                               @controllers.Controller_Finance.product_deactivate(product_id)
 PUT       /product/activate/:product_id                                 @controllers.Controller_Finance.product_activate(product_id)
 PUT       /product/credit/:product_id                                   @controllers.Controller_Finance.product_credit(product_id)
@@ -145,7 +147,7 @@ DELETE    /product_extension/:extension_id                              @control
 
 
 
-GET       /product/user_applicable                                      @controllers.Controller_Finance.product_getActive()
+GET       /product/list/user_applicable                                      @controllers.Controller_Finance.product_getActive()
 POST      /product/details/:product_id                                  @controllers.Controller_Finance.paymentDetails_create(product_id)
 PUT       /product/details/:payment_details_id                          @controllers.Controller_Finance.paymentDetails_update(payment_details_id: Long)
 PUT       /product/general/:product_id                                  @controllers.Controller_Finance.product_update(product_id)
@@ -297,6 +299,7 @@ GET       /actualization_procedure/:actualization_procedure_id          @control
 
 #C_Program
 POST      /c_program/create                                             @controllers.Controller_Code.c_program_create()
+PUT       /c_program/clone                                              @controllers.Controller_Code.c_program_clone()
 GET       /c_program/get/:c_program_id                                  @controllers.Controller_Code.c_program_get(c_program_id)
 PUT       /c_program/filter/:page_number                                @controllers.Controller_Code.c_program_getByFilter(page_number: Int)
 
@@ -319,15 +322,21 @@ PUT       /c_program/version/make_public/:version_id                    @control
 
 #Libraries
 POST      /library                                                      @controllers.Controller_Library.library_create()
+PUT       /library/clone                                                @controllers.Controller_Library.library_clone()
 GET       /library/:library_id                                          @controllers.Controller_Library.library_get(library_id)
 PUT       /library/:library_id                                          @controllers.Controller_Library.library_edit(library_id)
-PUT       /library/list/:page_number                                    @controllers.Controller_Library.library_getByFilter(page_number: Int)
+PUT       /library/filter/:page_number                                    @controllers.Controller_Library.library_getByFilter(page_number: Int)
 DELETE    /library/:library_id                                          @controllers.Controller_Library.library_delete(library_id)
 
 POST      /library/version/:library_id                                  @controllers.Controller_Library.library_version_create(library_id)
 GET       /library/version/:version_id                                  @controllers.Controller_Library.library_version_get(version_id)
 PUT       /library/version/:version_id                                  @controllers.Controller_Library.library_version_edit(version_id)
 DELETE    /library/version/:version_id                                  @controllers.Controller_Library.library_version_delete(version_id)
+
+#Libraries/Public
+PUT       /library/version_for_aprove/approve_decision                @controllers.Controller_Library.library_public_response()
+PUT       /library/version/make_public/:version_id                    @controllers.Controller_Library.library_version_make_public(version_id)
+
 
 #Actualization
 GET       /board/ide_upload_hardware/:project_id                        @controllers.Controller_Board.board_getForFastUpload(project_id)

@@ -38,7 +38,7 @@ public class Model_PaymentDetails extends Model {
     @ApiModelProperty(required = false, value = "Only if Product is for business") @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty  public String company_registration_no;
     @ApiModelProperty(required = false, value = "Only if Product is for business") @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty  public String company_vat_number;
 
-    @ApiModelProperty(required = false,value = "Used for billing and invoices") public String full_name;
+    @ApiModelProperty(required = false,value = "Used for billing and invoices") public String full_name;        // Když nejde o firemní účet
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String street;
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String street_number;
     @ApiModelProperty(required = true, value = "Used for billing and invoices") public String city;
@@ -114,13 +114,27 @@ public class Model_PaymentDetails extends Model {
 
     @JsonIgnore
     public boolean isComplete(){
-        return full_name != null && street != null && street_number != null && city != null && zip_code != null && country != null && invoice_email != null;
+        return full_name != null  && !full_name.equals("")
+                && street != null  && !street.equals("")
+                && street_number != null  && !street_number.equals("")
+                && city != null  && !city.equals("")
+                && zip_code != null  && !zip_code.equals("")
+                && country != null  && !country.equals("")
+                && invoice_email != null  && !invoice_email.equals("");
     }
 
     @JsonIgnore
     public boolean isCompleteCompany(){
-        return street != null && street_number != null && city != null && zip_code != null && country != null && invoice_email != null
-                && company_name != null && company_authorized_email != null && company_authorized_phone != null && (company_vat_number != null || company_registration_no != null);
+        return street != null
+                && street_number != null && !street_number.equals("")
+                && city != null && !city.equals("")
+                && zip_code != null && !zip_code.equals("")
+                && country != null && !country.equals("")
+                && invoice_email != null && !invoice_email.equals("")
+                && company_name != null && !company_name.equals("")
+                && company_authorized_email != null && !company_authorized_email.equals("")
+                && company_authorized_phone != null && !company_authorized_phone.equals("")
+                && (company_vat_number != null || company_registration_no != null);
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
