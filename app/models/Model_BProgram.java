@@ -98,7 +98,7 @@ public class Model_BProgram extends Model {
 
             // Je nahrán
             state.uploaded = true;          // Jestli je aktuální - nebo plánovaný
-            state.instance_status = instance.instance_status();
+            state.online_state = instance.online_state();
 
             if (Server.server_mode == Enum_Tyrion_Server_mode.developer) {
                 // /#token - frontend pouze nahradí substring - můžeme tedy do budoucna za adresu přidávat další parametry

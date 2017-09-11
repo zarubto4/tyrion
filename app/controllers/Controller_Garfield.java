@@ -329,14 +329,6 @@ public class Controller_Garfield extends Controller {
             if(garfield.print_label_id_2.equals(printer_id)) {
 
                 // TODO Lexa - odzkoušet a naimlementovat tiskárny P750W
-                Model_Board board = new Model_Board();
-                board.id = "123456789123456789123456";
-                board.hash_for_adding = UUID.randomUUID().toString();
-
-                Printer_Api api = new Printer_Api();
-                Label_12_mm label_12_mm = new Label_12_mm(board);
-                api.printFile(printer_id, 1, "test", label_12_mm.get_label() );
-
             }
 
             if(garfield.print_sticker_id.equals(printer_id)) {
@@ -360,7 +352,7 @@ public class Controller_Garfield extends Controller {
                 Printer_Api api = new Printer_Api();
                 Label_62_mm label_62_mm = new Label_62_mm(board, info, garfield);
 
-                api.printFile(printer_id, 1, "test", label_62_mm.get_label() );
+                api.printFile(printer_id, 1, "test", label_62_mm.get_label(), null);
 
             }
 

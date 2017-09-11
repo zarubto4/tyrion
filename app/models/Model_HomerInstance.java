@@ -132,7 +132,7 @@ public class Model_HomerInstance extends Model {
             return null;
         }
     }
-    @Transient @JsonProperty @ApiModelProperty(required = true) public  Enum_Online_status instance_status() {
+    @Transient @JsonProperty @ApiModelProperty(required = true) public  Enum_Online_status online_state() {
 
         // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
         // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
@@ -223,7 +223,7 @@ public class Model_HomerInstance extends Model {
 
             help.server_name = server_id();
             help.server_id = server_id();
-            help.instance_status = instance_status();
+            help.instance_online_state = online_state();
             help.server_online_state = server_online_state();
             help.update_permission = Model_BProgram.get_byId(b_program_id()).update_permission();
             help.edit_permission = Model_BProgram.get_byId(b_program_id()).edit_permission();

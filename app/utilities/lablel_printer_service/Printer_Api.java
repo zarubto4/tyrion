@@ -27,7 +27,7 @@ public class Printer_Api {
 
 // - Object API  --------------------------------------------------------------------------------------------------------------------
 
-    public JsonNode printFile(Integer printId, int quantity, String title, ByteArrayOutputStream file){
+    public JsonNode printFile(Integer printId, int quantity, String title, ByteArrayOutputStream file, PrinterOption option){
 
         PrintTask printTask = new PrintTask();
         printTask.printerId = printId;
@@ -35,6 +35,7 @@ public class Printer_Api {
         printTask.content = new String(Base64.getEncoder().encode( file.toByteArray()));
         printTask.qty = quantity;
         printTask.source = "Tyrion Generated Print Task";
+        printTask.options = option;
 
         return post("/printjobs", Json.toJson(printTask));
     }
@@ -120,6 +121,7 @@ public class Printer_Api {
                 .post(node);
 
         JsonNode response = responsePromise.get(5000).asJson();
+        System.out.println(response.toString());
 
         terminal_logger.debug("Printer_Api_post:: Result: " + response.toString());
         return response;

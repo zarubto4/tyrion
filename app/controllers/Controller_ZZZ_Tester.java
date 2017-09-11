@@ -3,6 +3,7 @@ package controllers;
 import com.itextpdf.text.pdf.qrcode.Mode;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import models.Model_Board;
 import models.Model_CProgram;
 import models.Model_Product;
 import models.Model_VersionObject;
@@ -10,10 +11,14 @@ import org.mindrot.jbcrypt.BCrypt;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.lablel_printer_service.Printer_Api;
+import utilities.lablel_printer_service.labels.Label_12_mm;
+import utilities.lablel_printer_service.printNodeModels.PrinterOption;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.response.GlobalResult;
 import utilities.scheduler.jobs.Job_SpendingCredit;
+
+import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_ZZZ_Tester extends Controller {
@@ -48,24 +53,6 @@ public class Controller_ZZZ_Tester extends Controller {
             // terminal_logger.error(BCrypt.hashpw("password", BCrypt.gensalt(12)));
 
 
-            for(int i = 0; i < 100;i++){
-
-                Model_CProgram cProgram = new Model_CProgram();
-                cProgram.name = "nazev " + i;
-                cProgram.description = "popisek " + i;
-                cProgram.save();
-
-                Model_VersionObject versionObject = new Model_VersionObject();
-                versionObject.public_version = true;
-                versionObject.version_description = "verze popis" + i;
-                versionObject.version_name = "verze název" + i ;
-                versionObject.c_program = cProgram;
-                versionObject.save();
-
-                cProgram.refresh();
-            }
-
-
 
             return GlobalResult.result_ok();
 
@@ -83,8 +70,21 @@ public class Controller_ZZZ_Tester extends Controller {
 
             Printer_Api api = new Printer_Api();
 
+            Model_Board board = new Model_Board();
+            board.hash_for_adding = UUID.randomUUID().toString();
+
+            //.substring(0,8) + UUID.randomUUID().toString().substring(0,8)
+
+            PrinterOption option = new PrinterOption();
+            option.media = "label";
+            option.dpi = "100800";
+
             // Test of printer
-            // new Label_62_mm();
+            Label_12_mm label_12_mm = new Label_12_mm(board);
+
+           // api.printFile(279215, 1, "Garfield Print QR Hash", label_12_mm.get_label());
+              api.printFile(279214, 1, "Garfield Print QR Hash", label_12_mm.get_label(), option);
+           // api.printFile(279213, 1, "Garfield Print QR Hash", label_12_mm.get_label());
 
 
             return GlobalResult.result_ok();

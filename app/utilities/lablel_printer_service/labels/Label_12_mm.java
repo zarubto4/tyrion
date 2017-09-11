@@ -11,7 +11,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Date;
 
-
 public class Label_12_mm {
 
     // Logger
@@ -52,7 +51,7 @@ public class Label_12_mm {
         try {
 
             // step 2: Create Document
-            Document document = new Document(Label_12_mm_Antistatic_Package, Utilities.millimetersToPoints(1), Utilities.millimetersToPoints(1), Utilities.millimetersToPoints(1), Utilities.millimetersToPoints(1));
+            Document document = new Document(Label_12_mm_Antistatic_Package, Utilities.millimetersToPoints(0), Utilities.millimetersToPoints(0), Utilities.millimetersToPoints(0), Utilities.millimetersToPoints(0));
 
             // step 3: Get output stream for final File
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -66,10 +65,13 @@ public class Label_12_mm {
             // step 5. Open file
             document.open();
 
-            // Step 6.  Add QR kode
 
             contentByte = writer.getDirectContent();
+
+            // Step 6.  Add QR kode
             document.add(device_hash_for_Add(this.board.hash_for_adding));
+
+
 
             document.close();
 
@@ -85,17 +87,30 @@ public class Label_12_mm {
     private PdfPTable device_hash_for_Add(String hash_for_Add) throws DocumentException {
 
         PdfPTable table = new PdfPTable(1);
+                table.setTotalWidth(Label_12_mm_Antistatic_Package.getWidth());
+                table.getDefaultCell().setFixedHeight(Label_12_mm_Antistatic_Package.getWidth());
+                table.setLockedWidth(true);
                 table.setWidthPercentage(100);
                 table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER);
                 table.getDefaultCell().setVerticalAlignment(Element.ALIGN_MIDDLE);
 
         // QR Code for ADD
-        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(hash_for_Add, 1000, 1000, null);
+        // QR Code for ADD
+        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(this.board.hash_for_adding, 1000, 1000, null);
         Image codeQrImage = barcodeQRCode.getImage();
-        codeQrImage.scaleAbsolute(12 , 12);
+        codeQrImage.scaleToFit(Label_12_mm_Antistatic_Package.getWidth(), Label_12_mm_Antistatic_Package.getWidth());
+
+        int odsazeni = 0;
+
+        PdfTemplate template = contentByte.createTemplate(
+                Label_12_mm_Antistatic_Package.getHeight() - odsazeni - odsazeni,
+                Label_12_mm_Antistatic_Package.getHeight() - odsazeni - odsazeni);
+        template.addImage(codeQrImage,
+                Label_12_mm_Antistatic_Package.getHeight(), 0, 0,
+                Label_12_mm_Antistatic_Package.getHeight(), -odsazeni, -odsazeni);
 
 
-        PdfPCell cell = new PdfPCell(codeQrImage, true);
+        PdfPCell cell = new PdfPCell(Image.getInstance(template), true);
         cell.setBorder(Rectangle.NO_BORDER);
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);

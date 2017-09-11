@@ -14,6 +14,6 @@ public class PrintTask {
     public String source;
     public int qty = 1;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL) public PrinterOption option;
+    @JsonInclude(JsonInclude.Include.NON_NULL) public PrinterOption options;
 
 }

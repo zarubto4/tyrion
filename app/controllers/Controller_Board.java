@@ -1984,11 +1984,11 @@ public class Controller_Board extends Controller {
 
             // Label 62 mm
             Label_62_mm label_62_mm = new Label_62_mm(board, batch , garfiled);
-            api.printFile(garfiled.print_sticker_id, 1, "Garfield Print Label", label_62_mm.get_label());
+            api.printFile(garfiled.print_sticker_id, 1, "Garfield Print Label", label_62_mm.get_label(), null);
 
             // Label qith QR kode on Ethernet connector
             Label_12_mm label_12_mm = new Label_12_mm(board);
-            api.printFile(garfiled.print_label_id_1, 1, "Garfield Print QR Hash", label_12_mm.get_label());
+            api.printFile(garfiled.print_label_id_1, 1, "Garfield Print QR Hash", label_12_mm.get_label(), null);
 
 
             if(typeOfBoard.connectible_to_internet) {
