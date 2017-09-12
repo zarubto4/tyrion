@@ -298,7 +298,7 @@ public class Controller_Library extends Controller {
 
             if(help.pending_library){
                 if(!Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name())) return GlobalResult.result_forbidden();
-                query.where().eq("version_objects.approval_state", Enum_Approval_state.pending.name());
+                query.where().eq("versions.approval_state", Enum_Approval_state.pending.name());
             }
 
             // Vyvoření odchozího JSON
