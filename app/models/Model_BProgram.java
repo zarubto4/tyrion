@@ -38,7 +38,8 @@ public class Model_BProgram extends Model {
                                                          @Id public String id;
                                                              public String name;
                         @Column(columnDefinition = "TEXT")   public String description;
-    @JsonIgnore @OneToOne(cascade = CascadeType.ALL)         public Model_HomerInstance instance; // TODO - do budoucna více instnací!!!! http://youtrack.byzance.cz/youtrack/issue/TYRION-502
+
+    @JsonIgnore @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Model_HomerInstance instance; // TODO - do budoucna více instnací!!!! http://youtrack.byzance.cz/youtrack/issue/TYRION-502
 
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time in ms", example = "1466163478925") public Date last_update;
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time in ms", example = "1466163478925") public Date date_of_create;
@@ -55,6 +56,7 @@ public class Model_BProgram extends Model {
     @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_version_objects_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_type_of_board_id;
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_project_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_instance_id;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -91,34 +93,33 @@ public class Model_BProgram extends Model {
 
             Swagger_B_Program_State state = new Swagger_B_Program_State();
 
-            if (instance.actual_instance == null) {
-                state.uploaded = false;
-                return state;
-            }
+            state.online_state = Model_HomerInstance.get_byId(instance_id()).online_state();
 
-            // Je nahrán
-            state.uploaded = true;          // Jestli je aktuální - nebo plánovaný
-            state.online_state = instance.online_state();
-
-            if (Server.server_mode == Enum_Tyrion_Server_mode.developer) {
+            if (Server.server_mode == Enum_Tyrion_Server_mode.developer && instance().actual_instance != null) {
                 // /#token - frontend pouze nahradí substring - můžeme tedy do budoucna za adresu přidávat další parametry
-                state.instance_remote_url = "ws://" + Model_HomerServer.get_byId(instance.server_id()).get_WebView_APP_URL() + instance.id + "/#token";
+                state.instance_remote_url = "ws://" + Model_HomerServer.get_byId(instance().server_id()).get_WebView_APP_URL() + instance_id() + "/#token";
             } else {
-                state.instance_remote_url = "wss://" + Model_HomerServer.get_byId(instance.server_id()).get_WebView_APP_URL()  + instance.id + "/#token";
+                state.instance_remote_url = "wss://" + Model_HomerServer.get_byId(instance().server_id()).get_WebView_APP_URL()  + instance_id() + "/#token";
             }
 
+            if (instance().actual_instance != null) {
+                // Jaká verze Blocko Programu je aktuální?
+                state.version_id = instance().actual_instance.get_b_program_version().id;
+                state.version_name = instance().actual_instance.get_b_program_version().version_name;
 
-            // Jaká verze Blocko Programu?
-            state.version_id = instance.actual_instance.get_b_program_version().id;
-            state.version_name = instance.actual_instance.get_b_program_version().version_name;
+                // Vracím naposledy použitou - Becki si to vyřeší sama
+            }else if(!instance().instance_history.isEmpty()){
+                state.version_id = instance().instance_history.get(0).get_b_program_version().id;
+                state.version_name = instance().instance_history.get(0).get_b_program_version().version_name;
+            }
 
             // Instnace ID
-            state.instance_id = instance.id;
+            state.instance_id = instance_id();
 
             // Informace o Serveru
-            state.server_id = instance.server_id();
-            state.server_name = instance.server_name();
-            state.server_online_state = instance.server_online_state();
+            state.server_id = instance().server_id();
+            state.server_name = instance().server_name();
+            state.server_online_state = instance().server_online_state();
 
             return state;
 
@@ -202,6 +203,46 @@ public class Model_BProgram extends Model {
 
     }
 
+    @JsonIgnore @Transient public String instance_id() {
+
+        try {
+
+
+            if(this.cache_instance_id == null){
+
+               Model_HomerInstance instance =  Model_HomerInstance.find.where().eq("b_program.id", id).select("id").findUnique();
+
+               if(instance != null) {
+                   cache_instance_id = instance.id;
+               }
+            }
+
+            return cache_instance_id;
+
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("getVersion_objects", e);
+            return null;
+        }
+    }
+
+    @JsonIgnore @Transient public Model_HomerInstance instance() {
+        try {
+
+            if(this.instance_id() != null){
+                this.instance = Model_HomerInstance.get_byId(instance_id());
+                return instance;
+            }
+
+            return null;
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError("getVersion_objects", e);
+            return null;
+        }
+    }
+
+
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -248,14 +289,14 @@ public class Model_BProgram extends Model {
 
         terminal_logger.debug("update :: Delete object Id: {} ", this.id);
 
-        instance.remove_from_cloud();
-        instance.removed_by_user = true;
-        instance.update();
+        instance().remove_from_cloud();
+        instance().removed_by_user = true;
+        instance().update();
 
         this.removed_by_user = true;
 
         if(project_id() != null){
-            Model_Project.get_byId( project_id() ).cache_list_b_program_ids.remove(id);
+            Model_Project.get_byId(project_id()).cache_list_b_program_ids.remove(id);
         }
 
         cache.remove(id);

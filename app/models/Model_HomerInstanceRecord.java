@@ -192,6 +192,7 @@ public class Model_HomerInstanceRecord extends Model {
                 WS_Message_Homer_Instance_add result_instance   = actual_running_instance.cloud_homer_server.add_instance(actual_running_instance);
                 if(!result_instance.status.equals("success")){
                     terminal_logger.internalServerError(new Exception("Failed to add Instance. ErrorCode: " + result_instance.error_code + ". Error: " + result_instance.error));
+                    return;
                 }
             }
 
@@ -199,13 +200,17 @@ public class Model_HomerInstanceRecord extends Model {
             WS_Message_Instance_upload_blocko_program result_step_2 = this.upload_blocko_program();
             if(!result_step_2.status.equals("success")){
                 terminal_logger.warn("Instance " + actual_running_instance.id + " Krok dva nevyšel Error :: Error Code:: " + result_step_2.error_code);
+                return;
             }
 
             // Step 3
             WS_Message_Instance_device_set_snap result_step_3 =  this.update_device_summary_collection();
             if(!result_step_3.status.equals("success")){
                 terminal_logger.warn("Instance " + actual_running_instance.id + " Krok dva nevyšel Error :: Error Code:: " + result_step_3.error_code);
+                return;
             }
+
+            Model_HomerInstance.cache_status.put(this.actual_running_instance.id, true);
 
             // Step 4
             this.create_actualization_hardware_request();
@@ -428,6 +433,15 @@ public class Model_HomerInstanceRecord extends Model {
             if (Model_HomerInstanceRecord.find.byId(this.id) == null) break;
         }
         super.save();
+    }
+
+    @Override
+    public void update(){
+
+        terminal_logger.debug("update :: Update object id: {}",  this.id);
+
+        super.update();
+        // cache.put(this.id, this);
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

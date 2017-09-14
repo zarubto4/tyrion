@@ -705,7 +705,9 @@ public class Model_Project extends Model {
             IdsList idlist = token_cache.get(project.id);
 
             if(idlist != null){
-                idlist.list.remove(person_id);
+                if(idlist.list.contains(person_id)) {
+                    idlist.list.remove(person_id);
+                }
             }
         }
     }

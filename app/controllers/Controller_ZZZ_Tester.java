@@ -52,8 +52,6 @@ public class Controller_ZZZ_Tester extends Controller {
 
             // terminal_logger.error(BCrypt.hashpw("password", BCrypt.gensalt(12)));
 
-
-
             return GlobalResult.result_ok();
 
         }catch (Exception e){
@@ -72,8 +70,6 @@ public class Controller_ZZZ_Tester extends Controller {
 
             Model_Board board = new Model_Board();
             board.hash_for_adding = UUID.randomUUID().toString();
-
-            //.substring(0,8) + UUID.randomUUID().toString().substring(0,8)
 
             PrinterOption option = new PrinterOption();
             option.media = "label";

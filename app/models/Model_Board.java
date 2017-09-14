@@ -268,7 +268,6 @@ public class Model_Board extends Model {
 
 
             if(cache_value_latest_online != null){
-                System.out.println("Hodnota je cachovaná ");
                 return cache_value_latest_online;
             }
 
@@ -996,7 +995,9 @@ public class Model_Board extends Model {
             try {
 
                 final Form<WS_Message_Hardware_overview> form = Form.form(WS_Message_Hardware_overview.class).bind(json_result);
-                if (form.hasErrors()) throw new Exception("WS_Message_Hardware_overview: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                if (form.hasErrors()) {
+                    throw new Exception("WS_Message_Hardware_overview: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                }
 
                 result.hardware_list.addAll(form.get().hardware_list);
 
@@ -1275,8 +1276,8 @@ public class Model_Board extends Model {
 
             WS_Message_Hardware_overview.WS_Help_Hardware_board_overview overview = report.get_device_from_list(this.id);
 
-            if(overview.error_code != null) {
-                terminal_logger.debug("hardware_firmware_state_check: Device is offline Error code:  " , overview.error_code );
+            if(!overview.online_state) {
+                terminal_logger.debug("hardware_firmware_state_check: Device is offline");
                 return;
             }
 

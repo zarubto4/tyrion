@@ -9,8 +9,6 @@ import utilities.enums.Enum_Online_status;
         value = "B_Program_State")
 public class Swagger_B_Program_State {
 
-    @ApiModelProperty(required = true, readOnly = true)
-    public boolean uploaded;
 
     @ApiModelProperty(required = true, readOnly = true)
     public Enum_Online_status online_state;
@@ -18,11 +16,11 @@ public class Swagger_B_Program_State {
     @ApiModelProperty(required = true, readOnly = true)
     public Enum_Online_status server_online_state;
 
-    @ApiModelProperty(required = false, readOnly = true)
+    @ApiModelProperty(required = false, readOnly = true, value = "Actual version id or latest know /used in cloud")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String version_id;
 
-    @ApiModelProperty(required = false, readOnly = true)
+    @ApiModelProperty(required = false, readOnly = true, value = "Actual version id or latest know /used in cloud")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String version_name;
 

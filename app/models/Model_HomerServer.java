@@ -153,10 +153,6 @@ public class Model_HomerServer extends Model{
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public WS_HomerServer get_server_webSocket_connection(){
-        return Controller_WebSocket.homer_servers.get(this.id.toString());
-    }
-
     @JsonIgnore @Transient public static Model_HomerServer get_destination_server(){
 
 
@@ -239,8 +235,6 @@ public class Model_HomerServer extends Model{
 
     }
 
-
-
     @JsonIgnore @Transient public String get_Grid_APP_URL(){
         return server_url + ":" +  grid_port + "/";
     }
@@ -287,7 +281,6 @@ public class Model_HomerServer extends Model{
 
         }).start();
     }
-
 
     @JsonIgnore @Transient public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries){
 
@@ -387,6 +380,7 @@ public class Model_HomerServer extends Model{
 
                 System.out.println("Hash sedí ");
 
+                Model_HomerServer.get_byId(ws_homer_server.identifikator).make_log_connect();
                 ws_homer_server.approve_server_verification(message.message_id);
 
                 return;
@@ -416,7 +410,7 @@ public class Model_HomerServer extends Model{
 
             if(!server_is_online()) return;
 
-            Synchronize_Homer_Synchronize_Settings check = new Synchronize_Homer_Synchronize_Settings(get_server_webSocket_connection());
+            Synchronize_Homer_Synchronize_Settings check = new Synchronize_Homer_Synchronize_Settings();
             check.start();
 
         }catch (Exception e) {
@@ -430,10 +424,10 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public WS_Message_Homer_Instance_list get_homer_server_list_of_instance(){
         try {
 
-            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Instance_list().make_request(), 1000 * 15, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Homer_Instance_list().make_request(), 1000 * 15, 0, 2);
             final Form<WS_Message_Homer_Instance_list> form = Form.form(WS_Message_Homer_Instance_list.class).bind(node);
             if(form.hasErrors()){
-                get_server_webSocket_connection().write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Instance_list.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
+                write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Instance_list.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
                 terminal_logger.warn("get_homer_server_list_of_instance:: Json Incorrect value");
                 return new WS_Message_Homer_Instance_list();
             }
@@ -451,11 +445,11 @@ public class Model_HomerServer extends Model{
 
             System.out.println("get_homer_server_list_of_hardware - start");
 
-            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Hardware_list().make_request(), 1000 * 15, 0, 2);
+            JsonNode node =write_with_confirmation(new WS_Message_Homer_Hardware_list().make_request(), 1000 * 15, 0, 2);
 
             final Form<WS_Message_Homer_Hardware_list> form = Form.form(WS_Message_Homer_Hardware_list.class).bind(node);
             if(form.hasErrors()){
-                get_server_webSocket_connection().write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Hardware_list.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
+                write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Hardware_list.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
                 terminal_logger.warn("get_homer_server_list_of_hardware:: Json Incorrect value");
                 return new WS_Message_Homer_Hardware_list();
             }
@@ -472,10 +466,11 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public WS_Message_Homer_Instance_number get_homer_server_number_of_instance(){
         try {
 
-            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_Instance_number().make_request(), 1000 * 5, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Homer_Instance_number().make_request(), 1000 * 5, 0, 2);
             final Form<WS_Message_Homer_Instance_number> form = Form.form(WS_Message_Homer_Instance_number.class).bind(node);
+
             if(form.hasErrors()){
-                get_server_webSocket_connection().write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Instance_number.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
+                write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Instance_number.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
                 terminal_logger.warn("get_homer_server_list_of_hardware:: Json Incorrect value");
                 return new WS_Message_Homer_Instance_number();
             }
@@ -494,7 +489,7 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public WS_Message_Homer_Instance_add add_instance(Model_HomerInstance instance){
         try {
 
-            JsonNode node = get_server_webSocket_connection().write_with_confirmation( new WS_Message_Homer_Instance_add().make_request(instance.id), 1000 * 5, 0, 2);
+            JsonNode node = write_with_confirmation( new WS_Message_Homer_Instance_add().make_request(instance.id), 1000 * 5, 0, 2);
 
             final Form<WS_Message_Homer_Instance_add> form = Form.form(WS_Message_Homer_Instance_add.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Homer_Instance_add: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
@@ -513,14 +508,16 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public WS_Message_Homer_Instance_destroy remove_instance(List<String> instance_ids) {
         try {
 
-            JsonNode node =  get_server_webSocket_connection().write_with_confirmation( new WS_Message_Homer_Instance_destroy().make_request(instance_ids), 1000 * 5, 0, 2);
+            System.out.println("Počet instnancí k odstranění je " + instance_ids.size() );
+
+            new WS_Message_Homer_Instance_destroy().make_request(instance_ids);
+
+            JsonNode node = write_with_confirmation(new WS_Message_Homer_Instance_destroy().make_request(instance_ids), 1000 * 5, 0, 2);
 
             final Form<WS_Message_Homer_Instance_destroy> form = Form.form(WS_Message_Homer_Instance_destroy.class).bind(node);
 
             return form.get();
 
-        }catch (InterruptedException|TimeoutException e){
-            terminal_logger.warn("Cloud Homer server", personal_server_name, " " , id, " is offline!");
         }catch (Exception e){
             terminal_logger.internalServerError(e);
         }
@@ -563,7 +560,7 @@ public class Model_HomerServer extends Model{
 
             System.out.println("vyvolávám homer ping ");
 
-            JsonNode node = get_server_webSocket_connection().write_with_confirmation(new WS_Message_Homer_ping().make_request(), 1000 * 2, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Homer_ping().make_request(), 1000 * 2, 0, 2);
 
             final Form<WS_Message_Homer_ping> form = Form.form(WS_Message_Homer_ping.class).bind(node);
             if(form.hasErrors()){terminal_logger.error("WS_Add_new_instance:: Incoming Json for Yoda has not right Form:: " + form.errorsAsJson(new Lang( new play.api.i18n.Lang("en", "US"))).toString()); return new WS_Message_Homer_ping();}
@@ -580,6 +577,7 @@ public class Model_HomerServer extends Model{
 
 /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
 
+    // only with successfully connection
     public void make_log_connect(){
         new Thread( () -> {
             try {

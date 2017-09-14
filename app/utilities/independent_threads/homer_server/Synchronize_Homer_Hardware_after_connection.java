@@ -74,6 +74,14 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                         // TODO dělat něco s overview??
                         System.out.println("4.4 Device overview?");
                         WS_Message_Hardware_overview overview = board.get_devices_overview();
+
+
+                        if (overview.get_device_from_list(board.id).online_state){
+                            System.out.println("4.4 " + board.id + " Na serveru hardware je a je online");
+                        }else {
+                            System.out.println("4.4 " + board.id + " Na serveru možná je možná taky ne ale dle dat je offline");
+                        }
+
                     }
 
                 }

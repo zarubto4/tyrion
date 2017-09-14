@@ -273,10 +273,15 @@ public class Model_CProgramUpdatePlan extends Model {
 
 
             Enum_HardwareHomerUpdate_state status = report.get_phase();
-            if (status == null) throw new NullPointerException("Hardware_update_state_from_Homer " + report.phase + " is not recognize in Json!");
+            if (status == null){
+                terminal_logger.error("Hardware_update_state_from_Homer " + report.phase + " is not recognize in Json!");
+                return;
+            }
 
             Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.get_byId(report.tracking_id);
-            if (plan == null) throw new NullPointerException("Plan id" + report.tracking_id + " not found!");
+            if (plan == null) {
+                throw new NullPointerException("Plan id" + report.tracking_id + " not found!");
+            }
 
             switch (status){
 

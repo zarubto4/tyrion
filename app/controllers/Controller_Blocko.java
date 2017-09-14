@@ -667,7 +667,7 @@ public class Controller_Blocko extends Controller{
             if (!b_program.update_permission()) return GlobalResult.result_forbidden();
 
             Model_HomerInstanceRecord record = new Model_HomerInstanceRecord();
-            record.main_instance_history = b_program.instance;
+            record.main_instance_history = b_program.instance();
             record.version_object = version_object;
             record.date_of_created = new Date();
 
@@ -747,8 +747,8 @@ public class Controller_Blocko extends Controller{
 
             if (!homer_instance.getB_program().update_permission() ) return GlobalResult.result_forbidden();
 
-            homer_instance.name = help.name;
-            homer_instance.description = help.description;
+            if(help.name != null && !help.name.equals("")) homer_instance.name = help.name;
+            if(help.description != null && !help.description.equals("")) homer_instance.description = help.description;
 
             homer_instance.update();
 
@@ -780,14 +780,11 @@ public class Controller_Blocko extends Controller{
         try{
 
             // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_name).findUnique();
+            Model_HomerInstance homer_instance = Model_HomerInstance.get_byId(instance_name);
             if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
 
             if (!homer_instance.getB_program().update_permission() ) return GlobalResult.result_forbidden();
 
-            if(homer_instance.actual_instance == null){
-                return GlobalResult.result_badRequest("Instance not running");
-            }
 
             // Pokud má aktuální instance "Actual Instance record - znaemná to, že má běžet v cloudu"
             // Proto tento záznam odstraním
@@ -795,9 +792,6 @@ public class Controller_Blocko extends Controller{
 
                 homer_instance.remove_from_cloud();
 
-                homer_instance.actual_instance = null;
-                Model_HomerInstance.cache_status.put(homer_instance.id, false);
-                homer_instance.update();
 
                 return GlobalResult.result_ok();
 

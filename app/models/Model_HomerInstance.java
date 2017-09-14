@@ -122,6 +122,20 @@ public class Model_HomerInstance extends Model {
 
             if (cache_server_id == null) {
                 Model_HomerServer homer_server = Model_HomerServer.find.where().eq("cloud_instances.id", id).select("id").findUnique();
+
+                if(homer_server == null) {
+                    terminal_logger.warn("Instance get server_id:: Instance has not set Default Server");
+
+                    this.cloud_homer_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.main_server.name()).findUnique();
+                    if(this.cloud_homer_server == null){
+                        throw new Exception("Model_HomerInstance:: server_id:: Main server is not set!!!! Cannot set Default Server to instance!");
+                    }
+                    this.update();
+
+                    // For Cache * next lines of codes
+                    homer_server = this.cloud_homer_server;
+                }
+
                 cache_server_id = homer_server.id.toString();
             }
 
@@ -137,7 +151,13 @@ public class Model_HomerInstance extends Model {
         // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
         // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
         if(actual_instance == null){
-            return Enum_Online_status.not_yet_first_connected;
+
+            if(instance_history.isEmpty()){
+                return Enum_Online_status.not_yet_first_connected;
+            }else {
+                return Enum_Online_status.shut_down;
+            }
+
         }
 
         // Pokud je server offline - tyrion si nemuže být jistý stavem hardwaru - ten teoreticky muže být online
@@ -151,12 +171,17 @@ public class Model_HomerInstance extends Model {
 
                     return cache_status.get(id) ? Enum_Online_status.online : Enum_Online_status.offline;
 
-                } else {
-                    // Začnu zjišťovat stav - v separátním vlákně!
+                }
+
+                //else {
+                    // Začnu zjišťovat stav - v separátním vlákně! Po strátě spojení se serverem nebo po načítání se někde opomělo změnit stav na online proto
+                    // je podmínka zakomentovaná aby se to ověřovalo vždy
+                    // TODO ASAP ošetřit!!!!
                     new Thread(() -> {
                         try {
 
                             WS_Message_Instance_status status = get_instance_status();
+
                             if (status.status.equals("success")) cache_status.put(id, status.get_status(id).status);
 
                         } catch (Exception e) {
@@ -166,7 +191,7 @@ public class Model_HomerInstance extends Model {
 
                     return Enum_Online_status.synchronization_in_progress;
 
-                }
+                //}
 
             } else {
                 return Enum_Online_status.unknown_lost_connection_with_server;
@@ -221,7 +246,7 @@ public class Model_HomerInstance extends Model {
                 help.b_program_version_name = actual_instance.b_program_version_name();
             }
 
-            help.server_name = server_id();
+            help.server_name = server_name();
             help.server_id = server_id();
             help.instance_online_state = online_state();
             help.server_online_state = server_online_state();
@@ -594,8 +619,25 @@ public class Model_HomerInstance extends Model {
     @JsonIgnore @Transient
     public void remove_from_cloud(){
 
-        List<String> instances = new ArrayList<>();
-        instances.add(id);
+        Model_HomerInstance.cache_status.put(this.id, false);
+
+        System.out.println("remove_from_cloud.................");
+        if(actual_instance != null) {
+
+            System.out.println("remove_from_cloud actual instnace");
+
+            actual_instance.actual_running_instance = null;
+            actual_instance.update();
+
+            actual_instance.refresh();
+
+            actual_instance = null;
+            this.update();
+        }
+
+        actual_instance = null;
+        this.update();
+
 
         Model_HomerServer server = Model_HomerServer.get_byId(server_id());
         if(server == null){
