@@ -1,13 +1,9 @@
 package controllers;
 
-import com.itextpdf.text.pdf.qrcode.Mode;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import models.Model_Board;
-import models.Model_CProgram;
-import models.Model_Product;
-import models.Model_VersionObject;
-import org.mindrot.jbcrypt.BCrypt;
+import models.*;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.lablel_printer_service.Printer_Api;
@@ -17,6 +13,7 @@ import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.response.GlobalResult;
 import utilities.scheduler.jobs.Job_SpendingCredit;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Online_Change_status;
 
 import java.util.UUID;
 
@@ -51,8 +48,27 @@ public class Controller_ZZZ_Tester extends Controller {
         try {
 
             // terminal_logger.error(BCrypt.hashpw("password", BCrypt.gensalt(12)));
+            // Test online change stavů
+            JsonNode json = request().body().asJson();
 
-            return GlobalResult.result_ok();
+            String type = json.get("type").asText();
+            String id = json.get("id").asText();
+            String project_id = json.get("project_id").asText();
+            boolean online_state = json.get("online_state").asBoolean();
+
+            if(type.equals("board")) {
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Board.class, id, online_state, project_id);
+            }
+
+            if(type.equals("instance")) {
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerInstance.class, id, online_state, project_id);
+            }
+
+            if(type.equals("server")) {
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerServer.class, id, online_state, project_id);
+            }
+
+            return GlobalResult.result_ok(json);
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);

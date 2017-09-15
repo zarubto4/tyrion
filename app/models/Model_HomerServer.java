@@ -31,6 +31,7 @@ import web_socket.message_objects.homer_with_tyrion.*;
 import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_add;
 import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_destroy;
 import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Check_homer_server_permission;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Online_Change_status;
 import web_socket.services.WS_HomerServer;
 
 import javax.persistence.*;
@@ -380,8 +381,21 @@ public class Model_HomerServer extends Model{
 
                 System.out.println("Hash sedí ");
 
-                Model_HomerServer.get_byId(ws_homer_server.identifikator).make_log_connect();
+                Model_HomerServer homer_server =  Model_HomerServer.get_byId(ws_homer_server.identifikator);
+                homer_server.make_log_connect();
+
                 ws_homer_server.approve_server_verification(message.message_id);
+
+                // Send echo to all connected users (its public servers)
+                if(homer_server.server_type.equals( Enum_Cloud_HomerServer_type.public_server) || homer_server.server_type.equals( Enum_Cloud_HomerServer_type.main_server) || homer_server.server_type.equals( Enum_Cloud_HomerServer_type.backup_server)) {
+                    WS_Message_Online_Change_status.synchronize_online_state_with_becki_public_objects(Model_HomerInstance.class, homer_server.id.toString(), true);
+                }
+
+                if(homer_server.server_type.equals( Enum_Cloud_HomerServer_type.private_server)) {
+                    throw new Exception("aprove_validation_for_homer_server - TODO private server!!!");
+                }
+
+
 
                 return;
 
@@ -553,6 +567,11 @@ public class Model_HomerServer extends Model{
     @JsonIgnore @Transient  public void is_disconnect(){
         terminal_logger.debug("is_disconnect:: Tyrion lost connection with Homer server: " + id);
         make_log_disconnect();
+
+        // Send echo to all connected users (its public servers)
+        if(server_type.equals( Enum_Cloud_HomerServer_type.public_server) || server_type.equals( Enum_Cloud_HomerServer_type.main_server) || server_type.equals( Enum_Cloud_HomerServer_type.backup_server)) {
+            WS_Message_Online_Change_status.synchronize_online_state_with_becki_public_objects(Model_HomerInstance.class, id.toString(), false);
+        }
     }
 
     @JsonIgnore @Transient public WS_Message_Homer_ping ping(){

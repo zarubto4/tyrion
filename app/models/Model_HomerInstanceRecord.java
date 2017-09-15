@@ -9,7 +9,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.Form;
 import play.i18n.Lang;
-import play.libs.Json;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
@@ -18,6 +17,7 @@ import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance
 import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_status;
 import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_add;
 import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_upload_blocko_program;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Online_Change_status;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -211,6 +211,7 @@ public class Model_HomerInstanceRecord extends Model {
             }
 
             Model_HomerInstance.cache_status.put(this.actual_running_instance.id, true);
+            WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerInstance.class, this.actual_running_instance.id, true, this.actual_running_instance.project_id );
 
             // Step 4
             this.create_actualization_hardware_request();

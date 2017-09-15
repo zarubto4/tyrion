@@ -10,7 +10,7 @@ OPTIONS   /*all                                                         @control
 
 ### DEVELOPERS TEST ############ DEVELOPERS TEST ############### DEVELOPERS TEST ################ DEVELOPERS TEST ###################################################
 POST      /test                                                         @controllers.Controller_ZZZ_Tester.test1()
-GET       /test2                                                        @controllers.Controller_ZZZ_Tester.test2()
+POST      /test2                                                        @controllers.Controller_ZZZ_Tester.test2()
 POST      /test3                                                        @controllers.Controller_ZZZ_Tester.test3()
 
 ### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET ###########################################################################

@@ -22,6 +22,7 @@ import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
 import web_socket.message_objects.homer_hardware_with_tyrion.*;
 import web_socket.message_objects.homer_instance_with_tyrion.verification.WS_Message_Grid_token_verification;
 import web_socket.message_objects.homer_instance_with_tyrion.verification.WS_Message_WebView_token_verification;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Online_Change_status;
 import web_socket.services.WS_HomerServer;
 import web_socket.message_objects.homer_instance_with_tyrion.*;
 
@@ -183,6 +184,7 @@ public class Model_HomerInstance extends Model {
                             WS_Message_Instance_status status = get_instance_status();
 
                             if (status.status.equals("success")) cache_status.put(id, status.get_status(id).status);
+                            WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerInstance.class, this.id, status.get_status(id).status, project_id);
 
                         } catch (Exception e) {
                             terminal_logger.internalServerError("notification_board_connect:", e);
@@ -620,6 +622,7 @@ public class Model_HomerInstance extends Model {
     public void remove_from_cloud(){
 
         Model_HomerInstance.cache_status.put(this.id, false);
+        WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerInstance.class, this.id, true, project_id);
 
         System.out.println("remove_from_cloud.................");
         if(actual_instance != null) {
