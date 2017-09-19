@@ -987,9 +987,6 @@ public class Controller_Code extends Controller{
             version_object.c_program.refresh();
 
 
-
-
-
             // Vracím Json
             return GlobalResult.result_ok(Json.toJson(version_object.c_program));
 

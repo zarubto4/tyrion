@@ -6,11 +6,13 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import com.microsoft.azure.documentdb.*;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
+import controllers.Controller_Security;
 import models.*;
 import org.slf4j.LoggerFactory;
 import play.Configuration;
 import play.Play;
 import utilities.cache.Server_Cache;
+import utilities.enums.Enum_Publishing_type;
 import utilities.financial.fakturoid.Fakturoid_InvoiceCheck;
 import utilities.financial.goPay.GoPay_PaymentCheck;
 import utilities.enums.Enum_Tyrion_Server_mode;
@@ -23,6 +25,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class Server {
 
@@ -282,6 +285,37 @@ public class Server {
         }
 
     }
+
+
+    /**
+     * Nastavení Výchozího Blocko Programu a výchozího Grid Programu vždy na startu pokud neexistuje!!!
+     */
+    public static void setWidgetAnDBlock(){
+
+        if(Model_GridWidget.get_byId("0000000-0000-0000-0000-000000000001") == null){
+            Model_GridWidget gridWidget = new Model_GridWidget();
+            gridWidget.id                  = UUID.fromString("00000000-0000-0000-0000-000000000001");
+            gridWidget.description         = "Default Widget";
+            gridWidget.name                = "Default Widget";
+            gridWidget.type_of_widget      = null;
+            gridWidget.author              = null;
+            gridWidget.publish_type        = Enum_Publishing_type.default_main_program;
+            gridWidget.save();
+        }
+
+        if(Model_BlockoBlock.get_byId("0000000-0000-0000-0000-000000000001") == null) {
+            Model_BlockoBlock blockoBlock = new Model_BlockoBlock();
+            blockoBlock.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
+            blockoBlock.description = "Default Block";
+            blockoBlock.name = "Default Block";
+            blockoBlock.author = null;
+            blockoBlock.type_of_block = null;
+            blockoBlock.publish_type = Enum_Publishing_type.default_main_program;
+            blockoBlock.save();
+        }
+    }
+
+
 
     /**
      * Výběr nastavení Logbacku podle Server.developerMode

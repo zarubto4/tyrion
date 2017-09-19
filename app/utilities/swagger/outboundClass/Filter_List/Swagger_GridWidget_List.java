@@ -51,6 +51,7 @@ public class Swagger_GridWidget_List {
             help.edit_permission    = gridWidget.edit_permission();
             help.update_permission  = gridWidget.update_permission();
 
+
             this.content.add(help);
         }
 

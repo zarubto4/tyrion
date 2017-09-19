@@ -9,4 +9,7 @@ public class Swagger_Blocko_Block_Filter {
 
     @ApiModelProperty(required = false, value = "Include only if you want to get Blocks of given project")
     public String project_id;
+
+    @ApiModelProperty(required = false, value = "Only for Admins with permissions")
+    public  boolean pending_blocks;
 }

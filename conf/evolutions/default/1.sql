@@ -46,7 +46,7 @@ create table BProgramHwGroup (
 ;
 
 create table BlockoBlock (
-  id                        varchar(255) not null,
+  id                        varchar(40) not null,
   name                      varchar(255),
   description               TEXT,
   author_id                 varchar(255),
@@ -54,8 +54,9 @@ create table BlockoBlock (
   producer_id               varchar(40),
   order_position            integer,
   removed_by_user           boolean,
-  block_type                varchar(7),
-  constraint ck_BlockoBlock_block_type check (block_type in ('DEFAULT')),
+  publish_type              varchar(20),
+  active                    boolean,
+  constraint ck_BlockoBlock_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_version','default_test_program')),
   constraint pk_BlockoBlock primary key (id))
 ;
 
@@ -68,7 +69,7 @@ create table BlockoBlockVersion (
   date_of_create            timestamp,
   design_json               TEXT,
   logic_json                TEXT,
-  blocko_block_id           varchar(255),
+  blocko_block_id           varchar(40),
   removed_by_user           boolean,
   constraint ck_BlockoBlockVersion_approval_state check (approval_state in ('approved','edited','pending','disapproved')),
   constraint pk_BlockoBlockVersion primary key (id))
@@ -149,7 +150,7 @@ create table CProgram (
   type_of_board_test_id     varchar(255),
   example_library_id        varchar(255),
   azure_c_program_link      varchar(255),
-  constraint ck_CProgram_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_test_program')),
+  constraint ck_CProgram_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_version','default_test_program')),
   constraint uq_CProgram_type_of_board_defaul unique (type_of_board_default_id),
   constraint uq_CProgram_type_of_board_test_i unique (type_of_board_test_id),
   constraint pk_CProgram primary key (id))
@@ -279,8 +280,9 @@ create table GridWidget (
   author_id                 varchar(255),
   type_of_widget_id         varchar(255),
   producer_id               varchar(40),
-  block_type                varchar(7),
-  constraint ck_GridWidget_block_type check (block_type in ('DEFAULT')),
+  publish_type              varchar(20),
+  active                    boolean,
+  constraint ck_GridWidget_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_version','default_test_program')),
   constraint pk_GridWidget primary key (id))
 ;
 
@@ -291,11 +293,13 @@ create table GridWidgetVersion (
   design_json               TEXT,
   logic_json                TEXT,
   approval_state            varchar(11),
+  publish_type              varchar(20),
   removed_by_user           boolean,
-  date_of_create            timestamp,
   author_id                 varchar(255),
+  date_of_create            timestamp,
   grid_widget_id            varchar(40),
   constraint ck_GridWidgetVersion_approval_state check (approval_state in ('approved','edited','pending','disapproved')),
+  constraint ck_GridWidgetVersion_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_version','default_test_program')),
   constraint pk_GridWidgetVersion primary key (id))
 ;
 
@@ -404,7 +408,7 @@ create table Library (
   date_of_create            timestamp,
   publish_type              varchar(20),
   azure_library_link        varchar(255),
-  constraint ck_Library_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_test_program')),
+  constraint ck_Library_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_version','default_test_program')),
   constraint pk_Library primary key (id))
 ;
 
@@ -667,6 +671,9 @@ create table TypeOfBlock (
   project_id                varchar(255),
   order_position            integer,
   removed_by_user           boolean,
+  active                    boolean,
+  publish_type              varchar(20),
+  constraint ck_TypeOfBlock_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_version','default_test_program')),
   constraint pk_TypeOfBlock primary key (id))
 ;
 
@@ -720,6 +727,9 @@ create table TypeOfWidget (
   project_id                varchar(255),
   order_position            integer,
   removed_by_user           boolean,
+  publish_type              varchar(20),
+  active                    boolean,
+  constraint ck_TypeOfWidget_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_version','default_test_program')),
   constraint pk_TypeOfWidget primary key (id))
 ;
 

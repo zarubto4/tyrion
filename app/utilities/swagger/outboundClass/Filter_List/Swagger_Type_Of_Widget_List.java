@@ -42,7 +42,6 @@ public class Swagger_Type_Of_Widget_List {
         List<Model_TypeOfWidget> typeOfWidgets =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
 
         for(Model_TypeOfWidget typeOfWidget : typeOfWidgets){
-
             this.content.add(typeOfWidget.get_typeOfWidget_short_detail());
         }
 

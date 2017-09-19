@@ -120,8 +120,8 @@ public class Model_HomerServer extends Model{
         this.time_stamp_configuration = new Date();
 
         // TODO - ADD SSH public KEY from USER
-        hash_certificate = UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString();
-        connection_identificator = UUID. randomUUID().toString() + "-" + UUID. randomUUID().toString() ;
+        if(hash_certificate == null) hash_certificate = UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString();
+        if(connection_identificator == null) connection_identificator = UUID. randomUUID().toString() + "-" + UUID. randomUUID().toString() ;
         date_of_create = new Date();
 
         super.save();

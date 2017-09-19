@@ -416,7 +416,7 @@ public class Grid extends TestHelper {
         Model_GridWidgetVersion v = grid_widget_version_create(grid_widget);
 
         WSResponse response = Play.current().injector().instanceOf(WSClient.class)
-                .url(Server.tyrion_serverAddress + routes.Controller_Grid.gridWidgetVersion_makePublic(v.id).toString())
+                .url(Server.tyrion_serverAddress + routes.Controller_Grid.gridWidgetVersion_version_make_public(v.id).toString())
                 .setHeader("X-AUTH-TOKEN", userToken)
                 .put("")
                 .get(5000);

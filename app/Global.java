@@ -35,41 +35,45 @@ public class Global extends GlobalSettings {
             Thread.sleep(2000);
             Server.setLogback();
 
-            // Set Logs
+            //2 Set Logs
             System.out.println(Enum_Terminal_Color.ANSI_YELLOW + "onStart: 2) Setting Logger for Tyrion" + Enum_Terminal_Color.ANSI_RESET);
             Server_Logger.set_Logger();
 
-            //2
+            //3
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 3) Setting global values" + Enum_Terminal_Color.ANSI_RESET);
             Server.setServerValues();
 
-            //3
+            //4
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 4) Setting system Permission" + Enum_Terminal_Color.ANSI_RESET);
             Server.setPermission();
 
-            //4
+            //5
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 5) Setting Directory for Files" + Enum_Terminal_Color.ANSI_RESET);
             Server.setDirectory();
 
-            //5
+            //6
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 6) Starting threads" + Enum_Terminal_Color.ANSI_RESET);
             Server.startThreads();
 
-            //6
+            //7
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 7) Starting all scheduler threads" + Enum_Terminal_Color.ANSI_RESET);
             Server.startSchedulingProcedures();
 
-            //7
+            //8
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 8) Initializing the cache layer" + Enum_Terminal_Color.ANSI_RESET);
             Server.initCache();
 
-            //8
+            //9
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 9) Initializing the NO SQL Database" + Enum_Terminal_Color.ANSI_RESET);
             DocumentDB.set_no_SQL_collection();
 
-            //9
+            //10
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 10) Creating Administrator" + Enum_Terminal_Color.ANSI_RESET);
             Server.setAdministrator();
+
+            //11
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 11) Creating Default Block and Widget Object" + Enum_Terminal_Color.ANSI_RESET);
+            Server.setWidgetAnDBlock();
 
             if (Server.server_mode != Enum_Tyrion_Server_mode.developer) Slack.post("Tyrion server in Mode " + Server.server_mode.name() + " version: " + Server.server_version + " started on " + new Date().toString() + ".");
 

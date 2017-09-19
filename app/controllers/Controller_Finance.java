@@ -205,7 +205,7 @@ public class Controller_Finance extends Controller {
 
             tariff.update();
 
-            return GlobalResult.result_ok(Json.toJson(tariff));
+            return GlobalResult.result_ok();
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
@@ -241,7 +241,7 @@ public class Controller_Finance extends Controller {
 
             tariff.update();
 
-            return GlobalResult.result_ok(Json.toJson(tariff));
+            return GlobalResult.result_ok();
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());

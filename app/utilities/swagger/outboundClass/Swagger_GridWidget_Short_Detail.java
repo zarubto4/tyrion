@@ -1,5 +1,6 @@
 package utilities.swagger.outboundClass;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -21,6 +22,9 @@ public class Swagger_GridWidget_Short_Detail {
 
     @ApiModelProperty(required = true, readOnly = true)
     public List<Swagger_GridWidgetVersion_Short_Detail> versions = new ArrayList<>();
+
+    @ApiModelProperty(required = true, readOnly = true) @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Boolean active;
 
     @ApiModelProperty(required = true, readOnly = true)
     public boolean edit_permission;

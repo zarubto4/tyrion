@@ -10,6 +10,7 @@ import play.libs.Json;
 import play.mvc.*;
 import utilities.emails.Email;
 import utilities.enums.Enum_Approval_state;
+import utilities.enums.Enum_Publishing_type;
 import utilities.errors.Exceptions.Tyrion_Exp_ForbidenPermission;
 import utilities.errors.Exceptions.Tyrion_Exp_ObjectNotValidAnymore;
 import utilities.errors.Exceptions.Tyrion_Exp_Unauthorized;
@@ -975,9 +976,14 @@ public class Controller_Grid extends Controller {
                 Model_Project project = Model_Project.get_byId(help.project_id);
                 if(project == null) return GlobalResult.result_notFound("Project project_id not found");
                 if(! project.update_permission()) return GlobalResult.result_forbidden();
+                typeOfWidget.publish_type = Enum_Publishing_type.private_program;
 
                 // Úprava objektu
                 typeOfWidget.project = project;
+                project.cache_list_type_of_widgets_ids.clear();
+
+            }else {
+                typeOfWidget.publish_type = Enum_Publishing_type.public_program;
 
             }
 
@@ -1227,17 +1233,26 @@ public class Controller_Grid extends Controller {
             // Získání všech objektů a následné odfiltrování soukormých TypeOfWidget
             Query<Model_TypeOfWidget> query = Ebean.find(Model_TypeOfWidget.class);
 
-            if(help.private_type){
-                query.where().eq("project.participants.person.id", Controller_Security.get_person().id);
-            }else{
-                query.where().eq("project", null);
-            }
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if(help.project_id != null){
-
                 query.where().eq("project.id", help.project_id);
             }
+
+            if(help.public_programs){
+                query.where().isNull("project").eq("removed_by_user", false).eq("publish_type", Enum_Publishing_type.public_program.name());
+            }
+
+            /*
+                if(help.pending_programs){
+                    if(!Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name())) return GlobalResult.result_forbidden();
+                    query.where().eq("version_objects.approval_state", Enum_Approval_state.pending.name());
+                }
+            */
+
+            // Order
+            query.order().asc("order_position");
+
 
             // Vytvoření odchozího JSON
             Swagger_Type_Of_Widget_List result = new Swagger_Type_Of_Widget_List(query, page_number);
@@ -1251,6 +1266,83 @@ public class Controller_Grid extends Controller {
         }
     }
 
+    @ApiOperation(value = "deactivate Type_Of_Widget",
+            tags = {"Admin-Type-of-Widget"},
+            notes = "deactivate Type of Widget",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result typeOfWidget_deactivate(String type_of_widget_id){
+        try {
+
+            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(type_of_widget_id);
+            if(typeOfWidget == null) return GlobalResult.result_notFound("TypeOfWidget type_of_widget_id not found");
+
+            // Kontrola oprávnění
+            if (! typeOfWidget.edit_permission() ) return GlobalResult.result_forbidden();
+
+
+            if (!typeOfWidget.active) return GlobalResult.result_badRequest("Tariff is already deactivated");
+
+            if(!typeOfWidget.update_permission()) return GlobalResult.result_forbidden();
+
+            typeOfWidget.active = false;
+
+            typeOfWidget.update();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "activate Type_Of_Widget",
+            tags = {"Admin-Type-of-Widget"},
+            notes = "activate Type of Widget",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result typeOfWidget_activate(String type_of_widget_id){
+        try {
+
+            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(type_of_widget_id);
+            if(typeOfWidget == null) return GlobalResult.result_notFound("TypeOfWidget type_of_widget_id not found");
+
+            if (typeOfWidget.active) return GlobalResult.result_badRequest("Tariff is already activated");
+
+            if(!typeOfWidget.update_permission()) return GlobalResult.result_forbidden();
+
+            typeOfWidget.active = true;
+
+            typeOfWidget.update();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
 
     @ApiOperation(value = "order Type_Of_Widget Up",
             tags = {"Type-of-Widget"},
@@ -1379,6 +1471,7 @@ public class Controller_Grid extends Controller {
             gridWidget.name                = help.name;
             gridWidget.author              = Controller_Security.get_person();
             gridWidget.type_of_widget      = typeOfWidget;
+            gridWidget.publish_type        = Enum_Publishing_type.private_program;
 
             // Kontrola oprávnění těsně před uložením
             if (!gridWidget.create_permission() ) return GlobalResult.result_forbidden();
@@ -1386,8 +1479,11 @@ public class Controller_Grid extends Controller {
             // Uložení objektu
             gridWidget.save();
 
+            gridWidget.refresh();
+            typeOfWidget.grid_widgets_ids.add(0, gridWidget.id.toString());
+
             // Získání šablony
-            Model_GridWidgetVersion scheme = Model_GridWidgetVersion.get_scheme();
+            Model_GridWidgetVersion scheme = Model_GridWidgetVersion.find.where().eq("publish_type", Enum_Publishing_type.default_version.name()).findUnique();
 
             // Kontrola objektu
             if(scheme == null) return GlobalResult.result_created( Json.toJson(gridWidget) );
@@ -1556,6 +1652,7 @@ public class Controller_Grid extends Controller {
             if(gridWidget == null) return GlobalResult.result_notFound("GridWidget grid_widget_id not found");
 
             // Kontrola oprávnění
+
             if (! gridWidget.read_permission() ) return GlobalResult.result_forbidden();
 
             // Vrácení objektu
@@ -1606,12 +1703,19 @@ public class Controller_Grid extends Controller {
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_GridWidget> query = Ebean.find(Model_GridWidget.class);
-            query.where().eq("author.id", Controller_Security.get_person().id);
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if(help.project_id != null){
 
+                Model_Project project = Model_Project.get_byId(help.project_id);
+                if(project == null )return GlobalResult.result_notFound("Project not found");
+                if(!project.read_permission())return GlobalResult.result_forbidden();
+
                 query.where().eq("type_of_widget.project.id", help.project_id);
+            }
+
+            if(help.pending_widget){
+                query.where().eq("grid_widget_versions.approval_state", Enum_Approval_state.pending.name()).eq("grid_widget_versions.removed_by_user", false);
             }
 
             // Vytvoření odchozího JSON
@@ -1668,6 +1772,111 @@ public class Controller_Grid extends Controller {
         }
     }
 
+    @ApiOperation(value = "make_Clone Grid_Widget",
+            tags = {"Grid_Widget"},
+            notes = "clone Grid_Widget for private",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Grid_Widget_Copy",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_GridWidget.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result gridWidget_clone() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Grid_Widget_Copy> form = Form.form(Swagger_Grid_Widget_Copy.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_Grid_Widget_Copy help = form.get();
+
+            // Vyhledám Objekt
+            Model_GridWidget grid_widget_old = Model_GridWidget.get_byId(help.grid_widget_id);
+            if(grid_widget_old == null) return GlobalResult.result_notFound("Model_GridWidget grid_widget_id not found");
+
+            // Zkontroluji oprávnění
+            if(!grid_widget_old.read_permission())  return GlobalResult.result_forbidden();
+
+            // Vyhledám Objekt
+            Model_Project project = Model_Project.get_byId(help.project_id);
+            if (project == null) return GlobalResult.result_notFound("Project project_id not found");
+
+            // Zkontroluji oprávnění
+            if(!project.update_permission())  return GlobalResult.result_forbidden();
+
+
+            // Kontrola objektu
+            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(help.type_of_widget_id);
+            if(typeOfWidget != null) {
+                if (!Model_Project.get_byId(typeOfWidget.project_id()).update_permission()) {
+                    return GlobalResult.result_forbidden();
+                }
+            }
+
+            if(typeOfWidget == null) {
+                typeOfWidget = new Model_TypeOfWidget();
+                typeOfWidget.description = "Yea! My First Widget Group with Community Widget";
+                typeOfWidget.name        = "Private Widget Group";
+                typeOfWidget.project     = project;
+                typeOfWidget.save();
+
+                typeOfWidget.refresh();
+            }
+
+
+            Model_GridWidget grid_widget_new =  new Model_GridWidget();
+            grid_widget_new.name = help.name;
+            grid_widget_new.description = help.description;
+            grid_widget_new.type_of_widget = typeOfWidget;
+            grid_widget_new.save();
+
+            grid_widget_new.refresh();
+
+
+            for(Model_GridWidgetVersion version : grid_widget_old.get_grid_widget_versions()){
+
+                Model_GridWidgetVersion copy_object = new Model_GridWidgetVersion();
+                copy_object.version_name        = version.version_name;
+                copy_object.date_of_create      = version.date_of_create;
+                copy_object.version_description = version.version_description;
+                copy_object.date_of_create      = new Date();
+                copy_object.author              = version.author;
+                copy_object.design_json         = version.design_json;
+                copy_object.logic_json          = version.logic_json;
+                copy_object.grid_widget         = grid_widget_new;
+
+                // Zkontroluji oprávnění
+                copy_object.save();
+
+            }
+
+            grid_widget_new.refresh();
+
+            // Vracím Objekt
+            return GlobalResult.result_ok(Json.toJson(grid_widget_new));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
     @ApiOperation(value = "delete Grid_Widget_Version",
             tags = {"Grid-Widget"},
             notes = "delete GridWidget version",
@@ -1699,6 +1908,9 @@ public class Controller_Grid extends Controller {
             // Kontrola oprávnění
             if (! version.delete_permission()) return GlobalResult.result_forbidden();
 
+            version.grid_widget.cache_value_grid_versions_id.clear();
+            Model_GridWidget.cache.put(version.grid_widget.id.toString(), version.grid_widget);
+
             // Smazání objektu
             version.delete();
 
@@ -1706,6 +1918,122 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "set_As_Main Grid_Widget_Version",
+            tags = {"Admin-Grid-Widget"},
+            notes = "delete GridWidget version",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "GridWidgetVersion.delete_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "GridWidgetVersion_delete_permission")
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result gridWidgetVersion_set_main(String grid_widget_version_id){
+        try {
+
+            // Kontrola objektu
+            Model_GridWidgetVersion version = Model_GridWidgetVersion.get_byId(grid_widget_version_id);
+            if(version == null) return GlobalResult.result_notFound("GridWidgetVersion grid_widget_version_id not found");
+
+            // Kontrola oprávnění
+            if (!version.edit_permission()) return GlobalResult.result_forbidden();
+
+            if(!version.get_grid_widget_id().equals("00000000-0000-0000-0000-000000000001")){
+                return GlobalResult.result_notFound("GridWidgetVersion grid_widget_version_id not from default program");
+            }
+
+            Model_GridWidgetVersion old_version = Model_GridWidgetVersion.find.where().eq("publish_type", Enum_Publishing_type.default_version.name()).select("id").findUnique();
+            if(old_version != null) {
+                old_version = Model_GridWidgetVersion.get_byId(old_version.id);
+                old_version.publish_type = null;
+                old_version.update();
+                Model_GridWidgetVersion.cache.put(old_version.id, old_version);
+            }
+
+            version.publish_type = Enum_Publishing_type.default_version;
+            version.update();
+
+            Model_GridWidgetVersion.cache.put(version.id, version);
+
+            // Vrácení potvrzení
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "make Grid_Widget_Version public",
+            tags = {"C_Program"},
+            notes = "Make C_Program public, so other users can see it and use it. Attention! Attention! Attention! A user can publish only three programs at the stage waiting for approval.",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200,
+            extensions = {
+                    @Extension(name = "permission_required", properties = {
+                            @ExtensionProperty(name = "C_Program.edit_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value = "C_Program_edit"),
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Bad Request",               response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result gridWidgetVersion_version_make_public(String grid_widget_version_id){
+        try {
+
+            System.out.println("gridWidgetVersion_version_make_public .... ");
+            // Kontrola objektu
+            Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.get_byId(grid_widget_version_id);
+            if(gridWidgetVersion == null) return GlobalResult.result_notFound("GridWidgetVersion grid_widget_version_id not found");
+
+            // Kontrola orávnění
+            if(!(gridWidgetVersion.read_permission())) return GlobalResult.result_forbidden();
+
+            if(Model_GridWidgetVersion.find.where().eq("approval_state", Enum_Approval_state.pending.name())
+                    .eq("author.id", Controller_Security.get_person_id())
+                    .findList().size() > 3) {
+                // TODO Notifikace uživatelovi
+                return GlobalResult.result_badRequest("You can publish only 3 programs. Wait until the previous ones approved by the administrator. Thanks.");
+            }
+
+            if(gridWidgetVersion.approval_state != null)  return GlobalResult.result_badRequest("You cannot publish same program twice!");
+
+            // Úprava objektu
+            gridWidgetVersion.approval_state = Enum_Approval_state.pending;
+
+            // Kontrola oprávnění
+            if(!(gridWidgetVersion.edit_permission())) return GlobalResult.result_forbidden();
+
+            // Uložení změn
+            gridWidgetVersion.update();
+
+            // Vrácení potvrzení
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -1778,6 +2106,11 @@ public class Controller_Grid extends Controller {
             // Uložení objektu
             version.save();
 
+            version.refresh();
+
+            gridWidget.cache_value_grid_versions_id.clear();
+            Model_GridWidget.cache.put(gridWidget.id.toString(), gridWidget);
+
             // Vrácení objektu
             return GlobalResult.result_created(Json.toJson(gridWidget));
 
@@ -1823,21 +2156,24 @@ public class Controller_Grid extends Controller {
     public Result gridWidgetVersion_edit(@ApiParam(value = "grid_widget_version_id String path",   required = true) String grid_widget_version_id){
         try {
 
+            System.out.println("gridWidgetVersion_edit .... ");
             // Zpracování Json
             final Form<Swagger_GridWidgetVersion_Edit> form = Form.form(Swagger_GridWidgetVersion_Edit.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_GridWidgetVersion_Edit help = form.get();
 
-            // Kontrola názvu
-            if(help.version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
-
             // Kontrola objektu
             Model_GridWidgetVersion version = Model_GridWidgetVersion.get_byId(grid_widget_version_id);
-            if(version == null) return GlobalResult.result_notFound("grid_widget_version_id not found");
+            if(version == null) {
+                return GlobalResult.result_notFound("grid_widget_version_id not found");
+            }
+
+            System.out.println("Co je tohle za verzi??  " + version.version_name );
 
             // Úprava objektu
             version.version_name = help.version_name;
             version.version_description = help.version_description;
+
 
             // Uložení objektu
             version.update();
@@ -1903,50 +2239,78 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    @ApiOperation(value = "edit Grid_Widget_Version ask for publication",
-            tags = {"Grid-Widget"},
-            notes = "sets Approval_state to pending",
+    @ApiOperation(value = "deactivate Grid_Widget",
+            tags = {"Admin-Grid-Widget"},
+            notes = "deactivate Widget",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "GridWidgetVersion_edit_permission", value = "If user has GridWidget.update_permission"),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "GridWidgetVersion.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "GridWidgetVersion_edit_permission")
-                    })
-            }
+            code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_GridWidgetVersion.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Secured_API.class)
-    public Result gridWidgetVersion_makePublic(@ApiParam(value = "grid_widget_version_id String path",   required = true) String grid_widget_version_id){
-        try{
+    public Result gridWidget_deactivate(String grid_widget_id){
+        try {
 
-            // Kontrola objektu
-            Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.get_byId(grid_widget_version_id);
-            if(gridWidgetVersion == null) return GlobalResult.result_notFound("GridWidgetVersion grid_widget_version_id not found");
+            Model_GridWidget gridWidget = Model_GridWidget.get_byId(grid_widget_id);
+            if(gridWidget == null) return GlobalResult.result_notFound("GridWidget not found");
 
-            // Kontrola orávnění
-            if(!(gridWidgetVersion.edit_permission())) return GlobalResult.result_forbidden();
+            // Kontrola oprávnění
+            if (! gridWidget.update_permission() ) return GlobalResult.result_forbidden();
 
-            // Úprava objektu
-            gridWidgetVersion.approval_state = Enum_Approval_state.pending;
+            if (!gridWidget.active) return GlobalResult.result_badRequest("Tariff is already deactivated");
 
-            // Uložení změn
-            gridWidgetVersion.update();
 
-            // Vrácení výsledku
-            return GlobalResult.result_ok(Json.toJson(gridWidgetVersion));
+            gridWidget.active = false;
 
-        }catch (Exception e) {
+            gridWidget.update();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "activate Grid_Widget",
+            tags = {"Admin-Grid-Widget"},
+            notes = "activate Widget",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result gridWidget_activate(String grid_widget_id){
+        try {
+
+            Model_GridWidget gridWidget = Model_GridWidget.get_byId(grid_widget_id);
+            if(gridWidget == null) return GlobalResult.result_notFound("GridWidget not found");
+
+            if(!gridWidget.update_permission()) return GlobalResult.result_forbidden();
+
+            if (gridWidget.active) return GlobalResult.result_badRequest("Tariff is already activated");
+
+            gridWidget.active = true;
+
+            gridWidget.update();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -2019,7 +2383,7 @@ public class Controller_Grid extends Controller {
 
 // GRID ADMIN ##########################################################################################################
 
-    @ApiOperation(value = "edit Grid_Widget_Version Response publication ",
+    @ApiOperation(value = "edit Grid_Widget_Version Response publication",
             tags = {"Admin-Grid-Widget"},
             notes = "sets Approval_state to pending",
             produces = "application/json",
@@ -2038,12 +2402,14 @@ public class Controller_Grid extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_GridWidgetVersion.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
+    @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_API.class)
     public Result grid_widget_public_response() {
 
         try {
@@ -2054,57 +2420,66 @@ public class Controller_Grid extends Controller {
             Swagger_GridWidget_Publish_Response help = form.get();
 
             // Kontrola názvu
-            if(help.grid_widget_version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
+            if(help.version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_GridWidgetVersion privateGridWidgetVersion = Model_GridWidgetVersion.get_byId(help.object_id);
+            Model_GridWidgetVersion privateGridWidgetVersion = Model_GridWidgetVersion.get_byId(help.version_id);
             if (privateGridWidgetVersion == null) return GlobalResult.result_notFound("grid_widget_version not found");
 
-            // Kontrola objektu
-            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.get_byId(help.grid_widget_type_of_widget_id);
-            if (typeOfWidget == null) return GlobalResult.result_notFound("type_of_widget not found");
+            // Kontrola nadřazeného objektu
+            Model_GridWidget widget_old = Model_GridWidget.get_byId(privateGridWidgetVersion.grid_widget.id.toString());
+
+            // Zkontroluji oprávnění
+            if(!widget_old.community_publishing_permission()){
+                return GlobalResult.result_forbidden();
+            }
+
 
             if(help.decision) {
-                // Vytvoření objektu
-                Model_GridWidget gridWidget = new Model_GridWidget();
-                gridWidget.name = help.grid_widget_name;
-                gridWidget.description = help.grid_widget_description;
-                gridWidget.type_of_widget = typeOfWidget;
-                gridWidget.author = privateGridWidgetVersion.grid_widget.author;
-                gridWidget.save();
+
+                // Kontrola skupiny kam se widget zařadí
+                Model_TypeOfWidget typeOfWidget_public = Model_TypeOfWidget.find.byId(help.grid_widget_type_of_widget_id);
+                if (typeOfWidget_public == null) {
+                    return GlobalResult.result_notFound("Model_TypeOfWidget not found");
+                }
+
+                if (typeOfWidget_public.publish_type != Enum_Publishing_type.public_program) {
+                    return GlobalResult.result_badRequest("You cannot register Widget to non-public group");
+                }
+
+                System.out.println("help.decision je true!!!");
+
+                privateGridWidgetVersion.approval_state = Enum_Approval_state.approved;
+                privateGridWidgetVersion.update();
+
+                Model_GridWidget gridWidget = Model_GridWidget.find.where().eq("id",widget_old.id.toString() + "_public_copy").findUnique();
+
+                if(gridWidget == null) {
+                    // Vytvoření objektu
+                    gridWidget = new Model_GridWidget();
+                    gridWidget.name = help.program_name;
+                    gridWidget.description = help.program_description;
+                    gridWidget.type_of_widget = typeOfWidget_public;
+                    gridWidget.author = privateGridWidgetVersion.grid_widget.author;
+                    gridWidget.publish_type = Enum_Publishing_type.public_program;
+                    gridWidget.save();
+                }
 
                 // Vytvoření objektu
                 Model_GridWidgetVersion gridWidgetVersion = new Model_GridWidgetVersion();
-                gridWidgetVersion.version_name = help.grid_widget_version_name;
-                gridWidgetVersion.version_description = help.grid_widget_version_description;
-                gridWidgetVersion.design_json = help.grid_widget_design_json;
-                gridWidgetVersion.logic_json = help.grid_widget_logic_json;
+                gridWidgetVersion.version_name = help.version_name;
+                gridWidgetVersion.version_description = help.version_description;
+                gridWidgetVersion.design_json = privateGridWidgetVersion.design_json;
+                gridWidgetVersion.logic_json = privateGridWidgetVersion.logic_json;
                 gridWidgetVersion.approval_state = Enum_Approval_state.approved;
                 gridWidgetVersion.grid_widget = gridWidget;
                 gridWidgetVersion.date_of_create = new Date();
                 gridWidgetVersion.save();
 
-                // Pokud jde o schválení po ediatci
-                if (help.state.equals("edit")) {
-                    privateGridWidgetVersion.approval_state = Enum_Approval_state.edited;
+                gridWidget.refresh();
 
-                    // Odeslání emailu
-                    try {
+                // TODO notifikace a emaily
 
-                        new Email()
-                                .text("Version of Widget " + gridWidgetVersion.grid_widget.name + ": " + Email.bold(gridWidgetVersion.version_name) + " was edited before publishing for this reason: ")
-                                .text(help.reason)
-                                .send(gridWidgetVersion.grid_widget.author.mail, "Version of Widget edited");
-
-                    } catch (Exception e) {
-                        terminal_logger.internalServerError("grid_widget_public_Approval:", e);
-                    }
-                } else privateGridWidgetVersion.approval_state = Enum_Approval_state.approved;
-
-                // Uložení úprav
-                privateGridWidgetVersion.update();
-
-                // Vrácení výsledku
                 return GlobalResult.result_ok();
 
             }else {
@@ -2135,83 +2510,4 @@ public class Controller_Grid extends Controller {
         }
     }
 
-    /**
-    @ApiOperation(value = "", hidden = true)
-    public Result gridWidgetVersion_editScheme(){
-
-        try {
-
-            // Získání JSON
-            final Form<Swagger_GridWidgetVersion_Scheme_Edit> form = Form.form(Swagger_GridWidgetVersion_Scheme_Edit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_GridWidgetVersion_Scheme_Edit help = form.get();
-
-            // Kontrola objektu
-            Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.get_scheme();
-            if (gridWidgetVersion == null) return GlobalResult.result_notFound("Scheme not found");
-
-            // Úprava objektu
-            gridWidgetVersion.design_json = help.design_json;
-            gridWidgetVersion.logic_json = help.logic_json;
-
-            // Uložení změn
-            gridWidgetVersion.update();
-
-            // Vrácení výsledku
-            return GlobalResult.result_ok();
-        }catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "", hidden = true)
-    public Result gridWidgetVersion_getScheme(){
-
-        try {
-
-            // Kontrola objektu
-            Model_GridWidgetVersion gridWidgetVersion = Model_GridWidgetVersion.get_scheme();
-            if (gridWidgetVersion == null) return GlobalResult.result_notFound("Scheme not found");
-
-            // Vytvoření výsledku
-            Swagger_GridWidgetVersion_scheme result = new Swagger_GridWidgetVersion_scheme();
-            result.design_json = gridWidgetVersion.design_json;
-            result.logic_json = gridWidgetVersion.logic_json;
-
-            // Vrácení výsledku
-            return GlobalResult.result_ok(Json.toJson(result));
-        }catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "", hidden = true)
-    public Result gridWidgetVersion_createScheme(){
-
-        try {
-
-            Model_GridWidgetVersion scheme = Model_GridWidgetVersion.get_scheme();
-            if (scheme != null) return GlobalResult.result_badRequest("Scheme already exists.");
-
-            // Získání JSON
-            final Form<Swagger_GridWidgetVersion_Scheme_Edit> form = Form.form(Swagger_GridWidgetVersion_Scheme_Edit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_GridWidgetVersion_Scheme_Edit help = form.get();
-
-            // Úprava objektu
-            scheme = new Model_GridWidgetVersion();
-            scheme.version_name = "version_scheme";
-            scheme.design_json = help.design_json;
-            scheme.logic_json = help.logic_json;
-
-            // Uložení změn
-            scheme.save();
-
-            // Vrácení výsledku
-            return GlobalResult.result_ok();
-        }catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-    **/
 }

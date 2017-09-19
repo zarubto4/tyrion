@@ -1,5 +1,6 @@
 package utilities.swagger.outboundClass;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -20,7 +21,13 @@ public class Swagger_TypeOfBlock_Short_Detail {
     public String description;
 
     @ApiModelProperty(required = true, readOnly = true)
+    public Integer order_position;
+
+    @ApiModelProperty(required = true, readOnly = true)
     public List<Swagger_Blocko_Block_Short_Detail> blocko_blocks = new ArrayList<>();
+
+    @ApiModelProperty(required = false, readOnly = true, value = "Visible only for administrator with permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Boolean active;
 
     @ApiModelProperty(required = true, readOnly = true)
     public boolean edit_permission;

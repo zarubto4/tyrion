@@ -273,13 +273,13 @@ public class BlockoTest extends TestHelper{
     public void get_blocko_block() {
 
         WSResponse response = Play.current().injector().instanceOf(WSClient.class)
-                .url(Server.tyrion_serverAddress + routes.Controller_Blocko.blockoBlock_get(blocko_block.id).toString())
+                .url(Server.tyrion_serverAddress + routes.Controller_Blocko.blockoBlock_get(blocko_block.id.toString()).toString())
                 .setHeader("X-AUTH-TOKEN", userToken)
                 .get()
                 .get(5000);
 
         ObjectNode expected = Json.newObject();
-        expected.put("id", blocko_block.id);
+        expected.put("id", blocko_block.id.toString());
         expected.put("name", blocko_block.name);
         expected.put("description", blocko_block.description);
         expected.put("type_of_block_id", type_of_block.id);
@@ -322,13 +322,13 @@ public class BlockoTest extends TestHelper{
         body.put("type_of_block_id", type_of_block.id);
 
         WSResponse response = Play.current().injector().instanceOf(WSClient.class)
-                .url(Server.tyrion_serverAddress + routes.Controller_Blocko.blockoBlock_update(b.id).toString())
+                .url(Server.tyrion_serverAddress + routes.Controller_Blocko.blockoBlock_update(b.id.toString()).toString())
                 .setHeader("X-AUTH-TOKEN", userToken)
                 .put(body)
                 .get(5000);
 
         ObjectNode expected = Json.newObject();
-        expected.put("id", b.id);
+        expected.put("id", b.id.toString());
         expected.put("name", body.get("name").asText());
         expected.put("description", body.get("general_description").asText());
         expected.put("type_of_block_id", type_of_block.id);
@@ -349,7 +349,7 @@ public class BlockoTest extends TestHelper{
         Model_BlockoBlock b = blocko_block_create(type_of_block);
 
         WSResponse response = Play.current().injector().instanceOf(WSClient.class)
-                .url(Server.tyrion_serverAddress + routes.Controller_Blocko.blockoBlock_delete(b.id).toString())
+                .url(Server.tyrion_serverAddress + routes.Controller_Blocko.blockoBlock_delete(b.id.toString()).toString())
                 .setHeader("X-AUTH-TOKEN", userToken)
                 .delete()
                 .get(5000);
@@ -370,13 +370,13 @@ public class BlockoTest extends TestHelper{
         body.put("design_json", UUID.randomUUID().toString());
 
         WSResponse response = Play.current().injector().instanceOf(WSClient.class)
-                .url(Server.tyrion_serverAddress + routes.Controller_Blocko.blockoBlockVersion_create(blocko_block.id).toString())
+                .url(Server.tyrion_serverAddress + routes.Controller_Blocko.blockoBlockVersion_create(blocko_block.id.toString()).toString())
                 .setHeader("X-AUTH-TOKEN", userToken)
                 .post(body)
                 .get(5000);
 
         ObjectNode expected = Json.newObject();
-        expected.put("id", blocko_block.id);
+        expected.put("id", blocko_block.id.toString());
         expected.put("name", blocko_block.name);
         expected.put("description", blocko_block.description);
         expected.put("type_of_block_id", type_of_block.id);

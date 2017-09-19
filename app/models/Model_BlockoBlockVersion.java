@@ -2,6 +2,7 @@ package models;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
@@ -90,7 +91,7 @@ public class Model_BlockoBlockVersion extends Model {
 
         if(cache_value_blocko_block_id == null){
             Model_BlockoBlock blocko_block = Model_BlockoBlock.find.where().eq("blocko_versions.id", id).select("id").findUnique();
-            cache_value_blocko_block_id = blocko_block.id;
+            cache_value_blocko_block_id = blocko_block.id.toString();
         }
 
         return Model_BlockoBlock.get_byId(cache_value_blocko_block_id);
@@ -110,6 +111,11 @@ public class Model_BlockoBlockVersion extends Model {
             help.author = author();
             help.delete_permission = this.delete_permission();
             help.edit_permission = this.edit_permission();
+
+            if(approval_state != null){
+                help.publish_status = approval_state;
+                help.community_publishing_permission = this.community_publishing_permission();
+            }
 
             return help;
 
@@ -131,7 +137,7 @@ public class Model_BlockoBlockVersion extends Model {
         }
         super.save();
 
-        if(get_blocko_block().type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, get_blocko_block().get_type_of_block().project_id(), get_blocko_block().id))).start();
+        if(get_blocko_block().type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, get_blocko_block().get_type_of_block().project_id(), get_blocko_block().id.toString()))).start();
     }
 
     @JsonIgnore @Override public void update() {
@@ -150,7 +156,7 @@ public class Model_BlockoBlockVersion extends Model {
         removed_by_user = true;
         super.update();
 
-        if(get_blocko_block().type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, get_blocko_block().get_type_of_block().project_id(), get_blocko_block().id))).start();
+        if(get_blocko_block().type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, get_blocko_block().get_type_of_block().project_id(), get_blocko_block().id.toString()))).start();
     }
 
 
@@ -171,7 +177,7 @@ public class Model_BlockoBlockVersion extends Model {
     @JsonProperty @ApiModelProperty(required = true) public boolean read_permission()    {  return  get_blocko_block().read_permission()   ||  Controller_Security.get_person().has_permission("BlockoBlock_read");   }
     @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()    {  return  get_blocko_block().update_permission() ||  Controller_Security.get_person().has_permission("BlockoBlock_edit");   }
     @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission()  {  return  get_blocko_block().update_permission() ||  Controller_Security.get_person().has_permission("BlockoBlock_delete"); }
-
+    @JsonProperty @Transient  @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  { return Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name());}
     public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/

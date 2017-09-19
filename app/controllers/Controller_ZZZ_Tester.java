@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiOperation;
 import models.*;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utilities.demo_data.Utilities_Demo_data_Controller;
+import utilities.enums.Enum_Publishing_type;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_12_mm;
 import utilities.lablel_printer_service.printNodeModels.PrinterOption;
@@ -28,12 +30,20 @@ public class Controller_ZZZ_Tester extends Controller {
      public Result test1(){
          try {
 
-             String id = request().body().asJson().get("id").asText();
-             if (id == null) return badRequest("id is null");
+             // String id = request().body().asJson().get("id").asText();
+             // if (id == null) return badRequest("id is null");
 
-             Model_Product product = Model_Product.get_byId(id);
+            // Model_Product product = Model_Product.get_byId(id);
 
-             Job_SpendingCredit.spend(product);
+             // Job_SpendingCredit.spend(product);
+
+             Model_GridWidget gridWidget = new Model_GridWidget();
+             gridWidget.id                  = UUID.fromString("00000000-0000-0000-0000-000000000001");
+             gridWidget.description         = "Default Widget";
+             gridWidget.name                = "Default Widget";
+             gridWidget.type_of_widget      = null;
+             gridWidget.publish_type        = Enum_Publishing_type.default_main_program;
+             gridWidget.save();
 
              return ok("Credit was spent");
 
@@ -105,4 +115,5 @@ public class Controller_ZZZ_Tester extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
+
 }

@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.helps_objects.TyrionCachedList;
+import utilities.enums.Enum_Publishing_type;
 import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_GridWidget_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_TypeOfWidget_Short_Detail;
@@ -41,11 +42,14 @@ public class Model_TypeOfWidget extends Model{
 
 
     @JsonIgnore              public boolean removed_by_user;
+                             public Enum_Publishing_type publish_type;
+
+    @JsonIgnore public boolean active; // U veřejných Skupin administrátor zveřejňuje skupinu - může připravit něco do budoucna
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_project_id;
-    @JsonIgnore @Transient @TyrionCachedList private List<String> grid_widgets_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> grid_widgets_ids = new ArrayList<>();
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -54,14 +58,19 @@ public class Model_TypeOfWidget extends Model{
 
         if(cache_value_project_id == null){
             Model_Project project = Model_Project.find.where().eq("type_of_widgets.id", id).select("id").findUnique();
-            cache_value_project_id = project.id;
+
+            if(project == null) {
+                cache_value_project_id = "";    // Public group
+            }else {
+                cache_value_project_id = project.id;
+            }
         }
 
-        return cache_value_project_id;
+        return cache_value_project_id.equals("") ? null : cache_value_project_id;
     }
 
 
-    @JsonProperty @Transient public List<Swagger_GridWidget_Short_Detail> widgets() {
+    @JsonProperty @Transient public List<Swagger_GridWidget_Short_Detail> grid_widgets() {
 
         try {
 
@@ -117,7 +126,10 @@ public class Model_TypeOfWidget extends Model{
         help.id = id;
         help.name = name;
         help.description = description;
-        help.grid_widgets = widgets();
+        help.order_position = order_position;
+        help.grid_widgets = grid_widgets();
+        help.active = Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name()) ? active : null;
+        help.publish_type = publish_type;
         help.edit_permission = edit_permission();
         help.delete_permission = delete_permission();
         help.update_permission = update_permission();
@@ -146,7 +158,7 @@ public class Model_TypeOfWidget extends Model{
         super.save();
 
         if(project != null){
-            project.cache_list_type_of_widgets_ids.add(id);
+            project.cache_list_type_of_widgets_ids.add(0, id);
         }
 
         cache.put(id, this);

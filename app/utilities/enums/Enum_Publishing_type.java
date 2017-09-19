@@ -11,5 +11,5 @@ public enum Enum_Publishing_type {
     @EnumValue("public_program")        public_program,
     @EnumValue("default_main_program")  default_main_program,
     @EnumValue("default_test_program")  default_test_program,
-
+    @EnumValue("default_version")       default_version,
 }

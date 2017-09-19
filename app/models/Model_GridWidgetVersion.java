@@ -2,12 +2,15 @@ package models;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Approval_state;
+import utilities.enums.Enum_Publishing_type;
 import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_GridWidgetVersion_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
@@ -34,23 +37,33 @@ public class Model_GridWidgetVersion extends Model{
     @Column(columnDefinition = "TEXT") public String design_json;
     @Column(columnDefinition = "TEXT") public String logic_json;
 
-                                       public Enum_Approval_state approval_state;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only if user make request for publishing") public Enum_Approval_state approval_state;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only for main / default program - and access only for administrators") public Enum_Publishing_type publish_type;
 
-                           @JsonIgnore public boolean removed_by_user;
 
-    @ApiModelProperty(required = true,
-            dataType = "integer",
-            value = "UNIX time in ms",
-            example = "1466163478925") public Date date_of_create;
+    @JsonIgnore public boolean removed_by_user;
+    @JsonIgnore @ManyToOne public Model_Person author;
 
-                @JsonIgnore @ManyToOne public Model_Person author;
-                @JsonIgnore @ManyToOne public Model_GridWidget grid_widget;
+    @ApiModelProperty(required = true, dataType = "integer", value = "UNIX time in ms", example = "1466163478925") public Date date_of_create;
 
-/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_GridWidget grid_widget;
+
+
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_grid_widget_id;
+
+/* JSON PROPERTY VALUES -----------------------------a-------------------------------------------------------------------*/
 
     @JsonProperty
     public Swagger_Person_Short_Detail author(){
-        return this.author.get_short_person();
+        if(this.author != null) {
+            return this.author.get_short_person();
+        }else {
+            return null;
+        }
     }
     
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
@@ -66,10 +79,32 @@ public class Model_GridWidgetVersion extends Model{
         help.design_json = this.design_json;
         help.delete_permission = this.delete_permission();
         help.edit_permission = this.edit_permission();
-        help.author = this.author.get_short_person();
+        help.author = author();
+        help.publish_type = publish_type;
+
+        if(approval_state != null){
+            help.publish_status = approval_state;
+            help.community_publishing_permission = this.grid_widget.community_publishing_permission();
+        }
+
+
 
         return help;
     }
+
+
+    @JsonIgnore
+    public String get_grid_widget_id(){
+        if(cache_value_grid_widget_id == null){
+
+            Model_GridWidget widget = Model_GridWidget.find.where().eq("grid_widget_versions.id", id).select("id").findUnique();
+            cache_value_grid_widget_id = widget.id.toString();
+
+        }
+
+        return cache_value_grid_widget_id;
+    }
+
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -83,9 +118,15 @@ public class Model_GridWidgetVersion extends Model{
             if (Model_GridWidgetVersion.get_byId(this.id) == null) break;
         }
         super.save();
+
+
+        // Add to Cache
+        Model_GridWidget.get_byId(get_grid_widget_id()).cache_value_grid_versions_id.add(0, id);
     }
 
     @JsonIgnore @Override public void update() {
+
+        System.out.println("gridWidgetVersion_edit .... update() ");
 
         terminal_logger.debug("update :: Update object Id: {}",  this.id);
         super.update();
@@ -97,6 +138,9 @@ public class Model_GridWidgetVersion extends Model{
 
         this.removed_by_user =true;
         super.update();
+
+        // Add to Cache
+        Model_GridWidget.get_byId(get_grid_widget_id()).cache_value_grid_versions_id.remove(id);
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -128,6 +172,7 @@ public class Model_GridWidgetVersion extends Model{
     public static Model_GridWidgetVersion get_byId(String id) {
 
         Model_GridWidgetVersion grid_widget_version = cache.get(id);
+
         if (grid_widget_version == null){
 
             grid_widget_version = Model_GridWidgetVersion.find.byId(id);
@@ -139,15 +184,6 @@ public class Model_GridWidgetVersion extends Model{
         return grid_widget_version;
     }
 
-    @JsonIgnore
-    public static Model_GridWidgetVersion get_scheme() {
-        return find.where().eq("version_name", "version_scheme").findUnique();
-    }
-
-    @JsonIgnore
-    public static List<Model_GridWidgetVersion> get_pending() {
-        return find.where().eq("approval_state", Enum_Approval_state.pending).findList();
-    }
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 

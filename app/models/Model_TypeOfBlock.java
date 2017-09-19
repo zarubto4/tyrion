@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.helps_objects.TyrionCachedList;
+import utilities.enums.Enum_Publishing_type;
 import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_Blocko_Block_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_TypeOfBlock_Short_Detail;
@@ -40,7 +41,8 @@ public class Model_TypeOfBlock extends Model {
     @JsonIgnore @OneToMany(mappedBy="type_of_block", cascade=CascadeType.ALL, fetch = FetchType.LAZY) @ApiModelProperty(required = true) public List<Model_BlockoBlock> blocko_blocks = new ArrayList<>();
 
 
-
+    @JsonIgnore public boolean active; // U veřejných Skupin administrátor zveřejňuje skupinu - může připravit něco do budoucna
+    public Enum_Publishing_type publish_type;
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -54,10 +56,14 @@ public class Model_TypeOfBlock extends Model {
 
         if(cache_value_project_id == null){
             Model_Project project = Model_Project.find.where().eq("type_of_blocks.id", id).select("id").findUnique();
-            cache_value_project_id = project.id;
+            if(project == null) {
+                cache_value_project_id = "";    // Public group
+            }else {
+                cache_value_project_id = project.id;
+            }
         }
 
-        return cache_value_project_id;
+        return cache_value_project_id.equals("") ? null : cache_value_project_id;
     }
 
     @JsonProperty @Transient public List<Swagger_Blocko_Block_Short_Detail> blocks() {
@@ -90,7 +96,7 @@ public class Model_TypeOfBlock extends Model {
 
                 // Získání seznamu
                 for (Model_BlockoBlock blockoBlock : blockoBlocks) {
-                    blocko_block_ids.add(blockoBlock.id);
+                    blocko_block_ids.add(blockoBlock.id.toString());
                 }
             }
 
@@ -113,7 +119,9 @@ public class Model_TypeOfBlock extends Model {
         help.id = id;
         help.name = name;
         help.description = description;
+        help.order_position = order_position;
         help.blocko_blocks.addAll(blocks());
+        help.active = Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name()) ? active : null;
         help.edit_permission = edit_permission();
         help.delete_permission = delete_permission();
         help.update_permission = update_permission();

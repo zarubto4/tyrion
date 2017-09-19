@@ -1328,7 +1328,7 @@ public class Controller_Blocko extends Controller{
             // Získání všech objektů a následné odfiltrování soukormých TypeOfBlock
             Query<Model_TypeOfBlock> query = Ebean.find(Model_TypeOfBlock.class);
 
-            if(help.private_type){
+            if(help.public_programs){ // TODO
                 query.where().eq("project.participants.person.id", Controller_Security.get_person_id());
             }else{
                 query.where().isNull("project");
@@ -1345,6 +1345,87 @@ public class Controller_Blocko extends Controller{
 
             // Vrácení výsledku
             return GlobalResult.result_ok(Json.toJson(result));
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "deactivate TypeOfBlocks",
+            tags = {"Admin-Type-of-Block"},
+            notes = "deactivate Type of Widget",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result typeOfBlock_deactivate(String type_of_block_id){
+        try {
+
+            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
+            if(typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock not found");
+
+            // Kontrola oprávnění
+            if (! typeOfBlock.edit_permission() ) return GlobalResult.result_forbidden();
+
+            if(typeOfBlock.project_id() != null ) return GlobalResult.result_forbidden();
+
+
+            if (!typeOfBlock.active) return GlobalResult.result_badRequest("TypeOfBlock is already deactivated");
+
+            if(!typeOfBlock.update_permission()) return GlobalResult.result_forbidden();
+
+            typeOfBlock.active = false;
+
+            typeOfBlock.update();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "activate TypeOfBlocks",
+            tags = {"Admin-Type-of-Block"},
+            notes = "activate Type of Widget",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result typeOfBlock_activate(String type_of_block_id){
+        try {
+
+
+            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
+            if(typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock not found");
+
+            if(typeOfBlock.project_id() != null ) return GlobalResult.result_forbidden();
+
+            if(!typeOfBlock.update_permission()) return GlobalResult.result_forbidden();
+
+            if (typeOfBlock.active) return GlobalResult.result_badRequest("TypeOfBlock is already activated");
+
+            typeOfBlock.active = true;
+
+            typeOfBlock.update();
+
+            return GlobalResult.result_ok();
 
         }catch (Exception e){
             return Server_Logger.result_internalServerError(e, request());

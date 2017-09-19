@@ -11,6 +11,7 @@ import org.ehcache.Cache;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_BlockoBlock_Type;
+import utilities.enums.Enum_Publishing_type;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_Short_Detail;
@@ -33,7 +34,7 @@ public class Model_BlockoBlock extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                        @Id public String id;
+                                                        @Id public UUID id;
                                                             public String name;
                          @Column(columnDefinition = "TEXT") public String description;
 
@@ -44,7 +45,7 @@ public class Model_BlockoBlock extends Model {
                                                 @JsonIgnore public Integer order_position;
                                                 @JsonIgnore public boolean removed_by_user;
 
-    @JsonIgnore public Enum_BlockoBlock_Type block_type;    // Mark for Public, Default or something else
+    public Enum_Publishing_type publish_type;
 
     @JsonIgnore @OneToMany(mappedBy="blocko_block", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_BlockoBlockVersion> blocko_versions = new ArrayList<>();
 
@@ -54,6 +55,8 @@ public class Model_BlockoBlock extends Model {
     @JsonIgnore @Transient @TyrionCachedList private List<String> cache_value_blocko_versions_id = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_author_id;
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_producer_id;
+
+    @JsonIgnore public boolean active; // U veřejných Skupin administrátor zveřejňuje skupinu - může připravit něco do budoucna
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -120,6 +123,10 @@ public class Model_BlockoBlock extends Model {
         return list;
     }
 
+    @Transient @JsonProperty(required = false) @ApiModelProperty(required = false, value = "Only for Community Administrator") @TyrionCachedList @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Boolean active(){
+        return publish_type == Enum_Publishing_type.public_program ? true : null;
+    }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
@@ -194,7 +201,7 @@ public class Model_BlockoBlock extends Model {
         try {
 
             Swagger_Blocko_Block_Short_Detail help = new Swagger_Blocko_Block_Short_Detail();
-            help.id = id;
+            help.id = id.toString();
             help.name = name;
             help.description = description;
             help.versions = versions();
@@ -217,15 +224,13 @@ public class Model_BlockoBlock extends Model {
 
         terminal_logger.debug("save :: Creating new Object");
 
-        order_position = Model_BlockoBlock.find.where().eq("type_of_block.id", type_of_block.id).findRowCount() + 1;
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (get_byId(this.id) == null) break;
+        if(type_of_block != null) {
+            order_position = Model_BlockoBlock.find.where().eq("type_of_block.id", type_of_block.id).findRowCount() + 1;
         }
+
         super.save();
 
-        if(type_of_block.project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, type_of_block.project_id(), type_of_block.project_id()))).start();
+        if(type_of_block != null && type_of_block.project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, type_of_block.project_id(), type_of_block.project_id()))).start();
     }
 
     @JsonIgnore @Override public void update() {
@@ -234,7 +239,7 @@ public class Model_BlockoBlock extends Model {
 
         super.update();
 
-        if(type_of_block.project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, type_of_block.project_id(), id))).start();
+        if(type_of_block.project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, type_of_block.project_id(), id.toString()))).start();
     }
 
     @JsonIgnore @Override public void delete() {

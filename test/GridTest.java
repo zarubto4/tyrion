@@ -344,7 +344,7 @@ public class GridTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(PUT)
-                .uri(routes.Controller_Grid.gridWidgetVersion_makePublic(b.id).toString())
+                .uri(routes.Controller_Grid.gridWidgetVersion_version_make_public(b.id).toString())
                 .header("X-AUTH-TOKEN", userToken);
 
         Result result = route(request);

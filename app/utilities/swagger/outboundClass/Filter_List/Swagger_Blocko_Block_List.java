@@ -45,7 +45,7 @@ public class Swagger_Blocko_Block_List {
 
             Swagger_Blocko_Block_Filter_Detail help = new Swagger_Blocko_Block_Filter_Detail();
 
-            help.blocko_block_id = blockoBlock.id;
+            help.blocko_block_id = blockoBlock.id.toString();
             help.blocko_block_name = blockoBlock.name;
             help.blocko_block_description = blockoBlock.description;
             help.blocko_block_version_id = blockoBlock.get_blocko_block_versions().size() != 0 ? blockoBlock.get_blocko_block_versions().get(0).id : null;

@@ -26,7 +26,6 @@ public class Swagger_Community_Version_Publish_Response {
     @ApiModelProperty(required = true)
     public String program_description;
 
-
     @Constraints.Required
     public boolean decision;
 

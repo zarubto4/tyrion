@@ -1,8 +1,10 @@
 package utilities.swagger.outboundClass;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.enums.Enum_Approval_state;
 
 import java.util.Date;
 
@@ -33,4 +35,13 @@ public class Swagger_BlockoBlock_Version_Short_Detail {
 
     @ApiModelProperty(required = true, readOnly = true)
     public Swagger_Person_Short_Detail author;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, readOnly = true, value = "Only for TypeOfBoard. Mark of default Version")
+    public Boolean main_mark = null;
+
+    @ApiModelProperty(required = true, readOnly = true)
+    public Enum_Approval_state publish_status;
+
+    @ApiModelProperty(required = false, readOnly = true)
+    public boolean community_publishing_permission;
 }

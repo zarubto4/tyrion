@@ -13,5 +13,5 @@ public class Swagger_TypeOfBlock_Filter {
 
     @Constraints.Required
     @ApiModelProperty(required = true, value = "Use 'true' for private Type_Of_Block or 'false' for non-private")
-    public Boolean private_type;
+    public Boolean public_programs;
 }

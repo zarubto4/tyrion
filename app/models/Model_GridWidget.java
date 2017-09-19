@@ -12,6 +12,7 @@ import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_BlockoBlock_Type;
 import utilities.enums.Enum_GridWidget_Type;
+import utilities.enums.Enum_Publishing_type;
 import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_GridWidgetVersion_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_GridWidget_Short_Detail;
@@ -43,15 +44,17 @@ public class Model_GridWidget extends Model{
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_TypeOfWidget type_of_widget;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Producer producer;
 
-    @JsonIgnore public Enum_GridWidget_Type block_type;    // Mark for Public, Default or something else
+    public Enum_Publishing_type publish_type;
 
     @JsonIgnore @OneToMany(mappedBy="grid_widget", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("date_of_create desc")
     public List<Model_GridWidgetVersion> grid_widget_versions = new ArrayList<>();
 
+    @JsonIgnore public boolean active; // U veřejných Skupin administrátor zveřejňuje skupinu - může připravit něco do budoucna
+
  /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_type_of_widget_id;
-    @JsonIgnore @Transient @TyrionCachedList private List<String> cache_value_grid_versions_id = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_value_grid_versions_id = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_author_id;
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_producer_id;
 
@@ -101,24 +104,25 @@ public class Model_GridWidget extends Model{
         return producer.name;
     }
 
-    @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_widget_id()             { return cache_value_type_of_widget_id != null ? cache_value_type_of_widget_id : get_type_of_widget().id; }
-    @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_widget_name()           { return get_type_of_widget().name; }
+    @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_widget_id()             { return cache_value_type_of_widget_id != null ? cache_value_type_of_widget_id : (get_type_of_widget() != null ? get_type_of_widget().id : null); }
+    @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_widget_name()           { return get_type_of_widget() != null ? get_type_of_widget().name : null; }
 
     @Transient  @JsonProperty @ApiModelProperty(required = true) public  List<Swagger_GridWidgetVersion_Short_Detail> versions(){
 
         List<Swagger_GridWidgetVersion_Short_Detail> list = new ArrayList<>();
 
         for( Model_GridWidgetVersion v : get_grid_widget_versions()){
-
-            if((v.approval_state == Enum_Approval_state.approved)||(v.approval_state == Enum_Approval_state.edited)||((this.author != null)&&(this.author.id.equals(Controller_Security.get_person().id)))) {
-
-                list.add(v.get_short_gridwidget_version());
-            }
+            list.add(v.get_short_gridwidget_version());
         }
 
         return list;
     }
 
+
+    @Transient @JsonProperty(required = false) @ApiModelProperty(required = false, value = "Only for Community Administrator") @TyrionCachedList @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Boolean active(){
+        return publish_type == Enum_Publishing_type.public_program ? true : null;
+    }
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @Transient @JsonIgnore public Swagger_GridWidget_Short_Detail get_grid_widget_short_detail(){
@@ -130,6 +134,11 @@ public class Model_GridWidget extends Model{
         help.edit_permission = edit_permission();
         help.delete_permission = delete_permission();
         help.update_permission = update_permission();
+
+        if( this.publish_type == Enum_Publishing_type.public_program) {
+            help.active = active;
+        }
+
         return help;
     }
 
@@ -137,10 +146,15 @@ public class Model_GridWidget extends Model{
     public Model_TypeOfWidget get_type_of_widget() {
         if(cache_value_type_of_widget_id == null){
             Model_TypeOfWidget type_of_block = Model_TypeOfWidget.find.where().eq("grid_widgets.id", id).select("id").findUnique();
-            cache_value_type_of_widget_id = type_of_block.id;
+
+            if(type_of_block != null) {
+                cache_value_type_of_widget_id = type_of_block.id;
+            }else {
+                cache_value_type_of_widget_id = "";
+            }
         }
 
-        return Model_TypeOfWidget.get_byId(cache_value_type_of_widget_id);
+        return !cache_value_type_of_widget_id.equals("") ? Model_TypeOfWidget.get_byId(cache_value_type_of_widget_id) : null;
     }
 
 
@@ -206,9 +220,18 @@ public class Model_GridWidget extends Model{
 
         terminal_logger.debug("save :: Creating new Object");
 
-        order_position = Model_GridWidget.find.where().eq("type_of_widget.id", type_of_widget.id).findRowCount() + 1;
+        if(type_of_widget != null) {
+            order_position = Model_GridWidget.find.where().eq("type_of_widget.id", type_of_widget.id).findRowCount() + 1;
+        }
 
         super.save();
+
+        super.refresh();
+
+        // Add to Cache - Na začátku při save mám vždy přímý link mimo Cache
+        if( get_type_of_widget() != null) {
+            get_type_of_widget().grid_widgets_ids.add(0, id.toString());
+        }
 
     }
 
@@ -225,6 +248,9 @@ public class Model_GridWidget extends Model{
 
         this.removed_by_user = true;
         super.update();
+
+        // Remove from Cache
+        get_type_of_widget().grid_widgets_ids.remove(id.toString());
     }
 
 /* ORDER  -------------------------------------------------------------------------------------------------------------*/
@@ -270,10 +296,11 @@ public class Model_GridWidget extends Model{
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   @Transient                                    public boolean create_permission() {return  type_of_widget.update_permission();}
-    @JsonIgnore   @Transient                                    public boolean read_permission()   {return  get_type_of_widget().read_permission();}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()   {return  get_type_of_widget().update_permission();}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission() {return  get_type_of_widget().update_permission();}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission() {return  get_type_of_widget().delete_permission();}
+    @JsonIgnore   @Transient                                    public boolean read_permission()   {return  publish_type == Enum_Publishing_type.public_program || publish_type == Enum_Publishing_type.default_main_program || get_type_of_widget().read_permission();}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()   {return  get_type_of_widget() != null ? get_type_of_widget().update_permission() : Controller_Security.get_person().has_permission(Model_GridWidget.permissions.GridWidget_edit.name()) ;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission() {return  get_type_of_widget() != null ? get_type_of_widget().update_permission() : Controller_Security.get_person().has_permission(Model_GridWidget.permissions.GridWidget_edit.name()) ;}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission() {return  get_type_of_widget() != null ? get_type_of_widget().update_permission() : Controller_Security.get_person().has_permission(Model_GridWidget.permissions.GridWidget_delete.name()) ;}
+    @JsonProperty @Transient  @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  { return Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name());}
 
 
     public enum permissions{GridWidget_create, GridWidget_read, GridWidget_edit, GridWidget_delete}

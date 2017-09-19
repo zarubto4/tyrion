@@ -115,7 +115,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             wireless.name = "wireless";
             wireless.save();
 
-
             // Ochranná zarážka proti znovu vytvoření
             Model_Producer producer = Model_Producer.find.where().eq("name", "Byzance ltd").findUnique();
             if (producer == null) return GlobalResult.result_badRequest("Create Producer first");
@@ -134,7 +133,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             Model_TypeOfBoard typeOfBoard_1 = new Model_TypeOfBoard();
             typeOfBoard_1.name = "IODA G2";
             typeOfBoard_1.description = " Yoda - Master Board with Ethernet and Wifi - second generation";
-            typeOfBoard_1.compiler_target_name = "BYZANCE_IODAG2";
+            typeOfBoard_1.compiler_target_name = "BYZANCE_YODAG2";
             typeOfBoard_1.revision = "12/2015 V1.0 #0000";
             typeOfBoard_1.processor = processor_1;
             typeOfBoard_1.producer = producer;
@@ -147,7 +146,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             Model_TypeOfBoard typeOfBoard_2 = new Model_TypeOfBoard();
             typeOfBoard_2.name = "IODA G3";
             typeOfBoard_2.description = " Ioda - Master Board with Ethernet and Wifi - third generation";
-            typeOfBoard_2.compiler_target_name = "BYZANCE_IODAG3E";
+            typeOfBoard_2.compiler_target_name = "BYZANCE_YODAG3";
             typeOfBoard_2.revision = "12/2015 V1.0 #0000";
             typeOfBoard_2.processor = processor_1;
             typeOfBoard_2.producer = producer;
@@ -155,8 +154,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             typeOfBoard_2.features.add(ethernet);
             typeOfBoard_2.features.add(wifi);
             typeOfBoard_2.save();
-
-
 
 
             return GlobalResult.result_ok();
@@ -181,7 +178,7 @@ public class Utilities_Demo_data_Controller extends Controller {
     public Result test_boards() {
         try {
             // Ochranná zarážka proti znovu vytvoření
-            Model_TypeOfBoard yoda_type = Model_TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_IODAG3").findUnique();
+            Model_TypeOfBoard yoda_type = Model_TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG3").findUnique();
             if (yoda_type == null) return GlobalResult.result_badRequest("Create Type of Boards first");
 
 
@@ -239,6 +236,8 @@ public class Utilities_Demo_data_Controller extends Controller {
             cloud_server_1.mqtt_username = "user";
             cloud_server_1.web_view_port = 8501;
             cloud_server_1.server_type = Enum_Cloud_HomerServer_type.main_server;
+            cloud_server_1.hash_certificate = "aaaaaaaaaaaaaaa";
+            cloud_server_1.connection_identificator = "bbbbbbbbbbbbbbb";
             cloud_server_1.save();
 
             Model_HomerServer cloud_server_2 = new Model_HomerServer();
@@ -278,6 +277,8 @@ public class Utilities_Demo_data_Controller extends Controller {
             // Nastavím kompilační servery
             Model_CompilationServer compilation_server_1 = new Model_CompilationServer();
             compilation_server_1.personal_server_name = "Perseus";
+            compilation_server_1.hash_certificate = "test";
+            compilation_server_1.connection_identificator = "test";
             compilation_server_1.save();
 
             Model_CompilationServer compilation_server_2 = new Model_CompilationServer();
@@ -312,10 +313,8 @@ public class Utilities_Demo_data_Controller extends Controller {
             tariff_1.company_details_required = false;
             tariff_1.payment_details_required = false;
 
-
             tariff_1.save();
             tariff_1.refresh();
-
 
             Model_ProductExtension extensions_1 = new Model_ProductExtension();
             extensions_1.name = "Extension 1";
@@ -378,8 +377,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             business_tariff.save();
             business_tariff.refresh();
 
-
-
+            /*
             Model_ProductExtension business_tariff_extensions_4 = new Model_ProductExtension();
             business_tariff_extensions_4.name = "Extension Project";
             business_tariff_extensions_4.description = "description extension sadafdfv";
@@ -503,6 +501,8 @@ public class Utilities_Demo_data_Controller extends Controller {
             tariff_1.order_position = 5;
             illegal_tariff.active = false;
             illegal_tariff.save();
+
+            */
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
