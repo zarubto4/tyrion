@@ -24,6 +24,7 @@ public class Swagger_TypeOfWidget_Short_Detail {
     @ApiModelProperty(required = true, readOnly = true)
     public Integer order_position;
 
+    @ApiModelProperty(required = false, readOnly = true)
     public Enum_Publishing_type publish_type;
 
     @ApiModelProperty(required = true, readOnly = true)

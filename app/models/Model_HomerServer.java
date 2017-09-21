@@ -402,6 +402,9 @@ public class Model_HomerServer extends Model{
             }else{
 
                 System.out.println("Hash nesedí ");
+                System.out.println("Hash původního Serveru:: " + Model_HomerServer.get_byId(ws_homer_server.identifikator).hash_certificate);
+                System.out.println("Hash příchozí  zprávy :: " + message.hash_token);
+
 
                 ws_homer_server.security_token_confirm = false;
                 ws_homer_server.rest_api_token =  null;

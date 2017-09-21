@@ -34,7 +34,6 @@ public class Controller_ZZZ_Tester extends Controller {
              // if (id == null) return badRequest("id is null");
 
             // Model_Product product = Model_Product.get_byId(id);
-
              // Job_SpendingCredit.spend(product);
 
              Model_GridWidget gridWidget = new Model_GridWidget();

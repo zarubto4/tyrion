@@ -29,7 +29,7 @@ public class Model_FloatingPersonToken extends Model {
 
     @Id @ApiModelProperty(required = true)                  public String connection_id;
                               @JsonIgnore                   public String authToken;
-       @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE)  public Model_Person person;
+       @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE)  public Model_Person person;     //TODO Lazy loading??
 
     @ApiModelProperty(required = true,
     dataType = "integer", readOnly = true,

@@ -209,6 +209,10 @@ public class Model_BlockoBlock extends Model {
             help.delete_permission = delete_permission();
             help.update_permission = update_permission();
 
+            if( this.publish_type == Enum_Publishing_type.public_program) {
+                help.active = active;
+            }
+
             return help;
 
         }catch (Exception e){

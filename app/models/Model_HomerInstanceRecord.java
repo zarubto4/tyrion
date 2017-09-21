@@ -211,7 +211,7 @@ public class Model_HomerInstanceRecord extends Model {
             }
 
             Model_HomerInstance.cache_status.put(this.actual_running_instance.id, true);
-            WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerInstance.class, this.actual_running_instance.id, true, this.actual_running_instance.project_id );
+            WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerInstance.class, this.actual_running_instance.id, true, this.actual_running_instance.get_project_id() );
 
             // Step 4
             this.create_actualization_hardware_request();

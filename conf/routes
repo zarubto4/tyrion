@@ -228,12 +228,15 @@ PUT       /instance/start_or_shut_down/:instance_id                     @control
 
 #Blocks
 POST      /blockoBlock                                                  @controllers.Controller_Blocko.blockoBlock_create()
+POST      /blockoBlock/make_clone                                       @controllers.Controller_Blocko.blockoBlock_clone()
 PUT       /blockoBlock/order/up/:blocko_block_id                        @controllers.Controller_Blocko.blockoBlock_orderUp(blocko_block_id)
 PUT       /blockoBlock/order/down/:blocko_block_id                      @controllers.Controller_Blocko.blockoBlock_orderDown(blocko_block_id)
 PUT       /blockoBlock/:blocko_block_id                                 @controllers.Controller_Blocko.blockoBlock_update(blocko_block_id)
 GET       /blockoBlock/:blocko_block_id                                 @controllers.Controller_Blocko.blockoBlock_get(blocko_block_id)
 DELETE    /blockoBlock/:blocko_block_id                                 @controllers.Controller_Blocko.blockoBlock_delete(blocko_block_id)
 PUT       /blockoBlock/list/:page_number                                @controllers.Controller_Blocko.blockoBlock_getByFilter(page_number:Int )
+PUT       /admin/blockoBlock/deactive/:blocko_block_id                  @controllers.Controller_Blocko.blockoBlock_deactivate(blocko_block_id)
+PUT       /admin/blockoBlock/active/:blocko_block_id                    @controllers.Controller_Blocko.blockoBlock_activate(blocko_block_id)
 
 POST      /blockoBlock/version/:blocko_block_id                         @controllers.Controller_Blocko.blockoBlockVersion_create(blocko_block_id)
 PUT       /blockoBlock/version/:blocko_block_version_id                 @controllers.Controller_Blocko.blockoBlockVersion_update(blocko_block_version_id)

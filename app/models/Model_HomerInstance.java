@@ -734,8 +734,13 @@ public class Model_HomerInstance extends Model {
             }
 
             terminal_logger.debug("Cloud_Homer_server:: cloud_verification_token:: WebView FloatingPersonToken Token found and user have permission");
-            server.write_without_confirmation(help.get_result(true));
-            return;
+
+            // Kontola operávnění ke konkrétní instanci??
+            if(Model_HomerInstance.find.where().eq("id", help.instance_id).eq("b_program.project.participants.person.id", floatingPersonToken.person.id).findRowCount() > 0) {
+                server.write_without_confirmation(help.get_result(true));
+            }else {
+                server.write_without_confirmation(help.get_result(false));
+            }
 
         }catch (Exception e){
             terminal_logger.internalServerError("cloud_verification_token_WEBVIEW:", e);

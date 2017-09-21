@@ -9,7 +9,7 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Insta
 public class WS_Message_WebView_token_verification extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "token_webView_verification";
+    @JsonIgnore public static final String messageType = "token_web_view_verification";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 

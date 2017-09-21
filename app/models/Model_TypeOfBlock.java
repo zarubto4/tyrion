@@ -66,7 +66,7 @@ public class Model_TypeOfBlock extends Model {
         return cache_value_project_id.equals("") ? null : cache_value_project_id;
     }
 
-    @JsonProperty @Transient public List<Swagger_Blocko_Block_Short_Detail> blocks() {
+    @JsonProperty @Transient public List<Swagger_Blocko_Block_Short_Detail> blocko_blocks() {
         try {
 
             List<Swagger_Blocko_Block_Short_Detail> short_detail_blocks = new ArrayList<>();
@@ -120,8 +120,9 @@ public class Model_TypeOfBlock extends Model {
         help.name = name;
         help.description = description;
         help.order_position = order_position;
-        help.blocko_blocks.addAll(blocks());
+        help.blocko_blocks.addAll(blocko_blocks());
         help.active = Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name()) ? active : null;
+        help.publish_type = publish_type;
         help.edit_permission = edit_permission();
         help.delete_permission = delete_permission();
         help.update_permission = update_permission();

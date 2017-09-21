@@ -1432,7 +1432,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "order TypeOfBlock Up",
+    @ApiOperation(value = "order_Up TypeOfBlock",
             tags = {"Type-of-Block"},
             notes = "Set order in list one position up",
             produces = "application/json",
@@ -1465,7 +1465,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "order TypeOfBlock Down",
+    @ApiOperation(value = "order_Down TypeOfBlock",
             tags = {"Type-of-Block"},
             notes = "Set order in list one position down",
             produces = "application/json",
@@ -1593,6 +1593,110 @@ public class Controller_Blocko extends Controller{
         }
     }
 
+    @ApiOperation(value = "make_Clone BlockoBlock",
+            tags = {"Blocko-Block"},
+            notes = "clone Blocko Block for private",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Blocko_Block_Copy",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlock.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Secured_API.class)
+    public Result blockoBlock_clone() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Blocko_Block_Copy> form = Form.form(Swagger_Blocko_Block_Copy.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_Blocko_Block_Copy help = form.get();
+
+            // Vyhledám Objekt
+            Model_BlockoBlock blocko_block_old = Model_BlockoBlock.get_byId(help.blocko_block_id);
+            if(blocko_block_old == null) return GlobalResult.result_notFound("Model_GridWidget blocko_block_id not found");
+
+            // Zkontroluji oprávnění
+            if(!blocko_block_old.read_permission())  return GlobalResult.result_forbidden();
+
+            // Vyhledám Objekt
+            Model_Project project = Model_Project.get_byId(help.project_id);
+            if (project == null) return GlobalResult.result_notFound("Project project_id not found");
+
+            // Zkontroluji oprávnění
+            if(!project.update_permission())  return GlobalResult.result_forbidden();
+
+
+            // Kontrola objektu
+            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(help.type_of_blocks_id);
+            if(typeOfBlock != null) {
+                if (!Model_Project.get_byId(typeOfBlock.project_id()).update_permission()) {
+                    return GlobalResult.result_forbidden();
+                }
+            }
+
+            if(typeOfBlock == null) {
+                typeOfBlock = new Model_TypeOfBlock();
+                typeOfBlock.description = "Yea! My First Blocko Group with Community Widget";
+                typeOfBlock.name        = "Private Widget Group";
+                typeOfBlock.project     = project;
+                typeOfBlock.save();
+
+                typeOfBlock.refresh();
+            }
+
+
+            Model_BlockoBlock blocko_block_new =  new Model_BlockoBlock();
+            blocko_block_new.name = help.name;
+            blocko_block_new.description = help.description;
+            blocko_block_new.type_of_block = typeOfBlock;
+            blocko_block_new.save();
+
+            blocko_block_new.refresh();
+
+
+            for(Model_BlockoBlockVersion version : blocko_block_old.get_blocko_block_versions()){
+
+                Model_BlockoBlockVersion copy_object = new Model_BlockoBlockVersion();
+                copy_object.version_name        = version.version_name;
+                copy_object.date_of_create      = version.date_of_create;
+                copy_object.version_description = version.version_description;
+                copy_object.date_of_create      = new Date();
+                copy_object.author              = version.author;
+                copy_object.design_json         = version.design_json;
+                copy_object.logic_json          = version.logic_json;
+                copy_object.blocko_block        = blocko_block_new;
+
+                // Zkontroluji oprávnění
+                copy_object.save();
+
+            }
+
+            blocko_block_new.refresh();
+
+            // Vracím Objekt
+            return GlobalResult.result_ok(Json.toJson(blocko_block_new));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
     @ApiOperation(value = "edit BlockoBlock",
             tags = {"Blocko-Block"},
             notes = "update basic information (name, and description) of the independent BlockoBlock",
@@ -1862,6 +1966,82 @@ public class Controller_Blocko extends Controller{
             if (!blockoBlock.edit_permission()) return GlobalResult.result_forbidden();
 
             blockoBlock.down();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "deactivate BlockoBlock",
+            tags = {"Admin-Blocko-Block"},
+            notes = "deactivate BlockoBlock",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result blockoBlock_deactivate(String blocko_block_id){
+        try {
+
+            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
+            if(blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
+
+            // Kontrola oprávnění
+            if (! blockoBlock.edit_permission() ) return GlobalResult.result_forbidden();
+
+
+            if (!blockoBlock.active) return GlobalResult.result_badRequest("BlockoBlock is already deactivated");
+
+            if(!blockoBlock.update_permission()) return GlobalResult.result_forbidden();
+
+            blockoBlock.active = false;
+
+            blockoBlock.update();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "activate BlockoBlock",
+            tags = {"Admin-Blocko-Block"},
+            notes = "activate Blocko Block",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result blockoBlock_activate(String blocko_block_id){
+        try {
+
+            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
+            if(blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
+
+            if (blockoBlock.active) return GlobalResult.result_badRequest("BlockoBlock is already activated");
+
+            if(!blockoBlock.update_permission()) return GlobalResult.result_forbidden();
+
+            blockoBlock.active = true;
+
+            blockoBlock.update();
 
             return GlobalResult.result_ok();
 
