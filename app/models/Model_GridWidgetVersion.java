@@ -12,8 +12,10 @@ import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_Publishing_type;
 import utilities.logger.Class_Logger;
+import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.outboundClass.Swagger_GridWidgetVersion_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -34,39 +36,55 @@ public class Model_GridWidgetVersion extends Model{
                                    @Id public String id;
                                        public String version_name;
                                        public String version_description;
+
     @Column(columnDefinition = "TEXT") public String design_json;
     @Column(columnDefinition = "TEXT") public String logic_json;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only if user make request for publishing") public Enum_Approval_state approval_state;
-    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only for main / default program - and access only for administrators") public Enum_Publishing_type publish_type;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only if user make request for publishing") @Enumerated(EnumType.STRING) public Enum_Approval_state approval_state;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only for main / default program - and access only for administrators") @Enumerated(EnumType.STRING) public Enum_Publishing_type publish_type;
 
 
     @JsonIgnore public boolean removed_by_user;
-    @JsonIgnore @ManyToOne public Model_Person author;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Person author;
 
     @ApiModelProperty(required = true, dataType = "integer", value = "UNIX time in ms", example = "1466163478925") public Date date_of_create;
 
-
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_GridWidget grid_widget;
-
 
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_grid_widget_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_value_author_id;
 
 /* JSON PROPERTY VALUES -----------------------------a-------------------------------------------------------------------*/
 
     @JsonProperty
     public Swagger_Person_Short_Detail author(){
-        if(this.author != null) {
-            return this.author.get_short_person();
-        }else {
+        try{
+
+            if (author == null) return null;
+
+            return get_author().get_short_person();
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
     
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @TyrionCachedList
+    public Model_Person get_author(){
+
+        if(cache_value_author_id == null){
+            Model_Person person = Model_Person.find.where().eq("widgetVersionsAuthor.id", id).select("id").findUnique();
+            cache_value_author_id = person.id;
+        }
+
+        return Model_Person.get_byId(cache_value_author_id);
+    }
 
     @JsonIgnore
     public Swagger_GridWidgetVersion_Short_Detail get_short_gridwidget_version(){
@@ -95,14 +113,29 @@ public class Model_GridWidgetVersion extends Model{
 
     @JsonIgnore
     public String get_grid_widget_id(){
+
         if(cache_value_grid_widget_id == null){
 
             Model_GridWidget widget = Model_GridWidget.find.where().eq("grid_widget_versions.id", id).select("id").findUnique();
-            cache_value_grid_widget_id = widget.id.toString();
+            if(widget != null) {
+                cache_value_grid_widget_id = widget.id.toString();
+            }else {
+                cache_value_grid_widget_id = "";
+            }
 
         }
 
-        return cache_value_grid_widget_id;
+        return !cache_value_grid_widget_id.equals("") ? cache_value_grid_widget_id: null;
+    }
+
+    @JsonIgnore @TyrionCachedList
+    public Model_GridWidget get_grid_widget(){
+
+        if(get_grid_widget_id() != null){
+            return Model_GridWidget.get_byId(cache_value_grid_widget_id);
+        }
+
+        return null;
     }
 
 
@@ -119,9 +152,14 @@ public class Model_GridWidgetVersion extends Model{
         }
         super.save();
 
+        if(grid_widget != null && get_grid_widget().type_of_widget != null && get_grid_widget().type_of_widget.project != null) {
+            new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo(Model_BlockoBlock.class, get_grid_widget().get_type_of_widget().project_id(), get_grid_widget_id()))).start();
+        }
 
         // Add to Cache
-        Model_GridWidget.get_byId(get_grid_widget_id()).cache_value_grid_versions_id.add(0, id);
+        if(grid_widget != null) {
+            grid_widget.cache_value_grid_versions_id.add(0, id);
+        }
     }
 
     @JsonIgnore @Override public void update() {
@@ -130,6 +168,10 @@ public class Model_GridWidgetVersion extends Model{
 
         terminal_logger.debug("update :: Update object Id: {}",  this.id);
         super.update();
+
+        if(get_grid_widget() != null && get_grid_widget().type_of_widget.project != null) {
+            new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo(Model_BlockoBlock.class, get_grid_widget().get_type_of_widget().project_id(), get_grid_widget_id()))).start();
+        }
     }
 
     @JsonIgnore @Override public void delete() {
@@ -140,7 +182,13 @@ public class Model_GridWidgetVersion extends Model{
         super.update();
 
         // Add to Cache
-        Model_GridWidget.get_byId(get_grid_widget_id()).cache_value_grid_versions_id.remove(id);
+        if(get_grid_widget() != null) {
+            get_grid_widget().cache_value_grid_versions_id.remove(id);
+        }
+
+        if(get_grid_widget() != null && get_grid_widget().type_of_widget.project != null) {
+            new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo(Model_BlockoBlock.class, get_grid_widget().get_type_of_widget().project_id(), get_grid_widget_id()))).start();
+        }
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

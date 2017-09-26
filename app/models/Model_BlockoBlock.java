@@ -52,7 +52,7 @@ public class Model_BlockoBlock extends Model {
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_type_of_block_id;
-    @JsonIgnore @Transient @TyrionCachedList private List<String> cache_value_blocko_versions_id = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_value_blocko_versions_id = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_author_id;
     @JsonIgnore @Transient @TyrionCachedList private String cache_value_producer_id;
 
@@ -105,19 +105,15 @@ public class Model_BlockoBlock extends Model {
     }
 
 
-    @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_block_id()   { return cache_value_type_of_block_id != null ? cache_value_type_of_block_id : get_type_of_block().id; }
-    @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_block_name() { return get_type_of_block().name; }
+    @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_block_id()   { return cache_value_type_of_block_id != null ? cache_value_type_of_block_id : (get_type_of_block() != null ? get_type_of_block().id : null); }
+    @Transient  @JsonProperty @ApiModelProperty(required = true, readOnly = true)  public String  type_of_block_name() { return get_type_of_block() != null ? get_type_of_block().name : null; }
 
     @Transient  @JsonProperty @ApiModelProperty(required = true) public  List<Swagger_BlockoBlock_Version_Short_Detail> versions(){
 
         List<Swagger_BlockoBlock_Version_Short_Detail> list = new ArrayList<>();
 
         for( Model_BlockoBlockVersion v : get_blocko_block_versions()){
-
-            // TODO Tohle je hrozně komplikovanej shit - nešlo by to jednoduššeji? Víme přece co je private a co je public ne???
-            if((v.approval_state == Enum_Approval_state.approved)||(v.approval_state == Enum_Approval_state.edited)||((this.get_author() != null)&&(this.get_author().id.equals(Controller_Security.get_person().id)))) {
-                list.add(v.get_short_blockoblock_version());
-            }
+           list.add(v.get_short_blockoblock_version());
         }
 
         return list;
@@ -134,10 +130,15 @@ public class Model_BlockoBlock extends Model {
     public Model_TypeOfBlock get_type_of_block() {
         if(cache_value_type_of_block_id == null){
             Model_TypeOfBlock type_of_block = Model_TypeOfBlock.find.where().eq("blocko_blocks.id", id).select("id").findUnique();
-            cache_value_type_of_block_id = type_of_block.id;
+
+            if(type_of_block != null) {
+                cache_value_type_of_block_id = type_of_block.id;
+            }else {
+                cache_value_type_of_block_id = "";
+            }
         }
 
-        return Model_TypeOfBlock.get_byId(cache_value_type_of_block_id);
+        return !cache_value_type_of_block_id.equals("") ? Model_TypeOfBlock.get_byId(cache_value_type_of_block_id) : null;
     }
 
     @Transient @JsonIgnore @TyrionCachedList
@@ -309,10 +310,12 @@ public class Model_BlockoBlock extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore  @Transient                                     public boolean create_permission() {return  type_of_block.update_permission();}
-    @JsonIgnore  @Transient                                     public boolean read_permission()   {return  get_type_of_block().read_permission();}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()   {return  get_type_of_block().update_permission();}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission() {return  get_type_of_block().update_permission();}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission() {return  get_type_of_block().delete_permission();}
+    @JsonIgnore  @Transient                                     public boolean read_permission()   {return  publish_type == Enum_Publishing_type.public_program || publish_type == Enum_Publishing_type.default_main_program ||  get_type_of_block().read_permission();}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()   {return  get_type_of_block() != null ? get_type_of_block().update_permission() : Controller_Security.get_person().has_permission(permissions.BlockoBlock_create.name());}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean update_permission() {return  get_type_of_block() != null ? get_type_of_block().update_permission() : Controller_Security.get_person().has_permission(permissions.BlockoBlock_edit.name());}
+    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission() {return  get_type_of_block() != null ? get_type_of_block().update_permission() : Controller_Security.get_person().has_permission(permissions.BlockoBlock_delete.name());}
+    @JsonProperty @Transient @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  { return Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name());}
+
 
     public enum permissions{BlockoBlock_create, BlockoBlock_read, BlockoBlock_edit, BlockoBlock_delete}
 

@@ -1233,22 +1233,29 @@ public class Controller_Grid extends Controller {
             // Získání všech objektů a následné odfiltrování soukormých TypeOfWidget
             Query<Model_TypeOfWidget> query = Ebean.find(Model_TypeOfWidget.class);
 
+            // Order
+            query.order().asc("order_position");
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if(help.project_id != null){
-                query.where().eq("project.id", help.project_id);
+
+                Model_Project project = Model_Project.get_byId(help.project_id);
+                if(project == null )return GlobalResult.result_notFound("Project not found");
+                if(!project.read_permission())return GlobalResult.result_forbidden();
+
+                query.where().eq("project.id", help.project_id).eq("removed_by_user", false);
             }
 
             if(help.public_programs){
-                query.where().isNull("project").eq("removed_by_user", false).eq("publish_type", Enum_Publishing_type.public_program.name());
+
+                if(!Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name())) {
+                    query.where().isNull("project").eq("removed_by_user", false).eq("publish_type", Enum_Publishing_type.public_program.name());
+                }else {
+                    query.where().isNull("project").eq("removed_by_user", false).eq("active", true).eq("publish_type", Enum_Publishing_type.public_program.name());
+                }
+
             }
 
-            /*
-                if(help.pending_programs){
-                    if(!Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name())) return GlobalResult.result_forbidden();
-                    query.where().eq("version_objects.approval_state", Enum_Approval_state.pending.name());
-                }
-            */
 
             // Order
             query.order().asc("order_position");
@@ -1924,7 +1931,7 @@ public class Controller_Grid extends Controller {
 
     @ApiOperation(value = "set_As_Main Grid_Widget_Version",
             tags = {"Admin-Grid-Widget"},
-            notes = "delete GridWidget version",
+            notes = "",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -2427,7 +2434,7 @@ public class Controller_Grid extends Controller {
             if (privateGridWidgetVersion == null) return GlobalResult.result_notFound("grid_widget_version not found");
 
             // Kontrola nadřazeného objektu
-            Model_GridWidget widget_old = Model_GridWidget.get_byId(privateGridWidgetVersion.grid_widget.id.toString());
+            Model_GridWidget widget_old = Model_GridWidget.get_byId(privateGridWidgetVersion.get_grid_widget_id());
 
             // Zkontroluji oprávnění
             if(!widget_old.community_publishing_permission()){
@@ -2460,7 +2467,7 @@ public class Controller_Grid extends Controller {
                     gridWidget.name = help.program_name;
                     gridWidget.description = help.program_description;
                     gridWidget.type_of_widget = typeOfWidget_public;
-                    gridWidget.author = privateGridWidgetVersion.grid_widget.author;
+                    gridWidget.author = privateGridWidgetVersion.get_grid_widget().get_author();
                     gridWidget.publish_type = Enum_Publishing_type.public_program;
                     gridWidget.save();
                 }
@@ -2490,9 +2497,9 @@ public class Controller_Grid extends Controller {
                 try {
 
                     new Email()
-                            .text("Version of Widget " + privateGridWidgetVersion.grid_widget.name + ": " + Email.bold(privateGridWidgetVersion.version_name) + " was not approved for this reason: ")
+                            .text("Version of Widget " + privateGridWidgetVersion.get_grid_widget().name + ": " + Email.bold(privateGridWidgetVersion.version_name) + " was not approved for this reason: ")
                             .text(help.reason)
-                            .send(privateGridWidgetVersion.grid_widget.author.mail, "Version of Widget disapproved" );
+                            .send(privateGridWidgetVersion.get_grid_widget().get_author().mail, "Version of Widget disapproved" );
 
                 } catch (Exception e) {
                     terminal_logger.internalServerError (e);

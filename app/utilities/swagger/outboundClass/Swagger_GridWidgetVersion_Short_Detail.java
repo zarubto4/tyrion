@@ -40,7 +40,7 @@ public class Swagger_GridWidgetVersion_Short_Detail {
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only for main / default program - and access only for administrators")
     public Enum_Publishing_type publish_type;
 
-    @ApiModelProperty(required = true, readOnly = true)
+    @ApiModelProperty(required = true, readOnly = true) @JsonInclude(JsonInclude.Include.NON_NULL)
     public Enum_Approval_state publish_status;
 
     @ApiModelProperty(required = false, readOnly = true)

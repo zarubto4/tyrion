@@ -72,7 +72,7 @@ public class Model_CProgram extends Model {
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty  @Transient public String project_id()           {
+    @JsonProperty @Transient @JsonInclude(JsonInclude.Include.NON_NULL) public String project_id()           {
 
         if(cache_value_project_id == null){
             Model_Project project = Model_Project.find.where().eq("c_programs.id", id).select("id").findUnique();
@@ -84,7 +84,7 @@ public class Model_CProgram extends Model {
 
 
     }
-    @JsonProperty  @Transient public String project_name()         {
+    @JsonProperty @Transient @JsonInclude(JsonInclude.Include.NON_NULL) public String project_name()         {
         try {
 
             if(cache_value_project_name == null){

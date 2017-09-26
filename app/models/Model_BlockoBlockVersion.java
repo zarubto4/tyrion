@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Approval_state;
+import utilities.enums.Enum_Publishing_type;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.swagger.outboundClass.Swagger_BlockoBlock_Version_Short_Detail;
@@ -35,19 +36,22 @@ public class Model_BlockoBlockVersion extends Model {
                                                         @Id public String id;
                                                             public String version_name;
                                                             public String version_description;
-                               @Enumerated(EnumType.STRING) public Enum_Approval_state approval_state;
 
-             @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Person author;
+    @Column(columnDefinition = "TEXT") public String design_json;
+    @Column(columnDefinition = "TEXT") public String logic_json;
 
-    @ApiModelProperty(required = true, dataType = "integer",
-            value = "UNIX time in ms",
-            example = "1466163478925")                      public Date date_of_create;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only if user make request for publishing") @Enumerated(EnumType.STRING) public Enum_Approval_state approval_state;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only for main / default program - and access only for administrators") @Enumerated(EnumType.STRING) public Enum_Publishing_type publish_type;
 
-                         @Column(columnDefinition = "TEXT") public String design_json;
-                         @Column(columnDefinition = "TEXT") public String logic_json;
-             @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BlockoBlock blocko_block;
 
-                                                @JsonIgnore public boolean removed_by_user;
+    @JsonIgnore public boolean removed_by_user;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Person author;
+
+    @ApiModelProperty(required = true, dataType = "integer", value = "UNIX time in ms", example = "1466163478925")   public Date date_of_create;
+
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BlockoBlock blocko_block;
+
+
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -86,15 +90,31 @@ public class Model_BlockoBlockVersion extends Model {
     }
 
 
+    @JsonIgnore
+    public String get_blocko_block_id(){
+
+        if(cache_value_blocko_block_id == null){
+
+            Model_BlockoBlock block = Model_BlockoBlock.find.where().eq("blocko_versions.id", id).select("id").findUnique();
+            if(block != null) {
+                cache_value_blocko_block_id = block.id.toString();
+            }else {
+                cache_value_blocko_block_id = "";
+            }
+        }
+
+        return !cache_value_blocko_block_id.equals("") ? cache_value_blocko_block_id: null;
+
+    }
+
     @JsonIgnore @TyrionCachedList
     public Model_BlockoBlock get_blocko_block(){
 
-        if(cache_value_blocko_block_id == null){
-            Model_BlockoBlock blocko_block = Model_BlockoBlock.find.where().eq("blocko_versions.id", id).select("id").findUnique();
-            cache_value_blocko_block_id = blocko_block.id.toString();
+        if(get_blocko_block_id() != null){
+           return Model_BlockoBlock.get_byId(cache_value_blocko_block_id);
         }
 
-        return Model_BlockoBlock.get_byId(cache_value_blocko_block_id);
+        return null;
     }
 
 
@@ -111,6 +131,7 @@ public class Model_BlockoBlockVersion extends Model {
             help.author = author();
             help.delete_permission = this.delete_permission();
             help.edit_permission = this.edit_permission();
+            help.publish_type = publish_type;
 
             if(approval_state != null){
                 help.publish_status = approval_state;
@@ -137,7 +158,13 @@ public class Model_BlockoBlockVersion extends Model {
         }
         super.save();
 
-        if(get_blocko_block().type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, get_blocko_block().get_type_of_block().project_id(), get_blocko_block().id.toString()))).start();
+        if(blocko_block.type_of_block != null && blocko_block.type_of_block.project != null) {
+            new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo(Model_BlockoBlock.class, get_blocko_block().get_type_of_block().project_id(), get_blocko_block().id.toString()))).start();
+        }
+
+        if(blocko_block != null) {
+            blocko_block.cache_value_blocko_versions_id.add(0, id);
+        }
     }
 
     @JsonIgnore @Override public void update() {
@@ -146,7 +173,9 @@ public class Model_BlockoBlockVersion extends Model {
 
         super.update();
 
-        if(get_blocko_block().type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlockVersion.class, get_blocko_block().get_type_of_block().project_id(), id))).start();
+        if(get_blocko_block().type_of_block != null && get_blocko_block().type_of_block.project != null){
+            new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlockVersion.class, get_blocko_block().get_type_of_block().project_id(), id))).start();
+        }
     }
 
     @JsonIgnore @Override public void delete() {
@@ -156,7 +185,13 @@ public class Model_BlockoBlockVersion extends Model {
         removed_by_user = true;
         super.update();
 
-        if(get_blocko_block().type_of_block.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, get_blocko_block().get_type_of_block().project_id(), get_blocko_block().id.toString()))).start();
+        if(get_blocko_block() != null && get_blocko_block().type_of_block.project != null) {
+            new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo(Model_BlockoBlock.class, get_blocko_block().get_type_of_block().project_id(), get_blocko_block().id.toString()))).start();
+        }
+
+        if(get_blocko_block() != null) {
+            get_blocko_block().cache_value_blocko_versions_id.remove(id);
+        }
     }
 
 

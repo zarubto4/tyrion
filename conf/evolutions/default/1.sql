@@ -64,14 +64,16 @@ create table BlockoBlockVersion (
   id                        varchar(255) not null,
   version_name              varchar(255),
   version_description       varchar(255),
-  approval_state            varchar(11),
-  author_id                 varchar(255),
-  date_of_create            timestamp,
   design_json               TEXT,
   logic_json                TEXT,
-  blocko_block_id           varchar(40),
+  approval_state            varchar(11),
+  publish_type              varchar(20),
   removed_by_user           boolean,
+  author_id                 varchar(255),
+  date_of_create            timestamp,
+  blocko_block_id           varchar(40),
   constraint ck_BlockoBlockVersion_approval_state check (approval_state in ('approved','edited','pending','disapproved')),
+  constraint ck_BlockoBlockVersion_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_version','default_test_program')),
   constraint pk_BlockoBlockVersion primary key (id))
 ;
 

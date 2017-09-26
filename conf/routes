@@ -12,7 +12,7 @@ OPTIONS   /*all                                                         @control
 POST      /test                                                         @controllers.Controller_ZZZ_Tester.test1()
 POST      /test2                                                        @controllers.Controller_ZZZ_Tester.test2()
 POST      /test3                                                        @controllers.Controller_ZZZ_Tester.test3()
-POST      /demodata                                                     @utilities.demo_data.Utilities_Demo_data_Controller.all_for_becki()
+GET       /demodata                                                     @utilities.demo_data.Utilities_Demo_data_Controller.all_for_becki()
 
 ### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET ###########################################################################
 ###################################################################################f#################################################################################
@@ -237,12 +237,14 @@ DELETE    /blockoBlock/:blocko_block_id                                 @control
 PUT       /blockoBlock/list/:page_number                                @controllers.Controller_Blocko.blockoBlock_getByFilter(page_number:Int )
 PUT       /admin/blockoBlock/deactive/:blocko_block_id                  @controllers.Controller_Blocko.blockoBlock_deactivate(blocko_block_id)
 PUT       /admin/blockoBlock/active/:blocko_block_id                    @controllers.Controller_Blocko.blockoBlock_activate(blocko_block_id)
+PUT       /admin/blockoBlock/approval                                   @controllers.Controller_Blocko.blockoBlock_public_response()
 
 POST      /blockoBlock/version/:blocko_block_id                         @controllers.Controller_Blocko.blockoBlockVersion_create(blocko_block_id)
 PUT       /blockoBlock/version/:blocko_block_version_id                 @controllers.Controller_Blocko.blockoBlockVersion_update(blocko_block_version_id)
 PUT       /blockoBlock/version/make_public/:blocko_block_version_id     @controllers.Controller_Blocko.blockoBlockVersion_makePublic(blocko_block_version_id)
 GET       /blockoBlock/version/:blocko_block_version_id                 @controllers.Controller_Blocko.blockoBlockVersion_get(blocko_block_version_id)
 DELETE    /blockoBlock/version/:blocko_block_version_id                 @controllers.Controller_Blocko.blockoBlockVersion_delete(blocko_block_version_id)
+PUT       /admin/blockoBlock/version/set_main/:blocko_block_version_id  @controllers.Controller_Blocko.blockoBlockVersion_set_main(blocko_block_version_id)
 
 #TypeOfBlocko
 POST      /typeOfBlock                                                  @controllers.Controller_Blocko.typeOfBlock_create()
@@ -441,6 +443,7 @@ DELETE    /grid_widget/:grid_widget_id                                  @control
 PUT       /grid_widget/list/:page_number                                @controllers.Controller_Grid.gridWidget_getByFilter(page_number: Int)
 PUT       /admin/grid_widget/deactive/:grid_widget_id                   @controllers.Controller_Grid.gridWidget_deactivate(grid_widget_id)
 PUT       /admin/grid_widget/active/:grid_widget_id                     @controllers.Controller_Grid.gridWidget_activate(grid_widget_id)
+PUT       /admin/grid_widget/approval                                   @controllers.Controller_Grid.grid_widget_public_response()
 
 POST      /grid_widget/version/:grid_widget_id                          @controllers.Controller_Grid.gridWidgetVersion_create(grid_widget_id)
 PUT       /grid_widget/version/:grid_widget_version_id                  @controllers.Controller_Grid.gridWidgetVersion_edit(grid_widget_version_id)
@@ -450,8 +453,7 @@ GET       /grid_widget/version/:grid_widget_version_id                  @control
 DELETE    /grid_widget/version/:grid_widget_version_id                  @controllers.Controller_Grid.gridWidgetVersion_delete(grid_widget_version_id)
 PUT       /admin/grid_widget/version/set_main/:grid_widget_id           @controllers.Controller_Grid.gridWidgetVersion_set_main(grid_widget_id)
 
-# Wigets / Admin Approval
-PUT       /admin/grid_widget/approval                                   @controllers.Controller_Grid.grid_widget_public_response()
+
 
 #TypeOfWidget
 POST      /type_of_widget                                               @controllers.Controller_Grid.typeOfWidget_create()

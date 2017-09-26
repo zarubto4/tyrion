@@ -13,6 +13,7 @@ import play.mvc.Security;
 import utilities.emails.Email;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_MProgram_SnapShot_settings;
+import utilities.enums.Enum_Publishing_type;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
@@ -1328,16 +1329,27 @@ public class Controller_Blocko extends Controller{
             // Získání všech objektů a následné odfiltrování soukormých TypeOfBlock
             Query<Model_TypeOfBlock> query = Ebean.find(Model_TypeOfBlock.class);
 
-            if(help.public_programs){ // TODO
-                query.where().eq("project.participants.person.id", Controller_Security.get_person_id());
-            }else{
-                query.where().isNull("project");
-            }
+            // Order
+            query.order().asc("order_position");
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if(help.project_id != null){
 
-                query.where().eq("project.id", help.project_id);
+                Model_Project project = Model_Project.get_byId(help.project_id);
+                if(project == null )return GlobalResult.result_notFound("Project not found");
+                if(!project.read_permission())return GlobalResult.result_forbidden();
+
+                query.where().eq("project.id", help.project_id).eq("removed_by_user", false);
+            }
+
+            if(help.public_programs){
+
+                if(!Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name())) {
+                    query.where().isNull("project").eq("removed_by_user", false).eq("publish_type", Enum_Publishing_type.public_program.name());
+                }else {
+                    query.where().isNull("project").eq("removed_by_user", false).eq("active", true).eq("publish_type", Enum_Publishing_type.public_program.name());
+                }
+
             }
 
             // Vytvoření odchozího JSON
@@ -1560,6 +1572,7 @@ public class Controller_Blocko extends Controller{
             blockoBlock.name                = help.name;
             blockoBlock.author              = Controller_Security.get_person();
             blockoBlock.type_of_block       = typeOfBlock;
+            blockoBlock.publish_type        = Enum_Publishing_type.private_program;
 
             // Kontrola oprávnění těsně před uložením
             if (!blockoBlock.create_permission()) return GlobalResult.result_forbidden();
@@ -2050,6 +2063,133 @@ public class Controller_Blocko extends Controller{
         }
     }
 
+    @ApiOperation(value = "edit BlockoBlock_Version Response publication",
+            tags = {"Admin-Blocko-Block"},
+            notes = "sets Approval_state to pending",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_Publish_Response",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Secured_API.class)
+    public Result blockoBlock_public_response() {
+
+        try {
+
+            // Získání JSON
+            final Form<Swagger_BlockoBlock_Publish_Response> form = Form.form(Swagger_BlockoBlock_Publish_Response.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_BlockoBlock_Publish_Response help = form.get();
+
+            // Kontrola názvu
+            if(help.version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
+
+            // Kontrola objektu
+            Model_BlockoBlockVersion private_blocko_block_version = Model_BlockoBlockVersion.get_byId(help.version_id);
+            if (private_blocko_block_version == null) return GlobalResult.result_notFound("grid_widget_version not found");
+
+            // Kontrola nadřazeného objektu
+            Model_BlockoBlock block_old = private_blocko_block_version.get_blocko_block();
+
+            // Zkontroluji oprávnění
+            if(!block_old.community_publishing_permission()){
+                return GlobalResult.result_forbidden();
+            }
+
+
+            if(help.decision) {
+
+                // Kontrola skupiny kam se widget zařadí
+                Model_TypeOfBlock type_of_block_public = Model_TypeOfBlock.find.byId(help.blocko_block_type_of_block_id);
+                if (type_of_block_public == null) {
+                    return GlobalResult.result_notFound("Model_TypeOfBlock not found");
+                }
+
+                if (type_of_block_public.publish_type != Enum_Publishing_type.public_program) {
+                    return GlobalResult.result_badRequest("You cannot register Widget to non-public group");
+                }
+
+                System.out.println("help.decision je true!!!");
+
+                private_blocko_block_version.approval_state = Enum_Approval_state.approved;
+                private_blocko_block_version.update();
+
+                Model_BlockoBlock blocko_block = Model_BlockoBlock.find.where().eq("id",block_old.id.toString() + "_public_copy").findUnique();
+
+                if(blocko_block == null) {
+                    // Vytvoření objektu
+                    blocko_block = new Model_BlockoBlock();
+                    blocko_block.name = help.program_name;
+                    blocko_block.description = help.program_description;
+                    blocko_block.type_of_block = type_of_block_public;
+                    blocko_block.author = private_blocko_block_version.get_blocko_block().get_author();
+                    blocko_block.publish_type = Enum_Publishing_type.public_program;
+                    blocko_block.save();
+                }
+
+                // Vytvoření objektu
+                Model_BlockoBlockVersion blocko_blockVersion = new Model_BlockoBlockVersion();
+                blocko_blockVersion.version_name = help.version_name;
+                blocko_blockVersion.version_description = help.version_description;
+                blocko_blockVersion.design_json = private_blocko_block_version.design_json;
+                blocko_blockVersion.logic_json = private_blocko_block_version.logic_json;
+                blocko_blockVersion.approval_state = Enum_Approval_state.approved;
+                blocko_blockVersion.blocko_block = blocko_block;
+                blocko_blockVersion.date_of_create = new Date();
+                blocko_blockVersion.save();
+
+                blocko_block.refresh();
+
+                // TODO notifikace a emaily
+
+                return GlobalResult.result_ok();
+
+            }else {
+                // Změna stavu schválení
+                private_blocko_block_version.approval_state = Enum_Approval_state.disapproved;
+
+                // Odeslání emailu s důvodem
+                try {
+
+                    new Email()
+                            .text("Version of Widget " + private_blocko_block_version.get_blocko_block().name + ": " + Email.bold(private_blocko_block_version.version_name) + " was not approved for this reason: ")
+                            .text(help.reason)
+                            .send(private_blocko_block_version.get_blocko_block().get_author().mail, "Version of Widget disapproved" );
+
+                } catch (Exception e) {
+                    terminal_logger.internalServerError (e);
+                }
+
+                // Uložení změn
+                private_blocko_block_version.update();
+
+                // Vrácení výsledku
+                return GlobalResult.result_ok();
+            }
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
 // BLOCK VERSION #######################################################################################################
 
     @ApiOperation(value = "create BlockoBlock_Version",
@@ -2268,7 +2408,7 @@ public class Controller_Blocko extends Controller{
         }
     }
 
-    @ApiOperation(value = "edit BlockoBlock_Version ask for publication",
+    @ApiOperation(value = "make BlockoBlock_Version public",
             tags = {"Blocko-Block"},
             notes = "sets Approval_state to pending",
             produces = "application/json",
@@ -2302,6 +2442,61 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(blockoBlockVersion));
 
         }catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "set_As_Main BlockoBlock_Version",
+            tags = {"Admin-Blocko-Block"},
+            notes = "",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            extensions = {
+                    @Extension( name = "permission_required", properties = {
+                            @ExtensionProperty(name = "GridWidgetVersion.delete_permission", value = "true"),
+                            @ExtensionProperty(name = "Static Permission key", value =  "GridWidgetVersion_delete_permission")
+                    })
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result blockoBlockVersion_set_main(String blocko_block_version_id){
+        try {
+
+            // Kontrola objektu
+            Model_BlockoBlockVersion version = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
+            if(version == null) return GlobalResult.result_notFound("BlockoBlockVersion blocko_block_version_id not found");
+
+            // Kontrola oprávnění
+            if (!version.edit_permission()) return GlobalResult.result_forbidden();
+
+            if(!version.get_blocko_block_id().equals("00000000-0000-0000-0000-000000000001")){
+                return GlobalResult.result_notFound("BlockoBlockVersion blocko_block_version_id not from default program");
+            }
+
+            Model_BlockoBlockVersion old_version = Model_BlockoBlockVersion.find.where().eq("publish_type", Enum_Publishing_type.default_version.name()).select("id").findUnique();
+            if(old_version != null) {
+                old_version = Model_BlockoBlockVersion.get_byId(old_version.id);
+                old_version.publish_type = null;
+                old_version.update();
+                Model_BlockoBlockVersion.cache.put(old_version.id, old_version);
+            }
+
+            version.publish_type = Enum_Publishing_type.default_version;
+            version.update();
+
+            Model_BlockoBlockVersion.cache.put(version.id, version);
+
+            // Vrácení potvrzení
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }
     }

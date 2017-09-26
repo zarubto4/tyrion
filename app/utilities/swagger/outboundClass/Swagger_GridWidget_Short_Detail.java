@@ -34,4 +34,5 @@ public class Swagger_GridWidget_Short_Detail {
 
     @ApiModelProperty(required = true, readOnly = true)
     public boolean delete_permission;
+
 }

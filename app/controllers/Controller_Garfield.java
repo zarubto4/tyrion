@@ -180,7 +180,7 @@ public class Controller_Garfield extends Controller {
             // Kontrola oprávnění
             if (! garfield.delete_permission()) return GlobalResult.result_forbidden();
 
-
+            // Odsranit objekt
             garfield.delete();
 
             // Vrácení objektu

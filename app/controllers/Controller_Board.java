@@ -1006,8 +1006,7 @@ public class Controller_Board extends Controller {
             c_program_test.description = "Test program for this device type";
             c_program_test.type_of_board_test = typeOfBoard;
             c_program_test.type_of_board =  typeOfBoard;
-            c_program.publish_type  = Enum_Publishing_type.default_test_program;
-
+            c_program_test.publish_type  = Enum_Publishing_type.default_test_program;
             c_program_test.save();
 
             typeOfBoard.refresh();

@@ -86,8 +86,8 @@ public class Printer_Api {
 
 
         List<Printer> printers = form.get().printer_list;
-
-        return printers.isEmpty() ? null : form.get().printer_list.get(0);
+        if(printers == null) return null;
+        return printers.isEmpty() ? null : printers.get(0);
     }
 
 

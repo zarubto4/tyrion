@@ -145,10 +145,10 @@ public class Model_GridWidget extends Model{
     @Transient @JsonIgnore @TyrionCachedList
     public Model_TypeOfWidget get_type_of_widget() {
         if(cache_value_type_of_widget_id == null){
-            Model_TypeOfWidget type_of_block = Model_TypeOfWidget.find.where().eq("grid_widgets.id", id).select("id").findUnique();
+            Model_TypeOfWidget typeOfWidget = Model_TypeOfWidget.find.where().eq("grid_widgets.id", id).select("id").findUnique();
 
-            if(type_of_block != null) {
-                cache_value_type_of_widget_id = type_of_block.id;
+            if(typeOfWidget != null) {
+                cache_value_type_of_widget_id = typeOfWidget.id;
             }else {
                 cache_value_type_of_widget_id = "";
             }
@@ -229,7 +229,7 @@ public class Model_GridWidget extends Model{
         super.refresh();
 
         // Add to Cache - Na začátku při save mám vždy přímý link mimo Cache
-        if( get_type_of_widget() != null) {
+        if( type_of_widget != null) {
             get_type_of_widget().grid_widgets_ids.add(0, id.toString());
         }
 

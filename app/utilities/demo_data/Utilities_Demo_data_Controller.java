@@ -19,7 +19,6 @@ import java.util.List;
 
 
 @Api(value = "Dashboard Private Api", hidden = true)
-@Security.Authenticated(Secured_API.class)
 public class Utilities_Demo_data_Controller extends Controller {
 
 // LOGGER ##############################################################################################################
@@ -142,6 +141,29 @@ public class Utilities_Demo_data_Controller extends Controller {
             typeOfBoard_1.features.add(wifi);
             typeOfBoard_1.save();
 
+            // Vytvoříme defaultní C_Program pro snížení počtu kroků pro nastavení desky
+            Model_CProgram c_program_1 = new Model_CProgram();
+            c_program_1.name =  typeOfBoard_1.name + " default program";
+            c_program_1.description = "Default program for this device type";
+            c_program_1.type_of_board_default = typeOfBoard_1;
+            c_program_1.type_of_board =  typeOfBoard_1;
+            c_program_1.publish_type  = Enum_Publishing_type.default_main_program;
+            c_program_1.save();
+
+            typeOfBoard_1.refresh();
+
+            // Vytvoříme testovací C_Program pro snížení počtu kroků pro nastavení desky
+            Model_CProgram c_program_test_1 = new Model_CProgram();
+            c_program_test_1.name =  typeOfBoard_1.name + " test program";
+            c_program_test_1.description = "Test program for this device type";
+            c_program_test_1.type_of_board_test = typeOfBoard_1;
+            c_program_test_1.type_of_board =  typeOfBoard_1;
+            c_program_test_1.publish_type  = Enum_Publishing_type.default_test_program;
+            c_program_test_1.save();
+
+            typeOfBoard_1.refresh();
+
+
             // Nastavím Type of Boards - YODA
             Model_TypeOfBoard typeOfBoard_2 = new Model_TypeOfBoard();
             typeOfBoard_2.name = "IODA G3";
@@ -154,6 +176,29 @@ public class Utilities_Demo_data_Controller extends Controller {
             typeOfBoard_2.features.add(ethernet);
             typeOfBoard_2.features.add(wifi);
             typeOfBoard_2.save();
+
+
+            // Vytvoříme defaultní C_Program pro snížení počtu kroků pro nastavení desky
+            Model_CProgram c_program_2 = new Model_CProgram();
+            c_program_2.name =  typeOfBoard_2.name + " default program";
+            c_program_2.description = "Default program for this device type";
+            c_program_2.type_of_board_default = typeOfBoard_2;
+            c_program_2.type_of_board =  typeOfBoard_2;
+            c_program_2.publish_type  = Enum_Publishing_type.default_main_program;
+            c_program_2.save();
+
+            typeOfBoard_2.refresh();
+
+            // Vytvoříme testovací C_Program pro snížení počtu kroků pro nastavení desky
+            Model_CProgram c_program_test_2 = new Model_CProgram();
+            c_program_test_2.name =  typeOfBoard_2.name + " test program";
+            c_program_test_2.description = "Test program for this device type";
+            c_program_test_2.type_of_board_test = typeOfBoard_2;
+            c_program_test_2.type_of_board =  typeOfBoard_2;
+            c_program_test_2.publish_type  = Enum_Publishing_type.default_test_program;
+            c_program_test_2.save();
+
+            typeOfBoard_2.refresh();
 
 
             return GlobalResult.result_ok();
