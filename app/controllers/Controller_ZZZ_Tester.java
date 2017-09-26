@@ -6,15 +6,14 @@ import io.swagger.annotations.ApiOperation;
 import models.*;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utilities.demo_data.Utilities_Demo_data_Controller;
 import utilities.enums.Enum_Publishing_type;
 import utilities.lablel_printer_service.Printer_Api;
-import utilities.lablel_printer_service.labels.Label_12_mm;
+import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
+import utilities.lablel_printer_service.labels.Label_12_mm_QR_code;
 import utilities.lablel_printer_service.printNodeModels.PrinterOption;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.response.GlobalResult;
-import utilities.scheduler.jobs.Job_SpendingCredit;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Online_Change_status;
 
 import java.util.UUID;
@@ -94,18 +93,18 @@ public class Controller_ZZZ_Tester extends Controller {
             Printer_Api api = new Printer_Api();
 
             Model_Board board = new Model_Board();
-            board.hash_for_adding = UUID.randomUUID().toString();
+            board.id = "123456789123456789121234";
+            board.hash_for_adding = "HWR_" + UUID.randomUUID().toString();
+            board.mac_address = "AA:QF:NN:MM:WW";
 
             PrinterOption option = new PrinterOption();
-            option.media = "label";
-            option.dpi = "100800";
+            option.media = "12mm";
 
             // Test of printer
-            Label_12_mm label_12_mm = new Label_12_mm(board);
+            Label_62_split_mm_Details label_12_mm_details = new Label_62_split_mm_Details(board);
 
-           // api.printFile(279215, 1, "Garfield Print QR Hash", label_12_mm.get_label());
-              api.printFile(279214, 1, "Garfield Print QR Hash", label_12_mm.get_label(), option);
-           // api.printFile(279213, 1, "Garfield Print QR Hash", label_12_mm.get_label());
+            //api.printFile(279211, 1, "Garfield Print QR Hash", label_12_mm_qr_code.get_label(), null);
+            api.printFile(279211, 1, "Garfield Print QR Hash", label_12_mm_details.get_label(), option);
 
 
             return GlobalResult.result_ok();

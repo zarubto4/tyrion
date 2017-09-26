@@ -20,10 +20,10 @@ import utilities.logger.Class_Logger;
 import java.io.*;
 
 
-public class Label_62_mm {
+public class Label_62_mm_package {
 
     // Logger
-    private static final Class_Logger terminal_logger = new Class_Logger(Label_62_mm.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Label_62_mm_package.class);
 
     // For image placing to cell
     private PdfContentByte contentByte;
@@ -33,7 +33,7 @@ public class Label_62_mm {
     Model_TypeOfBoard_Batch print_info = null;
     Model_Garfield garfield = null;
 
-    public Label_62_mm(Model_Board board, Model_TypeOfBoard_Batch batch, Model_Garfield garfield) {
+    public Label_62_mm_package(Model_Board board, Model_TypeOfBoard_Batch batch, Model_Garfield garfield) {
         try {
             this.board = board;
             this.print_info = batch;

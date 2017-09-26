@@ -10,8 +10,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.lablel_printer_service.Printer_Api;
-import utilities.lablel_printer_service.labels.Label_12_mm;
-import utilities.lablel_printer_service.labels.Label_62_mm;
+import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.lablel_printer_service.printNodeModels.Printer;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
@@ -350,9 +349,9 @@ public class Controller_Garfield extends Controller {
                 info.customer_company_made_description = "1.9.9";
 
                 Printer_Api api = new Printer_Api();
-                Label_62_mm label_62_mm = new Label_62_mm(board, info, garfield);
+                Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(board, info, garfield);
 
-                api.printFile(printer_id, 1, "test", label_62_mm.get_label(), null);
+                api.printFile(printer_id, 1, "test", label_62_mmPackage.get_label(), null);
 
             }
 

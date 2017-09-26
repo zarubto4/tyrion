@@ -3,7 +3,10 @@ package models;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.azure.storage.blob.CloudAppendBlob;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
+import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -14,12 +17,10 @@ import utilities.enums.Enum_Notification_type;
 import utilities.logger.Class_Logger;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.response.GlobalResult;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Executors;
 
 @Entity
@@ -58,7 +59,43 @@ public class Model_BootLoader extends Model {
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @Transient @JsonProperty public boolean main_bootloader(){ return main_type_of_board != null;}
-    @Transient @JsonProperty public String  file_path(){ return file != null ? file.get_file_path_for_direct_download() : null;}
+    @Transient @JsonProperty public String  file_path(){
+        try {
+            // Separace na Container a Blob
+            int slash = file.file_path.indexOf("/");
+            String container_name = file.file_path.substring(0, slash);
+            String real_file_path = file.file_path.substring(slash + 1);
+
+            CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
+
+            // Create Policy
+            Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            cal.setTime(new Date());
+            cal.add(Calendar.MONTH, 24);
+
+            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
+            policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
+            policy.setSharedAccessExpiryTime(cal.getTime());
+
+
+            String sas = blob.generateSharedAccessSignature(policy, null);
+
+            System.out.println("sas " + sas);
+            System.out.println("path blobu " + blob.getUri().getPath());
+
+
+            String total_link = blob.getUri().toString() + "?" + sas;
+
+            terminal_logger.debug("cloud_file_get_bootloader_version:: Total Link:: " + total_link);
+
+            // Přesměruji na link
+            return total_link;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
 
 
 

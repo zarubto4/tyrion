@@ -11,19 +11,19 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Date;
 
-public class Label_12_mm {
+public class Label_12_mm_QR_code {
 
     // Logger
-    private static final Class_Logger terminal_logger = new Class_Logger(Label_12_mm.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Label_12_mm_QR_code.class);
 
     // For image placing to cell
     private PdfContentByte contentByte;
-    private Rectangle Label_12_mm_Antistatic_Package = new RectangleReadOnly(Utilities.millimetersToPoints(12), Utilities.millimetersToPoints(12));
+    private Rectangle Label_12_mm = new RectangleReadOnly(Utilities.millimetersToPoints(12), Utilities.millimetersToPoints(12));
 
 
     Model_Board board = null;
 
-    public Label_12_mm(Model_Board board) {
+    public Label_12_mm_QR_code(Model_Board board) {
         try {
             this.board = board;
 
@@ -38,7 +38,7 @@ public class Label_12_mm {
 
         // Zkusím prototypově uložit
         // TODO smazat protože to nebude potřeba
-        try(OutputStream outputStream = new FileOutputStream(System.getProperty("user.dir") + "/label_printers/" + "generate_12_mm_" + new Date().getTime()  + ".pdf")) {
+        try(OutputStream outputStream = new FileOutputStream(System.getProperty("user.dir") + "/label_printers/" + "generate_12_mm_qr_code_" + new Date().getTime()  + ".pdf")) {
             out.writeTo(outputStream);
         }catch (Exception e){
 
@@ -51,7 +51,7 @@ public class Label_12_mm {
         try {
 
             // step 2: Create Document
-            Document document = new Document(Label_12_mm_Antistatic_Package, Utilities.millimetersToPoints(0), Utilities.millimetersToPoints(0), Utilities.millimetersToPoints(0), Utilities.millimetersToPoints(0));
+            Document document = new Document(Label_12_mm, Utilities.millimetersToPoints(0), Utilities.millimetersToPoints(0), Utilities.millimetersToPoints(0), Utilities.millimetersToPoints(0));
 
             // step 3: Get output stream for final File
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -87,8 +87,8 @@ public class Label_12_mm {
     private PdfPTable device_hash_for_Add(String hash_for_Add) throws DocumentException {
 
         PdfPTable table = new PdfPTable(1);
-                table.setTotalWidth(Label_12_mm_Antistatic_Package.getWidth());
-                table.getDefaultCell().setFixedHeight(Label_12_mm_Antistatic_Package.getWidth());
+                table.setTotalWidth(Label_12_mm.getWidth());
+                table.getDefaultCell().setFixedHeight(Label_12_mm.getWidth());
                 table.setLockedWidth(true);
                 table.setWidthPercentage(100);
                 table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -98,16 +98,16 @@ public class Label_12_mm {
         // QR Code for ADD
         BarcodeQRCode barcodeQRCode = new BarcodeQRCode(this.board.hash_for_adding, 1000, 1000, null);
         Image codeQrImage = barcodeQRCode.getImage();
-        codeQrImage.scaleToFit(Label_12_mm_Antistatic_Package.getWidth(), Label_12_mm_Antistatic_Package.getWidth());
+        codeQrImage.scaleToFit(Label_12_mm.getWidth(), Label_12_mm.getWidth());
 
         int odsazeni = 0;
 
         PdfTemplate template = contentByte.createTemplate(
-                Label_12_mm_Antistatic_Package.getHeight() - odsazeni - odsazeni,
-                Label_12_mm_Antistatic_Package.getHeight() - odsazeni - odsazeni);
+                Label_12_mm.getHeight() - odsazeni - odsazeni,
+                Label_12_mm.getHeight() - odsazeni - odsazeni);
         template.addImage(codeQrImage,
-                Label_12_mm_Antistatic_Package.getHeight(), 0, 0,
-                Label_12_mm_Antistatic_Package.getHeight(), -odsazeni, -odsazeni);
+                Label_12_mm.getHeight(), 0, 0,
+                Label_12_mm.getHeight(), -odsazeni, -odsazeni);
 
 
         PdfPCell cell = new PdfPCell(Image.getInstance(template), true);

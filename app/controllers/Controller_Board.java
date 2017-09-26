@@ -10,8 +10,8 @@ import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
 import utilities.lablel_printer_service.Printer_Api;
-import utilities.lablel_printer_service.labels.Label_12_mm;
-import utilities.lablel_printer_service.labels.Label_62_mm;
+import utilities.lablel_printer_service.labels.Label_12_mm_QR_code;
+import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
@@ -1982,11 +1982,11 @@ public class Controller_Board extends Controller {
             Printer_Api api = new Printer_Api();
 
             // Label 62 mm
-            Label_62_mm label_62_mm = new Label_62_mm(board, batch , garfiled);
-            api.printFile(garfiled.print_sticker_id, 1, "Garfield Print Label", label_62_mm.get_label(), null);
+            Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(board, batch , garfiled);
+            api.printFile(garfiled.print_sticker_id, 1, "Garfield Print Label", label_62_mmPackage.get_label(), null);
 
             // Label qith QR kode on Ethernet connector
-            Label_12_mm label_12_mm = new Label_12_mm(board);
+            Label_12_mm_QR_code label_12_mm = new Label_12_mm_QR_code(board);
             api.printFile(garfiled.print_label_id_1, 1, "Garfield Print QR Hash", label_12_mm.get_label(), null);
 
 
