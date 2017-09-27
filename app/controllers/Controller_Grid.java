@@ -1479,7 +1479,7 @@ public class Controller_Grid extends Controller {
             gridWidget.type_of_widget      = typeOfWidget;
             gridWidget.publish_type        = Enum_Publishing_type.private_program;
 
-            
+
             // Kontrola oprávnění těsně před uložením
             if (!gridWidget.create_permission() ) return GlobalResult.result_forbidden();
 

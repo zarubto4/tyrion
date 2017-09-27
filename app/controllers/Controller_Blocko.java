@@ -1109,6 +1109,7 @@ public class Controller_Blocko extends Controller{
 
                 // Úprava objektu
                 typeOfBlock.project = project;
+                typeOfBlock.publish_type = Enum_Publishing_type.private_program;
 
             }else {
                 if(Model_TypeOfBlock.get_publicByName(help.name) != null)
