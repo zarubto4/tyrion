@@ -10,6 +10,7 @@ import play.data.validation.Constraints;
 import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
+import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -53,7 +54,7 @@ public class Model_TypeOfBoard_Batch extends Model {
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public String get_new_MacAddress() throws Exception{
+    public String get_new_MacAddress() throws IllegalCharsetNameException{
 
         if(latest_used_mac_address == null){
             latest_used_mac_address = mac_address_start;
@@ -62,7 +63,7 @@ public class Model_TypeOfBoard_Batch extends Model {
         }
 
         if(latest_used_mac_address >= mac_address_end){
-            throw new Exception("All Mac Address used");
+            throw new IllegalCharsetNameException("All Mac Address used");
         }
 
         long mac = latest_used_mac_address;

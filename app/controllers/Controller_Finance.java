@@ -1107,7 +1107,7 @@ public class Controller_Finance extends Controller {
 
             }else {
 
-                if(help.integrator_registration) return GlobalResult.badRequest("Create Integrator Company First");
+                if(help.integrator_registration) return GlobalResult.result_badRequest("Create Integrator Company First");
 
                 customer = new Model_Customer();
 

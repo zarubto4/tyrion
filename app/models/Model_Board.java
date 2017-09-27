@@ -2022,7 +2022,7 @@ public class Model_Board extends Model {
         //Default starting state
         database_synchronize = true;
 
-        this.hash_for_adding = "HWR_" + UUID.randomUUID().toString();
+        this.hash_for_adding = "HW" + UUID.randomUUID().toString().replaceAll("[-]","").substring(0, 24);
 
         super.save();
 

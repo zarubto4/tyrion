@@ -13,6 +13,7 @@ import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_12_mm_QR_code;
 import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
+import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
@@ -25,6 +26,7 @@ import web_socket.message_objects.compilator_with_tyrion.WS_Message_Make_compila
 import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 import web_socket.message_objects.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
+import java.nio.charset.IllegalCharsetNameException;
 import java.util.*;
 
 
@@ -684,10 +686,10 @@ public class Controller_Board extends Controller {
             if (versionObject == null) return GlobalResult.result_notFound("FileRecord file_record_id not found");
 
             // Swagger_File_Content - Zástupný dokumentační objekt
-            if (versionObject.c_program == null) return GlobalResult.badRequest();
+            if (versionObject.c_program == null) return GlobalResult.result_badRequest();
 
             // Kontrola oprávnění
-            if (!versionObject.c_program.read_permission()) return GlobalResult.badRequest();
+            if (!versionObject.c_program.read_permission()) return GlobalResult.result_badRequest();
 
             // Swagger_File_Content - Zástupný dokumentační objekt
             Swagger_File_Content content = new Swagger_File_Content();
@@ -1947,20 +1949,22 @@ public class Controller_Board extends Controller {
             Swagger_Board_New_Garfield help = form.get();
 
             // Kotrola objektu
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId( help.type_of_board_id  );
-            if(typeOfBoard == null ) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(help.type_of_board_id);
+            if (typeOfBoard == null) return GlobalResult.result_notFound("TypeOfBoard type_of_board_id not found");
 
             // Kontorluji oprávnění
             if (!typeOfBoard.register_new_device_permission()) return GlobalResult.result_forbidden();
 
-            Model_TypeOfBoard_Batch batch = Model_TypeOfBoard_Batch.get_byId( help.type_of_board_batch_id  );
-            if(batch == null ) return GlobalResult.result_notFound("TypeOfBoard_Batch type_of_board_batch_id not found");
+            Model_TypeOfBoard_Batch batch = Model_TypeOfBoard_Batch.get_byId(help.type_of_board_batch_id);
+            if (batch == null)
+                return GlobalResult.result_notFound("TypeOfBoard_Batch type_of_board_batch_id not found");
 
             // Kontrola Objektu
             Model_Garfield garfiled = Model_Garfield.get_byId(help.garfield_station_id);
             if (garfiled == null) return GlobalResult.result_notFound("Garfield Station not found");
 
             Model_Board board = Model_Board.find.byId(help.full_id);
+
 
             // Pokud neexistuje vytvořím
             if (board == null) {
@@ -1982,15 +1986,19 @@ public class Controller_Board extends Controller {
             Printer_Api api = new Printer_Api();
 
             // Label 62 mm
-            Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(board, batch , garfiled);
+            Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(board, batch, garfiled);
+
+            label_62_mmPackage.get_label();
+            System.out.println(garfiled.print_sticker_id);
+
             api.printFile(garfiled.print_sticker_id, 1, "Garfield Print Label", label_62_mmPackage.get_label(), null);
 
             // Label qith QR kode on Ethernet connector
-            Label_12_mm_QR_code label_12_mm = new Label_12_mm_QR_code(board);
-            api.printFile(garfiled.print_label_id_1, 1, "Garfield Print QR Hash", label_12_mm.get_label(), null);
+            Label_62_split_mm_Details label_12_mm_details = new Label_62_split_mm_Details(board);
+            api.printFile(garfiled.print_label_id_1, 1, "Garfield Print QR Hash", label_12_mm_details.get_label(), null);
 
 
-            if(typeOfBoard.connectible_to_internet) {
+            if (typeOfBoard.connectible_to_internet) {
 
                 // Najdu backup_server
                 Model_HomerServer backup_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.backup_server).findUnique();
@@ -2012,8 +2020,6 @@ public class Controller_Board extends Controller {
                 result.backup_mqtt_username = backup_server.mqtt_username;
                 result.backup_mqtt_password = backup_server.mqtt_password;
 
-                result.bootloader_report = false;
-                result.auto_backup = true;
                 result.mac_address = board.mac_address;
 
                 return GlobalResult.result_created(Json.toJson(result));
@@ -2021,7 +2027,8 @@ public class Controller_Board extends Controller {
 
             // Vracím seznam zařízení k registraci
             return GlobalResult.result_created(Json.toJson(board));
-
+        } catch (IllegalCharsetNameException e) {
+            return GlobalResult.result_badRequest("All Mac Address used");
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }

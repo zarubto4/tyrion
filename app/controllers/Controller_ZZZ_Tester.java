@@ -8,6 +8,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.enums.Enum_Publishing_type;
 import utilities.lablel_printer_service.Printer_Api;
+import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.lablel_printer_service.labels.Label_12_mm_QR_code;
 import utilities.lablel_printer_service.printNodeModels.PrinterOption;
@@ -92,19 +93,22 @@ public class Controller_ZZZ_Tester extends Controller {
 
             Printer_Api api = new Printer_Api();
 
+
             Model_Board board = new Model_Board();
             board.id = "123456789123456789121234";
-            board.hash_for_adding = "HWR_" + UUID.randomUUID().toString();
+            board.hash_for_adding = "HW" + UUID.randomUUID().toString().replaceAll("[-]","").substring(0, 24);
             board.mac_address = "AA:QF:NN:MM:WW";
 
-            PrinterOption option = new PrinterOption();
-            option.media = "12mm";
+            Model_TypeOfBoard_Batch batch = Model_TypeOfBoard_Batch.find.findList().get(0);
+            Model_Garfield garfield = Model_Garfield.find.findList().get(0);
 
             // Test of printer
+            //Label_62_mm_package label_12_package  = new Label_62_mm_package(board, batch, garfield);
             Label_62_split_mm_Details label_12_mm_details = new Label_62_split_mm_Details(board);
 
             //api.printFile(279211, 1, "Garfield Print QR Hash", label_12_mm_qr_code.get_label(), null);
-            api.printFile(279211, 1, "Garfield Print QR Hash", label_12_mm_details.get_label(), option);
+            //api.printFile(279211, 1, "Garfield Print QR Hash", label_12_package.get_label(), null);
+            api.printFile(279211, 1, "Garfield Print QR Hash", label_12_mm_details.get_label(), null);
 
 
             return GlobalResult.result_ok();

@@ -358,7 +358,7 @@ public class Model_CProgram extends Model {
 
 
         if(project_id() != null){
-            Model_Project.get_byId( project_id() ).cache_list_c_program_ids.remove(id);
+            Model_Project.get_byId(project_id()).cache_list_c_program_ids.remove(id);
         }
 
         cache.remove(id);

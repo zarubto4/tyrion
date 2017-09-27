@@ -9,12 +9,15 @@ import com.itextpdf.text.Element;
 import com.itextpdf.text.Image;
 
 import java.io.FileOutputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import controllers.Controller_Security;
 import models.Model_Board;
 import models.Model_Garfield;
 import models.Model_TypeOfBoard_Batch;
+import models.Model_VersionObject;
 import utilities.logger.Class_Logger;
 
 import java.io.*;
@@ -27,7 +30,7 @@ public class Label_62_mm_package {
 
     // For image placing to cell
     private PdfContentByte contentByte;
-    private Rectangle Label_65_mm_Antistatic_Package = new RectangleReadOnly(Utilities.millimetersToPoints(62), Utilities.millimetersToPoints(70));
+    private Rectangle Label_65_mm_Antistatic_Package = new RectangleReadOnly(Utilities.millimetersToPoints(62), Utilities.millimetersToPoints(75));
 
     Model_Board board = null;
     Model_TypeOfBoard_Batch print_info = null;
@@ -46,17 +49,27 @@ public class Label_62_mm_package {
 
     public ByteArrayOutputStream get_label(){
 
-        ByteArrayOutputStream out = make_label();
+        try {
 
-        // Zkusím prototypově uložit
-        // TODO smazat protože to nebude potřeba
-        try(OutputStream outputStream = new FileOutputStream(System.getProperty("user.dir") + "/label_printers/" + "generate_" + new Date().getTime()  + ".pdf")) {
-            out.writeTo(outputStream);
-        }catch (Exception e){
+            System.out.println("get_label");
 
+            ByteArrayOutputStream out = make_label();
+
+            // Zkusím prototypově uložit
+            // TODO smazat protože to nebude potřeba
+            try (OutputStream outputStream = new FileOutputStream(System.getProperty("user.dir") + "/label_printers/" + "generate_" + new Date().getTime() + ".pdf")) {
+                out.writeTo(outputStream);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return out;
+
+        } catch (Exception e){
+            terminal_logger.internalServerError(e);
+            e.printStackTrace();
+            return null;
         }
-
-        return out;
     }
 
     private ByteArrayOutputStream make_label(){
@@ -97,6 +110,7 @@ public class Label_62_mm_package {
             return out;
 
         }catch (Exception e) {
+            e.printStackTrace();
             terminal_logger.internalServerError(e);
             return null;
         }
@@ -123,7 +137,7 @@ public class Label_62_mm_package {
         return head;
     }
 
-    private PdfPTable info_details(){
+    private PdfPTable info_details() throws ParseException {
 
         PdfPTable table = new PdfPTable(2);
         table.setWidthPercentage(100);
@@ -154,14 +168,26 @@ public class Label_62_mm_package {
 
         PdfPCell cell_Left = new PdfPCell();
 
+
+            SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+            String date = DATE_FORMAT.format(board.date_of_create);
+
             Paragraph p_tested = new Paragraph("Tested: ", bold);
-                      p_tested.add(new Chunk(board.date_of_create.toString(), regular));
+                      p_tested.add(new Chunk(date, regular));
+
+
+            board.get_type_of_board().main_test_c_program();
+
+
+            Model_VersionObject test_version = Model_VersionObject.find.where().eq("default_program.type_of_board.boards.id", board.id).isNotNull("default_program.type_of_board_test").findUnique();
+            Model_VersionObject production_version = Model_VersionObject.find.where().eq("default_program.type_of_board.boards.id", board.id).isNotNull("default_program.type_of_board_default").findUnique();
+
 
             Paragraph p_test_version = new Paragraph("FW Test Version: ", bold);
-                      p_test_version.add(new Chunk(board.get_type_of_board().main_test_c_program().default_main_version.version_name, regular));
+                      p_test_version.add(new Chunk(test_version.version_name, regular));
 
             Paragraph p_prod_version = new Paragraph("FW Prod Version: ", bold);
-                      p_prod_version.add(new Chunk(board.get_type_of_board().main_c_program().default_main_version.version_name, regular));
+                      p_prod_version.add(new Chunk(production_version.version_name, regular));
 
             Paragraph p_who_tested = new Paragraph("Who tested it: ", bold);
                       p_who_tested.add(new Chunk(Controller_Security.get_person().full_name, regular));
