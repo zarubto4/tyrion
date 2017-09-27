@@ -4,6 +4,9 @@ import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Query;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.microsoft.azure.storage.blob.CloudAppendBlob;
+import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
+import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
 import io.swagger.annotations.*;
 import models.*;
 import play.data.Form;
@@ -12,19 +15,23 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.Server;
 import utilities.emails.Email;
 import utilities.enums.Enum_Approval_state;
+import utilities.enums.Enum_Compile_status;
 import utilities.enums.Enum_Publishing_type;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
+import utilities.login_entities.Secured_Homer_Server;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_C_Program_List;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version;
+import utilities.swagger.outboundClass.Swagger_File_Link;
 
-import java.util.Date;
+import java.util.*;
 
 @Security.Authenticated(Secured_API.class)
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -708,6 +715,79 @@ public class Controller_Code extends Controller{
 
             // Vracím potvrzení o smazání
             return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get C_Program_Version Binary DownloadLink",
+            tags = {"C_Program"},
+            notes = "Required secure Token changed throw websocket",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = Swagger_File_Link.class),
+            @ApiResponse(code = 404, message = "File by ID not found", response = Result_NotFound.class),
+            @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result cloud_file_get_c_program_version(String version_id){
+        try{
+
+            // Ověření objektu
+            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
+            if (version_object == null) return GlobalResult.result_notFound("Version version_id not found");
+
+            // Zkontroluji validitu Verze zda sedí k C_Programu
+            if(version_object.c_program == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
+
+           if(!version_object.c_program.read_permission()) return GlobalResult.result_forbidden();
+
+            // Získám soubor
+            Model_CCompilation compilation = version_object.c_compilation;
+
+            if(compilation == null){
+                return GlobalResult.result_notFound("File not found");
+            }
+
+
+            if(compilation.status != Enum_Compile_status.successfully_compiled_and_restored){
+                return GlobalResult.result_notFound("File not successfully compiled and restored");
+            }
+
+
+            // Separace na Container a Blob
+            int slash = compilation.bin_compilation_file.file_path.indexOf("/");
+            String container_name = compilation.bin_compilation_file.file_path.substring(0,slash);
+            String real_file_path = compilation.bin_compilation_file.file_path.substring(slash+1);
+
+            CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
+
+
+            // Create Policy
+            Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            cal.setTime(new Date());
+            cal.add(Calendar.MINUTE, 30);
+
+            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
+            policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
+            policy.setSharedAccessExpiryTime(cal.getTime());
+
+
+            String sas = blob.generateSharedAccessSignature(policy, null);
+
+            String total_link = blob.getUri().toString() + "?" + sas;
+
+            terminal_logger.debug("cloud_file_get_c_program_version:: Total Link:: " + total_link);
+
+            Swagger_File_Link link = new Swagger_File_Link();
+            link.file_link = total_link;
+
+            // Přesměruji na link
+            return GlobalResult.result_ok(Json.toJson(link));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());

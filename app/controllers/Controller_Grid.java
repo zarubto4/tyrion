@@ -980,7 +980,6 @@ public class Controller_Grid extends Controller {
 
                 // Úprava objektu
                 typeOfWidget.project = project;
-                project.cache_list_type_of_widgets_ids.clear();
 
             }else {
                 typeOfWidget.publish_type = Enum_Publishing_type.public_program;
@@ -1480,14 +1479,12 @@ public class Controller_Grid extends Controller {
             gridWidget.type_of_widget      = typeOfWidget;
             gridWidget.publish_type        = Enum_Publishing_type.private_program;
 
+            
             // Kontrola oprávnění těsně před uložením
             if (!gridWidget.create_permission() ) return GlobalResult.result_forbidden();
 
             // Uložení objektu
             gridWidget.save();
-
-            gridWidget.refresh();
-            typeOfWidget.grid_widgets_ids.add(0, gridWidget.id.toString());
 
             // Získání šablony
             Model_GridWidgetVersion scheme = Model_GridWidgetVersion.find.where().eq("publish_type", Enum_Publishing_type.default_version.name()).findUnique();
@@ -1915,9 +1912,6 @@ public class Controller_Grid extends Controller {
             // Kontrola oprávnění
             if (! version.delete_permission()) return GlobalResult.result_forbidden();
 
-            version.grid_widget.cache_value_grid_versions_id.clear();
-            Model_GridWidget.cache.put(version.grid_widget.id.toString(), version.grid_widget);
-
             // Smazání objektu
             version.delete();
 
@@ -1969,13 +1963,10 @@ public class Controller_Grid extends Controller {
                 old_version = Model_GridWidgetVersion.get_byId(old_version.id);
                 old_version.publish_type = null;
                 old_version.update();
-                Model_GridWidgetVersion.cache.put(old_version.id, old_version);
             }
 
             version.publish_type = Enum_Publishing_type.default_version;
             version.update();
-
-            Model_GridWidgetVersion.cache.put(version.id, version);
 
             // Vrácení potvrzení
             return GlobalResult.result_ok();
@@ -2112,11 +2103,6 @@ public class Controller_Grid extends Controller {
 
             // Uložení objektu
             version.save();
-
-            version.refresh();
-
-            gridWidget.cache_value_grid_versions_id.clear();
-            Model_GridWidget.cache.put(gridWidget.id.toString(), gridWidget);
 
             // Vrácení objektu
             return GlobalResult.result_created(Json.toJson(gridWidget));

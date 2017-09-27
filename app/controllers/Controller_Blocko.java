@@ -2485,13 +2485,10 @@ public class Controller_Blocko extends Controller{
                 old_version = Model_BlockoBlockVersion.get_byId(old_version.id);
                 old_version.publish_type = null;
                 old_version.update();
-                Model_BlockoBlockVersion.cache.put(old_version.id, old_version);
             }
 
             version.publish_type = Enum_Publishing_type.default_version;
             version.update();
-
-            Model_BlockoBlockVersion.cache.put(version.id, version);
 
             // Vrácení potvrzení
             return GlobalResult.result_ok();

@@ -315,6 +315,7 @@ POST      /c_program/version/create/:c_program_id                       @control
 GET       /c_program/version/get/:version_id                            @controllers.Controller_Code.c_program_version_get(version_id)
 PUT       /c_program/version/edit/:version_id                           @controllers.Controller_Code.c_program_version_edit(version_id)
 DELETE    /c_program/version/delete/:version_id                         @controllers.Controller_Code.c_program_version_delete(version_id)
+PUT       /c_program/version/download/:version_id                       @controllers.Controller_Code.cloud_file_get_c_program_version(version_id)
 
 POST      /c_program/version/compile                                    @controllers.Controller_Board.compile_c_program_code()
 PUT       /c_program/version/compile/:version_id                        @controllers.Controller_Board.compile_c_program_version(version_id)
