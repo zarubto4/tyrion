@@ -61,6 +61,11 @@ public class Model_BootLoader extends Model {
     @Transient @JsonProperty public boolean main_bootloader(){ return main_type_of_board != null;}
     @Transient @JsonProperty public String  file_path(){
         try {
+
+            if (file == null) {
+                return null;
+            }
+
             // Separace na Container a Blob
             int slash = file.file_path.indexOf("/");
             String container_name = file.file_path.substring(0, slash);
