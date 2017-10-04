@@ -238,7 +238,6 @@ public class Model_Tariff extends Model {
 
     public enum permissions{Tariff_create, Tariff_read, Tariff_edit, Tariff_update, Tariff_delete,}
 
-
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
@@ -250,7 +249,6 @@ public class Model_Tariff extends Model {
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
+
     public static Model.Finder<String, Model_Tariff> find = new Finder<>(Model_Tariff.class);
-
 }
-

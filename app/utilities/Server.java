@@ -356,6 +356,7 @@ public class Server {
         for(Enum en : Model_Board.permissions.values())                   permissions.add(en.name());
         for(Enum en : Model_CompilationServer.permissions.values())       permissions.add(en.name());
         for(Enum en : Model_Library.permissions.values())                 permissions.add(en.name());
+        for(Enum en : Model_LoggyError.permissions.values())              permissions.add(en.name());
         for(Enum en : Model_Processor.permissions.values())               permissions.add(en.name());
         for(Enum en : Model_Producer.permissions.values())                permissions.add(en.name());
         for(Enum en : Model_TypeOfBoard.permissions.values())             permissions.add(en.name());

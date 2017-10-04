@@ -3,12 +3,17 @@ package models;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.Controller_Security;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.UUID;
 
 @Entity
+@ApiModel(value = "LoggyError", description = "Model of LoggyError")
 @Table(name="LoggyError")
 public class Model_LoggyError extends Model {
 
@@ -32,11 +37,6 @@ public class Model_LoggyError extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public void setYoutrack_url(String url) {
-        youtrack_url = url;
-    }
-
-    @JsonIgnore
     public Model_LoggyError(String id, String summary, String description, String stack_trace, String cause) {
         this.id = id;
         this.summary = summary;
@@ -56,6 +56,12 @@ public class Model_LoggyError extends Model {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore                                      public boolean read_permission()  {  return Controller_Security.get_person().has_permission("LoggyError_read");}
+    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("LoggyError_edit");}
+    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().has_permission("LoggyError_delete");}
+
+    public enum permissions{LoggyError_read, LoggyError_edit, LoggyError_delete,}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<String,Model_LoggyError> find = new Finder<>(Model_LoggyError.class);

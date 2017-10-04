@@ -227,40 +227,9 @@ public class Server_Logger extends Controller {
     }
 
 
-/* CONTROLLER OERATION ---------------------------------------------------------------------------------------------------*/
+/* CONTROLLER OERATION -------------------------------------------------------------------------------------------------*/
 
-
-    // Nahraje konkrétní bug na Youtrack
-    public Result loggy_report_bug_to_youtrack(String bug_id) {
-
-        String description = "";
-
-        try {
-            description = request().body().asJson().get("description").asText();
-        } catch (Exception e) {
-            System.err.println("[error_message] - TYRION - Server_Logger:: loggy_report_bug_to_youtrack: Error while reporting bug to YouTrack");
-        }
-
-        return upload_to_youtrack(bug_id, description);
-    }
-
-    // Odstraní konkrétní bug ze seznamu (souboru)
-    public Result loggy_remove_bug(String bug_id) {
-
-        Server_Logger.remove_error(bug_id);
-        return redirect("/admin/bugs");
-    }
-
-    // Vyprázdní soubory se záznamem chyb
-    public Result loggy_remove_all_bugs() {
-
-        Server_Logger.remove_all_errors();
-
-        return redirect("/admin/bugs");
-    }
-
-
-/* SERVICES ---------------------------------------------------------------------------------------------------*/
+/* SERVICES ------------------------------------------------------------------------------------------------------------*/
 
     /**
      * Saves error_message to database or increments "repetition" and sends it to Slack channel #servers if mode is not "developer".
@@ -295,16 +264,6 @@ public class Server_Logger extends Controller {
     // Vracím počet zaznamenaných bugů v souboru
     public static Integer number_of_reported_errors(){
         return Model_LoggyError.find.findRowCount();
-    }
-
-    // Vymažu bug z databáze
-    public static void remove_error(String id){
-        Model_LoggyError.find.byId(id).delete();
-    }
-
-    // Vymažu všechny bugy z databáze
-    public static void remove_all_errors(){
-        Ebean.delete(Model_LoggyError.find.all());
     }
 
     // Vymažu všechny bugy ze souboru
@@ -378,7 +337,7 @@ public class Server_Logger extends Controller {
 
     private static Result youtrack_checkUploadResponse(WSResponse response, Model_LoggyError error) {
         if (response.getStatus() == 201) {
-            error.setYoutrack_url(response.getHeader("Location").replace("/rest", "")); // uložím url z odpovědi
+            error.youtrack_url = response.getHeader("Location").replace("/rest", ""); // uložím url z odpovědi
             error.update();
 
             logger.debug( Server_Logger.class , error.youtrack_url +  "---" + Model_LoggyError.find.byId(error.id).youtrack_url);
