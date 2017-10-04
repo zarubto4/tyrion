@@ -35,7 +35,7 @@ public class Model_TypeOfBoard extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
                                 @Id    public String id;
-                                       public String name;
+                  @Column(unique=true) public String name;
                   @Column(unique=true) public String compiler_target_name;
                                        public String revision;
     @Column(columnDefinition = "TEXT")  public String description;
@@ -104,7 +104,7 @@ public class Model_TypeOfBoard extends Model {
         }
     }
 
-    @JsonProperty @TyrionCachedList
+    @JsonProperty @Transient @TyrionCachedList
     public Model_BootLoader main_boot_loader(){
         try {
 
@@ -219,7 +219,7 @@ public class Model_TypeOfBoard extends Model {
         }
     }
 
-    @JsonIgnore @TyrionCachedList
+    @JsonIgnore @Transient @TyrionCachedList
     public Model_CProgram get_main_c_program(){
 
         try {

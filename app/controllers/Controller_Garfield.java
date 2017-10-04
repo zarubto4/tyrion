@@ -11,6 +11,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_mm_package;
+import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.lablel_printer_service.printNodeModels.Printer;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
@@ -216,6 +217,76 @@ public class Controller_Garfield extends Controller {
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(garfield));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "print_label Board",
+            tags = {"Garfield"},
+            notes = "Print Labels Board - Not working properly yet!",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_Garfield.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result print_label(@ApiParam(required = true) String board_id){
+        try {
+
+
+            // Kotrola objektu
+            Model_Board board = Model_Board.get_byId(board_id);
+            if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
+
+            // Kontrola oprávnění
+            if(!board.edit_permission()) return GlobalResult.result_forbidden();
+
+            Model_TypeOfBoard_Batch batch = Model_TypeOfBoard_Batch.get_byId(board.batch_id);
+            if(batch == null) return GlobalResult.result_notFound("Model_TypeOfBoard_Batch " + board.batch_id + " not found");
+
+            // TODO tady je potřeba pohlídat online tiskárny - tiskne se na prvním garfieldovy - to není uplně super cool věc
+            // Zrovna mě ale nenapadá jak v rozumném čase doprogramovat řešení lépe - snad jen pomocí selektoru tiskáren???
+            // Tím pádem bude potřeba mít tiskárny trochu lépe pošéfované
+            List<Model_Garfield> garfields = Model_Garfield.find.where().eq("type_of_board_id", board.type_of_board_id()).select("id").findList();
+            if(garfields.isEmpty()) {
+                return GlobalResult.result_notFound("Garfield for this type of board not found");
+            }
+
+            // Kontrola objektu
+            Model_Garfield garfield = Model_Garfield.get_byId(garfields.get(0).id.toString());
+            if (garfield == null) return GlobalResult.result_notFound("Garfield not found");
+
+            // Kontrola oprávnění
+            if (!garfield.read_permission()) return GlobalResult.result_forbidden();
+
+            Printer_Api api = new Printer_Api();
+
+            // Label 62 mm
+            try{
+                // Test for creating - Controlling all prerequisites and requirements
+                new Label_62_mm_package(board, batch, garfield);
+            }catch (IllegalArgumentException e){
+                return GlobalResult.badRequest("Something is wrong: " + e.getMessage());
+            }
+
+            // Label 62 mm
+            Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(board, batch, garfield);
+            api.printFile(garfield.print_sticker_id, 1, "Garfield Print Label", label_62_mmPackage.get_label(), null);
+
+            // Label qith QR kode on Ethernet connector
+            Label_62_split_mm_Details label_12_mm_details = new Label_62_split_mm_Details(board);
+            api.printFile(garfield.print_label_id_1, 1, "Garfield Print QR Hash", label_12_mm_details.get_label(), null);
+
+
+            // Vrácení objektu
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());

@@ -38,6 +38,7 @@
     <logger name="p.a.d"                                                    level="WARN" />
     <logger name="com.microsoft.azure.documentdb"                           level="WARN" />
     <logger name="TYRION"                                                   level="TRACE" />
+    <logger name="org.mongodb.driver"                                       level="WARN" />
 
     <logger name="javax.net"                                                level="WARN" />
     <logger name="com.ning"                                                 level="WARN" />

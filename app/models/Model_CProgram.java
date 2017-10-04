@@ -306,7 +306,7 @@ public class Model_CProgram extends Model {
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override public void save() {
+    @JsonIgnore @Override @Transient public void save() {
 
         terminal_logger.debug("save :: Creating new Object");
 
@@ -338,7 +338,7 @@ public class Model_CProgram extends Model {
         cache.put(id, this);
     }
 
-    @JsonIgnore @Override public void update() {
+    @JsonIgnore @Override @Transient public void update() {
 
         terminal_logger.debug("update :: Update object Id: {}",  this.id);
 
@@ -350,7 +350,7 @@ public class Model_CProgram extends Model {
         cache.put(id, this);
     }
 
-    @JsonIgnore @Override public void delete() {
+    @JsonIgnore @Override @Transient public void delete() {
 
         terminal_logger.debug("update :: Delete object Id: {} ", this.id);
 
@@ -369,7 +369,7 @@ public class Model_CProgram extends Model {
         this.update();
     }
 
-    @JsonIgnore @Override public void refresh() {
+    @JsonIgnore @Override @Transient public void refresh() {
         terminal_logger.debug("update :: Delete object Id: {} ", this.id);
 
         this.cache_list_version_objects_ids.clear();

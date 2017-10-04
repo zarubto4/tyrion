@@ -216,9 +216,7 @@ public class TestHelper extends Controller{
 
     public static void person_delete(Model_Person person){
         try {
-
             person.delete();
-
         }catch (Exception e){
             logger.error("!!!! Error while cleaning up after test. Method {} failed! Reason: {}. !!!!", Thread.currentThread().getStackTrace()[1].getMethodName() , e.getMessage());
         }
@@ -732,7 +730,7 @@ public class TestHelper extends Controller{
             gridWidget.name = UUID.randomUUID().toString();
             gridWidget.description = UUID.randomUUID().toString();
             gridWidget.type_of_widget = typeOfWidget;
-            gridWidget.author = typeOfWidget.project.product.customer.getPerson();
+            gridWidget.author = null;
 
             gridWidget.save();
 

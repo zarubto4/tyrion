@@ -1,12 +1,17 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.*;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
+import org.bson.Document;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.enums.Enum_Publishing_type;
+import utilities.hardware_registration_auhtority.document_objects.DM_Board_Registration_Central_Authority;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
@@ -17,7 +22,10 @@ import utilities.logger.Server_Logger;
 import utilities.response.GlobalResult;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Online_Change_status;
 
+import java.util.Arrays;
 import java.util.UUID;
+
+import static com.mongodb.client.model.Sorts.descending;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_ZZZ_Tester extends Controller {
@@ -103,7 +111,7 @@ public class Controller_ZZZ_Tester extends Controller {
             Model_Garfield garfield = Model_Garfield.find.findList().get(0);
 
             // Test of printer
-            //Label_62_mm_package label_12_package  = new Label_62_mm_package(board, batch, garfield);
+            //Label_62_mm_package label_12_package  = new Label_62_mm_package(board, batch_id, garfield);
             Label_62_split_mm_Details label_12_mm_details = new Label_62_split_mm_Details(board);
 
             //api.printFile(279211, 1, "Garfield Print QR Hash", label_12_mm_qr_code.get_label(), null);
@@ -117,5 +125,56 @@ public class Controller_ZZZ_Tester extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
+
+    @ApiOperation(value = "Hidden test Method", hidden = true)
+    public Result test4(){
+        try {
+
+            MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://production-byzance-cosmos:PbimpRkWXhUrGBwRtLaR19B6NbffCgzklSfSVtHThFzMn6keUENJ9Hm50TZZgtqVOGesgbtCWLaC3yd6ENhoew==@production-byzance-cosmos.documents.azure.com:10255/?ssl=true&replicaSet=globaldb"));
+            MongoDatabase database = mongoClient.getDatabase("hardware-registration-authority-database");
+            MongoCollection<Document> collection = database.getCollection(DM_Board_Registration_Central_Authority.COLLECTION_NAME);
+
+            Model_TypeOfBoard_Batch batch = Model_TypeOfBoard_Batch.find.where().eq("removed_by_user", false).findUnique();
+
+            if(batch == null){
+                System.out.println("Batch nenalezen!!");
+                return GlobalResult.badRequest();
+            }
+
+            BasicDBObject whereQuery_mac = new BasicDBObject();
+            whereQuery_mac.put("revision", batch.revision);
+            whereQuery_mac.put("production_batch", batch.production_batch);
+
+            Document mac_address_already_registered = collection.find(whereQuery_mac).sort(descending("mac_address")).first();
+
+            System.out.println("Addresa kterou to vyflusnulo:: " + mac_address_already_registered.get("mac_address"));
+
+            Long latest_from_database = Long.parseLong(mac_address_already_registered.get("mac_address").toString().replace(":",""),16);
+
+            System.out.println("Adresa kterou to vyflusnulo v Longu:: " + latest_from_database);
+
+            /*
+                if(mac_address_already_registered != null){
+                    String latest_used_mac_address = (String) mac_address_already_registered.get("mac_address");
+
+                    Long latest_from_database = Long.parseLong(latest_used_mac_address.replace(":",""),16);
+
+                    if(batch_id.latest_used_mac_address != latest_from_database) {
+                        batch_id.latest_used_mac_address = latest_from_database;
+                        batch_id.refresh();
+                    }
+                }
+            */
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+
+
 
 }

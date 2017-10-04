@@ -36,14 +36,27 @@ public class Label_62_mm_package {
     Model_TypeOfBoard_Batch print_info = null;
     Model_Garfield garfield = null;
 
-    public Label_62_mm_package(Model_Board board, Model_TypeOfBoard_Batch batch, Model_Garfield garfield) {
-        try {
-            this.board = board;
-            this.print_info = batch;
-            this.garfield = garfield;
+    public Label_62_mm_package(Model_Board board, Model_TypeOfBoard_Batch batch, Model_Garfield garfield) throws IllegalArgumentException{
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        this.board = board;
+        this.print_info = batch;
+        this.garfield = garfield;
+
+
+        Model_VersionObject test_version = Model_VersionObject.find.where().eq("default_program.type_of_board.boards.id", board.id).isNotNull("default_program.type_of_board_test").findUnique();
+        Model_VersionObject production_version = Model_VersionObject.find.where().eq("default_program.type_of_board.boards.id", board.id).isNotNull("default_program.type_of_board_default").findUnique();
+
+
+        if(test_version == null){
+            throw new IllegalArgumentException("Test Firmware is not set");
+        }
+
+        if(production_version == null){
+            throw new IllegalArgumentException("Production Firmware is not set");
+        }
+
+        if(garfield == null){
+            throw new IllegalArgumentException("Garfield is not set");
         }
     }
 
@@ -51,18 +64,16 @@ public class Label_62_mm_package {
 
         try {
 
-            System.out.println("get_label");
-
             ByteArrayOutputStream out = make_label();
 
             // Zkusím prototypově uložit
-            // TODO smazat protože to nebude potřeba
+            /* TODO smazat protože to nebude potřeba
             try (OutputStream outputStream = new FileOutputStream(System.getProperty("user.dir") + "/label_printers/" + "generate_" + new Date().getTime() + ".pdf")) {
                 out.writeTo(outputStream);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
+            */
             return out;
 
         } catch (Exception e){
@@ -154,7 +165,7 @@ public class Label_62_mm_package {
             Paragraph p_product = new Paragraph("Product Revision: ", bold);
                       p_product.add(new Chunk(print_info.revision , regular));
 
-            Paragraph p_batch = new Paragraph("Production batch: ", bold);
+            Paragraph p_batch = new Paragraph("Production batch_id: ", bold);
                       p_batch.add(new Chunk(print_info.production_batch, regular));
 
             Paragraph p_made = new Paragraph("Made: ", bold);
@@ -223,7 +234,7 @@ public class Label_62_mm_package {
         // EAN Code
         BarcodeEAN ean_code = new BarcodeEAN();
         ean_code.setCodeType(Barcode.EAN13); // 13 characters.
-        ean_code.setCode(board.ean_number.toString());
+        ean_code.setCode(print_info.ean_number.toString());
 
         Image ean_code_image = ean_code.createImageWithBarcode(contentByte, null, null);
         ean_code_image.setAlignment(Image.ALIGN_MIDDLE);

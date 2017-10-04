@@ -359,7 +359,7 @@ public class Controller_Person extends Controller {
                 return GlobalResult.result_badRequest("You must recover your password in 24 hours.");
             }
 
-            for ( Model_FloatingPersonToken floatingPersonToken : person.floatingPersonTokens  ) {
+            for ( Model_FloatingPersonToken floatingPersonToken : Model_FloatingPersonToken.find.where().eq("person.id",  Controller_Security.get_person().id).findList()) {
                 floatingPersonToken.delete();
             }
 
@@ -486,7 +486,9 @@ public class Controller_Person extends Controller {
 
             if (!person.edit_permission())  return GlobalResult.result_forbidden();
 
-            for(Model_FloatingPersonToken token : person.floatingPersonTokens) token.delete();
+            for(Model_FloatingPersonToken token : Model_FloatingPersonToken.find.where().eq("person.id",  Controller_Security.get_person().id).findList()){
+                token.delete();
+            }
 
             return GlobalResult.result_ok();
 
@@ -575,7 +577,9 @@ public class Controller_Person extends Controller {
 
             person.freeze_account = true;
 
-            for(Model_FloatingPersonToken token : person.floatingPersonTokens) token.delete();
+            for(Model_FloatingPersonToken token : Model_FloatingPersonToken.find.where().eq("person.id",  Controller_Security.get_person().id).findList()){
+                token.delete();
+            }
 
             person.update();
 
@@ -713,14 +717,15 @@ public class Controller_Person extends Controller {
     public  Result person_getAllConnections(){
         try{
 
-           return GlobalResult.result_ok(Json.toJson( Controller_Security.get_person().floatingPersonTokens ));
+
+           return GlobalResult.result_ok(Json.toJson( Model_FloatingPersonToken.find.where().eq("person.id",  Controller_Security.get_person().id).findList() ));
 
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
 
-    @ApiOperation(value = "terminate logging",
+    @ApiOperation(value = "delete Person logged connections",
             tags = {"Person"},
             notes = "You know where the user is logged in. And you can log out this connection. (Terminate token)",
             produces = "application/json",
@@ -1058,7 +1063,7 @@ public class Controller_Person extends Controller {
             }
 
             // Odhlášení uživatele všude
-            for ( Model_FloatingPersonToken floatingPersonToken : person.floatingPersonTokens  ) {
+            for ( Model_FloatingPersonToken floatingPersonToken : Model_FloatingPersonToken.find.where().eq("person.id",  Controller_Security.get_person().id).findList()) {
                 floatingPersonToken.delete();
             }
 

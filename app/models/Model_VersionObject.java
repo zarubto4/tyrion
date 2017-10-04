@@ -564,7 +564,7 @@ public class Model_VersionObject extends Model {
         cache.put(id, this);
     }
 
-    @JsonIgnore @Override
+    @JsonIgnore @Transient @Override
     public void update(){
 
         // TODO informace o změně směr Becki!
@@ -574,7 +574,7 @@ public class Model_VersionObject extends Model {
     }
 
 
-    @JsonIgnore @Override
+    @JsonIgnore @Transient @Override
     public void delete(){
 
         removed_by_user = true;
@@ -594,7 +594,7 @@ public class Model_VersionObject extends Model {
         super.update();
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public Model_VersionObject cache_refresh(){
         cache.remove(id);
         return get_byId(id);

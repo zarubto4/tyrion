@@ -87,8 +87,7 @@ create table Board (
   picture_id                varchar(255),
   date_of_user_registration timestamp,
   date_of_create            timestamp,
-  batch                     varchar(255),
-  ean_number                bigint,
+  batch_id                  varchar(255),
   is_active                 boolean,
   developer_kit             boolean,
   backup_mode               boolean,
@@ -690,6 +689,7 @@ create table TypeOfBoard (
   connectible_to_internet   boolean,
   picture_id                varchar(255),
   removed_by_user           boolean,
+  constraint uq_TypeOfBoard_name unique (name),
   constraint uq_TypeOfBoard_compiler_target_n unique (compiler_target_name),
   constraint uq_TypeOfBoard_picture_id unique (picture_id),
   constraint pk_TypeOfBoard primary key (id))

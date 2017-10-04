@@ -9,8 +9,8 @@ import models.*;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
+import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
 import utilities.lablel_printer_service.Printer_Api;
-import utilities.lablel_printer_service.labels.Label_12_mm_QR_code;
 import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
@@ -1956,15 +1956,13 @@ public class Controller_Board extends Controller {
             if (!typeOfBoard.register_new_device_permission()) return GlobalResult.result_forbidden();
 
             Model_TypeOfBoard_Batch batch = Model_TypeOfBoard_Batch.get_byId(help.type_of_board_batch_id);
-            if (batch == null)
-                return GlobalResult.result_notFound("TypeOfBoard_Batch type_of_board_batch_id not found");
+            if (batch == null) return GlobalResult.result_notFound("TypeOfBoard_Batch type_of_board_batch_id not found");
 
             // Kontrola Objektu
             Model_Garfield garfiled = Model_Garfield.get_byId(help.garfield_station_id);
             if (garfiled == null) return GlobalResult.result_notFound("Garfield Station not found");
 
             Model_Board board = Model_Board.find.byId(help.full_id);
-
 
             // Pokud neexistuje vytvořím
             if (board == null) {
@@ -1973,11 +1971,22 @@ public class Controller_Board extends Controller {
                 board.is_active = false;
                 board.date_of_create = new Date();
                 board.type_of_board = typeOfBoard;
-                board.batch = batch.id.toString();
+                board.batch_id = batch.id.toString();
                 board.mac_address = batch.get_new_MacAddress();
-                board.ean_number = batch.ean_number;
+                board.hash_for_adding = Model_Board.generate_hash();
 
-                board.save();
+
+                if(Hardware_Registration_Authority.register_device(board, typeOfBoard, batch)){
+                    board.save();
+                }else {
+                    Model_Board board_repair_from_authority = Model_Board.find.byId(help.full_id);
+                    if(board_repair_from_authority != null) {
+                        board = board_repair_from_authority;
+                    }else {
+                       return GlobalResult.result_notFound("Registration Authority Fail!!");
+                    }
+                }
+
                 board.refresh();
             }
 
@@ -1986,11 +1995,14 @@ public class Controller_Board extends Controller {
             Printer_Api api = new Printer_Api();
 
             // Label 62 mm
+            try{
+                // Test for creating - Controlling all prerequisites and requirements
+                new Label_62_mm_package(board, batch, garfiled);
+            }catch (IllegalArgumentException e){
+                return GlobalResult.badRequest("Something is wrong: " + e.getMessage());
+            }
+
             Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(board, batch, garfiled);
-
-            label_62_mmPackage.get_label();
-            System.out.println(garfiled.print_sticker_id);
-
             api.printFile(garfiled.print_sticker_id, 1, "Garfield Print Label", label_62_mmPackage.get_label(), null);
 
             // Label qith QR kode on Ethernet connector

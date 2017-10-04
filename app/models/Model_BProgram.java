@@ -251,7 +251,6 @@ public class Model_BProgram extends Model {
 
         terminal_logger.debug("save :: Creating new Object");
 
-
         this.id = UUID.randomUUID().toString();
         this.azure_b_program_link = project.get_path() + "/b-programs/"  + this.id;
 

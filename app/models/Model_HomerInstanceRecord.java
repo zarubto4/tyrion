@@ -77,7 +77,7 @@ public class Model_HomerInstanceRecord extends Model {
 
     }
 
-    @Transient  @JsonProperty public List<Swagger_ActualizationProcedure_Short_Detail> procedure_short_details() {
+    @Transient @JsonProperty public List<Swagger_ActualizationProcedure_Short_Detail> procedure_short_details() {
 
         List<Swagger_ActualizationProcedure_Short_Detail> procedures_short_details = new ArrayList<>();
 
@@ -92,7 +92,7 @@ public class Model_HomerInstanceRecord extends Model {
 /* JSON IGNORE  ----------------------------------------------------------------------------------------------------*/
 
 
-    @JsonIgnore @TyrionCachedList
+    @JsonIgnore @Transient @TyrionCachedList
     public Model_VersionObject get_b_program_version(){
 
         if(cache_version_object_id == null){
@@ -133,7 +133,7 @@ public class Model_HomerInstanceRecord extends Model {
     }
 
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public Model_Product getProduct(){
         return this.actual_running_instance.get_project().get_product();
 
@@ -163,6 +163,7 @@ public class Model_HomerInstanceRecord extends Model {
      * Nasazení Record Instance do Cloudu - To jest nastavení Record jako výchozího stavu,
      * nasazení blocko programu, snchronizace hardaru a verzí atd..
      */
+    @Transient
     public void set_record_into_cloud() {
         new Thread(() -> {
 
@@ -222,6 +223,7 @@ public class Model_HomerInstanceRecord extends Model {
     }
 
     //Add Record to cloud Step 1
+    @Transient
     private void change_record_as_main() {
 
         try {
@@ -426,7 +428,7 @@ public class Model_HomerInstanceRecord extends Model {
 
 /* JSON Override  Method -----------------------------------------------------------------------------------------*/
 
-    @Override
+    @Override @Transient
     public void save(){
 
         while (true) { // I need Unique Value
@@ -436,7 +438,7 @@ public class Model_HomerInstanceRecord extends Model {
         super.save();
     }
 
-    @Override
+    @Override @Transient
     public void update(){
 
         terminal_logger.debug("update :: Update object id: {}",  this.id);

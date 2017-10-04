@@ -56,9 +56,6 @@ public class Utilities_Demo_data_Controller extends Controller {
         result = this.type_of_board();
         if (result.status() != 200) return result;
 
-        result = this.test_boards();
-        if (result.status() != 200) return result;
-
         result = this.external_servers();
         if (result.status() != 200) return result;
 
@@ -168,7 +165,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             Model_TypeOfBoard typeOfBoard_2 = new Model_TypeOfBoard();
             typeOfBoard_2.name = "IODA G3";
             typeOfBoard_2.description = " Ioda - Master Board with Ethernet and Wifi - third generation";
-            typeOfBoard_2.compiler_target_name = "BYZANCE_YODAG3";
+            typeOfBoard_2.compiler_target_name = "BYZANCE_YODAG3E";
             typeOfBoard_2.revision = "12/2015 V1.0 #0000";
             typeOfBoard_2.processor = processor_1;
             typeOfBoard_2.producer = producer;
@@ -201,6 +198,26 @@ public class Utilities_Demo_data_Controller extends Controller {
             typeOfBoard_2.refresh();
 
 
+
+            Model_TypeOfBoard_Batch batch = new Model_TypeOfBoard_Batch();
+            batch.type_of_board = typeOfBoard_2;
+            batch.revision = "revision_1";
+            batch.production_batch = "batch_1";
+            batch.date_of_assembly = "1.10.2017";
+            batch.pcb_manufacture_name = "PCB Name";
+            batch.pcb_manufacture_id = "PCB ICO";
+            batch.assembly_manufacture_name = "Assemble Name";
+            batch.assembly_manufacture_id = "Assemble ICO";
+            batch.customer_product_name = "YODA G3 - Ethernet";
+            batch.customer_company_name = "Byzance LTD";
+            batch.customer_company_made_description = "Best Company in World!";
+            batch.mac_address_start = 187723572641792L;
+            batch.mac_address_end = 187723572641900L;
+            batch.ean_number = 2134567865433L;
+
+            batch.save();
+
+
             return GlobalResult.result_ok();
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
@@ -217,50 +234,6 @@ public class Utilities_Demo_data_Controller extends Controller {
         public Pair(String id, String name) {
             this.id = id;
             this.name = name;
-        }
-    }
-
-    public Result test_boards() {
-        try {
-            // Ochranná zarážka proti znovu vytvoření
-            Model_TypeOfBoard yoda_type = Model_TypeOfBoard.find.where().eq("compiler_target_name", "BYZANCE_YODAG3").findUnique();
-            if (yoda_type == null) return GlobalResult.result_badRequest("Create Type of Boards first");
-
-
-            if (Model_Board.find.where().eq("id", "005300393533510B34353732").findUnique() != null)
-                return GlobalResult.result_badRequest("Its Already done!");
-
-            // YODA!!!!!
-            List<Pair> yodas = new ArrayList<>();
-            yodas.add(new Pair("005300393533510B34353732", "[F]"));
-            yodas.add(new Pair("004000393533510B34353732", "[G]"));
-            yodas.add(new Pair("004500393533510B34353732", "[H]"));
-            yodas.add(new Pair("0022003A3533510B34353732", "[I]"));
-            yodas.add(new Pair("003C00393533510B34353732", "[J]"));
-            yodas.add(new Pair("0025003A3533510B34353732", "[K]"));
-            yodas.add(new Pair("004300393533510B34353732", "[L]"));
-            yodas.add(new Pair("001D00453533510B34353732", "[M]"));
-            yodas.add(new Pair("0021003A3533510B34353732", "[N]"));
-            yodas.add(new Pair("002000453533510B34353732", "[O]"));
-            yodas.add(new Pair("0024003A3533510B34353732", "[P]"));
-            yodas.add(new Pair("001B00453533510B34353732", "[Q]"));
-            yodas.add(new Pair("002300513533510B34353732", "[R]"));
-            yodas.add(new Pair("003B00313533510B34353732", "[S]"));
-            yodas.add(new Pair("002300453533510B34353732", "[T]"));
-
-            for (Pair yoda_pair : yodas) {
-                Model_Board yoda = new Model_Board();
-                yoda.id = yoda_pair.id;
-                yoda.name = yoda_pair.name;
-                yoda.type_of_board = yoda_type;
-                yoda.date_of_create = new Date();
-                yoda.description = "G2.0";
-                yoda.save();
-            }
-
-            return GlobalResult.result_ok();
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
         }
     }
 

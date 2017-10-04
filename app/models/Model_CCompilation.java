@@ -65,7 +65,7 @@ public class Model_CCompilation extends Model {
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
+    @JsonIgnore @Transient @Override
     public void save() {
 
         terminal_logger.debug("save :: Creating new Object");
@@ -75,7 +75,8 @@ public class Model_CCompilation extends Model {
         super.save();
     }
 
-    @JsonIgnore @Override public void update() {
+    @JsonIgnore @Transient @Override
+    public void update() {
 
         terminal_logger.debug("update :: Update object Id: {}",  this.id);
 
@@ -87,7 +88,8 @@ public class Model_CCompilation extends Model {
     }
 
 
-    @JsonIgnore @Override public void delete() {
+    @JsonIgnore @Transient @Override
+    public void delete() {
         terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
     }
 

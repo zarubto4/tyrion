@@ -8,6 +8,7 @@ import utilities.cache.Server_Cache;
 import utilities.document_db.DocumentDB;
 import utilities.enums.Enum_Terminal_Color;
 import utilities.enums.Enum_Tyrion_Server_mode;
+import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.request_counter.RequestCounter;
@@ -74,6 +75,11 @@ public class Global extends GlobalSettings {
             //11
             terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 11) Creating Default Block and Widget Object" + Enum_Terminal_Color.ANSI_RESET);
             Server.setWidgetAnDBlock();
+
+            //12
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 12) Synchronize all registered Hardware with Registration Authority" + Enum_Terminal_Color.ANSI_RESET);
+            Hardware_Registration_Authority.synchronize_device_with_authority();
+
 
             if (Server.server_mode != Enum_Tyrion_Server_mode.developer) Slack.post("Tyrion server in Mode " + Server.server_mode.name() + " version: " + Server.server_version + " started on " + new Date().toString() + ".");
 

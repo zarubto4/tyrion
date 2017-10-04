@@ -293,7 +293,7 @@ public class Model_HomerInstance extends Model {
 
 /* JSON Override  Method -----------------------------------------------------------------------------------------*/
 
-    @Override
+    @Override @Transient
     public void save(){
 
         terminal_logger.debug("save :: Creating new Object");
@@ -312,7 +312,7 @@ public class Model_HomerInstance extends Model {
         cache.put(this.id, this);
     }
 
-    @Override
+    @Override @Transient
     public void update(){
 
         terminal_logger.debug("update :: Update object id: {}",  this.id);
@@ -321,7 +321,7 @@ public class Model_HomerInstance extends Model {
         cache.put(this.id, this);
     }
     
-    @Override
+    @Override @Transient
     public void delete(){
 
         terminal_logger.debug("update :: Delete object id: {} ", this.id);

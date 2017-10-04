@@ -136,7 +136,7 @@ public class PersonTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.Controller_Person.person_validateProperty().toString())
+                .uri(routes.Controller_Person.something_validateProperty().toString())
                 .bodyJson(body);
 
         Result result = route(request);
@@ -153,7 +153,7 @@ public class PersonTest extends TestHelper{
 
         RequestBuilder request = new RequestBuilder()
                 .method(POST)
-                .uri(routes.Controller_Person.person_validateProperty().toString())
+                .uri(routes.Controller_Person.something_validateProperty().toString())
                 .bodyJson(body);
 
         Result result = route(request);
@@ -208,26 +208,14 @@ public class PersonTest extends TestHelper{
         assertEquals(OK, result.status());
     }
 
-    @Test   
-    public void get_person_all() {
-
-        RequestBuilder request = new RequestBuilder()
-                .method(GET)
-                .uri(routes.Controller_Person.person_getAll().toString())
-                .header("X-AUTH-TOKEN", adminToken);
-
-        Result result = route(request);
-        assertEquals(OK, result.status());
-    }
-
     @Test
     public void admin_delete_person() {
 
-        Model_Person p = person_create();
+        Model_Person person = person_create();
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.Controller_Person.person_delete(p.id).toString())
+                .uri(routes.Controller_Person.person_delete(person.id).toString())
                 .header("X-AUTH-TOKEN", adminToken);
 
         Result result = route(request);
@@ -237,15 +225,15 @@ public class PersonTest extends TestHelper{
     @Test
     public void user_delete_person() {
 
-        Model_Person p = person_create();
+        Model_Person person = person_create();
 
         RequestBuilder request = new RequestBuilder()
                 .method(DELETE)
-                .uri(routes.Controller_Person.person_delete(p.id).toString())
-                .header("X-AUTH-TOKEN", person_login(p));
+                .uri(routes.Controller_Person.person_delete(person.id).toString())
+                .header("X-AUTH-TOKEN", person_login(person));
 
         Result result = route(request);
-        person_delete(p);
+        person_delete(person);
         assertEquals(FORBIDDEN, result.status());
     }
 }

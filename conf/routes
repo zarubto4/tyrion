@@ -12,6 +12,7 @@ OPTIONS   /*all                                                         @control
 POST      /test                                                         @controllers.Controller_ZZZ_Tester.test1()
 POST      /test2                                                        @controllers.Controller_ZZZ_Tester.test2()
 POST      /test3                                                        @controllers.Controller_ZZZ_Tester.test3()
+GET       /test4                                                        @controllers.Controller_ZZZ_Tester.test4()
 GET       /demodata                                                     @utilities.demo_data.Utilities_Demo_data_Controller.all_for_becki()
 
 ### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET ###########################################################################
@@ -61,7 +62,7 @@ POST      /validate_entity                                              @control
 POST      /person                                                       @controllers.Controller_Person.person_create()
 PUT       /person/:person_id                                            @controllers.Controller_Person.person_update(person_id)
 GET       /person/:person_id                                            @controllers.Controller_Person.person_get(person_id)
-DELETE    /person/:id                                                   @controllers.Controller_Person.person_delete(id: String)
+DELETE    /person/:person_id                                            @controllers.Controller_Person.person_delete(person_id)
 
 POST      /person/authentication_email                                  @controllers.Controller_Person.person_authenticationSendEmail()
 
@@ -476,6 +477,8 @@ GET       /garfield                                                      @contro
 PUT       /garfiled/:garfield_id                                         @controllers.Controller_Garfield.edit_Garfield(garfield_id)
 DELETE    /garfiled/:garfield_id                                         @controllers.Controller_Garfield.remove_Garfield(garfield_id)
 GET       /garfiled/:garfield_id                                         @controllers.Controller_Garfield.get_Garfield(garfield_id)
+GET       /admin/garfiled-synchronize                                    @utilities.hardware_registration_auhtority.Hardware_Registration_Authority.synchronize_script()
+GET       /admin/garfiled-print-labes/:board_id                          @controllers.Controller_Garfield.print_label(board_id)
 
 GET       /printer/printer/:garfield_id/:printer_id                      @controllers.Controller_Garfield.online_state_Printer(garfield_id, printer_id: Integer)
 POST      /printer/test/:garfield_id/:printer_id                         @controllers.Controller_Garfield.print_test_Printer(garfield_id, printer_id: Integer)
@@ -518,4 +521,5 @@ DELETE    /admin/bug                                                    @control
 DELETE    /admin/bug/:bug_id                                            @controllers.Controller_Report.serverError_delete(bug_id)
 PUT       /admin/bug/report/:bug_id                                     @controllers.Controller_Report.serverError_report(bug_id)
 
+# Not used
 GET       /public/*file                                                 @controllers.Assets.versioned(path="/public", file: Asset)

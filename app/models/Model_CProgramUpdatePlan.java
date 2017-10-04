@@ -112,8 +112,8 @@ public class Model_CProgramUpdatePlan extends Model {
         return board_detail;
     }
 
-    @ApiModelProperty(required = false, value = "Is visible only if user send own binary file ( OR state for c_program_detail)") @Transient
-    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
+    @ApiModelProperty(required = false, value = "Is visible only if user send own binary file ( OR state for c_program_detail)")
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient
     public Model_FileRecord binary_file_detail(){
         return binary_file == null ? null : binary_file;
     }
@@ -123,7 +123,7 @@ public class Model_CProgramUpdatePlan extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
 
-    @JsonIgnore public Swagger_C_Program_Update_plan_Short_Detail get_short_version_for_board(){
+    @JsonIgnore @Transient public Swagger_C_Program_Update_plan_Short_Detail get_short_version_for_board(){
 
         Swagger_C_Program_Update_plan_Short_Detail detail = new Swagger_C_Program_Update_plan_Short_Detail();
         detail.id = this.id.toString();
@@ -148,7 +148,7 @@ public class Model_CProgramUpdatePlan extends Model {
         return detail;
     }
 
-    @JsonIgnore public Swagger_UpdatePlan_brief_for_homer get_brief_for_update_homer_server(){
+    @JsonIgnore @Transient public Swagger_UpdatePlan_brief_for_homer get_brief_for_update_homer_server(){
         try {
 
             Swagger_UpdatePlan_brief_for_homer brief_for_homer = new Swagger_UpdatePlan_brief_for_homer();
@@ -192,7 +192,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
+    @JsonIgnore @Transient  @Override
     public void save() {
 
         terminal_logger.debug("save :: Creating new Object");
@@ -206,7 +206,7 @@ public class Model_CProgramUpdatePlan extends Model {
         cache.put(id.toString(), this);
     }
 
-    @JsonIgnore @Override
+    @JsonIgnore @Transient @Override
     public void update() {
 
         terminal_logger.trace("update :: operation");
@@ -231,7 +231,8 @@ public class Model_CProgramUpdatePlan extends Model {
         cache.put(id.toString(), this);
     }
 
-    @JsonIgnore @Override public void delete() {
+    @JsonIgnore @Transient  @Override
+    public void delete() {
 
         terminal_logger.debug("update :: Delete object Id: {} ", this.id);
         super.delete();
@@ -250,7 +251,6 @@ public class Model_CProgramUpdatePlan extends Model {
         @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String bootloader_id;
         @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String bootloader_name;
         @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String version_identificator;
-
     }
 
     class Board_detail{

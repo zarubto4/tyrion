@@ -571,7 +571,7 @@ public class Model_ActualizationProcedure extends Model {
 
     @JsonIgnore public static Cache<String, Model_ActualizationProcedure> cache; // Server_cache Override during server initialization
 
-    public void change_state(Model_CProgramUpdatePlan plan, Enum_CProgram_updater_state state){
+    @JsonIgnore @Transient public void change_state(Model_CProgramUpdatePlan plan, Enum_CProgram_updater_state state){
         cProgram_updater_state.put(plan.id.toString(), state);
     }
 

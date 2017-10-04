@@ -11,7 +11,7 @@ public class Swagger_TypeOfBoard_New {
     @Constraints.Required
     @Constraints.MinLength(value = 4,  message = "The name must have at least 4 characters.")
     @Constraints.MaxLength(value = 60, message = "The name must not have more than 60 characters.")
-    @ApiModelProperty(required = true, value = "Length must be between 8 and 60 characters.")
+    @ApiModelProperty(required = true, value = "Length must be between 8 and 60 characters. Name must be unique across all System")
     public String name;
 
     @Constraints.Required

@@ -76,8 +76,7 @@ public class Model_Board extends Model {
 
     // Parametry při výrobě a osazení a registraci
     @JsonIgnore public Date date_of_create;                 // Datum vytvoření objektu (vypálení dat do procesoru)
-    @JsonIgnore public String batch; // Výrobní šarže
-    @JsonIgnore public Long ean_number;                 // Datum vytvoření objektu (vypálení dat do procesoru)
+    @JsonIgnore public String batch_id; // Výrobní šarže
     @JsonIgnore public boolean is_active; // Příznak, že deska byla oživena a je použitelná v platformě
 
 
@@ -2012,6 +2011,10 @@ public class Model_Board extends Model {
 
     public enum permissions {Board_read, Board_Create, Board_edit, Board_delete, Board_update}
 
+    public static String generate_hash(){
+        return "HW" + UUID.randomUUID().toString().replaceAll("[-]","").substring(0, 24);
+    }
+
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @Override
@@ -2022,7 +2025,7 @@ public class Model_Board extends Model {
         //Default starting state
         database_synchronize = true;
 
-        this.hash_for_adding = "HW" + UUID.randomUUID().toString().replaceAll("[-]","").substring(0, 24);
+        if(hash_for_adding == null) this.hash_for_adding = generate_hash();
 
         super.save();
 

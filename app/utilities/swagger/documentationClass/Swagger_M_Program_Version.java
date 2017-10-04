@@ -20,5 +20,4 @@ public class Swagger_M_Program_Version {
     @ApiModelProperty(required = true, readOnly = true)
     public boolean public_mode;
 
-
 }

@@ -37,6 +37,7 @@ public class Model_Invitation extends Model{
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    @Transient
     public void delete_notification() {
         try {
 
@@ -52,7 +53,7 @@ public class Model_Invitation extends Model{
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-   @JsonIgnore @Override
+   @JsonIgnore @Transient @Override
     public void save() {
 
         terminal_logger.debug("save :: Creating new Object");
@@ -64,7 +65,7 @@ public class Model_Invitation extends Model{
         super.save();
     }
 
-    @JsonIgnore @Override public void update() {
+    @JsonIgnore @Transient @Override public void update() {
 
         terminal_logger.debug("update :: Update object Id: {}",  this.id);
 
@@ -73,7 +74,7 @@ public class Model_Invitation extends Model{
         new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Invitation.class, project.id, id))).start();
     }
 
-    @JsonIgnore @Override public void delete() {
+    @JsonIgnore @Transient @Override public void delete() {
 
         terminal_logger.debug("delete: Delete object Id: {} ", this.id);
 

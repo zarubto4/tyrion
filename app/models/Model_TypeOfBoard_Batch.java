@@ -42,7 +42,7 @@ public class Model_TypeOfBoard_Batch extends Model {
 
     public Long mac_address_start;
     public Long mac_address_end;
-    public Long latest_used_mac_address;
+    public Long latest_used_mac_address;  // Pro přiřazení je vždy nutné zvednout novou verzi
 
     public Long ean_number;
 
@@ -66,17 +66,16 @@ public class Model_TypeOfBoard_Batch extends Model {
             throw new IllegalCharsetNameException("All Mac Address used");
         }
 
-        long mac = latest_used_mac_address;
         this.latest_used_mac_address = latest_used_mac_address + 1;
         update();
 
-        return convert_to_MAC_ISO(mac);
+        return convert_to_MAC_ISO(this.latest_used_mac_address);
 
     }
 
     //Konvertor Long na ISO normu Mac addressy
     @JsonIgnore @Transient
-    private String convert_to_MAC_ISO(Long mac){
+    public static String convert_to_MAC_ISO(Long mac){
 
         if (mac > 0xFFFFFFFFFFFFL || mac < 0) {
             throw new IllegalArgumentException("mac out of range");
