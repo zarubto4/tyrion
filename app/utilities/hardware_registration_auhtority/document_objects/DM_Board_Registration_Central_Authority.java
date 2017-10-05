@@ -7,7 +7,7 @@ import java.util.Date;
 
 public class DM_Board_Registration_Central_Authority {
 
-    public static final String COLLECTION_NAME = "HW_Test_Registration_Collection";
+    public static final String COLLECTION_NAME = "hardware-registration-authority";
 
     public DM_Board_Registration_Central_Authority(){}
 

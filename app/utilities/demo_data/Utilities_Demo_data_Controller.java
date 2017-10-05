@@ -126,42 +126,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             processor_1.save();
 
             // Nastavím Type of Boards - YODA
-            Model_TypeOfBoard typeOfBoard_1 = new Model_TypeOfBoard();
-            typeOfBoard_1.name = "IODA G2";
-            typeOfBoard_1.description = " Yoda - Master Board with Ethernet and Wifi - second generation";
-            typeOfBoard_1.compiler_target_name = "BYZANCE_YODAG2";
-            typeOfBoard_1.revision = "12/2015 V1.0 #0000";
-            typeOfBoard_1.processor = processor_1;
-            typeOfBoard_1.producer = producer;
-            typeOfBoard_1.connectible_to_internet = true;
-            typeOfBoard_1.features.add(ethernet);
-            typeOfBoard_1.features.add(wifi);
-            typeOfBoard_1.save();
-
-            // Vytvoříme defaultní C_Program pro snížení počtu kroků pro nastavení desky
-            Model_CProgram c_program_1 = new Model_CProgram();
-            c_program_1.name =  typeOfBoard_1.name + " default program";
-            c_program_1.description = "Default program for this device type";
-            c_program_1.type_of_board_default = typeOfBoard_1;
-            c_program_1.type_of_board =  typeOfBoard_1;
-            c_program_1.publish_type  = Enum_Publishing_type.default_main_program;
-            c_program_1.save();
-
-            typeOfBoard_1.refresh();
-
-            // Vytvoříme testovací C_Program pro snížení počtu kroků pro nastavení desky
-            Model_CProgram c_program_test_1 = new Model_CProgram();
-            c_program_test_1.name =  typeOfBoard_1.name + " test program";
-            c_program_test_1.description = "Test program for this device type";
-            c_program_test_1.type_of_board_test = typeOfBoard_1;
-            c_program_test_1.type_of_board =  typeOfBoard_1;
-            c_program_test_1.publish_type  = Enum_Publishing_type.default_test_program;
-            c_program_test_1.save();
-
-            typeOfBoard_1.refresh();
-
-
-            // Nastavím Type of Boards - YODA
             Model_TypeOfBoard typeOfBoard_2 = new Model_TypeOfBoard();
             typeOfBoard_2.name = "IODA G3";
             typeOfBoard_2.description = " Ioda - Master Board with Ethernet and Wifi - third generation";
@@ -198,24 +162,60 @@ public class Utilities_Demo_data_Controller extends Controller {
             typeOfBoard_2.refresh();
 
 
+            // Prototype Collection from Pragoboard
+            Model_TypeOfBoard_Batch batch_proto = new Model_TypeOfBoard_Batch();
+            batch_proto.type_of_board = typeOfBoard_2;
+            batch_proto.revision = "Test Private Collection";
+            batch_proto.production_batch = "First Try";
+            batch_proto.date_of_assembly = "12.6.2017";
+            batch_proto.pcb_manufacture_name = "PragoBoard s.r.o.";
+            batch_proto.pcb_manufacture_id = "25615149";
+            batch_proto.assembly_manufacture_name = "Byzance IoT Solution s.r.o";
+            batch_proto.assembly_manufacture_id = "Not Know";
+            batch_proto.customer_product_name = "YODA G3 - Ethernet";
+            batch_proto.customer_company_name = "Byzance LTD";
+            batch_proto.customer_company_made_description = "Best Company in World!";
+            batch_proto.mac_address_start = 210006720901120L;
+            batch_proto.mac_address_end = 210006720901129L;
+            batch_proto.ean_number = 210006720901124L;
+            batch_proto.save();
 
-            Model_TypeOfBoard_Batch batch = new Model_TypeOfBoard_Batch();
-            batch.type_of_board = typeOfBoard_2;
-            batch.revision = "revision_1";
-            batch.production_batch = "batch_1";
-            batch.date_of_assembly = "1.10.2017";
-            batch.pcb_manufacture_name = "PCB Name";
-            batch.pcb_manufacture_id = "PCB ICO";
-            batch.assembly_manufacture_name = "Assemble Name";
-            batch.assembly_manufacture_id = "Assemble ICO";
-            batch.customer_product_name = "YODA G3 - Ethernet";
-            batch.customer_company_name = "Byzance LTD";
-            batch.customer_company_made_description = "Best Company in World!";
-            batch.mac_address_start = 187723572641792L;
-            batch.mac_address_end = 187723572641900L;
-            batch.ean_number = 2134567865433L;
+            // Prototype Collection from PCB Benešov
+            Model_TypeOfBoard_Batch batch_test = new Model_TypeOfBoard_Batch();
+            batch_test.type_of_board = typeOfBoard_2;
+            batch_test.revision = "VF250717";
+            batch_test.production_batch = "1000001 - Test Collection";
+            batch_test.date_of_assembly = "27.9.2017";
+            batch_test.pcb_manufacture_name = "PCB Benešov a.s";
+            batch_test.pcb_manufacture_id = "45147698";
+            batch_test.assembly_manufacture_name = "TTC TELEKOMUNIKACE, s.r.o.";
+            batch_test.assembly_manufacture_id = "41194403";
+            batch_test.customer_product_name = "YODA G3 - Ethernet";
+            batch_test.customer_company_name = "Byzance LTD";
+            batch_test.customer_company_made_description = "Best Company in World!";
+            batch_test.mac_address_start = 210006720901136L;
+            batch_test.mac_address_end   = 210006720901155L;
+            batch_test.ean_number        = 210006720901139L;
+            batch_test.save();
 
-            batch.save();
+            // Prototype Collection from PCB Benešov
+            // Prototype Collection from PCB Benešov
+            Model_TypeOfBoard_Batch batch_final_first = new Model_TypeOfBoard_Batch();
+            batch_final_first.type_of_board = typeOfBoard_2;
+            batch_final_first.revision = "VF250717";
+            batch_final_first.production_batch = "1000001 - Test Collection";
+            batch_final_first.date_of_assembly = "27.9.2017";
+            batch_final_first.pcb_manufacture_name = "PCB Benešov a.s";
+            batch_final_first.pcb_manufacture_id = "45147698";
+            batch_final_first.assembly_manufacture_name = "TTC TELEKOMUNIKACE, s.r.o.";
+            batch_final_first.assembly_manufacture_id = "41194403";
+            batch_final_first.customer_product_name = "YODA G3 - Ethernet";
+            batch_final_first.customer_company_name = "Byzance LTD";
+            batch_final_first.customer_company_made_description = "Best Company in World!";
+            batch_final_first.mac_address_start = 210006720901136L;
+            batch_final_first.mac_address_end   = 210006720901155L;
+            batch_final_first.ean_number        = 210006720901139L;
+            // batch_final_first.save(); Odkomentovat s finální produkcí
 
 
             return GlobalResult.result_ok();
@@ -226,16 +226,6 @@ public class Utilities_Demo_data_Controller extends Controller {
 
 
     //------------------------------------------------------------------------------------------------------------------
-    // Pair objekt určen pro tvorbu demo dat (registrace Deviců)
-    class Pair {
-        public String id;
-        public String name;
-
-        public Pair(String id, String name) {
-            this.id = id;
-            this.name = name;
-        }
-    }
 
     public Result external_servers() {
         try {
@@ -355,172 +345,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             extensions_2.tariff_optional = tariff_1;
             extensions_2.configuration = "{\"price\":400,\"count\":2}";
             extensions_2.save();
-
-            // Pro geeky
-            Model_Tariff geek_tariff = new Model_Tariff();
-            geek_tariff.order_position = 2;
-            geek_tariff.active = true;
-            geek_tariff.business_model = Enum_BusinessModel.saas;
-            geek_tariff.name = "For true Geeks";
-            geek_tariff.description = "Temporary account only for next 3 months";
-            geek_tariff.identifier = "geek";
-
-            geek_tariff.color = "green-jungle";
-
-            geek_tariff.credit_for_beginning = 200000L;
-
-            geek_tariff.company_details_required = false;
-            geek_tariff.payment_details_required = false;
-
-            geek_tariff.save();
-            geek_tariff.refresh();
-
-            // Placená
-            Model_Tariff business_tariff = new Model_Tariff();
-            business_tariff.order_position = 3;
-            business_tariff.active = true;
-            business_tariff.business_model = Enum_BusinessModel.saas;
-            business_tariff.name = "For true Business";
-            business_tariff.description = "Best for true business";
-            business_tariff.identifier = "business_1";
-
-            business_tariff.color = "green-jungle";
-
-            business_tariff.credit_for_beginning = (long) 100000;
-
-            business_tariff.company_details_required = true;
-            business_tariff.payment_details_required = true;
-
-
-            business_tariff.save();
-            business_tariff.refresh();
-
-            /*
-            Model_ProductExtension business_tariff_extensions_4 = new Model_ProductExtension();
-            business_tariff_extensions_4.name = "Extension Project";
-            business_tariff_extensions_4.description = "description extension sadafdfv";
-            business_tariff_extensions_4.type = Enum_ExtensionType.project;
-            business_tariff_extensions_4.active = true;
-            business_tariff_extensions_4.removed = false;
-            business_tariff_extensions_4.color = "blue-chambray";
-            business_tariff_extensions_4.tariff_included = business_tariff;
-            business_tariff_extensions_4.configuration = "{\"price\":2600,\"count\":4}";
-            business_tariff_extensions_4.save();
-
-            Model_ProductExtension business_tariff_extensions_3 = new Model_ProductExtension();
-            business_tariff_extensions_3.name = "Extension 1";
-            business_tariff_extensions_3.description = "description extension djsdjs";
-            business_tariff_extensions_3.type = Enum_ExtensionType.project;
-            business_tariff_extensions_3.active = true;
-            business_tariff_extensions_3.removed = false;
-            business_tariff_extensions_3.color = "blue-chambray";
-            business_tariff_extensions_3.tariff_included = business_tariff;
-            business_tariff_extensions_3.configuration = "{\"price\":600,\"count\":5}";
-            business_tariff_extensions_3.save();
-
-            Model_ProductExtension business_tariff_extensions_2 = new Model_ProductExtension();
-            business_tariff_extensions_2.name = "Extension sadas";
-            business_tariff_extensions_2.description = "description extasdension 1";
-            business_tariff_extensions_2.type = Enum_ExtensionType.project;
-            business_tariff_extensions_2.active = true;
-            business_tariff_extensions_2.removed = false;
-            business_tariff_extensions_2.color = "blue-chambray";
-            business_tariff_extensions_2.tariff_optional = business_tariff;
-            business_tariff_extensions_2.configuration = "{\"price\":600,\"count\":5}";
-            business_tariff_extensions_2.save();
-
-            Model_ProductExtension business_tariff_extensions_1 = new Model_ProductExtension();
-            business_tariff_extensions_1.name = "Extension sadasa";
-            business_tariff_extensions_1.description = "description extensioasdan 1";
-            business_tariff_extensions_1.type = Enum_ExtensionType.project;
-            business_tariff_extensions_1.active = true;
-            business_tariff_extensions_1.removed = false;
-            business_tariff_extensions_1.color = "blue-chambray";
-            business_tariff_extensions_1.tariff_optional = business_tariff;
-            business_tariff_extensions_1.configuration = "{\"price\":600,\"count\":5}";
-            business_tariff_extensions_1.save();
-
-            // Další placený
-
-            Model_Tariff business_tariff_2 = new Model_Tariff();
-            business_tariff_2.order_position = 4;
-            business_tariff_2.active = true;
-            business_tariff_2.business_model = Enum_BusinessModel.saas;
-            business_tariff_2.name = "Enterprise";
-            business_tariff_2.description = "You know what you need!";
-            business_tariff_2.identifier = "business_2";
-
-            business_tariff_2.color = "green-sharp";
-
-            business_tariff_2.credit_for_beginning = (long) 500000;
-
-            business_tariff_2.company_details_required = true;
-            business_tariff_2.payment_details_required = true;
-
-            business_tariff_2.save();
-            business_tariff_2.refresh();
-
-            Model_ProductExtension business_tariff2_extensions_5 = new Model_ProductExtension();
-            business_tariff2_extensions_5.name = "Extension saasa";
-            business_tariff2_extensions_5.description = "description extensioasn 1";
-            business_tariff2_extensions_5.type = Enum_ExtensionType.project;
-            business_tariff2_extensions_5.active = true;
-            business_tariff2_extensions_5.removed = false;
-            business_tariff2_extensions_5.color = "blue-chambray";
-            business_tariff2_extensions_5.tariff_included = business_tariff_2;
-            business_tariff2_extensions_5.configuration = "{\"price\":600,\"count\":5}";
-            business_tariff2_extensions_5.save();
-
-            Model_ProductExtension business_tariff2_extensions_4 = new Model_ProductExtension();
-            business_tariff2_extensions_4.name = "Extension sasa";
-            business_tariff2_extensions_4.description = "description extensdan 1";
-            business_tariff2_extensions_4.type = Enum_ExtensionType.project;
-            business_tariff2_extensions_4.active = true;
-            business_tariff2_extensions_4.removed = false;
-            business_tariff2_extensions_4.color = "blue-chambray";
-            business_tariff2_extensions_4.tariff_included = business_tariff_2;
-            business_tariff2_extensions_4.configuration = "{\"price\":600,\"count\":5}";
-            business_tariff2_extensions_4.save();
-
-            Model_ProductExtension business_tariff2_extensions_3 = new Model_ProductExtension();
-            business_tariff2_extensions_3.name = "Extension dasa";
-            business_tariff2_extensions_3.description = "description extensioan 1";
-            business_tariff2_extensions_3.type = Enum_ExtensionType.project;
-            business_tariff2_extensions_3.active = true;
-            business_tariff2_extensions_3.removed = false;
-            business_tariff2_extensions_3.color = "blue-chambray";
-            business_tariff2_extensions_3.tariff_optional = business_tariff_2;
-            business_tariff2_extensions_3.configuration = "{\"price\":600,\"count\":5}";
-            business_tariff2_extensions_3.save();
-
-            Model_ProductExtension business_tariff2_extensions_2 = new Model_ProductExtension();
-            business_tariff2_extensions_2.name = "Extension ssa";
-            business_tariff2_extensions_2.description = "description extenssdan 1";
-            business_tariff2_extensions_2.type = Enum_ExtensionType.project;
-            business_tariff2_extensions_2.active = true;
-            business_tariff2_extensions_2.removed = false;
-            business_tariff2_extensions_2.color = "blue-chambray";
-            business_tariff2_extensions_2.tariff_optional = business_tariff_2;
-            business_tariff2_extensions_2.configuration = "{\"price\":600,\"count\":5}";
-            business_tariff2_extensions_2.save();
-
-            Model_ProductExtension business_tariff2_extensions_1 = new Model_ProductExtension();
-            business_tariff2_extensions_1.name = "Extension sadaska";
-            business_tariff2_extensions_1.description = "description extenssaioasdan 1";
-            business_tariff2_extensions_1.type = Enum_ExtensionType.project;
-            business_tariff2_extensions_1.active = true;
-            business_tariff2_extensions_1.removed = false;
-            business_tariff2_extensions_1.color = "blue-chambray";
-            business_tariff2_extensions_1.tariff_optional = business_tariff_2;
-            business_tariff2_extensions_1.configuration = "{\"price\":600,\"count\":5}";
-            business_tariff2_extensions_1.save();
-
-            Model_Tariff illegal_tariff = new Model_Tariff();
-            tariff_1.order_position = 5;
-            illegal_tariff.active = false;
-            illegal_tariff.save();
-
-            */
 
             return GlobalResult.result_ok();
         } catch (Exception e) {

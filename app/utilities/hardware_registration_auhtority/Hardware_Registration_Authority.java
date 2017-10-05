@@ -41,6 +41,9 @@ public class Hardware_Registration_Authority extends Controller {
     private static final Class_Logger terminal_logger_registration = new Class_Logger(Hardware_Registration_Authority.class);
 
 
+    /**
+     * Tohle rozhodně nemazat!!!!!! A ani neměnit - naprosto klíčová konfigurace záměrně zahrabaná v kodu!
+     */
     private static MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://production-byzance-cosmos:PbimpRkWXhUrGBwRtLaR19B6NbffCgzklSfSVtHThFzMn6keUENJ9Hm50TZZgtqVOGesgbtCWLaC3yd6ENhoew==@production-byzance-cosmos.documents.azure.com:10255/?ssl=true&replicaSet=globaldb"));
     private static MongoDatabase database = mongoClient.getDatabase("hardware-registration-authority-database");
     private static MongoCollection<Document> collection = database.getCollection(DM_Board_Registration_Central_Authority.COLLECTION_NAME);
@@ -61,6 +64,7 @@ public class Hardware_Registration_Authority extends Controller {
     })
     public Result synchronize_script(){
         try{
+
 
             synchronize_mac_address_with_authority();
             synchronize_device_with_authority();
@@ -83,6 +87,7 @@ public class Hardware_Registration_Authority extends Controller {
         Document device_id_already_registered = collection.find(whereQuery_board_id).first();
 
         if(device_id_already_registered != null) {
+            terminal_logger_registration.error("Collection name:: " + DM_Board_Registration_Central_Authority.COLLECTION_NAME);
             terminal_logger_registration.error("Hardware_Registration_Authority:: register_device:: In Database is registered device with Same device ID!");
             synchronize_mac_address_with_authority();
             synchronize_device_with_authority();
@@ -95,6 +100,7 @@ public class Hardware_Registration_Authority extends Controller {
         Document mac_address_already_registered = collection.find(whereQuery_mac).first();
 
         if(mac_address_already_registered != null) {
+            terminal_logger_registration.error("Collection name:: " + DM_Board_Registration_Central_Authority.COLLECTION_NAME);
             terminal_logger_registration.error("Hardware_Registration_Authority:: register_device:: ");
             synchronize_mac_address_with_authority();
             synchronize_device_with_authority();
