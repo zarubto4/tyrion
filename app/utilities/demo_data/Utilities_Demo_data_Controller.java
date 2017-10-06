@@ -1,5 +1,6 @@
 package utilities.demo_data;
 
+import com.avaje.ebean.Model;
 import io.swagger.annotations.Api;
 import models.*;
 import play.Application;
@@ -51,22 +52,50 @@ public class Utilities_Demo_data_Controller extends Controller {
     public Result all_for_becki() {
 
         Result result = this.producers();
-        if (result.status() != 200) return result;
-
         result = this.type_of_board();
-        if (result.status() != 200) return result;
-
         result = this.external_servers();
-        if (result.status() != 200) return result;
-
         result = this.basic_tariffs();
-        if (result.status() != 200) return result;
-
         result = this.person_test_user();
-        if (result.status() != 200) return result;
+        result = this.garfield();
 
         return result;
     }
+
+    public Result garfield() {
+        try{
+
+            System.out.println("garfield()");
+
+            if (Model_Garfield.find.where().eq("name", "Byzance 1").findUnique() != null)
+                return GlobalResult.result_badRequest("Its Already done!");
+
+            Model_Garfield garfield = new Model_Garfield();
+
+            garfield.name = "Garfield";
+            garfield.description = "Test Garfield";
+            garfield.hardware_tester_id = "G1_1";
+            garfield.print_label_id_1 =  279211;  // 12 mm
+            garfield.print_label_id_2 =  279211;  // 24 mm
+            garfield.print_sticker_id =  279211;  // 65 mm
+
+
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("name", "IODA G3").findUnique();
+            Model_Producer producer = Model_Producer.find.where().eq("name", "Byzance ltd").findUnique();
+
+
+            garfield.type_of_board_id = typeOfBoard.id;
+            garfield.producer_id = producer.id.toString();
+
+            garfield.save();
+
+            return GlobalResult.result_ok();
+
+        }catch (Exception e){
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+
 
     public Result producers() {
         try {

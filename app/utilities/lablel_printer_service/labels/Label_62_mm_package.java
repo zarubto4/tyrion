@@ -48,11 +48,11 @@ public class Label_62_mm_package {
 
 
         if(test_version == null){
-            throw new IllegalArgumentException("Test Firmware is not set");
+            terminal_logger.error("Label_62_mm_package:: Test Firmware is not set");
         }
 
         if(production_version == null){
-            throw new IllegalArgumentException("Production Firmware is not set");
+            terminal_logger.error("Label_62_mm_package:: Production Firmware is not set");
         }
 
         if(garfield == null){
@@ -195,10 +195,10 @@ public class Label_62_mm_package {
 
 
             Paragraph p_test_version = new Paragraph("FW Test Version: ", bold);
-                      p_test_version.add(new Chunk(test_version.version_name, regular));
+                      p_test_version.add(new Chunk(test_version != null ? test_version.version_name : "Not Tracked ", regular));
 
             Paragraph p_prod_version = new Paragraph("FW Prod Version: ", bold);
-                      p_prod_version.add(new Chunk(production_version.version_name, regular));
+                      p_prod_version.add(new Chunk(production_version != null ? production_version.version_name : "Not Tracked ", regular));
 
             Paragraph p_who_tested = new Paragraph("Who tested it: ", bold);
                       p_who_tested.add(new Chunk(Controller_Security.get_person().full_name, regular));

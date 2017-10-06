@@ -111,6 +111,7 @@ public class Hardware_Registration_Authority extends Controller {
         board_registration_central_authority.board_id = board.id;
         board_registration_central_authority.mac_address = board.mac_address;
         board_registration_central_authority.hash_for_adding = board.hash_for_adding;
+        board_registration_central_authority.personal_name = board.name;
         board_registration_central_authority.type_of_board_compiler_target_name =  typeOfBoard.compiler_target_name;
         board_registration_central_authority.type_of_board_revision_name =  typeOfBoard.revision;
         board_registration_central_authority.date_of_create = board.date_of_create;
@@ -249,6 +250,7 @@ public class Hardware_Registration_Authority extends Controller {
                     board.id = help.board_id;
                     board.mac_address = help.mac_address;
                     board.hash_for_adding = help.hash_for_adding;
+                    board.name = help.personal_name;
                     board.is_active = false;
                     board.date_of_create = help.date_of_create;
                     board.type_of_board = typeOfBoard;

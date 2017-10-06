@@ -87,6 +87,16 @@ public class Model_Garfield  extends Model{
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override public void save() {
+
+        terminal_logger.debug("save :: Creating new Object");
+        date_of_crate = new Date();
+
+        super.save();
+    }
+
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public static final String CHANNEL = "garfield";

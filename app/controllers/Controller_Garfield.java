@@ -243,28 +243,44 @@ public class Controller_Garfield extends Controller {
 
             // Kotrola objektu
             Model_Board board = Model_Board.get_byId(board_id);
-            if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
+            if(board == null ) {
+                terminal_logger.error("print_label:: Device ID not found");
+                return GlobalResult.result_notFound("Board board_id not found");
+            }
 
             // Kontrola oprávnění
-            if(!board.edit_permission()) return GlobalResult.result_forbidden();
+            if(!board.read_permission()) {
+                terminal_logger.error("print_label:: Device missing read permission");
+                return GlobalResult.result_forbidden();
+            }
 
             Model_TypeOfBoard_Batch batch = Model_TypeOfBoard_Batch.get_byId(board.batch_id);
-            if(batch == null) return GlobalResult.result_notFound("Model_TypeOfBoard_Batch " + board.batch_id + " not found");
+            if(batch == null) {
+                terminal_logger.error("print_label:: Device missing Model_TypeOfBoard_Batch");
+                return GlobalResult.result_notFound("Model_TypeOfBoard_Batch " + board.batch_id + " not found");
+            }
 
             // TODO tady je potřeba pohlídat online tiskárny - tiskne se na prvním garfieldovy - to není uplně super cool věc
             // Zrovna mě ale nenapadá jak v rozumném čase doprogramovat řešení lépe - snad jen pomocí selektoru tiskáren???
             // Tím pádem bude potřeba mít tiskárny trochu lépe pošéfované
             List<Model_Garfield> garfields = Model_Garfield.find.where().eq("type_of_board_id", board.type_of_board_id()).select("id").findList();
             if(garfields.isEmpty()) {
+                terminal_logger.error("print_label:: garfields for this type of board not found");
                 return GlobalResult.result_notFound("Garfield for this type of board not found");
             }
 
             // Kontrola objektu
             Model_Garfield garfield = Model_Garfield.get_byId(garfields.get(0).id.toString());
-            if (garfield == null) return GlobalResult.result_notFound("Garfield not found");
+            if (garfield == null) {
+                terminal_logger.error("print_label:: garfield not found");
+                return GlobalResult.result_notFound("Garfield not found");
+            }
 
             // Kontrola oprávnění
-            if (!garfield.read_permission()) return GlobalResult.result_forbidden();
+            if (!garfield.read_permission()) {
+                terminal_logger.error("print_label:: Missing garfield not found");
+                return GlobalResult.result_forbidden();
+            }
 
             Printer_Api api = new Printer_Api();
 
@@ -273,7 +289,8 @@ public class Controller_Garfield extends Controller {
                 // Test for creating - Controlling all prerequisites and requirements
                 new Label_62_mm_package(board, batch, garfield);
             }catch (IllegalArgumentException e){
-                return GlobalResult.badRequest("Something is wrong: " + e.getMessage());
+                terminal_logger.error("print_label:: Label_62_mm_package printer info Error, " + e.getMessage());
+                return GlobalResult.result_badRequest("Something is wrong: " + e.getMessage());
             }
 
             // Label 62 mm

@@ -121,7 +121,6 @@ public class Printer_Api {
                 .post(node);
 
         JsonNode response = responsePromise.get(5000).asJson();
-        System.out.println(response.toString());
 
         terminal_logger.debug("Printer_Api_post:: Result: " + response.toString());
         return response;
