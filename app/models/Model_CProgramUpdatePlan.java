@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.logger.Class_Logger;
@@ -17,7 +18,9 @@ import utilities.swagger.outboundClass.Swagger_UpdatePlan_brief_for_homer_Binary
 import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -41,14 +44,10 @@ public class Model_CProgramUpdatePlan extends Model {
 
                                                        @JsonIgnore @ManyToOne() public Model_ActualizationProcedure actualization_procedure;
 
-                @ApiModelProperty(required = true, value = "UNIX time in ms",
-                        example = "1466163478925")                              public Date date_of_create;
-
-                @ApiModelProperty(required = true, value = "UNIX time in ms",
-                        example = "1466163478925")                              public Date date_of_finish;
+              @ApiModelProperty(required = true, value = "UNIX time in ms", example = "1466163478925") public Date date_of_finish;
 
 
-              @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                   public Model_Board board;                           // Deska k aktualizaci
+              @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Model_Board board;                           // Deska k aktualizaci
               @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public Enum_Firmware_type firmware_type;                 // Typ Firmwaru
 
                                                                                 // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
@@ -62,6 +61,14 @@ public class Model_CProgramUpdatePlan extends Model {
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error_message", required = false)  public String error;
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error_message", required = false)  public Integer error_code;
+
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList public String cache_actualization_procedure_id;
+    @JsonIgnore @Transient @TyrionCachedList public String cache_board_id;
+    @JsonIgnore @Transient @TyrionCachedList public String cache_c_program_version_for_update_id;
+    @JsonIgnore @Transient @TyrionCachedList public String cache_bootloader_id;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -122,12 +129,10 @@ public class Model_CProgramUpdatePlan extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-
     @JsonIgnore @Transient public Swagger_C_Program_Update_plan_Short_Detail get_short_version_for_board(){
 
         Swagger_C_Program_Update_plan_Short_Detail detail = new Swagger_C_Program_Update_plan_Short_Detail();
         detail.id = this.id.toString();
-        detail.date_of_create = date_of_create;
         detail.date_of_finish = date_of_finish;
         detail.firmware_type = firmware_type;
         detail.state = state;
@@ -147,7 +152,6 @@ public class Model_CProgramUpdatePlan extends Model {
 
         return detail;
     }
-
     @JsonIgnore @Transient public Swagger_UpdatePlan_brief_for_homer get_brief_for_update_homer_server(){
         try {
 
@@ -199,7 +203,20 @@ public class Model_CProgramUpdatePlan extends Model {
         count_of_tries = 0;
 
         if(this.state == null) this.state = Enum_CProgram_updater_state.not_start_yet;
-        this.date_of_create = new Date();
+
+        // Set Cache parameter
+        cache_board_id = board.id;
+
+        // set Cache Parameter
+        if(c_program_version_for_update != null){
+            cache_c_program_version_for_update_id = c_program_version_for_update.id;
+        }
+
+        // set Cache Parameter
+        if(bootloader != null){
+            cache_bootloader_id = bootloader.id.toString();
+        }
+
 
         super.save();
 

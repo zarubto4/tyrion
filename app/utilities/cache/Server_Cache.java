@@ -195,6 +195,13 @@ public class Server_Cache {
                             ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_TypeOfBoard.class.getSimpleName() + ".CACHE")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(24, TimeUnit.HOURS))).build());
 
+
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Hardware Group Model");
+            Model_BoardGroup.cache = cacheManager.createCache(Model_BoardGroup.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_BoardGroup.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_BoardGroup.class.getSimpleName() + ".CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(60, TimeUnit.HOURS))).build());
+
         /*
          *  Updates
          *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------

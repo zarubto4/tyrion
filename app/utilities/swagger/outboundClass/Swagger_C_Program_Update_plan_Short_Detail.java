@@ -15,7 +15,6 @@ public class Swagger_C_Program_Update_plan_Short_Detail {
     @ApiModelProperty(required = true, readOnly = true)
     public String id;
 
-    public Date date_of_create;
     public Date date_of_finish;
 
     public Enum_Firmware_type firmware_type;

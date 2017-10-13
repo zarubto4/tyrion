@@ -2563,7 +2563,7 @@ public class Controller_Board extends Controller {
 
 
             // If Json contains TypeOfBoards list of id's
-            if(help.type_of_board_ids != null ){
+            if(help.type_of_board_ids != null && !help.type_of_board_ids.isEmpty()){
                 query.where().in("type_of_board.id", help.type_of_board_ids);
             }
 
@@ -2572,8 +2572,8 @@ public class Controller_Board extends Controller {
                 query.where().eq("is_active", help.active.equals("true"));
             }
 
-            if(help.projects != null){
-                query.where().in("projects.id", help.projects);
+            if(help.projects != null && !help.projects.isEmpty()){
+                query.where().in("project.id", help.projects);
             }
 
             if(help.producers != null){
@@ -3040,4 +3040,294 @@ public class Controller_Board extends Controller {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
+
+///###################################################################################################################*/
+
+    @ApiOperation(value = "create BoardGroup",
+            tags = { "BoardGroup"},
+            notes = "Create Board Group",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_Hardware_Group_New",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_BoardGroup.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result board_group_create() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Hardware_Group_New> form = Form.form(Swagger_Hardware_Group_New.class).bindFromRequest();
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_Hardware_Group_New help = form.get();
+
+            Model_Project project = Model_Project.get_byId(help.project_id);
+            if(project == null) return GlobalResult.result_notFound("Model_Project not found");
+
+
+            if (Model_BoardGroup.find.where().eq("name", help.name).eq("project.id", project.id).findUnique() != null){
+                return GlobalResult.result_badRequest("Group name must be a unique!");
+            }
+
+
+            Model_BoardGroup group = new Model_BoardGroup();
+            group.name = help.name;
+            group.description = help.description;
+            group.project = project;
+
+
+            if(!group.create_permission()) return GlobalResult.result_forbidden();
+            group.save();
+
+            // Vracím seznam
+            return GlobalResult.result_ok(Json.toJson(group));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "edit BoardGroup",
+            tags = { "BoardGroup"},
+            notes = "update BoardGroup",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_Hardware_Group_Edit",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_BootLoader.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result board_group_update(String board_group_id) {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Hardware_Group_New> form = Form.form(Swagger_Hardware_Group_New.class).bindFromRequest();
+            if(form.hasErrors())return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_Hardware_Group_New help = form.get();
+
+            Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
+            if (group == null) return GlobalResult.result_notFound("BoardGroupLoader not found");
+
+            if (!group.edit_permission()) return GlobalResult.result_forbidden();
+
+            group.name = help.name;
+            group.description = help.description;
+
+            group.update();
+
+            return GlobalResult.result_ok(Json.toJson(group));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "update BoardGroup Device List",
+            tags = { "BoardGroup"},
+            notes = "update BoardGroup add or remove device list",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_Hardware_Group_DeviceListEdit",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = Result_Ok.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message", response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result board_group_update_device_list() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Hardware_Group_DeviceListEdit> form = Form.form(Swagger_Hardware_Group_DeviceListEdit.class).bindFromRequest();
+            if(form.hasErrors())return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_Hardware_Group_DeviceListEdit help = form.get();
+
+
+            if(help.device_synchro != null) {
+
+                Model_Board board = Model_Board.get_byId(help.device_synchro.device_id);
+                if(!board.update_permission()) return GlobalResult.result_forbidden();
+
+                for(String board_group_id: help.device_synchro.group_ids){
+
+                    Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
+                    if(!group.update_permission()) return GlobalResult.result_forbidden();
+
+                    // Nějaké mazání 
+                    board.cache_hardware_groups_id.add(board_group_id);
+                    board.board_groups.add(group);
+                }
+
+                board.save();
+            }
+
+
+
+            if(help.group_synchro != null) {
+
+                Model_BoardGroup group = Model_BoardGroup.get_byId(help.group_synchro.group_id);
+                if(!group.update_permission()) return GlobalResult.result_forbidden();
+
+                for(String board_id: help.group_synchro.device_ids){
+                    Model_Board board = Model_Board.get_byId(board_id);
+                    if(!board.update_permission()) return GlobalResult.result_forbidden();
+
+                    board.cache_hardware_groups_id.add(help.group_synchro.group_id);
+                    board.board_groups.add(group);
+                    board.update();
+                }
+
+                group.refresh();
+            }
+
+
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+
+    @ApiOperation(value = "delete BoardGroup",
+            tags = { "BoardGroup"},
+            notes = "delete BoardGroup",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = Result_Ok.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message", response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result board_group_delete(String board_group_id) {
+        try {
+
+            Model_BoardGroup group = Model_BoardGroup.find.byId(board_group_id);
+            if (group == null) return GlobalResult.result_notFound("BootLoader not found");
+
+            if (!group.delete_permission()) return GlobalResult.result_forbidden();
+
+            group.delete();
+
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get_List BoardGroup From Project",
+            tags = { "Type-Of-Board"},
+            notes = "get List of BoardGroup from Project",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = Model_BoardGroup.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found", response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error", response = Result_InternalServerError.class)
+    })
+    public Result board_group_get_list_project( String project_id) {
+        try {
+
+            // Kontrola validity objektu
+            Model_Project project = Model_Project.get_byId(project_id);
+            if(project == null ) return GlobalResult.result_notFound("Project project_id not found");
+
+            // Kontorluji oprávnění
+            if(! project.read_permission()) return GlobalResult.result_forbidden();
+
+            // Vrácení validity objektu
+            return GlobalResult.result_ok(Json.toJson(project.get_hardware_groups_not_deleted()));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get BoardGroup",
+            tags = { "Type-Of-Board"},
+            notes = "get List of BoardGroup from Project",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = Model_BoardGroup.class),
+            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found", response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error", response = Result_InternalServerError.class)
+    })
+    public Result board_group_get(String board_group_id) {
+        try {
+
+            // Kontrola validity objektu
+            Model_BoardGroup group = Model_BoardGroup.find.byId(board_group_id);
+            if (group == null) return GlobalResult.result_notFound("BoardGroupLoader not found");
+
+            if (!group.read_permission()) return GlobalResult.result_forbidden();
+
+            // Vrácení validity objektu
+            return GlobalResult.result_ok(Json.toJson(group));
+
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
 }

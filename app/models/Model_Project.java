@@ -45,6 +45,7 @@ public class Model_Project extends Model {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_TypeOfBlock>             type_of_blocks    = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_TypeOfWidget>            type_of_widgets   = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Board>                   boards            = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BoardGroup>              board_groups      = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("date_of_creation desc")             public List<Model_Invitation>              invitations       = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("id asc")                            public List<Model_ProjectParticipant>      participants      = new ArrayList<>();
 
@@ -62,6 +63,7 @@ public class Model_Project extends Model {
     @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_library_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_b_program_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_m_project_ids = new ArrayList<>();
+    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_hardware_groups_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_type_of_widgets_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_type_of_blocks_ids = new ArrayList<>();
     @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_instance_ids = new ArrayList<>();
@@ -331,6 +333,36 @@ public class Model_Project extends Model {
             return new ArrayList<Model_MProject>();
         }
     }
+
+    @JsonIgnore @TyrionCachedList
+    public List<Model_BoardGroup> get_hardware_groups_not_deleted(){
+        try{
+
+            if(cache_hardware_groups_ids.isEmpty()){
+
+                List<Model_BoardGroup> board_groups = Model_BoardGroup.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+
+                // Získání seznamu
+                for (Model_BoardGroup board_group : board_groups) {
+                    cache_hardware_groups_ids.add(board_group.id.toString());
+                }
+
+            }
+
+            List<Model_BoardGroup> board_groups  = new ArrayList<>();
+
+            for(String board_group_id : cache_hardware_groups_ids){
+                board_groups.add(Model_BoardGroup.get_byId(board_group_id));
+            }
+
+            return board_groups;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError("get_m_projects_not_deleted", e);
+            return new ArrayList<Model_BoardGroup>();
+        }
+    }
+
 
     @JsonIgnore @TyrionCachedList
     public List<Model_TypeOfWidget> get_type_of_widgets_not_deleted(){

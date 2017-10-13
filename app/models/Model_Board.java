@@ -76,9 +76,8 @@ public class Model_Board extends Model {
 
     // Parametry při výrobě a osazení a registraci
     @JsonIgnore public Date date_of_create;                 // Datum vytvoření objektu (vypálení dat do procesoru)
-    @JsonIgnore public String batch_id; // Výrobní šarže
-    @JsonIgnore public boolean is_active; // Příznak, že deska byla oživena a je použitelná v platformě
-
+    @JsonIgnore public String batch_id;                     // Výrobní šarže
+    @JsonIgnore public boolean is_active;                   // Příznak, že deska byla oživena a je použitelná v platformě
 
     // Parametry konfigurovate uživatelem z frontendu
     // Pozor v Controller_Board jsou parametry v metodě board_update_parameters používány
@@ -100,6 +99,10 @@ public class Model_Board extends Model {
 
     @JsonIgnore public String connected_server_id;      // Latest know Server ID
     @JsonIgnore public String connected_instance_id;    // Latest know Instance ID
+
+
+    // Hardware Groups
+    @JsonIgnore @ManyToMany(mappedBy = "boards", fetch = FetchType.LAZY)  public List<Model_BoardGroup> board_groups = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -123,6 +126,7 @@ public class Model_Board extends Model {
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_backup_id;              // Backup
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_backup_version_id;
     @Transient @JsonIgnore @TyrionCachedList public String cache_latest_know_ip_address;
+    @Transient @JsonIgnore @TyrionCachedList public List<String> cache_hardware_groups_id;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
@@ -347,6 +351,9 @@ public class Model_Board extends Model {
         }
     }
 
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_HardwareGroup_Short_Detail>  hardware_groups() { List<Swagger_HardwareGroup_Short_Detail>    l = new ArrayList<>();   for( Model_BoardGroup m : get_hardware_groups()) l.add(m.get_group_short_detail());  return l;}
+
+
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
@@ -360,6 +367,13 @@ public class Model_Board extends Model {
             swagger_board_short_detail.description = description;
             swagger_board_short_detail.type_of_board_id = type_of_board_id();
             swagger_board_short_detail.type_of_board_name = type_of_board_name();
+
+            if(project_id() == null && read_permission()) {
+                swagger_board_short_detail.hash_for_adding = hash_for_adding;
+            }
+
+            swagger_board_short_detail.hardware_groups = hardware_groups();
+
 
             swagger_board_short_detail.edit_permission = edit_permission();
             swagger_board_short_detail.delete_permission = delete_permission();
@@ -501,6 +515,31 @@ public class Model_Board extends Model {
         }
 
         return Model_Project.get_byId(cache_value_project_id);
+    }
+
+    @JsonIgnore @Transient @TyrionCachedList public List<Model_BoardGroup> get_hardware_groups() {
+
+        if(cache_hardware_groups_id == null){
+            List<Model_BoardGroup> groups = Model_BoardGroup.find.where().eq("boards.id", id).select("id").findList();
+
+            if(groups == null) {
+                cache_hardware_groups_id = new ArrayList<>();
+                return new ArrayList<>();
+            }else {
+                cache_hardware_groups_id = new ArrayList<>();
+                for (Model_BoardGroup group : groups) {
+                    cache_hardware_groups_id.add(group.id.toString());
+                }
+            }
+        }
+
+        List<Model_BoardGroup> groups = new ArrayList<>();
+
+        for(String group_id : cache_hardware_groups_id){
+            groups.add(Model_BoardGroup.get_byId(group_id));
+        }
+
+        return groups;
     }
 
     @JsonIgnore @Transient @TyrionCachedList public boolean update_boot_loader_required(){
@@ -1060,7 +1099,6 @@ public class Model_Board extends Model {
         }
     }
 
-
     // Change Hardware web view support --//
     @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_web_view(boolean settings){
         try {
@@ -1132,7 +1170,6 @@ public class Model_Board extends Model {
 
         }
     }
-
 
     //-- Set AutoBackup  --//
     @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_auto_backup(){
@@ -2012,7 +2049,12 @@ public class Model_Board extends Model {
     public enum permissions {Board_read, Board_Create, Board_edit, Board_delete, Board_update}
 
     public static String generate_hash(){
-        return "HW" + UUID.randomUUID().toString().replaceAll("[-]","").substring(0, 24);
+        String hash = "HW" + UUID.randomUUID().toString().replaceAll("[-]","").substring(0, 24);
+        if(Model_Board.find.where().eq("hash_for_adding", hash).findUnique() != null) {
+            return generate_hash();
+        }else {
+            return hash;
+        }
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/

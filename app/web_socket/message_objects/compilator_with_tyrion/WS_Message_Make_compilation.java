@@ -38,7 +38,7 @@ public class WS_Message_Make_compilation extends WS_AbstractMessage {
         request.put("message_type", message_type);
         request.put("message_channel",    Model_CompilationServer.CHANNEL);
         request.put("target",             typeOfBoard.compiler_target_name);
-        request.put("library_version",    "v0"); // TODO longterm podle verzí komplační knihovny
+        request.put("library_version",    "v0.0.1"); // TODO longterm podle verzí komplační knihovny
         request.put("version_id",         version_id);
         request.put("code",               code);
         request.set("includes", includes);

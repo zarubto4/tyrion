@@ -297,8 +297,9 @@ DELETE    /compilation_server/:server_id                                @control
 ################################################################################################################################################################################
 
 #Actualization Procedure
-GET       /actualization_procedure/project/:project_id                  @controllers.Controller_Actualization.get_Actualization_Procedures_by_project(project_id)
-GET       /actualization_procedure/:actualization_procedure_id          @controllers.Controller_Actualization.get_Actualization_Procedure(actualization_procedure_id)
+GET       /actualization_procedure/filter/:page_number                  @controllers.Controller_Actualization.get_Actualization_Procedures_by_filter(page_number: Int)
+GET       /actualization_procedure/object/:actualization_procedure_id   @controllers.Controller_Actualization.get_Actualization_Procedure(actualization_procedure_id)
+GET       /actualization_procedure/make                                 @controllers.Controller_Actualization.make_actualization_procedure()
 
 ### COMPILATION & LIBRARIES ############ COMPILATION & LIBRARIES ############### COMPILATION & LIBRARIES ################ COMPILATION & LIBRARIES ##############################
 ################################################################################################################################################################################
@@ -372,6 +373,15 @@ PUT       /board/:hash_for_adding/:project_id                           @control
 DELETE    /board/:board_id                                              @controllers.Controller_Board.board_disconnectProject(board_id)
 PUT       /board/picture/upload/:board_id                               @controllers.Controller_Board.board_uploadPicture(board_id)
 PUT       /board/picture/remove/:board_id                               @controllers.Controller_Board.board_removePicture(board_id)
+
+
+#Board_Group
+POST      /board_group                                                  @controllers.Controller_Board.board_group_create()
+PUT       /board_group/group/:board_group_id                            @controllers.Controller_Board.board_group_update(board_group_id)
+PUT       /board_group/devices                                          @controllers.Controller_Board.board_group_update_device_list()
+GET       /board_group/project/:project_id                              @controllers.Controller_Board.board_group_get_list_project(project_id)
+GET       /board_group/individual/:board_group_id                       @controllers.Controller_Board.board_group_get(board_group_id)
+DELETE    /board_group/:board_group_id                                  @controllers.Controller_Board.board_group_delete(board_group_id)
 
 #Producer
 POST      /producer                                                     @controllers.Controller_Board.producer_create()
