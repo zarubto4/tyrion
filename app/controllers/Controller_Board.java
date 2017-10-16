@@ -2852,17 +2852,16 @@ public class Controller_Board extends Controller {
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Board_Connection", value = Model_Board.connection_permission_docs),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Board.first_connect_permission", value = "true"),
-                            @ExtensionProperty(name = "Project.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "Board_update"),
-                    }),
-            }
+            code = 200
+    )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_Board_Registration_To_Project",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Board.class),
@@ -2871,23 +2870,39 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result board_connectProject(String hash_for_adding, String project_id){
+    public Result board_connectProject(){
         try {
+
+            // Zpracování Json
+            final Form<Swagger_Board_Registration_To_Project> form = Form.form(Swagger_Board_Registration_To_Project.class).bindFromRequest();
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_Board_Registration_To_Project help = form.get();
+
 
             terminal_logger.debug("CompilationControler:: Registrace nového zařízení ");
             // Kotrola objektu
-            Model_Board board = Model_Board.find.where().eq("hash_for_adding", hash_for_adding).findUnique();
+            Model_Board board = Model_Board.find.where().eq("hash_for_adding", help.hash_for_adding).findUnique();
             if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
-
-            // Kotrola objektu
-            Model_Project project = Model_Project.get_byId(project_id);
-            if(project == null) return GlobalResult.result_notFound("Project project_id not found");
-
-            // Kontrola oprávnění
             if(!board.first_connect_permission()) return GlobalResult.result_badRequest("Board is already registered");
 
-            // Kontrola oprávnění
+            // Kotrola objektu
+            Model_Project project = Model_Project.get_byId(help.project_id);
+            if(project == null) return GlobalResult.result_notFound("Project project_id not found");
             if(!project.update_permission()) return GlobalResult.result_forbidden();
+
+            // Pouze získání aktuálního stavu do Cache paměti ID listu
+            if(board.cache_hardware_groups_id == null){
+                board.get_hardware_groups();
+            }
+
+            // Cyklus pro přidávání // Nejdříve kontroluji
+            for(String board_group_id: help.group_ids) {
+                Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
+                if(group == null) return GlobalResult.result_notFound("BoardGroup ID not found");
+                if(!group.update_permission()) return GlobalResult.result_forbidden();
+            }
+
+
 
             // uprava desky
             board.project = project;
@@ -2897,8 +2912,31 @@ public class Controller_Board extends Controller {
             board.update();
             project.update();
 
+
             if( Model_Board.cache_status.containsKey(board.id)){
                 Model_Board.cache_status.remove(board.id);
+            }
+
+            // Pouze získání aktuálního stavu do Cache paměti ID listu
+            if(board.cache_hardware_groups_id == null){
+                board.get_hardware_groups();
+            }
+
+            // Cyklus pro přidávání // Nejdříve kontroluji
+            for(String board_group_id: help.group_ids) {
+
+                // Přidám všechny, které nejsou už součásti cache_hardware_groups_id
+                if(!board.cache_hardware_groups_id.contains(board_group_id)){
+
+                    Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
+                    // už nemusím kontrolovat
+
+                    // Nějaké mazání
+                    board.cache_hardware_groups_id.add(board_group_id);
+                    board.board_groups.add(group);
+                    group.cache_group_size +=1;
+                    board.update();
+                }
             }
 
             // vrácení objektu
@@ -3186,22 +3224,74 @@ public class Controller_Board extends Controller {
             Swagger_Hardware_Group_DeviceListEdit help = form.get();
 
 
+
+
             if(help.device_synchro != null) {
 
+                System.out.println("Přidávám Seznam Group nad Devicem Počet prvků " + help.device_synchro.group_ids.size());
+
                 Model_Board board = Model_Board.get_byId(help.device_synchro.device_id);
+                if(board == null) return GlobalResult.result_notFound("Board ID not found");
                 if(!board.update_permission()) return GlobalResult.result_forbidden();
 
-                for(String board_group_id: help.device_synchro.group_ids){
+                System.out.println("Board " + board.id);
 
-                    Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
-                    if(!group.update_permission()) return GlobalResult.result_forbidden();
-
-                    // Nějaké mazání 
-                    board.cache_hardware_groups_id.add(board_group_id);
-                    board.board_groups.add(group);
+                // Pouze získání aktuálního stavu do Cache paměti ID listu
+                if(board.cache_hardware_groups_id == null){
+                    board.get_hardware_groups();
                 }
 
-                board.save();
+                // Cyklus pro přidávání
+                for(String board_group_id: help.device_synchro.group_ids) {
+
+                    System.out.println("Kontorluji nezaregistrovanou  skupinu " + board_group_id );
+
+                    // Přidám všechny, které nejsou už součásti cache_hardware_groups_id
+                    if(!board.cache_hardware_groups_id.contains(board_group_id)){
+
+                        System.out.println("Přidávám skupinu" + board_group_id );
+
+                        Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
+                        if(group == null) return GlobalResult.result_notFound("BoardGroup ID not found");
+                        if(!group.update_permission()) return GlobalResult.result_forbidden();
+
+                        // Nějaké mazání
+                        board.cache_hardware_groups_id.add(board_group_id);
+                        board.board_groups.add(group);
+                        group.cache_group_size +=1;
+                        board.update();
+                    }
+                }
+
+
+                // Cyklus pro mazání java.util.ConcurrentModificationException
+                for (Iterator<String> it = board.cache_hardware_groups_id.iterator(); it.hasNext(); ) {
+
+                    String board_group_id = it.next();
+
+                    System.out.println("Kontorluji již zaregistrovanou skupinu " + board_group_id );
+
+                    // Není a tak mažu
+                    if(!help.device_synchro.group_ids.contains(board_group_id)){
+
+                        System.out.println("Odebírám skupinu" + board_group_id );
+
+                        Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
+                        if(group == null) return GlobalResult.result_notFound("BoardGroup ID not found");
+                        if(!group.update_permission()) return GlobalResult.result_forbidden();
+                        group.boards.remove(board);
+                        group.update();
+
+                        board.board_groups.remove(group);
+                        group.cache_group_size -=1;
+                        it.remove();
+                        board.update();
+
+                    }
+
+                }
+
+
             }
 
 

@@ -365,11 +365,12 @@ PUT       /board/userDescription/:board_id                              @control
 PUT       /board/parameters/:board_id                                   @controllers.Controller_Board.board_update_parameters(board_id)
 PUT       /board/backup                                                 @controllers.Controller_Board.board_updateBackup()
 
+PUT       /board/registration                                           @controllers.Controller_Board.board_connectProject()
 PUT       /board/filter/:page_number                                    @controllers.Controller_Board.board_getByFilter(page_number: Int)
 GET       /board/check/:hash_for_adding                                 @controllers.Controller_Board.board_check(hash_for_adding)
 GET       /board/:board_id                                              @controllers.Controller_Board.board_get(board_id)
 DELETE    /board/deactivateBoard/:board_id                              @controllers.Controller_Board.board_deactivate(board_id)
-PUT       /board/:hash_for_adding/:project_id                           @controllers.Controller_Board.board_connectProject(hash_for_adding, project_id)
+
 DELETE    /board/:board_id                                              @controllers.Controller_Board.board_disconnectProject(board_id)
 PUT       /board/picture/upload/:board_id                               @controllers.Controller_Board.board_uploadPicture(board_id)
 PUT       /board/picture/remove/:board_id                               @controllers.Controller_Board.board_removePicture(board_id)

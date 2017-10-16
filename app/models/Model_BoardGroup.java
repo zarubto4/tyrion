@@ -92,7 +92,6 @@ public class Model_BoardGroup extends Model {
         date_of_create = new Date();
 
         super.save();
-        super.refresh();
 
         project.cache_hardware_groups_ids.add(id.toString());
 
