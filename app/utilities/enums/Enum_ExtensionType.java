@@ -39,7 +39,7 @@ public enum Enum_ExtensionType {
             }
 
         } catch (Exception e){
-            terminal_logger.internalServerError("getExtensionClass:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }

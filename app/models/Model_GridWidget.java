@@ -182,7 +182,7 @@ public class Model_GridWidget extends Model{
             return grid_versions;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("getVersion_objects", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<Model_GridWidgetVersion>();
         }
 

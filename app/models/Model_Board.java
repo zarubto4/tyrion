@@ -204,14 +204,14 @@ public class Model_Board extends Model {
                     plans.add(plan.get_short_version_for_board());
 
                 }catch (Exception e){
-                    terminal_logger.internalServerError("updates:", e);
+                    terminal_logger.internalServerError(e);
                 }
             }
 
             return plans;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("updates:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -334,7 +334,7 @@ public class Model_Board extends Model {
                             }}));
 
                         } catch (Exception e) {
-                            terminal_logger.internalServerError("notification_board_connect:", e);
+                            terminal_logger.internalServerError(e);
                         }
                     }).start();
 
@@ -388,7 +388,7 @@ public class Model_Board extends Model {
             return swagger_board_short_detail;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_short_board:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -628,7 +628,7 @@ public class Model_Board extends Model {
                         terminal_logger.warn("Incoming Message not recognized::" + json.toString());
 
                         // Zarážka proti nevadliní odpovědi a zacyklení
-                        if(json.has("status") && json.get("status").asText().equals("error_message")){
+                        if(json.has("status") && json.get("status").asText().equals("error")){
                             return;
                         }
 
@@ -641,7 +641,7 @@ public class Model_Board extends Model {
                     homer.write_without_confirmation(json.put("error_message", "Your message not contains message_type").put("error_code", 400));
                     return;
                 }else {
-                    terminal_logger.internalServerError("Messages:", e);
+                    terminal_logger.internalServerError(e);
                 }
             }
         }).start();
@@ -996,7 +996,7 @@ public class Model_Board extends Model {
                 result.hardware_list.addAll(form.get().hardware_list);
 
             }catch (Exception e){
-                terminal_logger.internalServerError("get_devices_online_state:", e);
+                terminal_logger.internalServerError(e);
                 return new WS_Message_Hardware_online_status();
             }
         }
@@ -1044,7 +1044,7 @@ public class Model_Board extends Model {
 
 
             }catch (Exception e){
-                terminal_logger.internalServerError("get_devices_online_state:", e);
+                terminal_logger.internalServerError(e);
                 return new WS_Message_Hardware_overview();
             }
         }
@@ -1270,7 +1270,7 @@ public class Model_Board extends Model {
                 plan.update();
 
             } catch(Exception e) {
-                terminal_logger.internalServerError("actualization_update_procedure:", e);
+                terminal_logger.internalServerError(e);
                 plan.state = Enum_CProgram_updater_state.critical_error;
                 plan.update();
                 break;
@@ -1853,7 +1853,7 @@ public class Model_Board extends Model {
                         .send_under_project(project_id());
 
             } catch (Exception e) {
-                terminal_logger.internalServerError("notification_board_connect:", e);
+                terminal_logger.internalServerError(e);
             }
         }).start();
     }
@@ -1873,7 +1873,7 @@ public class Model_Board extends Model {
                     .send_under_project(project_id());
 
             }catch (Exception e){
-                terminal_logger.internalServerError("notification_board_disconnect:", e);
+                terminal_logger.internalServerError(e);
             }
         }).start();
     }
@@ -1890,7 +1890,7 @@ public class Model_Board extends Model {
                 new Model_Notification()
                         .setImportance( Enum_Notification_importance.high)
                         .setLevel(Enum_Notification_level.error)
-                        .setText(new Notification_Text().setText("Attention! We note the highest critical error_message on your device "))
+                        .setText(new Notification_Text().setText("Attention! We note the highest critical error on your device "))
                         .setObject(this)
                         .setText(new Notification_Text().setText(" There was a collapse of the running firmware "))
                         .setObject(firmware_version.c_program)
@@ -1902,7 +1902,7 @@ public class Model_Board extends Model {
                         .send_under_project(project_id());
 
             }catch (Exception e){
-                terminal_logger.internalServerError("notification_board_unstable_actual_firmware_version:", e);
+                terminal_logger.internalServerError(e);
             }
         }).start();
     }
@@ -1932,7 +1932,7 @@ public class Model_Board extends Model {
 
 
             }catch (Exception e){
-                terminal_logger.internalServerError("notification_board_unstable_actual_firmware_version:", e);
+                terminal_logger.internalServerError(e);
             }
         }).start();
     }
@@ -1963,7 +1963,7 @@ public class Model_Board extends Model {
             }).start();
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("notification_set_static_backup_procedure_first_information_single:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -1992,7 +1992,7 @@ public class Model_Board extends Model {
             }).start();
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("notification_set_static_backup_procedure_first_information_list:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -2004,7 +2004,7 @@ public class Model_Board extends Model {
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
             } catch (DocumentClientException e) {
-                terminal_logger.internalServerError("make_log_connect:", e);
+                terminal_logger.internalServerError(e);
             }
         }).start();
     }
@@ -2014,7 +2014,7 @@ public class Model_Board extends Model {
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Disconnected.make_request(this.id), null, true);
             } catch (DocumentClientException e) {
-                terminal_logger.internalServerError("make_log_disconnect:", e);
+                terminal_logger.internalServerError(e);
             }
         }).start();
     }
@@ -2024,7 +2024,7 @@ public class Model_Board extends Model {
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_BackupIncident.make_request_success_backup(this.id), null, true);
             } catch (DocumentClientException e) {
-                terminal_logger.internalServerError("make_log_backup_arrise_change:", e);
+                terminal_logger.internalServerError(e);
             }
         }).start();
     }
@@ -2147,7 +2147,7 @@ public class Model_Board extends Model {
                 WS_Message_Hardware_online_status result = get_devices_online_state();
 
 
-                if( result.status.equals("error_message")){
+                if( result.status.equals("error")){
 
                     terminal_logger.debug("is_online:: hardware_id:: "+  id + " Checking online state! Device is offline");
                     cache_status.put(id, false);
@@ -2168,7 +2168,7 @@ public class Model_Board extends Model {
                 cache_status.put(id, false );
                 return false;
             }catch (Exception e){
-                terminal_logger.internalServerError("is_online:", e);
+                terminal_logger.internalServerError(e);
                 return false;
             }
         }else {

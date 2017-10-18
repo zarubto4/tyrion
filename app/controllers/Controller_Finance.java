@@ -402,7 +402,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side error_message" ,        response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result productExtension_create(String product_id){
@@ -460,7 +460,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side error_message" ,        response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
     public Result productExtension_get(String extension_id){
         try{
@@ -487,7 +487,7 @@ public class Controller_Finance extends Controller {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK Result",                 response = Model_ProductExtension.class, responseContainer = "list"),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side error_message" ,        response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
     public Result productExtension_getAll(){
         try{
@@ -523,7 +523,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side error_message" ,        response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result productExtension_update(String extension_id){
@@ -564,7 +564,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side error_message" ,        response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
     public Result productExtension_activate(String extension_id){
         try{
@@ -600,7 +600,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side error_message" ,        response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
     public Result productExtension_deactivate(String extension_id){
         try{
@@ -635,7 +635,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side error_message" ,        response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
     public Result productExtension_delete(String extension_id){
         try{
@@ -682,7 +682,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side error_message" ,        response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result tariffExtension_create(String tariff_id){
@@ -988,7 +988,7 @@ public class Controller_Finance extends Controller {
             @ApiResponse(code = 200, message = "OK Result",                 response = Swagger_ProductExtension_Type.class, responseContainer = "list"),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side error_message" ,        response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
     public Result tariff_getAllTypes(){
         try{

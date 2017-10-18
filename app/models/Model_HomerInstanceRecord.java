@@ -422,7 +422,7 @@ public class Model_HomerInstanceRecord extends Model {
             actualization_procedure.update();
 
         }catch (Exception e){
-            terminal_logger.internalServerError("create_actualization_request:", e);
+            terminal_logger.internalServerError( e);
         }
     }
 

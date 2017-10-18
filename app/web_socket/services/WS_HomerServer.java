@@ -188,19 +188,15 @@ public class WS_HomerServer extends WS_Interface_type {
             webSCtype.write_without_confirmation(json.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Check_homer_server_permission.message_type, null));
 
         }catch (Exception e){
-            terminal_logger.internalServerError("Incoming data from Homer is not in valid state and also its not verified connection", e);
+            terminal_logger.internalServerError(new Exception("Invalid data came from Homer and also it is not verified connection", e));
 
             if(json.has("message_id")){
                 reject_server_verification(json.get("message_id").asText());
             }else {
                 reject_server_verification(UUID.randomUUID().toString());
             }
-
         }
     }
-
-
-
 
     // Je voláno, až se server ověří
     public void synchronize_configuration(){

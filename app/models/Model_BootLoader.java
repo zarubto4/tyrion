@@ -139,7 +139,7 @@ public class Model_BootLoader extends Model {
                     .send_under_project(plan.board.project_id());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("notification_bootloader_procedure_first_information_single:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -163,7 +163,7 @@ public class Model_BootLoader extends Model {
 
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("notification_bootloader_procedure_first_information_single:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -203,7 +203,7 @@ public class Model_BootLoader extends Model {
             }).start();
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("notification_bootloader_procedure_first_information_list:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -241,7 +241,7 @@ public class Model_BootLoader extends Model {
             return Server.blobClient.getContainerReference("bootloaders"); // Jméno kontejneru
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_Container:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }

@@ -4,7 +4,7 @@ import com.avaje.ebean.annotation.EnumValue;
 
 public enum Enum_Log_level {
 
-    @EnumValue("error_message")   error,
+    @EnumValue("error")   error,
     @EnumValue("warn")    warn,
     @EnumValue("info")    info,
     @EnumValue("debug")   debug,

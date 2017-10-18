@@ -964,9 +964,8 @@ public class Controller_Code extends Controller{
                                 .send(version_old.c_program.get_project().get_product().customer, "Publishing your program" );
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError("approve_decision:", e);
+                        terminal_logger.internalServerError(e);
                     }
-
 
                 // Admin to schválil ale měl nějaký keci k tomu
                 }else {
@@ -986,7 +985,7 @@ public class Controller_Code extends Controller{
                                 .send(version_old.c_program.get_project().get_product().customer, "Publishing your program" );
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError("approve_decision:", e);
+                        terminal_logger.internalServerError(e);
                     }
                 }
 
@@ -1011,9 +1010,8 @@ public class Controller_Code extends Controller{
                             .send(version_old.c_program.get_project().get_product().customer, "Publishing your program");
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("approve_decision:", e);
+                    terminal_logger.internalServerError(e);
                 }
-
             }
 
             // Potvrzení
@@ -1058,14 +1056,12 @@ public class Controller_Code extends Controller{
                 version_object.c_program.default_main_version  = null;
                 previous_main_version.update();
                 version_object.c_program.update();
-
             }
 
             version_object.default_program = version_object.c_program;
             version_object.update();
 
             version_object.c_program.refresh();
-
 
             // Vracím Json
             return GlobalResult.result_ok(Json.toJson(version_object.c_program));
@@ -1074,5 +1070,4 @@ public class Controller_Code extends Controller{
             return Server_Logger.result_internalServerError(e, request());
         }
     }
-
 }

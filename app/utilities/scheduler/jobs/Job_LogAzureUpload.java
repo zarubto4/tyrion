@@ -48,7 +48,7 @@ public class Job_LogAzureUpload implements Job {
                 terminal_logger.debug("Job_LogAzureUpload:: log_upload_thread: log successfully uploaded");
 
             } catch (Exception e) {
-                terminal_logger.internalServerError("Job_LogAzureUpload:: log_upload_thread:", e);
+                terminal_logger.internalServerError(e);
             }
 
             terminal_logger.debug("Job_LogAzureUpload:: log_upload_thread: thread stopped on {}", new Date());

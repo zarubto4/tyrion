@@ -165,7 +165,7 @@ public class Model_BlockoBlock extends Model {
             return blocko_versions;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("getVersion_objects", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<Model_BlockoBlockVersion>();
         }
 
@@ -217,7 +217,7 @@ public class Model_BlockoBlock extends Model {
             return help;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_blocko_block_short_detail:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }

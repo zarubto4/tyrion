@@ -58,7 +58,7 @@ public class Job_OldNotificationRemoval implements Job {
                 }
 
             } catch (Exception e) {
-                terminal_logger.internalServerError("remove_notification_thread:", e);
+                terminal_logger.internalServerError(e);
             }
 
             terminal_logger.debug("remove_notification_thread: thread stopped on {} ", new Date());

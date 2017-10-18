@@ -72,7 +72,7 @@ public class FinancialPermission {
 
             //custom_id = ((Model_Person) object).id;
         } else {
-            terminal_logger.internalServerError("checkRestApiRequest:", new Exception("Object is instance of an unknown class."));
+            terminal_logger.internalServerError(new Exception("Object is instance of an unknown class."));
             return 0L;
         }
 

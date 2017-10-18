@@ -68,7 +68,7 @@ public enum ErrorCode {
     @EnumValue("ERROR_50002")                           ERROR_50002( 50002 , "Invalid message for device"),
     @EnumValue("ERROR_50003")                           ERROR_50003( 50003 , "Device is not enumerated yet"),
     @EnumValue("ERROR_50004")                           ERROR_50004( 50004 , "Device id is missing in master_hardware list"),
-    @EnumValue("ERROR_50005")                           ERROR_50005( 50005 , "Bus critical error_message - collision on bus cable"),
+    @EnumValue("ERROR_50005")                           ERROR_50005( 50005 , "Bus critical error - collision on bus cable"),
 
     @EnumValue("ERROR_60001")                           ERROR_60001( 600001 , "Write to external memory failed"),
     @EnumValue("ERROR_60002")                           ERROR_60002( 600002 , "Erase of external memory failed"),

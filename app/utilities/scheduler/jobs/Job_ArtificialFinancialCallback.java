@@ -88,7 +88,7 @@ public class Job_ArtificialFinancialCallback implements Job {
                     terminal_logger.debug("callback_thread: Sending notification for invoice: {} - response: {}", invoice.proforma_id, response.getStatus());
                 }
             } catch (Exception e) {
-                terminal_logger.internalServerError("callback_thread:", e);
+                terminal_logger.internalServerError(e);
             }
 
             terminal_logger.debug("callback_thread: thread stopped on {}", new Date());

@@ -8,7 +8,7 @@ public enum Enum_Notification_level {
     @EnumValue("info")      info,
     @EnumValue("success")   success,
     @EnumValue("warning")   warning,
-    @EnumValue("error_message")     error;
+    @EnumValue("error")     error;
 
     @JsonCreator
     public static Enum_Notification_level fromString(String key) {

@@ -9,7 +9,7 @@ public class Result_Custom {
 
 
     @ApiModelProperty(value = "state", required = true, readOnly = true)
-    public String state = "error_message";
+    public String state = "error";
 
     @ApiModelProperty(value = "code", required = true, readOnly = true)
     public Integer code;

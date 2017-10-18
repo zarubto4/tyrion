@@ -145,7 +145,7 @@ public class Model_BoardGroup extends Model {
             try {
                 //Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
             } catch (Exception e) {
-                terminal_logger.internalServerError("make_log_to_non_sql_database:", e);
+                terminal_logger.internalServerError(e);
             }
         }).start();
     }

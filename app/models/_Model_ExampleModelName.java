@@ -56,7 +56,7 @@ public class _Model_ExampleModelName extends Model{
             return help;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_short_ExampleModelName_version", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -129,7 +129,7 @@ public class _Model_ExampleModelName extends Model{
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
             } catch (DocumentClientException e) {
-                terminal_logger.internalServerError("make_log_to_non_sql_database:", e);
+                terminal_logger.internalServerError(e);
             }
         }).start();
     }

@@ -16,18 +16,13 @@ public class Class_Logger{
     /*
      Rather an exception should be thrown or if it is undesired,
      you can use terminal_logger.internalServerError(new Exception("Your message.")).
-     New exception creates an stack trace so it is easier to track down errors and it does not pollute DB.
+     New exception creates an stack trace so it is easier to track down errors and it does not pollute DB with empty bugs.
       */
     public void error(String log_message, Object... args) {
         Server_Logger.error(t_class, log_message, args);
     }
 
-    public void internalServerError(String origin, Exception e){
-        Server_Logger.internalServerError(t_class, origin, e);
-    }
-
-    public void internalServerError(Exception e){
-        String origin = Thread.currentThread().getStackTrace()[2].getMethodName(); // Finds out the caller of this method (where was error_message logged)
-        Server_Logger.internalServerError(t_class, origin, e);
+    public void internalServerError(Throwable e){
+        Server_Logger.internalServerError(e);
     }
 }

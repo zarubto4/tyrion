@@ -214,7 +214,7 @@ public class Model_Invoice extends Model {
                     .send(this.getProduct().notificationReceivers());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("notificationInvoiceNew:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -234,7 +234,7 @@ public class Model_Invoice extends Model {
                     .send(this.getProduct().notificationReceivers());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("notificationInvoiceReminder:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -253,7 +253,7 @@ public class Model_Invoice extends Model {
                     .send(this.getProduct().notificationReceivers());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("notificationInvoiceReminder:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -270,7 +270,7 @@ public class Model_Invoice extends Model {
                     .send(this.getProduct().notificationReceivers());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("notificationPaymentIncomplete:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -287,7 +287,7 @@ public class Model_Invoice extends Model {
                     .send(this.getProduct().notificationReceivers());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("notificationPaymentSuccess:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -304,7 +304,7 @@ public class Model_Invoice extends Model {
                     .send(this.getProduct().notificationReceivers());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("notificationPaymentFail:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 

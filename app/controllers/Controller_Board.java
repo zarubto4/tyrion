@@ -178,7 +178,7 @@ public class Controller_Board extends Controller {
                     terminal_logger.internalServerError(new Exception("Error in reading libraries version not found! Version ID = " + lib_version));
 
                     ObjectNode error = Json.newObject();
-                    error.put("status", "error_message");
+                    error.put("status", "error");
                     error.put("error_message", "Error getting libraries - Library not found!");
                     error.put("error_code", 400);
                     return GlobalResult.result_buildErrors(error);
@@ -200,7 +200,7 @@ public class Controller_Board extends Controller {
                             terminal_logger.internalServerError(new Exception("Error reading libraries from files! Model_FileRecord ID = " + f.id));
 
                             ObjectNode error = Json.newObject();
-                            error.put("status", "error_message");
+                            error.put("status", "error");
                             error.put("error_message", "Error with importing libraries - Library Id: " + lib_id );
                             error.put("error_code", 400);
                             return GlobalResult.result_buildErrors(error);
@@ -260,7 +260,7 @@ public class Controller_Board extends Controller {
             }
 
             // Neznámá chyba se kterou nebylo počítání
-            return GlobalResult.result_badRequest("Unknown error_message");
+            return GlobalResult.result_badRequest("Unknown error");
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }
@@ -1820,7 +1820,7 @@ public class Controller_Board extends Controller {
                         procedure.execute_update_procedure();
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError("board_updateBackup:", e);
+                        terminal_logger.internalServerError(e);
                     }
                 }).start();
             }
@@ -2350,7 +2350,7 @@ public class Controller_Board extends Controller {
                         procedure.execute_update_procedure();
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError("board_updateBackup:", e);
+                        terminal_logger.internalServerError(e);
                     }
                 }).start();
             }
@@ -2503,7 +2503,7 @@ public class Controller_Board extends Controller {
                         procedure.execute_update_procedure();
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError("board_updateBackup:", e);
+                        terminal_logger.internalServerError(e);
                     }
                 }).start();
             }

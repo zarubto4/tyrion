@@ -267,7 +267,7 @@ public class Server_Cache {
 
         }catch (Exception e){
             e.printStackTrace();
-            terminal_logger.internalServerError("initCache:", e);
+            terminal_logger.internalServerError(e);
 
         }
     }

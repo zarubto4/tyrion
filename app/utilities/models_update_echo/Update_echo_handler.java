@@ -80,7 +80,7 @@ public class Update_echo_handler {
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    terminal_logger.internalServerError("UpdateEcho:: send_update_messages_thread:", e);
+                    terminal_logger.internalServerError(e);
                 }
             }
         }
@@ -109,7 +109,7 @@ public class Update_echo_handler {
                     }
 
                 }catch (Exception e){
-                    terminal_logger.internalServerError("NotificationHandler:: sendNotification:: Error", e);
+                    terminal_logger.internalServerError(e);
                 }
         }
 

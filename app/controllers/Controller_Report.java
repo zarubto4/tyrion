@@ -55,7 +55,7 @@ public class Controller_Report extends Controller {
             report.compilation_server_public_created = Model_CompilationServer.find.where().findRowCount();
             report.compilation_server_public_online  = Controller_WebSocket.compiler_cloud_servers.size();
 
-            report.bugs_reported = Model_LoggyError.find.findRowCount();
+            report.bugs_reported = Model_ServerError.find.findRowCount();
 
             return GlobalResult.result_ok(Json.toJson(report));
 
@@ -73,14 +73,14 @@ public class Controller_Report extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",                 response = Model_LoggyError.class, responseContainer = "list"),
+            @ApiResponse(code = 200, message = "OK Result",                 response = Model_ServerError.class, responseContainer = "list"),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result serverError_getAll(){
         try{
 
-            List<Model_LoggyError> errors = Model_LoggyError.find.all();
+            List<Model_ServerError> errors = Model_ServerError.find.all();
 
             return GlobalResult.result_ok(Json.toJson(errors));
 
@@ -98,7 +98,7 @@ public class Controller_Report extends Controller {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK Result",                 response = Model_LoggyError.class),
+            @ApiResponse(code = 200, message = "OK Result",                 response = Model_ServerError.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
@@ -106,7 +106,7 @@ public class Controller_Report extends Controller {
     public Result serverError_get(@ApiParam(value = "bug_id String path", required = true) String bug_id){
         try{
 
-            Model_LoggyError error = Model_LoggyError.find.byId(bug_id);
+            Model_ServerError error = Model_ServerError.find.byId(bug_id);
             if (error == null) return GlobalResult.result_notFound("Bug not found");
 
             return GlobalResult.result_ok(Json.toJson(error));
@@ -135,7 +135,7 @@ public class Controller_Report extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_LoggyError.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_ServerError.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -150,7 +150,7 @@ public class Controller_Report extends Controller {
         try {
             description = request().body().asJson().get("description").asText();
         } catch (Exception e) {
-            System.err.println("[error_message] - TYRION - Server_Logger:: loggy_report_bug_to_youtrack: Error while reporting bug to YouTrack");
+            System.err.println("[error] - TYRION - Server_Logger:: loggy_report_bug_to_youtrack: Error while reporting bug to YouTrack");
         }
 
         return Server_Logger.upload_to_youtrack(bug_id, description);
@@ -173,7 +173,7 @@ public class Controller_Report extends Controller {
     })
     public Result serverError_delete(@ApiParam(value = "bug_id String path", required = true) String bug_id) {
         try {
-            Model_LoggyError error = Model_LoggyError.find.byId(bug_id);
+            Model_ServerError error = Model_ServerError.find.byId(bug_id);
             if (error == null) return GlobalResult.result_notFound("Bug not found");
 
             if (!error.delete_permission()) return GlobalResult.result_forbidden();
@@ -202,7 +202,7 @@ public class Controller_Report extends Controller {
     })
     public Result serverError_deleteAll() {
         try {
-            List<Model_LoggyError> errors = Model_LoggyError.find.all();
+            List<Model_ServerError> errors = Model_ServerError.find.all();
 
             if (!errors.isEmpty()) {
                 if (!errors.get(0).delete_permission()) return GlobalResult.result_forbidden();

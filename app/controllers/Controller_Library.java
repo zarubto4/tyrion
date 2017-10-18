@@ -814,7 +814,7 @@ public class Controller_Library extends Controller {
                                 .send(version_old.c_program.get_project().get_product().customer, "Publishing your program" );
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError("approve_decision:", e);
+                        terminal_logger.internalServerError(e);
                     }
 
 
@@ -836,7 +836,7 @@ public class Controller_Library extends Controller {
                                 .send(version_old.c_program.get_project().get_product().customer, "Publishing your program" );
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError("approve_decision:", e);
+                        terminal_logger.internalServerError(e);
                     }
                 }
 
@@ -861,7 +861,7 @@ public class Controller_Library extends Controller {
                             .send(version_old.c_program.get_project().get_product().customer, "Publishing your program");
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("approve_decision:", e);
+                    terminal_logger.internalServerError(e);
                 }
 
             }

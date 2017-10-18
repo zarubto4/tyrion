@@ -71,7 +71,7 @@ public class Job_RequestStatsUpdate implements Job {
                     terminal_logger.trace("stats_update_thread: no requests");
                 }
             } catch (Exception e) {
-                terminal_logger.internalServerError("stats_update_thread: ", e);
+                terminal_logger.internalServerError(e);
             }
 
             terminal_logger.trace("stats_update_thread: thread stopped on {}", new Date());

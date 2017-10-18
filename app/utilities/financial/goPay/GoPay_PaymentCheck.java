@@ -84,7 +84,7 @@ public class GoPay_PaymentCheck {
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    terminal_logger.internalServerError("check_payment_thread:", e);
+                    terminal_logger.internalServerError(e);
                 }
             }
         }
@@ -131,7 +131,7 @@ public class GoPay_PaymentCheck {
                         result = response.asJson();
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError("checkPayment:", e);
+                        terminal_logger.internalServerError(e);
                         Thread.sleep(2500);
                         continue;
                     }
@@ -152,7 +152,7 @@ public class GoPay_PaymentCheck {
                                 if (invoice.status != Enum_Payment_status.paid) {
 
                                     if (!Fakturoid.fakturoid_post("/invoices/" + invoice.proforma_id + "/fire.json?event=pay_proforma"))
-                                        terminal_logger.internalServerError("checkPayment:", new Exception("Error changing status to paid on Fakturoid. Inconsistent state."));
+                                        terminal_logger.internalServerError(new Exception("Error changing status to paid on Fakturoid. Inconsistent state."));
 
                                     invoice.getProduct().credit_upload(help.amount * 10);
                                     invoice.status = Enum_Payment_status.paid;
@@ -259,7 +259,7 @@ public class GoPay_PaymentCheck {
             }
         } catch (Exception e){
 
-            terminal_logger.internalServerError("checkPayment:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 }

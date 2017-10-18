@@ -86,7 +86,7 @@ public class Fakturoid extends Controller {
             return ok();
 
         }catch (Exception e){
-            terminal_logger.internalServerError("fakturoid_callback:", e);
+            terminal_logger.internalServerError(e);
             return ok();
         }
     }
@@ -98,7 +98,7 @@ public class Fakturoid extends Controller {
      * If it is a first invoice, that means the product owner is not registered in Fakturoid,
      * method tries to create subject in Fakturoid.
      * @param invoice Model invoice that needs to be synchronized to Fakturoid.
-     * @return invoice with details from Fakturoid or null if error_message occur.
+     * @return invoice with details from Fakturoid or null if error occur.
      */
     public static Model_Invoice create_proforma(Model_Invoice invoice){
         try {
@@ -145,7 +145,7 @@ public class Fakturoid extends Controller {
                     result = response.asJson();
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("create_proforma:", e);
+                    terminal_logger.internalServerError(e);
                     Thread.sleep(2500);
                     continue;
                 }
@@ -189,7 +189,7 @@ public class Fakturoid extends Controller {
                 }
             }
         } catch (Exception e) {
-            terminal_logger.internalServerError("create_proforma:", e);
+            terminal_logger.internalServerError(e);
         }
 
         return null;
@@ -230,7 +230,7 @@ public class Fakturoid extends Controller {
                     result = response.asJson();
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("create_subject:", e);
+                    terminal_logger.internalServerError(e);
                     Thread.sleep(2500);
                     continue;
                 }
@@ -282,7 +282,7 @@ public class Fakturoid extends Controller {
             }
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("create_paid_invoice:", e);
+            terminal_logger.internalServerError(e);
         }
 
         return invoice;
@@ -322,7 +322,7 @@ public class Fakturoid extends Controller {
                 terminal_logger.debug("sendInvoiceEmail: Email was successfully sent");
 
         }catch (Exception e){
-            terminal_logger.internalServerError("sendInvoiceEmail:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -351,14 +351,14 @@ public class Fakturoid extends Controller {
 
 
         }catch (Exception e){
-            terminal_logger.internalServerError("sendInvoiceReminderEmail:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
     /**
      * Method creates subject in Fakturoid. Tries 5 times to get the result.
      * @param details Model PaymentDetails with info about the customer.
-     * @return String id of the subject from Fakturoid. Null if some error_message occurs.
+     * @return String id of the subject from Fakturoid. Null if some error occurs.
      */
     public static String create_subject(Model_PaymentDetails details){
         try {
@@ -400,7 +400,7 @@ public class Fakturoid extends Controller {
                     response = responsePromise.get(5000);
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("create_subject:", e);
+                    terminal_logger.internalServerError(e);
                     Thread.sleep(2500);
                     continue;
                 }
@@ -448,7 +448,7 @@ public class Fakturoid extends Controller {
             }
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("create_subject:", e);
+            terminal_logger.internalServerError(e);
         }
 
         return null;
@@ -552,7 +552,7 @@ public class Fakturoid extends Controller {
                     result = response.asJson();
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("update_subject:", e);
+                    terminal_logger.internalServerError(e);
                     Thread.sleep(2500);
                     continue;
                 }
@@ -596,7 +596,7 @@ public class Fakturoid extends Controller {
             }
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("update_subject:", e);
+            terminal_logger.internalServerError(e);
         }
 
         return false;
@@ -657,7 +657,7 @@ public class Fakturoid extends Controller {
                     response = responsePromise.get(5000);
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("fakturoid_post:", e);
+                    terminal_logger.internalServerError(e);
                     Thread.sleep(2500);
                     continue;
                 }
@@ -689,7 +689,7 @@ public class Fakturoid extends Controller {
             }
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("fakturoid_post:", e);
+            terminal_logger.internalServerError(e);
         }
 
         return false;
@@ -719,7 +719,7 @@ public class Fakturoid extends Controller {
                     response = responsePromise.get(5000);
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("fakturoid_delete:", e);
+                    terminal_logger.internalServerError(e);
                     Thread.sleep(2500);
                     continue;
                 }
@@ -743,7 +743,7 @@ public class Fakturoid extends Controller {
             }
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("fakturoid_delete:", e);
+            terminal_logger.internalServerError(e);
         }
 
         return false;

@@ -27,7 +27,7 @@ public class Check_Online_Status_after_user_login extends Thread {
             // TODO doplnit to co lze uživatelovi zpracovat dopředu http://youtrack.byzance.cz/youtrack/issue/TYRION-485
 
         }catch (Exception e){
-            terminal_logger.internalServerError("run:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 }

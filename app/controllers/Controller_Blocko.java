@@ -2538,7 +2538,7 @@ public class Controller_Blocko extends Controller{
                         .send(blockoBlockVersion.get_blocko_block().get_author().mail, "Version of Block disapproved" );
 
             } catch (Exception e) {
-                terminal_logger.internalServerError("blockoDisapprove:", e);
+                terminal_logger.internalServerError(e);
             }
 
             // Uložení změn
@@ -2619,7 +2619,7 @@ public class Controller_Blocko extends Controller{
                             .send(blockoBlockVersion.get_blocko_block().get_author().mail, "Version of Block edited" );
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("blockoApproval:", e);
+                    terminal_logger.internalServerError(e);
                 }
             }
             else privateBlockoBlockVersion.approval_state = Enum_Approval_state.approved;

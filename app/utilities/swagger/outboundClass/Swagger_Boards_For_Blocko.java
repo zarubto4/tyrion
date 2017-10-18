@@ -64,7 +64,7 @@ public class Swagger_Boards_For_Blocko {
                 c_programs.add(c_program_short_detail_for_blocko);
 
             }catch (Exception e){
-                terminal_logger.internalServerError("Swagger_Boards_For_Blocko:: add_C_Programs", e);
+                terminal_logger.internalServerError(e);
             }
         }
     }

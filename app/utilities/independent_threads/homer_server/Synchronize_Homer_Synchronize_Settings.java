@@ -118,7 +118,7 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
             homer_server.onClose();
         }catch (Exception e){
             System.out.println("synchronize_configuration: TimeoutException");
-            terminal_logger.internalServerError("run", e);
+            terminal_logger.internalServerError(e);
             homer_server.onClose();
         }
 

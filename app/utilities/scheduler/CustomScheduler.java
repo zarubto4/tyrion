@@ -76,7 +76,7 @@ public class CustomScheduler {
                 case 24: spend_credit_period = cronSchedule("0 0 * * * ?");break;
                 case 48: spend_credit_period = cronSchedule("0 0,30 * * * ?");break;
                 default: {
-                    terminal_logger.internalServerError("start:", new Exception("Cannot start scheduler job - SpendingCredit, wrong configuration - using default '1'. " +
+                    terminal_logger.internalServerError(new Exception("Cannot start scheduler job - SpendingCredit, wrong configuration - using default '1'. " +
                             "Check the conf/application.conf file. Property Financial.{mode}.spendDailyPeriod should contain only 1-4, 12, 24 or 48."));
                     spend_credit_period = dailyAtHourAndMinute(3,15);
                     Server.financial_spendDailyPeriod = 1;
@@ -203,7 +203,7 @@ public class CustomScheduler {
         try {
             customScheduler.start();
         } catch (SchedulerException e) {
-            terminal_logger.internalServerError("startScheduler:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -211,7 +211,7 @@ public class CustomScheduler {
         try {
             customScheduler.scheduler.clear();
         } catch (SchedulerException e) {
-            terminal_logger.internalServerError("stopScheduler:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -223,6 +223,21 @@ public class CustomScheduler {
         try {
 
             String name = "upload-" + record.main_instance_history.id;
+
+            terminal_logger.debug("scheduleJob: Scheduling new Job - {}", name);
+
+            customScheduler.scheduler.scheduleJob(newJob(Job_UploadBlockoToCloud.class).withIdentity(JobKey.jobKey(name)).usingJobData("record_id", record.id).build(),
+                    newTrigger().withIdentity(name + "-key").startNow().withSchedule(toCron(record.planed_when)).build()); // Spuštění na základě data
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+        }
+    }
+
+    public static void scheduleUpdateServer(Model_HomerInstanceRecord record) {
+        try {
+
+            String name = "update-server-" + record.main_instance_history.id;
 
             terminal_logger.debug("scheduleJob: Scheduling new Job - {}", name);
 

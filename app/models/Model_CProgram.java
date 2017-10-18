@@ -144,7 +144,7 @@ public class Model_CProgram extends Model {
             return versions;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("Model_CProgram:: program_versions", e);
+            terminal_logger.internalServerError(e);
             List<Swagger_C_Program_Version_Short_Detail> versions = new ArrayList<>();
             return versions;
         }
@@ -172,7 +172,7 @@ public class Model_CProgram extends Model {
 
             return help;
         }catch (Exception e){
-            terminal_logger.internalServerError("Model_CProgram:: get_c_program_short_detail", e);
+            terminal_logger.internalServerError(e);
             return null;
 
         }
@@ -208,7 +208,7 @@ public class Model_CProgram extends Model {
             return help;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("Model_CProgram:: get_c_program_short_detail", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -237,7 +237,7 @@ public class Model_CProgram extends Model {
             return versions;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("getVersion_objects", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<Model_VersionObject>();
         }
     }
@@ -289,7 +289,7 @@ public class Model_CProgram extends Model {
             return c_program_versions;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("program_version", e);
+            terminal_logger.internalServerError(e);
           return null;
         }
     }

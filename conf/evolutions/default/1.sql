@@ -357,9 +357,9 @@ create table HomerServer (
   days_in_archive           integer,
   logging                   boolean,
   interactive               boolean,
-  log_level                 varchar(13),
+  log_level                 varchar(5),
   constraint ck_HomerServer_server_type check (server_type in ('main_server','test_server','private_server','backup_server','public_server')),
-  constraint ck_HomerServer_log_level check (log_level in ('warn','trace','debug','error_message','info')),
+  constraint ck_HomerServer_log_level check (log_level in ('warn','trace','debug','error','info')),
   constraint pk_HomerServer primary key (id))
 ;
 
@@ -432,18 +432,6 @@ create table Log (
   constraint pk_Log primary key (id))
 ;
 
-create table LoggyError (
-  id                        varchar(255) not null,
-  summary                   TEXT,
-  description               TEXT,
-  stack_trace               TEXT,
-  cause                     TEXT,
-  youtrack_url              varchar(255),
-  repetition                bigint,
-  created                   timestamp,
-  constraint pk_LoggyError primary key (id))
-;
-
 create table MProgram (
   id                        varchar(255) not null,
   name                      varchar(255),
@@ -484,7 +472,7 @@ create table MProjectProgramSnapShot (
 
 create table Notification (
   id                        varchar(255) not null,
-  notification_level        varchar(13),
+  notification_level        varchar(7),
   notification_importance   varchar(6),
   state                     varchar(11),
   content_string            TEXT,
@@ -494,7 +482,7 @@ create table Notification (
   was_read                  boolean,
   created                   timestamp,
   person_id                 varchar(255),
-  constraint ck_Notification_notification_level check (notification_level in ('success','warning','error_message','info')),
+  constraint ck_Notification_notification_level check (notification_level in ('success','warning','error','info')),
   constraint ck_Notification_notification_importance check (notification_importance in ('normal','high','low')),
   constraint ck_Notification_state check (state in ('unconfirmed','deleted','created','updated')),
   constraint pk_Notification primary key (id))
@@ -652,6 +640,25 @@ create table SecurityRole (
   name                      varchar(255),
   description               varchar(255),
   constraint pk_SecurityRole primary key (id))
+;
+
+create table ServerError (
+  id                        varchar(40) not null,
+  summary                   TEXT,
+  description               TEXT,
+  type                      varchar(255),
+  message                   varchar(255),
+  stack_trace               TEXT,
+  request                   varchar(255),
+  person                    varchar(255),
+  tyrion                    varchar(255),
+  repetition                bigint,
+  created                   timestamp,
+  cause_type                varchar(255),
+  cause_message             varchar(255),
+  cause_stack_trace         TEXT,
+  youtrack_url              varchar(255),
+  constraint pk_ServerError primary key (id))
 ;
 
 create table Tariff (
@@ -1095,8 +1102,6 @@ drop table if exists Library_TypeOfBoard cascade;
 
 drop table if exists Log cascade;
 
-drop table if exists LoggyError cascade;
-
 drop table if exists MProgram cascade;
 
 drop table if exists MProgramInstanceParameter cascade;
@@ -1138,6 +1143,8 @@ drop table if exists ProjectParticipant cascade;
 drop table if exists RequestLog cascade;
 
 drop table if exists SecurityRole cascade;
+
+drop table if exists ServerError cascade;
 
 drop table if exists Tariff cascade;
 

@@ -6,7 +6,6 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import com.microsoft.azure.documentdb.*;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
-import controllers.Controller_Security;
 import models.*;
 import org.slf4j.LoggerFactory;
 import play.Configuration;
@@ -356,7 +355,7 @@ public class Server {
         for(Enum en : Model_Board.permissions.values())                   permissions.add(en.name());
         for(Enum en : Model_CompilationServer.permissions.values())       permissions.add(en.name());
         for(Enum en : Model_Library.permissions.values())                 permissions.add(en.name());
-        for(Enum en : Model_LoggyError.permissions.values())              permissions.add(en.name());
+        for(Enum en : Model_ServerError.permissions.values())              permissions.add(en.name());
         for(Enum en : Model_Processor.permissions.values())               permissions.add(en.name());
         for(Enum en : Model_Producer.permissions.values())                permissions.add(en.name());
         for(Enum en : Model_TypeOfBoard.permissions.values())             permissions.add(en.name());
@@ -413,7 +412,7 @@ public class Server {
             Server_Cache.initCache();
 
         }catch (Exception e){
-            terminal_logger.internalServerError("initCache:", e);
+            terminal_logger.internalServerError(e);
         }
 
     }

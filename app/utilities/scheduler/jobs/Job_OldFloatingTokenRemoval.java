@@ -63,7 +63,7 @@ public class Job_OldFloatingTokenRemoval implements Job {
                 }
 
             } catch (Exception e) {
-                terminal_logger.internalServerError("remove_floating_person_token_thread:", e);
+                terminal_logger.internalServerError(e);
             }
 
             terminal_logger.debug("remove_floating_person_token_thread: thread stopped on {}", new Date());

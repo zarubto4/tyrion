@@ -44,7 +44,6 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
 
             while(true){
 
-
                 PagedList<Model_Board> paging_list = Model_Board.find.where().select("id").select("connected_server_id").findPagedList(page, page_size);
 
                 System.out.println("4.3 Jdu kontrolovat seznam z databáze a hledat co na serveru mám navíc");
@@ -81,25 +80,18 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                         }else {
                             System.out.println("4.4 " + board.id + " Na serveru možná je možná taky ne ale dle dat je offline");
                         }
-
                     }
-
                 }
-
 
                 // Pokud je počet stránek shodný
                 if( paging_list.getTotalPageCount() == page) break;
 
                 System.out.println("Page == " + page);
                 page++;
-
             }
 
-
         }catch(Exception e){
-            terminal_logger.internalServerError("run:", e);
-
+            terminal_logger.internalServerError(e);
         }
     }
-
 }

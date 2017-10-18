@@ -28,7 +28,7 @@ public class CoreResponse extends Controller {
             response().setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Origin, Content-Type, api_key, Authorization, x-auth-token, accept, appid, appname, authorization, content-type, becki-version");
 
         }catch (Exception e){
-            terminal_logger.internalServerError("cors:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -46,7 +46,7 @@ public class CoreResponse extends Controller {
             response().setHeader("Accept", "*");
             response().setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Origin, Content-Type, Content-Type,  api_key, Authorization, x-auth-token, accept, appid, appname, authorization, content-type, becki-version");
         }catch (Exception e){
-            terminal_logger.internalServerError("cors:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -62,7 +62,7 @@ public class CoreResponse extends Controller {
             response().setHeader("Accept", "*");
             response().setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Origin, content-Type, api_key, Authorization, x-auth-token, accept, appid, appname, authorization, content-type, becki-version");
         }catch (Exception e){
-            terminal_logger.internalServerError("cors:", e);
+            terminal_logger.internalServerError(e);
         }
 
     }

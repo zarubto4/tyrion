@@ -85,7 +85,7 @@ public class Controller_Security extends Controller {
              return person_id;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_person_id:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -222,6 +222,13 @@ public class Controller_Security extends Controller {
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
 
+            try {
+                if (person.mailValidated)
+                    throw new IllegalArgumentException("HAHA toto je message IAE");
+            } catch (Exception e) {
+                throw new Exception("This is wrapping exception message.", e);
+            }
+
             // Ukládám do databáze
             floatingPersonToken.save();
 
@@ -330,7 +337,7 @@ public class Controller_Security extends Controller {
                 }
 
             }catch (Exception e){
-                terminal_logger.internalServerError("logout:", e);
+                terminal_logger.internalServerError(e);
             }
 
             // JE nutné garantovat vždy odpověď ok za všech situací kromě kritického selhální
@@ -356,9 +363,9 @@ public class Controller_Security extends Controller {
 
             Map<String, String> map = UtilTools.getMap_From_query(request().queryString().entrySet());
 
-            if (map.containsKey("error_message")) {
+            if (map.containsKey("error")) {
 
-                terminal_logger.warn("GET_github_oauth::  contains Error: {} " , map.get("error_message"));
+                terminal_logger.warn("GET_github_oauth::  contains Error: {} " , map.get("error"));
 
                 if (map.containsKey("state")){
 
@@ -466,7 +473,7 @@ public class Controller_Security extends Controller {
 
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("GET_github_oauth:", e);
+            terminal_logger.internalServerError(e);
             return Server_Logger.result_internalServerError(e, request());
         }
 
@@ -480,7 +487,7 @@ public class Controller_Security extends Controller {
             terminal_logger.debug("GET_facebook_oauth:: URL:: {} ", url);
             Map<String, String> map = UtilTools.getMap_From_query(request().queryString().entrySet());
 
-            if (map.containsKey("error_message")) {
+            if (map.containsKey("error")) {
 
                 terminal_logger.warn("GET_facebook_oauth:: Map Contains Error");
 
@@ -619,7 +626,7 @@ public class Controller_Security extends Controller {
 
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("GET_facebook_oauth:", e);
+            terminal_logger.internalServerError(e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -698,7 +705,7 @@ public class Controller_Security extends Controller {
             return result_ok(Json.toJson(result));
 
         }catch (Exception e) {
-            terminal_logger.internalServerError("GitHub:", e);
+            terminal_logger.internalServerError(e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }

@@ -69,7 +69,7 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
 
                     WS_Message_Hardware_UpdateProcedure_Command result = Model_HomerServer.get_byId(ws_homerServer.identifikator).update_devices_firmware(tasks);
                     if(!result.status.equals("success")){
-                        terminal_logger.internalServerError("WS_Message_Hardware_UpdateProcedure_Command incorrect result!",  new Exception());
+                        terminal_logger.internalServerError(new Exception("Result status was not 'success'"));
                     }
                 }
 
@@ -81,7 +81,7 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
 
             }
         }catch (Exception e){
-            terminal_logger.internalServerError("run:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 }

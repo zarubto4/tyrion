@@ -187,7 +187,7 @@ public class NotificationTester extends Controller {
             case "info": lvl = Enum_Notification_level.info;break;
             case "success": lvl = Enum_Notification_level.success;break;
             case "warning": lvl = Enum_Notification_level.warning;break;
-            case "error_message": lvl = Enum_Notification_level.error;break;
+            case "error": lvl = Enum_Notification_level.error;break;
             default: lvl = Enum_Notification_level.info;break;
         }
 

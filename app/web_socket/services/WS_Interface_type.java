@@ -59,7 +59,7 @@ public abstract class WS_Interface_type {
 
         }catch (Exception e){
 
-            terminal_logger.internalServerError("onMessage:",e);
+            terminal_logger.internalServerError(e);
 
             ObjectNode result = Json.newObject();
             result.put("message_type", "JsonUnrecognized " + e.getClass().getSimpleName());

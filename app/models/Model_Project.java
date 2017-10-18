@@ -212,7 +212,7 @@ public class Model_Project extends Model {
             return board_list;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_project_boards_not_deleted", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<Model_Board>();
         }
     }
@@ -241,7 +241,7 @@ public class Model_Project extends Model {
             return c_programs;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_c_programs_not_deleted", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<Model_CProgram>();
         }
     }
@@ -271,7 +271,7 @@ public class Model_Project extends Model {
 
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_c_privates_project_libraries_not_deleted", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<Model_Library>();
         }
     }
@@ -300,7 +300,7 @@ public class Model_Project extends Model {
             return b_programs;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_b_programs_not_deleted", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<Model_BProgram>();
         }
     }
@@ -329,7 +329,7 @@ public class Model_Project extends Model {
             return m_projects;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_m_projects_not_deleted", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<Model_MProject>();
         }
     }
@@ -358,7 +358,7 @@ public class Model_Project extends Model {
             return board_groups;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_m_projects_not_deleted", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<Model_BoardGroup>();
         }
     }
@@ -388,7 +388,7 @@ public class Model_Project extends Model {
             return typeOfWidgets;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_type_of_widgets_not_deleted", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<Model_TypeOfWidget>();
         }
     }
@@ -418,7 +418,7 @@ public class Model_Project extends Model {
             return typeOfBlocks;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_type_of_blocks_not_deleted", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<Model_TypeOfBlock>();
         }
     }
@@ -448,7 +448,7 @@ public class Model_Project extends Model {
             return instances;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_instances_not_deleted", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<Model_HomerInstance>();
         }
     }

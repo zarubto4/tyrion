@@ -59,8 +59,8 @@ public class Model_CProgramUpdatePlan extends Model {
                                                 @Enumerated(EnumType.STRING)    public Enum_CProgram_updater_state state;
                                                                     @JsonIgnore public Integer count_of_tries;                         // Počet celkovbých pokusu doručit update (změny z wait to progres atd..
 
-    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error_message", required = false)  public String error;
-    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error_message", required = false)  public Integer error_code;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public String error;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public Integer error_code;
 
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/

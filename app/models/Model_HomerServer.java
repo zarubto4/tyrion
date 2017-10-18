@@ -276,7 +276,7 @@ public class Model_HomerServer extends Model{
                     homer.write_without_confirmation(json.put("error_message", "Your message not contains message_type").put("error_code", 400));
                     return;
                 }else {
-                    terminal_logger.internalServerError("Messages:", e);
+                    terminal_logger.internalServerError(e);
                 }
             }
 
@@ -379,8 +379,6 @@ public class Model_HomerServer extends Model{
 
             if(message.hash_token.equals( Model_HomerServer.get_byId(ws_homer_server.identifikator).hash_certificate)){
 
-                System.out.println("Hash sedí ");
-
                 Model_HomerServer homer_server =  Model_HomerServer.get_byId(ws_homer_server.identifikator);
                 homer_server.make_log_connect();
 
@@ -395,8 +393,6 @@ public class Model_HomerServer extends Model{
                     throw new Exception("aprove_validation_for_homer_server - TODO private server!!!");
                 }
 
-
-
                 return;
 
             }else{
@@ -404,7 +400,6 @@ public class Model_HomerServer extends Model{
                 System.out.println("Hash nesedí ");
                 System.out.println("Hash původního Serveru:: " + Model_HomerServer.get_byId(ws_homer_server.identifikator).hash_certificate);
                 System.out.println("Hash příchozí  zprávy :: " + message.hash_token);
-
 
                 ws_homer_server.security_token_confirm = false;
                 ws_homer_server.rest_api_token =  null;
@@ -605,7 +600,7 @@ public class Model_HomerServer extends Model{
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_HomerServer_Connect.make_request( this.id.toString()), null, true);
             } catch (DocumentClientException e) {
-                terminal_logger.internalServerError("make_log_connect:", e);
+                terminal_logger.internalServerError(e);
             }
         }).start();
     }
@@ -615,7 +610,7 @@ public class Model_HomerServer extends Model{
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_HomerServer_Disconnect.make_request( this.id.toString()), null, true);
             } catch (DocumentClientException e) {
-                terminal_logger.internalServerError("make_log_disconnect:", e);
+                terminal_logger.internalServerError(e);
             }
         }).start();
     }

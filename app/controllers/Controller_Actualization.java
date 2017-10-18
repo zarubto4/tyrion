@@ -20,13 +20,10 @@ import utilities.response.response_objects.Result_Forbidden;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.swagger.documentationClass.Swagger_ActualizationProcedure_Filter;
 import utilities.swagger.documentationClass.Swagger_ActualizationProcedure_Make;
-import utilities.swagger.documentationClass.Swagger_C_Program_Filter;
 import utilities.swagger.outboundClass.Filter_List.Swagger_ActualizationProcedure_List;
-import utilities.swagger.outboundClass.Filter_List.Swagger_C_Program_List;
 import utilities.swagger.outboundClass.Swagger_ActualizationProcedure_Short_Detail;
 
 import java.util.Date;
-import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured_API.class)
@@ -178,7 +175,7 @@ public class Controller_Actualization extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.ActualizationProcedure_Make",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ActualizationProcedure_Make",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"

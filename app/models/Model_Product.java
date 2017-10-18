@@ -163,7 +163,7 @@ public class Model_Product extends Model {
 
             } catch (Exception e) {
 
-                terminal_logger.internalServerError("credit_upload:", e);
+                terminal_logger.internalServerError(e);
 
             } finally {
 
@@ -182,7 +182,7 @@ public class Model_Product extends Model {
             }
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("credit_upload:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -208,7 +208,7 @@ public class Model_Product extends Model {
 
             } catch (Exception e) {
 
-                terminal_logger.internalServerError("credit_remove:", e);
+                terminal_logger.internalServerError(e);
 
             } finally {
 
@@ -226,7 +226,7 @@ public class Model_Product extends Model {
             }
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("credit_remove:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -243,7 +243,7 @@ public class Model_Product extends Model {
             return true;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("terminateOnDemand:", e);
+            terminal_logger.internalServerError(e);
             return false;
         }
     }
@@ -263,7 +263,7 @@ public class Model_Product extends Model {
             return help;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("getFinancialHistory:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -294,7 +294,7 @@ public class Model_Product extends Model {
             this.update();
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("archiveEvent:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -304,7 +304,7 @@ public class Model_Product extends Model {
 
             return ((double) getFinancialHistory().last_spending) ;
         } catch (Exception e){
-            terminal_logger.internalServerError("getLastSpending:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -315,7 +315,7 @@ public class Model_Product extends Model {
 
             return ((double) getFinancialHistory().average_spending) ;
         } catch (Exception e){
-            terminal_logger.internalServerError("getAverageSpending:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -330,7 +330,7 @@ public class Model_Product extends Model {
 
             return credit / history.average_spending;
         } catch (Exception e){
-            terminal_logger.internalServerError("getRemainingDays:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -353,7 +353,7 @@ public class Model_Product extends Model {
 
 
         } catch (Exception e){
-            terminal_logger.internalServerError("credit_spend:", e);
+            terminal_logger.internalServerError(e);
         }
 
         this.update();
@@ -450,7 +450,7 @@ public class Model_Product extends Model {
             return form.get();
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("getConfiguration:",e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -615,7 +615,7 @@ public class Model_Product extends Model {
                     .setObject(this)
                     .send(notificationReceivers());
         } catch (Exception e) {
-            terminal_logger.internalServerError("notificationCreditSuccess:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -634,7 +634,7 @@ public class Model_Product extends Model {
                     .setText(new Notification_Text().setText(" was unsuccessful."))
                     .send(notificationReceivers());
         } catch (Exception e) {
-            terminal_logger.internalServerError("notificationCreditFail:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -652,7 +652,7 @@ public class Model_Product extends Model {
                     .setObject(this)
                     .send(notificationReceivers());
         } catch (Exception e) {
-            terminal_logger.internalServerError("notificationCreditRemove:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -697,7 +697,7 @@ public class Model_Product extends Model {
                     .send(notificationReceivers());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("notificationCreditRemove:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -714,7 +714,7 @@ public class Model_Product extends Model {
                     .send(notificationReceivers());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("notificationRefundPaymentSuccess:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -731,7 +731,7 @@ public class Model_Product extends Model {
                     .send(notificationReceivers());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("notificationRefundPaymentSuccess:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -744,7 +744,7 @@ public class Model_Product extends Model {
         try {
             return Server.blobClient.getContainerReference("product");
         }catch (Exception e){
-            terminal_logger.internalServerError("get_Container:",e);
+            terminal_logger.internalServerError(e);
             throw new NullPointerException();
         }
     }

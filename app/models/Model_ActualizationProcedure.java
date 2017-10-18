@@ -190,7 +190,7 @@ public class Model_ActualizationProcedure extends Model {
             }
 
         }catch (Exception e){
-            terminal_logger.internalServerError("update_state:",e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -238,7 +238,7 @@ public class Model_ActualizationProcedure extends Model {
             return project_id;
         }
 
-        terminal_logger.internalServerError(new Exception("Model_ActualizationProcedure:: get_project_id Project not found!!"));
+        terminal_logger.internalServerError(new Exception("Project not found!!"));
         return null;
     }
 
@@ -392,7 +392,7 @@ public class Model_ActualizationProcedure extends Model {
                 }).start();
 
         }catch (Exception e){
-            terminal_logger.internalServerError("notification_update_procedure_progress:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -478,7 +478,7 @@ public class Model_ActualizationProcedure extends Model {
                 }).start();
 
         }catch (Exception e){
-            terminal_logger.internalServerError("notification_update_procedure_final_report:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -541,7 +541,7 @@ public class Model_ActualizationProcedure extends Model {
             }).start();
 
         }catch (Exception e){
-            terminal_logger.internalServerError("notification_update_procedure_complete:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 

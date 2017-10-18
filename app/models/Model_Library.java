@@ -125,7 +125,7 @@ public class Model_Library extends Model{
             return versions;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("getVersion_objects", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<Model_VersionObject>();
         }
     }
@@ -156,7 +156,7 @@ public class Model_Library extends Model{
             return boards;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("getType_of_Boards", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<Model_TypeOfBoard>();
         }
     }
@@ -180,7 +180,7 @@ public class Model_Library extends Model{
 
             return help;
         }catch (Exception e){
-            terminal_logger.internalServerError("get_short_library:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -215,7 +215,7 @@ public class Model_Library extends Model{
             return help;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("library_version:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }

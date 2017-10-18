@@ -83,7 +83,7 @@ public class Model_TypeOfWidget extends Model{
             return short_detail_widgets;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("widgets:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }

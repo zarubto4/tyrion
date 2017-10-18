@@ -110,7 +110,7 @@ public class Model_CCompilation extends Model {
                     .send(Controller_Security.get_person());
 
         }catch (Exception e){
-            terminal_logger.internalServerError("Model_CCompilation:: notification_compilation_start", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -127,7 +127,7 @@ public class Model_CCompilation extends Model {
                     .send(Controller_Security.get_person());
 
         }catch (Exception e){
-            terminal_logger.internalServerError("Model_CCompilation:: notification_compilation_success", e);
+            terminal_logger.internalServerError(e);
         }
 
     }
@@ -144,7 +144,7 @@ public class Model_CCompilation extends Model {
                     .setText(new Notification_Text().setText(reason).setBoldText())
                     .send(Controller_Security.get_person());
         }catch (Exception e){
-            terminal_logger.internalServerError("Model_CCompilation:: notification_compilation_unsuccessful_warn", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -160,7 +160,7 @@ public class Model_CCompilation extends Model {
                     .setText(new Notification_Text().setText(result).setBoldText())
                     .send(Controller_Security.get_person());
         }catch (Exception e){
-            terminal_logger.internalServerError("Model_CCompilation:: notification_compilation_unsuccessful_error", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -178,7 +178,7 @@ public class Model_CCompilation extends Model {
                         .setObject(this.version_object.c_program)
                         .send(Controller_Security.get_person());
             } catch (Exception e) {
-                terminal_logger.internalServerError("Model_CCompilation:: notification_new_actualization_request_on_version", e);
+                terminal_logger.internalServerError(e);
             }
         }).start();
     }

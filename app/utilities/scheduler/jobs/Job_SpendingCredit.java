@@ -318,7 +318,7 @@ public class Job_SpendingCredit implements Job {
                         GoPay.onDemandPayment(invoice);
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError("spendCreditSaas:", e);
+                        terminal_logger.internalServerError(e);
 
                         invoice = GoPay.singlePayment("Substitute payment", product, invoice);
 

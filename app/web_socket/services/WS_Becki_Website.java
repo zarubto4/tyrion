@@ -75,7 +75,7 @@ public class WS_Becki_Website extends WS_Interface_type {
      */
     @Override
     public WebSocket<String> connection(){
-        terminal_logger.internalServerError("It is not allowed and desirable to call the connection() method. It is not usable for any purpose due to concealment of user connections!", new IllegalAccessException() );
+        terminal_logger.internalServerError(new IllegalAccessException("It is not allowed and desirable to call the connection() method. It is not usable for any purpose due to concealment of user connections!"));
         return null;
     }
 
@@ -111,7 +111,7 @@ public class WS_Becki_Website extends WS_Interface_type {
             }
 
         }catch (Exception e){
-            terminal_logger.internalServerError("write_without_confirmation:", e);
+            terminal_logger.internalServerError(e);
         }
 
     }

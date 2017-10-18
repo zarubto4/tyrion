@@ -83,7 +83,7 @@ public class Fakturoid_InvoiceCheck {
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    terminal_logger.internalServerError("check_invoice_thread:", e);
+                    terminal_logger.internalServerError(e);
                 }
             }
         }
@@ -123,7 +123,7 @@ public class Fakturoid_InvoiceCheck {
                     result = response.asJson();
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("checkInvoice:", e);
+                    terminal_logger.internalServerError(e);
                     Thread.sleep(2500);
                     continue;
                 }
@@ -165,7 +165,7 @@ public class Fakturoid_InvoiceCheck {
                                         result2 = response2.asJson();
 
                                     } catch (Exception e) {
-                                        terminal_logger.internalServerError("checkInvoice:", e);
+                                        terminal_logger.internalServerError(e);
                                         Thread.sleep(2500);
                                         continue;
                                     }
@@ -198,7 +198,7 @@ public class Fakturoid_InvoiceCheck {
                                     break;
                                 }
                             } catch (Exception e) {
-                                terminal_logger.internalServerError("checkInvoice:", e);
+                                terminal_logger.internalServerError(e);
                                 invoice.getProduct().archiveEvent("Proforma paid", "System marked proforma as paid, but cannot transform it to invoice.", invoice.id);
                             }
                         }
@@ -235,7 +235,7 @@ public class Fakturoid_InvoiceCheck {
                 break;
             }
         } catch (Exception e) {
-            terminal_logger.internalServerError("checkInvoice:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 }

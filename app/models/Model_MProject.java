@@ -81,7 +81,7 @@ public class Model_MProject extends Model {
             return swagger_m_project_short_detail;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_short_m_project:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -112,7 +112,7 @@ public class Model_MProject extends Model {
             return m_programs;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("getVersion_objects", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<Model_MProgram>();
         }
     }

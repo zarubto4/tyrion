@@ -187,7 +187,7 @@ public class Model_HomerInstance extends Model {
                             WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerInstance.class, this.id, status.get_status(id).status, project_id);
 
                         } catch (Exception e) {
-                            terminal_logger.internalServerError("notification_board_connect:", e);
+                            terminal_logger.internalServerError(e);
                         }
                     }).start();
 
@@ -222,7 +222,7 @@ public class Model_HomerInstance extends Model {
             return null;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("instance_remote_url", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -258,7 +258,7 @@ public class Model_HomerInstance extends Model {
             return help;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_instance_short_detail", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -358,7 +358,7 @@ public class Model_HomerInstance extends Model {
                 .send(Controller_Security.get_person());
 
         }catch (Exception e){
-            terminal_logger.internalServerError("notification_instance_start_upload:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -376,7 +376,7 @@ public class Model_HomerInstance extends Model {
                     .send_under_project(get_project_id());
 
         }catch (Exception e){
-            terminal_logger.internalServerError("notification_instance_successful_upload:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -400,7 +400,7 @@ public class Model_HomerInstance extends Model {
                     .send_under_project(get_project_id());
 
         }catch (Exception e){
-            terminal_logger.internalServerError("notification_instance_unsuccessful_upload:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -416,7 +416,7 @@ public class Model_HomerInstance extends Model {
                     .send_under_project(get_project_id());
 
         }catch (Exception e){
-            terminal_logger.internalServerError("notification_new_actualization_request_instance:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -465,7 +465,7 @@ public class Model_HomerInstance extends Model {
                         terminal_logger.warn("Incoming Message not recognized::" + json.toString());
 
                         // Zarážka proti nevadliní odpovědi a zacyklení
-                        if(json.has("status") && json.get("status").asText().equals("error_message")){
+                        if(json.has("status") && json.get("status").asText().equals("error")){
                             return;
                         }
 
@@ -479,7 +479,7 @@ public class Model_HomerInstance extends Model {
                     homer.write_without_confirmation(json.put("error_message", "Your message not contains message_type").put("error_code", 400));
                     return;
                 }else {
-                    terminal_logger.internalServerError("Messages:", e);
+                    terminal_logger.internalServerError(e);
                 }
             }
         }).start();
@@ -606,7 +606,7 @@ public class Model_HomerInstance extends Model {
             return form.get();
 
         }catch (Exception e){
-            Model_HomerInstance.terminal_logger.internalServerError("get_hardware_list:", e);
+            Model_HomerInstance.terminal_logger.internalServerError(e);
             return new WS_Message_Hardware_overview();
         }
     }
@@ -714,7 +714,7 @@ public class Model_HomerInstance extends Model {
             homer.write_without_confirmation(help.get_result(false));
 
         }catch (Exception e){
-            terminal_logger.internalServerError("cloud_verification_token_GRID:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -743,7 +743,7 @@ public class Model_HomerInstance extends Model {
             }
 
         }catch (Exception e){
-            terminal_logger.internalServerError("cloud_verification_token_WEBVIEW:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 

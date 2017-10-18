@@ -466,7 +466,7 @@ public class Controller_Grid extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(m_program));
         } catch (Exception e) {
-            terminal_logger.internalServerError("get_M_Program:", e);
+            terminal_logger.internalServerError(e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }
@@ -1729,7 +1729,7 @@ public class Controller_Grid extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
-            terminal_logger.internalServerError("gridWidget_getByFilter:", e);
+            terminal_logger.internalServerError(e);
             return Server_Logger.result_internalServerError(e, request());
         }
     }

@@ -55,7 +55,7 @@ public class GoPay extends Controller {
     /**
      * Method serves to retrieve the token from GoPay if the local token is expired else it returns local static token.
      * Method tries 5 times to get the token.
-     * @return String token from GoPay or null if error_message occur.
+     * @return String token from GoPay or null if error occur.
      */
     public static String getToken(){
         try {
@@ -110,7 +110,7 @@ public class GoPay extends Controller {
 
             return null;
         }catch (Exception e){
-            terminal_logger.internalServerError("getToken:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -190,7 +190,7 @@ public class GoPay extends Controller {
                 response = responsePromise.get(10000).asJson();
 
             } catch (Exception e) {
-                terminal_logger.internalServerError("singlePayment: ", new Exception("Error getting result"));
+                terminal_logger.internalServerError(new Exception("Error getting result", e));
                 continue;
             }
 
@@ -199,7 +199,7 @@ public class GoPay extends Controller {
 
             final Form<GoPay_Result> form = Form.form(GoPay_Result.class).bind(response);
             if (form.hasErrors())
-                terminal_logger.internalServerError("singlePayment: ", new Exception("Error while binding Json: " + form.errorsAsJson().toString()));
+                terminal_logger.internalServerError(new Exception("Error while binding Json: " + form.errorsAsJson().toString()));
             else {
                 GoPay_Result help = form.get();
 
@@ -231,7 +231,7 @@ public class GoPay extends Controller {
      * This method is used to automatically take money from credit card.
      * The method tries 5 times to get the result.
      * @param invoice Model invoice related to payment.
-     * @throws Exception Exception is thrown if some error_message occur. (e.g. GoPay does not return status 200 OK)
+     * @throws Exception Exception is thrown if some error occur. (e.g. GoPay does not return status 200 OK)
      */
     public static void onDemandPayment(Model_Invoice invoice) throws Exception{
 
@@ -275,7 +275,7 @@ public class GoPay extends Controller {
                 response = responsePromise.get(10000);
 
             } catch (Exception e) {
-                terminal_logger.internalServerError("onDemandPayment: ", new Exception("Error getting result"));
+                terminal_logger.internalServerError(new Exception("Error getting result", e));
                 Thread.sleep(2500);
                 continue;
             }
@@ -323,16 +323,16 @@ public class GoPay extends Controller {
 
                 case 409: {
 
-                    invoice.getProduct().archiveEvent("On demand payment", "GoPay on demand payment number: " + invoice.gopay_id + " was unsuccessful due to some validation error_message", invoice.id);
+                    invoice.getProduct().archiveEvent("On demand payment", "GoPay on demand payment number: " + invoice.gopay_id + " was unsuccessful due to some validation error", invoice.id);
 
-                    throw new ValidationException("Payment could not be made due to some validation error_message. Response: " + result.toString());
+                    throw new ValidationException("Payment could not be made due to some validation error. Response: " + result.toString());
                 }
 
                 default: {
 
                     invoice.getProduct().archiveEvent("On demand payment", "GoPay on demand payment number: " + invoice.gopay_id + " was unsuccessful", invoice.id);
 
-                    throw new Exception("Cannot take money from credit card, GoPay service returned error_message. Response: " + result.toString());
+                    throw new Exception("Cannot take money from credit card, GoPay service returned error. Response: " + result.toString());
                 }
             }
         }
@@ -342,7 +342,7 @@ public class GoPay extends Controller {
      * This method serves to cancel on demand payment if user asks for it.
      * The method will try 5 times to get the result.
      * @param product Model product the on demand payment is terminated for.
-     * @throws Exception Exception is thrown if some error_message occur. (e.g. GoPay does not return status 200 OK)
+     * @throws Exception Exception is thrown if some error occur. (e.g. GoPay does not return status 200 OK)
      */
     public static void terminateOnDemand(Model_Product product) throws Exception{
 
@@ -374,7 +374,7 @@ public class GoPay extends Controller {
                 response = responsePromise.get(10000);
 
             } catch (Exception e) {
-                terminal_logger.internalServerError("terminateOnDemand: ", new Exception("Error getting result"));
+                terminal_logger.internalServerError(new Exception("Error getting result", e));
                 continue;
             }
 
@@ -392,7 +392,7 @@ public class GoPay extends Controller {
                 product.archiveEvent("Terminate on demand payment", "Failed to terminate GoPay on demand payment number: " + product.gopay_id, null);
                 product.notificationTerminateOnDemand(false);
 
-                terminal_logger.internalServerError("terminateOnDemand: ", new Exception("Cannot terminate on demand payment. Response from GoPay was: " + result.toString()));
+                terminal_logger.internalServerError(new Exception("Cannot terminate on demand payment. Response from GoPay was: " + result.toString()));
             }
         }
     }
@@ -402,7 +402,7 @@ public class GoPay extends Controller {
      * The method will try 5 times to get the result.
      * @param invoice Model invoice to refund.
      * @param amount Long amount equal or lesser than full amount in invoice.
-     * @throws Exception Exception is thrown if some error_message occur. (e.g. GoPay does not return status 200 OK)
+     * @throws Exception Exception is thrown if some error occur. (e.g. GoPay does not return status 200 OK)
      */
     private static void refundPayment(Model_Invoice invoice, Long amount) throws Exception{
 
@@ -436,7 +436,7 @@ public class GoPay extends Controller {
                 response = responsePromise.get(10000);
 
             } catch (Exception e) {
-                terminal_logger.internalServerError("refundPayment: ", new Exception("Error getting result"));
+                terminal_logger.internalServerError(new Exception("Error getting result", e));
                 continue;
             }
 
@@ -505,7 +505,7 @@ public class GoPay extends Controller {
             return ok();
 
         } catch (Exception e){
-            terminal_logger.internalServerError("payment_notification:", e);
+            terminal_logger.internalServerError(e);
             return ok();
         }
     }
@@ -524,7 +524,7 @@ public class GoPay extends Controller {
             return redirect(Server.becki_mainUrl);
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("payment_return:", e);
+            terminal_logger.internalServerError(e);
             return redirect(Server.becki_mainUrl);
         }
     }

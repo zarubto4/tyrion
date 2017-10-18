@@ -57,7 +57,7 @@ public class Secured_Homer_Server extends Security.Authenticator {
             }
 
         }catch (NullPointerException e){
-            terminal_logger.internalServerError("getUsername:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }

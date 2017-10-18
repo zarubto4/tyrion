@@ -377,7 +377,7 @@ public class Controller_Project extends Controller {
                             .send(mail, "Invitation to Collaborate");
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("project_invite:", e);
+                    terminal_logger.internalServerError(e);
                 }
             }
 
@@ -402,7 +402,7 @@ public class Controller_Project extends Controller {
                             .send(person.mail, "Invitation to Collaborate");
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError("project_invite:", e);
+                    terminal_logger.internalServerError(e);
                 }
 
                 project.notification_project_invitation(person, invitation);

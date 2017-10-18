@@ -44,7 +44,7 @@ public class Model_MProjectProgramSnapShot extends Model {
 
         }catch (Exception e){
 
-            terminal_logger.internalServerError("m_program_snapshots:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
 

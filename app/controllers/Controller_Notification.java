@@ -223,12 +223,9 @@ public class Controller_Notification extends Controller {
               NotificationActionHandler.perform(help.action, help.payload);
 
           } catch (IllegalArgumentException e) {
-
               Controller_Security.get_person().notification_error(e.getMessage());
-
           } catch (Exception e) {
-
-              terminal_logger.internalServerError("notification_confirm:", e);
+              terminal_logger.internalServerError(e);
           }
 
           notification.confirm();

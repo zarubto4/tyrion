@@ -256,7 +256,7 @@ public class Model_Notification extends Model {
             }
 
             default:{
-                terminal_logger.internalServerError("setObject:", new Exception("Notification Unsupported Object: " + class_name));
+                terminal_logger.internalServerError(new Exception("Notification Unsupported Object: " + class_name));
             }
         }
 
@@ -287,7 +287,7 @@ public class Model_Notification extends Model {
         try {
             throw new Exception("Not supported! Notifications are saved automatically using save_object()");
         } catch (Exception e) {
-            terminal_logger.internalServerError("save:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 
@@ -297,7 +297,7 @@ public class Model_Notification extends Model {
             this.state = Enum_Notification_state.deleted;
             this.send();
         } catch (Exception e) {
-            terminal_logger.internalServerError("delete:", e);
+            terminal_logger.internalServerError(e);
         }
         super.delete();
     }
@@ -325,7 +325,7 @@ public class Model_Notification extends Model {
                 invitation.update();
             }
         } catch (Exception e) {
-            terminal_logger.internalServerError("save_object:", e);
+            terminal_logger.internalServerError(e);
         }
 
         return this;

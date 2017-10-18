@@ -182,7 +182,7 @@ public class Model_Person extends Model {
         try {
             return Server.blobClient.getContainerReference("pictures");
         }catch (Exception e){
-            terminal_logger.internalServerError("get_Container:", e);
+            terminal_logger.internalServerError(e);
             throw new NullPointerException();
         }
     }

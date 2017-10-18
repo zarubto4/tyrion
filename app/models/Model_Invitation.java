@@ -47,7 +47,7 @@ public class Model_Invitation extends Model{
                 if (notification != null) notification.delete();
             }
         } catch (Exception e) {
-            terminal_logger.internalServerError("delete_notification:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 

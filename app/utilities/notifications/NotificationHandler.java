@@ -90,7 +90,7 @@ public class NotificationHandler {
                 }catch (InterruptedException i){
                     // Do nothing
                 }catch (Exception e){
-                    terminal_logger.internalServerError("send_notification_thread: ", e);
+                    terminal_logger.internalServerError(e);
                 }
             }
         }
@@ -157,11 +157,11 @@ public class NotificationHandler {
                     }
 
                 } catch (NullPointerException e) {
-                    terminal_logger.internalServerError("sendNotification:", e);
+                    terminal_logger.internalServerError(e);
                 }
             }
         }catch (Exception e){
-            terminal_logger.internalServerError("sendNotification:", e);
+            terminal_logger.internalServerError(e);
         }
     }
 }

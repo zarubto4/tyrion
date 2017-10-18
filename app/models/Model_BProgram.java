@@ -83,7 +83,7 @@ public class Model_BProgram extends Model {
             return versions;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("Model_BProgram:: program_versions", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
@@ -124,7 +124,7 @@ public class Model_BProgram extends Model {
             return state;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("instance_details:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -148,7 +148,7 @@ public class Model_BProgram extends Model {
             return help;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("get_b_program_short_detail:", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -197,7 +197,7 @@ public class Model_BProgram extends Model {
             return versions;
 
         }catch (Exception e){
-            terminal_logger.internalServerError("getVersion_objects", e);
+            terminal_logger.internalServerError(e);
             return new ArrayList<>();
         }
 
@@ -221,7 +221,7 @@ public class Model_BProgram extends Model {
 
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("getVersion_objects", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
@@ -237,7 +237,7 @@ public class Model_BProgram extends Model {
             return null;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError("getVersion_objects", e);
+            terminal_logger.internalServerError(e);
             return null;
         }
     }
