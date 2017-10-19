@@ -82,7 +82,7 @@ public class Controller_Security extends Controller {
 
             String person_id = Model_Person.token_cache.get( token  );
 
-             return person_id;
+            return person_id;
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
@@ -221,13 +221,6 @@ public class Controller_Security extends Controller {
             // Zjistím kde je přihlášení (user-Agent je třeba "Safari v1.30" nebo "Chrome 12.43" atd..)
             if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
-
-            try {
-                if (person.mailValidated)
-                    throw new IllegalArgumentException("HAHA toto je message IAE");
-            } catch (Exception e) {
-                throw new Exception("This is wrapping exception message.", e);
-            }
 
             // Ukládám do databáze
             floatingPersonToken.save();

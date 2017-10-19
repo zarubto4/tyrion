@@ -514,7 +514,7 @@ GET       /.well-known/acme-challenge/:file                             @utiliti
 
 # Basic Page Requests
 
-GET       /admin/report/dashboard                                       @controllers.Controller_Report.report_admin_dashboard()
+GET       /admin/report/dashboard                                       @controllers.Controller_Admin.report_admin_dashboard()
 
 GET       /admin/request_stats                                          @utilities.request_counter.RequestCounter.get_request_stats()
 DELETE    /admin/request_stats                                          @utilities.request_counter.RequestCounter.reset_request_stats()
@@ -526,11 +526,13 @@ GET       /admin/test/log                                               @utiliti
 GET       /admin/test/log/clear                                         @utilities.test.TestLog.clear_test_log()
 
 # BUGS SERVISE PAGE
-GET       /admin/bug                                                    @controllers.Controller_Report.serverError_getAll()
-GET       /admin/bug/:bug_id                                            @controllers.Controller_Report.serverError_get(bug_id)
-DELETE    /admin/bug                                                    @controllers.Controller_Report.serverError_deleteAll()
-DELETE    /admin/bug/:bug_id                                            @controllers.Controller_Report.serverError_delete(bug_id)
-PUT       /admin/bug/report/:bug_id                                     @controllers.Controller_Report.serverError_report(bug_id)
+GET       /admin/bug                                                    @controllers.Controller_Admin.serverError_getAll()
+GET       /admin/bug/:bug_id                                            @controllers.Controller_Admin.serverError_get(bug_id)
+DELETE    /admin/bug                                                    @controllers.Controller_Admin.serverError_deleteAll()
+DELETE    /admin/bug/:bug_id                                            @controllers.Controller_Admin.serverError_delete(bug_id)
+PUT       /admin/bug/report/:bug_id                                     @controllers.Controller_Admin.serverError_report(bug_id)
+
+POST      /admin/update                                                 @controllers.Controller_Admin.server_scheduleUpdate()
 
 # Not used
 GET       /public/*file                                                 @controllers.Assets.versioned(path="/public", file: Asset)

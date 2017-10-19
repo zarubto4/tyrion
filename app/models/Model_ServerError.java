@@ -27,7 +27,7 @@ public class Model_ServerError extends Model {
     @Column(columnDefinition = "TEXT")  public String summary;
     @Column(columnDefinition = "TEXT")  public String description;
                                         public String type;
-                                        public String message;
+    @Column(columnDefinition = "TEXT")  public String message;
     @Column(columnDefinition = "TEXT")  public String stack_trace;
 
                                         public String request;
@@ -37,7 +37,7 @@ public class Model_ServerError extends Model {
                                         public Date created;
 
                                         public String cause_type;
-                                        public String cause_message;
+    @Column(columnDefinition = "TEXT")  public String cause_message;
     @Column(columnDefinition = "TEXT")  public String cause_stack_trace;
 
                                         public String youtrack_url;
@@ -66,11 +66,10 @@ public class Model_ServerError extends Model {
 
         if (request != null) {
             this.request = request.method() + " " + request.path();
-        }
-
-        Model_Person person = Controller_Security.get_person();
-        if (person != null) {
-            this.person = person.mail;
+            Model_Person person = Controller_Security.get_person();
+            if (person != null) {
+                this.person = person.mail;
+            }
         }
     }
 

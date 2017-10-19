@@ -1,13 +1,31 @@
 package utilities.scheduler.jobs;
 
-import models.Model_HomerInstanceRecord;
 import models.Model_HomerServer;
 import org.quartz.Job;
+import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import play.api.Play;
+import play.libs.F;
+import play.libs.Json;
+import play.libs.ws.WSClient;
+import play.libs.ws.WSRequest;
+import play.libs.ws.WSResponse;
 import utilities.logger.Class_Logger;
+import utilities.update_server.GitHub_Asset;
+import utilities.update_server.GitHub_Release;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Updates various servers, even itself
@@ -22,17 +40,13 @@ public class Job_UpdateServer implements Job {
 
     public Job_UpdateServer(){}
 
-    private String server;
-    private String version;
-    private String identifier;
+    private JobDataMap jobData;
     
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
         terminal_logger.info("execute: Executing Job_UpdateServer");
 
-        server = context.getMergedJobDataMap().getString("server");
-        identifier = context.getMergedJobDataMap().getString("identifier");
-        version = context.getMergedJobDataMap().getString("version");
+        jobData = context.getMergedJobDataMap();
 
         if(!update_server_thread.isAlive()) update_server_thread.start();
     }
@@ -45,17 +59,80 @@ public class Job_UpdateServer implements Job {
 
                 terminal_logger.trace("update_server_thread: concurrent thread started on {}", new Date());
 
-                if (server == null) throw new NullPointerException("Job was instantiated without server in the JobExecutionContext or the server is null for some reason.");
-                if (identifier == null && !server.equals("tyrion")) throw new NullPointerException("Job was instantiated without identifier in the JobExecutionContext or the identifier is null for some reason.");
-                if (version == null) throw new NullPointerException("Job was instantiated without version in the JobExecutionContext or the version is null for some reason.");
+                if (jobData == null) {
+                    throw new NullPointerException("Job was instantiated without jobData in the JobExecutionContext.");
+                }
+
+                if (!jobData.containsKey("server")) {
+                    throw new NullPointerException("Job was instantiated without server in the JobExecutionContext or the server is null for some reason.");
+                }
+
+                String server = jobData.getString("server");
+
+                if (!jobData.containsKey("identifier") && !server.equals("tyrion")) {
+                    throw new NullPointerException("Job was instantiated without identifier in the JobExecutionContext or the identifier is null for some reason.");
+                }
+
+                if (!jobData.containsKey("version")) {
+                    throw new NullPointerException("Job was instantiated without version in the JobExecutionContext or the version is null for some reason.");
+                }
+
+                WSClient ws = Play.current().injector().instanceOf(WSClient.class);
 
                 switch (server) {
                     case "tyrion": {
                         // TODO execute script
+                        terminal_logger.trace("update_server_thread: Updating Tyrion");
+
+                        WSResponse wsResponse = ws.url(jobData.getString("url"))
+                                .setHeader("Authorization", "token 4d89903b259510a1257a67d396bd4aaf10cdde6a")
+                                .setHeader("Accept", "application/octet-stream")
+                                .setFollowRedirects(false)
+                                .get()
+                                .get(10000);
+
+                        terminal_logger.trace("update_server_thread: Got file download url");
+                        terminal_logger.trace(wsResponse.getHeader("location"));
+
+                        // Redirect URL from response
+                        String url = wsResponse.getHeader("location");
+
+                        // Request for URL without query params
+                        WSRequest request = ws.url(url.substring(0, url.indexOf("?")))
+                                .setRequestTimeout(-1);
+
+                        // Query params must be decoded and added one by one, because of bug in Play! (query was getting double encoded)
+                        String[] pairs = url.substring(url.indexOf("?") + 1).split("&");
+                        for (String pair : pairs) {
+                            int idx = pair.indexOf("=");
+                            request.setQueryParameter(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+                        }
+
+                        WSResponse response = request.get().get(30, TimeUnit.MINUTES);
+
+                        terminal_logger.debug("update_server_thread: Status for file download is {}", response.getStatus());
+
+                        Path path = Paths.get("tyrion.zip");
+                        InputStream inputStream = response.getBodyAsStream();
+                        OutputStream outputStream = Files.newOutputStream(path);
+
+                        int read;
+                        byte[] buffer = new byte[1024];
+                        while ((read = inputStream.read(buffer)) != -1) {
+                            outputStream.write(buffer, 0, read);
+                        }
+
+                        if (inputStream != null) {inputStream.close();}
+                        if (outputStream != null) {outputStream.close();}
+
+                        terminal_logger.trace("update_server_thread: File downloaded, run update script");
+
+                        Process proc = Runtime.getRuntime().exec("./conf/update_server.sh " + jobData.getString("version").replace("v", ""));
+
                         break;
                     }
                     case "homer": {
-                        Model_HomerServer homerServer = Model_HomerServer.get_byId(identifier);
+                        Model_HomerServer homerServer = Model_HomerServer.get_byId(""); // TODO
                         if (homerServer == null) throw new NullPointerException("Cannot find the Homer Server in the DB.");
 
                         // TODO do request

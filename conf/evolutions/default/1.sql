@@ -647,7 +647,7 @@ create table ServerError (
   summary                   TEXT,
   description               TEXT,
   type                      varchar(255),
-  message                   varchar(255),
+  message                   TEXT,
   stack_trace               TEXT,
   request                   varchar(255),
   person                    varchar(255),
@@ -655,7 +655,7 @@ create table ServerError (
   repetition                bigint,
   created                   timestamp,
   cause_type                varchar(255),
-  cause_message             varchar(255),
+  cause_message             TEXT,
   cause_stack_trace         TEXT,
   youtrack_url              varchar(255),
   constraint pk_ServerError primary key (id))

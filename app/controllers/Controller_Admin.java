@@ -3,23 +3,40 @@ package controllers;
 import com.avaje.ebean.Ebean;
 import io.swagger.annotations.*;
 import models.*;
+import play.data.Form;
 import play.libs.Json;
+import play.libs.ws.WSClient;
+import play.libs.ws.WSResponse;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
+import utilities.scheduler.CustomScheduler;
+import utilities.swagger.documentationClass.Swagger_ServerUpdate;
 import utilities.swagger.outboundClass.Swagger_Report_Admin_Dashboard;
+import utilities.update_server.GitHub_Asset;
+import utilities.update_server.GitHub_Release;
+import utilities.update_server.ServerUpdate;
 
+import javax.inject.Inject;
 import java.util.List;
+import java.util.Optional;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured_API.class)
-public class Controller_Report extends Controller {
+public class Controller_Admin extends Controller {
 
+// LOGGER ##############################################################################################################
+
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Admin.class);
+
+    @Inject
+    WSClient ws;
 
     @ApiOperation(value = "get Report_Admin_Dashboard",
             tags = {"Admin-Report"},
@@ -207,6 +224,52 @@ public class Controller_Report extends Controller {
             if (!errors.isEmpty()) {
                 if (!errors.get(0).delete_permission()) return GlobalResult.result_forbidden();
                 Ebean.delete(errors);
+            }
+
+            return GlobalResult.result_ok();
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+// UPDATE SERVER #######################################################################################################
+
+    public Result server_scheduleUpdate() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_ServerUpdate> form = Form.form(Swagger_ServerUpdate.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_ServerUpdate help = form.get();
+
+            terminal_logger.debug("server_scheduleUpdate: requesting releases");
+
+            WSResponse releases = ws.url("https://api.github.com/repos/ByzanceIoT/tyrion/releases/tags/" + help.version)
+                    .setHeader("Authorization", "token 4d89903b259510a1257a67d396bd4aaf10cdde6a")
+                    .get()
+                    .get(10000);
+
+            final Form<GitHub_Release> release_form = Form.form(GitHub_Release.class).bind(releases.asJson());
+            if (form.hasErrors()) {return GlobalResult.result_externalServerError(form.errorsAsJson());}
+            GitHub_Release release = release_form.get();
+
+            terminal_logger.debug("server_scheduleUpdate: got release");
+
+            Optional<GitHub_Asset> optional = release.assets.stream().filter(a -> a.name.equals("tyrion.zip")).findAny();
+            if (optional.isPresent()) {
+                GitHub_Asset asset = optional.get();
+
+                terminal_logger.debug("server_scheduleUpdate: Asset was found");
+
+                ServerUpdate update = new ServerUpdate();
+                update.server = "tyrion";
+                update.version = help.version;
+                update.time = help.update_time;
+                update.url = asset.url;
+
+                CustomScheduler.scheduleUpdateServer(update);
+            } else {
+                return GlobalResult.result_badRequest("Bad release, cannot find the asset file");
             }
 
             return GlobalResult.result_ok();

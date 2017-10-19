@@ -10,6 +10,7 @@ import utilities.Server;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.logger.Class_Logger;
 import utilities.scheduler.jobs.*;
+import utilities.update_server.ServerUpdate;
 
 import java.util.*;
 import java.util.Calendar;
@@ -234,15 +235,24 @@ public class CustomScheduler {
         }
     }
 
-    public static void scheduleUpdateServer(Model_HomerInstanceRecord record) {
+    public static void scheduleUpdateServer(ServerUpdate update) {
         try {
 
-            String name = "update-server-" + record.main_instance_history.id;
+            String name = "update-server-" + update.server + (update.identifier != null ? "-" + update.identifier : "") + "-to-version-" + update.version;
 
             terminal_logger.debug("scheduleJob: Scheduling new Job - {}", name);
 
-            customScheduler.scheduler.scheduleJob(newJob(Job_UploadBlockoToCloud.class).withIdentity(JobKey.jobKey(name)).usingJobData("record_id", record.id).build(),
-                    newTrigger().withIdentity(name + "-key").startNow().withSchedule(toCron(record.planed_when)).build()); // Spuštění na základě data
+            JobDataMap data = new JobDataMap();
+            data.put("server", update.server);
+            data.put("version", update.server);
+            data.put("url", update.url);
+
+            if (update.identifier != null) {
+                data.put("identifier", update.identifier);
+            }
+
+            customScheduler.scheduler.scheduleJob(newJob(Job_UpdateServer.class).withIdentity(JobKey.jobKey(name)).usingJobData(data).build(),
+                    newTrigger().withIdentity(name + "-key").startNow().withSchedule(toCron(new Date(update.time))).build()); // Spuštění na základě data
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
