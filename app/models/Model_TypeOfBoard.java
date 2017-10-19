@@ -76,8 +76,7 @@ public class Model_TypeOfBoard extends Model {
     @JsonIgnore @Transient @TyrionCachedList public  String cache_main_c_program_version_id;    // Výchozí defaault firmware chache
     @JsonIgnore @Transient @TyrionCachedList public  String cache_main_c_program_id;
     @JsonIgnore @Transient @TyrionCachedList public  String cache_test_program_version_id;      // testovací firmware chache
-    @JsonIgnore
-    @Transient @TyrionCachedList public  String cache_test_c_program_id;
+    @JsonIgnore @Transient @TyrionCachedList public  String cache_test_c_program_id;
 
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -102,6 +101,22 @@ public class Model_TypeOfBoard extends Model {
             terminal_logger.internalServerError(e);
             return null;
         }
+    }
+
+    @JsonProperty @Transient
+    public List<CompilationLibrary> supported_libraries() {
+        
+    }
+
+    class CompilationLibrary {
+        public String tag_name;
+        public String release_desription;
+        public String name;
+        public String body;
+        public boolean draft;
+        public boolean prerelease;
+        public String created_at;
+        public String published_at;
     }
 
     @JsonProperty @Transient @TyrionCachedList
@@ -180,6 +195,7 @@ public class Model_TypeOfBoard extends Model {
             return null;
         }
     }
+
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
@@ -292,7 +308,7 @@ public class Model_TypeOfBoard extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-       @JsonIgnore   @Transient public boolean create_permission(){  return Controller_Security.get_person().has_permission("TypeOfBoard_create"); }
+    @JsonIgnore   @Transient public boolean create_permission(){  return Controller_Security.get_person().has_permission("TypeOfBoard_create"); }
     @JsonIgnore   @Transient public boolean read_permission()  {  return true; }
     @JsonProperty @Transient public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("TypeOfBoard_edit");   }
     @JsonProperty @Transient public boolean update_permission()  {  return Controller_Security.get_person().has_permission("TypeOfBoard_update");   }
