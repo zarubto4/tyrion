@@ -2896,10 +2896,12 @@ public class Controller_Board extends Controller {
             }
 
             // Cyklus pro přidávání // Nejdříve kontroluji
-            for(String board_group_id: help.group_ids) {
-                Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
-                if(group == null) return GlobalResult.result_notFound("BoardGroup ID not found");
-                if(!group.update_permission()) return GlobalResult.result_forbidden();
+            if(help.group_ids != null || !help.group_ids.isEmpty()) {
+                for (String board_group_id : help.group_ids) {
+                    Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
+                    if (group == null) return GlobalResult.result_notFound("BoardGroup ID not found");
+                    if (!group.update_permission()) return GlobalResult.result_forbidden();
+                }
             }
 
 
@@ -2922,20 +2924,22 @@ public class Controller_Board extends Controller {
                 board.get_hardware_groups();
             }
 
-            // Cyklus pro přidávání // Nejdříve kontroluji
-            for(String board_group_id: help.group_ids) {
+            if(help.group_ids != null || !help.group_ids.isEmpty()) {
+                // Cyklus pro přidávání // Nejdříve kontroluji
+                for (String board_group_id : help.group_ids) {
 
-                // Přidám všechny, které nejsou už součásti cache_hardware_groups_id
-                if(!board.cache_hardware_groups_id.contains(board_group_id)){
+                    // Přidám všechny, které nejsou už součásti cache_hardware_groups_id
+                    if (!board.cache_hardware_groups_id.contains(board_group_id)) {
 
-                    Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
-                    // už nemusím kontrolovat
+                        Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
+                        // už nemusím kontrolovat
 
-                    // Nějaké mazání
-                    board.cache_hardware_groups_id.add(board_group_id);
-                    board.board_groups.add(group);
-                    group.cache_group_size +=1;
-                    board.update();
+                        // Nějaké mazání
+                        board.cache_hardware_groups_id.add(board_group_id);
+                        board.board_groups.add(group);
+                        group.cache_group_size += 1;
+                        board.update();
+                    }
                 }
             }
 
