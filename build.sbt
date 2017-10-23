@@ -1,6 +1,8 @@
 name := """Tyrion"""
 
-version := "1.13.5"
+version := "1.13.6"
+
+packageName in Universal := "v" + version.value
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
 

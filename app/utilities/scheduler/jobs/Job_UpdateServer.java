@@ -127,7 +127,7 @@ public class Job_UpdateServer implements Job {
 
                         terminal_logger.trace("update_server_thread: File downloaded, run update script");
 
-                        Process proc = Runtime.getRuntime().exec("./conf/update_server.sh " + jobData.getString("version").replace("v", ""));
+                        Process proc = Runtime.getRuntime().exec("./update_server.sh " + jobData.getString("version"));
 
                         break;
                     }

@@ -1,19 +1,21 @@
 #!/usr/bin/env bash
 
 # Go one level below current instance
-cd ../..
+cd ..
 
 # Set vars
-VERSION=$1
-NEWSERVER="tyrion-$VERSION"
+NEWSERVER=$1
 CURRENTSERVER=$(cat ./CURRENTSERVER)
 OLDSERVER=$(cat ./OLDSERVER)
 
 # Unzip new package
-unzip "$NEWSERVER.zip"
+unzip "dist.zip"
 
 # Stop previous instance
-cat ./$CURRENTSERVER/RUNNING_PID | kill
+kill $(cat ./$CURRENTSERVER/RUNNING_PID)
+
+# Add execute permission
+chmod +x ./$NEWSERVER/bin/tyrion
 
 # Run instance of new verion
 ./$NEWSERVER/bin/tyrion 2>&1 >> ./$NEWSERVER/server.log &
