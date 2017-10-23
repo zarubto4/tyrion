@@ -252,7 +252,7 @@ public class CustomScheduler {
 
             JobDataMap data = new JobDataMap();
             data.put("server", update.server);
-            data.put("version", update.server);
+            data.put("version", update.version);
             data.put("url", update.url);
 
             if (update.identifier != null) {
