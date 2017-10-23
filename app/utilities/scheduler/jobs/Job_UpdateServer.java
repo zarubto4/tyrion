@@ -139,12 +139,21 @@ public class Job_UpdateServer implements Job {
                         }
 
                         BufferedReader err = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+                        StringBuilder err_log = new StringBuilder();
                         String err_line;
                         while ((err_line = err.readLine()) != null) {
                             terminal_logger.info("update_server_thread: Process output: {}", err_line);
+                            err_log.append(err_line);
+                            err_log.append("\n");
                         }
 
-                        terminal_logger.debug("update_server_thread: Process exit code: {}", proc.waitFor());
+                        int exitCode = proc.waitFor();
+
+                        terminal_logger.debug("update_server_thread: Process exit code: {}", exitCode);
+
+                        if (exitCode != 0) {
+                            terminal_logger.internalServerError(new Exception("Process exited with non-zero code " + exitCode + ". Errors:\n" + err_log.toString()));
+                        }
 
                         break;
                     }
