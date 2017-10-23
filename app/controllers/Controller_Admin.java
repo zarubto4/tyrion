@@ -245,6 +245,7 @@ public class Controller_Admin extends Controller {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
