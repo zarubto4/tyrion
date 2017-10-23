@@ -3,6 +3,7 @@ package controllers;
 import com.avaje.ebean.Ebean;
 import io.swagger.annotations.*;
 import models.*;
+import play.Configuration;
 import play.data.Form;
 import play.libs.Json;
 import play.libs.ws.WSClient;
@@ -244,8 +245,8 @@ public class Controller_Admin extends Controller {
 
             terminal_logger.debug("server_scheduleUpdate: requesting releases");
 
-            WSResponse releases = ws.url("https://api.github.com/repos/ByzanceIoT/tyrion/releases/tags/" + help.version)
-                    .setHeader("Authorization", "token 4d89903b259510a1257a67d396bd4aaf10cdde6a")
+            WSResponse releases = ws.url(Configuration.root().getString("GitHub.releasesUrl") + help.version)
+                    .setHeader("Authorization", "token " + Configuration.root().getString("GitHub.apiKey"))
                     .get()
                     .get(10000);
 

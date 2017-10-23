@@ -5,6 +5,7 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import play.Configuration;
 import play.api.Play;
 import play.libs.F;
 import play.libs.Json;
@@ -87,7 +88,7 @@ public class Job_UpdateServer implements Job {
                         terminal_logger.trace("update_server_thread: Updating Tyrion");
 
                         WSResponse wsResponse = ws.url(jobData.getString("url"))
-                                .setHeader("Authorization", "token 4d89903b259510a1257a67d396bd4aaf10cdde6a")
+                                .setHeader("Authorization", "token " + Configuration.root().getString("GitHub.apiKey"))
                                 .setHeader("Accept", "application/octet-stream")
                                 .setFollowRedirects(false)
                                 .get()

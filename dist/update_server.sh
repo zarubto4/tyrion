@@ -17,7 +17,7 @@ OLDSERVER=$(cat ./OLDSERVER)
 unzip "dist.zip"
 
 # Stop previous instance and remove previous pid
-(kill $(cat ./$CURRENTSERVER/RUNNING_PID) && rm -rf ./$CURRENTSERVER/RUNNING_PID) &
+(kill $(cat ./$CURRENTSERVER/RUNNING_PID) && rm -rf ./$CURRENTSERVER/RUNNING_PID && echo "Previous instance stopped") &
 
 # Add execute permission
 chmod +x ./$NEWSERVER/bin/tyrion
