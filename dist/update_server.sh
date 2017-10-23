@@ -12,7 +12,7 @@ OLDSERVER=$(cat ./OLDSERVER)
 unzip "dist.zip"
 
 # Stop previous instance
-kill $(cat ./$CURRENTSERVER/RUNNING_PID)
+kill $(cat ./$CURRENTSERVER/RUNNING_PID) &
 
 # Remove previous pid
 rm -rf ./$CURRENTSERVER/RUNNING_PID
@@ -30,4 +30,4 @@ cd $NEWSERVER
 cd ..
 
 # Replace values in files and remove old server and dist.zip
-cat $CURRENTSERVER > ./OLDSERVER && cat $NEWSERVER > ./CURRENTSERVER && rm -rf ./$OLDSERVER && em -rf ./dist.zip
+echo "$CURRENTSERVER" > ./OLDSERVER && echo "$NEWSERVER" > ./CURRENTSERVER && rm -rf ./$OLDSERVER && rm -rf ./dist.zip
