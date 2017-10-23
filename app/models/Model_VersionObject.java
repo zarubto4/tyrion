@@ -166,6 +166,7 @@ public class Model_VersionObject extends Model {
             help.version_id = id;
             help.version_name = version_name;
             help.version_description = version_description;
+            help.library_compilation_version = c_compilation.firmware_version_lib;
             help.delete_permission = c_program.delete_permission();
             help.update_permission = c_program.update_permission();
             help.author = this.author.get_short_person();
@@ -243,6 +244,18 @@ public class Model_VersionObject extends Model {
 
         Model_VersionObject version = this;
 
+        if(this.c_compilation == null) {
+
+            Model_CCompilation cCompilation = new Model_CCompilation();
+            cCompilation.status = Enum_Compile_status.compilation_in_progress;
+            cCompilation.firmware_version_lib = library_compilation_version;
+            cCompilation.version_object = this;
+            cCompilation.save();
+
+            this.c_compilation = cCompilation;
+            this.update();
+        }
+
         Thread compile_that = new Thread() {
 
             @Override
@@ -265,18 +278,28 @@ public class Model_VersionObject extends Model {
         Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("c_programs.id", this.c_program.id).findUnique();
         if(typeOfBoard == null){
 
-            terminal_logger.internalServerError(new Exception("Type_of_Board not found! Not found way how to compile version."));
+            terminal_logger.internalServerError(new Exception("compile_program_procedure:: Type_of_Board not found! Not found way how to compile version."));
 
             Result_BadRequest result = new Result_BadRequest();
             result.message = "Version is not version of C_Program";
             return result;
         }
 
+        // Něco se kriticky posralo a soubor nebyl vytvořen, kde byl pozanmenán tag kompilace
         if(this.c_compilation == null) {
+
+            terminal_logger.internalServerError(new Exception("compile_program_procedure:: this.c_compilation == null"));
 
             Model_CCompilation cCompilation = new Model_CCompilation();
             cCompilation.version_object = this;
+
+
+            if(!typeOfBoard.cache_library_list.isEmpty()) {
+                cCompilation.firmware_version_lib = typeOfBoard.cache_library_list.get(typeOfBoard.cache_library_list.size()).tag_name;
+            }
+
             cCompilation.save();
+
 
             this.c_compilation = cCompilation;
             this.update();
@@ -391,7 +414,7 @@ public class Model_VersionObject extends Model {
 
 
 
-        WS_Message_Make_compilation compilation = Model_CompilationServer.make_Compilation( new WS_Message_Make_compilation().make_request( typeOfBoard ,this.id, code_file.main, includes   ));
+        WS_Message_Make_compilation compilation = Model_CompilationServer.make_Compilation( new WS_Message_Make_compilation().make_request(typeOfBoard, c_compilation.firmware_version_lib, this.id, code_file.main, includes   ));
 
 
         // Když obsahuje chyby - vrátím rovnou Becki

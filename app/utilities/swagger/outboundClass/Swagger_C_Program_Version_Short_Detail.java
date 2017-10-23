@@ -23,6 +23,10 @@ public class Swagger_C_Program_Version_Short_Detail {
     public String version_description;
 
     @ApiModelProperty(required = true, readOnly = true)
+    public String library_compilation_version;
+
+
+    @ApiModelProperty(required = true, readOnly = true)
     public Enum_Compile_status status;
 
 

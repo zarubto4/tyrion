@@ -84,7 +84,7 @@ public class Controller_Board extends Controller {
             // Kontrola oprávnění
             if(!version_object.c_program.read_permission()) return GlobalResult.result_forbidden();
 
-            // Smažu předchozí kompilaci
+            // Odpovím předchozí kompilací
             if(version_object.c_compilation != null) return GlobalResult.result_ok(Json.toJson( new Swagger_Compilation_Ok()));
 
 
@@ -233,7 +233,7 @@ public class Controller_Board extends Controller {
             }
 
 
-            WS_Message_Make_compilation compilation_result = Model_CompilationServer.make_Compilation(new WS_Message_Make_compilation().make_request( typeOfBoard ,"only_for_compilation", help.main, includes ));
+            WS_Message_Make_compilation compilation_result = Model_CompilationServer.make_Compilation(new WS_Message_Make_compilation().make_request( typeOfBoard , help.library_compilation_version, "only_for_compilation", help.main, includes ));
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode build_url
             if (compilation_result.build_url != null && compilation_result.status.equals("success")) {

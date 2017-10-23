@@ -31,14 +31,14 @@ public class WS_Message_Make_compilation extends WS_AbstractMessage {
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public ObjectNode make_request(Model_TypeOfBoard typeOfBoard, String version_id, String code, ObjectNode includes ) {
+    public ObjectNode make_request(Model_TypeOfBoard typeOfBoard, String library_version, String  version_id, String code, ObjectNode includes ) {
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
         request.put("message_channel",    Model_CompilationServer.CHANNEL);
         request.put("target",             typeOfBoard.compiler_target_name);
-        request.put("library_version",    "v0.0.1"); // TODO longterm podle verzí komplační knihovny
+        request.put("library_version",    library_version);
         request.put("version_id",         version_id);
         request.put("code",               code);
         request.set("includes", includes);
