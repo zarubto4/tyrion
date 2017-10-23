@@ -114,7 +114,7 @@ public class Job_UpdateServer implements Job {
 
                         terminal_logger.debug("update_server_thread: Status for file download is {}", response.getStatus());
 
-                        Path path = Paths.get("dist.zip");
+                        Path path = Paths.get("../dist.zip");
                         InputStream inputStream = response.getBodyAsStream();
                         OutputStream outputStream = Files.newOutputStream(path);
 
@@ -135,6 +135,12 @@ public class Job_UpdateServer implements Job {
                         String line;
                         while ((line = in.readLine()) != null) {
                             terminal_logger.info("update_server_thread: Process output: {}", line);
+                        }
+
+                        BufferedReader err = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+                        String err_line;
+                        while ((err_line = err.readLine()) != null) {
+                            terminal_logger.info("update_server_thread: Process output: {}", err_line);
                         }
 
                         terminal_logger.debug("update_server_thread: Process exit code: {}", proc.waitFor());

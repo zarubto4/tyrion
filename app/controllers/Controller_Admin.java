@@ -255,7 +255,7 @@ public class Controller_Admin extends Controller {
 
             terminal_logger.debug("server_scheduleUpdate: got release");
 
-            Optional<GitHub_Asset> optional = release.assets.stream().filter(a -> a.name.equals("tyrion.zip")).findAny();
+            Optional<GitHub_Asset> optional = release.assets.stream().filter(a -> a.name.equals("dist.zip")).findAny();
             if (optional.isPresent()) {
                 GitHub_Asset asset = optional.get();
 

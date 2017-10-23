@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ $# -eq 0 ] ; then
+    echo "No arguments supplied! Usage: update_server.sh <version>"
+    exit 1
+fi
+
 # Go one level below current instance
 cd ..
 
@@ -11,11 +16,8 @@ OLDSERVER=$(cat ./OLDSERVER)
 # Unzip new package
 unzip "dist.zip"
 
-# Stop previous instance
-kill $(cat ./$CURRENTSERVER/RUNNING_PID) &
-
-# Remove previous pid
-rm -rf ./$CURRENTSERVER/RUNNING_PID
+# Stop previous instance and remove previous pid
+(kill $(cat ./$CURRENTSERVER/RUNNING_PID) && rm -rf ./$CURRENTSERVER/RUNNING_PID) &
 
 # Add execute permission
 chmod +x ./$NEWSERVER/bin/tyrion
