@@ -234,6 +234,20 @@ public class Controller_Admin extends Controller {
 
 // UPDATE SERVER #######################################################################################################
 
+    @ApiOperation(value = "update Server Server_Component",
+            tags = {"Admin"},
+            notes = "",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     public Result server_scheduleUpdate() {
         try {
 

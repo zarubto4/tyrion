@@ -152,7 +152,7 @@ public class Controller_Code extends Controller{
                     version_object.update();
                 }
 
-                version_object.compile_program_thread();
+                version_object.compile_program_thread(typeOfBoard.get_main_c_program().default_main_version.c_compilation.firmware_version_lib);
 
             }
 
@@ -246,7 +246,7 @@ public class Controller_Code extends Controller{
                 Model_FileRecord.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program_new.get_path() ,  copy_object);
                 copy_object.update();
 
-                copy_object.compile_program_thread();
+                copy_object.compile_program_thread(version.c_compilation.firmware_version_lib);
 
             }
 
@@ -557,7 +557,7 @@ public class Controller_Code extends Controller{
             Model_FileRecord.uploadAzure_Version(Json.toJson(help).toString(), "code.json" , c_program.get_path() ,  version_object);
             version_object.update();
 
-            version_object.compile_program_thread();
+            version_object.compile_program_thread(help.library_compilation_version);
 
             // Vracím vytvořený objekt
             return GlobalResult.result_created(Json.toJson(c_program.program_version(version_object)));
@@ -946,7 +946,7 @@ public class Controller_Code extends Controller{
                 Model_FileRecord.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program.get_path() ,  version_object);
                 version_object.update();
 
-                version_object.compile_program_thread();
+                version_object.compile_program_thread(version_old.c_compilation.firmware_version_lib);
 
                 // Admin to schválil bez dalších keců
                 if((help.reason == null || help.reason.length() < 4) ){

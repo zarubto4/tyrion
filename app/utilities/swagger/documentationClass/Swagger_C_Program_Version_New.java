@@ -27,6 +27,10 @@ public class Swagger_C_Program_Version_New {
     public String version_description;
 
 
+    @ApiModelProperty(required = false, value = "The Library Version tag_name from TypeOfBoard.supported_libraries")
+    @Constraints.MaxLength(value = 60)
+    public String library_compilation_version;
+
     @ApiModelProperty(required = true)
     public String main;
 
@@ -35,5 +39,8 @@ public class Swagger_C_Program_Version_New {
 
     @ApiModelProperty(required = false, value = "Contains IDs of imported Library versions")
     @Valid public List<String>  imported_libraries = new ArrayList<>();
+
+
+
 
 }

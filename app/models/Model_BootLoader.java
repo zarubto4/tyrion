@@ -212,6 +212,7 @@ public class Model_BootLoader extends Model {
     @JsonIgnore @Override public void save() {
 
         terminal_logger.debug("save :: Creating new Object");
+        // TODO uložit do Cache Paměti
 
         super.save();
     }

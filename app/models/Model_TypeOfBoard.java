@@ -13,6 +13,7 @@ import org.ehcache.Cache;
 import utilities.Server;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.logger.Class_Logger;
+import utilities.swagger.documentationClass.Swagger_CompilationLibrary;
 import utilities.swagger.outboundClass.Swagger_C_Program_Version_Short_Detail;
 import utilities.swagger.outboundClass.Swagger_C_program_Short_Detail;
 
@@ -77,7 +78,7 @@ public class Model_TypeOfBoard extends Model {
     @JsonIgnore @Transient @TyrionCachedList public  String cache_main_c_program_id;
     @JsonIgnore @Transient @TyrionCachedList public  String cache_test_program_version_id;      // testovací firmware chache
     @JsonIgnore @Transient @TyrionCachedList public  String cache_test_c_program_id;
-
+    @JsonIgnore @Transient @TyrionCachedList public  List<Swagger_CompilationLibrary> cache_library_list; // Záměrně není pole definované!
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -104,20 +105,10 @@ public class Model_TypeOfBoard extends Model {
     }
 
     @JsonProperty @Transient
-    public List<CompilationLibrary> supported_libraries() {
-        
+    public List<Swagger_CompilationLibrary> supported_libraries() {
+        return cache_library_list;
     }
 
-    class CompilationLibrary {
-        public String tag_name;
-        public String release_desription;
-        public String name;
-        public String body;
-        public boolean draft;
-        public boolean prerelease;
-        public String created_at;
-        public String published_at;
-    }
 
     @JsonProperty @Transient @TyrionCachedList
     public Model_BootLoader main_boot_loader(){
@@ -198,6 +189,11 @@ public class Model_TypeOfBoard extends Model {
 
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    @Transient @JsonIgnore // Pouze Pro synchronizaci s GitHubem - musí obsahovat i smazané
+    public List<Model_BootLoader> boot_loaders_get_for_github_include_removed(){
+        return Model_BootLoader.find.where().eq("type_of_board.id",id).findList();
+    }
 
     @JsonIgnore @TyrionCachedList
     public Model_Producer get_producer(){

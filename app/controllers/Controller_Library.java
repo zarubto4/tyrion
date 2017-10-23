@@ -796,7 +796,7 @@ public class Controller_Library extends Controller {
                 Model_FileRecord.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , library.get_path() ,  version_object);
                 version_object.update();
 
-                version_object.compile_program_thread();
+                version_object.compile_program_thread(version_old.c_compilation.firmware_version_lib);
 
                 // Admin to schválil bez dalších keců
                 if((help.reason == null || help.reason.length() < 4) ){

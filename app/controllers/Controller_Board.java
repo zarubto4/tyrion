@@ -1158,9 +1158,18 @@ public class Controller_Board extends Controller {
     public Result typeOfBoard_getAll() {
         try {
 
-            // TODO dá se cachovat
+            // TODO dá se cachovat - Pozor stejný seznam se nachází i Job_CheckCompilationLibraries
             // Získání seznamu
-            List<Model_TypeOfBoard> typeOfBoards = Model_TypeOfBoard.find.where().eq("removed_by_user", false).orderBy("UPPER(name) ASC").findList();
+            // To co jsem tady napsal jen filtruje tahá ručně desky z cache pojendom - možná by šlo někde mít statické pole ID třeba
+            // přímo v objektu Model_TypeOfBoard DB ignor a to používat a aktualizovat a statické pole nechat na samotné jave, aby si ji uchavaala v pam,ěti
+            List<Model_TypeOfBoard> typeOfBoards_not_cached = Model_TypeOfBoard.find.where().eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+
+            List<Model_TypeOfBoard> typeOfBoards = new ArrayList<>();
+
+            for(Model_TypeOfBoard typeOfBoard_not_cached : typeOfBoards_not_cached ) {
+                typeOfBoards.add(Model_TypeOfBoard.get_byId(typeOfBoard_not_cached.id));
+            }
+
 
             // Vrácení seznamu
             return  GlobalResult.result_ok(Json.toJson(typeOfBoards));

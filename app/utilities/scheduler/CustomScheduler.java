@@ -174,6 +174,14 @@ public class CustomScheduler {
                             .build()
                 );
 
+                // 8) Update libraries and bootloaders from github
+                terminal_logger.debug("start: Scheduling new Job - Library and Bootloader Synchronization from GitHub");
+                scheduler.scheduleJob( newJob(Job_CheckCompilationLibraries.class).withIdentity( JobKey.jobKey("synchronize_libraries_with_github") ).build(),
+                        newTrigger().withIdentity(every_minute_key).startNow()
+                                .withSchedule(cronSchedule("30 0/1 * * * ?"))// Spuštění každou minutu a to v 30 vteřině každé minuty
+                                .build()
+                );
+
                 try {
 
                     List<Model_HomerInstanceRecord> records = Model_HomerInstanceRecord.find.where().gt("planed_when", new Date()).findList();

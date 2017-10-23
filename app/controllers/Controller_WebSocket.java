@@ -129,7 +129,7 @@ public class Controller_WebSocket extends Controller {
 
             if(homer_server_selected== null){
                 // Připojím se
-                terminal_logger.warn("homer_cloud_server_connection:: Incoming connection: Server:  "+ connection_identificator + "is not registred in database!!!!!");
+                terminal_logger.warn("homer_cloud_server_connection:: Incoming connection: Server:  "+ connection_identificator + " is not registred in database!!!!!");
                 return WebSocket.reject(forbidden("Server side error - already connected"));
             }
 

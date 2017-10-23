@@ -239,7 +239,7 @@ public class Model_VersionObject extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient  public void compile_program_thread() {
+    @JsonIgnore @Transient  public void compile_program_thread(String library_compilation_version) {
 
         Model_VersionObject version = this;
 
