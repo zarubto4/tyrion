@@ -84,7 +84,7 @@ public class Job_UpdateServer implements Job {
 
                 switch (server) {
                     case "tyrion": {
-                        // TODO execute script
+
                         terminal_logger.trace("update_server_thread: Updating Tyrion");
 
                         WSResponse wsResponse = ws.url(jobData.getString("url"))
