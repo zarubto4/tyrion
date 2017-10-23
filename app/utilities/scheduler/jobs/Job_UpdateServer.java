@@ -15,7 +15,9 @@ import utilities.logger.Class_Logger;
 import utilities.update_server.GitHub_Asset;
 import utilities.update_server.GitHub_Release;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
@@ -112,7 +114,7 @@ public class Job_UpdateServer implements Job {
 
                         terminal_logger.debug("update_server_thread: Status for file download is {}", response.getStatus());
 
-                        Path path = Paths.get("tyrion.zip");
+                        Path path = Paths.get("dist.zip");
                         InputStream inputStream = response.getBodyAsStream();
                         OutputStream outputStream = Files.newOutputStream(path);
 
@@ -128,6 +130,14 @@ public class Job_UpdateServer implements Job {
                         terminal_logger.trace("update_server_thread: File downloaded, run update script");
 
                         Process proc = Runtime.getRuntime().exec("./update_server.sh " + jobData.getString("version"));
+
+                        BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+                        String line;
+                        while ((line = in.readLine()) != null) {
+                            terminal_logger.info("update_server_thread: Process output: {}", line);
+                        }
+
+                        terminal_logger.debug("update_server_thread: Process exit code: {}", proc.waitFor());
 
                         break;
                     }

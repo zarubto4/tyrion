@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # Go one level below current instance
 cd ..
@@ -14,11 +14,20 @@ unzip "dist.zip"
 # Stop previous instance
 kill $(cat ./$CURRENTSERVER/RUNNING_PID)
 
+# Remove previous pid
+rm -rf ./$CURRENTSERVER/RUNNING_PID
+
 # Add execute permission
 chmod +x ./$NEWSERVER/bin/tyrion
 
-# Run instance of new verion
-./$NEWSERVER/bin/tyrion 2>&1 >> ./$NEWSERVER/server.log &
+# Go into new server
+cd $NEWSERVER
 
-# Replace values in files and remove old server
-cat $CURRENTSERVER > ./OLDSERVER && cat $NEWSERVER > ./CURRENTSERVER && rm -rf ./$OLDSERVER
+# Run instance of new verion
+./bin/tyrion 2>&1 >> ./server.log &
+
+# Go one level below current instance
+cd ..
+
+# Replace values in files and remove old server and dist.zip
+cat $CURRENTSERVER > ./OLDSERVER && cat $NEWSERVER > ./CURRENTSERVER && rm -rf ./$OLDSERVER && em -rf ./dist.zip
