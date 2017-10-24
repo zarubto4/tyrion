@@ -143,11 +143,8 @@ public class Job_CheckCompilationLibraries implements Job {
 
                     Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(typeOfBoard_from_DB_not_cached.id);
 
-                    System.out.println("Kontroluji Model_TypeOfBoard:: " + typeOfBoard.name);
-
                     // Pokud není pole, vytvořím ho
                     if(typeOfBoard.cache_library_list == null) {
-                        System.out.println("emty list");
                         typeOfBoard.cache_library_list = new ArrayList<>();
                     }
 

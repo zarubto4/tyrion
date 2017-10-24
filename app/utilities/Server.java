@@ -137,10 +137,11 @@ public class Server {
 
                 server_mode = Enum_Tyrion_Server_mode.developer;
 
+                String mac_address = getMacAddress();
                 // Speciální podmínka, která nastaví podklady sice v Developerském modu - ale s URL adresami tak, aby byly v síti přístupné
-                if( getMacAddress().equals("60:f8:1d:bc:71:42")|| // Mac Mini Server Wifi
-                    getMacAddress().equals("ac:87:a3:18:a1:1c")|| // Mac Mini Server Ethernet
-                    getMacAddress().equals("2c:4d:54:4f:68:6e")){ // Linux Lexa
+                if( mac_address.equals("60:f8:1d:bc:71:42")|| // Mac Mini Server Wifi
+                    mac_address.equals("ac:87:a3:18:a1:1c")|| // Mac Mini Server Ethernet
+                    mac_address.equals("2c:4d:54:4f:68:6e")){ // Linux Lexa
 
                     tyrion_serverAddress    = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
                     tyrion_webSocketAddress = "ws://"   + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
@@ -443,7 +444,6 @@ public class Server {
                 sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? ":" : ""));
             }
 
-            System.out.println("MAc Address:: " +  sb.toString() );
             return sb.toString();
 
         }catch (Exception e){
