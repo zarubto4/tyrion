@@ -143,6 +143,9 @@ public class Server {
                     mac_address.equals("ac:87:a3:18:a1:1c")|| // Mac Mini Server Ethernet
                     mac_address.equals("2c:4d:54:4f:68:6e")){ // Linux Lexa
 
+                    terminal_logger.warn("setServerValues:: Special Settings for DEV Office servers.");
+                    terminal_logger.warn("setServerValues:: Local URL: " +  IP_Founder.getLocalHostLANAddress().getHostAddress());
+
                     tyrion_serverAddress    = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
                     tyrion_webSocketAddress = "ws://"   + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
                     becki_mainUrl           = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress();
