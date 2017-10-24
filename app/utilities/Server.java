@@ -21,6 +21,8 @@ import utilities.notifications.NotificationHandler;
 import utilities.scheduler.CustomScheduler;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -135,6 +137,17 @@ public class Server {
 
                 server_mode = Enum_Tyrion_Server_mode.developer;
 
+                // Speciální podmínka, která nastaví podklady sice v Developerském modu - ale s URL adresami tak, aby byly v síti přístupné
+                if( getMacAddress().equals("60:f8:1d:bc:71:42")|| // Mac Mini Server Wifi
+                    getMacAddress().equals("ac:87:a3:18:a1:1c")|| // Mac Mini Server Ethernet
+                    getMacAddress().equals("2c:4d:54:4f:68:6e")){ // Linux Lexa
+
+                    tyrion_serverAddress    = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
+                    tyrion_webSocketAddress = "ws://"   + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
+                    becki_mainUrl           = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress();
+                }
+
+
                 // Nastavení adresy, kde běží Grid APP
                 grid_app_main_url       = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":8888";
 
@@ -165,11 +178,12 @@ public class Server {
         }
 
         // Nastavení pro Tyrion Adresy
-        tyrion_serverAddress = "http://" + Configuration.root().getString("Server." + server_mode.name());
-        tyrion_webSocketAddress = "ws://" + Configuration.root().getString("Server." + server_mode.name());
+
+        if(tyrion_serverAddress == null)    tyrion_serverAddress    = "http://" + Configuration.root().getString("Server." + server_mode.name());
+        if(tyrion_webSocketAddress == null) tyrion_webSocketAddress = "ws://" + Configuration.root().getString("Server." + server_mode.name());
 
         // Nastavení pro Becki Adresy
-        becki_mainUrl           = "http://" + Configuration.root().getString("Becki." + server_mode.name() + ".mainUrl");
+        if(becki_mainUrl == null) becki_mainUrl           = "http://" + Configuration.root().getString("Becki." + server_mode.name() + ".mainUrl");
 
         // Swagger URL Redirect - Actual Rest Api docu
         link_api_swagger        = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
@@ -415,6 +429,27 @@ public class Server {
             terminal_logger.internalServerError(e);
         }
 
+    }
+
+    public static String getMacAddress(){
+        try {
+
+            InetAddress ip = InetAddress.getLocalHost();
+            NetworkInterface network = NetworkInterface.getByInetAddress(ip);
+            byte[] mac = network.getHardwareAddress();
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < mac.length; i++) {
+                sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? ":" : ""));
+            }
+
+            System.out.println("MAc Address:: " +  sb.toString() );
+            return sb.toString();
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return "Not-know";
+        }
     }
 
     /**
