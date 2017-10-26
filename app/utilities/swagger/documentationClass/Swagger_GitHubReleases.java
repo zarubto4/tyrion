@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 
 @ApiModel(description = "Json Model - Private for GitHub Release",
@@ -27,6 +28,6 @@ public class Swagger_GitHubReleases {
     public String published_at;
 
     @Valid
-    public List<Swagger_GitHubReleases_Asset> assets;
+    public List<Swagger_GitHubReleases_Asset> assets = new ArrayList<>();
 
 }

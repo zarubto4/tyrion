@@ -110,7 +110,7 @@ public class Model_ServerError extends Model {
         pretty.append("\n");
 
         pretty.append("Repetitions: ");
-        pretty.append(this.tyrion);
+        pretty.append(this.repetition);
         pretty.append("\n");
 
         pretty.append("Stack trace:\n");

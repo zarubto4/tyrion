@@ -1,5 +1,7 @@
 package controllers;
 
+import com.avaje.ebean.Ebean;
+import com.avaje.ebean.Expr;
 import io.swagger.annotations.*;
 import models.Model_Person;
 import models.Model_Permission;
@@ -540,25 +542,29 @@ public class Controller_Permission extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Invite_Person> form = Form.form(Swagger_Invite_Person.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.result_invalidBody(form.errorsAsJson());
-            }
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Invite_Person help = form.get();
+
+            if (help.persons_mail.isEmpty()) {
+                return GlobalResult.result_badRequest("Fill in some emails.");
+            }
 
             // Kontrola objektu
             Model_SecurityRole securityRole = Model_SecurityRole.find.byId(role_id);
-            if (securityRole == null) return GlobalResult.result_notFound("SecurityRole role_id not found");
+            if (securityRole == null) return GlobalResult.result_notFound("SecurityRole not found");
 
             // Kontrola oprávnění
             if (!securityRole.update_permission()) return GlobalResult.result_forbidden();
 
-            // Získání seznamu uživatelů, kteří jsou registrovaní(listIn) a kteří ne(listOut)
-            List<Model_Person> listIn = new ArrayList<>();
-            List<String> toRemove = new ArrayList<>();
+            terminal_logger.debug("role_add_person: Finding {} person(s)", help.persons_mail.size());
 
+            List<Model_Person> persons = Model_Person.find.where().notExists(Ebean.find(Model_SecurityRole.class).where(Expr.in("persons.mail", help.persons_mail))).in("mail", help.persons_mail).findList();
 
-            List<Model_Person> persons = Model_Person.find.where().in("mail", help.persons_mail).ne("roles.id", securityRole.id).findList();
+            if (persons.isEmpty()) {
+                return GlobalResult.result_badRequest("No person to add was found for given email values.");
+            }
 
+            terminal_logger.debug("role_add_person: Adding {} person(s)", persons.size());
             securityRole.persons.addAll(persons);
             securityRole.update();
 
