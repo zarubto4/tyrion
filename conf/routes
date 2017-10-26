@@ -533,6 +533,7 @@ DELETE    /admin/bug/:bug_id                                            @control
 PUT       /admin/bug/report/:bug_id                                     @controllers.Controller_Admin.serverError_report(bug_id)
 
 POST      /admin/update                                                 @controllers.Controller_Admin.server_scheduleUpdate()
+GET       /admin/update                                                 @controllers.Controller_Admin.server_getUpdates()
 
 # Not used
 GET       /public/*file                                                 @controllers.Assets.versioned(path="/public", file: Asset)

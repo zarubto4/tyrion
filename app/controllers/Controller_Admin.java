@@ -1,8 +1,14 @@
 package controllers;
 
 import com.avaje.ebean.Ebean;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.*;
+import play.Application;
 import play.Configuration;
 import play.data.Form;
 import play.libs.Json;
@@ -12,21 +18,29 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.Server;
 import utilities.logger.Class_Logger;
 import utilities.logger.Server_Logger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.scheduler.CustomScheduler;
+import utilities.swagger.documentationClass.Swagger_GitHubReleases;
+import utilities.swagger.documentationClass.Swagger_GitHubReleases_List;
 import utilities.swagger.documentationClass.Swagger_ServerUpdate;
 import utilities.swagger.outboundClass.Swagger_Report_Admin_Dashboard;
+import utilities.swagger.outboundClass.Swagger_ServerUpdates;
 import utilities.update_server.GitHub_Asset;
 import utilities.update_server.GitHub_Release;
 import utilities.update_server.ServerUpdate;
 
 import javax.inject.Inject;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured_API.class)
@@ -38,6 +52,9 @@ public class Controller_Admin extends Controller {
 
     @Inject
     WSClient ws;
+
+    @Inject
+    Application application;
 
     @ApiOperation(value = "get Report_Admin_Dashboard",
             tags = {"Admin-Report"},
@@ -243,6 +260,17 @@ public class Controller_Admin extends Controller {
             protocols = "https",
             code = 200
     )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ServerUpdate",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
@@ -253,6 +281,11 @@ public class Controller_Admin extends Controller {
     public Result server_scheduleUpdate() {
         try {
 
+            // Must be built by 'activator dist' for this feature to work correctly
+            if (application.isDev()) {
+                return GlobalResult.result_badRequest("This feature is available only in production mode.");
+            }
+
             // Zpracování Json
             final Form<Swagger_ServerUpdate> form = Form.form(Swagger_ServerUpdate.class).bindFromRequest();
             if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
@@ -260,13 +293,13 @@ public class Controller_Admin extends Controller {
 
             terminal_logger.debug("server_scheduleUpdate: requesting releases");
 
-            WSResponse releases = ws.url(Configuration.root().getString("GitHub.releasesUrl") + help.version)
+            WSResponse releases = ws.url(Configuration.root().getString("GitHub.releasesUrl") + "/tags/" + help.version)
                     .setHeader("Authorization", "token " + Configuration.root().getString("GitHub.apiKey"))
                     .get()
                     .get(10000);
 
             final Form<GitHub_Release> release_form = Form.form(GitHub_Release.class).bind(releases.asJson());
-            if (form.hasErrors()) {return GlobalResult.result_externalServerError(form.errorsAsJson());}
+            if (release_form.hasErrors()) {return GlobalResult.result_externalServerError(release_form.errorsAsJson());}
             GitHub_Release release = release_form.get();
 
             terminal_logger.debug("server_scheduleUpdate: got release");
@@ -289,6 +322,126 @@ public class Controller_Admin extends Controller {
             }
 
             return GlobalResult.result_ok();
+        } catch (Exception e) {
+            return Server_Logger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get server updates",
+            tags = {"Admin"},
+            notes = "",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",                 response = Swagger_ServerUpdates.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result server_getUpdates() {
+        try {
+
+            terminal_logger.debug("server_getUpdates: requesting releases");
+
+            WSResponse response = ws.url(Configuration.root().getString("GitHub.releasesUrl"))
+                    .setHeader("Authorization", "token " + Configuration.root().getString("GitHub.apiKey"))
+                    .setHeader("Accept", "application/json")
+                    .get()
+                    .get(10000);
+
+            int status = response.getStatus();
+
+            terminal_logger.debug("server_getUpdates: got response, status {}", status);
+
+            if (status != 200) {
+                String body = response.getBody();
+                terminal_logger.internalServerError(new Exception("Error response from GitHub. Status was " + status + " and body: " + body));
+                return GlobalResult.result_custom(status, body);
+            }
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            List<Swagger_GitHubReleases> releases;
+
+            try {
+                releases = mapper.readValue(response.asJson().toString(), new TypeReference<List<Swagger_GitHubReleases>>(){});
+            } catch (Exception e) {
+                terminal_logger.internalServerError(e);
+                return GlobalResult.result_externalServerError("Cannot parse response from GitHub");
+            }
+
+            terminal_logger.debug("server_getUpdates: number of releases {}", releases.size());
+
+            Swagger_ServerUpdates updates = new Swagger_ServerUpdates();
+
+            releases.stream().filter(release -> {
+
+                if (release.draft || release.prerelease || release.assets.stream().noneMatch(asset -> asset.name.equals("dist.zip"))) {
+                    terminal_logger.debug("server_getUpdates: release is only draft or has not dist package");
+                    return false;
+                }
+
+                terminal_logger.debug("server_getUpdates: filtering depending on mode, release: {}", Json.toJson(release));
+
+                switch (Server.server_mode) {
+                    case developer: {
+                        Pattern pattern = Pattern.compile("^(v)(\\d+\\.)(\\d+\\.)(\\d+)(-(.)*)?$");
+                        Matcher matcher = pattern.matcher(release.tag_name);
+                        if (!matcher.find()) {
+                            terminal_logger.debug("server_getUpdates: release is invalid for developer mode");
+                            return false;
+                        }
+                        break;
+                    }
+                    case stage: {
+                        Pattern pattern = Pattern.compile("^(v)(\\d+\\.)(\\d+\\.)(\\d+)(-beta(.)*)?$");
+                        Matcher matcher = pattern.matcher(release.tag_name);
+                        if (!matcher.find()) {
+                            terminal_logger.debug("server_getUpdates: release is invalid for stage mode");
+                            return false;
+                        }
+                        break;
+                    }
+                    case production: {
+                        Pattern pattern = Pattern.compile("^(v)(\\d+\\.)(\\d+\\.)(\\d+)$");
+                        Matcher matcher = pattern.matcher(release.tag_name);
+                        if (!matcher.find()) {
+                            terminal_logger.debug("server_getUpdates: release is invalid for production mode");
+                            return false;
+                        }
+                        break;
+                    }
+                    default: // empty
+                }
+
+                String version = release.tag_name.replace("v", "");
+                String current = Server.server_version;
+
+                if (version.contains("-")) {
+                    version = version.substring(0, version.indexOf("-"));
+                }
+
+                String[] versionNumbers = version.split("\\.");
+                String[] currentNumbers = current.split("\\.");
+
+                // If version is higher than current
+                for (int i = 0; i < versionNumbers.length; i++) {
+                    if (new Long(versionNumbers[i]) < new Long(currentNumbers[i])) {
+                        terminal_logger.debug("server_getUpdates: release is older than current running version");
+                        return false;
+                    }
+                }
+
+                return true;
+
+            }).forEach(release -> updates.releases.add(release));
+
+            terminal_logger.debug("server_getUpdates: got releases");
+
+            return GlobalResult.result_ok(Json.toJson(updates));
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }

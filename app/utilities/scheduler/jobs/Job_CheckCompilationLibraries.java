@@ -10,6 +10,7 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import play.Configuration;
 import play.api.Play;
 import play.data.Form;
 import play.i18n.Lang;
@@ -83,8 +84,6 @@ public class Job_CheckCompilationLibraries implements Job {
         public void run() {
             try {
 
-                //System.out.println("Spouštím vlákno kontroly:: ");
-
                 WSClient ws = Play.current().injector().instanceOf(WSClient.class);
 
                 terminal_logger.trace("check_version_thread: concurrent thread started on {}", new Date());
@@ -102,22 +101,16 @@ public class Job_CheckCompilationLibraries implements Job {
                  * doplní si údaje a dále distribuje.
                  */
                 WSResponse ws_response_get_all_releases = ws.url("https://api.github.com/repos/ByzanceIoT/hw-libs/releases")
-                        .setHeader("Authorization", "token 4d89903b259510a1257a67d396bd4aaf10cdde6a")
+                        .setHeader("Authorization", "token " + Configuration.root().getString("GitHub.apiKey"))
                         .setHeader("Accept", "application/json")
-                        .setHeader("Content-Type", "application/json")
-                        .setFollowRedirects(false)
                         .get()
                         .get(10000);
 
-                //System.out.println("Vytvořil jsem request na seznam releasů");
-
                 if(ws_response_get_all_releases.getStatus() != 200){
                     terminal_logger.error("Permission Error in Job_CheckCompilationLibraries. Please Check it");
-                    terminal_logger.error("Error Message from Githubb: {}", ws_response_get_all_releases.getBody());
+                    terminal_logger.error("Error Message from Github: {}", ws_response_get_all_releases.getBody());
                     return;
                 }
-
-
 
                 // Získám seznam všech objektů z Githubu
                 ObjectNode request_list = Json.newObject();
@@ -125,15 +118,11 @@ public class Job_CheckCompilationLibraries implements Job {
 
                 final Form<Swagger_GitHubReleases_List> form = Form.form(Swagger_GitHubReleases_List.class).bind(request_list);
                 if (form.hasErrors()) {
-                    terminal_logger.internalServerError( new Exception("check_version_thread: Incoming Json from GitHub has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString()));
-                    return;
+                    throw  new Exception("check_version_thread: Incoming Json from GitHub has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
                 }
 
-
-                // Seznam Release z GitHubu v urpavené podobě
+                // Seznam Release z GitHubu v upravené podobě
                 List<Swagger_GitHubReleases> releases = form.get().list;
-
-                //System.out.println("Počet releasů dohromady je:: " + releases.size());
 
                 List<Model_TypeOfBoard> typeOfBoards_from_DB_not_cached = Model_TypeOfBoard.find.where().eq("removed_by_user", false).select("id").findList();
                 // Do každého typu desky - který má Tyrion v DB doplní podporované knihovny

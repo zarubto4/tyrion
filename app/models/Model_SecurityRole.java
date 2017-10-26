@@ -33,7 +33,7 @@ public class Model_SecurityRole extends Model {
         @ApiModelProperty(required = true) public String name;
         @ApiModelProperty(required = true) public String description;
 
-    @JsonIgnore @ManyToMany(mappedBy = "roles",fetch = FetchType.LAZY)  @JoinTable(name = "person_roles") public List<Model_Person> persons = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "roles",fetch = FetchType.LAZY) public List<Model_Person> persons = new ArrayList<>();
     @ManyToMany() @OrderBy(value ="permission_key") public List<Model_Permission> person_permissions = new ArrayList<>();
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/

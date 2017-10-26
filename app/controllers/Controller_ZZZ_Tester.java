@@ -26,6 +26,8 @@ import web_socket.message_objects.tyrion_with_becki.WS_Message_Online_Change_sta
 import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.mongodb.client.model.Sorts.descending;
 
@@ -40,23 +42,43 @@ public class Controller_ZZZ_Tester extends Controller {
      public Result test1(){
          try {
 
-             // String id = request().body().asJson().get("id").asText();
-             // if (id == null) return badRequest("id is null");
+             JsonNode json = request().body().asJson();
 
-            // Model_Product product = Model_Product.get_byId(id);
-             // Job_SpendingCredit.spend(product);
+             String tag = json.get("tag").asText();
 
-             Model_GridWidget gridWidget = new Model_GridWidget();
-             gridWidget.id                  = UUID.fromString("00000000-0000-0000-0000-000000000001");
-             gridWidget.description         = "Default Widget";
-             gridWidget.name                = "Default Widget";
-             gridWidget.type_of_widget      = null;
-             gridWidget.publish_type        = Enum_Publishing_type.default_main_program;
-             gridWidget.save();
+             System.out.println(tag);
 
-             return ok("Credit was spent");
+             switch (json.get("mode").asText()) {
+                 case "developer": {
+                     Pattern pattern = Pattern.compile("^(v)(\\d+\\.)(\\d+\\.)(\\d+)(-(.)*)?$");
+                     Matcher matcher = pattern.matcher(tag);
+                     if (!matcher.find()) {
+                         return GlobalResult.result_badRequest("Invalid version");
+                     }
+                     break;
+                 }
+                 case "stage": {
+                     Pattern pattern = Pattern.compile("^(v)(\\d+\\.)(\\d+\\.)(\\d+)(-beta(.)*)?$");
+                     Matcher matcher = pattern.matcher(tag);
+                     if (!matcher.find()) {
+                         return GlobalResult.result_badRequest("Invalid version");
+                     }
+                     break;
+                 }
+                 case "production": {
+                     Pattern pattern = Pattern.compile("^(v)(\\d+\\.)(\\d+\\.)(\\d+)$");
+                     Matcher matcher = pattern.matcher(tag);
+                     if (!matcher.find()) {
+                         return GlobalResult.result_badRequest("Invalid version");
+                     }
+                     break;
+                 }
+                 default: // empty
+             }
 
-         }catch (Exception e){
+             return ok("Valid version for mode");
+
+         } catch (Exception e) {
              terminal_logger.internalServerError(e);
              return badRequest();
          }
@@ -89,7 +111,7 @@ public class Controller_ZZZ_Tester extends Controller {
 
             return GlobalResult.result_ok(json);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
             return badRequest();
         }

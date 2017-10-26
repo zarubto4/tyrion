@@ -1,6 +1,5 @@
 package controllers;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.*;
 import models.*;
@@ -263,23 +262,22 @@ public class Controller_Person extends Controller {
         try{
 
             final Form<Swagger_Person_Password_RecoveryEmail> form = Form.form(Swagger_Person_Password_RecoveryEmail.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Person_Password_RecoveryEmail help = form.get();
 
             String link;
 
             Model_Person person = Model_Person.find.where().eq("mail", help.mail).findUnique();
-            if(person == null) return GlobalResult.result_ok();
+            if (person == null) return GlobalResult.result_ok();
 
-            Model_PasswordRecoveryToken previousToken = Model_PasswordRecoveryToken.find.where().eq("person_id",person.id).findUnique();
+            Model_PasswordRecoveryToken previousToken = Model_PasswordRecoveryToken.find.where().eq("person_id", person.id).findUnique();
 
-            if(!(previousToken == null)) if(((new Date()).getTime() - previousToken.time_of_creation.getTime()) > 900000)
-            {
+            if (previousToken != null && new Date().getTime() - previousToken.time_of_creation.getTime() > 900000) {
                 previousToken.delete();
                 previousToken = null;
             }
 
-            if(previousToken == null){
+            if (previousToken == null){
 
                 Model_PasswordRecoveryToken passwordRecoveryToken = new Model_PasswordRecoveryToken();
                 passwordRecoveryToken.setPasswordRecoveryToken();
@@ -287,16 +285,16 @@ public class Controller_Person extends Controller {
                 passwordRecoveryToken.time_of_creation = new Date();
                 passwordRecoveryToken.save();
 
-                link =Server.becki_mainUrl + "/" +  Server.becki_passwordReset + "/" + passwordRecoveryToken.password_recovery_token;
+                link = Server.becki_mainUrl + "/" +  Server.becki_passwordReset + "/" + passwordRecoveryToken.password_recovery_token;
             }else {
-                link =Server.becki_mainUrl + "/" +  Server.becki_passwordReset + "/" + previousToken.password_recovery_token;
+                link = Server.becki_mainUrl + "/" +  Server.becki_passwordReset + "/" + previousToken.password_recovery_token;
             }
             try {
 
                 new Email()
                         .text("Password reset was requested for this email.")
                         .divider()
-                        .link("Reset your password",link)
+                        .link("Reset your password", link)
                         .send(help.mail,"Password Reset");
 
             } catch (Exception e) {
@@ -336,7 +334,7 @@ public class Controller_Person extends Controller {
         try{
 
             final Form<Swagger_Person_Password_New> form = Form.form(Swagger_Person_Password_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Person_Password_New help = form.get();
 
             Model_Person person = Model_Person.find.where().eq("mail", help.mail).findUnique();
@@ -349,12 +347,12 @@ public class Controller_Person extends Controller {
                 return GlobalResult.result_badRequest("Password change was unsuccessful");
             }
 
-            if(((new java.util.Date()).getTime() - passwordRecoveryToken.time_of_creation.getTime()) > 86400000 ){
+            if (new Date().getTime() - passwordRecoveryToken.time_of_creation.getTime() > 86400000) {
                 passwordRecoveryToken.delete();
                 return GlobalResult.result_badRequest("You must recover your password in 24 hours.");
             }
 
-            for ( Model_FloatingPersonToken floatingPersonToken : Model_FloatingPersonToken.find.where().eq("person.id",  Controller_Security.get_person().id).findList()) {
+            for (Model_FloatingPersonToken floatingPersonToken : Model_FloatingPersonToken.find.where().eq("person.id",  Controller_Security.get_person_id()).findList()) {
                 floatingPersonToken.delete();
             }
 
@@ -363,12 +361,12 @@ public class Controller_Person extends Controller {
 
             person.refresh();
             person.setSha(help.password);
+            person.mailValidated = true;
             person.update();
 
             passwordRecoveryToken.delete();
 
             try {
-
                 new Email()
                         .text("Password was changed for your account.")
                         .send(help.mail,"Password Reset");
@@ -908,15 +906,13 @@ public class Controller_Person extends Controller {
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Person_ChangeProperty help = form.get();
 
-            if(Model_ChangePropertyToken.find.where().eq("person.id", Controller_Security.get_person().id).findUnique() != null)
+            if(Model_ChangePropertyToken.find.where().eq("person.id", Controller_Security.get_person_id()).findUnique() != null)
                 return GlobalResult.result_badRequest("You can request only one change at this time.");
 
             // Proměnné mailu
             String subject;
             String text;
             String link;
-
-
 
             switch (help.property){
 
@@ -1057,7 +1053,7 @@ public class Controller_Person extends Controller {
             }
 
             // Odhlášení uživatele všude
-            for ( Model_FloatingPersonToken floatingPersonToken : Model_FloatingPersonToken.find.where().eq("person.id",  Controller_Security.get_person().id).findList()) {
+            for ( Model_FloatingPersonToken floatingPersonToken : Model_FloatingPersonToken.find.where().eq("person.id",  Controller_Security.get_person_id()).findList()) {
                 floatingPersonToken.delete();
             }
 
