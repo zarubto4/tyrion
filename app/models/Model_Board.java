@@ -87,8 +87,8 @@ public class Model_Board extends Model {
                  public boolean web_view;                    // Podpora webového rozhraní informací o hardwaru ze strany byzance - neuživatelský webserver
                  public Integer web_port;
 
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                public Model_TypeOfBoard type_of_board;     // Typ desky - (Cachováno)
-    @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)   public Model_Project project;         // Projekt, pod který Hardware spadá
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_TypeOfBoard type_of_board;     // Typ desky - (Cachováno)
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_Project project;         // Projekt, pod který Hardware spadá
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_VersionObject actual_c_program_version;               // OVěřená verze firmwaru, která na hardwaru běží (Cachováno)
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_VersionObject actual_backup_c_program_version;        // Ověřený statický backup - nebo aktuálně zazálohovaný firmware (Cachováno)
@@ -199,7 +199,7 @@ public class Model_Board extends Model {
 
             List<Swagger_C_Program_Update_plan_Short_Detail> plans = new ArrayList<>();
 
-            for (Model_CProgramUpdatePlan plan : Model_CProgramUpdatePlan.find.where().eq("board.id", this.id).order().desc("date_of_create").findList()) {
+            for (Model_CProgramUpdatePlan plan : Model_CProgramUpdatePlan.find.where().eq("board.id", this.id).order().desc("actualization_procedure.date_of_create").findList()) {
                 try {
                     plans.add(plan.get_short_version_for_board());
 
@@ -2086,6 +2086,7 @@ public class Model_Board extends Model {
         if(project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Board.class, project_id(), this.id))).start();
 
         //Database Update
+        System.out.println("Dělám super Update");
         super.update();
     }
 

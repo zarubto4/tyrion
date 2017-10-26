@@ -136,8 +136,9 @@ public class Server {
             case "developer" : {
 
                 server_mode = Enum_Tyrion_Server_mode.developer;
+                String mac_address = getMacAddress().toLowerCase();
+                terminal_logger.warn("Local MacAddress: " + mac_address);
 
-                String mac_address = getMacAddress();
                 // Speciální podmínka, která nastaví podklady sice v Developerském modu - ale s URL adresami tak, aby byly v síti přístupné
                 if( mac_address.equals("60:f8:1d:bc:71:42")|| // Mac Mini Server Wifi
                     mac_address.equals("ac:87:a3:18:a1:1c")|| // Mac Mini Server Ethernet

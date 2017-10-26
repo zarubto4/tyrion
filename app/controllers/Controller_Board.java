@@ -2887,10 +2887,16 @@ public class Controller_Board extends Controller {
             if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Board_Registration_To_Project help = form.get();
 
+            System.out.println("HW o chci registrovat:: '" + help.hash_for_adding +"'");
 
             terminal_logger.debug("CompilationControler:: Registrace nového zařízení ");
-            // Kotrola objektu
-            Model_Board board = Model_Board.find.where().eq("hash_for_adding", help.hash_for_adding).findUnique();
+
+            // Kotrola objektu - NAjdu v Databázi
+            Model_Board board_not_cache = Model_Board.find.where().eq("hash_for_adding", help.hash_for_adding).select("id").findUnique();
+            if(board_not_cache == null ) return GlobalResult.result_notFound("Board board_id not found");
+
+            //Vytáhnu přes Cache Manager
+            Model_Board board = Model_Board.get_byId(board_not_cache.id);
             if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
             if(!board.first_connect_permission()) return GlobalResult.result_badRequest("Board is already registered");
 
@@ -2905,7 +2911,7 @@ public class Controller_Board extends Controller {
             }
 
             // Cyklus pro přidávání // Nejdříve kontroluji
-            if(help.group_ids != null || !help.group_ids.isEmpty()) {
+            if(help.group_ids != null && !help.group_ids.isEmpty()) {
                 for (String board_group_id : help.group_ids) {
                     Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
                     if (group == null) return GlobalResult.result_notFound("BoardGroup ID not found");
@@ -2913,27 +2919,25 @@ public class Controller_Board extends Controller {
                 }
             }
 
-
-
-            // uprava desky
-            board.project = project;
             board.date_of_user_registration = new Date();
+            board.cache_value_project_id = project.id;
+            board.project = project;
+            board.update();
+
+            // ZDe Vracím
+            if(help.group_ids != null && !help.group_ids.isEmpty()) return GlobalResult.result_ok(Json.toJson(board));
+
+
+
             project.cache_list_board_ids.add(board.id);
 
-            board.update();
-            project.update();
-
-
-            if( Model_Board.cache_status.containsKey(board.id)){
-                Model_Board.cache_status.remove(board.id);
-            }
 
             // Pouze získání aktuálního stavu do Cache paměti ID listu
             if(board.cache_hardware_groups_id == null){
                 board.get_hardware_groups();
             }
 
-            if(help.group_ids != null || !help.group_ids.isEmpty()) {
+            if(help.group_ids != null && !help.group_ids.isEmpty()) {
                 // Cyklus pro přidávání // Nejdříve kontroluji
                 for (String board_group_id : help.group_ids) {
 
@@ -2942,6 +2946,7 @@ public class Controller_Board extends Controller {
 
                         Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
                         // už nemusím kontrolovat
+                        if(group == null) continue;
 
                         // Nějaké mazání
                         board.cache_hardware_groups_id.add(board_group_id);
