@@ -263,6 +263,10 @@ public class Utilities_Demo_data_Controller extends Controller {
             if (Model_HomerServer.find.where().eq("personal_server_name", "Alfa").findUnique() != null)
                 return GlobalResult.result_badRequest("Its Already done!");
 
+            if(Model_HomerServer.find.where().eq("server_type",Enum_Cloud_HomerServer_type.main_server ).findRowCount() > 0){
+                return GlobalResult.result_badRequest("Its Already done!");
+            }
+
             // Nasstavím Homer servery
             Model_HomerServer cloud_server_1 = new Model_HomerServer();
             cloud_server_1.personal_server_name = "Alfa";
@@ -332,8 +336,9 @@ public class Utilities_Demo_data_Controller extends Controller {
         try {
 
             // Ochranná zarážka proti znovu vytvoření
-            if (Model_Tariff.find.where().eq("name", "Alfa account").findUnique() != null)
+            if (Model_Tariff.find.where().eq("name", "Alfa account").findUnique() != null) {
                 return GlobalResult.result_badRequest("Its Already done!");
+            }
 
             // Alfa
             Model_Tariff tariff_1 = new Model_Tariff();

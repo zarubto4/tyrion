@@ -85,8 +85,6 @@ public class Model_BootLoader extends Model {
 
             String sas = blob.generateSharedAccessSignature(policy, null);
 
-            System.out.println("sas " + sas);
-            System.out.println("path blobu " + blob.getUri().getPath());
 
 
             String total_link = blob.getUri().toString() + "?" + sas;

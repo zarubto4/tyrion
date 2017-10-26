@@ -259,20 +259,21 @@ public class Model_BProgram extends Model {
             Model_HomerInstance instance = new Model_HomerInstance();
             instance.instance_type = Enum_Homer_instance_type.INDIVIDUAL;
             instance.cloud_homer_server = Model_HomerServer.get_destination_server();
+            instance.project_id = project.id;
             instance.save();
             this.instance = instance;
 
         }
 
-        super.save();
+        project.cache_list_b_program_ids.add(id);
 
-        if(project != null){
-            project.cache_list_b_program_ids.add(id);
-        }
+        super.save();
 
         cache.put(id, this);
 
-        if(project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
+        if(project_id() != null) {
+            new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
+        }
     }
 
     @JsonIgnore @Override public void update() {
@@ -281,18 +282,26 @@ public class Model_BProgram extends Model {
 
         super.update();
 
-        if(project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BProgram.class, project_id(), id))).start();
+        if(project_id() != null) {
+            new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BProgram.class, project_id(), id))).start();
+        }
     }
 
     @JsonIgnore @Override public void delete() {
 
         terminal_logger.debug("update :: Delete object Id: {} ", this.id);
 
-        instance().remove_from_cloud();
-        instance().removed_by_user = true;
-        instance().update();
+        try {
+
+            instance().remove_from_cloud();
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+        }
 
         this.removed_by_user = true;
+        instance().update();
+
 
         if(project_id() != null){
             Model_Project.get_byId(project_id()).cache_list_b_program_ids.remove(id);
@@ -302,7 +311,9 @@ public class Model_BProgram extends Model {
 
         super.update();
 
-        if(project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
+        if(project_id() != null) {
+            new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BProgram.class, project_id(), project_id()))).start();
+        }
 
     }
 

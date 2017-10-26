@@ -267,9 +267,7 @@ public class Model_Board extends Model {
         if(online_state() == Enum_Online_status.online) return null;
         try {
 
-
             if(cache_value_latest_online != null){
-                System.out.println("Hodnota je cachovaná ");
                 return cache_value_latest_online;
             }
 

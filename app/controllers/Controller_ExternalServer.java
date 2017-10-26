@@ -647,10 +647,6 @@ public class Controller_ExternalServer extends Controller {
 
             String sas = blob.generateSharedAccessSignature(policy, null);
 
-            System.out.println("sas " + sas);
-            System.out.println("path blobu " +  blob.getUri().getPath());
-
-
             String total_link = blob.getUri().toString() + "?" + sas;
 
             terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
@@ -774,10 +770,6 @@ public class Controller_ExternalServer extends Controller {
 
 
             String sas = blob.generateSharedAccessSignature(policy, null);
-
-            System.out.println("sas " + sas);
-            System.out.println("path blobu " +  blob.getUri().getPath());
-
 
             String total_link = blob.getUri().toString() + "?" + sas;
 

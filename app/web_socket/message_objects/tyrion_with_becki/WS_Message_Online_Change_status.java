@@ -61,6 +61,9 @@ public class WS_Message_Online_Change_status {
     @JsonIgnore @Transient
     public static void synchronize_online_state_with_becki_project_objects(Class<?> cls, String id, boolean online_state, String project_id){
 
+        if(project_id == null){
+            throw  new NullPointerException("Project ID is null - Not allow! Something is wrong - Message for Developers and Test Procedures");
+        }
         new Thread( () -> {
             try {
 

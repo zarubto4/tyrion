@@ -747,6 +747,16 @@ public class Model_Project extends Model {
 
     public static List<String> get_project_becki_person_ids_list(String project_id){
 
+        if(token_cache == null){
+            terminal_logger.error("get_project_becki_person_ids_list:: token_cache is null");
+            return new ArrayList<>();
+        }
+
+        if(project_id == null){
+            terminal_logger.error("get_project_becki_person_ids_list:: project_id is null");
+            return new ArrayList<>();
+        }
+
         IdsList idlist = token_cache.get(project_id);
 
         if(idlist == null){
