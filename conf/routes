@@ -297,9 +297,9 @@ DELETE    /compilation_server/:server_id                                @control
 ################################################################################################################################################################################
 
 #Actualization Procedure
-GET       /actualization_procedure/filter/:page_number                  @controllers.Controller_Actualization.get_Actualization_Procedures_by_filter(page_number: Int)
+PUT       /actualization_procedure/filter/:page_number                  @controllers.Controller_Actualization.get_Actualization_Procedures_by_filter(page_number: Int)
 GET       /actualization_procedure/object/:actualization_procedure_id   @controllers.Controller_Actualization.get_Actualization_Procedure(actualization_procedure_id)
-GET       /actualization_procedure/make                                 @controllers.Controller_Actualization.make_actualization_procedure()
+POST      /actualization_procedure/make                                 @controllers.Controller_Actualization.make_actualization_procedure()
 
 ### COMPILATION & LIBRARIES ############ COMPILATION & LIBRARIES ############### COMPILATION & LIBRARIES ################ COMPILATION & LIBRARIES ##############################
 ################################################################################################################################################################################

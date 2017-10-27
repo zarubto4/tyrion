@@ -148,6 +148,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 478, message = "External server side Error",response = Result_ExternalServerSideError.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result compile_c_program_code() {
         try {
 
@@ -2833,10 +2834,16 @@ public class Controller_Board extends Controller {
     public Result board_check(String hash_for_adding) {
         try {
 
-            // Kotrola objektu
-            Model_Board board = Model_Board.find.where().eq("hash_for_adding", hash_for_adding).findUnique();
-
             Swagger_Board_Registration_Status status = new Swagger_Board_Registration_Status();
+
+            // Kotrola objektu
+            Model_Board board_not_cached = Model_Board.find.where().eq("hash_for_adding", hash_for_adding).select("id").findUnique();
+            if(board_not_cached == null) {
+                status.status = Enum_Board_registration_status.NOT_EXIST;
+                return GlobalResult.result_ok(Json.toJson(status));
+            }
+
+            Model_Board board = Model_Board.get_byId(board_not_cached.id);
 
             if(board == null ){
                 status.status = Enum_Board_registration_status.NOT_EXIST;
@@ -2879,6 +2886,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result board_connectProject(){
         try {
 
@@ -2912,25 +2920,22 @@ public class Controller_Board extends Controller {
 
             // Cyklus pro přidávání // Nejdříve kontroluji
             if(help.group_ids != null && !help.group_ids.isEmpty()) {
+
+
+                System.out.println("Skupina není Empty'");
+
                 for (String board_group_id : help.group_ids) {
                     Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
                     if (group == null) return GlobalResult.result_notFound("BoardGroup ID not found");
                     if (!group.update_permission()) return GlobalResult.result_forbidden();
                 }
+
+
             }
 
             board.date_of_user_registration = new Date();
             board.cache_value_project_id = project.id;
             board.project = project;
-            board.update();
-
-            // ZDe Vracím
-            if(help.group_ids != null && !help.group_ids.isEmpty()) return GlobalResult.result_ok(Json.toJson(board));
-
-
-
-            project.cache_list_board_ids.add(board.id);
-
 
             // Pouze získání aktuálního stavu do Cache paměti ID listu
             if(board.cache_hardware_groups_id == null){
@@ -2946,16 +2951,21 @@ public class Controller_Board extends Controller {
 
                         Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
                         // už nemusím kontrolovat
-                        if(group == null) continue;
+                        if(group == null) {
+                            return GlobalResult.result_notFound("BoardGroup ID not found");
+                        }
 
                         // Nějaké mazání
                         board.cache_hardware_groups_id.add(board_group_id);
                         board.board_groups.add(group);
                         group.cache_group_size += 1;
-                        board.update();
                     }
                 }
             }
+
+            System.out.println("Jsem na konci a budu ukládat");
+            project.cache_list_board_ids.add(board.id);
+            board.update();
 
             // vrácení objektu
             return GlobalResult.result_ok(Json.toJson(board));

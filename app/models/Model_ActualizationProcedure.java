@@ -35,7 +35,7 @@ public class Model_ActualizationProcedure extends Model {
 
                                                     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerInstanceRecord homer_instance_record; // For updates under instance snapshot records
 
-    @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL) @OrderBy("date_of_create DESC") public List<Model_CProgramUpdatePlan> updates = new ArrayList<>();
+    @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL) @OrderBy("date_of_finish DESC") public List<Model_CProgramUpdatePlan> updates = new ArrayList<>();
 
     @ApiModelProperty(required = true, value = "UNIX time in ms")  public Date date_of_create;
     @ApiModelProperty(required = true, value = "UNIX time in ms")  public Date date_of_planing;
@@ -43,10 +43,7 @@ public class Model_ActualizationProcedure extends Model {
 
     @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public Enum_Update_type_of_update type_of_update;
 
-
-    // Temporary variable for reasons of incompleteness when calling save() and also for acceleration and for reduce database load.
-    // - is only added when the new Model_ActualizationProcedure object is created and it does not yet contain any references that project_id could find throw database search
-    @JsonIgnore @Transient public String project_id;
+    @JsonIgnore public String project_id;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -83,10 +80,24 @@ public class Model_ActualizationProcedure extends Model {
             detail.date_of_planing = date_of_planing;
             detail.date_of_finish = date_of_finish;
 
+            if (type_of_update == Enum_Update_type_of_update.MANUALLY_RELEASE_MANAGER) {
+                detail.firmware_type = updates.get(0).firmware_type;
+                if( detail.firmware_type == Enum_Firmware_type.FIRMWARE || detail.firmware_type == Enum_Firmware_type.BACKUP) {
+                    detail.program = updates.get(0).c_program_detail();
+                }
+
+                if(detail.firmware_type == Enum_Firmware_type.BOOTLOADER) {
+                    detail.bootloader = updates.get(0).bootloader_detail();
+                }
+            }
+
+
             detail.state = state();
             detail.type_of_update = type_of_update;
             detail.procedure_size_complete = procedure_size_complete();
             detail.procedure_size_all = procedure_size_all();
+
+            detail.edit_permission = edit_permission();
 
             return detail;
         }catch (Exception e){
@@ -554,11 +565,15 @@ public class Model_ActualizationProcedure extends Model {
 
     @JsonIgnore @Transient   public static final String read_permission_docs   = "User can read Actualization_procedure if they have ID of Actualization_procedure";
 
-    @JsonIgnore @Transient   public boolean read_permission()      {
-        return Model_Project.find.where().eq("b_programs.instance.instance_history.procedures.id",id ).findUnique().read_permission() || Controller_Security.get_person().has_permission("Actualization_procedure_read");
+    @JsonIgnore @Transient  public boolean read_permission()      {
+        return Model_Project.get_byId(project_id).read_permission() || Controller_Security.get_person().has_permission("Actualization_procedure_read");
     }
 
-    public enum permissions{Actualization_procedure_read}
+    @JsonProperty @Transient  public boolean edit_permission()      {
+        return Model_Project.get_byId(project_id).update_permission() || Controller_Security.get_person().has_permission("Actualization_procedure_edit");
+    }
+
+    public enum permissions{Actualization_procedure_read, Actualization_procedure_edit}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

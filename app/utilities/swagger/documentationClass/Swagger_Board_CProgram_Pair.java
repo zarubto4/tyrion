@@ -15,4 +15,7 @@ public class Swagger_Board_CProgram_Pair {
     @Constraints.Required @ApiModelProperty(required = true)
     public String c_program_version_id;
 
+    //@Constraints.Required @ApiModelProperty(required = true)
+    //public String c_program_id;
+
 }

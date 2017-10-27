@@ -78,10 +78,17 @@ public class Controller_Blocko extends Controller{
     public Result bProgram_create(@ApiParam(value = "project_id String path", required = true) String project_id){
         try{
 
+
+
             // Zpracování Json
             final Form<Swagger_B_Program_New> form = Form.form(Swagger_B_Program_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_B_Program_New help = form.get();
+
+
+            if(help.name.length() > 2) {
+                return GlobalResult.result_badRequest("Tato zpráva by se měla zobrazit jako důvod toho že to nefunguje. ");
+            }
 
             // Kontrola objektu
             Model_Project project = Model_Project.get_byId(project_id);
@@ -541,6 +548,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result bProgramVersion_update(@ApiParam(value = "version_id String path", required = true) String version_id){
         try{
 
@@ -648,6 +656,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result bProgramVersion_deploy(@ApiParam(value = "version_id String path", required = true) String version_id){
         try {
 
@@ -734,6 +743,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result instance_edit(@ApiParam(value = "instance_id String path", required = true) String instance_id){
         try{
 
@@ -1319,6 +1329,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 401, message = "Unauthorized request",  response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
     })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result typeOfBlock_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
         try {
 
@@ -1852,6 +1863,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 401, message = "Unauthorized request",  response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
     })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result blockoBlock_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
         try {
 
@@ -2090,7 +2102,6 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured_API.class)
     public Result blockoBlock_public_response() {
 
         try {
@@ -2515,6 +2526,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result blockoDisapprove(){
         try {
 
@@ -2567,6 +2579,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result blockoApproval() {
 
         try {

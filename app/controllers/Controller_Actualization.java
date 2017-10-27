@@ -6,6 +6,7 @@ import io.swagger.annotations.*;
 import models.*;
 import play.data.Form;
 import play.libs.Json;
+import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -20,10 +21,12 @@ import utilities.response.response_objects.Result_Forbidden;
 import utilities.response.response_objects.Result_Unauthorized;
 import utilities.swagger.documentationClass.Swagger_ActualizationProcedure_Filter;
 import utilities.swagger.documentationClass.Swagger_ActualizationProcedure_Make;
+import utilities.swagger.documentationClass.Swagger_ActualizationProcedure_Make_TypeOfBoard;
 import utilities.swagger.outboundClass.Filter_List.Swagger_ActualizationProcedure_List;
 import utilities.swagger.outboundClass.Swagger_ActualizationProcedure_Short_Detail;
 
 import java.util.Date;
+import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured_API.class)
@@ -92,6 +95,7 @@ public class Controller_Actualization extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result get_Actualization_Procedures_by_filter(int page_number){
         try {
 
@@ -106,15 +110,16 @@ public class Controller_Actualization extends Controller {
 
 
 
-            if(help.project_ids.isEmpty()) {
+            if(!help.project_ids.isEmpty()) {
 
                 for(String project_id : help.project_ids) {
-                    Model_Project project = Model_Project.find.byId(project_id);
+                    Model_Project project = Model_Project.get_byId(project_id);
                     if (project == null) return GlobalResult.result_notFound("Model_Project project_id not found");
-                    if (!project.read_permission()) return GlobalResult.result_forbidden("Model_Project project_id not found");
+                    if (!project.read_permission()) return GlobalResult.result_forbidden();
                 }
 
-                query.where().in("updates.board.project.id", help.project_ids);
+                query.where().in("project_id", help.project_ids);
+
             }else {
                 return GlobalResult.result_notFound("Project project_id not included");
             }
@@ -169,7 +174,7 @@ public class Controller_Actualization extends Controller {
             notes = "make procedure",
             produces = "application/json",
             protocols = "https",
-            code = 200
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -183,12 +188,13 @@ public class Controller_Actualization extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_ActualizationProcedure_Short_Detail.class),
+            @ApiResponse(code = 201, message = "Ok Created",              response = Swagger_ActualizationProcedure_Short_Detail.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result make_actualization_procedure() {
         try {
 
@@ -196,6 +202,7 @@ public class Controller_Actualization extends Controller {
             final Form<Swagger_ActualizationProcedure_Make> form = Form.form(Swagger_ActualizationProcedure_Make.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_ActualizationProcedure_Make help = form.get();
+
 
 
             // Kontrola Firmware Type
@@ -210,7 +217,7 @@ public class Controller_Actualization extends Controller {
             // Kontrola
 
             // Only for controling
-            if(help.time != null) {
+            if(help.time != null && help.time != 0L) {
                 try {
                     Date date_of_planing = new Date(help.time);
                     if (date_of_planing.getTime() < (new Date().getTime() - 5000)) {
@@ -221,10 +228,9 @@ public class Controller_Actualization extends Controller {
                 }
             }
 
-            Model_VersionObject c_program_version = Model_VersionObject.get_byId(help.c_program_version_id);
-            if(c_program_version == null)  return GlobalResult.result_notFound("firmware_type not found");
-            if(c_program_version.c_program == null) return GlobalResult.result_notFound("Version is not c Program");
-            if(!c_program_version.c_program.read_permission()) return GlobalResult.result_forbidden();
+            Model_BoardGroup group = Model_BoardGroup.get_byId(help.hardware_group_id);
+            if(group == null)  return GlobalResult.result_notFound("Model_BoardGroup group_id recognized");
+            if(!group.read_permission()) return GlobalResult.result_forbidden();
 
 
             Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
@@ -232,39 +238,69 @@ public class Controller_Actualization extends Controller {
             procedure.date_of_create = new Date();
             procedure.project_id = project.id;
 
-            if(help.time != null) {
+            if (help.time != null && help.time != 0L) {
                 // Planed
                 procedure.date_of_planing = new Date(help.time);
-            }else {
+            } else {
                 // Immediately
                 procedure.date_of_planing = new Date();
             }
 
 
-            for(String group_id : help.hardware_group_ids ) {
+            for(Swagger_ActualizationProcedure_Make_TypeOfBoard type_of_boards_settings : help.type_of_boards_settings) {
 
-                Model_BoardGroup group = Model_BoardGroup.get_byId(group_id);
-                if(group == null)  return GlobalResult.result_notFound("Model_BoardGroup group_id recognized");
-                if(!group.read_permission()) return GlobalResult.result_forbidden();
+                Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(type_of_boards_settings.type_of_board_id);
+                if(typeOfBoard == null) return GlobalResult.result_notFound("firmware_type not found");
 
-                for(String hardware_id : group.get_hardware_id_list()) {
 
-                    Model_Board board = Model_Board.get_byId(hardware_id);
-                    if(board == null) return GlobalResult.result_notFound("hardware_id not found");
-                    if(!board.update_permission()) return GlobalResult.result_forbidden();
-                    if(!board.project_id().equals( project.id)) return GlobalResult.result_notFound("hardware_id is not from same project");
+                Model_VersionObject c_program_version = null;
+
+                if(firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP) {
+                    c_program_version = Model_VersionObject.get_byId(type_of_boards_settings.c_program_version_id);
+                    if (c_program_version == null) return GlobalResult.result_notFound("firmware_type not found");
+                    if (c_program_version.c_program == null) return GlobalResult.result_notFound("Version is not c Program");
+                    if (!c_program_version.c_program.read_permission()) return GlobalResult.result_forbidden();
+                    if (!c_program_version.c_program.get_type_of_board().id.equals(typeOfBoard.id)) GlobalResult.result_badRequest("Invalid type of CProgram for TypeOfBoard");
+                }
+
+                Model_BootLoader bootLoader = null;
+
+                if(firmware_type == Enum_Firmware_type.BOOTLOADER) {
+                    bootLoader = Model_BootLoader.get_byId(type_of_boards_settings.bootloader_id);
+                    if (bootLoader == null) return GlobalResult.result_notFound("firmware_type  found");
+                    if (!bootLoader.read_permission()) return GlobalResult.result_forbidden();
+                    if (!bootLoader.type_of_board.id.equals(typeOfBoard.id)) GlobalResult.result_badRequest("Invalid type of Bootloader for TypeOfBoard");
+                }
+
+                List<Model_Board> boards = Model_Board.find.where().eq("board_groups.id", group.id).eq("type_of_board.id", typeOfBoard.id).select("id").findList();
+
+                for (Model_Board hardware_not_cached : boards) {
+                    Model_Board board = Model_Board.get_byId(hardware_not_cached.id);
+                    if (board == null) return GlobalResult.result_notFound("hardware_id not found");
+                    if (!board.update_permission()) return GlobalResult.result_forbidden();
+                    if (!board.project_id().equals(project.id))
+                        return GlobalResult.result_notFound("hardware_id is not from same project");
 
                     Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
                     plan.board = board;
                     plan.firmware_type = firmware_type;
-                    plan.c_program_version_for_update = c_program_version;
+
+                    if(firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP) {
+                        plan.c_program_version_for_update = c_program_version;
+                    }
+
+                    if(firmware_type == Enum_Firmware_type.BOOTLOADER){
+                        plan.bootloader = bootLoader;
+                    }
+
                     procedure.updates.add(plan);
                 }
+
             }
 
             procedure.save();
 
-            return GlobalResult.result_ok(Json.toJson(procedure.short_detail()));
+            return GlobalResult.result_created(Json.toJson(procedure.short_detail()));
         } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }

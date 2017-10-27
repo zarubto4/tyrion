@@ -9,6 +9,7 @@ import org.ehcache.Cache;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_HardwareGroup_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_TypeOfBoard_ShortDetail;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ public class Model_BoardGroup extends Model {
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @TyrionCachedList public Integer cache_group_size = null;
+    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_type_of_boards = new ArrayList<>();
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -53,6 +55,19 @@ public class Model_BoardGroup extends Model {
 
         return cache_group_size;
     }
+
+    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfBoard_ShortDetail> type_of_boards_short_detail(){
+        List<Swagger_TypeOfBoard_ShortDetail> type_of_boards_short_detail = new ArrayList<>();
+        for(Model_TypeOfBoard typeOfBoard : get_type_of_boards_include_group()){
+            Swagger_TypeOfBoard_ShortDetail typeOfBoard_shortDetail = new Swagger_TypeOfBoard_ShortDetail();
+            typeOfBoard_shortDetail.id = typeOfBoard.id;
+            typeOfBoard_shortDetail.name = typeOfBoard.name;
+            type_of_boards_short_detail.add(typeOfBoard_shortDetail);
+        }
+        return type_of_boards_short_detail;
+    }
+
+
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
@@ -67,6 +82,36 @@ public class Model_BoardGroup extends Model {
         return short_detail;
 
     }
+
+    @JsonIgnore @TyrionCachedList
+    public List<Model_TypeOfBoard> get_type_of_boards_include_group(){
+        try {
+
+            // Cache
+            if(cache_type_of_boards.isEmpty()){
+
+                List<Model_TypeOfBoard> typeOfBoards = Model_TypeOfBoard.find.where().eq("boards.board_groups.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+
+                // Získání seznamu
+                for (Model_TypeOfBoard typeOfBoard : typeOfBoards) {
+                    cache_type_of_boards.add(typeOfBoard.id);
+                }
+            }
+
+            List<Model_TypeOfBoard> typeOfBoards = new ArrayList<>();
+
+            for(String type_of_board_id : cache_type_of_boards){
+                typeOfBoards.add(Model_TypeOfBoard.get_byId(type_of_board_id));
+            }
+
+            return typeOfBoards;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return new ArrayList<Model_TypeOfBoard>();
+        }
+    }
+
 
     // TODO teoreticky cachovat?
     @JsonIgnore @Transient public List<String> get_hardware_id_list(){

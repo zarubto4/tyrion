@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.microsoft.azure.storage.StorageException;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -491,6 +492,16 @@ public class Model_VersionObject extends Model {
                 return new Result_Ok();
 
              //   return (ObjectNode) Json.toJson(new Swagger_Compilation_Ok());
+
+            }catch (StorageException e){
+
+                terminal_logger.internalServerError(new Exception("Azure Save StorageException" + compilation.build_url, e));
+                c_compilation.status = Enum_Compile_status.compilation_server_error;
+                c_compilation.update();
+
+                Result_ExternalServerSideError result = new Result_ExternalServerSideError();
+                result.message = "Server side Error!";
+                return result;
 
             }catch (ConnectException e){
 

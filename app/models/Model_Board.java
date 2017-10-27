@@ -2084,7 +2084,6 @@ public class Model_Board extends Model {
         if(project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Board.class, project_id(), this.id))).start();
 
         //Database Update
-        System.out.println("Dělám super Update");
         super.update();
     }
 

@@ -40,8 +40,10 @@ public class Update_echo_handler {
         update_messages.add(message);
 
         if(send_update_messages_thread.getState() == Thread.State.TIMED_WAITING) {
-            terminal_logger.trace("NotificationHandler:: addToQueue: thread is sleeping, waiting for interruption!");
+            terminal_logger.debug("NotificationHandler:: addToQueue: thread is sleeping, waiting for interruption!");
             send_update_messages_thread.interrupt();
+        }else {
+            terminal_logger.debug("NotificationHandler:: addToQueue: thread not sleeping");
         }
     }
 

@@ -12,9 +12,7 @@ import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.logger.Class_Logger;
 import utilities.notifications.helps_objects.Notification_Text;
-import utilities.swagger.outboundClass.Swagger_C_Program_Update_plan_Short_Detail;
-import utilities.swagger.outboundClass.Swagger_UpdatePlan_brief_for_homer;
-import utilities.swagger.outboundClass.Swagger_UpdatePlan_brief_for_homer_BinaryComponent;
+import utilities.swagger.outboundClass.*;
 import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
 
 import javax.persistence.*;
@@ -78,11 +76,11 @@ public class Model_CProgramUpdatePlan extends Model {
 
     @ApiModelProperty(required = false, value = "Is visible only if update is for Firmware or Backup")
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient
-    public C_Program_Update_program c_program_detail(){
+    public Swagger_C_Program_Update_program c_program_detail(){
 
         if(c_program_version_for_update == null ) return null;
 
-            C_Program_Update_program c_program_detail   = new  C_Program_Update_program();
+            Swagger_C_Program_Update_program c_program_detail   = new  Swagger_C_Program_Update_program();
             c_program_detail.c_program_id               = c_program_version_for_update.c_program.id;
             c_program_detail.c_program_program_name     = c_program_version_for_update.c_program.name;
             c_program_detail.c_program_version_id       = c_program_version_for_update.id;
@@ -93,11 +91,11 @@ public class Model_CProgramUpdatePlan extends Model {
 
     @ApiModelProperty(required = false, value = "Is visible only if update is for Bootloader")
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient
-    public Bootloader_Update_program bootloader_detail(){
+    public Swagger_Bootloader_Update_program bootloader_detail(){
 
         if(bootloader == null ) return null;
 
-        Bootloader_Update_program bootloader_update_detail  = new  Bootloader_Update_program();
+        Swagger_Bootloader_Update_program bootloader_update_detail  = new Swagger_Bootloader_Update_program();
         bootloader_update_detail.bootloader_id                      = bootloader.id.toString();
         bootloader_update_detail.bootloader_name                    = bootloader.name;
         bootloader_update_detail.version_identificator   = bootloader.version_identificator;
@@ -106,9 +104,9 @@ public class Model_CProgramUpdatePlan extends Model {
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true) @Transient
-    public Board_detail board_detail(){
+    public Swagger_Board_Update_Short_Detail board_detail(){
 
-        Board_detail board_detail = new Board_detail();
+        Swagger_Board_Update_Short_Detail board_detail = new Swagger_Board_Update_Short_Detail();
         board_detail.board_id = board.id;
         board_detail.online_state = board.online_state();
         board_detail.name = board.name;
@@ -256,28 +254,6 @@ public class Model_CProgramUpdatePlan extends Model {
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
-
-    class C_Program_Update_program{
-        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String c_program_id;
-        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String c_program_version_id;
-        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String c_program_program_name;
-        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String c_program_version_name;
-    }
-
-    class Bootloader_Update_program{
-        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String bootloader_id;
-        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String bootloader_name;
-        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String version_identificator;
-    }
-
-    class Board_detail{
-        @ApiModelProperty(required = true, readOnly = true) public String board_id;
-        @ApiModelProperty(required = true, readOnly = true) public Enum_Online_status online_state;
-        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String description;
-        @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String name;
-        @ApiModelProperty(required = true, readOnly = true) public String type_of_board_id;
-        @ApiModelProperty(required = true, readOnly = true) public String type_of_board_name;
-    }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 

@@ -81,7 +81,7 @@ public class Model_CCompilation extends Model {
         terminal_logger.debug("update :: Update object Id: {}",  this.id);
 
         // Call notification about model update
-        new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_VersionObject.class, version_object.c_program.project_id(), version_object.id))).start();
+        new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_CProgram.class, version_object.c_program.project_id(), version_object.c_program.id))).start();
 
         super.update();
         this.version_object.cache_refresh();

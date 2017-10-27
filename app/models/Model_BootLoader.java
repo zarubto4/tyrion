@@ -49,11 +49,11 @@ public class Model_BootLoader extends Model {
 
     @JsonIgnore @OneToMany(mappedBy="bootloader",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
 
-    @JsonIgnore  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)                public Model_TypeOfBoard type_of_board;
+    @JsonIgnore  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)                public Model_TypeOfBoard type_of_board; // TODO Cachovat - a opravit kde je nevhodná návaznost
                                                            @JsonIgnore  @OneToOne()                public Model_TypeOfBoard main_type_of_board;
 
-    @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader")                                         public List<Model_Board> boards  = new ArrayList<>();
-                 @OneToOne(mappedBy = "boot_loader", cascade = CascadeType.ALL)                    public Model_FileRecord file;
+    @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader", fetch = FetchType.LAZY)                 public List<Model_Board> boards  = new ArrayList<>();
+                 @OneToOne(mappedBy = "boot_loader", cascade = CascadeType.ALL)                    public Model_FileRecord file; // TODO Cachovat - a opravit kde je nevhodná návaznost
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -62,7 +62,7 @@ public class Model_BootLoader extends Model {
     @Transient @JsonProperty public String  file_path(){
         try {
 
-            if (file == null) {
+            if (file == null) { // TODO Cachovat - a opravit kde je nevhodná návaznost
                 return null;
             }
 

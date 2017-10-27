@@ -16,7 +16,7 @@ public class Swagger_ActualizationProcedure_Filter {
 
     @ApiModelProperty(required = true,  readOnly = true) public List<String> project_ids = new ArrayList<>();
 
-    @ApiModelProperty(required = false, readOnly = true)  public List<Enum_Update_group_procedure_state> states  = new ArrayList<>();
+    @ApiModelProperty(required = false, readOnly = true)  public List<Enum_Update_group_procedure_state> update_states  = new ArrayList<>();
     @ApiModelProperty(required = false, readOnly = true)  public List<Enum_Update_type_of_update> type_of_updates  = new ArrayList<>();
 
 }

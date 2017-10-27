@@ -26,7 +26,7 @@ public class Swagger_Library_Short_Detail {
     public String description;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Swagger_Type_of_board_Short_Detail> type_of_boards = new ArrayList<>();
+    public List<Swagger_TypeOfBoard_ShortDetail> type_of_boards = new ArrayList<>();
 
     @ApiModelProperty(required = true, readOnly = true)
     public boolean update_permission;
@@ -42,7 +42,7 @@ public class Swagger_Library_Short_Detail {
     @JsonIgnore @Transient
     public void add_board_type(Model_TypeOfBoard typeOfBoard){
 
-        Swagger_Type_of_board_Short_Detail pair = new Swagger_Type_of_board_Short_Detail();
+        Swagger_TypeOfBoard_ShortDetail pair = new Swagger_TypeOfBoard_ShortDetail();
         pair.name = typeOfBoard.name;
         pair.id   = typeOfBoard.id;
 
@@ -53,11 +53,5 @@ public class Swagger_Library_Short_Detail {
 
  // Help class ---------------------------------------------------------------------------------------------------------
 
-    @ApiModel(description = "Json Model for Library Short Detail",
-              value = "Type_of_board_Short_Detail")
-    public class Swagger_Type_of_board_Short_Detail{
-        public String id;
-        public String name;
-    }
 }
 

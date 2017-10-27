@@ -17,6 +17,7 @@ import utilities.financial.goPay.GoPay_PaymentCheck;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.grid_support.utils.IP_Founder;
 import utilities.logger.Class_Logger;
+import utilities.models_update_echo.Update_echo_handler;
 import utilities.notifications.NotificationHandler;
 import utilities.scheduler.CustomScheduler;
 
@@ -412,12 +413,14 @@ public class Server {
 
     public static void startThreads() {
 
-        //1. Nastartovat notifikační vlákno
+        //1. Nastartovat notifikačních vláken
         NotificationHandler.startNotificationThread();
 
         GoPay_PaymentCheck.startPaymentCheckThread();
 
         Fakturoid_InvoiceCheck.startInvoiceCheckThread();
+
+        Update_echo_handler.startEchoUpdateThread();
     }
 
     public static void startSchedulingProcedures() {
@@ -436,7 +439,7 @@ public class Server {
 
     }
 
-    public static String getMacAddress(){
+    private static String getMacAddress(){
         try {
 
             InetAddress ip = InetAddress.getLocalHost();
