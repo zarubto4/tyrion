@@ -3,9 +3,7 @@ package controllers;
 import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.*;
 import play.Application;
@@ -20,14 +18,13 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
+import utilities.logger.YouTrack;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
 import utilities.scheduler.CustomScheduler;
-import utilities.swagger.documentationClass.Swagger_GitHubReleases;
-import utilities.swagger.documentationClass.Swagger_GitHubReleases_List;
-import utilities.swagger.documentationClass.Swagger_ServerUpdate;
+import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Swagger_Report_Admin_Dashboard;
 import utilities.swagger.outboundClass.Swagger_ServerUpdates;
 import utilities.update_server.GitHub_Asset;
@@ -35,12 +32,10 @@ import utilities.update_server.GitHub_Release;
 import utilities.update_server.ServerUpdate;
 
 import javax.inject.Inject;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured_API.class)
@@ -95,7 +90,7 @@ public class Controller_Admin extends Controller {
             return GlobalResult.result_ok(Json.toJson(report));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -120,7 +115,7 @@ public class Controller_Admin extends Controller {
             return GlobalResult.result_ok(Json.toJson(errors));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -147,7 +142,7 @@ public class Controller_Admin extends Controller {
             return GlobalResult.result_ok(Json.toJson(error));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -162,7 +157,7 @@ public class Controller_Admin extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Bug_Report",
+                            dataType = "utilities.swagger.documentationClass.Swagger_Bug_Description",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -178,17 +173,57 @@ public class Controller_Admin extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result serverError_report(@ApiParam(value = "bug_id String path", required = true) String bug_id) {
-
-        String description = "";
-
+    public Result serverError_addDescription(@ApiParam(value = "bug_id String path", required = true) String bug_id) {
         try {
-            description = request().body().asJson().get("description").asText();
-        } catch (Exception e) {
-            System.err.println("[error] - TYRION - Server_Logger:: loggy_report_bug_to_youtrack: Error while reporting bug to YouTrack");
-        }
 
-        return Server_Logger.upload_to_youtrack(bug_id, description);
+            final Form<Swagger_Bug_Description> form = Form.form(Swagger_Bug_Description.class).bindFromRequest();
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_Bug_Description help = form.get();
+
+            Model_ServerError error = Model_ServerError.find.byId(bug_id);
+            if (error == null) return GlobalResult.result_notFound("Bug not found");
+
+            if (!error.edit_permission()) return GlobalResult.result_forbidden();
+
+            error.description = help.description;
+            error.update();
+
+            return GlobalResult.result_ok(Json.toJson(error));
+        } catch (Exception e) {
+            return ServerLogger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "Bug report",
+            tags = { "Admin-Report"},
+            notes = "Reports bug to YouTrack.",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_ServerError.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result serverError_report(@ApiParam(value = "bug_id String path", required = true) String bug_id) {
+        try {
+
+            Model_ServerError error = Model_ServerError.find.byId(bug_id);
+            if (error == null) return GlobalResult.result_notFound("Bug not found");
+
+            if (!error.edit_permission()) return GlobalResult.result_forbidden();
+
+            error.youtrack_url = YouTrack.report(error);
+            error.update();
+
+            return GlobalResult.result_ok(Json.toJson(error));
+        } catch (Exception e) {
+            return ServerLogger.result_internalServerError(e, request());
+        }
     }
 
     @ApiOperation(value = "Bug delete",
@@ -217,7 +252,7 @@ public class Controller_Admin extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -246,7 +281,7 @@ public class Controller_Admin extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -323,7 +358,7 @@ public class Controller_Admin extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -429,7 +464,9 @@ public class Controller_Admin extends Controller {
 
                 // If version is higher than current
                 for (int i = 0; i < versionNumbers.length; i++) {
-                    if (new Long(versionNumbers[i]) < new Long(currentNumbers[i])) {
+                    Long versionNumber = new Long(versionNumbers[i]);
+                    Long currentNumber = new Long(currentNumbers[i]);
+                    if (versionNumber < currentNumber || (i == versionNumbers.length - 1 && versionNumber.equals(currentNumber))) {
                         terminal_logger.debug("server_getUpdates: release is older than current running version");
                         return false;
                     }
@@ -443,7 +480,7 @@ public class Controller_Admin extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(updates));
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 }

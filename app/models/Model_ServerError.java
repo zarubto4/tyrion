@@ -152,11 +152,11 @@ public class Model_ServerError extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore                                      public boolean read_permission()  {  return Controller_Security.get_person().has_permission("LoggyError_read");}
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("LoggyError_edit");}
-    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().has_permission("LoggyError_delete");}
+    @JsonIgnore                                      public boolean read_permission()  {  return Controller_Security.get_person().has_permission("LoggerError_read");}
+    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("LoggerError_edit");}
+    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().has_permission("LoggerError_delete");}
 
-    public enum permissions{LoggyError_read, LoggyError_edit, LoggyError_delete,}
+    public enum permissions{LoggerError_read, LoggerError_edit, LoggerError_delete,}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

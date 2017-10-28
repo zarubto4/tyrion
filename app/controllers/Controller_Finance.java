@@ -2,10 +2,8 @@ package controllers;
 
 import com.avaje.ebean.Ebean;
 import io.swagger.annotations.*;
-import io.swagger.annotations.Extension;
 import models.*;
 import play.data.Form;
-import play.i18n.Lang;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
@@ -13,11 +11,10 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.enums.*;
 import utilities.financial.extensions.configurations.*;
-import utilities.financial.extensions.extensions.*;
 import utilities.financial.fakturoid.Fakturoid;
 import utilities.financial.goPay.GoPay;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
@@ -25,12 +22,8 @@ import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Swagger_Product_Active;
 import utilities.swagger.outboundClass.Swagger_Invoice_FullDetails;
 import utilities.swagger.outboundClass.Swagger_ProductExtension_Type;
-import web_socket.message_objects.homer_instance_with_tyrion.verification.WS_Message_Grid_token_verification;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -106,7 +99,7 @@ public class Controller_Finance extends Controller {
 
             return GlobalResult.result_created(Json.toJson(tariff));
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -172,7 +165,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(tariff));
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -208,7 +201,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -244,7 +237,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -276,7 +269,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -308,7 +301,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -340,7 +333,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -371,7 +364,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(tariff));
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -443,7 +436,7 @@ public class Controller_Finance extends Controller {
         }catch (IllegalStateException e){
             return GlobalResult.result_badRequest("Illegal or not Valid Config");
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -473,7 +466,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(extension));
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -495,7 +488,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(Model_ProductExtension.get_byUser(Controller_Security.get_person_id())));
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -547,7 +540,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(extension));
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -583,7 +576,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(extension));
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -619,7 +612,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(extension));
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -652,7 +645,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -737,7 +730,7 @@ public class Controller_Finance extends Controller {
         }catch (IllegalStateException e){
             return GlobalResult.result_badRequest("Illegal or not Valid Config");
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -814,7 +807,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(extension));
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -843,7 +836,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -875,7 +868,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -908,7 +901,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -941,7 +934,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -973,7 +966,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1014,7 +1007,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(types));
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1047,7 +1040,7 @@ public class Controller_Finance extends Controller {
             }
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1259,7 +1252,7 @@ public class Controller_Finance extends Controller {
 
         } catch (Exception e) {
             Ebean.endTransaction();
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1289,7 +1282,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(products));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1318,7 +1311,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(product));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1373,7 +1366,7 @@ public class Controller_Finance extends Controller {
             return  GlobalResult.result_ok(Json.toJson(product));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
 
     }
@@ -1415,7 +1408,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(product));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1456,7 +1449,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(product));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1528,7 +1521,7 @@ public class Controller_Finance extends Controller {
             return  GlobalResult.result_ok(Json.toJson(invoice));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
 
     }
@@ -1566,7 +1559,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1649,7 +1642,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_created(Json.toJson(payment_details));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1755,7 +1748,7 @@ public class Controller_Finance extends Controller {
             return  GlobalResult.result_ok(Json.toJson(payment_details));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1790,7 +1783,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok( Json.toJson(products));
 
         }catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1827,7 +1820,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_badRequest("Request was unsuccessful.");
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1862,7 +1855,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(help));
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1910,7 +1903,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1945,7 +1938,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(invoice));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1980,7 +1973,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_pdfFile(pdf_in_array, kind.equals("proforma") ? "proforma_" + invoice.invoice_number + ".pdf" : invoice.invoice_number + ".pdf");
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2011,7 +2004,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2049,7 +2042,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2094,7 +2087,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(invoices) );
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2179,7 +2172,7 @@ public class Controller_Finance extends Controller {
         }catch (IllegalArgumentException e){
             return GlobalResult.result_badRequest("Payment details are invalid.");
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2203,7 +2196,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(customers));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2273,7 +2266,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(customer));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2334,7 +2327,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok(Json.toJson(customer));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2365,7 +2358,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2397,7 +2390,7 @@ public class Controller_Finance extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 }

@@ -11,7 +11,7 @@ import play.mvc.Security;
 import utilities.enums.Enum_Notification_importance;
 import utilities.enums.Enum_Notification_state;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.login_entities.Secured_API;
 import utilities.notifications.NotificationActionHandler;
 import utilities.response.GlobalResult;
@@ -57,7 +57,7 @@ public class Controller_Notification extends Controller {
         return GlobalResult.result_ok(Json.toJson(result));
 
      } catch (Exception e) {
-       return Server_Logger.result_internalServerError(e, request());
+       return ServerLogger.result_internalServerError(e, request());
      }
   }
 
@@ -91,7 +91,7 @@ public class Controller_Notification extends Controller {
       return GlobalResult.result_ok();
 
     } catch (Exception e) {
-      return Server_Logger.result_internalServerError(e, request());
+      return ServerLogger.result_internalServerError(e, request());
     }
   }
 
@@ -139,7 +139,7 @@ public class Controller_Notification extends Controller {
       return GlobalResult.result_ok();
 
     } catch (Exception e) {
-      return Server_Logger.result_internalServerError(e, request());
+      return ServerLogger.result_internalServerError(e, request());
     }
   }
 
@@ -171,7 +171,7 @@ public class Controller_Notification extends Controller {
       return GlobalResult.result_ok("Notifications were sent again");
 
     }catch (Exception e){
-      return Server_Logger.result_internalServerError(e, request());
+      return ServerLogger.result_internalServerError(e, request());
     }
   }
 
@@ -232,7 +232,7 @@ public class Controller_Notification extends Controller {
 
           return GlobalResult.result_ok();
       } catch (Exception e){
-          return Server_Logger.result_internalServerError(e, request());
+          return ServerLogger.result_internalServerError(e, request());
       }
   }
 }

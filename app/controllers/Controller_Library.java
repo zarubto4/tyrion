@@ -14,7 +14,7 @@ import utilities.emails.Email;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_Publishing_type;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
@@ -100,7 +100,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_created(Json.toJson(library));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -192,7 +192,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok(Json.toJson(library_new));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -227,7 +227,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok(Json.toJson(library));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -308,7 +308,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -370,7 +370,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok(Json.toJson(library));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -412,7 +412,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -489,7 +489,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_created(Json.toJson(version_object.library.library_version(version_object)));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -534,7 +534,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok(Json.toJson(version_object.library.library_version(version_object)));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -599,7 +599,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok(Json.toJson(version_object));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -643,7 +643,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -700,7 +700,7 @@ public class Controller_Library extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -870,7 +870,7 @@ public class Controller_Library extends Controller {
             return  GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 

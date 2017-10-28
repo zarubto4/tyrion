@@ -206,7 +206,7 @@ public class CustomScheduler {
         }
     }
 
-    public static void startScheduler() {
+    public static void init() {
         Injector injector = Guice.createInjector(new SchedulerModule());
         customScheduler = injector.getInstance(CustomScheduler.class);
         try {
@@ -216,7 +216,7 @@ public class CustomScheduler {
         }
     }
 
-    public static void stopScheduler() {
+    public static void stop() {
         try {
             customScheduler.scheduler.clear();
         } catch (SchedulerException e) {

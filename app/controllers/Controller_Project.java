@@ -10,9 +10,8 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
 import utilities.emails.Email;
-import utilities.enums.*;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
@@ -104,7 +103,7 @@ public class Controller_Project extends Controller {
             return GlobalResult.result_created(Json.toJson(project));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -130,7 +129,7 @@ public class Controller_Project extends Controller {
             return GlobalResult.result_ok(Json.toJson(  Controller_Security.get_person().get_user_access_projects() ));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -174,7 +173,7 @@ public class Controller_Project extends Controller {
             return GlobalResult.result_ok(Json.toJson(project));
 
          } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
 
     }
@@ -221,7 +220,7 @@ public class Controller_Project extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -284,7 +283,7 @@ public class Controller_Project extends Controller {
 
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -415,7 +414,7 @@ public class Controller_Project extends Controller {
             return GlobalResult.result_ok(Json.toJson(project));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -473,7 +472,7 @@ public class Controller_Project extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(participant));
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -564,7 +563,7 @@ public class Controller_Project extends Controller {
             return GlobalResult.result_ok(Json.toJson(project));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 }

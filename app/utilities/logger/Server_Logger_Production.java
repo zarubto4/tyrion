@@ -9,26 +9,26 @@ public class Server_Logger_Production implements Interface_Server_Logger {
 
     @Override
     public void trace(Class<?> t_class, String log_message, Object... args) {
-        logger.trace(t_class.getSimpleName() + ":: " + log_message, args);
+        logger.trace(t_class.getSimpleName() + "::" + log_message, args);
     }
 
     @Override
     public void info(Class<?> t_class, String log_message, Object... args) {
-        logger.info(t_class.getSimpleName() + ":: " + log_message, args);
+        logger.info(t_class.getSimpleName() + "::" + log_message, args);
     }
 
     @Override
     public void debug(Class<?> t_class, String log_message, Object... args) {
-        logger.debug(t_class.getSimpleName() + ":: " + log_message, args);
+        logger.debug(t_class.getSimpleName() + "::" + log_message, args);
     }
 
     @Override
     public void warn(Class<?> t_class, String log_message, Object... args) {
-        logger.warn(t_class.getSimpleName() + ":: " + log_message, args);
+        logger.warn(t_class.getSimpleName() + "::" + log_message, args);
     }
 
     @Override
     public void error(Class<?> t_class, String log_message, Object... args) {
-        logger.error(t_class.getSimpleName() + ":: " + log_message, args);
+        logger.error(t_class.getSimpleName() + "::" + log_message, args);
     }
 }

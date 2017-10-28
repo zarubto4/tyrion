@@ -29,7 +29,7 @@ public class Update_echo_handler {
     public static List<WS_Message_Update_model_echo> update_messages = new ArrayList<>();
 
     public static void startEchoUpdateThread(){
-        terminal_logger.info("UpdateEcho:: startNotificationThread: starting");
+        terminal_logger.info("UpdateEcho:: startEchoUpdateThread: starting");
         if(!send_update_messages_thread.isAlive()) send_update_messages_thread.start();
     }
 

@@ -138,15 +138,15 @@ public class Server {
 
                 server_mode = Enum_Tyrion_Server_mode.developer;
                 String mac_address = getMacAddress().toLowerCase();
-                terminal_logger.warn("Local MacAddress: " + mac_address);
+                terminal_logger.warn("setServerValues - local macAddress: {}", mac_address);
 
                 // Speciální podmínka, která nastaví podklady sice v Developerském modu - ale s URL adresami tak, aby byly v síti přístupné
                 if( mac_address.equals("60:f8:1d:bc:71:42")|| // Mac Mini Server Wifi
                     mac_address.equals("ac:87:a3:18:a1:1c")|| // Mac Mini Server Ethernet
                     mac_address.equals("2c:4d:54:4f:68:6e")){ // Linux Lexa
 
-                    terminal_logger.warn("setServerValues:: Special Settings for DEV Office servers.");
-                    terminal_logger.warn("setServerValues:: Local URL: " +  IP_Founder.getLocalHostLANAddress().getHostAddress());
+                    terminal_logger.warn("setServerValues - Special Settings for DEV Office servers.");
+                    terminal_logger.warn("setServerValues - Local URL: " +  IP_Founder.getLocalHostLANAddress().getHostAddress());
 
                     tyrion_serverAddress    = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
                     tyrion_webSocketAddress = "ws://"   + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
@@ -264,16 +264,25 @@ public class Server {
     public static void setAdministrator(){
 
         // For Developing
-        if(Model_SecurityRole.findByName("SuperAdmin") == null){
-            Model_SecurityRole role = new Model_SecurityRole();
-            role.person_permissions.addAll(Model_Permission.find.all());
+        Model_SecurityRole role = Model_SecurityRole.findByName("SuperAdmin");
+        List<Model_Permission> permissions = Model_Permission.find.all();
+        if(role == null){
+            role = new Model_SecurityRole();
+            role.person_permissions.addAll(permissions);
             role.name = "SuperAdmin";
             role.save();
+        } else {
+            for (Model_Permission permission : permissions) {
+                if (!role.person_permissions.contains(permission)) {
+                    role.person_permissions.add(permission);
+                }
+            }
+            role.update();
         }
 
         if (Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique() == null) {
 
-            terminal_logger.warn("setAdministrator: Creating first admin account: admin@byzance.cz, password: 123456789, token: token2");
+            terminal_logger.warn("setAdministrator - Creating first admin account: admin@byzance.cz, password: 123456789, token: token2");
 
             Model_Person person = new Model_Person();
             person.full_name = "Admin Byzance";
@@ -293,7 +302,7 @@ public class Server {
 
         }else{
 
-            terminal_logger.warn("setAdministrator: admin is already created");
+            terminal_logger.warn("setAdministrator - admin is already created");
 
             // updatuji oprávnění
             Model_Person person = Model_Person.find.where().eq("mail", "admin@byzance.cz").findUnique();
@@ -349,9 +358,9 @@ public class Server {
             configurator.setContext(context);
             context.reset();
             if (!Configuration.root().getString("Server.mode").equals("production")) {
-                configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Loggy.developerSettings")));
+                configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Logger.developerSettings")));
             } else {
-                configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Loggy.productionSettings")));
+                configurator.doConfigure(Play.application().getFile(Play.application().configuration().getString("Logger.productionSettings")));
             }
         } catch (JoranException je) {}
     }
@@ -375,7 +384,7 @@ public class Server {
         for(Enum en : Model_Board.permissions.values())                   permissions.add(en.name());
         for(Enum en : Model_CompilationServer.permissions.values())       permissions.add(en.name());
         for(Enum en : Model_Library.permissions.values())                 permissions.add(en.name());
-        for(Enum en : Model_ServerError.permissions.values())              permissions.add(en.name());
+        for(Enum en : Model_ServerError.permissions.values())             permissions.add(en.name());
         for(Enum en : Model_Processor.permissions.values())               permissions.add(en.name());
         for(Enum en : Model_Producer.permissions.values())                permissions.add(en.name());
         for(Enum en : Model_TypeOfBoard.permissions.values())             permissions.add(en.name());
@@ -399,6 +408,14 @@ public class Server {
         for(Enum en : Model_MProject.permissions.values())                permissions.add(en.name());
         for(Enum en : Model_MProgram.permissions.values())                permissions.add(en.name());
 
+        List<Model_Permission> perms = Model_Permission.find.all();
+
+        for (Model_Permission permission : perms) {
+            if (!permissions.contains(permission.permission_key)) {
+                permission.delete();
+            }
+        }
+
         for(String permission : permissions) new Model_Permission(permission, "description");
 
     }
@@ -413,19 +430,18 @@ public class Server {
 
     public static void startThreads() {
 
-        //1. Nastartovat notifikačních vláken
-        NotificationHandler.startNotificationThread();
+        //1. Nastartovat notifikační vlákno
+        NotificationHandler.startThread();
 
-        GoPay_PaymentCheck.startPaymentCheckThread();
+        GoPay_PaymentCheck.startThread();
 
-        Fakturoid_InvoiceCheck.startInvoiceCheckThread();
+        Fakturoid_InvoiceCheck.startThread();
 
         Update_echo_handler.startEchoUpdateThread();
     }
 
     public static void startSchedulingProcedures() {
-
-        CustomScheduler.startScheduler();
+        CustomScheduler.init();
     }
 
     public static void initCache() {

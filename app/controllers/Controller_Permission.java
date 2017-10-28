@@ -5,7 +5,6 @@ import com.avaje.ebean.Expr;
 import io.swagger.annotations.*;
 import models.Model_Person;
 import models.Model_Permission;
-import models.Model_Project;
 import models.Model_SecurityRole;
 import play.data.Form;
 import play.libs.Json;
@@ -14,7 +13,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_NotFound;
@@ -79,7 +78,7 @@ public class Controller_Permission extends Controller {
 
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -122,7 +121,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -152,7 +151,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok(Json.toJson(permissions));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
 
     }
@@ -210,7 +209,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok(Json.toJson(permission));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
 
     }
@@ -278,7 +277,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok(Json.toJson(securityRole));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -322,7 +321,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -374,7 +373,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_created(Json.toJson(securityRole));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -411,7 +410,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -467,7 +466,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok(Json.toJson(securityRole));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -502,7 +501,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok(Json.toJson(securityRole));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -573,7 +572,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok(Json.toJson(securityRole));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -609,7 +608,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -637,7 +636,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok(Json.toJson(details));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
 
     }
@@ -672,7 +671,7 @@ public class Controller_Permission extends Controller {
             return GlobalResult.result_ok(Json.toJson(system_access));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
 
 
