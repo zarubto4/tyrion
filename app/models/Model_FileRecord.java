@@ -4,10 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.azure.storage.blob.CloudBlob;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
-import com.microsoft.azure.storage.blob.ListBlobItem;
+import com.microsoft.azure.storage.blob.*;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
@@ -15,10 +12,7 @@ import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @ApiModel( value = "FileRecord", description = "Model of FileRecord")
@@ -52,6 +46,54 @@ public class Model_FileRecord extends Model {
 
         return Server.azure_blob_Link + file_path;
     }
+
+
+    /*
+    * Ľink by šlo v rámci úspor cachovat. To jest uložit si pod ID objektu jeho link a dát mu platnost - pokud ho v cahce nenajdu
+    * vytvořím link, pokud ano z cache vracím.
+    * Teoreticky mužu mít variabliblní proměnou (vstup metody) do které dám v čas jak dluho se má v chache paměti / na jak dlouho se má vygenerovat link
+    * // 30 sekund nic mocMM
+    * */
+
+    @JsonIgnore @Transient public String  get_file_path_for_direct_download_public_link(int second){
+        try {
+
+            // Separace na Container a Blob
+            int slash = file_path.indexOf("/");
+            String container_name = file_path.substring(0, slash);
+            String real_file_path = file_path.substring(slash + 1);
+
+            CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
+
+            // Create Policy
+            Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            cal.setTime(new Date());
+            cal.add(Calendar.SECOND, second);
+
+            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
+            policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
+            policy.setSharedAccessExpiryTime(cal.getTime());
+
+
+            String sas = blob.generateSharedAccessSignature(policy, null);
+
+            String total_link = blob.getUri().toString() + "?" + sas;
+
+            // TODO Cache total_link
+            terminal_logger.trace("Direct download link:: {} ", total_link);
+            return total_link;
+
+        }catch (Exception e){
+            e.printStackTrace();
+
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
+
+
+
+
 
     @JsonIgnore @Transient public String get_fileRecord_from_Azure_inString(){
         try {
@@ -183,9 +225,8 @@ public class Model_FileRecord extends Model {
     @JsonIgnore @Transient
     public static Model_FileRecord uploadAzure_File(String file, String contentType, String file_name, String file_path) throws Exception{
 
-        //terminal_logger.debug("uploadAzure_File:: Azure file:"+ file.substring(0,50));
-
         byte[] bytes = Model_FileRecord.get_decoded_binary_string_from_Base64(file);
+
 
         terminal_logger.trace("Azure file path  ::" + file_path);
         terminal_logger.trace("Azure file name  ::" + file_name);
@@ -194,7 +235,17 @@ public class Model_FileRecord extends Model {
         String container_name = file_path.substring(0,file_path.indexOf("/"));
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
 
-        CloudBlockBlob blob = container.getBlockBlobReference(file_name);
+
+        int slash = file_path.indexOf("/");
+        String real_file_path = file_path.substring(slash+1);
+
+
+        // Opravil jsem zde nahrávání obrázků z HW stárnky a type of board stránky - pokud se to psorralo někde jinde
+        // tak bych to probral jestli to nejsednotit pomocí statických proměných celé flow nahrávání - ale myslím, že jsem podchytil všechny
+        // usecase
+
+        // Zde musí být plná cesta bez kontejneru!
+        CloudBlockBlob blob = container.getBlockBlobReference(real_file_path);
 
         InputStream is = new ByteArrayInputStream(bytes);
         blob.getProperties().setContentType(contentType);
@@ -322,10 +373,14 @@ public class Model_FileRecord extends Model {
 
     @Override
     public void delete(){
+        try {
+            terminal_logger.debug("delete File from Azure", this.id);
+            this.remove_file_from_Azure();
+        }catch (Exception e) {
+            terminal_logger.internalServerError(e);
+        }
 
-        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
-
-        this.remove_file_from_Azure();
+        terminal_logger.debug("delete :: Delete object Id: {} ", this.id);
         super.delete();
     }
 
@@ -343,6 +398,12 @@ public class Model_FileRecord extends Model {
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
+
+    public static Model_FileRecord get_byId(String id){
+
+      return Model_FileRecord.find.byId(id);
+    }
+
     public static Model.Finder<String, Model_FileRecord> find = new Finder<>(Model_FileRecord.class);
 
 }

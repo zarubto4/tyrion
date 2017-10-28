@@ -146,7 +146,7 @@ DELETE    /product_extension/:extension_id                              @control
 
 
 
-GET       /product/list/user_applicable                                      @controllers.Controller_Finance.product_getActive()
+GET       /product/list/user_applicable                                 @controllers.Controller_Finance.product_getActive()
 POST      /product/details/:product_id                                  @controllers.Controller_Finance.paymentDetails_create(product_id)
 PUT       /product/details/:payment_details_id                          @controllers.Controller_Finance.paymentDetails_update(payment_details_id: Long)
 PUT       /product/general/:product_id                                  @controllers.Controller_Finance.product_update(product_id)

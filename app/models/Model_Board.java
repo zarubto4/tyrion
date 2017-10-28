@@ -112,7 +112,7 @@ public class Model_Board extends Model {
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_type_of_board_id;                        // Type of Board Id
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_type_of_board_name;
 
-    @Transient @JsonIgnore @TyrionCachedList public String cache_value_picture_link;
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_picture_id;
 
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_producer_id;                             // Producer ID
 
@@ -140,21 +140,24 @@ public class Model_Board extends Model {
     @JsonProperty  @Transient  public String actual_bootloader_version_name()       { try{ return get_actual_bootloader().name; }catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String actual_bootloader_id()                 { try{ return cache_value_actual_boot_loader_id != null ? cache_value_actual_boot_loader_id : get_actual_bootloader().id.toString(); }catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String picture_link(){
-
         try {
 
-            if( cache_value_picture_link == null) {
+            if( cache_value_picture_id == null) {
 
-                Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("board.id",id).select("file_path").findUnique();
+                Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("board.id",id).select("id").findUnique();
                 if (fileRecord != null) {
-                    cache_value_picture_link = Server.azure_blob_Link + fileRecord.file_path;
-                    terminal_logger.debug("picture_link :: {}{}", Server.azure_blob_Link, cache_value_picture_link);
+                    cache_value_picture_id =  fileRecord.id;
                 }
-
             }
 
-            return cache_value_picture_link;
+            if(cache_value_picture_id != null) {
+                Model_FileRecord record = Model_FileRecord.get_byId(cache_value_picture_id);
+                if(record != null) {
+                    return record.get_file_path_for_direct_download_public_link(300);
+                }
+            }
 
+            return null;
         }catch (Exception e){
             terminal_logger.internalServerError(e);
             return null;
@@ -2106,7 +2109,7 @@ public class Model_Board extends Model {
 
     @JsonIgnore @Transient
     public String get_path(){
-        return get_project().get_path() + "/hardware/";
+        return get_project().get_path() + "/hardware";
     }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/

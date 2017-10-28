@@ -98,7 +98,10 @@ public class Model_CProgramUpdatePlan extends Model {
         Swagger_Bootloader_Update_program bootloader_update_detail  = new Swagger_Bootloader_Update_program();
         bootloader_update_detail.bootloader_id                      = bootloader.id.toString();
         bootloader_update_detail.bootloader_name                    = bootloader.name;
-        bootloader_update_detail.version_identificator   = bootloader.version_identificator;
+        bootloader_update_detail.version_identificator              = bootloader.version_identificator;
+        bootloader_update_detail.type_of_board_name                 = bootloader.type_of_board.name;
+        bootloader_update_detail.type_of_board_id                    = bootloader.type_of_board.id;
+
 
         return bootloader_update_detail;
     }

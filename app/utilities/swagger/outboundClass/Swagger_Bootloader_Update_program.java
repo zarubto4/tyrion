@@ -8,4 +8,6 @@ public class Swagger_Bootloader_Update_program {
     @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String bootloader_id;
     @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String bootloader_name;
     @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String version_identificator;
+    @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String type_of_board_id;
+    @ApiModelProperty(required = true, value = "Can be empty", readOnly = true) public String type_of_board_name;
 }

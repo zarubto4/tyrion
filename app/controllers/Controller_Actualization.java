@@ -234,7 +234,7 @@ public class Controller_Actualization extends Controller {
 
 
             Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
-            procedure.type_of_update = Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL;
+            procedure.type_of_update = Enum_Update_type_of_update.MANUALLY_RELEASE_MANAGER;
             procedure.date_of_create = new Date();
             procedure.project_id = project.id;
 

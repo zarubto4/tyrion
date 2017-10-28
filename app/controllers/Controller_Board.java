@@ -1237,7 +1237,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @BodyParser.Of(value = BodyParser.Json.class, maxLength = 1024 * 1024 * 4)
+    @BodyParser.Of(value = BodyParser.Json.class, maxLength = 1024 * 1024 * 10)
     public Result typeOfBoard_uploadPicture(String type_of_board_id){
         try {
 
@@ -1260,7 +1260,6 @@ public class Controller_Board extends Controller {
             if(!(type_of_board.picture == null)){
 
                 terminal_logger.debug("typeOfBoard_uploadPicture picture is already there - system remove previous photo");
-
                 Model_FileRecord fileRecord = type_of_board.picture;
                 type_of_board.picture = null;
                 type_of_board.update();
@@ -1275,7 +1274,7 @@ public class Controller_Board extends Controller {
             terminal_logger.debug("typeOfBoard_uploadPicture:: Type     :: " + dataType[0]);
             terminal_logger.debug("typeOfBoard_uploadPicture:: Data     :: " + parts[1].substring(0, 10) + "......");
 
-            String file_name =  UUID.randomUUID().toString() + "." + dataType[0];
+            String file_name =  UUID.randomUUID().toString() + ".png";
             String file_path =  type_of_board.get_Container().getName() + "/" + file_name;
 
             terminal_logger.debug("typeOfBoard_uploadPicture:: File Name:: " + file_name );
@@ -2639,7 +2638,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @BodyParser.Of(value = BodyParser.Json.class, maxLength = 1024 * 1024 * 4)
+    @BodyParser.Of(value = BodyParser.Json.class, maxLength = 1024 * 1024 * 10)
     public Result board_uploadPicture(String board_id){
         try {
 
@@ -2649,17 +2648,12 @@ public class Controller_Board extends Controller {
             Swagger_BASE64_FILE help = form.get();
 
             Model_Board board = Model_Board.get_byId(board_id);
+            if(board == null) return GlobalResult.result_notFound("Board does not exist");
 
             if(!board.edit_permission()) return GlobalResult.result_forbidden();
 
             if(board.get_project() == null ) return GlobalResult.result_badRequest("Hardware is not in project!");
 
-            if(help.file == null || help.file.equals("")){
-                Model_FileRecord fileRecord = board.picture;
-                board.picture = null;
-                board.update();
-                fileRecord.delete();
-            }
 
             // Odebrání předchozího obrázku
             if(board.picture != null){
@@ -2675,12 +2669,14 @@ public class Controller_Board extends Controller {
             String[] type = parts[0].split(":");
             String[] dataType = type[1].split(";");
 
-            terminal_logger.debug("person_uploadPicture:: Data Type:" + dataType[0] + ":::");
-            terminal_logger.debug("person_uploadPicture:: Data: " + parts[1].substring(0, 10) + "......");
+            terminal_logger.debug("person_uploadPicture:: Data Type  :: " + dataType[0] + ":::");
+            terminal_logger.debug("person_uploadPicture:: Data       :: " + parts[1].substring(0, 10) + "......");
 
-            String name = UUID.randomUUID().toString();
+            String file_name =  UUID.randomUUID().toString() + ".png";
+            String file_path =  board.get_path() + "/" + file_name;
 
-            board.picture = Model_FileRecord.uploadAzure_File( parts[1], dataType[0], "board_photo", board.get_path() + name);
+
+            board.picture =  Model_FileRecord.uploadAzure_File( parts[1], dataType[0], file_name , file_path);
             board.update();
 
             return GlobalResult.result_ok(Json.toJson(board));
