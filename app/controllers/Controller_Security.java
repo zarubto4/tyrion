@@ -24,7 +24,7 @@ import utilities.enums.Enum_Where_logged_tag;
 import utilities.financial.FinancialPermission;
 import utilities.independent_threads.Check_Online_Status_after_user_login;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.Socials;
 import utilities.response.CoreResponse;
@@ -160,7 +160,7 @@ public class Controller_Security extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -240,7 +240,7 @@ public class Controller_Security extends Controller {
             return result_ok( Json.toJson( swagger_login_token ) );
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -286,7 +286,7 @@ public class Controller_Security extends Controller {
 
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -342,7 +342,7 @@ public class Controller_Security extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -472,7 +472,7 @@ public class Controller_Security extends Controller {
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
 
     }
@@ -625,7 +625,7 @@ public class Controller_Security extends Controller {
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -704,7 +704,7 @@ public class Controller_Security extends Controller {
 
         }catch (Exception e) {
             terminal_logger.internalServerError(e);
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -774,7 +774,7 @@ public class Controller_Security extends Controller {
             return result_ok(Json.toJson(result));
 
         }catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 

@@ -1,22 +1,16 @@
 package utilities.demo_data;
 
-import com.avaje.ebean.Model;
 import io.swagger.annotations.Api;
 import models.*;
 import play.Application;
 import play.mvc.Controller;
 import play.mvc.Result;
-import play.mvc.Security;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
-import utilities.login_entities.Secured_API;
+import utilities.logger.ServerLogger;
 import utilities.response.GlobalResult;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 
 @Api(value = "Dashboard Private Api", hidden = true)
@@ -37,7 +31,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             return  ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -91,7 +85,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -112,7 +106,7 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -249,7 +243,7 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -328,7 +322,7 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -382,7 +376,7 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -415,7 +409,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 }

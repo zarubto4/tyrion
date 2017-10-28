@@ -18,7 +18,7 @@ import utilities.Server;
 import utilities.emails.Email;
 import utilities.enums.Enum_Notification_action;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.login_entities.Secured_API;
 import utilities.notifications.NotificationActionHandler;
 import utilities.response.GlobalResult;
@@ -123,7 +123,7 @@ public class Controller_Person extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -170,7 +170,7 @@ public class Controller_Person extends Controller {
 
             return GlobalResult.redirect( Server.becki_mainUrl + "/" + Server.becki_accountAuthorizedSuccessful );
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -231,7 +231,7 @@ public class Controller_Person extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -302,7 +302,7 @@ public class Controller_Person extends Controller {
             }
             return GlobalResult.result_ok();
         }catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -377,7 +377,7 @@ public class Controller_Person extends Controller {
 
             return GlobalResult.result_ok("Password was changed successfully");
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -404,7 +404,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok(Json.toJson(person));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -444,7 +444,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -486,7 +486,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -530,7 +530,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -579,7 +579,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -620,7 +620,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -682,7 +682,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok(Json.toJson(person));
 
          } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -714,7 +714,7 @@ public class Controller_Person extends Controller {
            return GlobalResult.result_ok(Json.toJson( Model_FloatingPersonToken.find.where().eq("person.id",  Controller_Security.get_person().id).findList() ));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -749,7 +749,7 @@ public class Controller_Person extends Controller {
 
             return GlobalResult.result_ok();
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -868,7 +868,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok(Json.toJson(validation));
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -975,7 +975,7 @@ public class Controller_Person extends Controller {
             return GlobalResult.result_ok("Change was requested. You must authorize the change in next 4 hours via your email. Authorization email was sent.");
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1062,7 +1062,7 @@ public class Controller_Person extends Controller {
             return redirect(Server.becki_mainUrl);
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1172,7 +1172,7 @@ public class Controller_Person extends Controller {
 
             return GlobalResult.result_ok("Picture successfully uploaded");
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1207,7 +1207,7 @@ public class Controller_Person extends Controller {
 
             return GlobalResult.result_ok("Picture successfully removed");
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 

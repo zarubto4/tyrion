@@ -13,7 +13,7 @@ import java.util.List;
 public class Swagger_Board_Registration_To_Project {
 
     @ApiModelProperty(required = false)
-    public List<String> group_ids;
+    public List<String> group_ids = new ArrayList<>();
 
     @Constraints.Required @ApiModelProperty(required = true) public String project_id;
     @Constraints.Required @ApiModelProperty(required = true) public String hash_for_adding;

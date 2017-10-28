@@ -15,7 +15,7 @@ import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
@@ -110,7 +110,7 @@ public class Controller_Board extends Controller {
            return GlobalResult.result_badRequest("unknown_error");
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
 
     }
@@ -262,7 +262,7 @@ public class Controller_Board extends Controller {
             // Neznámá chyba se kterou nebylo počítání
             return GlobalResult.result_badRequest("Unknown error");
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
 
     }
@@ -464,7 +464,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_created(Json.toJson(processor));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -491,7 +491,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(processor));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -516,7 +516,7 @@ public class Controller_Board extends Controller {
            return GlobalResult.result_ok(Json.toJson(processors));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -580,7 +580,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(processor));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -622,7 +622,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -659,7 +659,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(content));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -699,7 +699,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(content));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -759,7 +759,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_created(Json.toJson(producer));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -822,7 +822,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(producer));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -851,7 +851,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(producers));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -881,7 +881,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(producer));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -926,7 +926,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1018,7 +1018,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_created(Json.toJson(typeOfBoard));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1093,7 +1093,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(typeOfBoard));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
 
     }
@@ -1136,7 +1136,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1175,7 +1175,7 @@ public class Controller_Board extends Controller {
             return  GlobalResult.result_ok(Json.toJson(typeOfBoards));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1208,7 +1208,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(typeOfBoard));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1286,7 +1286,7 @@ public class Controller_Board extends Controller {
 
             return GlobalResult.result_ok("Picture successfully uploaded");
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1365,7 +1365,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_created(Json.toJson(batch));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1407,7 +1407,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1481,7 +1481,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_created(Json.toJson(batch));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1543,7 +1543,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(boot_loader));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1595,7 +1595,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(boot_loader));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1630,7 +1630,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(boot_loader));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1705,7 +1705,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(boot_loader));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1756,7 +1756,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(boot_loader));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1839,7 +1839,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1911,7 +1911,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_created(Json.toJson(board));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2051,7 +2051,7 @@ public class Controller_Board extends Controller {
         } catch (IllegalCharsetNameException e) {
             return GlobalResult.result_badRequest("All Mac Address used");
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2100,7 +2100,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(list));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2166,7 +2166,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2261,7 +2261,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2369,7 +2369,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2522,7 +2522,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2610,7 +2610,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         } catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2684,7 +2684,7 @@ public class Controller_Board extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(board));
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2718,7 +2718,7 @@ public class Controller_Board extends Controller {
 
             return GlobalResult.result_ok("Picture successfully removed");
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2762,7 +2762,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
 
     }
@@ -2803,7 +2803,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2851,7 +2851,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(status));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2884,39 +2884,28 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Board_Registration_To_Project> form = Form.form(Swagger_Board_Registration_To_Project.class).bindFromRequest();
-            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Board_Registration_To_Project help = form.get();
 
-            System.out.println("HW o chci registrovat:: '" + help.hash_for_adding +"'");
-
-            terminal_logger.debug("CompilationControler:: Registrace nového zařízení ");
+            terminal_logger.debug("board_connectProject: registering new device with hash: {}", help.hash_for_adding);
 
             // Kotrola objektu - NAjdu v Databázi
             Model_Board board_not_cache = Model_Board.find.where().eq("hash_for_adding", help.hash_for_adding).select("id").findUnique();
-            if(board_not_cache == null ) return GlobalResult.result_notFound("Board board_id not found");
+            if (board_not_cache == null) return GlobalResult.result_notFound("Board board_id not found");
 
             //Vytáhnu přes Cache Manager
             Model_Board board = Model_Board.get_byId(board_not_cache.id);
-            if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
-            if(!board.first_connect_permission()) return GlobalResult.result_badRequest("Board is already registered");
+            if (board == null) return GlobalResult.result_notFound("Board not found");
+            if (!board.first_connect_permission()) return GlobalResult.result_badRequest("Board is already registered");
 
             // Kotrola objektu
             Model_Project project = Model_Project.get_byId(help.project_id);
-            if(project == null) return GlobalResult.result_notFound("Project project_id not found");
-            if(!project.update_permission()) return GlobalResult.result_forbidden();
+            if (project == null) return GlobalResult.result_notFound("Project not found");
+            if (!project.update_permission()) return GlobalResult.result_forbidden();
 
             // Pouze získání aktuálního stavu do Cache paměti ID listu
-            if(board.cache_hardware_groups_id == null){
+            if (board.cache_hardware_groups_id == null){
                 board.get_hardware_groups();
-            }
-
-            // Cyklus pro přidávání // Nejdříve kontroluji
-            if(help.group_ids != null && !help.group_ids.isEmpty()) {
-                for (String board_group_id : help.group_ids) {
-                    Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
-                    if (group == null) return GlobalResult.result_notFound("BoardGroup ID not found");
-                    if (!group.update_permission()) return GlobalResult.result_forbidden();
-                }
             }
 
             board.date_of_user_registration = new Date();
@@ -2924,31 +2913,18 @@ public class Controller_Board extends Controller {
             board.project = project;
             board.update();
 
-            // ZDe Vracím
-            if(help.group_ids != null && !help.group_ids.isEmpty()) return GlobalResult.result_ok(Json.toJson(board));
-
-
-
             project.cache_list_board_ids.add(board.id);
 
+            if (!help.group_ids.isEmpty()) {
 
-            // Pouze získání aktuálního stavu do Cache paměti ID listu
-            if(board.cache_hardware_groups_id == null){
-                board.get_hardware_groups();
-            }
-
-            if(help.group_ids != null && !help.group_ids.isEmpty()) {
-                // Cyklus pro přidávání // Nejdříve kontroluji
                 for (String board_group_id : help.group_ids) {
+                    Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
+                    if (group == null) return GlobalResult.result_notFound("BoardGroup not found");
+                    if (!group.update_permission()) return GlobalResult.result_forbidden();
 
                     // Přidám všechny, které nejsou už součásti cache_hardware_groups_id
                     if (!board.cache_hardware_groups_id.contains(board_group_id)) {
 
-                        Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
-                        // už nemusím kontrolovat
-                        if(group == null) continue;
-
-                        // Nějaké mazání
                         board.cache_hardware_groups_id.add(board_group_id);
                         board.board_groups.add(group);
                         group.cache_group_size += 1;
@@ -2961,7 +2937,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -3020,7 +2996,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(board));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -3070,7 +3046,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(boards_for_blocko));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -3093,7 +3069,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -3154,7 +3130,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(group));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -3204,7 +3180,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(group));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -3238,81 +3214,65 @@ public class Controller_Board extends Controller {
 
             // Zpracování Json
             final Form<Swagger_Hardware_Group_DeviceListEdit> form = Form.form(Swagger_Hardware_Group_DeviceListEdit.class).bindFromRequest();
-            if(form.hasErrors())return GlobalResult.result_invalidBody(form.errorsAsJson());
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Hardware_Group_DeviceListEdit help = form.get();
-
-
-
 
             if(help.device_synchro != null) {
 
-                System.out.println("Přidávám Seznam Group nad Devicem Počet prvků " + help.device_synchro.group_ids.size());
-
                 Model_Board board = Model_Board.get_byId(help.device_synchro.device_id);
-                if(board == null) return GlobalResult.result_notFound("Board ID not found");
-                if(!board.update_permission()) return GlobalResult.result_forbidden();
+                if (board == null) return GlobalResult.result_notFound("Board ID not found");
+                if (!board.update_permission()) return GlobalResult.result_forbidden();
 
-                System.out.println("Board " + board.id);
+                terminal_logger.debug("board_group_update_device_list - board: {}", board.id);
 
                 // Pouze získání aktuálního stavu do Cache paměti ID listu
                 if(board.cache_hardware_groups_id == null){
+                    terminal_logger.debug("board_group_update_device_list - loading from cache");
                     board.get_hardware_groups();
                 }
+
+                terminal_logger.debug("board_group_update_device_list - cached groups: {}", Json.toJson(board.cache_hardware_groups_id));
 
                 // Cyklus pro přidávání
                 for(String board_group_id: help.device_synchro.group_ids) {
 
-                    System.out.println("Kontorluji nezaregistrovanou  skupinu " + board_group_id );
-
                     // Přidám všechny, které nejsou už součásti cache_hardware_groups_id
                     if(!board.cache_hardware_groups_id.contains(board_group_id)){
 
-                        System.out.println("Přidávám skupinu" + board_group_id );
+                        terminal_logger.debug("board_group_update_device_list - adding group {}", board_group_id );
 
                         Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
-                        if(group == null) return GlobalResult.result_notFound("BoardGroup ID not found");
-                        if(!group.update_permission()) return GlobalResult.result_forbidden();
+                        if (group == null) return GlobalResult.result_notFound("BoardGroup not found");
+                        if (!group.update_permission()) return GlobalResult.result_forbidden();
 
-                        // Nějaké mazání
                         board.cache_hardware_groups_id.add(board_group_id);
                         board.board_groups.add(group);
                         group.cache_group_size +=1;
-                        board.update();
                     }
                 }
-
 
                 // Cyklus pro mazání java.util.ConcurrentModificationException
                 for (Iterator<String> it = board.cache_hardware_groups_id.iterator(); it.hasNext(); ) {
 
                     String board_group_id = it.next();
 
-                    System.out.println("Kontorluji již zaregistrovanou skupinu " + board_group_id );
-
                     // Není a tak mažu
                     if(!help.device_synchro.group_ids.contains(board_group_id)){
 
-                        System.out.println("Odebírám skupinu" + board_group_id );
+                        terminal_logger.debug("board_group_update_device_list - removing group {}", board_group_id );
 
                         Model_BoardGroup group = Model_BoardGroup.get_byId(board_group_id);
-                        if(group == null) return GlobalResult.result_notFound("BoardGroup ID not found");
-                        if(!group.update_permission()) return GlobalResult.result_forbidden();
-                        group.boards.remove(board);
-                        group.update();
+                        if (group == null) return GlobalResult.result_notFound("BoardGroup not found");
+                        if (!group.update_permission()) return GlobalResult.result_forbidden();
 
                         board.board_groups.remove(group);
                         group.cache_group_size -=1;
                         it.remove();
-                        board.update();
-
                     }
-
                 }
 
-
+                board.update();
             }
-
-
 
             if(help.group_synchro != null) {
 
@@ -3325,20 +3285,20 @@ public class Controller_Board extends Controller {
 
                     board.cache_hardware_groups_id.add(help.group_synchro.group_id);
                     board.board_groups.add(group);
-                    board.update();
+
                 }
 
                 group.refresh();
             }
 
 
+
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
-
 
     @ApiOperation(value = "delete BoardGroup",
             tags = { "BoardGroup"},
@@ -3369,7 +3329,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -3402,7 +3362,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(project.get_hardware_groups_not_deleted()));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -3434,7 +3394,7 @@ public class Controller_Board extends Controller {
             return GlobalResult.result_ok(Json.toJson(group));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 

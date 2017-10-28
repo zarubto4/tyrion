@@ -33,8 +33,8 @@ public class Fakturoid_InvoiceCheck {
     /**
      * Method starts the concurrent thread.
      */
-    public static void startInvoiceCheckThread(){
-        terminal_logger.info("startInvoiceCheckThread: starting");
+    public static void startThread(){
+        terminal_logger.info("startThread: starting");
         if(!check_invoice_thread.isAlive()) check_invoice_thread.start();
     }
 

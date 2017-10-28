@@ -5,7 +5,7 @@ import com.google.inject.Inject;
 import play.Application;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.response.GlobalResult;
 
 import java.io.*;
@@ -92,7 +92,7 @@ public class TestLauncher extends Controller{
             return GlobalResult.result_ok("Test was successfully run. See the test log for errors.");
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 }

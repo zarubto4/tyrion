@@ -1190,18 +1190,18 @@ public class Model_Board extends Model {
     ///-- Send Update Procedure to All Hardware's  --//
     @JsonIgnore @Transient public static void execute_update_procedure(Model_ActualizationProcedure procedure){
 
-        terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} Start Execution. ", procedure.id );
-        terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} . Actual state {} ", procedure.id , procedure.state.name());
+        terminal_logger.debug("execute_update_procedure - start execution of procedure: {}", procedure.id );
+        terminal_logger.debug("execute_update_procedure - actual state: {} ", procedure.state.name());
 
         if(procedure.state == Enum_Update_group_procedure_state.complete || procedure.state == Enum_Update_group_procedure_state.successful_complete ){
-            terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} is done  (successful_complete or complete) -> Return.", procedure.id);
+            terminal_logger.debug("execute_update_procedure - procedure: {} is done (successful_complete or complete) -> return", procedure.id);
             return;
         }
 
         if(procedure.updates.isEmpty()){
             procedure.state = Enum_Update_group_procedure_state.complete_with_error;
             procedure.update();
-            terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} is empty and not set to any updates! -> Return." , procedure.id);
+            terminal_logger.debug("execute_update_procedure - procedure: {} is empty -> return" , procedure.id);
             return;
         }
 
@@ -1220,11 +1220,11 @@ public class Model_Board extends Model {
                 .findList();
 
         if(plans.isEmpty()){
-            terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} all updates is done or in progress. -> Return.", procedure.id );
+            terminal_logger.debug("execute_update_procedure - Procedure id:: {} all updates is done or in progress. -> Return.", procedure.id );
             return;
         }
 
-        terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} . Number of C_Procedures By database for execution:: {}" , procedure.id , plans.size());
+        terminal_logger.debug("execute_update_procedure - Procedure id:: {} . Number of C_Procedures By database for execution:: {}" , procedure.id , plans.size());
 
 
         HashMap<String, List<Model_CProgramUpdatePlan> > server_device_sort = new HashMap<>();
@@ -1233,18 +1233,18 @@ public class Model_Board extends Model {
         for (Model_CProgramUpdatePlan plan : plans) {
             try {
 
-                terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: ID:: {} - New Cycle" , procedure.id , plan.id);
-                terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Board ID:: {}" , procedure.id , plan.id,  plan.board.id);
-                terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Status:: {} ", procedure.id , plan.id,  plan.state);
+                terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: ID:: {} - New Cycle" , procedure.id , plan.id);
+                terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Board ID:: {}" , procedure.id , plan.id,  plan.board.id);
+                terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Status:: {} ", procedure.id , plan.id,  plan.state);
 
-                terminal_logger.debug("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Number of tries  ", procedure.id , plan.id,  plan.count_of_tries);
+                terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Number of tries  ", procedure.id , plan.id,  plan.count_of_tries);
 
                 if( plan.count_of_tries > 5 ){
                     plan.state = Enum_CProgram_updater_state.critical_error;
                     plan.error = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message();
                     plan.error_code = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code();
                     plan.update();
-                    terminal_logger.warn("actualization_update_procedure:: Procedure id:: {} plan {} CProgramUpdatePlan:: Error:: {} Message:: {} Continue Cycle. " , procedure.id , plan.id, ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code() , ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message());
+                    terminal_logger.warn("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Error:: {} Message:: {} Continue Cycle. " , procedure.id , plan.id, ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code() , ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message());
                     continue;
                 }
 
@@ -1254,7 +1254,7 @@ public class Model_Board extends Model {
                 }
 
                 if(Model_HomerServer.get_byId(plan.board.connected_server_id).online_state() != Enum_Online_status.online){
-                    terminal_logger.warn("actualization_update_procedure:: Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id, Model_HomerServer.get_byId(plan.board.connected_server_id).personal_server_name);
+                    terminal_logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id, Model_HomerServer.get_byId(plan.board.connected_server_id).personal_server_name);
                     plan.state = Enum_CProgram_updater_state.homer_server_is_offline;
                     plan.update();
                     continue;
@@ -1262,7 +1262,7 @@ public class Model_Board extends Model {
 
                 server_device_sort.get(plan.board.connected_server_id).add(plan);
 
-                terminal_logger.debug("actualization_update_procedure:: Procedure id:: {}  plan {} of blocko program is online and connected with Tyrion", procedure.id, plan.id);
+                terminal_logger.debug("execute_update_procedure - Procedure id:: {}  plan {} of blocko program is online and connected with Tyrion", procedure.id, plan.id);
 
                 plan.state = Enum_CProgram_updater_state.in_progress;
                 plan.update();
@@ -1275,7 +1275,7 @@ public class Model_Board extends Model {
             }
         }
 
-        terminal_logger.debug("Summary for actualizations");
+        terminal_logger.debug("execute_update_procedure - Summary for actualizations");
 
         //  new Thread(procedure::notification_update_procedure_start).start();
 
@@ -1303,10 +1303,10 @@ public class Model_Board extends Model {
 
             if(report.error_message != null){
 
-                terminal_logger.debug("hardware_firmware_state_check: Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: {} " , this.id, report.error_code, report.error_message);
+                terminal_logger.debug("hardware_firmware_state_check - Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: {} " , this.id, report.error_code, report.error_message);
 
                     if(report.error_code.equals(ErrorCode.HARDWARE_IS_OFFLINE.error_code())){
-                        terminal_logger.debug("hardware_firmware_state_check:: Report Device ID: {} is offline" , this.id);
+                        terminal_logger.debug("hardware_firmware_state_check -: Report Device ID: {} is offline" , this.id);
                         return;
                     }
             }
@@ -1314,22 +1314,22 @@ public class Model_Board extends Model {
             WS_Message_Hardware_overview.WS_Help_Hardware_board_overview overview = report.get_device_from_list(this.id);
 
             if(!overview.online_state) {
-                terminal_logger.debug("hardware_firmware_state_check: Device is offline");
+                terminal_logger.debug("hardware_firmware_state_check - device is offline");
                 return;
             }
 
-            terminal_logger.debug("hardware_firmware_state_check: Summary information of connected master board: ID = {}", this.id);
+            terminal_logger.debug("hardware_firmware_state_check - Summary information of connected master board: ID = {}", this.id);
 
-            terminal_logger.debug("hardware_firmware_state_check: Settings check ",this.id);
+            terminal_logger.debug("hardware_firmware_state_check - Settings check ",this.id);
             check_settings(overview);
 
-            terminal_logger.debug("hardware_firmware_state_check: Firmware check ",this.id);
+            terminal_logger.debug("hardware_firmware_state_check - Firmware check ",this.id);
             check_firmware(overview);
 
-            terminal_logger.debug("hardware_firmware_state_check: Backup check ",this.id);
+            terminal_logger.debug("hardware_firmware_state_check - Backup check ",this.id);
             check_backup(overview);
 
-            terminal_logger.debug("hardware_firmware_state_check: Bootloader check ",this.id);
+            terminal_logger.debug("hardware_firmware_state_check - Bootloader check ",this.id);
             check_bootloader(overview);
 
             check_updates(overview);
@@ -1347,13 +1347,13 @@ public class Model_Board extends Model {
 
         // Kontrola zda je stejný
         if(overview.autobackup != this.backup_mode){
-            terminal_logger.warn("Model_Board:: check_settings:: inconsistent state:: autobackup");
+            terminal_logger.warn("check_settings - inconsistent state: autobackup");
             set_auto_backup();
         }
 
         // Kontrola Backupu
         if(overview.alias == null || !overview.alias.equals(this.name)){
-            terminal_logger.warn("Model_Board:: check_settings:: inconsistent state:: alias");
+            terminal_logger.warn("check_settings - inconsistent state: alias");
             set_alias(this.name);
         }
 
@@ -1371,13 +1371,13 @@ public class Model_Board extends Model {
 
         // Synchronizace webview - což je web stránka kterou generuje hardware pro vývojáře na sledování zátěže, vlákna atd..
         if(overview.webview != web_view){
-            terminal_logger.warn("Model_Board:: check_settings:: inconsistent state:: web_view");
+            terminal_logger.warn("check_settings - inconsistent state: web_view");
             set_web_view(web_view);
         }
 
         // Synchronizace portu na kterém běží webview
         if(overview.webport == null ||  !overview.webport.equals(web_port)){
-            terminal_logger.warn("Model_Board:: check_settings:: inconsistent state:: web_port");
+            terminal_logger.warn("check_settings - inconsistent state: web_port");
             set_web_port(web_port);
         }
 
@@ -1395,14 +1395,14 @@ public class Model_Board extends Model {
         // Firmware Neexistuje na Tyrionovi Deska je buď uplně nová nebo apřiřazená například při vývyji nebo byl aktivován database_synchronize když byla deska offline
         if(Model_CCompilation.find.where().eq("firmware_build_id", overview.binaries.firmware.build_id).findRowCount() < 1 || get_actual_c_program_version() == null || get_actual_c_program_version().c_compilation != null) {
 
-            terminal_logger.debug("hardware_firmware_state_check: Actual firmware_id is not recognized by the DB - Device has not firmware from Tyrion");
-            terminal_logger.debug("hardware_firmware_state_check: Tyrion will try to find Default C Program Main Version for this type of hardware. If is it set, Tyrion will update device to starting state");
+            terminal_logger.debug("check_firmware - Actual firmware_id is not recognized by the DB - Device has not firmware from Tyrion");
+            terminal_logger.debug("check_firmware - Tyrion will try to find Default C Program Main Version for this type of hardware. If is it set, Tyrion will update device to starting state");
 
             // Nastavím default firmware podle schématu Tyriona!
             // Defaultní firmware je v v backandu určený výchozí program k typu desky.
             if (get_type_of_board().get_main_c_program() != null && get_type_of_board().get_main_c_program().default_main_version != null) {
 
-                terminal_logger.debug("hardware_firmware_state_check: Yes, Default Version for Type Of Device {} is set", get_type_of_board().name);
+                terminal_logger.debug("check_firmware - Yes, Default Version for Type Of Device {} is set", get_type_of_board().name);
 
                 List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
 
@@ -1433,11 +1433,11 @@ public class Model_Board extends Model {
         // Nastavit aktuální verzi firmwaru na backup který naběhnul
         if(!actual_c_program_version.c_compilation.firmware_build_id.equals(overview.binaries.firmware.build_id)){
 
-            terminal_logger.debug("hardware_firmware_state_check: Different firmware versions versus database");
+            terminal_logger.debug("check_firmware - Different firmware versions versus database");
 
             if (get_backup_c_program_version().id.equals(overview.binaries.bootloader.build_id)) {
 
-                terminal_logger.warn("hardware_firmware_state_check: We have problem with firmware version. Backup is now running");
+                terminal_logger.warn("check_firmware - We have problem with firmware version. Backup is now running");
 
                 // Notifikace uživatelovi
                 this.notification_board_unstable_actual_firmware_version(get_actual_c_program_version());
@@ -1456,8 +1456,8 @@ public class Model_Board extends Model {
             // Backup to není
             else {
 
-                terminal_logger.warn("hardware_firmware_state_check: Wrong version on hardware - or null version on hardware");
-                terminal_logger.warn("hardware_firmware_state_check: Now System set Default Firmware or Firmware by Database!!!");
+                terminal_logger.warn("check_firmware - Wrong version on hardware - or null version on hardware");
+                terminal_logger.warn("check_firmware - Now System set Default Firmware or Firmware by Database!!!");
 
                 // Nastavuji nový systémový update
                 List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
@@ -1513,15 +1513,14 @@ public class Model_Board extends Model {
                 // Verze se rovnají
                 if (plan.board.get_actual_c_program_version().c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id )) {
 
-                    terminal_logger.debug("hardware_firmware_state_check: Firmware versions are equal. Procedure done");
+                    terminal_logger.debug("check_firmware - up to date, procedure is done");
                     plan.state = Enum_CProgram_updater_state.complete;
                     plan.update();
 
                 } else {
 
-                    terminal_logger.debug("hardware_firmware_state_check: Firmware versions are not equal, System start with and try the new update");
+                    terminal_logger.debug("check_firmware - need update, system starts a new update, number of tries {}", plan.count_of_tries);
                     plan.state = Enum_CProgram_updater_state.not_start_yet;
-                    terminal_logger.debug("hardware_firmware_state_check: Firmware versions are not equal, System start with and try the new update. Number of Tries:: {} ", plan.count_of_tries);
                     plan.count_of_tries++;
                     plan.update();
                     execute_update_procedure(plan.actualization_procedure);
@@ -1530,7 +1529,7 @@ public class Model_Board extends Model {
 
             } else {
 
-                terminal_logger.debug("hardware_firmware_state_check: Firmware versions are not equal because there is no on the hardware at all. System start with a new update");
+                terminal_logger.debug("check_firmware - no firmware, system starts a new update");
                 plan.state = Enum_CProgram_updater_state.not_start_yet;
                 plan.count_of_tries++;
                 plan.update();
@@ -1550,7 +1549,7 @@ public class Model_Board extends Model {
         if(backup_mode) return;
 
 
-        terminal_logger.debug("hardware_firmware_state_check::     Third Check Backup! ");
+        terminal_logger.debug("check_backup - third check backup! ");
 
         Model_VersionObject version = Model_VersionObject.find.where().eq("c_compilation.firmware_build_id", overview.binaries.backup.build_id).findUnique();
 
@@ -1611,15 +1610,14 @@ public class Model_Board extends Model {
                     // Verze se rovnají
                     if (plan.board.get_backup_c_program_version().c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
 
-                        terminal_logger.debug("hardware_firmware_state_check: Backup versions are equal. Procedure done");
+                        terminal_logger.debug("check_backup - up to date, procedure is done");
                         plan.state = Enum_CProgram_updater_state.complete;
                         plan.update();
 
                     } else {
 
-                        terminal_logger.debug("hardware_firmware_state_check: Backup versions are not equal, System start with and try the new update");
+                        terminal_logger.debug("check_backup - need update, system starts a new update, number of tries {}", plan.count_of_tries);
                         plan.state = Enum_CProgram_updater_state.not_start_yet;
-                        terminal_logger.debug("hardware_firmware_state_check: Backup versions are not equal, System start with and try the new update. Number of Tries:: {} ", plan.count_of_tries);
                         plan.count_of_tries++;
                         plan.update();
                         execute_update_procedure(plan.actualization_procedure);
@@ -1628,7 +1626,7 @@ public class Model_Board extends Model {
 
                 } else {
 
-                    terminal_logger.debug("hardware_firmware_state_check: Backup versions are not equal because there is no on the hardware at all. System start with a new update");
+                    terminal_logger.debug("check_backup - no backup, system starts a new update");
                     plan.state = Enum_CProgram_updater_state.not_start_yet;
                     plan.count_of_tries++;
                     plan.update();
@@ -1663,7 +1661,7 @@ public class Model_Board extends Model {
         // Pokud uživatel nechce DB synchronizaci ingoruji
         if(!this.database_synchronize) return;
 
-        if (get_actual_bootloader() == null) terminal_logger.trace("hardware_firmware_state_check:: Actual bootloader_id by DB not recognized :: ", overview.binaries.bootloader.build_id);
+        if (get_actual_bootloader() == null) terminal_logger.trace("hardware_firmware_state_check -: Actual bootloader_id by DB not recognized :: ", overview.binaries.bootloader.build_id);
 
         
 
@@ -1703,15 +1701,14 @@ public class Model_Board extends Model {
                 // Verze se rovnají
                 if (plan.board.get_actual_bootloader().version_identificator.equals(plan.bootloader.version_identificator)) {
 
-                    terminal_logger.debug("hardware_firmware_state_check: Bootloader versions are equal. Procedure done");
+                    terminal_logger.debug("check_bootloader - up to date, procedure is done");
                     plan.state = Enum_CProgram_updater_state.complete;
                     plan.update();
 
                 } else {
 
-                    terminal_logger.debug("hardware_firmware_state_check: Bootloader versions are not equal, System start with and try the new update");
+                    terminal_logger.debug("check_bootloader - need update, system starts a new update, number of tries {}", plan.count_of_tries);
                     plan.state = Enum_CProgram_updater_state.not_start_yet;
-                    terminal_logger.debug("hardware_firmware_state_check: Bootloader versions are not equal, System start with and try the new update. Number of Tries:: {} ", plan.count_of_tries);
                     plan.count_of_tries++;
                     plan.update();
                     execute_update_procedure(plan.actualization_procedure);
@@ -1719,7 +1716,7 @@ public class Model_Board extends Model {
 
             } else {
 
-                terminal_logger.debug("hardware_firmware_state_check: Bootloader versions are not equal because there is no on the hardware at all. System start with a new update");
+                terminal_logger.debug("check_bootloader - no bootloader, system starts a new update");
                 plan.state = Enum_CProgram_updater_state.not_start_yet;
                 plan.count_of_tries++;
                 plan.update();
@@ -1735,28 +1732,24 @@ public class Model_Board extends Model {
 
         // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
 
-            // Bootloader
-            terminal_logger.debug("hardware_firmware_state_check::     Second Check Bootloader! ");
-            if(overview.binaries.bootloader != null)
-                if(get_actual_bootloader().main_type_of_board != null)
-                    if(!overview.binaries.bootloader.build_id.equals(actual_bootloader_id())){
+        // Bootloader
+        terminal_logger.debug("check_updates - second check bootloader! ");
+        if(overview.binaries.bootloader != null && get_actual_bootloader().main_type_of_board != null && !overview.binaries.bootloader.build_id.equals(actual_bootloader_id())) {
 
-                        terminal_logger.debug("hardware_firmware_state_check::     Different bootloader on hardware versus database");
+            terminal_logger.debug("check_updates - different bootloader on hardware versus database");
 
-                        List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
+            List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
 
-                        WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
-                        b_pair.board = this;
-                        b_pair.bootLoader = this.get_actual_bootloader();
+            WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
+            b_pair.board = this;
+            b_pair.bootLoader = this.get_actual_bootloader();
 
-                        b_pairs.add(b_pair);
+            b_pairs.add(b_pair);
 
-                        terminal_logger.debug("hardware_firmware_state_check::     Creating update procedure");
-                        Model_ActualizationProcedure procedure = create_update_procedure(Enum_Firmware_type.BOOTLOADER, Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, b_pairs);
-                        procedure.execute_update_procedure();
-                    }
-
-
+            terminal_logger.debug("check_updates - creating update procedure");
+            Model_ActualizationProcedure procedure = create_update_procedure(Enum_Firmware_type.BOOTLOADER, Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, b_pairs);
+            procedure.execute_update_procedure();
+        }
     }
 
 
@@ -2037,7 +2030,7 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient public static final String disconnection_permission_docs = "read: If user want remove Board from Project, he needs one single permission Project.update_permission, where hardware is registered. - Or user need static/dynamic permission key";
 
     // TODO Cachování oprávnění - Dá se to tu zlepšít obdobně jako třeba v C_Program
-    @JsonIgnore   @Transient public boolean create_permission() {  return  Controller_Security.has_token() && Controller_Security.get_person().has_permission("Board_Create"); }
+    @JsonIgnore   @Transient public boolean create_permission(){  return  Controller_Security.has_token() && Controller_Security.get_person().has_permission("Board_Create"); }
     @JsonProperty @Transient public boolean edit_permission()  {  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.get_person().has_permission("Board_edit")) ;}
     @JsonProperty @Transient public boolean read_permission()  {  return  Controller_Security.has_token() && ((project_id() != null && get_project().read_permission())   || Controller_Security.has_token() && Controller_Security.get_person().has_permission("Board_read"));}
     @JsonProperty @Transient public boolean delete_permission(){  return  Controller_Security.has_token() && ((project_id() != null && get_project().update_permission()) || Controller_Security.has_token() && Controller_Security.get_person().has_permission("Board_delete"));}
@@ -2060,7 +2053,7 @@ public class Model_Board extends Model {
     @Override
     public void save(){
 
-        terminal_logger.debug("save :: Creating new Object");
+        terminal_logger.debug("save - inserting to database");
 
         //Default starting state
         database_synchronize = true;
@@ -2076,15 +2069,14 @@ public class Model_Board extends Model {
     @Override
     public void update(){
 
-        terminal_logger.debug("update :: Update object Id: " + this.id);
+        terminal_logger.debug("update - updating database, id: {}", this.id);
 
         //Cache Update
-        cache.put(this.id, this);
+        cache.replace(this.id, this);
 
         if(project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Board.class, project_id(), this.id))).start();
 
         //Database Update
-        System.out.println("Dělám super Update");
         super.update();
     }
 
@@ -2139,24 +2131,21 @@ public class Model_Board extends Model {
 
         if (status == null){
 
-            terminal_logger.debug("is_online:: Check online status - its not in cache:: " + id);
-
+            terminal_logger.debug("is_online - online status is not in cache: {}", id);
             try {
 
                 WS_Message_Hardware_online_status result = get_devices_online_state();
 
+                if (result.status.equals("error")){
 
-                if( result.status.equals("error")){
-
-                    terminal_logger.debug("is_online:: hardware_id:: "+  id + " Checking online state! Device is offline");
+                    terminal_logger.debug("is_online - hardware_id: {}, device is offline", id);
                     cache_status.put(id, false);
                     return false;
 
-                } else if( result.status.equals("success") ){
+                } else if (result.status.equals("success")){
 
                     cache_status.put(id, result.is_device_online(id));
                     return false;
-
                 }
 
                 cache_status.put(id, false );

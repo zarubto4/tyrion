@@ -1,29 +1,19 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.mongodb.*;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
-import org.bson.Document;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utilities.enums.Enum_Publishing_type;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
-import utilities.hardware_registration_auhtority.document_objects.DM_Board_Registration_Central_Authority;
 import utilities.lablel_printer_service.Printer_Api;
-import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
-import utilities.lablel_printer_service.labels.Label_12_mm_QR_code;
-import utilities.lablel_printer_service.printNodeModels.PrinterOption;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.response.GlobalResult;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Online_Change_status;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -146,7 +136,7 @@ public class Controller_ZZZ_Tester extends Controller {
             return GlobalResult.result_ok();
         }catch (Exception e){
             e.printStackTrace();
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -293,7 +283,7 @@ public class Controller_ZZZ_Tester extends Controller {
 
         }catch (Exception e){
             e.printStackTrace();
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 

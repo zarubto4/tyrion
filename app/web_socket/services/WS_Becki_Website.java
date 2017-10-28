@@ -25,7 +25,7 @@ public class WS_Becki_Website extends WS_Interface_type {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(WS_HomerServer.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(WS_Becki_Website.class);
 
 /* VALUES  -------------------------------------------------------------------------------------------------------------*/
 

@@ -34,8 +34,8 @@ public class GoPay_PaymentCheck {
     /**
      * Method starts the concurrent thread.
      */
-    public static void startPaymentCheckThread(){
-        terminal_logger.info("startPaymentCheckThread: starting");
+    public static void startThread(){
+        terminal_logger.info("startThread: starting");
         if(!check_payment_thread.isAlive()) check_payment_thread.start();
     }
 

@@ -55,7 +55,7 @@ public class WS_Becki_Single_Connection extends WS_Interface_type {
     @Override
     public void onClose() {
 
-        terminal_logger.trace("WS_Becki_Single_Connection::  onClose::  " + identifikator);
+        terminal_logger.trace("onClose - identifier:" + identifikator);
 
          this.close();
 

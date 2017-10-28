@@ -15,7 +15,7 @@ import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_MProgram_SnapShot_settings;
 import utilities.enums.Enum_Publishing_type;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
@@ -27,7 +27,6 @@ import utilities.swagger.outboundClass.Filter_List.Swagger_Instance_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Type_Of_Block_List;
 import utilities.swagger.outboundClass.Swagger_B_Program_Version;
 import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
-import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_destroy;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -107,7 +106,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_created(Json.toJson(b_program));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -144,7 +143,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(b_program));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -202,7 +201,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -264,7 +263,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(b_program));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -305,7 +304,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -465,7 +464,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson( version_object.get_b_program().program_version(version_object) ));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -505,7 +504,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(version_object.get_b_program().program_version(version_object)));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -566,7 +565,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -611,7 +610,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -701,7 +700,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -756,7 +755,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(homer_instance));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -812,7 +811,7 @@ public class Controller_Blocko extends Controller{
             }
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -852,7 +851,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(list));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -888,7 +887,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(instance));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -951,7 +950,7 @@ public class Controller_Blocko extends Controller{
 
         } catch (Exception e) {
 
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1014,7 +1013,7 @@ public class Controller_Blocko extends Controller{
 
         } catch (Exception e) {
 
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1044,7 +1043,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(instance));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1126,7 +1125,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_created( Json.toJson(typeOfBlock));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1169,7 +1168,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(typeOfBlock));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
 
 
@@ -1244,7 +1243,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok( Json.toJson(typeOfBlock));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1286,7 +1285,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1360,7 +1359,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1402,7 +1401,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1441,7 +1440,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1474,7 +1473,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1507,7 +1506,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1603,7 +1602,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_created( Json.toJson(blockoBlock) );
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1708,7 +1707,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(blocko_block_new));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
     @ApiOperation(value = "edit BlockoBlock",
@@ -1777,7 +1776,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(blockoBlock));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
 
     }
@@ -1818,7 +1817,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(blockoBlock));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
 
     }
@@ -1877,7 +1876,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(result));
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1918,7 +1917,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1951,7 +1950,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -1984,7 +1983,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2024,7 +2023,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2060,7 +2059,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2187,7 +2186,7 @@ public class Controller_Blocko extends Controller{
             }
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2257,7 +2256,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_created(Json.toJson(blockoBlock));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2298,7 +2297,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(blocko_version));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
 
     }
@@ -2364,7 +2363,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(version));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2405,7 +2404,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2443,7 +2442,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(blockoBlockVersion));
 
         }catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2495,7 +2494,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -2548,7 +2547,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
 
         }
     }
@@ -2631,7 +2630,7 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 

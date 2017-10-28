@@ -53,7 +53,7 @@ private static final Class_Logger terminal_logger = new Class_Logger(Model_Permi
     @JsonIgnore @Override
     public void save() {
 
-        terminal_logger.debug("save :: Creating new Object");
+        terminal_logger.debug("save - Creating new Object");
 
         super.save();
 
@@ -61,14 +61,16 @@ private static final Class_Logger terminal_logger = new Class_Logger(Model_Permi
 
     @JsonIgnore @Override public void update() {
 
-        terminal_logger.debug("update :: Update object value: {}",  this.permission_key);
+        terminal_logger.debug("update - Update object value: {}",  this.permission_key);
 
         super.update();
 
     }
 
     @JsonIgnore @Override public void delete() {
-        terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
+        terminal_logger.debug("delete - id" +
+                ": {}",  this.permission_key);
+        super.delete();
     }
 
 

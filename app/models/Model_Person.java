@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import org.hibernate.validator.constraints.Email;
 import play.data.validation.Constraints;
+import play.libs.Json;
 import utilities.Server;
 import utilities.enums.Enum_Notification_action;
 import utilities.enums.Enum_Notification_importance;
@@ -252,6 +253,8 @@ public class Model_Person extends Model {
         if(permissions_keys.isEmpty()){
             for( Model_Permission m :  Model_Permission.find.where().eq("roles.persons.id", id).findList() ) cache_permission(m.permission_key, true);
         }
+
+        terminal_logger.debug("has_permission - permissions: {}", Json.toJson(this.permissions_keys));
 
         return this.permissions_keys.containsKey(permission_key);
     }

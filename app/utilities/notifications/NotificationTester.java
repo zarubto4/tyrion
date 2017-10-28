@@ -12,7 +12,7 @@ import utilities.enums.Enum_Notification_importance;
 import utilities.enums.Enum_Notification_level;
 import utilities.enums.Enum_Notification_type;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.login_entities.Secured_API;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
@@ -138,7 +138,7 @@ public class NotificationTester extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -161,7 +161,7 @@ public class NotificationTester extends Controller {
             return GlobalResult.result_ok();
 
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 

@@ -13,7 +13,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.WebSocket;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.login_entities.Secured_API;
 import utilities.login_entities.TokenCache;
 import utilities.response.GlobalResult;
@@ -109,7 +109,7 @@ public class Controller_WebSocket extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(swagger_websocket_token));
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 

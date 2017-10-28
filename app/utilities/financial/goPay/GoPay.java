@@ -20,7 +20,7 @@ import utilities.enums.Enum_Currency;
 import utilities.enums.Enum_Recurrence_cycle;
 import utilities.financial.goPay.helps_objects.*;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.swagger.documentationClass.Swagger_Payment_Refund;
@@ -487,7 +487,7 @@ public class GoPay extends Controller {
             return GlobalResult.result_ok();
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 

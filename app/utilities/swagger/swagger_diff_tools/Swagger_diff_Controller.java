@@ -12,7 +12,7 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.response.GlobalResult;
 import utilities.swagger.swagger_diff_tools.servise_class.*;
 
@@ -36,7 +36,7 @@ public class Swagger_diff_Controller extends Controller {
 
             return GlobalResult.result_ok(old_api);
         }catch (Exception e){
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 

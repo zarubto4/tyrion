@@ -10,7 +10,7 @@ import utilities.enums.Enum_Terminal_Color;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.request_counter.RequestCounter;
 import utilities.scheduler.CustomScheduler;
 import utilities.slack.Slack;
@@ -32,70 +32,70 @@ public class Global extends GlobalSettings {
         try {
 
             //1
-            System.out.println(Enum_Terminal_Color.ANSI_YELLOW + "onStart: 1) Setting LogBack" + Enum_Terminal_Color.ANSI_RESET);
+            System.out.println(Enum_Terminal_Color.ANSI_YELLOW + "onStart - 1) Setting LogBack" + Enum_Terminal_Color.ANSI_RESET);
             Thread.sleep(2000);
             Server.setLogback();
 
             //2 Set Logs
-            System.out.println(Enum_Terminal_Color.ANSI_YELLOW + "onStart: 2) Setting Logger for Tyrion" + Enum_Terminal_Color.ANSI_RESET);
-            Server_Logger.set_Logger();
+            System.out.println(Enum_Terminal_Color.ANSI_YELLOW + "onStart - 2) Setting Logger for Tyrion" + Enum_Terminal_Color.ANSI_RESET);
+            ServerLogger.setLogger();
 
             //3
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 3) Setting global values" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart - 3) Setting global values" + Enum_Terminal_Color.ANSI_RESET);
             Server.setServerValues();
 
             //4
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 4) Setting system Permission" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart - 4) Setting system Permission" + Enum_Terminal_Color.ANSI_RESET);
             Server.setPermission();
 
             //5
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 5) Setting Directory for Files" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart - 5) Setting Directory for Files" + Enum_Terminal_Color.ANSI_RESET);
             Server.setDirectory();
 
             //6
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 6) Starting threads" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart - 6) Starting threads" + Enum_Terminal_Color.ANSI_RESET);
             Server.startThreads();
 
             //7
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 7) Starting all scheduler threads" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart - 7) Starting all scheduler threads" + Enum_Terminal_Color.ANSI_RESET);
             Server.startSchedulingProcedures();
 
             //8
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 8) Initializing the cache layer" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart - 8) Initializing the cache layer" + Enum_Terminal_Color.ANSI_RESET);
             Server.initCache();
 
             //9
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 9) Initializing the NO SQL Database" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart - 9) Initializing the NO SQL Database" + Enum_Terminal_Color.ANSI_RESET);
             DocumentDB.set_no_SQL_collection();
 
             //10
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 10) Creating Administrator" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart - 10) Creating Administrator" + Enum_Terminal_Color.ANSI_RESET);
             Server.setAdministrator();
 
             //11
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 11) Creating Default Block and Widget Object" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart - 11) Creating Default Block and Widget Object" + Enum_Terminal_Color.ANSI_RESET);
             Server.setWidgetAnDBlock();
 
             //12
-            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart: 12) Synchronize all registered Hardware with Registration Authority" + Enum_Terminal_Color.ANSI_RESET);
+            terminal_logger.warn( Enum_Terminal_Color.ANSI_YELLOW + "onStart - 12) Synchronize all registered Hardware with Registration Authority" + Enum_Terminal_Color.ANSI_RESET);
             Hardware_Registration_Authority.synchronize_device_with_authority();
 
 
             if (Server.server_mode != Enum_Tyrion_Server_mode.developer) Slack.post("Tyrion server in Mode " + Server.server_mode.name() + " version: " + Server.server_version + " started on " + new Date().toString() + ".");
 
        }catch (Exception e){
-            System.out.println("");
-            System.out.println("");
-            System.out.println("");
+            System.out.println();
+            System.out.println();
+            System.out.println();
             System.err.println("#########################################################################################");
             System.err.println("##                                                                                     ##");
             System.err.println("##       Tyrion is not configured properly!!!!                                         ##");
             System.err.println("##       Please - Check Global Class!!!!                                               ##");
             System.err.println("##                                                                                     ##");
             System.err.println("#########################################################################################");
-            System.out.println("");
-            System.out.println("");
-            System.out.println("");
+            System.out.println();
+            System.out.println();
+            System.out.println();
             terminal_logger.internalServerError(e);
        }
 
@@ -107,25 +107,25 @@ public class Global extends GlobalSettings {
     @Override
     public void onStop(Application app){
 
-        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop: Shutting down the server on {}" + Enum_Terminal_Color.ANSI_RESET, new Date());
+        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop - Shutting down the server on {}" + Enum_Terminal_Color.ANSI_RESET, new Date());
 
-        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop: Disconnecting all Becki applications" + Enum_Terminal_Color.ANSI_RESET);
+        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop - Disconnecting all Becki applications" + Enum_Terminal_Color.ANSI_RESET);
         Controller_WebSocket.disconnectBeckiApplications();
 
-        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop: Disconnecting all Blocko Servers" + Enum_Terminal_Color.ANSI_RESET);
+        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop - Disconnecting all Blocko Servers" + Enum_Terminal_Color.ANSI_RESET);
         Controller_WebSocket.disconnectHomerServers();
 
-        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop: Disconnecting all Compilation Servers" + Enum_Terminal_Color.ANSI_RESET);
+        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop - Disconnecting all Compilation Servers" + Enum_Terminal_Color.ANSI_RESET);
         Controller_WebSocket.disconnectCodeServers();
 
-        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop: Closing cache layer" + Enum_Terminal_Color.ANSI_RESET);
+        terminal_logger.warn(Enum_Terminal_Color.ANSI_RED + "onStop - Closing cache layer" + Enum_Terminal_Color.ANSI_RESET);
         Server_Cache.stopCache();
 
         if(Server.server_mode == Enum_Tyrion_Server_mode.developer){
             try {
 
-                terminal_logger.warn("onStop: You have developer version - System removes CRON task from your RAM");
-                CustomScheduler.stopScheduler();
+                terminal_logger.warn("onStop - You have developer version - System removes CRON task from your RAM");
+                CustomScheduler.stop();
 
             } catch (Exception e) {
                 terminal_logger.internalServerError(e);
@@ -158,7 +158,7 @@ public class Global extends GlobalSettings {
     @Override
     public Action onRequest(Http.Request request, Method actionMethod) {
 
-        terminal_logger.debug("request: " + request.method() + " " + request.path());
+        terminal_logger.debug("request - " + request.method() + " " + request.path());
         RequestCounter.count(actionMethod.getName());
 
         return super.onRequest(request, actionMethod);

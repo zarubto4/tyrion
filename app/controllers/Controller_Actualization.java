@@ -12,7 +12,7 @@ import play.mvc.Security;
 import utilities.enums.Enum_Firmware_type;
 import utilities.enums.Enum_Update_type_of_update;
 import utilities.logger.Class_Logger;
-import utilities.logger.Server_Logger;
+import utilities.logger.ServerLogger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_NotFound;
@@ -63,7 +63,7 @@ public class Controller_Actualization extends Controller {
             return GlobalResult.result_ok(Json.toJson(procedure));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -127,7 +127,7 @@ public class Controller_Actualization extends Controller {
             return GlobalResult.result_ok(Json.toJson(result));
 
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -159,7 +159,7 @@ public class Controller_Actualization extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(procedure));
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 
@@ -266,7 +266,7 @@ public class Controller_Actualization extends Controller {
 
             return GlobalResult.result_ok(Json.toJson(procedure.short_detail()));
         } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
+            return ServerLogger.result_internalServerError(e, request());
         }
     }
 

@@ -37,8 +37,8 @@ public class NotificationHandler {
     /**
      * Method starts the concurrent thread.
      */
-    public static void startNotificationThread(){
-        terminal_logger.trace("startNotificationThread: starting");
+    public static void startThread(){
+        terminal_logger.trace("startThread: starting");
         if(!send_notification_thread.isAlive()) send_notification_thread.start();
     }
 
