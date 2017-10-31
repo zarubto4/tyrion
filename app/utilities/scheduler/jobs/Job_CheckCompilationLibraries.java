@@ -33,10 +33,7 @@ import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -293,9 +290,7 @@ public class Job_CheckCompilationLibraries implements Job {
                             return;
                         }
 
-
-                        new_bootLoader.save();
-                        new_bootLoader.refresh();
+                        String file_body =  Model_FileRecord.get_encoded_binary_string_from_body(ws_download_file.asByteArray());
 
 
                         // Naheraji na Azure
@@ -305,8 +300,8 @@ public class Job_CheckCompilationLibraries implements Job {
                         terminal_logger.debug("check_version_thread:: bootLoader_uploadFile::  File Name " + file_name);
                         terminal_logger.debug("check_version_thread:: bootLoader_uploadFile::  File Path " + file_path);
 
-                        new_bootLoader.file = Model_FileRecord.uploadAzure_File(ws_download_file.getBody(), "application/octet-stream", file_name, file_path);
-                        new_bootLoader.update();
+                        new_bootLoader.file = Model_FileRecord.uploadAzure_File(file_body, "application/octet-stream", file_name, file_path);
+                        new_bootLoader.save();
 
                         // Nefungovalo to korektně občas - tak se to ukládá oboustraně!
                         new_bootLoader.file.boot_loader = new_bootLoader;
@@ -314,7 +309,6 @@ public class Job_CheckCompilationLibraries implements Job {
                         new_bootLoader.refresh();
 
                         bootLoaders_for_add.add(new_bootLoader);
-
 
                         typeOfBoard.boot_loaders.addAll(bootLoaders_for_add);
                         typeOfBoard.update();
