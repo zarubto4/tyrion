@@ -1734,18 +1734,20 @@ public class Controller_Board extends Controller {
             if(!boot_loader.edit_permission()) return GlobalResult.result_forbidden();
             if(boot_loader.file == null) return GlobalResult.result_badRequest("Required bootloader object with file");
 
-            if(boot_loader.main_type_of_board != null) return GlobalResult.result_badRequest("Bootloader is Already Main");
+            if(boot_loader.get_main_type_of_board() != null) return GlobalResult.result_badRequest("Bootloader is Already Main");
 
 
             Model_BootLoader old_main = Model_BootLoader.find.where().eq("main_type_of_board.id", boot_loader.type_of_board.id).findUnique();
             if(old_main != null){
 
                 old_main.main_type_of_board = null;
+                old_main.cache_value_main_type_of_board_id = null;
                 old_main.update();
 
             }
 
-            boot_loader.main_type_of_board = boot_loader.type_of_board;
+            boot_loader.main_type_of_board = boot_loader.get_main_type_of_board();
+            boot_loader.cache_value_main_type_of_board_id =  boot_loader.main_type_of_board.id;
             boot_loader.update();
 
             // Vymažu Device Cache
@@ -1820,6 +1822,7 @@ public class Controller_Board extends Controller {
                 }
             }
 
+            System.out.println("Velikost pole:: "+ board_for_update.size());
 
             if(!boards.isEmpty()){
                 new Thread( () -> {

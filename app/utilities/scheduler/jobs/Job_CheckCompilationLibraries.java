@@ -309,7 +309,7 @@ public class Job_CheckCompilationLibraries implements Job {
 
                         bootLoaders_for_add.add(new_bootLoader);
 
-                        typeOfBoard.boot_loaders.addAll(bootLoaders_for_add);
+                        typeOfBoard.boot_loaders().addAll(bootLoaders_for_add);
                         typeOfBoard.update();
 
                     }

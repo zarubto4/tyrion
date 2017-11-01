@@ -1737,7 +1737,7 @@ public class Model_Board extends Model {
 
         // Bootloader
         terminal_logger.debug("check_updates - second check bootloader! ");
-        if(overview.binaries.bootloader != null && get_actual_bootloader().main_type_of_board != null && !overview.binaries.bootloader.build_id.equals(actual_bootloader_id())) {
+        if(overview.binaries.bootloader != null && get_actual_bootloader().get_main_type_of_board() != null && !overview.binaries.bootloader.build_id.equals(actual_bootloader_id())) {
 
             terminal_logger.debug("check_updates - different bootloader on hardware versus database");
 
@@ -1759,6 +1759,10 @@ public class Model_Board extends Model {
 /* UPDATE --------------------------------------------------------------------------------------------------------------*/
 
     public static Model_ActualizationProcedure create_update_procedure(Enum_Firmware_type firmware_type, Enum_Update_type_of_update type_of_update, List<WS_Help_Hardware_Pair> board_for_update){
+
+        if(board_for_update == null || board_for_update.isEmpty()) {
+            throw new NullPointerException("List<WS_Help_Hardware_Pair> board_for_update) is empty");
+        }
 
         Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
         procedure.project_id = board_for_update.get(0).board.project_id();
