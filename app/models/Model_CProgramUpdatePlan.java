@@ -72,38 +72,58 @@ public class Model_CProgramUpdatePlan extends Model {
 
 
     @JsonProperty @Transient
-    public Date date_of_planing() { return actualization_procedure.date_of_planing;}
+    public Date date_of_planing() {
+        return actualization_procedure.date_of_planing;
+    }
+
+    @JsonProperty @Transient
+    public Date date_of_create() {
+        return actualization_procedure.date_of_create;
+    }
+
 
     @ApiModelProperty(required = false, value = "Is visible only if update is for Firmware or Backup")
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient
     public Swagger_C_Program_Update_program c_program_detail(){
 
-        if(c_program_version_for_update == null ) return null;
+        try {
+            if (c_program_version_for_update == null) return null;
 
-            Swagger_C_Program_Update_program c_program_detail   = new  Swagger_C_Program_Update_program();
-            c_program_detail.c_program_id               = c_program_version_for_update.c_program.id;
-            c_program_detail.c_program_program_name     = c_program_version_for_update.c_program.name;
-            c_program_detail.c_program_version_id       = c_program_version_for_update.id;
-            c_program_detail.c_program_version_name     = c_program_version_for_update.version_name;
+            Swagger_C_Program_Update_program c_program_detail = new Swagger_C_Program_Update_program();
+            c_program_detail.c_program_id = c_program_version_for_update.c_program.id;
+            c_program_detail.c_program_program_name = c_program_version_for_update.c_program.name;
+            c_program_detail.c_program_version_id = c_program_version_for_update.id;
+            c_program_detail.c_program_version_name = c_program_version_for_update.version_name;
 
             return c_program_detail;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
     }
 
     @ApiModelProperty(required = false, value = "Is visible only if update is for Bootloader")
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient
     public Swagger_Bootloader_Update_program bootloader_detail(){
+        try {
 
-        if(bootloader == null ) return null;
+            if (bootloader == null) return null;
 
-        Swagger_Bootloader_Update_program bootloader_update_detail  = new Swagger_Bootloader_Update_program();
-        bootloader_update_detail.bootloader_id                      = bootloader.id.toString();
-        bootloader_update_detail.bootloader_name                    = bootloader.name;
-        bootloader_update_detail.version_identificator              = bootloader.version_identificator;
-        bootloader_update_detail.type_of_board_name                 = bootloader.type_of_board.name;
-        bootloader_update_detail.type_of_board_id                    = bootloader.type_of_board.id;
+            Swagger_Bootloader_Update_program bootloader_update_detail = new Swagger_Bootloader_Update_program();
+            bootloader_update_detail.bootloader_id = bootloader.id.toString();
+            bootloader_update_detail.bootloader_name = bootloader.name;
+            bootloader_update_detail.version_identificator = bootloader.version_identificator;
+            bootloader_update_detail.type_of_board_name = bootloader.type_of_board.name;
+            bootloader_update_detail.type_of_board_id = bootloader.type_of_board.id;
 
 
-        return bootloader_update_detail;
+            return bootloader_update_detail;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true) @Transient
@@ -134,21 +154,21 @@ public class Model_CProgramUpdatePlan extends Model {
 
         Swagger_C_Program_Update_plan_Short_Detail detail = new Swagger_C_Program_Update_plan_Short_Detail();
         detail.id = this.id.toString();
+        detail.actualization_procedure_id = this.actualization_procedure.id.toString();
+
+        detail.type_of_update = this.actualization_procedure.type_of_update;
+        detail.date_of_create = date_of_create();
+        detail.date_of_planed = date_of_planing();
         detail.date_of_finish = date_of_finish;
         detail.firmware_type = firmware_type;
         detail.state = state;
 
         if(detail.firmware_type == Enum_Firmware_type.FIRMWARE || detail.firmware_type == Enum_Firmware_type.BACKUP){
-            detail.c_program_id               = c_program_version_for_update.c_program.id;
-            detail.c_program_program_name     = c_program_version_for_update.c_program.name;
-            detail.c_program_version_id       = c_program_version_for_update.id;
-            detail.c_program_version_name     = c_program_version_for_update.version_name;
+                detail.program = c_program_detail();
         }
 
         if(detail.firmware_type == Enum_Firmware_type.BOOTLOADER ){
-            detail.bootloader_id           = bootloader.id.toString();
-            detail.bootloader_name         = bootloader.name;
-            detail.version_identificator   = bootloader.version_identificator;
+            detail.bootloader = bootloader_detail();
         }
 
         return detail;

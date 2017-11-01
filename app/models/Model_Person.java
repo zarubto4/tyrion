@@ -82,8 +82,8 @@ public class Model_Person extends Model {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public List<String> project_ids = new ArrayList<>();
-    @JsonIgnore @Transient private HashMap<String, Boolean> permissions_keys = new HashMap<>(); // Záměrně Private! Tak aby se přistupovalo z jedné metody
+    @JsonIgnore @Transient public List<String> cache_value_project_ids = new ArrayList<>();
+    @JsonIgnore @Transient private HashMap<String, Boolean> cache_value_permissions_keys = new HashMap<>(); // Záměrně Private! Tak aby se přistupovalo z jedné metody
     @JsonIgnore @Transient public String cache_picture_link;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -107,19 +107,26 @@ public class Model_Person extends Model {
     public List<Swagger_Project_Short_Detail> get_user_access_projects(){
 
         // Chache Add Projects
-        if(project_ids.isEmpty()) {
+        if(cache_value_project_ids.isEmpty()) {
 
             // Získání seznamu
             List<Model_Project> projects = Model_Project.find.where().eq("participants.person.id", id).order().asc("name").select("id").findList();
             for (Model_Project project : projects) {
-                project_ids.add(project.id);
+                cache_value_project_ids.add(project.id);
             }
         }
 
         List<Swagger_Project_Short_Detail> projects = new ArrayList<>();
 
-        for(String project_id : project_ids){
-            projects.add(Model_Project.get_byId(project_id).project_short_detail());
+        for(String project_id : cache_value_project_ids){
+
+            Model_Project project = Model_Project.get_byId(project_id);
+
+            if(project == null){
+                continue;
+            }
+
+            projects.add(project.project_short_detail());
         }
 
         return projects;
@@ -250,17 +257,17 @@ public class Model_Person extends Model {
 
     @JsonIgnore @Transient
     public boolean has_permission(String permission_key) {
-        if(permissions_keys.isEmpty()){
+        if(cache_value_permissions_keys.isEmpty()){
             for( Model_Permission m :  Model_Permission.find.where().eq("roles.persons.id", id).findList() ) cache_permission(m.permission_key, true);
         }
 
-        terminal_logger.debug("has_permission - permissions: {}", Json.toJson(this.permissions_keys));
+        terminal_logger.debug("has_permission - permissions: {}", Json.toJson(this.cache_value_permissions_keys));
 
-        return this.permissions_keys.containsKey(permission_key);
+        return this.cache_value_permissions_keys.containsKey(permission_key);
     }
     @JsonIgnore @Transient
     public void cache_permission(String permission_key, boolean value) {
-        this.permissions_keys.put(permission_key, value);
+        this.cache_value_permissions_keys.put(permission_key, value);
     }
     
     /**
@@ -297,7 +304,7 @@ public class Model_Person extends Model {
             if (person == null) return null;
 
             for(Model_Permission permission : person.person_permissions){
-                person.permissions_keys.put(permission.permission_key, true);
+                person.cache_value_permissions_keys.put(permission.permission_key, true);
             }
 
             cache.put(id, person);

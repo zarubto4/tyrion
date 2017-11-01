@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
@@ -31,7 +32,7 @@ public class Model_Customer extends Model{
          @OneToOne(mappedBy = "customer",cascade = CascadeType.ALL) public Model_PaymentDetails payment_details;
 
        @JsonIgnore @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL) public List<Model_Product>  products  = new ArrayList<>();
-                   @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL) public List<Model_Employee> employees = new ArrayList<>();
+                   @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Employee> employees = new ArrayList<>();
 
        @JsonIgnore public boolean removed_by_user;
 
@@ -40,20 +41,18 @@ public class Model_Customer extends Model{
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     public List<Model_Employee> getEmployees(){
-
-        if (this.employees.isEmpty()) this.employees = Model_Employee.find.where().eq("customer.id", this.id).findList();
-
-        return this.employees;
+        return  Model_Employee.find.where().eq("customer.id", this.id).findList();
     }
 
     @JsonIgnore
     public boolean isEmployee(Model_Person person){
         try {
 
-            if (employees.isEmpty())
+            if (employees.isEmpty()) {
                 return Model_Person.find.where().eq("employees.customer.id", this.id).findUnique() != null;
+            }
 
-            return employees.stream().anyMatch(e -> e.person.id.equals(person.id));
+            return employees.stream().anyMatch(e -> e.get_person().id.equals(person.id));
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
