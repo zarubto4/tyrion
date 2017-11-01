@@ -177,12 +177,12 @@ create table CProgramUpdatePlan (
   c_program_version_for_update_id varchar(255),
   bootloader_id             varchar(40),
   binary_file_id            varchar(255),
-  state                     varchar(23),
+  state                     varchar(28),
   count_of_tries            integer,
   error                     varchar(255),
   error_code                integer,
   constraint ck_CProgramUpdatePlan_firmware_type check (firmware_type in ('BACKUP','FIRMWARE','BOOTLOADER','WIFI')),
-  constraint ck_CProgramUpdatePlan_state check (state in ('canceled','in_progress','waiting_for_device','overwritten','bin_file_not_found','not_updated','homer_server_is_offline','complete','instance_inaccessible','critical_error','not_start_yet')),
+  constraint ck_CProgramUpdatePlan_state check (state in ('canceled','in_progress','waiting_for_device','homer_server_never_connected','overwritten','bin_file_not_found','not_updated','homer_server_is_offline','complete','instance_inaccessible','critical_error','not_start_yet')),
   constraint pk_CProgramUpdatePlan primary key (id))
 ;
 

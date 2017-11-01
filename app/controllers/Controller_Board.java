@@ -1746,7 +1746,7 @@ public class Controller_Board extends Controller {
 
             }
 
-            boot_loader.main_type_of_board = boot_loader.get_main_type_of_board();
+            boot_loader.main_type_of_board = boot_loader.get_type_of_board();
             boot_loader.cache_value_main_type_of_board_id =  boot_loader.main_type_of_board.id;
             boot_loader.update();
 
@@ -1820,11 +1820,13 @@ public class Controller_Board extends Controller {
                 } else{
                     pair.bootLoader = Model_BootLoader.find.where().eq("main_type_of_board.boards.id", board.id).findUnique();
                 }
+
+                board_for_update.add(pair);
             }
 
             System.out.println("Velikost pole:: "+ board_for_update.size());
 
-            if(!boards.isEmpty()){
+            if(!board_for_update.isEmpty()){
                 new Thread( () -> {
                     try {
 

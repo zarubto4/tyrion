@@ -131,10 +131,7 @@ public class Model_TypeOfBoard extends Model {
 
     @Transient @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<Model_BootLoader> boot_loaders(){
-
         try {
-            if (!bootloader_edit_permission()) return null;
-
 
             if (cache_bootloaders_id == null) {
 

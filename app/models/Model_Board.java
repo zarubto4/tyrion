@@ -1236,7 +1236,7 @@ public class Model_Board extends Model {
         for (Model_CProgramUpdatePlan plan : plans) {
             try {
 
-                terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: ID:: {} - New Cycle" , procedure.id , plan.id);
+                terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: ID:: {} - New Cycle" , procedure.id , plan.id, plan.id);
                 terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Board ID:: {}" , procedure.id , plan.id,  plan.board.id);
                 terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Status:: {} ", procedure.id , plan.id,  plan.state);
 
@@ -1251,6 +1251,11 @@ public class Model_Board extends Model {
                     continue;
                 }
 
+                if(plan.board.connected_server_id == null){
+                    plan.state = Enum_CProgram_updater_state.homer_server_never_connected;
+                    plan.update();
+                    continue;
+                }
 
                 if(!server_device_sort.containsKey(plan.board.connected_server_id)){
                     server_device_sort.put(plan.board.connected_server_id, new ArrayList<Model_CProgramUpdatePlan>());
