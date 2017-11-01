@@ -78,16 +78,10 @@ public class Controller_Blocko extends Controller{
         try{
 
 
-
             // Zpracování Json
             final Form<Swagger_B_Program_New> form = Form.form(Swagger_B_Program_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_B_Program_New help = form.get();
-
-
-            if(help.name.length() > 2) {
-                return GlobalResult.result_badRequest("Tato zpráva by se měla zobrazit jako důvod toho že to nefunguje. ");
-            }
 
             // Kontrola objektu
             Model_Project project = Model_Project.get_byId(project_id);

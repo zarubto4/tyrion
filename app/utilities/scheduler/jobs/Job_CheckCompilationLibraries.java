@@ -292,7 +292,6 @@ public class Job_CheckCompilationLibraries implements Job {
 
                         String file_body =  Model_FileRecord.get_encoded_binary_string_from_body(ws_download_file.asByteArray());
 
-
                         // Naheraji na Azure
                         String file_name = UUID.randomUUID().toString() + "." + "bin";
                         String file_path = new_bootLoader.get_Container().getName() + "/" + file_name;
