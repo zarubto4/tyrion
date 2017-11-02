@@ -18,7 +18,7 @@ public class WS_Message_Homer_Instance_list extends WS_AbstractMessage {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Constraints.Required  public List<String> instance_ids = new ArrayList<>();
+    public List<String> instance_ids = new ArrayList<>();
 
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/

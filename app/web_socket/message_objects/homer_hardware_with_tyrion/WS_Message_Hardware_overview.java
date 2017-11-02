@@ -19,12 +19,13 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
     @JsonIgnore
     public static final String message_type = "hardware_info";
 
+    public WS_Message_Hardware_overview(){}
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
 
     @Valid
-    public List<WS_Help_Hardware_board_overview> hardware_list = new ArrayList<>();
+    public List<WS_Message_Hardware_overview_Board> hardware_list = new ArrayList<>();
 
 
     /**
@@ -34,18 +35,39 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
      * Slower for a small number of elements - significantly faster for a large number of elements.
      */
     @JsonIgnore
-    HashMap<String, WS_Help_Hardware_board_overview> map = new HashMap<>();
-    public WS_Help_Hardware_board_overview get_device_from_list(String device_id) {
+    HashMap<String, WS_Message_Hardware_overview_Board> map = new HashMap<>();
+    public WS_Message_Hardware_overview_Board get_device_from_list(String device_id) {
+
+        // System.out.println("WS_Message_Hardware_overview get_device_from_list " +  device_id);
 
         if (map.isEmpty() && hardware_list.isEmpty()) {
+            System.out.println("WS_Message_Hardware_overview: Seznam je prázdný :( " +  device_id);
             return null;
         } else if (map.isEmpty()) {
-            for (WS_Help_Hardware_board_overview status : hardware_list) {
+
+            // System.out.println("WS_Message_Hardware_overview: Message status: " + super.status);
+
+            for (WS_Message_Hardware_overview_Board status : hardware_list) {
+                status.status = super.status;
+                status.message_channel = super.message_channel;
+                status.message_id = super.message_id;
+                status.message_type = super.message_type;
+                status.websocket_identificator = super.websocket_identificator;
                 map.put(status.hardware_id, status);
             }
         }
 
-        return map.get(device_id);
+        if(map.containsKey(device_id)){
+            return map.get(device_id);
+        }else {
+            // System.out.println("WS_Message_Hardware_overview: Seznam neobsahuje dané ID :( " +  device_id);
+            WS_Message_Hardware_overview_Board overview_board = new WS_Message_Hardware_overview_Board();
+            overview_board.status = "error";
+            overview_board.error_message = "Hardware is not in List";
+            overview_board.error_code = 1231;
+            return overview_board;
+        }
+
     }
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
@@ -75,55 +97,6 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
         )));
 
         return request;
-
-    }
-
-/* HELP CLASS  -------------------------------------------------------------------------------------------------------*/
-
-    public static class WS_Help_Hardware_board_overview {
-
-        @Constraints.Required public String hardware_id;
-        @Constraints.Required public boolean online_state;
-        public String mac;
-
-        public String target;                       // třeba Yoda G3
-        public String alias;                        // "pepa"
-
-        @Valid public WS_Help_Hardware_board_binaries binaries;
-
-        public String ip;
-        public boolean console;
-        public boolean webview;
-        public Integer webport;
-
-        public String normal_mqtt_connection;       // ip addressa:port
-        public String backup_mqtt_connection;       // ip addressa:port
-
-        public boolean autobackup;
-
-
-    }
-
-    public static class WS_Help_Hardware_board_binaries {
-
-        public WS_Help_Hardware_board_binaries(){}
-
-        @Constraints.Required @Valid public WS_Help_Hardware_board_IBinaryInfo firmware;
-        @Constraints.Required @Valid public WS_Help_Hardware_board_IBinaryInfo bootloader;
-        @Constraints.Required @Valid public WS_Help_Hardware_board_IBinaryInfo backup;
-        @Constraints.Required @Valid public WS_Help_Hardware_board_IBinaryInfo buffer;
-
-    }
-
-    // Zastupný objekt pro binary
-    public static class WS_Help_Hardware_board_IBinaryInfo {
-
-        public String version;
-        public Integer size;
-        public Long timestamp;
-        public String build_id;
-        public String name;
-        public Integer memsize;
 
     }
 

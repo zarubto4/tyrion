@@ -197,8 +197,10 @@ public class Model_CProgramUpdatePlan extends Model {
                 binary.program_version_name = c_program_version_for_update.version_name;
             }
             else if(firmware_type == Enum_Firmware_type.BOOTLOADER){
-                binary.download_id = bootloader.version_identificator;
+                binary.download_id = bootloader.id.toString();
                 binary.build_id = bootloader.version_identificator;
+                binary.program_name = bootloader.name;
+                binary.program_version_name = bootloader.version_identificator;
             }
             else{
                 terminal_logger.internalServerError(new IllegalAccessException("Unsupported type of Enum_Firmware_type or not set firmware_type in Model_CProgramUpdatePlan"));

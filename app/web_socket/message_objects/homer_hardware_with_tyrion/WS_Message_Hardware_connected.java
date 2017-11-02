@@ -17,6 +17,4 @@ public class WS_Message_Hardware_connected extends WS_AbstractMessage {
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
-
-
 }

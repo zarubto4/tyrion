@@ -191,7 +191,7 @@ public class Server_Cache {
 
             terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Board Models");
             Model_Board.cache_status = cacheManager.createCache(Model_Board.CACHE_STATUS,
-                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, boolean.class,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Boolean.class,
                             ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." +  Model_Board.class.getSimpleName() + ".CACHE")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(60, TimeUnit.MINUTES))).build());
 

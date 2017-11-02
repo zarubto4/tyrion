@@ -9,6 +9,7 @@ import play.libs.Json;
 import utilities.enums.Enum_MProgram_SnapShot_settings;
 import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class WS_Message_Homer_Hardware_list extends WS_AbstractMessage {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Constraints.Required  public List<String> hardware_ids = new ArrayList<>();
+    @Valid public List<String> hardware_ids = new ArrayList<>();
 
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/

@@ -662,7 +662,7 @@ public class Model_Board extends Model {
             }
 
             // Aktualizuji cache status online HW
-            cache_status.put(help.hardware_id, true);
+            cache_status.put(help.hardware_id, Boolean.TRUE);
 
             // Notifikce
             if(device.developer_kit) {
@@ -679,7 +679,7 @@ public class Model_Board extends Model {
             }
 
             // Nastavím server_id - pokud nekoresponduje s tím, který má HW v databázi uložený
-            if(device.connected_server_id == null || !device.connected_server_id.equals(help.websocket_identificator)){
+            if(help.websocket_identificator != null && ( device.connected_server_id == null || !device.connected_server_id.equals(help.websocket_identificator))){
                 terminal_logger.debug("master_device_Connected:: Changing server id property to {} ", help.websocket_identificator);
                 device.connected_server_id = help.websocket_identificator;
                 device.update();
@@ -706,7 +706,7 @@ public class Model_Board extends Model {
             terminal_logger.debug("master_device_Disconnected:: Updating device status " +  help.hardware_id + " on offline ");
 
             // CHACHE OFFLINE
-            cache_status.put(help.hardware_id, false);
+            cache_status.put(help.hardware_id, Boolean.FALSE);
 
 
             Model_Board device =  Model_Board.get_byId(help.hardware_id);
@@ -1007,12 +1007,14 @@ public class Model_Board extends Model {
     }
 
     //-- Over View Hardware  --//
-    @JsonIgnore @Transient public WS_Message_Hardware_overview get_devices_overview(){
-        return get_devices_overview(Collections.singletonList(this));
-    }
+    @JsonIgnore @Transient public WS_Message_Hardware_overview_Board get_devices_overview(){
 
-    @JsonIgnore @Transient public static WS_Message_Hardware_overview get_devices_overview(Model_Board device){
-        return get_devices_overview(Collections.singletonList(device));
+        WS_Message_Hardware_overview overview = get_devices_overview(Collections.singletonList(this));
+        if(overview.get_device_from_list(id) != null){
+            return overview.get_device_from_list(id);
+        }
+
+        return new WS_Message_Hardware_overview_Board();
     }
 
     @JsonIgnore @Transient public static WS_Message_Hardware_overview get_devices_overview(List<Model_Board> devices){
@@ -1038,9 +1040,13 @@ public class Model_Board extends Model {
 
                 final Form<WS_Message_Hardware_overview> form = Form.form(WS_Message_Hardware_overview.class).bind(json_result);
                 if (form.hasErrors()) {
+                    terminal_logger.warn("get_devices_overview:: Json Incorrect value. {}", result);
+                    terminal_logger.warn("get_devices_overview:: Response. {}", form.errorsAsJson(Lang.forCode("en-US")).toString());
+
                     throw new Exception("WS_Message_Hardware_overview: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
                 }
 
+                result.status = form.get().status;
                 result.hardware_list.addAll(form.get().hardware_list);
 
 
@@ -1307,7 +1313,7 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient  public void hardware_firmware_state_check() {
         try {
 
-            WS_Message_Hardware_overview report = get_devices_overview();
+            WS_Message_Hardware_overview_Board report = get_devices_overview();
 
             if(report.error_message != null){
 
@@ -1319,9 +1325,12 @@ public class Model_Board extends Model {
                     }
             }
 
-            WS_Message_Hardware_overview.WS_Help_Hardware_board_overview overview = report.get_device_from_list(this.id);
+            if(!report.status.equals("success")){
+                terminal_logger.warn("hardware_firmware_state_check: WS_Help_Hardware_board_overview something is wrong on device {}" , this.id);
+                return;
+            }
 
-            if(!overview.online_state) {
+            if(!report.online_state) {
                 terminal_logger.debug("hardware_firmware_state_check - device is offline");
                 return;
             }
@@ -1329,18 +1338,18 @@ public class Model_Board extends Model {
             terminal_logger.debug("hardware_firmware_state_check - Summary information of connected master board: ID = {}", this.id);
 
             terminal_logger.debug("hardware_firmware_state_check - Settings check ",this.id);
-            check_settings(overview);
+            check_settings(report);
 
             terminal_logger.debug("hardware_firmware_state_check - Firmware check ",this.id);
-            check_firmware(overview);
+            check_firmware(report);
 
             terminal_logger.debug("hardware_firmware_state_check - Backup check ",this.id);
-            check_backup(overview);
+            check_backup(report);
 
             terminal_logger.debug("hardware_firmware_state_check - Bootloader check ",this.id);
-            check_bootloader(overview);
+            check_bootloader(report);
 
-            check_updates(overview);
+            check_updates(report);
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
@@ -1351,7 +1360,7 @@ public class Model_Board extends Model {
      * Zde se kontroluje jestli je na HW to co na něm reálně být má
      * @param overview
      */
-    @JsonIgnore @Transient private void check_settings(WS_Message_Hardware_overview.WS_Help_Hardware_board_overview overview){
+    @JsonIgnore @Transient private void check_settings(WS_Message_Hardware_overview_Board overview){
 
         // Kontrola zda je stejný
         if(overview.autobackup != this.backup_mode){
@@ -1359,8 +1368,8 @@ public class Model_Board extends Model {
             set_auto_backup();
         }
 
-        // Kontrola Backupu
-        if(overview.alias == null || !overview.alias.equals(this.name)){
+        // Kontrola Akuasz
+        if((overview.alias == null || !overview.alias.equals(this.name)) && name != null){
             terminal_logger.warn("check_settings - inconsistent state: alias");
             set_alias(this.name);
         }
@@ -1384,7 +1393,7 @@ public class Model_Board extends Model {
         }
 
         // Synchronizace portu na kterém běží webview
-        if(overview.webport == null ||  !overview.webport.equals(web_port)){
+        if((overview.webport == null ||  !overview.webport.equals(web_port)) && web_port != null){
             terminal_logger.warn("check_settings - inconsistent state: web_port");
             set_web_port(web_port);
         }
@@ -1394,7 +1403,7 @@ public class Model_Board extends Model {
      * Pokud máme odchylku od databáze na hardwaru, to jest nesedí firmware_build_id na hW s tím co říká databáze
      * @param overview
      */
-    @JsonIgnore @Transient private void check_firmware(WS_Message_Hardware_overview.WS_Help_Hardware_board_overview overview){
+    @JsonIgnore @Transient private void check_firmware(WS_Message_Hardware_overview_Board overview){
 
 
         // Pokud uživatel nechce DB synchronizaci ingoruji
@@ -1548,7 +1557,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonIgnore @Transient private void check_backup(WS_Message_Hardware_overview.WS_Help_Hardware_board_overview overview){
+    @JsonIgnore @Transient private void check_backup(WS_Message_Hardware_overview_Board overview){
 
         // Pokud uživatel nechce DB synchronizaci ingoruji
         if(!this.database_synchronize) return;
@@ -1582,7 +1591,7 @@ public class Model_Board extends Model {
                     .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
                 .endJunction()
                 .eq("firmware_type", Enum_Firmware_type.BACKUP.name())
-                .lt("actualization_procedure.date_of_planing", new Date().getTime())
+                .lt("actualization_procedure.date_of_planing", new Date())
                 .order().desc("actualization_procedure.date_of_planing")
                 .findList();
 
@@ -1644,7 +1653,7 @@ public class Model_Board extends Model {
             }
 
        // Pokud mám vypnutý autobackup a nastavený statický a ten nesedí - tak aktualizuji
-        }else if(!backup_mode && !get_backup_c_program_version().c_compilation.firmware_build_id.equals(overview.binaries.backup.build_id)){
+        }else if(!backup_mode && get_backup_c_program_version() != null && !get_backup_c_program_version().c_compilation.firmware_build_id.equals(overview.binaries.backup.build_id)){
 
             // Nastavuji nový systémový update
             List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
@@ -1664,7 +1673,7 @@ public class Model_Board extends Model {
 
     }
 
-    @JsonIgnore @Transient private void check_bootloader(WS_Message_Hardware_overview.WS_Help_Hardware_board_overview overview){
+    @JsonIgnore @Transient private void check_bootloader(WS_Message_Hardware_overview_Board overview){
 
         // Pokud uživatel nechce DB synchronizaci ingoruji
         if(!this.database_synchronize) return;
@@ -1684,7 +1693,7 @@ public class Model_Board extends Model {
                 .endJunction()
                 .disjunction()
                 .add(Expr.eq("firmware_type", Enum_Firmware_type.BOOTLOADER.name()))
-                .lt("actualization_procedure.date_of_planing", new Date().getTime())
+                .lt("actualization_procedure.date_of_planing", new Date())
                 .order().desc("actualization_procedure.date_of_planing")
                 .findList();
 
@@ -1736,13 +1745,13 @@ public class Model_Board extends Model {
 
     }
 
-    @JsonIgnore @Transient private void check_updates(WS_Message_Hardware_overview.WS_Help_Hardware_board_overview overview){
+    @JsonIgnore @Transient private void check_updates(WS_Message_Hardware_overview_Board overview){
 
         // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
 
         // Bootloader
         terminal_logger.debug("check_updates - second check bootloader! ");
-        if(overview.binaries.bootloader != null && get_actual_bootloader().get_main_type_of_board() != null && !overview.binaries.bootloader.build_id.equals(actual_bootloader_id())) {
+        if(get_actual_bootloader() == null || (overview.binaries.bootloader != null || get_actual_bootloader() != null && get_actual_bootloader().get_main_type_of_board() != null && !overview.binaries.bootloader.build_id.equals(actual_bootloader_id()))) {
 
             terminal_logger.debug("check_updates - different bootloader on hardware versus database");
 
@@ -1750,7 +1759,17 @@ public class Model_Board extends Model {
 
             WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
             b_pair.board = this;
-            b_pair.bootLoader = this.get_actual_bootloader();
+
+            if(this.get_actual_bootloader() == null) {
+
+                b_pair.bootLoader =  get_type_of_board().main_boot_loader();
+                if(b_pair.bootLoader == null) {
+                    terminal_logger.error("Main Bootloader for Type Of Board {} is not set", this.type_of_board_name());
+                    return;
+                }
+            }else {
+                b_pair.bootLoader = this.get_actual_bootloader();
+            }
 
             b_pairs.add(b_pair);
 

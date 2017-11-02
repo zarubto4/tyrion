@@ -432,7 +432,7 @@ public class Model_HomerServer extends Model {
 
                 // Send echo to all connected users (its public servers)
                 if (homer_server.server_type.equals(Enum_Cloud_HomerServer_type.public_server) || homer_server.server_type.equals(Enum_Cloud_HomerServer_type.main_server) || homer_server.server_type.equals(Enum_Cloud_HomerServer_type.backup_server)) {
-                    WS_Message_Online_Change_status.synchronize_online_state_with_becki_public_objects(Model_HomerInstance.class, homer_server.id.toString(), true);
+                    WS_Message_Online_Change_status.synchronize_online_state_with_becki_public_objects(Model_HomerServer.class, homer_server.id.toString(), true);
                 }
 
                 if (homer_server.server_type.equals(Enum_Cloud_HomerServer_type.private_server)) {
@@ -487,8 +487,9 @@ public class Model_HomerServer extends Model {
             JsonNode node = write_with_confirmation(new WS_Message_Homer_Instance_list().make_request(), 1000 * 15, 0, 2);
             final Form<WS_Message_Homer_Instance_list> form = Form.form(WS_Message_Homer_Instance_list.class).bind(node);
             if (form.hasErrors()) {
+                terminal_logger.warn("get_homer_server_list_of_instance:: Json Incorrect value. {}", node);
+                terminal_logger.warn("get_homer_server_list_of_instance:: Response. {}", form.errorsAsJson(Lang.forCode("en-US")).toString());
                 write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Instance_list.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
-                terminal_logger.warn("get_homer_server_list_of_instance:: Json Incorrect value");
                 return new WS_Message_Homer_Instance_list();
             }
 
@@ -505,14 +506,14 @@ public class Model_HomerServer extends Model {
     public WS_Message_Homer_Hardware_list get_homer_server_list_of_hardware() {
         try {
 
-            System.out.println("get_homer_server_list_of_hardware - start");
-
             JsonNode node = write_with_confirmation(new WS_Message_Homer_Hardware_list().make_request(), 1000 * 15, 0, 2);
 
             final Form<WS_Message_Homer_Hardware_list> form = Form.form(WS_Message_Homer_Hardware_list.class).bind(node);
             if (form.hasErrors()) {
+                terminal_logger.warn("get_homer_server_list_of_hardware:: Json Incorrect value. {}", node);
+                terminal_logger.warn("get_homer_server_list_of_hardware:: Response. {}", form.errorsAsJson(Lang.forCode("en-US")).toString());
                 write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Hardware_list.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
-                terminal_logger.warn("get_homer_server_list_of_hardware:: Json Incorrect value");
+
                 return new WS_Message_Homer_Hardware_list();
             }
 
@@ -626,9 +627,12 @@ public class Model_HomerServer extends Model {
         terminal_logger.debug("is_disconnect:: Tyrion lost connection with Homer server: " + id);
         make_log_disconnect();
 
+        System.out.println("Odpojení serveru");
         // Send echo to all connected users (its public servers)
-        if (server_type.equals(Enum_Cloud_HomerServer_type.public_server) || server_type.equals(Enum_Cloud_HomerServer_type.main_server) || server_type.equals(Enum_Cloud_HomerServer_type.backup_server)) {
-            WS_Message_Online_Change_status.synchronize_online_state_with_becki_public_objects(Model_HomerInstance.class, id.toString(), false);
+        if (server_type == Enum_Cloud_HomerServer_type.public_server || server_type == Enum_Cloud_HomerServer_type.main_server || server_type == Enum_Cloud_HomerServer_type.backup_server) {
+            System.out.println("Podmínky splněny");
+
+            WS_Message_Online_Change_status.synchronize_online_state_with_becki_public_objects(Model_HomerServer.class, id.toString(), false);
         }
     }
 

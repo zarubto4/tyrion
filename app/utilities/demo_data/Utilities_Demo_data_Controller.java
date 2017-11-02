@@ -271,8 +271,8 @@ public class Utilities_Demo_data_Controller extends Controller {
             cloud_server_1.mqtt_username = "user";
             cloud_server_1.web_view_port = 8501;
             cloud_server_1.server_type = Enum_Cloud_HomerServer_type.main_server;
-            cloud_server_1.hash_certificate = "aaaaaaaaaaaaaaa";
-            cloud_server_1.connection_identificator = "bbbbbbbbbbbbbbb";
+            cloud_server_1.connection_identificator = "aaaaaaaaaaaaaaa";
+            cloud_server_1.hash_certificate = "bbbbbbbbbbbbbbb";
             cloud_server_1.save();
 
             Model_HomerServer cloud_server_2 = new Model_HomerServer();

@@ -1737,13 +1737,15 @@ public class Controller_Board extends Controller {
             if(boot_loader.get_main_type_of_board() != null) return GlobalResult.result_badRequest("Bootloader is Already Main");
 
 
-            Model_BootLoader old_main = Model_BootLoader.find.where().eq("main_type_of_board.id", boot_loader.type_of_board.id).findUnique();
-            if(old_main != null){
+            Model_BootLoader old_main_not_cached = Model_BootLoader.find.where().eq("main_type_of_board.id", boot_loader.type_of_board.id).select("id").findUnique();
 
-                old_main.main_type_of_board = null;
-                old_main.cache_value_main_type_of_board_id = null;
-                old_main.update();
-
+            if(old_main_not_cached != null){
+                Model_BootLoader old_main = Model_BootLoader.get_byId(old_main_not_cached.id.toString());
+                if(old_main != null) {
+                    old_main.main_type_of_board = null;
+                    old_main.cache_value_main_type_of_board_id = null;
+                    old_main.update();
+                }
             }
 
             boot_loader.main_type_of_board = boot_loader.get_type_of_board();
