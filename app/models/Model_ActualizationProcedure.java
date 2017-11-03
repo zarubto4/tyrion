@@ -231,26 +231,7 @@ public class Model_ActualizationProcedure extends Model {
     @JsonIgnore @Transient
     public String get_project_id(){
 
-        if(project_id != null) return project_id;
-
-        if(type_of_update == Enum_Update_type_of_update.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE){
-            return null;
-        }
-
-        if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP || type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME ) {
-            Model_Project project = Model_Project.find.where().eq("b_programs.instance.instance_history.procedures.id", id).select("id").findUnique();
-            project_id = project.id;
-            return project_id;
-        }
-
-        if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
-            Model_Project project =  Model_Project.find.where().eq("boards.c_program_update_plans.actualization_procedure.id", id).select("id").findUnique();
-            project_id = project.id;
-            return project_id;
-        }
-
-        terminal_logger.internalServerError(new Exception("Project not found!!"));
-        return null;
+       return project_id;
     }
 
     @JsonIgnore @Transient

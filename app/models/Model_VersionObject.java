@@ -17,6 +17,7 @@ import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
+import utilities.Server;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_Compile_status;
@@ -175,6 +176,11 @@ public class Model_VersionObject extends Model {
             // Compilation status
             if(this.c_compilation != null){
                 help.status = this.c_compilation.status;
+
+                if(this.c_compilation.status == Enum_Compile_status.successfully_compiled_and_restored) {
+                  help.download_link_bin_file = this.c_compilation.file_path();
+                }
+
             }else {
                 help.status = Enum_Compile_status.file_with_code_not_found;
             }
@@ -479,7 +485,7 @@ public class Model_VersionObject extends Model {
                 terminal_logger.trace("compile_program_procedure:: Body is ok - uploading to Azure");
 
                 // Daný soubor potřebuji dostat na Azure a Propojit s verzí
-                c_compilation.bin_compilation_file = Model_FileRecord.create_Binary_file(c_compilation.get_path(), Model_FileRecord.get_encoded_binary_string_from_body(body), "compilation.bin");
+                c_compilation.bin_compilation_file = Model_FileRecord.create_Binary_file(c_compilation.get_path(), body, "firmware.bin");
 
                 terminal_logger.trace("compile_program_procedure:: Body is ok - uploading to Azure was succesfull");
                 c_compilation.status = Enum_Compile_status.successfully_compiled_and_restored;

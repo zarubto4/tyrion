@@ -25,10 +25,11 @@ public class Swagger_C_Program_Version_Short_Detail {
     @ApiModelProperty(required = true, readOnly = true)
     public String library_compilation_version;
 
+    @ApiModelProperty(required = true, readOnly = true, value = "Link for download file in Binary (Not in Base64)")
+    public String download_link_bin_file;
 
     @ApiModelProperty(required = true, readOnly = true)
     public Enum_Compile_status status;
-
 
     @ApiModelProperty(required = true, readOnly = true)
     public boolean update_permission;
