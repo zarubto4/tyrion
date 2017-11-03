@@ -31,14 +31,14 @@ public class YouTrack {
     public static String report(Model_ServerError error) {
 
         terminal_logger.debug("report - new issue");
-
+/*
         if (System.currentTimeMillis() > tokenExpire - 10000) { // pokud nemám platný token, získám ho a metodu spustím znovu
             terminal_logger.debug("report - need login");
             if (login().get(5000).status() != 200) {
                 throw new RuntimeException("Login to YouTrack was unsuccessful.");
             }
         }
-
+*/
         terminal_logger.debug("report - reporting issue");
 
         ObjectNode issue = Json.newObject()
@@ -47,7 +47,10 @@ public class YouTrack {
                 .put("description", error.description + "\n\n" + error.prettyPrint());
 
 
+        terminal_logger.debug("report - request body: {}", Json.toJson(issue));
+
         WSResponse response = getWSClient().url(Configuration.root().getString("Logger.youtrackUrl") + "/youtrack/rest/issue")
+                .setHeader("Accept", "application/json")
                 .setHeader("Content-Type", "application/json")
                 //.setHeader("Authorization", "Bearer " + token)
                 .setHeader("Authorization", "Bearer " + Configuration.root().getString("Logger.youtrackApiKey"))
@@ -59,7 +62,7 @@ public class YouTrack {
             return response.getHeader("Location").replace("/rest", ""); // uložím url z odpovědi
         }
 
-        terminal_logger.debug("report - unsuccessful, status: {}", response.getStatus());
+        terminal_logger.debug("report - unsuccessful, status: {}, body: {}", response.getStatus(), response.getBody());
 
         return null;
     }

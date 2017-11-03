@@ -110,7 +110,7 @@ public class Model_Person extends Model {
         if(project_ids.isEmpty()) {
 
             // Získání seznamu
-            List<Model_Project> projects = Model_Project.find.where().eq("participants.person.id", id).order().asc("name").select("id").findList();
+            List<Model_Project> projects = Model_Project.find.where().eq("removed_by_user", false).eq("participants.person.id", id).order().asc("name").select("id").findList();
             for (Model_Project project : projects) {
                 project_ids.add(project.id);
             }
@@ -119,7 +119,10 @@ public class Model_Person extends Model {
         List<Swagger_Project_Short_Detail> projects = new ArrayList<>();
 
         for(String project_id : project_ids){
-            projects.add(Model_Project.get_byId(project_id).project_short_detail());
+            Model_Project project = Model_Project.get_byId(project_id);
+            if (project != null) {
+                projects.add(project.project_short_detail());
+            }
         }
 
         return projects;

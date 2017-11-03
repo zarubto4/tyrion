@@ -53,7 +53,7 @@ private static final Class_Logger terminal_logger = new Class_Logger(Model_Permi
     @JsonIgnore @Override
     public void save() {
 
-        terminal_logger.debug("save - Creating new Object");
+        terminal_logger.debug("save - new permission: {}", this.permission_key);
 
         super.save();
 
@@ -68,8 +68,7 @@ private static final Class_Logger terminal_logger = new Class_Logger(Model_Permi
     }
 
     @JsonIgnore @Override public void delete() {
-        terminal_logger.debug("delete - id" +
-                ": {}",  this.permission_key);
+        terminal_logger.debug("delete - id: {}",  this.permission_key);
         super.delete();
     }
 

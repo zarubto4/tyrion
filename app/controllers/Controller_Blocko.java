@@ -1,6 +1,7 @@
 package controllers;
 
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.Expr;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
@@ -75,19 +76,12 @@ public class Controller_Blocko extends Controller{
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result bProgram_create(@ApiParam(value = "project_id String path", required = true) String project_id){
-        try{
-
-
+        try {
 
             // Zpracování Json
             final Form<Swagger_B_Program_New> form = Form.form(Swagger_B_Program_New.class).bindFromRequest();
             if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_B_Program_New help = form.get();
-
-
-            if(help.name.length() > 2) {
-                return GlobalResult.result_badRequest("Tato zpráva by se měla zobrazit jako důvod toho že to nefunguje. ");
-            }
 
             // Kontrola objektu
             Model_Project project = Model_Project.get_byId(project_id);
@@ -1343,24 +1337,24 @@ public class Controller_Blocko extends Controller{
             // Order
             query.order().asc("order_position");
 
+            query.where()
+                    .eq("removed_by_user", false)
+                    .or(Expr.eq("project.participants.person.id", Controller_Security.get_person_id()), Expr.and(Expr.isNull("project"), Expr.eq("publish_type", Enum_Publishing_type.public_program.name())));
+
             // Pokud JSON obsahuje project_id filtruji podle projektu
-            if(help.project_id != null){
+            if (help.project_id != null) {
+
+                terminal_logger.debug("typeOfBlock_getByFilter - filtering by project");
 
                 Model_Project project = Model_Project.get_byId(help.project_id);
                 if(project == null )return GlobalResult.result_notFound("Project not found");
                 if(!project.read_permission())return GlobalResult.result_forbidden();
 
-                query.where().eq("project.id", help.project_id).eq("removed_by_user", false);
+                query.where().eq("project.id", help.project_id);
             }
 
-            if(help.public_programs){
-
-                if(!Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name())) {
-                    query.where().isNull("project").eq("removed_by_user", false).eq("publish_type", Enum_Publishing_type.public_program.name());
-                }else {
-                    query.where().isNull("project").eq("removed_by_user", false).eq("active", true).eq("publish_type", Enum_Publishing_type.public_program.name());
-                }
-
+            if (!Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name())) {
+                query.where().eq("active", true);
             }
 
             // Vytvoření odchozího JSON
@@ -1721,6 +1715,7 @@ public class Controller_Blocko extends Controller{
             return ServerLogger.result_internalServerError(e, request());
         }
     }
+    
     @ApiOperation(value = "edit BlockoBlock",
             tags = {"Blocko-Block"},
             notes = "update basic information (name, and description) of the independent BlockoBlock",
