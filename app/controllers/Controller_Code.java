@@ -125,7 +125,7 @@ public class Controller_Code extends Controller{
                 version_object.public_version = help.c_program_public_admin_create;
 
                 // Zkontroluji oprávnění
-                if (!version_object.c_program.update_permission()) return GlobalResult.result_forbidden();
+                if (!c_program.update_permission()) return GlobalResult.result_forbidden();
 
                 version_object.save();
 
@@ -548,7 +548,7 @@ public class Controller_Code extends Controller{
             version_object.public_version      = false;
 
             // Zkontroluji oprávnění
-            if(!version_object.c_program.update_permission()) return GlobalResult.result_forbidden();
+            if(!c_program.update_permission()) return GlobalResult.result_forbidden();
 
             version_object.save();
 
@@ -599,13 +599,13 @@ public class Controller_Code extends Controller{
             if(version_object == null) return GlobalResult.result_notFound("Version_Object version_object not found");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
-            if(version_object.c_program == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
+            if(version_object.get_c_program() == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
 
             // Zkontroluji oprávnění
-            if (!version_object.c_program.read_permission())  return GlobalResult.result_forbidden();
+            if (!version_object.get_c_program() .read_permission())  return GlobalResult.result_forbidden();
 
             // Vracím Objekt
-            return GlobalResult.result_ok(Json.toJson(version_object.c_program.program_version(version_object)));
+            return GlobalResult.result_ok(Json.toJson(version_object.get_c_program() .program_version(version_object)));
 
         } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
@@ -658,7 +658,7 @@ public class Controller_Code extends Controller{
             if (version_object == null) return GlobalResult.result_notFound("Version version_id not found");
 
             // Kontrola oprávnění
-            if(!version_object.c_program.edit_permission()) return GlobalResult.result_forbidden();
+            if(!version_object.get_c_program().edit_permission()) return GlobalResult.result_forbidden();
 
             //Uprava objektu
             version_object.version_name = help.version_name;
@@ -704,10 +704,10 @@ public class Controller_Code extends Controller{
             if (version_object == null) return GlobalResult.result_notFound("Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k C_Programu
-            if(version_object.c_program == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
+            if(version_object.get_c_program() == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
 
             // Kontrola oprávnění
-            if(!version_object.c_program.delete_permission()) return GlobalResult.result_forbidden();
+            if(!version_object.get_c_program().delete_permission()) return GlobalResult.result_forbidden();
 
             // Smažu zástupný objekt
             version_object.delete();
@@ -750,7 +750,7 @@ public class Controller_Code extends Controller{
             Model_VersionObject version = Model_VersionObject.get_byId(version_id);
             if(version == null) return GlobalResult.result_notFound("Version not found");
 
-            if(version.c_program == null )return GlobalResult.result_notFound("Version not found");
+            if(version.get_c_program()  == null )return GlobalResult.result_notFound("Version not found");
 
 
             if(Model_VersionObject.find.where().eq("approval_state", Enum_Approval_state.pending.name())
@@ -766,7 +766,7 @@ public class Controller_Code extends Controller{
             version.approval_state = Enum_Approval_state.pending;
 
             // Kontrola oprávnění
-            if(!(version.c_program.edit_permission())) return GlobalResult.result_forbidden();
+            if(!(version.get_c_program().edit_permission())) return GlobalResult.result_forbidden();
 
             // Uložení změn
             version.update();
@@ -816,12 +816,12 @@ public class Controller_Code extends Controller{
             Model_VersionObject version_old = Model_VersionObject.get_byId(help.version_id);
             if(version_old == null) return GlobalResult.result_notFound("Version not found");
 
-            if(version_old.c_program == null){
+            if(version_old.get_c_program() == null){
                 return GlobalResult.result_notFound("C_Program c_program_id not found");
             }
 
             // Ověření objektu
-            Model_CProgram c_program_old = Model_CProgram.get_byId(version_old.c_program.id);
+            Model_CProgram c_program_old = Model_CProgram.get_byId(version_old.get_c_program().id);
 
 
             // Zkontroluji oprávnění
@@ -888,7 +888,7 @@ public class Controller_Code extends Controller{
                                 .divider()
                                 .text("We will publish it as soon as possible.")
                                 .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.get_person().full_name)
-                                .send(version_old.c_program.get_project().get_product().customer, "Publishing your program" );
+                                .send(version_old.get_c_program().get_project().get_product().customer, "Publishing your program" );
 
                     } catch (Exception e) {
                         terminal_logger.internalServerError(e);
@@ -909,7 +909,7 @@ public class Controller_Code extends Controller{
                                 .text("We will publish it as soon as possible. We also had to make some changes to your program or rename something.")
                                 .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                                 .text(Email.bold("Thanks!") + Email.newLine() + Controller_Security.get_person().full_name)
-                                .send(version_old.c_program.get_project().get_product().customer, "Publishing your program" );
+                                .send(version_old.get_c_program().get_project().get_product().customer, "Publishing your program" );
 
                     } catch (Exception e) {
                         terminal_logger.internalServerError(e);
@@ -970,28 +970,28 @@ public class Controller_Code extends Controller{
             Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
             if (version_object == null) return GlobalResult.result_notFound("Version_Object version_object_id not found");
 
-            if (version_object.c_program == null || (version_object.c_program.type_of_board_default == null && version_object.c_program.type_of_board_test == null)) return GlobalResult.result_badRequest("Version_object is not version of c_program or is not default firmware");
+            if (version_object.get_c_program() == null || (version_object.get_c_program().type_of_board_default == null && version_object.get_c_program().type_of_board_test == null)) return GlobalResult.result_badRequest("Version_object is not version of c_program or is not default firmware");
 
             // Kontrola oprávnění
-            if(!version_object.c_program.edit_permission()) return GlobalResult.result_forbidden();
+            if(!version_object.get_c_program().edit_permission()) return GlobalResult.result_forbidden();
 
-            Model_VersionObject previous_main_version = Model_VersionObject.find.where().eq("c_program.id", version_object.c_program.id).isNotNull("default_program").findUnique();
+            Model_VersionObject previous_main_version = Model_VersionObject.find.where().eq("c_program.id", version_object.get_c_program().id).isNotNull("default_program").findUnique();
 
             if (previous_main_version != null){
 
                 previous_main_version.default_program = null;
-                version_object.c_program.default_main_version  = null;
+                version_object.get_c_program().default_main_version  = null;
                 previous_main_version.update();
-                version_object.c_program.update();
+                version_object.get_c_program().update();
             }
 
-            version_object.default_program = version_object.c_program;
+            version_object.default_program = version_object.get_c_program();
             version_object.update();
 
-            version_object.c_program.refresh();
+            version_object.get_c_program().refresh();
 
             // Vracím Json
-            return GlobalResult.result_ok(Json.toJson(version_object.c_program));
+            return GlobalResult.result_ok(Json.toJson(version_object.get_c_program()));
 
         } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());

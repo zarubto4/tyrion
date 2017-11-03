@@ -77,7 +77,7 @@ public class Model_VersionObject extends Model {
             cascade = CascadeType.ALL)                      public List<Model_CProgram> examples = new ArrayList<>();
 
     // C_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                                              public Model_CProgram c_program;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                                              public Model_CProgram c_program;  // TODO - tady je hooodně návazností
     @JsonIgnore @OneToOne(mappedBy="version_object", cascade = CascadeType.ALL)                                 public Model_CCompilation c_compilation;
 
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version", fetch = FetchType.LAZY)                              public List<Model_Board>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
@@ -130,8 +130,24 @@ public class Model_VersionObject extends Model {
             if(bProgram == null) return null;
             cache_b_program_id = bProgram.id;
         }
-
+        if(cache_b_program_id == null) return null;
         return Model_BProgram.get_byId(cache_b_program_id);
+
+    }
+
+    @JsonIgnore @TyrionCachedList
+    public Model_CProgram get_c_program(){
+
+        if(cache_c_program_id == null){
+            Model_CProgram cProgram = Model_CProgram.find.where().eq("version_objects.id", id).select("id").findUnique();
+            cache_c_program_id = cProgram.id;
+        }
+
+        if(cache_c_program_id == null){
+            return null;
+        }
+
+        return Model_CProgram.get_byId(cache_c_program_id);
 
     }
 
@@ -169,8 +185,8 @@ public class Model_VersionObject extends Model {
             help.version_name = version_name;
             help.version_description = version_description;
             help.library_compilation_version = c_compilation.firmware_version_lib;
-            help.delete_permission = c_program.delete_permission();
-            help.update_permission = c_program.update_permission();
+            help.delete_permission = get_c_program().delete_permission();
+            help.update_permission = get_c_program().update_permission();
             help.author = this.author.get_short_person();
 
             // Compilation status
@@ -187,7 +203,7 @@ public class Model_VersionObject extends Model {
 
             if(approval_state != null){
                 help.publish_status = approval_state;
-                help.community_publishing_permission = c_program.community_publishing_permission();
+                help.community_publishing_permission = get_c_program().community_publishing_permission();
             }
 
             // Main status
@@ -282,7 +298,7 @@ public class Model_VersionObject extends Model {
     @JsonIgnore @Transient public Response_Interface compile_program_procedure(){
 
 
-        Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("c_programs.id", this.c_program.id).findUnique();
+        Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("c_programs.id", this.get_c_program().id).findUnique();
         if(typeOfBoard == null){
 
             terminal_logger.internalServerError(new Exception("compile_program_procedure:: Type_of_Board not found! Not found way how to compile version."));
@@ -619,8 +635,10 @@ public class Model_VersionObject extends Model {
 
         removed_by_user = true;
 
-        if(c_program != null){
-            c_program.cache_list_version_objects_ids.remove(id);
+        System.out.println("Mažu Verzi ---- ");
+        if(get_c_program() != null){
+            System.out.println("čistím cache");
+            get_c_program().cache_list_version_objects_ids.remove(id);
         }
 
         if(get_b_program() != null){
@@ -632,11 +650,11 @@ public class Model_VersionObject extends Model {
         }
 
         super.update();
+        cache_refresh();
     }
 
     @JsonIgnore @Transient
     public Model_VersionObject cache_refresh(){
-        cache.remove(id);
         return get_byId(id);
     }
 

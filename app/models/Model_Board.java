@@ -1915,7 +1915,7 @@ public class Model_Board extends Model {
                         .setText(new Notification_Text().setText("Attention! We note the highest critical error on your device "))
                         .setObject(this)
                         .setText(new Notification_Text().setText(" There was a collapse of the running firmware "))
-                        .setObject(firmware_version.c_program)
+                        .setObject(firmware_version.get_c_program())
                         .setText(new Notification_Text().setText(" version "))
                         .setObject(firmware_version)
                         .setText(new Notification_Text().setText(". But stay calm. The hardware has successfully restarted and uploaded a backup version. " +

@@ -686,9 +686,9 @@ public class Controller_ExternalServer extends Controller {
             if (version_object == null) return GlobalResult.result_notFound("Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k C_Programu
-            if(version_object.c_program == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
+            if(version_object.get_c_program() == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
 
-            if(!version_object.c_program.read_permission()) return GlobalResult.result_forbidden();
+            if(!version_object.get_c_program().read_permission()) return GlobalResult.result_forbidden();
 
             // Získám soubor
             Model_CCompilation compilation = version_object.c_compilation;

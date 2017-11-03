@@ -415,10 +415,10 @@ public class Controller_Blocko extends Controller{
 
                     b_pair.c_program_version = Model_VersionObject.get_byId(group.main_board_pair.c_program_version_id);
                     if ( b_pair.c_program_version == null) return GlobalResult.result_notFound("C_Program Version_Object c_program_version_id not found");
-                    if ( b_pair.c_program_version.c_program == null)  return GlobalResult.result_badRequest("Version is not from C_Program");
+                    if ( b_pair.c_program_version.get_c_program() == null)  return GlobalResult.result_badRequest("Version is not from C_Program");
 
 
-                    if( Model_TypeOfBoard.find.where().eq("c_programs.id",  b_pair.c_program_version.c_program.id ).where().eq("boards.id",  b_pair.board.id).findRowCount() < 1){
+                    if( Model_TypeOfBoard.find.where().eq("c_programs.id",  b_pair.c_program_version.get_c_program().id ).where().eq("boards.id",  b_pair.board.id).findRowCount() < 1){
                         return GlobalResult.result_badRequest("You want upload C++ program version id: " +  b_pair.c_program_version.id + " thats not compatible with hardware " + b_pair.board.id);
                     }
 
@@ -445,7 +445,7 @@ public class Controller_Blocko extends Controller{
                         if ( b_pair.c_program_version == null) return GlobalResult.result_notFound("C_Program Version_Object c_program_version_id not found");
                         if ( b_pair.c_program_version.c_program == null)  return GlobalResult.result_badRequest("Version is not from C_Program");
 
-                        if( Model_TypeOfBoard.find.where().eq("c_programs.id",  b_pair.c_program_version.c_program.id ).where().eq("boards.id",  b_pair.board.id).findRowCount() < 1){
+                        if( Model_TypeOfBoard.find.where().eq("c_programs.id",  b_pair.c_program_version.get_c_program().id ).where().eq("boards.id",  b_pair.board.id).findRowCount() < 1){
                             return GlobalResult.result_badRequest("You want upload C++ program version id: " +  b_pair.c_program_version.id + " thats not compatible with hardware " + b_pair.board.id);
                         }
 

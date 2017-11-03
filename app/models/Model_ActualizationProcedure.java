@@ -312,7 +312,7 @@ public class Model_ActualizationProcedure extends Model {
                         notification.setText(new Notification_Text().setText(" for Board "))
                                     .setObject(updates.get(0).board)
                                     .setText( new Notification_Text().setText(" from Code Editor with Program "))
-                                    .setObject(updates.get(0).c_program_version_for_update.c_program)
+                                    .setObject(updates.get(0).c_program_version_for_update.get_c_program())
                                     .setText( new Notification_Text().setText(" version "))
                                     .setObject(updates.get(0).c_program_version_for_update)
                                     .setText( new Notification_Text().setText("."));

@@ -79,10 +79,10 @@ public class Controller_Board extends Controller {
             if(version_object == null) return GlobalResult.result_notFound("Version_Object version_id not found");
 
             // Smažu předchozí kompilaci
-            if(version_object.c_program == null) return GlobalResult.result_badRequest("Version is not version of C_Program");
+            if(version_object.get_c_program() == null) return GlobalResult.result_badRequest("Version is not version of C_Program");
 
             // Kontrola oprávnění
-            if(!version_object.c_program.read_permission()) return GlobalResult.result_forbidden();
+            if(!version_object.get_c_program().read_permission()) return GlobalResult.result_forbidden();
 
             // Odpovím předchozí kompilací
             if(version_object.c_compilation != null) return GlobalResult.result_ok(Json.toJson( new Swagger_Compilation_Ok()));
@@ -687,10 +687,10 @@ public class Controller_Board extends Controller {
             if (versionObject == null) return GlobalResult.result_notFound("FileRecord file_record_id not found");
 
             // Swagger_File_Content - Zástupný dokumentační objekt
-            if (versionObject.c_program == null) return GlobalResult.result_badRequest();
+            if (versionObject.get_c_program() == null) return GlobalResult.result_badRequest();
 
             // Kontrola oprávnění
-            if (!versionObject.c_program.read_permission()) return GlobalResult.result_badRequest();
+            if (!versionObject.get_c_program().read_permission()) return GlobalResult.result_badRequest();
 
             // Swagger_File_Content - Zástupný dokumentační objekt
             Swagger_File_Content content = new Swagger_File_Content();
@@ -2328,10 +2328,10 @@ public class Controller_Board extends Controller {
                 if (c_program_version == null) return GlobalResult.result_notFound("Version_Object version_id not found");
 
                 //Zkontroluji validitu Verze zda sedí k C_Programu
-                if (c_program_version.c_program == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
+                if (c_program_version.get_c_program() == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
 
                 // Zkontroluji oprávnění
-                if (!c_program_version.c_program.read_permission()) return GlobalResult.result_forbidden();
+                if (!c_program_version.get_c_program().read_permission()) return GlobalResult.result_forbidden();
 
                 //Zkontroluji validitu Verze zda sedí k C_Programu
                 if (c_program_version.c_compilation == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program - Missing compilation File");
@@ -2481,10 +2481,10 @@ public class Controller_Board extends Controller {
                     if (c_program_version == null) return GlobalResult.result_notFound("Version_Object c_program_version_id not found");
 
                     //Zkontroluji validitu Verze zda sedí k C_Programu
-                    if (c_program_version.c_program == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
+                    if (c_program_version.get_c_program() == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
 
                     // Zkontroluji oprávnění
-                    if (!c_program_version.c_program.read_permission()) return GlobalResult.result_forbidden();
+                    if (!c_program_version.get_c_program().read_permission()) return GlobalResult.result_forbidden();
 
                     //Zkontroluji validitu Verze zda sedí k C_Programu
                     if (c_program_version.c_compilation == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program - Missing compilation File");

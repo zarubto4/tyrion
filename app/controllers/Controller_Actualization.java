@@ -258,9 +258,9 @@ public class Controller_Actualization extends Controller {
                 if(firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP) {
                     c_program_version = Model_VersionObject.get_byId(type_of_boards_settings.c_program_version_id);
                     if (c_program_version == null) return GlobalResult.result_notFound("firmware_type not found");
-                    if (c_program_version.c_program == null) return GlobalResult.result_notFound("Version is not c Program");
-                    if (!c_program_version.c_program.read_permission()) return GlobalResult.result_forbidden();
-                    if (!c_program_version.c_program.get_type_of_board().id.equals(typeOfBoard.id)) GlobalResult.result_badRequest("Invalid type of CProgram for TypeOfBoard");
+                    if (c_program_version.get_c_program() == null) return GlobalResult.result_notFound("Version is not c Program");
+                    if (!c_program_version.get_c_program().read_permission()) return GlobalResult.result_forbidden();
+                    if (!c_program_version.get_c_program().get_type_of_board().id.equals(typeOfBoard.id)) GlobalResult.result_badRequest("Invalid type of CProgram for TypeOfBoard");
                 }
 
                 Model_BootLoader bootLoader = null;

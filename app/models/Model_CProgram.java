@@ -219,7 +219,7 @@ public class Model_CProgram extends Model {
 
             if(cache_list_version_objects_ids.isEmpty()){
 
-                List<Model_VersionObject> versions =  Model_VersionObject.find.where().eq("c_program.id", id).eq("removed_by_user", false).order().desc("date_of_create").select("id").findList();;
+                List<Model_VersionObject> versions =  Model_VersionObject.find.where().eq("c_program.id", id).eq("removed_by_user", false).order().desc("date_of_create").select("id").findList();
 
                 // Získání seznamu
                 for (Model_VersionObject version : versions) {

@@ -90,8 +90,8 @@ public class Model_CProgramUpdatePlan extends Model {
             if (c_program_version_for_update == null) return null;
 
             Swagger_C_Program_Update_program c_program_detail = new Swagger_C_Program_Update_program();
-            c_program_detail.c_program_id = c_program_version_for_update.c_program.id;
-            c_program_detail.c_program_program_name = c_program_version_for_update.c_program.name;
+            c_program_detail.c_program_id = c_program_version_for_update.get_c_program().id;
+            c_program_detail.c_program_program_name = c_program_version_for_update.get_c_program().name;
             c_program_detail.c_program_version_id = c_program_version_for_update.id;
             c_program_detail.c_program_version_name = c_program_version_for_update.version_name;
 
@@ -193,7 +193,7 @@ public class Model_CProgramUpdatePlan extends Model {
             if(firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP){
                 binary.download_id =  c_program_version_for_update.c_compilation.id.toString();
                 binary.build_id =  c_program_version_for_update.c_compilation.firmware_build_id;
-                binary.program_name = c_program_version_for_update.c_program.name;
+                binary.program_name = c_program_version_for_update.get_c_program().name;
                 binary.program_version_name = c_program_version_for_update.version_name;
             }
             else if(firmware_type == Enum_Firmware_type.BOOTLOADER){

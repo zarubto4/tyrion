@@ -220,12 +220,12 @@ public class Model_Notification extends Model {
 
                 element.id = versionObject.id;
 
-                if (versionObject.c_program != null){
+                if (versionObject.get_c_program() != null){
 
                     element.name = "C_Program_Version";
                     element.text = versionObject.version_name;
-                    element.program_id = versionObject.c_program.id;
-                    element.project_id = versionObject.c_program.project_id();
+                    element.program_id = versionObject.get_c_program().id;
+                    element.project_id = versionObject.get_c_program().project_id();
 
                 } else if (versionObject.get_b_program() != null){
 
