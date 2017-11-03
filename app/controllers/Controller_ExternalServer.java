@@ -664,6 +664,54 @@ public class Controller_ExternalServer extends Controller {
         }
     }
 
+    @ApiOperation(value = "get C_Program_Version Binary DownloadLink",
+            tags = {"C_Program"},
+            notes = "Required secure Token changed throw websocket",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 303
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 303, message = "Ok Result"),
+            @ApiResponse(code = 404, message = "File by ID not found", response = Result_NotFound.class),
+            @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result cloud_file_bin_get_c_program_version(String version_id){
+        try{
+
+            // Ověření objektu
+            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
+            if (version_object == null) return GlobalResult.result_notFound("Version version_id not found");
+
+            // Zkontroluji validitu Verze zda sedí k C_Programu
+            if(version_object.c_program == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
+
+            if(!version_object.c_program.read_permission()) return GlobalResult.result_forbidden();
+
+            // Získám soubor
+            Model_CCompilation compilation = version_object.c_compilation;
+
+            if(compilation == null){
+                return GlobalResult.result_notFound("File not found");
+            }
+
+            if(compilation.status != Enum_Compile_status.successfully_compiled_and_restored){
+                return GlobalResult.result_notFound("File not successfully compiled and restored");
+            }
+
+            byte[] bytes = Model_FileRecord.get_decoded_binary_string_from_Base64(compilation.bin_compilation_file.get_fileRecord_from_Azure_inString());
+
+            // Vrátím soubor
+            return GlobalResult.result_binFile(bytes, "firmware.bin");
+
+        } catch (Exception e) {
+            return ServerLogger.result_internalServerError(e, request());
+        }
+    }
+
+
     @ApiOperation(value = "get C_Program File",
             tags = {"Homer-Server-API"},
             notes = "Required secure Token changed throw websocket",
@@ -679,8 +727,12 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_Homer_Server.class)
-    public Result cloud_file_get_c_program_version(String compilation_id){
+    public Result cloud_file_get_c_program_compilation(String compilation_id){
         try{
+
+            System.out.println("cloud_file_get_c_program_version--------------------------------------------------------");
+            System.out.println("cloud_file_get_c_program_version: " + compilation_id);
+            System.out.println("cloud_file_get_c_program_version--------------------------------------------------------");
 
             // Získám soubor
             Model_CCompilation compilation = Model_CCompilation.find.byId(compilation_id);

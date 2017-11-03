@@ -2,11 +2,16 @@ package models;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.documentdb.DocumentClientException;
+import com.microsoft.azure.storage.blob.CloudAppendBlob;
+import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
+import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.document_db.DocumentDB;
 import utilities.document_db.document_objects.DM_CompilationServer_Connect;
 import utilities.document_db.document_objects.DM_CompilationServer_Disconnect;
@@ -19,8 +24,7 @@ import utilities.notifications.helps_objects.Notification_Text;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @ApiModel(value = "C_Compilation", description = "Model of C_Compilation")
@@ -52,6 +56,9 @@ public class Model_CCompilation extends Model {
     @JsonIgnore  public String firmware_build_datetime;
 
 
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+    @JsonIgnore @Transient @TyrionCachedList public String cache_value_file_id;
+
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 
@@ -59,7 +66,59 @@ public class Model_CCompilation extends Model {
 
     @JsonIgnore @Transient
     public Model_FileRecord compilation(){
-        return Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "compilation.bin").findUnique();
+        return Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "firmware.bin").findUnique();
+    }
+
+
+    @Transient @JsonProperty
+    public String file_path(){
+        try {
+
+            if(cache_value_file_id != null ) {
+                String link = Model_FileRecord.cache_public_link.get(cache_value_file_id + "_" + Model_CCompilation.class.getSimpleName());
+                if (link != null) return link;
+            }
+
+            if (bin_compilation_file == null) { // TODO Cachovat - a opravit kde je nevhodná návaznost
+                return null;
+            }
+
+            this.cache_value_file_id = bin_compilation_file.id;
+
+            // Separace na Container a Blob
+            int slash = bin_compilation_file.file_path.indexOf("/");
+            String container_name = bin_compilation_file.file_path.substring(0, slash);
+            String real_file_path = bin_compilation_file.file_path.substring(slash + 1);
+
+            CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
+
+            // Create Policy
+            Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            cal.setTime(new Date());
+            cal.add(Calendar.HOUR, 5);
+
+            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
+            policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
+            policy.setSharedAccessExpiryTime(cal.getTime());
+
+
+            String sas = blob.generateSharedAccessSignature(policy, null);
+
+
+            String total_link = blob.getUri().toString() + "?" + sas;
+
+            terminal_logger.debug("file_path:: Total Link:: " + total_link);
+
+
+            Model_FileRecord.cache_public_link.put(cache_value_file_id + "_" + Model_BootLoader.class.getSimpleName(), total_link);
+
+            // Přesměruji na link
+            return total_link;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
     }
 
 

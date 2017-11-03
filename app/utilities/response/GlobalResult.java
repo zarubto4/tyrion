@@ -65,6 +65,15 @@ public class GlobalResult extends Controller {
         return ok(byte_array);
     }
 
+    public static Result result_binFile(byte[] byte_array, String  file_name){
+
+        CoreResponse.cors_bin_file();
+        response().setHeader("filename", file_name);
+
+        return ok(byte_array);
+    }
+
+
 
 //**********************************************************************************************************************
 

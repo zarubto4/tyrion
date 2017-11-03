@@ -278,7 +278,7 @@ public class Model_FileRecord extends Model {
     }
 
     @JsonIgnore @Transient
-    public static Model_FileRecord create_Binary_file(String file_path, String file_content, String file_name) throws Exception{
+    public static Model_FileRecord create_Binary_file(String file_path, byte[] file_content, String file_name) throws Exception{
 
         terminal_logger.debug("create_Binary_file:: Azure create_Binary_file: " + file_path +"/"+ file_name );
 
@@ -293,7 +293,7 @@ public class Model_FileRecord extends Model {
         CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
         CloudBlockBlob blob = container.getBlockBlobReference( real_file_path +"/" + file_name );
 
-        InputStream is = new ByteArrayInputStream(file_content.getBytes());
+        InputStream is = new ByteArrayInputStream(file_content);
         blob.upload(is, -1);
 
         Model_FileRecord fileRecord = new Model_FileRecord();

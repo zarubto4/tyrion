@@ -64,6 +64,20 @@ public class CoreResponse extends Controller {
         }catch (Exception e){
             terminal_logger.internalServerError(e);
         }
+    }
+
+    public static void cors_bin_file() {
+        try {
+            response().setHeader("Access-Control-Allow-Origin", "*"); // Zde bude web se kterým to může komunikovat (url frontendu)
+            response().setHeader("Access-Control-Allow-Methods", "GET");
+            response().setHeader("Access-Control-Max-Age", "72000");
+            response().setHeader("Content-Type", "application/octet-stream");
+            response().setHeader("Byzance-Api-Version", Server.server_version);
+            response().setHeader("Accept", "*");
+            response().setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Origin, content-Type, api_key, Authorization, x-auth-token, accept, appid, appname, authorization, content-type, becki-version");
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+        }
 
     }
 
