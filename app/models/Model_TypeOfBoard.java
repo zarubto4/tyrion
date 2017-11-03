@@ -79,6 +79,7 @@ public class Model_TypeOfBoard extends Model {
     @JsonIgnore @Transient @TyrionCachedList public  String cache_test_program_version_id;      // testovací firmware chache
     @JsonIgnore @Transient @TyrionCachedList public  String cache_test_c_program_id;
     @JsonIgnore @Transient @TyrionCachedList public  List<Swagger_CompilationLibrary> cache_library_list; // Záměrně není pole definované!
+    @JsonIgnore @Transient @TyrionCachedList public  List<String> cache_bootloaders_id; // Záměrně není pole definované!
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -130,8 +131,35 @@ public class Model_TypeOfBoard extends Model {
 
     @Transient @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<Model_BootLoader> boot_loaders(){
-        if(!bootloader_edit_permission()) return null;
-        return Model_BootLoader.find.where().eq("type_of_board.id",id).findList();
+        try {
+
+            if (cache_bootloaders_id == null) {
+
+                List<Model_BootLoader> bootLoaders = Model_BootLoader.find.where().eq("type_of_board.id", id).select("id").findList();
+                cache_bootloaders_id = new ArrayList<>();
+
+                // Získání seznamu
+                for (Model_BootLoader bootLoader : bootLoaders) {
+                    cache_bootloaders_id.add(bootLoader.id.toString());
+                }
+            }
+
+            if (cache_bootloaders_id.isEmpty()) {
+                return new ArrayList<>();
+            }
+
+            List<Model_BootLoader> bootLoaders = new ArrayList<>();
+
+            for (String bootLoader_id : cache_bootloaders_id) {
+                bootLoaders.add(Model_BootLoader.get_byId(bootLoader_id));
+            }
+
+            return bootLoaders;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return new ArrayList<>();
+        }
     }
 
     @Transient @JsonProperty(required = false) @ApiModelProperty(required = false) @TyrionCachedList @JsonInclude(JsonInclude.Include.NON_NULL)

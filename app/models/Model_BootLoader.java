@@ -10,7 +10,10 @@ import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
 import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
+import scala.collection.immutable.StringLike;
 import utilities.Server;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Notification_importance;
 import utilities.enums.Enum_Notification_level;
 import utilities.enums.Enum_Notification_type;
@@ -49,22 +52,36 @@ public class Model_BootLoader extends Model {
 
     @JsonIgnore @OneToMany(mappedBy="bootloader",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
 
-    @JsonIgnore  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)                public Model_TypeOfBoard type_of_board; // TODO Cachovat - a opravit kde je nevhodná návaznost
-                                                           @JsonIgnore  @OneToOne()                public Model_TypeOfBoard main_type_of_board;
+    @JsonIgnore  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)                 public Model_TypeOfBoard type_of_board;       // TODO Cachovat - a opravit kde je nevhodná návaznost
+     @JsonIgnore @OneToOne(fetch = FetchType.LAZY)                                                 public Model_TypeOfBoard main_type_of_board;
 
     @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader", fetch = FetchType.LAZY)                 public List<Model_Board> boards  = new ArrayList<>();
-                 @OneToOne(mappedBy = "boot_loader", cascade = CascadeType.ALL)                    public Model_FileRecord file; // TODO Cachovat - a opravit kde je nevhodná návaznost
+                 @OneToOne(mappedBy = "boot_loader", cascade = CascadeType.ALL)                    public Model_FileRecord file;                // TODO Cachovat - a opravit kde je nevhodná návaznost
 
+
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @TyrionCachedList public String cache_value_type_of_board_id;
+    @JsonIgnore @Transient @TyrionCachedList public String cache_value_main_type_of_board_id;
+    @JsonIgnore @Transient @TyrionCachedList public String cache_value_file_id;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @Transient @JsonProperty public boolean main_bootloader(){ return main_type_of_board != null;}
+    @Transient @JsonProperty public boolean main_bootloader(){ return get_main_type_of_board() != null;}
     @Transient @JsonProperty public String  file_path(){
         try {
+
+            if(cache_value_file_id != null ) {
+                String link = Model_FileRecord.cache_public_link.get(cache_value_file_id + "_" + Model_BootLoader.class.getSimpleName());
+                if (link != null) return link;
+            }
 
             if (file == null) { // TODO Cachovat - a opravit kde je nevhodná návaznost
                 return null;
             }
+
+            this.cache_value_file_id = file.id;
 
             // Separace na Container a Blob
             int slash = file.file_path.indexOf("/");
@@ -76,7 +93,7 @@ public class Model_BootLoader extends Model {
             // Create Policy
             Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
             cal.setTime(new Date());
-            cal.add(Calendar.MONTH, 24);
+            cal.add(Calendar.HOUR, 5);
 
             SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
             policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
@@ -86,10 +103,12 @@ public class Model_BootLoader extends Model {
             String sas = blob.generateSharedAccessSignature(policy, null);
 
 
-
             String total_link = blob.getUri().toString() + "?" + sas;
 
-            terminal_logger.debug("cloud_file_get_bootloader_version:: Total Link:: " + total_link);
+            terminal_logger.debug("file_path:: Total Link:: " + total_link);
+
+
+            Model_FileRecord.cache_public_link.put(cache_value_file_id + "_" + Model_BootLoader.class.getSimpleName(), total_link);
 
             // Přesměruji na link
             return total_link;
@@ -103,6 +122,49 @@ public class Model_BootLoader extends Model {
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @Transient @JsonIgnore public Model_TypeOfBoard get_type_of_board(){
+
+
+        if (cache_value_type_of_board_id == null) {
+
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("boot_loaders.id", id).select("id").findUnique();
+            if(typeOfBoard == null) {
+                return null;
+            }
+
+            cache_value_type_of_board_id = typeOfBoard.id;
+        }
+
+        return Model_TypeOfBoard.get_byId(cache_value_type_of_board_id);
+
+    }
+
+    @Transient @JsonIgnore public Model_TypeOfBoard get_main_type_of_board(){
+        try {
+
+            if (cache_value_main_type_of_board_id == null) {
+
+                Model_TypeOfBoard main = Model_TypeOfBoard.find.where().eq("main_boot_loader.id", id).select("id").findUnique();
+                if(main == null) {
+                    cache_value_main_type_of_board_id = "";
+                    return null;
+                }
+
+                cache_value_main_type_of_board_id = main.id;
+            }
+
+            if(cache_value_main_type_of_board_id.equals("")){
+                return null;
+            }
+
+            return Model_TypeOfBoard.get_byId(cache_value_main_type_of_board_id);
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -210,9 +272,14 @@ public class Model_BootLoader extends Model {
     @JsonIgnore @Override public void save() {
 
         terminal_logger.debug("save :: Creating new Object");
-        // TODO uložit do Cache Paměti
 
         super.save();
+
+        if(get_type_of_board() != null){
+            get_type_of_board().boot_loaders();
+            get_type_of_board().cache_bootloaders_id.add(id.toString());
+        }
+        cache.put(id.toString(), this);
     }
 
     @JsonIgnore @Override public void update() {
@@ -224,8 +291,13 @@ public class Model_BootLoader extends Model {
 
     @JsonIgnore @Override public void delete() {
 
-        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
+        terminal_logger.debug("delete :: Delete object Id: {} ", this.id);
 
+        if(get_type_of_board() != null){
+            get_type_of_board().cache_bootloaders_id.remove(id.toString());
+        }
+
+        cache.remove(id.toString());
         super.delete();
     }
 
@@ -270,12 +342,23 @@ public class Model_BootLoader extends Model {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
+    public static final String CACHE = Model_BootLoader.class.getSimpleName();
+
+    public static Cache<String, Model_BootLoader> cache = null; // < ID, Model_BootLoader>
+
     @JsonIgnore
     public static Model_BootLoader get_byId(String id) {
 
-        terminal_logger.warn("CACHE is not implemented - TODO");
-        return find.byId(id);
+        Model_BootLoader bootloader = cache.get(id);
+        if (bootloader == null) {
 
+            bootloader = find.byId(id);
+            if (bootloader == null) return null;
+
+            cache.put(id, bootloader);
+        }
+
+        return bootloader;
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

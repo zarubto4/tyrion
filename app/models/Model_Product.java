@@ -470,7 +470,7 @@ public class Model_Product extends Model {
         List<Model_Person> receivers = new ArrayList<>();
         try {
 
-            this.customer.getEmployees().forEach(employee -> receivers.add(employee.person));
+            this.customer.getEmployees().forEach(employee -> receivers.add(employee.get_person()));
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);

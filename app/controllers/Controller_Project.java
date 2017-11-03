@@ -89,11 +89,14 @@ public class Controller_Project extends Controller {
             for (Model_Employee employee : product.customer.getEmployees()) {
 
                 Model_ProjectParticipant participant = new Model_ProjectParticipant();
-                participant.person = employee.person;
+                participant.person = employee.get_person();
                 participant.project = project;
                 participant.state = employee.state;
 
                 participant.save();
+
+                System.out.println("P5idávám ID při registraci projektu do PErson Access " + project.id);
+                participant.person.cache_value_project_ids.add(project.id);
             }
 
 

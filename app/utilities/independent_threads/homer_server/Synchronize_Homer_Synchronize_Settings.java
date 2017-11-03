@@ -40,20 +40,17 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
 
         try{
 
-            System.out.println("2. Spouštím Sycnhronizační proceduru Synchronize_Homer_Synchronize_Settings");
+            terminal_logger.trace("Spouštím Sycnhronizační proceduru Synchronize_Homer_Synchronize_Settings");
 
-            System.out.println("2.1 Žádám o nastavení Homera");
             ObjectNode ask_for_configuration = homer_server.write_with_confirmation( new WS_Message_Homer_Get_homer_server_configuration().make_request() , 1000 * 60, 0, 0);
-
-            System.out.println("2.1 Co jsem obrdžel:: " + ask_for_configuration.toString());
 
             final Form<WS_Message_Homer_Get_homer_server_configuration> form = Form.form(WS_Message_Homer_Get_homer_server_configuration.class).bind(ask_for_configuration);
             if(form.hasErrors()){
 
-                homer_server.write_without_confirmation( ask_for_configuration.has("message_id") ? ask_for_configuration.get("message_id").asText() : UUID.randomUUID().toString(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Get_homer_server_configuration.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
-                terminal_logger.warn("WS_Message_Homer_Get_homer_server_configuration: Incoming Json for Yoda has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                terminal_logger.trace("run:: invalid incoming message {}", ask_for_configuration);
+                terminal_logger.trace("run:: response", form.errorsAsJson(Lang.forCode("en-US")).toString());
 
-                System.out.println("2.1 NEvalidní zpráva! Zavírám spojení");
+                homer_server.write_without_confirmation( ask_for_configuration.has("message_id") ? ask_for_configuration.get("message_id").asText() : UUID.randomUUID().toString(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Get_homer_server_configuration.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
 
                 homer_server.onClose();
 

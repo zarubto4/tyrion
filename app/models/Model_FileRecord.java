@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.storage.blob.*;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import utilities.Server;
 import utilities.logger.Class_Logger;
 
@@ -397,6 +398,10 @@ public class Model_FileRecord extends Model {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
+    public static final String CACHE_PUBLIC_LINK = Model_FileRecord.class.getSimpleName() + "_PUBLIC_LINK";
+
+    // public static Cache<String, Model_FileRecord> cache;         // Server_cache Override during server initialization
+    public static Cache<String, String> cache_public_link;      // Server_cache Override during server initialization
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Model_FileRecord get_byId(String id){

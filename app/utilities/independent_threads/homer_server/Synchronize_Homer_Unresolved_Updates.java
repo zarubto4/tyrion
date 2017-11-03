@@ -37,7 +37,7 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
 
         try {
 
-            System.out.println("5. Spouštím Sycnhronizační proceduru Synchronize_Homer_Unresolved_Updates");
+            terminal_logger.debug("5. Spouštím Sycnhronizační proceduru Synchronize_Homer_Unresolved_Updates");
 
             int page = 0;
             int page_size = 100;

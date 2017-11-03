@@ -1715,7 +1715,7 @@ public class Controller_Blocko extends Controller{
             return ServerLogger.result_internalServerError(e, request());
         }
     }
-    
+
     @ApiOperation(value = "edit BlockoBlock",
             tags = {"Blocko-Block"},
             notes = "update basic information (name, and description) of the independent BlockoBlock",

@@ -253,6 +253,7 @@ public class Model_ActualizationProcedure extends Model {
         return null;
     }
 
+    @JsonIgnore @Transient
     public void execute_update_procedure(){
         Model_Board.execute_update_procedure(this);
     }

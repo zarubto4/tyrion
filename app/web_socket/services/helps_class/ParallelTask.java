@@ -19,8 +19,6 @@ public class ParallelTask implements Callable<ObjectNode> {
 
     public ParallelTask(String server_id, ObjectNode message, Integer time, Integer delay, Integer number_of_retries){
 
-        System.out.println("server_id:: " + server_id);
-
         this.server_id = server_id;
         this.message = message;
         this.time = time;

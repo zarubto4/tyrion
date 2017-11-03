@@ -36,7 +36,7 @@ public abstract class WS_Interface_type {
     public void onMessage(String message){
         try {
 
-
+            System.err.println("onMessage:: " +message);
             terminal_logger.debug("onMessage: Incoming message: {} " , message);
 
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(message);

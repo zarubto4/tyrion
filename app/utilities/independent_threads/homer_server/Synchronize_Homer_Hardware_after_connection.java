@@ -2,8 +2,12 @@ package utilities.independent_threads.homer_server;
 
 import com.avaje.ebean.PagedList;
 import models.*;
+import play.libs.Json;
 import utilities.logger.Class_Logger;
+import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_connected;
 import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_overview;
+import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_overview_Board;
+import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Hardware_list;
 import web_socket.services.WS_HomerServer;
 
 import java.util.ArrayList;
@@ -18,11 +22,13 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
 
 /*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
-    WS_HomerServer ws_homerServer = null;
+    private WS_HomerServer ws_homerServer = null;
+    private Model_HomerServer homer_server = null;
 
     // Umožněno kontrolovat COmpilator i Homer server
     public Synchronize_Homer_Hardware_after_connection(WS_HomerServer ws_homerServer) {
         this.ws_homerServer = ws_homerServer;
+        this.homer_server = Model_HomerServer.get_byId(ws_homerServer.identifikator);
     }
 
 
@@ -31,67 +37,66 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
 
         try {
 
-            System.out.println("4. Spouštím Sycnhronizační proceduru Synchronize_Homer_Hardware_after_connection");
-
-            int page = 0;
-            int page_size = 100;
-
-            System.out.println("4.1 Teď žádám homera o všechen Hardware");
-            List<String> device_ids_on_server = Model_HomerServer.get_byId(ws_homerServer.identifikator).get_homer_server_list_of_hardware().hardware_ids;
-
-            System.out.println("4.2 Hardware, který by měl běžet ");
-            List<String> device_ids_required = new ArrayList<>();
-
-            while(true){
-
-                PagedList<Model_Board> paging_list = Model_Board.find.where().select("id").select("connected_server_id").findPagedList(page, page_size);
-
-                System.out.println("4.3 Jdu kontrolovat seznam z databáze a hledat co na serveru mám navíc");
-                for(Model_Board board : paging_list.getList()){
-
-                    // Přidám do seznamu harwaru, který má na serveru být
-                    device_ids_required.add(board.id);
-
-                    if(!device_ids_on_server.contains(board.id)){
-
-                        System.out.println("4.3 " + board.id + " Na server není harware který bych očekával - což znamená dvě  věci - je na jiném serveru nebo je offline");
-
-                        if(board.connected_server_id == null){
-                            System.out.println("4.4 " + board.id + " Device se ještě nikdy nepřipojil ");
-                        }
-                        else if(board.connected_server_id .equals( Model_HomerServer.get_byId( ws_homerServer.get_identificator()).id)){
-                             System.out.println("4.4 " + board.id + " Device je ofline a tak na něj seru ");
-
-                        }else {
-                            System.out.println("4.4 " + board.id + " Device je na špatném serveru a tak ho relokuji!!");
-                            board.device_relocate_server(Model_HomerServer.get_byId(ws_homerServer.identifikator));
-                        }
-
-                    }else {
-                        System.out.println("4.3 " + board.id + " Na server hardware je online");
-
-                        // TODO dělat něco s overview??
-                        System.out.println("4.4 Device overview?");
-                        WS_Message_Hardware_overview overview = board.get_devices_overview();
+            terminal_logger.info("4. Spouštím Sycnhronizační proceduru Synchronize_Homer_Hardware_after_connection");
 
 
-                        if (overview.get_device_from_list(board.id).online_state){
-                            System.out.println("4.4 " + board.id + " Na serveru hardware je a je online");
-                        }else {
-                            System.out.println("4.4 " + board.id + " Na serveru možná je možná taky ne ale dle dat je offline");
-                        }
-                    }
-                }
+            WS_Message_Homer_Hardware_list message_homer_hardware_list = homer_server.get_homer_server_list_of_hardware();
 
-                // Pokud je počet stránek shodný
-                if( paging_list.getTotalPageCount() == page) break;
-
-                System.out.println("Page == " + page);
-                page++;
+            if(!message_homer_hardware_list.status.equals("success")){
+                terminal_logger.warn("Message WS_Message_Homer_Hardware_list: invalid response - something is wrong");
+                return;
             }
+
+            List<String> device_ids_on_server = message_homer_hardware_list.hardware_ids;
+            terminal_logger.info("4. Number of registered or connected Devices on Server:: {} ", device_ids_on_server.size());
+            check_device_on_server(device_ids_on_server);
+
+            terminal_logger.trace("4, Number of required HW on this server: {}", Model_Board.find.where().eq("connected_server_id", this.ws_homerServer.get_identificator()).select("id").select("connected_server_id").findRowCount());
 
         }catch(Exception e){
             terminal_logger.internalServerError(e);
         }
     }
+
+    public void check_device_on_server(List<String> device_ids_on_server){
+
+        for(String board_not_cached_id : device_ids_on_server) {
+
+            Model_Board board = Model_Board.get_byId(board_not_cached_id);
+            if(board == null) continue;
+
+            if(board.connected_server_id == null){
+
+                terminal_logger.debug("4.4 " + board.id + " Device se ještě nikdy nepřipojil a tak mu nastavuji výchozí server");
+                board.connected_server_id = this.ws_homerServer.get_identificator();
+                board.update();
+
+            }else if(!board.connected_server_id.equals(this.ws_homerServer.get_identificator())){
+                terminal_logger.debug("4.4  {} Device je na špatném serveru a tak ho relokuji!!", board.id);
+                board.device_relocate_server(Model_HomerServer.get_byId(ws_homerServer.identifikator));
+                continue;
+            }else {
+                terminal_logger.trace("4.4 {} Device je na správném serveru evidentně a tak ho jenom zkrontroluji", board.id);
+            }
+
+            WS_Message_Hardware_overview_Board overview = board.get_devices_overview();
+
+            if(overview.status.equals("success")){
+                terminal_logger.trace("4.4 {} Status HW je {}", board.id, overview.online_state);
+
+                WS_Message_Hardware_connected connected = new WS_Message_Hardware_connected();
+                connected.status = overview.status;
+                connected.hardware_id = board.id;
+                Model_Board.device_Connected(connected);
+
+            }else {
+                terminal_logger.warn("Something is wrong with WS_Help_Hardware_board_overview message");
+                terminal_logger.warn("Incoming message WS_Help_Hardware_board_overview {}", Json.toJson(overview));
+            }
+
+
+        }
+    }
+
+
 }

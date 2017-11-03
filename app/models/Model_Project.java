@@ -150,6 +150,7 @@ public class Model_Project extends Model {
         }
 
         super.save();
+
     }
 
     @JsonIgnore @Override public void update() {
@@ -172,13 +173,8 @@ public class Model_Project extends Model {
         terminal_logger.debug("delete: Delete object Id: {} ", this.id);
         removed_by_user = true;
 
-        try {
 
-            if (cache.containsKey(this.id)) cache.remove(this.id);
-
-        } catch (Exception e) {
-            terminal_logger.internalServerError(e);
-        }
+        cache.remove(this.id);
 
         update();
     }

@@ -89,8 +89,6 @@ public class WS_HomerServer extends WS_Interface_type {
     @Override
     public void onClose() {
 
-        System.out.println("onClose: Starting cancelled procedure with virtual Homers");
-
         terminal_logger.warn("onClose: Starting cancelled procedure with virtual Homers");
 
         if(service != null) service.shutdownNow();
@@ -111,7 +109,7 @@ public class WS_HomerServer extends WS_Interface_type {
 
         if(!security_token_confirm){
 
-            System.out.println("Příchozí zpráva - Homer ještě nemá boolean security_token_confirm nastavený na true");
+            terminal_logger.trace("Příchozí zpráva - Homer ještě nemá boolean security_token_confirm nastavený na true");
 
             validation_check(json);
             return;
@@ -164,14 +162,13 @@ public class WS_HomerServer extends WS_Interface_type {
                 final Form<WS_Message_Check_homer_server_permission> form = Form.form(WS_Message_Check_homer_server_permission.class).bind(json);
                 if (form.hasErrors()){
 
-                    System.out.println("Příchozí zpráva s Hash je nevalidní - Odpovídám co se mi nelíbí ");
+                    terminal_logger.trace("validation_check:: invalid incoming message {}", json);
+                    terminal_logger.trace("validation_check:: response", form.errorsAsJson(Lang.forCode("en-US")).toString());
 
                     webSCtype.write_without_confirmation(json.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Check_homer_server_permission.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
                     return;
 
                 }
-
-                System.out.println("Příchozí zpráva s Hash je validní - přenechávám proceduře připojení ");
 
                 Model_HomerServer.aprove_validation_for_homer_server(this, form.get());
 
@@ -202,7 +199,7 @@ public class WS_HomerServer extends WS_Interface_type {
     public void synchronize_configuration(){
         new Thread( () -> {
             try {
-                    System.out.println("1. Spouštím Sycnhronizační proceduru (synchronize_configuration)- Několik vláken - dej tomu čas");
+                   terminal_logger.trace("1. Spouštím Sycnhronizační proceduru (synchronize_configuration)- Několik vláken - dej tomu čas");
 
                     if(service != null) service.shutdownNow();
 
@@ -229,7 +226,7 @@ public class WS_HomerServer extends WS_Interface_type {
 
                     service.awaitTermination(5L, TimeUnit.MINUTES);
 
-                    terminal_logger.warn("1. Dokončil jsem metodu (synchronize_configuration) ");
+                    terminal_logger.trace("1. Dokončil jsem metodu (synchronize_configuration) ");
 
 
             }catch (Exception e){

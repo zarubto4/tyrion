@@ -10,7 +10,7 @@ import play.data.validation.Constraints;
 public class Swagger_Project_Edit {
 
     @Constraints.Required
-    @Constraints.MinLength(value = 8,  message = "The name must have at least 8 characters, must be unique!")
+    @Constraints.MinLength(value = 4,  message = "The name must have at least 4 characters, must be unique!")
     @Constraints.MaxLength(value = 60, message = "The name must not have more than 60 characters, must be unique!")
     @ApiModelProperty(required = true, value = "Length must be between 8 and 60 characters, must be unique!")
     public String project_name;

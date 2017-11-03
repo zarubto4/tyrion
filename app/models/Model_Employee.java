@@ -9,10 +9,7 @@ import utilities.enums.Enum_Participant_status;
 import utilities.logger.Class_Logger;
 import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
 import java.util.UUID;
 
@@ -30,7 +27,7 @@ public class Model_Employee extends Model{
                             @Id public UUID id;
                     @JsonIgnore public Date created;
                                 public Enum_Participant_status state;
-         @JsonIgnore @ManyToOne public Model_Person person;
+         @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Person person;
          @JsonIgnore @ManyToOne public Model_Customer customer;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -38,10 +35,19 @@ public class Model_Employee extends Model{
     @JsonProperty
     public Swagger_Person_Short_Detail person(){
 
-        return this.person.get_short_person();
+        return this.get_person().get_short_person();
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    @Transient @JsonIgnore
+    public Model_Person get_person(){
+
+        Model_Person person = Model_Person.find.where().eq("employees.id", id).select("id").findUnique();
+        return Model_Person.get_byId(person.id);
+
+    }
+
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 

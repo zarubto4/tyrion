@@ -116,6 +116,13 @@ public class Server_Cache {
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(4, TimeUnit.HOURS))).build());
 
 
+            // Library
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Library Model");
+            Model_FileRecord.cache_public_link = cacheManager.createCache(Model_FileRecord.CACHE_PUBLIC_LINK,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
+                            ResourcePoolsBuilder.heap(5000))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(1, TimeUnit.HOURS))).build());
+
         /*
          *  Type of Blocks && Type of Widgets
          *  ---------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -182,12 +189,11 @@ public class Server_Cache {
                             ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." +  Model_Board.class.getSimpleName() + ".CACHE")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(60, TimeUnit.MINUTES))).build());
 
-            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Board status");
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Board Models");
             Model_Board.cache_status = cacheManager.createCache(Model_Board.CACHE_STATUS,
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Boolean.class,
-                    ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + ".Model_Board.CACHE_STATUS")))
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." +  Model_Board.class.getSimpleName() + ".CACHE")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(60, TimeUnit.MINUTES))).build());
-
 
             terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Library Model");
             Model_TypeOfBoard.cache = cacheManager.createCache(Model_TypeOfBoard.CACHE,
@@ -195,6 +201,11 @@ public class Server_Cache {
                             ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_TypeOfBoard.class.getSimpleName() + ".CACHE")))
                             .withExpiry(Expirations.timeToIdleExpiration(Duration.of(24, TimeUnit.HOURS))).build());
 
+            terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Bootloader status");
+            Model_BootLoader.cache = cacheManager.createCache(Model_BootLoader.CACHE,
+                    CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Model_BootLoader.class,
+                            ResourcePoolsBuilder.heap( Configuration.root().getInt("Cache." + Server.server_mode.name() + "." + Model_BootLoader.class.getSimpleName() + ".CACHE")))
+                            .withExpiry(Expirations.timeToIdleExpiration(Duration.of(60, TimeUnit.MINUTES))).build());
 
             terminal_logger.info("Tyrion Configuration:: Server Cache:: Set Cache for Hardware Group Model");
             Model_BoardGroup.cache = cacheManager.createCache(Model_BoardGroup.CACHE,
