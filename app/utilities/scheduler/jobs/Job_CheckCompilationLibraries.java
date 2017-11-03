@@ -18,6 +18,8 @@ import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
+import utilities.Server;
+import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.lablel_printer_service.printNodeModels.Printer;
 import utilities.lablel_printer_service.printNodeModels.PrinterList;
 import utilities.logger.Class_Logger;
@@ -35,6 +37,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Updates & Synchronize Compilation versions from GitHub HW-Libs
@@ -155,7 +159,36 @@ public class Job_CheckCompilationLibraries implements Job {
 
                         // Ignorujeme všechny tagy, které se týkají bootloader
                         // ZDe mohou přibýt další ignore filtry
-                        if(release.tag_name.contains("bootloader")){
+                        if(release.tag_name.contains("bootloader") || release.tag_name.toLowerCase().contains("bootloader")){
+                            continue;
+                        }
+
+
+                        String regex_apha_beta = "^(v)(\\d+\\.)(\\d+\\.)(\\d+)((-alpha|-beta)((\\.\\d+){0,3})?)?$"; // - alfa nebo beta
+                        String regex_beta = "^(v)(\\d+\\.)(\\d+\\.)(\\d+)((-beta)((\\.\\d+){0,3})?)?$ ";  // - jenom Beta
+                        String regex_production = "^(v)(\\d+\\.)(\\d+\\.)(\\d+)$ "; // - Jenom čistá verze
+
+
+                        Pattern pattern = null;
+                        if(Server.server_mode == Enum_Tyrion_Server_mode.production) {
+                            pattern = Pattern.compile(regex_beta);                          // Záměrně - uživatelům to umožnujeme průběžně řešit
+                        }else if(Server.server_mode == Enum_Tyrion_Server_mode.stage) {
+                            pattern = Pattern.compile(regex_beta);
+                        }else if(Server.server_mode == Enum_Tyrion_Server_mode.developer) {
+                            pattern = Pattern.compile(regex_apha_beta);
+                        }
+
+                        if(pattern == null) {
+                            terminal_logger.error("check_version_thread:: Pattern is null -  Server.server_mode not set!");
+                            continue;
+                        }
+
+                        Matcher matcher = pattern.matcher(release.tag_name);
+
+                        if(matcher.matches()){
+                            terminal_logger.info("check_version_thread:: Code Library Version TAG name {} match regex", release.tag_name);
+                        }else {
+                            terminal_logger.warn("check_version_thread:: Code Library Version  TAG name {} not match regex {} ", release.tag_name, pattern.pattern());
                             continue;
                         }
 

@@ -268,15 +268,38 @@ public class Controller_ZZZ_Tester extends Controller {
 
 
             Model_Board board11 = new Model_Board();
-            board11.id = "005000263136510236363332";
-            board11.name = "[G45]";
+            board11.id = "002800363136510236363332";
+            board11.name = "[G46]";
             board11.is_active = false;
             board11.date_of_create = new Date();
             board11.type_of_board = typeOfBoard;
             board11.batch_id = batch.id.toString();
-            board11.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901140L);
+            board11.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901141L);
             board11.hash_for_adding = Model_Board.generate_hash();
             Hardware_Registration_Authority.register_device(board11, typeOfBoard, batch_1);
+
+
+            Model_Board board12 = new Model_Board();
+            board12.id = "004000273136510236363332";
+            board12.name = "[G47]";
+            board12.is_active = false;
+            board12.date_of_create = new Date();
+            board12.type_of_board = typeOfBoard;
+            board12.batch_id = batch.id.toString();
+            board12.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901142L);
+            board12.hash_for_adding = Model_Board.generate_hash();
+            Hardware_Registration_Authority.register_device(board12, typeOfBoard, batch_1);
+
+            Model_Board board13 = new Model_Board();
+            board13.id = "003200453136510236363332";
+            board13.name = "[G48]";
+            board13.is_active = false;
+            board13.date_of_create = new Date();
+            board13.type_of_board = typeOfBoard;
+            board13.batch_id = batch.id.toString();
+            board13.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901143L);
+            board13.hash_for_adding = Model_Board.generate_hash();
+            Hardware_Registration_Authority.register_device(board13, typeOfBoard, batch_1);
 
 
             return GlobalResult.result_ok();
