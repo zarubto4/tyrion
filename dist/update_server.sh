@@ -16,20 +16,20 @@ OLDSERVER=$(cat OLDSERVER)
 # Unzip new package
 unzip "dist.zip"
 
-if [ -e ./$CURRENTSERVER/RUNNING_PID ] ; then
+if [ ! -e ./$CURRENTSERVER/RUNNING_PID ] ; then
     >&2 echo " !! Current PID is missing !!"
     exit 1
 fi
 
 # Stop previous instance and remove previous pid
-echo " == Killing previous instance with pid: $(cat $CURRENTSERVER/RUNNING_PID) =="
-(kill $(cat $CURRENTSERVER/RUNNING_PID) && rm -rf $CURRENTSERVER/RUNNING_PID && echo " == Previous instance stopped ==") &
+echo " == Killing previous instance with pid: $(cat ./$CURRENTSERVER/RUNNING_PID) =="
+(kill $(cat ./$CURRENTSERVER/RUNNING_PID) && rm -rf ./$CURRENTSERVER/RUNNING_PID && echo " == Previous instance stopped ==") &
 
 # Add execute permission
 chmod +x ./$NEWSERVER/bin/tyrion
 
 # Go into new server
-cd $NEWSERVER
+cd ./$NEWSERVER
 
 # Run instance of new verion
 echo " == Starting new server =="
@@ -53,12 +53,12 @@ case $RESPONSE in
 
                 # If server started but is in fault state - stopping it
                 if [ $RESPONSE -eq 500 ] && [ -e ./$NEWSERVER/RUNNING_PID ] ; then
-                    echo " == Killing non functioning instance with pid: $(cat $NEWSERVER/RUNNING_PID) =="
+                    echo " == Killing non functioning instance with pid: $(cat ./$NEWSERVER/RUNNING_PID) =="
                     kill $(cat ./$NEWSERVER/RUNNING_PID)
                 fi
 
                 # Go into last functioning server
-                cd $CURRENTSERVER
+                cd ./$CURRENTSERVER
 
                 # Run instance of last version
                 echo " == Starting previous server =="
