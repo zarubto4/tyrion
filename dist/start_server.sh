@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ -e ./RUNNING_PID ]; then
+if [ -e ./RUNNING_PID ] ; then
     echo " == Found previous PID - trying to kill it =="
     kill $(cat ./RUNNING_PID)
 fi

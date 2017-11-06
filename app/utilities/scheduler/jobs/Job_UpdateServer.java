@@ -130,7 +130,7 @@ public class Job_UpdateServer implements Job {
 
                         terminal_logger.trace("update_server_thread: File downloaded, run update script");
 
-                        Process proc = Runtime.getRuntime().exec("./update_server.sh " + jobData.getString("version"));
+                        Process proc = Runtime.getRuntime().exec("./update_server.sh " + jobData.getString("version") + " > update.log");
 
                         BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
                         String line;
