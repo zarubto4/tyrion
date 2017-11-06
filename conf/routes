@@ -300,6 +300,7 @@ DELETE    /compilation_server/:server_id                                @control
 PUT       /actualization_procedure/filter/:page_number                  @controllers.Controller_Actualization.get_Actualization_Procedures_by_filter(page_number: Int)
 GET       /actualization_procedure/object/:actualization_procedure_id   @controllers.Controller_Actualization.get_Actualization_Procedure(actualization_procedure_id)
 POST      /actualization_procedure/make                                 @controllers.Controller_Actualization.make_actualization_procedure()
+PUT       /actualization_procedure/cancel/:actualization_procedure_id   @controllers.Controller_Actualization.canceled_procedure(actualization_procedure_id)
 
 ### COMPILATION & LIBRARIES ############ COMPILATION & LIBRARIES ############### COMPILATION & LIBRARIES ################ COMPILATION & LIBRARIES ##############################
 ################################################################################################################################################################################

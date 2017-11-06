@@ -139,6 +139,21 @@ public class Model_Board extends Model {
     @JsonProperty  @Transient  public String project_id()                           { try{ return cache_value_project_id         != null ? cache_value_project_id : get_project().id; }catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String actual_bootloader_version_name()       { try{ return get_actual_bootloader().name; }catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String actual_bootloader_id()                 { try{ return cache_value_actual_boot_loader_id != null ? cache_value_actual_boot_loader_id : get_actual_bootloader().id.toString(); }catch (NullPointerException e){return  null;}}
+    @JsonProperty  @Transient  public boolean bootloader_update_in_progress()       {
+        try {
+             return Model_CProgramUpdatePlan.find.where().eq("board.id", this.id).eq("firmware_type", Enum_Firmware_type.BOOTLOADER.name()).disjunction()
+                     .eq("state", Enum_CProgram_updater_state.in_progress)
+                     .eq("state", Enum_CProgram_updater_state.waiting_for_device)
+                     .eq("state", Enum_CProgram_updater_state.not_start_yet)
+                     .eq("state", Enum_CProgram_updater_state.homer_server_never_connected)
+                     .endJunction().findRowCount() > 0;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return true; // Raději true než false aby to uživatel neodpálil další update
+        }
+    }
+
     @JsonProperty  @Transient  public String picture_link(){
         try {
 
@@ -195,6 +210,8 @@ public class Model_Board extends Model {
         }
 
     }
+
+
 
     @JsonProperty  @Transient  public List<Swagger_C_Program_Update_plan_Short_Detail> updates(){
 
@@ -307,7 +324,6 @@ public class Model_Board extends Model {
             return null;
         }
     }
-
     @JsonProperty  @Transient  public Enum_Online_status online_state(){
 
         try {
@@ -351,9 +367,7 @@ public class Model_Board extends Model {
             return Enum_Online_status.offline;
         }
     }
-
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_HardwareGroup_Short_Detail>  hardware_groups() { List<Swagger_HardwareGroup_Short_Detail>    l = new ArrayList<>();   for( Model_BoardGroup m : get_hardware_groups()) l.add(m.get_group_short_detail());  return l;}
-
 
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
@@ -1807,6 +1821,7 @@ public class Model_Board extends Model {
                     .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
                     .endJunction()
                     .eq("board.id", b_pair.board.id).findList();
 

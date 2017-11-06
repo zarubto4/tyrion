@@ -213,8 +213,11 @@ public class Model_ActualizationProcedure extends Model {
        List<Model_CProgramUpdatePlan> list = Model_CProgramUpdatePlan.find.where()
                                             .eq("actualization_procedure.id",id).where()
                                                 .disjunction()
-                                                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline       ))
+                                                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
                                                     .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                                                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
+                                                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                                                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
                                                     .add(Expr.isNull("state"))
                                             .findList();
 
@@ -223,9 +226,10 @@ public class Model_ActualizationProcedure extends Model {
            plan.update();
        }
 
-        state = Enum_Update_group_procedure_state.canceled;
+       state = Enum_Update_group_procedure_state.canceled;
+       date_of_finish = new Date();
 
-        this.update();
+       this.update();
     }
 
     @JsonIgnore @Transient

@@ -106,7 +106,7 @@ public class Controller_Actualization extends Controller {
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_ActualizationProcedure> query = Ebean.find(Model_ActualizationProcedure.class);
-            query.order().asc("date_of_create");
+            query.order().desc("date_of_create");
 
 
 
@@ -167,7 +167,6 @@ public class Controller_Actualization extends Controller {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
-
 
     @ApiOperation(value = "make ActualizationProcedure",
             tags = {"Actualization"},
