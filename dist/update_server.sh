@@ -47,6 +47,8 @@ RESPONSE=$(curl -w "%{http_code}" -o "" --silent --connect-timeout 60 "http://0.
 case $RESPONSE in
         200|201|400|404)
                 echo " == Server started properly =="
+                # Replace values in files and remove old server and dist.zip
+                echo "$CURRENTSERVER" > ./OLDSERVER && echo "$NEWSERVER" > ./CURRENTSERVER && rm -rf ./dist.zip && rm -rf ./$OLDSERVER
                 ;;
         *)
                 echo " !! Server did not started or is in fault state !!"
@@ -77,6 +79,3 @@ case $RESPONSE in
                 exit 1
                 ;;
 esac
-
-# Replace values in files and remove old server and dist.zip
-echo "$CURRENTSERVER" > ./OLDSERVER && echo "$NEWSERVER" > ./CURRENTSERVER && rm -rf ./dist.zip && rm -rf ./$OLDSERVER
