@@ -253,7 +253,14 @@ public class Model_ActualizationProcedure extends Model {
 
         terminal_logger.trace("save :: Creating new Object");
 
-        date_of_create = new Date();
+
+        if(date_of_create == null) {
+            date_of_create = new Date();
+        }
+
+        if(date_of_planing == null) {
+            date_of_planing = new Date();
+        }
 
         this.state = Enum_Update_group_procedure_state.not_start_yet;
 

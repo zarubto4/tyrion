@@ -15,6 +15,10 @@ public class WS_Message_Homer_Get_homer_server_configuration extends WS_Abstract
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
+    // @Constraints.Required   ?
+    public String server_version;
+
+
     @Constraints.Required public String server_id;
 
     @Constraints.Required public int mqtt_port;

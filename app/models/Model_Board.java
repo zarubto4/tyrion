@@ -139,18 +139,38 @@ public class Model_Board extends Model {
     @JsonProperty  @Transient  public String project_id()                           { try{ return cache_value_project_id         != null ? cache_value_project_id : get_project().id; }catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String actual_bootloader_version_name()       { try{ return get_actual_bootloader().name; }catch (NullPointerException e){return  null;}}
     @JsonProperty  @Transient  public String actual_bootloader_id()                 { try{ return cache_value_actual_boot_loader_id != null ? cache_value_actual_boot_loader_id : get_actual_bootloader().id.toString(); }catch (NullPointerException e){return  null;}}
-    @JsonProperty  @Transient  public boolean bootloader_update_in_progress()       {
+    @JsonProperty  @Transient  public String bootloader_update_in_progress_bootloader_id()       {
         try {
-             return Model_CProgramUpdatePlan.find.where().eq("board.id", this.id).eq("firmware_type", Enum_Firmware_type.BOOTLOADER.name()).disjunction()
-                     .eq("state", Enum_CProgram_updater_state.in_progress)
-                     .eq("state", Enum_CProgram_updater_state.waiting_for_device)
-                     .eq("state", Enum_CProgram_updater_state.not_start_yet)
-                     .eq("state", Enum_CProgram_updater_state.homer_server_never_connected)
-                     .endJunction().findRowCount() > 0;
+            // TODO Tohle by šlo ukládat do kešky [TZ]
+           Model_CProgramUpdatePlan plan_not_cached = Model_CProgramUpdatePlan.find.where().eq("board.id", this.id).eq("firmware_type", Enum_Firmware_type.BOOTLOADER.name())
+                     .disjunction()
+                         .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                         .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
+                         .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                         .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                         .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
+                         .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
+                     .endJunction()
+                     .eq("firmware_type", Enum_Firmware_type.BOOTLOADER)
+                     .le("actualization_procedure.date_of_planing", new Date())
+                     .order().desc("actualization_procedure.date_of_planing")
+                     .select("id")
+                     .setMaxRows(1)
+                     .findUnique();
+
+           if( plan_not_cached != null ) {
+               Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.get_byId(plan_not_cached.id.toString());
+
+               if(plan != null) {
+                   return plan.bootloader.id.toString();
+               }
+           }
+
+           return null;
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);
-            return true; // Raději true než false aby to uživatel neodpálil další update
+            return null; // Raději true než false aby to uživatel neodpálil další update
         }
     }
 
@@ -1363,8 +1383,6 @@ public class Model_Board extends Model {
             terminal_logger.debug("hardware_firmware_state_check - Bootloader check ",this.id);
             check_bootloader(report);
 
-            check_updates(report);
-
         }catch (Exception e){
             terminal_logger.internalServerError(e);
         }
@@ -1452,7 +1470,7 @@ public class Model_Board extends Model {
 
             } else {
                 terminal_logger.error("Attention please! This is not a critical bug - Tyrion server is not just set for this type of device! Set main C_Program and version!");
-                terminal_logger.internalServerError(new Exception("Default main code version is not set for Type Of Board " + get_type_of_board().name + " please set that!"));
+                terminal_logger.error("Default main code version is not set for Type Of Board " + get_type_of_board().name + " please set that!");
                 return;
             }
         }
@@ -1692,32 +1710,41 @@ public class Model_Board extends Model {
         // Pokud uživatel nechce DB synchronizaci ingoruji
         if(!this.database_synchronize) return;
 
-        if (get_actual_bootloader() == null) terminal_logger.trace("hardware_firmware_state_check -: Actual bootloader_id by DB not recognized :: ", overview.binaries.bootloader.build_id);
+        if (get_actual_bootloader() == null) {
+            terminal_logger.trace("check_bootloader -: Actual bootloader_id by DB not recognized :: ", overview.binaries.bootloader.build_id);
+        }
 
-        
+        System.out.println("Chci vypsat aktualizační procedury");
+        List<Model_CProgramUpdatePlan> firmware_plans_SS = Model_CProgramUpdatePlan.find.where().eq("board.id", this.id).findList();
+        for (Model_CProgramUpdatePlan plan : firmware_plans_SS) {
+            System.out.println("Update:: ID " + plan.id + " state: " + plan.state);
+        }
+
 
         // Vylistuji seznam úkolů k updatu
         List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.where().eq("board.id", this.id)
                 .disjunction()
-                .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
-                .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
-                .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
-                .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
-                .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
                 .endJunction()
-                .disjunction()
-                .add(Expr.eq("firmware_type", Enum_Firmware_type.BOOTLOADER.name()))
-                .lt("actualization_procedure.date_of_planing", new Date())
+                .eq("firmware_type", Enum_Firmware_type.BOOTLOADER)
+                .le("actualization_procedure.date_of_planing", new Date())
                 .order().desc("actualization_procedure.date_of_planing")
                 .findList();
 
-        // Kontrola Firmwaru a přepsání starých
+        // Kontrola Bootloader a přepsání starých
         // Je žádoucí přepsat všechny předhozí update plány - ale je nutné se podívat jestli nejsou rozdílné!
         // To jest pokud mám 2 updaty firmwaru pak ten starší zahodím
         // Ale jestli mám udpate firmwaru a backupu pak k tomu dojít nesmí!
         // Poměrně krkolomné řešení a HNUS kod - ale chyba je výjmečná a stává se jen sporadicky těsně před nebo po restartu serveru
         if(firmware_plans.size() > 1){
+            terminal_logger.trace("check_bootloader:: firmware_plans.size() > 1 ");
             for (int i = 1; i < firmware_plans.size(); i++) {
+                terminal_logger.trace("check_bootloader:: overwritten procedure ID {}", firmware_plans.get(i).id);
                 firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
                 firmware_plans.get(i).update();
             }
@@ -1747,50 +1774,40 @@ public class Model_Board extends Model {
 
             } else {
 
-                terminal_logger.debug("check_bootloader - no bootloader, system starts a new update");
+                terminal_logger.debug("check_bootloader:: no bootloader, system starts a update again");
                 plan.state = Enum_CProgram_updater_state.not_start_yet;
                 plan.count_of_tries++;
                 plan.update();
 
                 execute_update_procedure(plan.actualization_procedure);
             }
-
         }
 
-    }
+        // Pokud na HW opravdu žádný bootloader není a není ani vytvořená update procedura
+        if(get_actual_bootloader() == null && firmware_plans.isEmpty()){
 
-    @JsonIgnore @Transient private void check_updates(WS_Message_Hardware_overview_Board overview){
+            terminal_logger.debug("check_bootloader:: noo default bootloader on hardware - required automatic update");
 
-        // Pokusím se najít Aktualizační proceduru jestli existuje s následujícími stavy
-
-        // Bootloader
-        terminal_logger.debug("check_updates - second check bootloader! ");
-        if(get_actual_bootloader() == null || (overview.binaries.bootloader != null || get_actual_bootloader() != null && get_actual_bootloader().get_main_type_of_board() != null && !overview.binaries.bootloader.build_id.equals(actual_bootloader_id()))) {
-
-            terminal_logger.debug("check_updates - different bootloader on hardware versus database");
+            if(get_type_of_board().main_boot_loader() == null) {
+                terminal_logger.error("check_bootloader::Main Bootloader for Type Of Board {} is not set for update device {}", this.type_of_board_name(), this.id);
+                return;
+            }
 
             List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
 
             WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
             b_pair.board = this;
 
-            if(this.get_actual_bootloader() == null) {
-
-                b_pair.bootLoader =  get_type_of_board().main_boot_loader();
-                if(b_pair.bootLoader == null) {
-                    terminal_logger.error("Main Bootloader for Type Of Board {} is not set", this.type_of_board_name());
-                    return;
-                }
-            }else {
-                b_pair.bootLoader = this.get_actual_bootloader();
-            }
+            if(this.get_actual_bootloader() == null) b_pair.bootLoader =  get_type_of_board().main_boot_loader();
+            else b_pair.bootLoader = this.get_actual_bootloader();
 
             b_pairs.add(b_pair);
 
-            terminal_logger.debug("check_updates - creating update procedure");
-            Model_ActualizationProcedure procedure = create_update_procedure(Enum_Firmware_type.BOOTLOADER, Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL, b_pairs);
+            terminal_logger.debug("check_bootloader:: - creating update procedure for bootloader");
+            Model_ActualizationProcedure procedure = create_update_procedure(Enum_Firmware_type.BOOTLOADER, Enum_Update_type_of_update.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
             procedure.execute_update_procedure();
         }
+
     }
 
 
