@@ -975,14 +975,16 @@ public class Controller_Code extends Controller{
             // Kontrola oprávnění
             if(!version_object.get_c_program().edit_permission()) return GlobalResult.result_forbidden();
 
-            Model_VersionObject previous_main_version = Model_VersionObject.find.where().eq("c_program.id", version_object.get_c_program().id).isNotNull("default_program").findUnique();
+            Model_VersionObject previous_main_version_not_cached = Model_VersionObject.find.where().eq("c_program.id", version_object.get_c_program().id).isNotNull("default_program").select("id").findUnique();
+            if (previous_main_version_not_cached != null){
 
-            if (previous_main_version != null){
-
-                previous_main_version.default_program = null;
-                version_object.get_c_program().default_main_version  = null;
-                previous_main_version.update();
-                version_object.get_c_program().update();
+                Model_VersionObject previous_main_version = Model_VersionObject.get_byId(previous_main_version_not_cached.id);
+                if(previous_main_version != null) {
+                    previous_main_version.default_program = null;
+                    version_object.get_c_program().default_main_version = null;
+                    previous_main_version.update();
+                    version_object.get_c_program().update();
+                }
             }
 
             version_object.default_program = version_object.get_c_program();

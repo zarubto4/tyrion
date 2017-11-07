@@ -148,6 +148,7 @@ public class Controller_ZZZ_Tester extends Controller {
             Model_TypeOfBoard_Batch batch = Model_TypeOfBoard_Batch.find.where().eq("revision", "Test Private Collection").findUnique();
             Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("name","IODA G3" ).findUnique();
 
+            /*
             Model_Board board1 = new Model_Board();
             board1.id = "004B00313435510E30353932";
             board1.name = "[G31]";
@@ -208,9 +209,11 @@ public class Controller_ZZZ_Tester extends Controller {
             board5.hash_for_adding = Model_Board.generate_hash();
             Hardware_Registration_Authority.register_device(board5, typeOfBoard, batch);
 
+            */
             //--------------------------------------------------------------------------------------------------------------
             Model_TypeOfBoard_Batch batch_1 = Model_TypeOfBoard_Batch.find.where().eq("production_batch", "1000001 - Test Collection").findUnique();
 
+             /*
             Model_Board board7 = new Model_Board();
             board7.id = "002E00273136510236363332";
             board7.name = "[G41]";
@@ -290,17 +293,29 @@ public class Controller_ZZZ_Tester extends Controller {
             board12.hash_for_adding = Model_Board.generate_hash();
             Hardware_Registration_Authority.register_device(board12, typeOfBoard, batch_1);
 
-            Model_Board board13 = new Model_Board();
-            board13.id = "003200453136510236363332";
-            board13.name = "[G48]";
-            board13.is_active = false;
-            board13.date_of_create = new Date();
-            board13.type_of_board = typeOfBoard;
-            board13.batch_id = batch.id.toString();
-            board13.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901143L);
-            board13.hash_for_adding = Model_Board.generate_hash();
-            Hardware_Registration_Authority.register_device(board13, typeOfBoard, batch_1);
+            */
 
+            Model_Board board_g49 = new Model_Board();
+            board_g49.id = "003A00463136510236363332";
+            board_g49.name = "[G49]";
+            board_g49.is_active = false;
+            board_g49.date_of_create = new Date();
+            board_g49.type_of_board = typeOfBoard;
+            board_g49.batch_id = batch.id.toString();
+            board_g49.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901143L);
+            board_g49.hash_for_adding = Model_Board.generate_hash();
+            Hardware_Registration_Authority.register_device(board_g49, typeOfBoard, batch_1);
+
+            Model_Board board_g50 = new Model_Board();
+            board_g50.id = "003D00443136510236363332";
+            board_g50.name = "[G50]";
+            board_g50.is_active = false;
+            board_g50.date_of_create = new Date();
+            board_g50.type_of_board = typeOfBoard;
+            board_g50.batch_id = batch.id.toString();
+            board_g50.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901144L);
+            board_g50.hash_for_adding = Model_Board.generate_hash();
+            Hardware_Registration_Authority.register_device(board_g50, typeOfBoard, batch_1);
 
             return GlobalResult.result_ok();
 
