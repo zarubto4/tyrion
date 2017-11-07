@@ -232,7 +232,7 @@ public class Model_Board extends Model {
     }
 
 
-
+    // TODO updates a required_updates předělat do filtru - Updaty nad HW (jeden, projekt, více atd..)
     @JsonProperty  @Transient  public List<Swagger_C_Program_Update_plan_Short_Detail> updates(){
 
         try {
@@ -255,29 +255,6 @@ public class Model_Board extends Model {
             return null;
         }
     }
-
-    @JsonProperty  @Transient  public Swagger_HomerServer_public_Detail server(){ try{ if(connected_server_id == null) return null; return Model_HomerServer.get_byId(connected_server_id).get_public_info(); }catch (Exception e){terminal_logger.internalServerError(e); return null;}}
-    @JsonProperty  @Transient @ApiModelProperty(value = "Can be null, if device is not in Instance") public Swagger_Instance_Short_Detail actual_instance(){
-
-        Model_HomerInstance instance = get_instance();
-        return instance != null  ? instance.get_instance_short_detail() : null;
-    }
-
-    @JsonProperty  @Transient  public String actual_c_program_id(){ return cache_value_actual_c_program_id != null ? cache_value_actual_c_program_id : (get_actual_c_program() == null ? null : get_actual_c_program().id);}
-    @JsonProperty  @Transient  public String actual_c_program_name(){ return get_actual_c_program() == null ? null : get_actual_c_program().name;}
-    @JsonProperty  @Transient  public String actual_c_program_description(){ return get_actual_c_program() == null ? null :  get_actual_c_program().description;}
-
-    @JsonProperty  @Transient  public String actual_c_program_version_id(){ return cache_value_actual_c_program_version_id != null ? cache_value_actual_c_program_version_id : (get_actual_c_program_version() == null ? null : get_actual_c_program_version().id);}
-    @JsonProperty  @Transient  public String actual_c_program_version_name(){ return get_actual_c_program_version() == null ? null : get_actual_c_program_version().version_name;}
-    @JsonProperty  @Transient  public String actual_c_program_version_description(){  return get_actual_c_program_version() == null ? null : get_actual_c_program_version().version_description;}
-
-    @JsonProperty  @Transient  public String actual_c_program_backup_id(){  return cache_value_actual_c_program_backup_id != null ? cache_value_actual_c_program_backup_id : (get_backup_c_program() == null ? null : get_backup_c_program().id); }
-    @JsonProperty  @Transient  public String actual_c_program_backup_name(){ return get_backup_c_program() == null ? null : get_backup_c_program().name;}
-    @JsonProperty  @Transient  public String actual_c_program_backup_description(){ return get_backup_c_program() == null ? null : get_backup_c_program().description;}
-
-    @JsonProperty  @Transient  public String actual_c_program_backup_version_id(){ return cache_value_actual_c_program_backup_version_id != null ? cache_value_actual_c_program_backup_version_id : (get_backup_c_program_version() == null ? null :  get_backup_c_program_version().id) ;}
-    @JsonProperty  @Transient  public String actual_c_program_backup_version_name(){ return get_backup_c_program_version() == null ? null :  get_backup_c_program_version().version_name; }
-    @JsonProperty  @Transient  public String actual_c_program_backup_version_description(){return get_backup_c_program_version() == null ? null :  get_backup_c_program_version().version_description;}
 
     @JsonProperty  @Transient  public List<Swagger_C_Program_Update_plan_Short_Detail> required_updates(){
 
@@ -302,6 +279,30 @@ public class Model_Board extends Model {
             return new ArrayList<>();
         }
     }
+    
+    @JsonProperty  @Transient  public Swagger_HomerServer_public_Detail server(){ try{ if(connected_server_id == null) return null; return Model_HomerServer.get_byId(connected_server_id).get_public_info(); }catch (Exception e){terminal_logger.internalServerError(e); return null;}}
+    @JsonProperty  @Transient @ApiModelProperty(value = "Can be null, if device is not in Instance") public Swagger_Instance_Short_Detail actual_instance(){
+
+        Model_HomerInstance instance = get_instance();
+        return instance != null  ? instance.get_instance_short_detail() : null;
+    }
+
+    @JsonProperty  @Transient  public String actual_c_program_id(){ return cache_value_actual_c_program_id != null ? cache_value_actual_c_program_id : (get_actual_c_program() == null ? null : get_actual_c_program().id);}
+    @JsonProperty  @Transient  public String actual_c_program_name(){ return get_actual_c_program() == null ? null : get_actual_c_program().name;}
+    @JsonProperty  @Transient  public String actual_c_program_description(){ return get_actual_c_program() == null ? null :  get_actual_c_program().description;}
+
+    @JsonProperty  @Transient  public String actual_c_program_version_id(){ return cache_value_actual_c_program_version_id != null ? cache_value_actual_c_program_version_id : (get_actual_c_program_version() == null ? null : get_actual_c_program_version().id);}
+    @JsonProperty  @Transient  public String actual_c_program_version_name(){ return get_actual_c_program_version() == null ? null : get_actual_c_program_version().version_name;}
+    @JsonProperty  @Transient  public String actual_c_program_version_description(){  return get_actual_c_program_version() == null ? null : get_actual_c_program_version().version_description;}
+
+    @JsonProperty  @Transient  public String actual_c_program_backup_id(){  return cache_value_actual_c_program_backup_id != null ? cache_value_actual_c_program_backup_id : (get_backup_c_program() == null ? null : get_backup_c_program().id); }
+    @JsonProperty  @Transient  public String actual_c_program_backup_name(){ return get_backup_c_program() == null ? null : get_backup_c_program().name;}
+    @JsonProperty  @Transient  public String actual_c_program_backup_description(){ return get_backup_c_program() == null ? null : get_backup_c_program().description;}
+
+    @JsonProperty  @Transient  public String actual_c_program_backup_version_id(){ return cache_value_actual_c_program_backup_version_id != null ? cache_value_actual_c_program_backup_version_id : (get_backup_c_program_version() == null ? null :  get_backup_c_program_version().id) ;}
+    @JsonProperty  @Transient  public String actual_c_program_backup_version_name(){ return get_backup_c_program_version() == null ? null :  get_backup_c_program_version().version_name; }
+    @JsonProperty  @Transient  public String actual_c_program_backup_version_description(){return get_backup_c_program_version() == null ? null :  get_backup_c_program_version().version_description;}
+
 
     @JsonProperty  @Transient @ApiModelProperty(value = "Value is null, if device status is online.") public Long latest_online(){
         if(online_state() == Enum_Online_status.online) return null;

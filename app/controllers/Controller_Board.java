@@ -1752,6 +1752,9 @@ public class Controller_Board extends Controller {
             boot_loader.cache_value_main_type_of_board_id =  boot_loader.main_type_of_board.id;
             boot_loader.update();
 
+            // Update Chache
+            boot_loader.get_type_of_board().cache_value_main_bootloader_id = boot_loader.id.toString();
+
             // Vymažu Device Cache
             Model_Board.cache.clear();
 
