@@ -1117,6 +1117,8 @@ public class Controller_Blocko extends Controller{
             }else {
                 if(Model_TypeOfBlock.get_publicByName(help.name) != null)
                     return GlobalResult.result_badRequest("TypeOfBlock with this name already exists, type a new one.");
+
+                typeOfBlock.publish_type = Enum_Publishing_type.public_program;
             }
 
             // Kontrola oprávnění těsně před uložením podle standardu
