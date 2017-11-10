@@ -54,6 +54,21 @@ public class Model_TypeOfBoard_Batch extends Model {
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
+    public String get_nextMacAddress_just_for_check() throws IllegalCharsetNameException{
+
+        // Its used only for check - if some other server dont use this mac address and if its not registred in central hardware registration authority
+        if(latest_used_mac_address == null) {
+            return convert_to_MAC_ISO(mac_address_start);
+        }
+
+        if(latest_used_mac_address >= mac_address_end){
+            throw new IllegalCharsetNameException("All Mac Address used");
+        }
+
+        return convert_to_MAC_ISO(this.latest_used_mac_address + 1);
+    }
+
+    @JsonIgnore @Transient
     public String get_new_MacAddress() throws IllegalCharsetNameException{
 
         if(latest_used_mac_address == null){

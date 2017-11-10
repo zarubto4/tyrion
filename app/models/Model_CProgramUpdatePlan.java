@@ -130,12 +130,12 @@ public class Model_CProgramUpdatePlan extends Model {
     public Swagger_Board_Update_Short_Detail board_detail(){
 
         Swagger_Board_Update_Short_Detail board_detail = new Swagger_Board_Update_Short_Detail();
-        board_detail.board_id = board.id;
-        board_detail.online_state = board.online_state();
-        board_detail.name = board.name;
-        board_detail.description = board.description;
-        board_detail.type_of_board_id = board.get_type_of_board().id;
-        board_detail.type_of_board_name = board.get_type_of_board().name;
+        board_detail.board_id = get_board().id;
+        board_detail.online_state =  get_board().online_state();
+        board_detail.name =  get_board().name;
+        board_detail.description =  get_board().description;
+        board_detail.type_of_board_id =  get_board().get_type_of_board().id;
+        board_detail.type_of_board_name =  get_board().get_type_of_board().name;
 
         return board_detail;
     }
@@ -173,13 +173,29 @@ public class Model_CProgramUpdatePlan extends Model {
 
         return detail;
     }
+
+    @JsonIgnore @Transient public Model_Board get_board(){
+
+        if(cache_board_id != null) {
+            return Model_Board.get_byId(cache_board_id);
+        }
+
+        Model_Board board_not_cached = Model_Board.find.where().eq("c_program_update_plans.id", id).select("id").findUnique();
+        if(board_not_cached != null){
+            cache_board_id = board_not_cached.id;
+            return get_board();
+        }
+
+        return null;
+    }
+
     @JsonIgnore @Transient public Swagger_UpdatePlan_brief_for_homer get_brief_for_update_homer_server(){
         try {
 
             Swagger_UpdatePlan_brief_for_homer brief_for_homer = new Swagger_UpdatePlan_brief_for_homer();
             brief_for_homer.actualization_procedure_id = actualization_procedure.id.toString();
             brief_for_homer.c_program_update_plan_id = id.toString();
-            brief_for_homer.hardware_ids.add(board.id);
+            brief_for_homer.hardware_ids.add(get_board().id);
 
             Swagger_UpdatePlan_brief_for_homer_BinaryComponent binary = new Swagger_UpdatePlan_brief_for_homer_BinaryComponent();
             binary.firmware_type = firmware_type;
@@ -191,16 +207,20 @@ public class Model_CProgramUpdatePlan extends Model {
             }
 
             if(firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP){
-                binary.download_id =  c_program_version_for_update.c_compilation.id.toString();
-                binary.build_id =  c_program_version_for_update.c_compilation.firmware_build_id;
-                binary.program_name = c_program_version_for_update.get_c_program().name;
-                binary.program_version_name = c_program_version_for_update.version_name;
+                binary.download_id              = c_program_version_for_update.c_compilation.id.toString();
+                binary.build_id                 = c_program_version_for_update.c_compilation.firmware_build_id;
+                binary.program_name             = c_program_version_for_update.get_c_program().name.length() > 32 ? c_program_version_for_update.version_name.substring(0, 32) : c_program_version_for_update.version_name;
+                binary.program_version_name     = c_program_version_for_update.version_name.length() > 32 ? c_program_version_for_update.version_name.substring(0, 32) : c_program_version_for_update.version_name;
+                binary.compilation_lib_version  = c_program_version_for_update.c_compilation.firmware_version_lib;
+                binary.time_stamp               = c_program_version_for_update.c_compilation.firmware_build_datetime;
+
             }
             else if(firmware_type == Enum_Firmware_type.BOOTLOADER){
-                binary.download_id = bootloader.id.toString();
-                binary.build_id = bootloader.version_identificator;
-                binary.program_name = bootloader.name;
-                binary.program_version_name = bootloader.version_identificator;
+                binary.download_id          = bootloader.id.toString();
+                binary.build_id             = bootloader.version_identificator;
+                binary.program_name         = bootloader.name.length() > 32 ? bootloader.name.substring(0, 32) : bootloader.name;
+                binary.program_version_name = bootloader.version_identificator.length() > 32 ? bootloader.version_identificator.substring(0, 32) : bootloader.version_identificator;
+                binary.time_stamp           = bootloader.date_of_create;
             }
             else{
                 terminal_logger.internalServerError(new IllegalAccessException("Unsupported type of Enum_Firmware_type or not set firmware_type in Model_CProgramUpdatePlan"));
@@ -290,6 +310,7 @@ public class Model_CProgramUpdatePlan extends Model {
         try {
 
 
+
             Enum_HardwareHomerUpdate_state status = report.get_phase();
             if (status == null){
                 terminal_logger.error("Hardware_update_state_from_Homer " + report.phase + " is not recognize in Json!");
@@ -317,7 +338,7 @@ public class Model_CProgramUpdatePlan extends Model {
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
                                 .setObject(plan.actualization_procedure)
                                 .setText(new Notification_Text().setText(". We are making backup on board "))
-                                .setObject(plan.board)
+                                .setObject(plan.get_board())
                                 .setText(new Notification_Text().setText("finished:: " + report.percentage_progress + "%"))
                                 .send_under_project(plan.actualization_procedure.get_project_id());
 
@@ -341,7 +362,7 @@ public class Model_CProgramUpdatePlan extends Model {
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
                                 .setObject(plan.actualization_procedure)
                                 .setText(new Notification_Text().setText(". Transfer firmware to "))
-                                .setObject(plan.board)
+                                .setObject(plan.get_board())
                                 .setText(new Notification_Text().setText(" finished:: " + report.percentage_progress + "%"))
                                 .send_under_project(plan.actualization_procedure.get_project_id());
 
@@ -354,10 +375,12 @@ public class Model_CProgramUpdatePlan extends Model {
                 case UPDATE_DONE: {
                     try {
 
+                        System.out.println("----------------UPDATE PROCEDURA JE OZNACENA JAKO  DONE");
+
                         plan.state = Enum_CProgram_updater_state.complete;
                         plan.update();
 
-                        Model_Board board = plan.board;
+                        Model_Board board = plan.get_board();
 
                         if (plan.firmware_type == Enum_Firmware_type.FIRMWARE) {
 

@@ -53,7 +53,7 @@ public class Model_CCompilation extends Model {
     @JsonIgnore  public String firmware_version_mbed;
     @JsonIgnore  public String firmware_version_lib;        // v1.0.1, v1.0.2 etc...
     @JsonIgnore  public String firmware_build_id;
-    @JsonIgnore  public String firmware_build_datetime;
+    @JsonIgnore  public Date firmware_build_datetime;
 
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/

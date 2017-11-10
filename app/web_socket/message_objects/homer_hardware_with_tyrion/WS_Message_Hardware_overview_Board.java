@@ -11,9 +11,9 @@ public class WS_Message_Hardware_overview_Board {
 
     @Constraints.Required public String hardware_id;
     @Constraints.Required public boolean online_state;
-    public String mac;
+    @Constraints.Required public String mac;
 
-    public String target;                       // třeba Yoda G3
+    @Constraints.Required public String target;                       // třeba Yoda G3
     public String alias;                        // "pepa"
 
     @Valid public WS_Message_Hardware_overview_Board_Binaries binaries;
@@ -23,8 +23,8 @@ public class WS_Message_Hardware_overview_Board {
     public boolean webview;
     public Integer webport;
 
-    public String normal_mqtt_connection;       // ip addressa:port
-    public String backup_mqtt_connection;       // ip addressa:port
+    @Constraints.Required  public String normal_mqtt_connection;       // ip addressa:port
+    @Constraints.Required  public String backup_mqtt_connection;       // ip addressa:port
 
     public boolean autobackup;
 

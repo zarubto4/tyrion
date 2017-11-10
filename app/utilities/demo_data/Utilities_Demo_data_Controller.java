@@ -60,7 +60,7 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             System.out.println("garfield()");
 
-            if (Model_Garfield.find.where().eq("name", "Byzance 1").findUnique() != null)
+            if (Model_Garfield.find.where().eq("name", "Garfield").findUnique() != null)
                 return GlobalResult.result_badRequest("Its Already done!");
 
             Model_Garfield garfield = new Model_Garfield();

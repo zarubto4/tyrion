@@ -8,6 +8,7 @@ public enum Enum_HardwareHomerUpdate_state {
     // events
     @EnumValue("UPDATE_STARTED")                    UPDATE_STARTED,
     @EnumValue("ERASING_FLASH_STARTED")             ERASING_FLASH_STARTED,      // Creating backup
+    @EnumValue("PHASE_FLASH_ERASED")                PHASE_FLASH_ERASED,      // Creating backup
     @EnumValue("UPLOAD_STARTED")                    UPLOAD_STARTED,
     @EnumValue("SENDING_PART")                      SENDING_PART,
     @EnumValue("UPLOAD_END")                        UPLOAD_END,
@@ -46,6 +47,7 @@ public enum Enum_HardwareHomerUpdate_state {
         // events
         else if(value.equalsIgnoreCase(UPDATE_STARTED.toString()))              return Enum_HardwareHomerUpdate_state.UPDATE_STARTED;
         else if(value.equalsIgnoreCase(ERASING_FLASH_STARTED.toString()))       return Enum_HardwareHomerUpdate_state.ERASING_FLASH_STARTED;
+        else if(value.equalsIgnoreCase(PHASE_FLASH_ERASED.toString()))          return Enum_HardwareHomerUpdate_state.PHASE_FLASH_ERASED;
         else if(value.equalsIgnoreCase(UPLOAD_STARTED.toString()))              return Enum_HardwareHomerUpdate_state.UPLOAD_STARTED;
         else if(value.equalsIgnoreCase(SENDING_PART.toString()))                return Enum_HardwareHomerUpdate_state.SENDING_PART;
         else if(value.equalsIgnoreCase(UPLOAD_END.toString()))                  return Enum_HardwareHomerUpdate_state.UPLOAD_END;

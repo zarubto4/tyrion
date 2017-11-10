@@ -142,7 +142,7 @@ create table CCompilation (
   firmware_version_mbed     varchar(255),
   firmware_version_lib      varchar(255),
   firmware_build_id         varchar(255),
-  firmware_build_datetime   varchar(255),
+  firmware_build_datetime   timestamp,
   constraint ck_CCompilation_status check (status in ('file_with_code_not_found','json_code_is_broken','successfully_compiled_and_restored','compilation_in_progress','compilation_server_error','hardware_unstable','server_was_offline','successfully_compiled_not_restored','compiled_with_code_errors','undefined')),
   constraint uq_CCompilation_c_compilation_ve unique (c_compilation_version),
   constraint uq_CCompilation_bin_compilation_ unique (bin_compilation_file_id),

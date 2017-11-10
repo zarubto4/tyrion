@@ -321,7 +321,7 @@ public class Model_ActualizationProcedure extends Model {
 
                     if(updates.get(0).firmware_type == Enum_Firmware_type.FIRMWARE)
                         notification.setText(new Notification_Text().setText(" for Board "))
-                                    .setObject(updates.get(0).board)
+                                    .setObject(updates.get(0).get_board())
                                     .setText( new Notification_Text().setText(" from Code Editor with Program "))
                                     .setObject(updates.get(0).c_program_version_for_update.get_c_program())
                                     .setText( new Notification_Text().setText(" version "))
@@ -330,7 +330,7 @@ public class Model_ActualizationProcedure extends Model {
 
                     else  if(updates.get(0).firmware_type == Enum_Firmware_type.BOOTLOADER)
                         notification.setText(new Notification_Text().setText(" for Board "))
-                                .setObject(updates.get(0).board)
+                                .setObject(updates.get(0).get_board())
                                 .setText( new Notification_Text().setText(" Bootloader version " + updates.get(0).bootloader.version_identificator ))
                                 .setText( new Notification_Text().setText("."));
 
@@ -349,7 +349,7 @@ public class Model_ActualizationProcedure extends Model {
                 if(updates.size() == 1){
 
                     notification.setText(new Notification_Text().setText(" with one device "));
-                    notification.setObject(updates.get(0).board);
+                    notification.setObject(updates.get(0).get_board());
 
                 }
                 else{

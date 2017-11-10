@@ -508,7 +508,7 @@ public class Model_VersionObject extends Model {
                 c_compilation.c_comp_build_url = compilation.build_url;
                 c_compilation.firmware_build_id = compilation.build_id;
                 c_compilation.virtual_input_output = compilation.interface_code;
-                c_compilation.date_of_create = new Date();
+                c_compilation.firmware_build_datetime = new Date();
                 c_compilation.update();
 
                 return new Result_Ok();

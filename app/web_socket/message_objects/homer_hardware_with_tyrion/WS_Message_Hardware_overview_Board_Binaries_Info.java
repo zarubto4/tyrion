@@ -11,7 +11,8 @@ public class WS_Message_Hardware_overview_Board_Binaries_Info {
     public Integer size;
     public Long timestamp;
     public String build_id;
-    public String name;
+    public String usr_name;
+    public String usr_version;
     public Integer memsize;
 
 

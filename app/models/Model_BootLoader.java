@@ -186,7 +186,7 @@ public class Model_BootLoader extends Model {
                     .setText(new Notification_Text().setText("Attention. You have entered the bootloader update command for Bootloader version "))
                     .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.bootloader.version_identificator + " "))
                     .setText(new Notification_Text().setText(" for device "))
-                    .setObject(plan.board)
+                    .setObject(plan.get_board())
                     .setText(new Notification_Text().setText(". "))
                     .setText(new Notification_Text().setText("Bootloader update is a critical action. " +
                             "Do not disconnect the device from the power supply during the update. " +
@@ -196,7 +196,7 @@ public class Model_BootLoader extends Model {
                             "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
                             "In the details of the instance or hardware overview, you can see the status of each procedures. " +
                             "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
-                    .send_under_project(plan.board.project_id());
+                    .send_under_project(plan. get_board().project_id());
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
@@ -216,10 +216,10 @@ public class Model_BootLoader extends Model {
                     .setText(new Notification_Text().setText("Success! Bootloader version "))
                     .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.bootloader.version_identificator + " "))
                     .setText(new Notification_Text().setText("  is done for device "))
-                    .setObject(plan.board)
+                    .setObject(plan.get_board())
                     .setText(new Notification_Text().setText(". "))
                     .setText(new Notification_Text().setText("Have a nice Day!"))
-                    .send_under_project(plan.board.project_id());
+                    .send_under_project(plan.get_board().project_id());
 
 
         } catch (Exception e) {
@@ -258,7 +258,7 @@ public class Model_BootLoader extends Model {
                                 "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
                                 "In the details of the instance or hardware overview, you can see the status of each procedure. " +
                                 "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
-                        .send_under_project(plans.get(0).board.project_id());
+                        .send_under_project(plans.get(0).get_board().project_id());
 
             }).start();
 

@@ -1985,6 +1985,19 @@ public class Controller_Board extends Controller {
 
             // Pokud neexistuje vytvořím
             if (board == null) {
+
+                terminal_logger.warn("New Device Registration ID: {}", help.full_id);
+
+                // Try to Find it on Registration Authority
+                if(Hardware_Registration_Authority.check_if_value_is_registered(help.full_id, "board_id")) {
+                    terminal_logger.error("Device is already Registred ID: {}", help.full_id);
+                    return GlobalResult.badRequest("Device is already Registred ID: " + help.full_id);
+                }
+                if(Hardware_Registration_Authority.check_if_value_is_registered(batch.get_nextMacAddress_just_for_check(), "mac_address")) {
+                    terminal_logger.error("Next Mac Address fot this device is already registered. Check It. Mac Address:: {}", help.full_id);
+                    return GlobalResult.badRequest("Next Mac Address fot this device is already registered. Check It Mac Address:: " +  help.full_id);
+                }
+
                 board = new Model_Board();
                 board.id = help.full_id;
                 board.is_active = false;

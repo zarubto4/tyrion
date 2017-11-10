@@ -76,19 +76,31 @@ public class Hardware_Registration_Authority extends Controller {
         }
     }
 
+    public static boolean check_if_value_is_registered(String value, String type){
+
+        // type == "board_id" or "mac_address"
+
+        // Kontroluji Device ID
+        BasicDBObject whereQuery_board_id = new BasicDBObject();
+        whereQuery_board_id.put( type ,value);
+        Document device_id_already_registered = collection.find(whereQuery_board_id).first();
+
+        if(device_id_already_registered != null) {
+            return true;
+        }
+
+        return false;
+    }
+
     // Před uložením desky - je nejprve proveden dotaz zda může být uložena!
     public static boolean register_device(Model_Board board, Model_TypeOfBoard typeOfBoard, Model_TypeOfBoard_Batch batch){
 
         terminal_logger_registration.info("Registration new Device " + board.id);
 
         // Kontroluji Device ID
-        BasicDBObject whereQuery_board_id = new BasicDBObject();
-        whereQuery_board_id.put("board_id", board.id);
-        Document device_id_already_registered = collection.find(whereQuery_board_id).first();
-
-        if(device_id_already_registered != null) {
-            terminal_logger_registration.error("Collection name:: " + DM_Board_Registration_Central_Authority.COLLECTION_NAME);
-            terminal_logger_registration.error("Hardware_Registration_Authority:: register_device:: In Database is registered device with Same device ID!");
+        if( check_if_value_is_registered(board.id,"board_id")) {
+            terminal_logger_registration.error("Hardware_Registration_Authority:: check_if_value_is_registered:: Collection name:: " + DM_Board_Registration_Central_Authority.COLLECTION_NAME);
+            terminal_logger_registration.error("Hardware_Registration_Authority:: check_if_value_is_registered:: In Database is registered device with Same device ID!");
             synchronize_mac_address_with_authority();
             synchronize_device_with_authority();
             return false;

@@ -279,7 +279,7 @@ public class Model_Board extends Model {
             return new ArrayList<>();
         }
     }
-    
+
     @JsonProperty  @Transient  public Swagger_HomerServer_public_Detail server(){ try{ if(connected_server_id == null) return null; return Model_HomerServer.get_byId(connected_server_id).get_public_info(); }catch (Exception e){terminal_logger.internalServerError(e); return null;}}
     @JsonProperty  @Transient @ApiModelProperty(value = "Can be null, if device is not in Instance") public Swagger_Instance_Short_Detail actual_instance(){
 
@@ -1232,6 +1232,64 @@ public class Model_Board extends Model {
 
 
     ///-- Send Update Procedure to All Hardware's  --//
+    @JsonIgnore @Transient public static void execute_update_plan(Model_CProgramUpdatePlan plan){
+        terminal_logger.debug("execute_update_plan - start execution of plan: {}", plan.id );
+        terminal_logger.debug("execute_update_plan - actual state: {} ", plan.state.name());
+
+        if(plan.actualization_procedure.state == Enum_Update_group_procedure_state.complete || plan.actualization_procedure.state == Enum_Update_group_procedure_state.successful_complete ){
+            terminal_logger.debug("execute_update_plan - procedure: {} is done (successful_complete or complete) -> return", plan.actualization_procedure.id);
+            return;
+        }
+
+        if(plan.actualization_procedure.updates.isEmpty()){
+            plan.actualization_procedure.state = Enum_Update_group_procedure_state.complete_with_error;
+            plan.actualization_procedure.update();
+            terminal_logger.debug("execute_update_plan - procedure: {} is empty -> return" , plan.actualization_procedure.id);
+            return;
+        }
+
+        plan.actualization_procedure.state = Enum_Update_group_procedure_state.in_progress;
+        plan.actualization_procedure.update();
+
+        try {
+
+            if( plan.count_of_tries > 5 ){
+                plan.state = Enum_CProgram_updater_state.critical_error;
+                plan.error = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message();
+                plan.error_code = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code();
+                plan.update();
+                terminal_logger.warn("execute_update_plan - Procedure id:: {} plan {} CProgramUpdatePlan:: Error:: {} Message:: {} Continue Cycle. " , plan.actualization_procedure.id , plan.id, ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code() , ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message());
+                return;
+            }
+
+            if(plan.get_board().connected_server_id == null){
+                plan.state = Enum_CProgram_updater_state.homer_server_never_connected;
+                plan.update();
+                return;
+            }
+
+            if(Model_HomerServer.get_byId(plan.get_board().connected_server_id).online_state() != Enum_Online_status.online){
+                terminal_logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", plan.actualization_procedure.id , plan.id, Model_HomerServer.get_byId(plan.get_board().connected_server_id).personal_server_name);
+                plan.state = Enum_CProgram_updater_state.homer_server_is_offline;
+                plan.update();
+                return;
+            }
+
+            plan.state = Enum_CProgram_updater_state.in_progress;
+            plan.update();
+
+            Model_HomerServer.get_byId(plan.get_board().connected_server_id).update_devices_firmware(Collections.singletonList(plan.get_brief_for_update_homer_server()));
+
+        } catch(Exception e) {
+            terminal_logger.internalServerError(e);
+            plan.state = Enum_CProgram_updater_state.critical_error;
+            plan.update();
+        }
+
+    }
+
+
+
     @JsonIgnore @Transient public static void execute_update_procedure(Model_ActualizationProcedure procedure){
 
         terminal_logger.debug("execute_update_procedure - start execution of procedure: {}", procedure.id );
@@ -1259,6 +1317,7 @@ public class Model_Board extends Model {
                 .eq("state", Enum_CProgram_updater_state.waiting_for_device)
                 .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
                 .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
+                .eq("state", Enum_CProgram_updater_state.homer_server_never_connected)
                 .eq("state", Enum_CProgram_updater_state.bin_file_not_found)
                 .endJunction()
                 .findList();
@@ -1278,7 +1337,7 @@ public class Model_Board extends Model {
             try {
 
                 terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: ID:: {} - New Cycle" , procedure.id , plan.id, plan.id);
-                terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Board ID:: {}" , procedure.id , plan.id,  plan.board.id);
+                terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Board ID:: {}" , procedure.id , plan.id,  plan.get_board().id);
                 terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Status:: {} ", procedure.id , plan.id,  plan.state);
 
                 terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Number of tries  ", procedure.id , plan.id,  plan.count_of_tries);
@@ -1292,24 +1351,24 @@ public class Model_Board extends Model {
                     continue;
                 }
 
-                if(plan.board.connected_server_id == null){
+                if(plan.get_board().connected_server_id == null){
                     plan.state = Enum_CProgram_updater_state.homer_server_never_connected;
                     plan.update();
                     continue;
                 }
 
-                if(!server_device_sort.containsKey(plan.board.connected_server_id)){
-                    server_device_sort.put(plan.board.connected_server_id, new ArrayList<Model_CProgramUpdatePlan>());
+                if(!server_device_sort.containsKey(plan.get_board().connected_server_id)){
+                    server_device_sort.put(plan.get_board().connected_server_id, new ArrayList<Model_CProgramUpdatePlan>());
                 }
 
-                if(Model_HomerServer.get_byId(plan.board.connected_server_id).online_state() != Enum_Online_status.online){
+                if(Model_HomerServer.get_byId(plan.get_board().connected_server_id).online_state() != Enum_Online_status.online){
                     terminal_logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id, Model_HomerServer.get_byId(plan.board.connected_server_id).personal_server_name);
                     plan.state = Enum_CProgram_updater_state.homer_server_is_offline;
                     plan.update();
                     continue;
                 }
 
-                server_device_sort.get(plan.board.connected_server_id).add(plan);
+                server_device_sort.get(plan.get_board().connected_server_id).add(plan);
 
                 terminal_logger.debug("execute_update_procedure - Procedure id:: {}  plan {} of blocko program is online and connected with Tyrion", procedure.id, plan.id);
 
@@ -1442,9 +1501,141 @@ public class Model_Board extends Model {
         // Pokud uživatel nechce DB synchronizaci ingoruji
         if(!this.database_synchronize) return;
 
-        // Firmware Neexistuje na Tyrionovi Deska je buď uplně nová nebo apřiřazená například při vývyji nebo byl aktivován database_synchronize když byla deska offline
-        if(Model_CCompilation.find.where().eq("firmware_build_id", overview.binaries.firmware.build_id).findRowCount() < 1 || get_actual_c_program_version() == null || get_actual_c_program_version().c_compilation != null) {
+        if (get_actual_c_program_version() == null) {
+            terminal_logger.trace("check_firmware -: Actual firmware by DB not recognized :: ", overview.binaries.firmware.build_id);
+        }
 
+
+        // Vylistuji seznam úkolů k updatu
+        List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.where().eq("board.id", this.id)
+                .disjunction()
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
+                .endJunction()
+                .eq("firmware_type", Enum_Firmware_type.FIRMWARE.name())
+                .lt("actualization_procedure.date_of_planing", new Date())
+                .order().desc("actualization_procedure.date_of_planing")
+                .findList();
+
+
+        // Kontrola Firmwaru a přepsání starých
+        // Je žádoucí přepsat všechny předhozí update plány - ale je nutné se podívat jestli nejsou rozdílné!
+        // To jest pokud mám 2 updaty firmwaru pak ten starší zahodím
+        // Ale jestli mám udpate firmwaru a backupu pak k tomu dojít nesmí!
+        // Poměrně krkolomné řešení a HNUS kod - ale chyba je výjmečná a stává se jen sporadicky těsně před nebo po restartu serveru
+        if(firmware_plans.size() > 1){
+            for (int i = 1; i < firmware_plans.size(); i++) {
+                    firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
+                    firmware_plans.get(i).update();
+            }
+        }
+
+        if(!firmware_plans.isEmpty()){
+
+            terminal_logger.debug("check_firmware není empty");
+
+            Model_CProgramUpdatePlan plan = firmware_plans.get(0);
+
+            // Mám shodu firmwaru oproti očekávánemů
+            if (get_actual_c_program_version() != null) {
+
+                // Verze se rovnají
+                if (get_actual_c_program_version().c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
+                    terminal_logger.debug("check_firmware verze se shodují");
+
+                    terminal_logger.debug("check_firmware - up to date, procedure is done");
+                    plan.state = Enum_CProgram_updater_state.complete;
+                    plan.update();
+
+                } else {
+                    terminal_logger.debug("check_firmware verze se neshodují");
+                    terminal_logger.debug("check_firmware - need update, system starts a update again, number of tries {}", plan.count_of_tries);
+                    plan.state = Enum_CProgram_updater_state.not_start_yet;
+                    plan.count_of_tries++;
+                    plan.update();
+                    execute_update_plan(plan);
+                }
+
+            } else {
+
+                terminal_logger.debug("check_firmware - no firmware, system starts a new update");
+                plan.state = Enum_CProgram_updater_state.not_start_yet;
+                plan.count_of_tries++;
+                plan.update();
+
+                execute_update_plan(plan);
+            }
+        }
+
+        // Nemám Updaty - ale verze se neshodují
+        if(get_actual_c_program_version() != null && firmware_plans.isEmpty()){
+
+            if(!get_actual_c_program_version().c_compilation.firmware_build_id.equals(overview.binaries.firmware.build_id)){
+                // Na HW není to co by na něm mělo být.
+
+                terminal_logger.debug("check_firmware - Different firmware versions versus database");
+
+                if (get_backup_c_program_version() != null && get_backup_c_program_version().c_compilation.firmware_build_id.equals(overview.binaries.bootloader.build_id)) {
+
+                    terminal_logger.warn("check_firmware - We have problem with firmware version. Backup is now running");
+
+                    // Notifikace uživatelovi
+                    this.notification_board_unstable_actual_firmware_version(get_actual_c_program_version());
+
+                    // Označit firmare za nestabilní
+                    get_actual_c_program_version().c_compilation.status = Enum_Compile_status.hardware_unstable;
+                    get_actual_c_program_version().c_compilation.update();
+
+                    // Přemapovat hardware
+                    actual_c_program_version = get_backup_c_program_version();
+
+                    this.cache_value_actual_c_program_id = actual_c_program_version.id;                     // C Program
+                    this.cache_value_actual_c_program_version_id = actual_c_program_version.id;
+                    this.cache_value_actual_c_program_backup_id = actual_c_program_version.id;              // Backup
+                    this.cache_value_actual_c_program_backup_version_id  = actual_c_program_version.id;
+
+                    this.update();
+
+                    return;
+                }
+
+                // Backup to není
+                else {
+
+                    terminal_logger.warn("check_firmware - Wrong version on hardware - or null version on hardware");
+                    terminal_logger.warn("check_firmware - Now System set Default Firmware or Firmware by Database!!!");
+
+                    // Nastavuji nový systémový update
+                    List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
+
+                    WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
+                    b_pair.board = this;
+                    b_pair.c_program_version = get_actual_c_program_version();
+
+                    b_pairs.add(b_pair);
+
+                    Model_ActualizationProcedure procedure = create_update_procedure(Enum_Firmware_type.FIRMWARE, Enum_Update_type_of_update.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
+                    procedure.execute_update_procedure();
+
+                    return;
+                }
+
+            }else {
+                // Na HW je to co by na něm podle databáze mělo být.
+                System.out.println("Na Hardwaru je to - co by na něm mělo být");
+                return;
+            }
+
+
+        }
+
+
+        // Set Defualt Program protože žádný teď nemáš
+        if(get_actual_c_program_version() == null && firmware_plans.isEmpty()){
             terminal_logger.debug("check_firmware - Actual firmware_id is not recognized by the DB - Device has not firmware from Tyrion");
             terminal_logger.debug("check_firmware - Tyrion will try to find Default C Program Main Version for this type of hardware. If is it set, Tyrion will update device to starting state");
 
@@ -1467,127 +1658,12 @@ public class Model_Board extends Model {
                 Model_ActualizationProcedure procedure = create_update_procedure(Enum_Firmware_type.FIRMWARE, Enum_Update_type_of_update.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
                 procedure.execute_update_procedure();
 
-                return;
-
             } else {
                 terminal_logger.error("Attention please! This is not a critical bug - Tyrion server is not just set for this type of device! Set main C_Program and version!");
                 terminal_logger.error("Default main code version is not set for Type Of Board " + get_type_of_board().name + " please set that!");
-                return;
             }
         }
 
-        // Kontrola zda nenaběhnul backup!
-        // Nejpravděpodobnější varianta proč tam není správná verze je nasazený Backup
-        // Pokud je aktuální backup podle DB shodný firmwarem na hardwaru - měl bych oznámit kritickou chybu uživatelovi
-        // A zároven označit firmware verzi za nestabilní
-        // Nastavit aktuální verzi firmwaru na backup který naběhnul
-        if(!actual_c_program_version.c_compilation.firmware_build_id.equals(overview.binaries.firmware.build_id)){
-
-            terminal_logger.debug("check_firmware - Different firmware versions versus database");
-
-            if (get_backup_c_program_version().id.equals(overview.binaries.bootloader.build_id)) {
-
-                terminal_logger.warn("check_firmware - We have problem with firmware version. Backup is now running");
-
-                // Notifikace uživatelovi
-                this.notification_board_unstable_actual_firmware_version(get_actual_c_program_version());
-
-                // Označit firmare za nestabilní
-                get_actual_c_program_version().c_compilation.status = Enum_Compile_status.hardware_unstable;
-                get_actual_c_program_version().c_compilation.update();
-
-                // Přemapovat hardware
-                actual_c_program_version = get_backup_c_program_version();
-                this.update();
-
-                return;
-            }
-
-            // Backup to není
-            else {
-
-                terminal_logger.warn("check_firmware - Wrong version on hardware - or null version on hardware");
-                terminal_logger.warn("check_firmware - Now System set Default Firmware or Firmware by Database!!!");
-
-                // Nastavuji nový systémový update
-                List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
-
-                WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
-                b_pair.board = this;
-                b_pair.c_program_version = get_actual_c_program_version();
-
-                b_pairs.add(b_pair);
-
-                Model_ActualizationProcedure procedure = create_update_procedure(Enum_Firmware_type.FIRMWARE, Enum_Update_type_of_update.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
-                procedure.execute_update_procedure();
-
-                return;
-            }
-
-        }
-
-        // Vylistuji seznam úkolů k updatu
-        List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.where().eq("board.id", this.id)
-                .disjunction()
-                .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
-                .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
-                .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
-                .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
-                .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
-                .endJunction()
-                .disjunction()
-                .add(Expr.eq("firmware_type", Enum_Firmware_type.FIRMWARE.name()))
-                .lt("actualization_procedure.date_of_planing", new Date().getTime())
-                .order().desc("actualization_procedure.date_of_planing")
-                .findList();
-
-        // Kontrola Firmwaru a přepsání starých
-        // Je žádoucí přepsat všechny předhozí update plány - ale je nutné se podívat jestli nejsou rozdílné!
-        // To jest pokud mám 2 updaty firmwaru pak ten starší zahodím
-        // Ale jestli mám udpate firmwaru a backupu pak k tomu dojít nesmí!
-        // Poměrně krkolomné řešení a HNUS kod - ale chyba je výjmečná a stává se jen sporadicky těsně před nebo po restartu serveru
-        if(firmware_plans.size() > 1){
-            for (int i = 1; i < firmware_plans.size(); i++) {
-                    firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
-                    firmware_plans.get(i).update();
-            }
-        }
-
-        if(!firmware_plans.isEmpty()){
-
-            Model_CProgramUpdatePlan plan = firmware_plans.get(0);
-
-            // Mám shodu firmwaru oproti očekávánemů
-            if (plan.board.get_actual_c_program_version() != null) {
-
-                // Verze se rovnají
-                if (plan.board.get_actual_c_program_version().c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id )) {
-
-                    terminal_logger.debug("check_firmware - up to date, procedure is done");
-                    plan.state = Enum_CProgram_updater_state.complete;
-                    plan.update();
-
-                } else {
-
-                    terminal_logger.debug("check_firmware - need update, system starts a new update, number of tries {}", plan.count_of_tries);
-                    plan.state = Enum_CProgram_updater_state.not_start_yet;
-                    plan.count_of_tries++;
-                    plan.update();
-                    execute_update_procedure(plan.actualization_procedure);
-
-                }
-
-            } else {
-
-                terminal_logger.debug("check_firmware - no firmware, system starts a new update");
-                plan.state = Enum_CProgram_updater_state.not_start_yet;
-                plan.count_of_tries++;
-                plan.update();
-
-                execute_update_procedure(plan.actualization_procedure);
-            }
-
-        }
     }
 
     @JsonIgnore @Transient private void check_backup(WS_Message_Hardware_overview_Board overview){
@@ -1655,10 +1731,10 @@ public class Model_Board extends Model {
 
             if(plan.firmware_type == Enum_Firmware_type.BACKUP) {
 
-                if (plan.board.get_backup_c_program_version() != null) {
+                if (plan.get_board().get_backup_c_program_version() != null) {
 
                     // Verze se rovnají
-                    if (plan.board.get_backup_c_program_version().c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
+                    if (plan.get_board().get_backup_c_program_version().c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
 
                         terminal_logger.debug("check_backup - up to date, procedure is done");
                         plan.state = Enum_CProgram_updater_state.complete;
@@ -1715,12 +1791,6 @@ public class Model_Board extends Model {
             terminal_logger.trace("check_bootloader -: Actual bootloader_id by DB not recognized :: ", overview.binaries.bootloader.build_id);
         }
 
-        System.out.println("Chci vypsat aktualizační procedury");
-        List<Model_CProgramUpdatePlan> firmware_plans_SS = Model_CProgramUpdatePlan.find.where().eq("board.id", this.id).findList();
-        for (Model_CProgramUpdatePlan plan : firmware_plans_SS) {
-            System.out.println("Update:: ID " + plan.id + " state: " + plan.state);
-        }
-
 
         // Vylistuji seznam úkolů k updatu
         List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.where().eq("board.id", this.id)
@@ -1755,10 +1825,10 @@ public class Model_Board extends Model {
 
             Model_CProgramUpdatePlan plan = firmware_plans.get(0);
 
-            if (plan.board.get_actual_bootloader() != null) {
+            if (plan.get_board().get_actual_bootloader() != null) {
 
                 // Verze se rovnají
-                if (plan.board.get_actual_bootloader().version_identificator.equals(plan.bootloader.version_identificator)) {
+                if (plan.get_board().get_actual_bootloader().version_identificator.equals(plan.bootloader.version_identificator)) {
 
                     terminal_logger.debug("check_bootloader - up to date, procedure is done");
                     plan.state = Enum_CProgram_updater_state.complete;

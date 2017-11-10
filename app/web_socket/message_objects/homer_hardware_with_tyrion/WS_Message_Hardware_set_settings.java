@@ -31,7 +31,7 @@ public class WS_Message_Hardware_set_settings extends WS_AbstractMessage {
             pair.hardware_id = device.id;
 
             Set_Alias_Pair settings = new Set_Alias_Pair();
-            settings.hardware_alias = device.name;
+            settings.alias = device.name;
             pair.settings = settings;
 
             device_pair.add(pair);
@@ -149,7 +149,7 @@ public class WS_Message_Hardware_set_settings extends WS_AbstractMessage {
     interface Settings{}
 
     class Set_Alias_Pair implements Settings{
-       @JsonProperty public String hardware_alias;
+       @JsonProperty public String alias;
     }
 
     class Set_AutoBackup_Pair implements Settings{
