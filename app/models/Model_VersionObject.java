@@ -440,7 +440,8 @@ public class Model_VersionObject extends Model {
         WS_Message_Make_compilation compilation = Model_CompilationServer.make_Compilation( new WS_Message_Make_compilation().make_request(typeOfBoard, c_compilation.firmware_version_lib, this.id, code_file.main, includes   ));
 
 
-        // Když obsahuje chyby - vrátím rovnou Becki
+
+        // Když obsahuje chyby - vrátím rovnou Becki - Toto je regulérní správná odpověd - chyby způsobil v c++ kodu uživatel
         if(!compilation.build_errors.isEmpty()) {
 
             terminal_logger.trace("compile_program_procedure:: compilation contains user Errors");
@@ -451,6 +452,16 @@ public class Model_VersionObject extends Model {
             Result_CompilationListError result_compilationListError = new Result_CompilationListError();
             result_compilationListError.errors = compilation.build_errors;
             return result_compilationListError;
+        }
+
+        // Toto už regulérní zpráva není  - něco se posralo!
+        if (!compilation.status.equals("success") && compilation.error_message != null) {
+            c_compilation.status = Enum_Compile_status.compilation_server_error;
+            c_compilation.update();
+
+            Result_BadRequest result = new Result_BadRequest();
+            result.message = "Error on Server Side";
+            return result;
         }
 
         if(compilation.interface_code == null || compilation.build_url == null){

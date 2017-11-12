@@ -12,6 +12,7 @@ import play.i18n.Lang;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
+import utilities.scheduler.CustomScheduler;
 import utilities.swagger.outboundClass.Swagger_ActualizationProcedure_Short_Detail;
 import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_device_set_snap;
 import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_status;
@@ -436,6 +437,18 @@ public class Model_HomerInstanceRecord extends Model {
             if (Model_HomerInstanceRecord.find.byId(this.id) == null) break;
         }
         super.save();
+
+        // If immidietly
+        if(planed_when == null || planed_when.getTime() < new Date().getTime()){
+
+            terminal_logger.debug("bProgramVersion_deploy: Set the instants immediately");
+            this.set_record_into_cloud();
+
+        }else {
+            terminal_logger.debug("bProgramVersion_deploy: Set the instants by Time scheduler (not now) ");
+            CustomScheduler.scheduleBlockoUpload(this);
+        }
+
     }
 
     @Override @Transient

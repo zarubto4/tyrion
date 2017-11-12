@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
+import play.libs.Json;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
@@ -16,9 +17,7 @@ import utilities.swagger.outboundClass.*;
 import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -108,14 +107,17 @@ public class Model_CProgramUpdatePlan extends Model {
     public Swagger_Bootloader_Update_program bootloader_detail(){
         try {
 
-            if (bootloader == null) return null;
+            Model_BootLoader cached_bootLoader = get_bootloader();
+
+            if (cached_bootLoader == null) return null;
+
 
             Swagger_Bootloader_Update_program bootloader_update_detail = new Swagger_Bootloader_Update_program();
-            bootloader_update_detail.bootloader_id = bootloader.id.toString();
-            bootloader_update_detail.bootloader_name = bootloader.name;
-            bootloader_update_detail.version_identificator = bootloader.version_identificator;
-            bootloader_update_detail.type_of_board_name = bootloader.type_of_board.name;
-            bootloader_update_detail.type_of_board_id = bootloader.type_of_board.id;
+            bootloader_update_detail.bootloader_id = cached_bootLoader.id.toString();
+            bootloader_update_detail.bootloader_name = cached_bootLoader.name;
+            bootloader_update_detail.version_identificator = cached_bootLoader.version_identificator;
+            bootloader_update_detail.type_of_board_name = cached_bootLoader.type_of_board.name;
+            bootloader_update_detail.type_of_board_id = cached_bootLoader.type_of_board.id;
 
 
             return bootloader_update_detail;
@@ -189,6 +191,21 @@ public class Model_CProgramUpdatePlan extends Model {
         return null;
     }
 
+    @JsonIgnore @Transient public Model_BootLoader get_bootloader(){
+
+        if(cache_bootloader_id != null) {
+            return Model_BootLoader.get_byId(cache_bootloader_id);
+        }
+
+        Model_BootLoader bootloader_not_cached = Model_BootLoader.find.where().eq("c_program_update_plans.id", id).select("id").findUnique();
+        if(bootloader_not_cached != null){
+            cache_bootloader_id = bootloader_not_cached.id.toString();
+            return get_bootloader();
+        }
+
+        return null;
+    }
+
     @JsonIgnore @Transient public Swagger_UpdatePlan_brief_for_homer get_brief_for_update_homer_server(){
         try {
 
@@ -200,7 +217,7 @@ public class Model_CProgramUpdatePlan extends Model {
             Swagger_UpdatePlan_brief_for_homer_BinaryComponent binary = new Swagger_UpdatePlan_brief_for_homer_BinaryComponent();
             binary.firmware_type = firmware_type;
 
-            brief_for_homer.binnary = binary;
+            brief_for_homer.binary = binary;
 
             if(actualization_procedure.type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
                 brief_for_homer.progress_subscribe = true;
@@ -209,18 +226,22 @@ public class Model_CProgramUpdatePlan extends Model {
             if(firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP){
                 binary.download_id              = c_program_version_for_update.c_compilation.id.toString();
                 binary.build_id                 = c_program_version_for_update.c_compilation.firmware_build_id;
-                binary.program_name             = c_program_version_for_update.get_c_program().name.length() > 32 ? c_program_version_for_update.version_name.substring(0, 32) : c_program_version_for_update.version_name;
+                binary.program_name             = c_program_version_for_update.get_c_program().name.length() > 32 ? c_program_version_for_update.get_c_program().name.substring(0, 32) : c_program_version_for_update.get_c_program().name;
                 binary.program_version_name     = c_program_version_for_update.version_name.length() > 32 ? c_program_version_for_update.version_name.substring(0, 32) : c_program_version_for_update.version_name;
                 binary.compilation_lib_version  = c_program_version_for_update.c_compilation.firmware_version_lib;
                 binary.time_stamp               = c_program_version_for_update.c_compilation.firmware_build_datetime;
 
             }
             else if(firmware_type == Enum_Firmware_type.BOOTLOADER){
-                binary.download_id          = bootloader.id.toString();
-                binary.build_id             = bootloader.version_identificator;
-                binary.program_name         = bootloader.name.length() > 32 ? bootloader.name.substring(0, 32) : bootloader.name;
-                binary.program_version_name = bootloader.version_identificator.length() > 32 ? bootloader.version_identificator.substring(0, 32) : bootloader.version_identificator;
-                binary.time_stamp           = bootloader.date_of_create;
+
+                Model_BootLoader cached_bootLoader = get_bootloader();
+                if (cached_bootLoader == null) return null;
+
+                binary.download_id          = cached_bootLoader.id.toString();
+                binary.build_id             = cached_bootLoader.version_identificator;
+                binary.program_name         = cached_bootLoader.name.length() > 32 ? cached_bootLoader.name.substring(0, 32) : cached_bootLoader.name;
+                binary.program_version_name = cached_bootLoader.version_identificator.length() > 32 ? cached_bootLoader.version_identificator.substring(0, 32) : cached_bootLoader.version_identificator;
+                binary.time_stamp           = cached_bootLoader.date_of_create;
             }
             else{
                 terminal_logger.internalServerError(new IllegalAccessException("Unsupported type of Enum_Firmware_type or not set firmware_type in Model_CProgramUpdatePlan"));
@@ -309,11 +330,9 @@ public class Model_CProgramUpdatePlan extends Model {
     public static void update_procedure_progress(WS_Message_Hardware_UpdateProcedure_Progress report){
         try {
 
-
-
-            Enum_HardwareHomerUpdate_state status = report.get_phase();
-            if (status == null){
-                terminal_logger.error("Hardware_update_state_from_Homer " + report.phase + " is not recognize in Json!");
+            Enum_HardwareHomerUpdate_state phase = report.get_phase();
+            if (phase == null){
+                terminal_logger.error("update_procedure_progress " + report.phase + " is not recognize in Json!");
                 return;
             }
 
@@ -322,7 +341,20 @@ public class Model_CProgramUpdatePlan extends Model {
                 throw new NullPointerException("Plan id" + report.tracking_id + " not found!");
             }
 
-            switch (status){
+
+            // Pokud se vrátí fáze špatně - ukončuji celý update
+            if (report.error != null || report.error_code != null){
+                terminal_logger.warn("update_procedure_progress  Update Fail! Device ID: {}, update procedure: {}", plan.get_board().id, plan.id);
+
+                plan.state = Enum_CProgram_updater_state.critical_error;
+                plan.error_code = report.error_code;
+                plan.error = report.error;
+                plan.update();
+                Model_ActualizationProcedure.get_byId(report.tracking_group_id).change_state(plan, plan.state);
+                return;
+            }
+
+            switch (phase){
 
                 case ERASING_FLASH_STARTED: {
                     try {
@@ -341,6 +373,8 @@ public class Model_CProgramUpdatePlan extends Model {
                                 .setObject(plan.get_board())
                                 .setText(new Notification_Text().setText("finished:: " + report.percentage_progress + "%"))
                                 .send_under_project(plan.actualization_procedure.get_project_id());
+
+                        return;
 
                     } catch (Exception e) {
                         terminal_logger.internalServerError(e);
@@ -366,6 +400,8 @@ public class Model_CProgramUpdatePlan extends Model {
                                 .setText(new Notification_Text().setText(" finished:: " + report.percentage_progress + "%"))
                                 .send_under_project(plan.actualization_procedure.get_project_id());
 
+                        return;
+
                     } catch (Exception e) {
                         terminal_logger.internalServerError(e);
                     }
@@ -389,7 +425,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
                         } else if (plan.firmware_type == Enum_Firmware_type.BOOTLOADER) {
 
-                            board.actual_boot_loader = plan.bootloader;
+                            board.actual_boot_loader = plan.get_bootloader();
                             board.update();
 
 
@@ -400,6 +436,7 @@ public class Model_CProgramUpdatePlan extends Model {
                             board.make_log_backup_arrise_change();
                         }
 
+                        return;
                     } catch (Exception e) {
                         terminal_logger.internalServerError(e);
                     }
@@ -412,6 +449,7 @@ public class Model_CProgramUpdatePlan extends Model {
                         plan.update();
                         Model_ActualizationProcedure.get_byId(report.tracking_group_id).change_state(plan, plan.state);
 
+                        return;
                     }catch (Exception e) {
                         terminal_logger.internalServerError(e);
                     }
@@ -427,6 +465,7 @@ public class Model_CProgramUpdatePlan extends Model {
                         plan.update();
                         Model_ActualizationProcedure.get_byId(report.tracking_group_id).change_state(plan, plan.state);
 
+                        return;
                     }catch (Exception e) {
                         terminal_logger.internalServerError(e);
                     }
@@ -438,11 +477,20 @@ public class Model_CProgramUpdatePlan extends Model {
                         plan.state = Enum_CProgram_updater_state.overwritten;
                         plan.update();
 
+                        return;
                     } catch (Exception e) {
                         terminal_logger.internalServerError(e);
                     }
                 }
 
+                default: {
+                    System.err.print("NEdefinovaný stav! - update_procedure_progress - SHIT HAPENS - N2kdo to na HOmerovi posrral nebo to někdo neimplementoval do tyriona");
+                    System.err.print("NEdefinovaný stav! - update_procedure_progress - SHIT HAPENS - N2kdo to na HOmerovi posrral nebo to někdo neimplementoval do tyriona");
+                    System.err.print("NEdefinovaný stav! - update_procedure_progress - SHIT HAPENS - N2kdo to na HOmerovi posrral nebo to někdo neimplementoval do tyriona");
+                    System.err.print("NEdefinovaný stav! - update_procedure_progress - SHIT HAPENS - N2kdo to na HOmerovi posrral nebo to někdo neimplementoval do tyriona");
+                    System.err.print("NEdefinovaný stav! - update_procedure_progress - SHIT HAPENS - N2kdo to na HOmerovi posrral nebo to někdo neimplementoval do tyriona");
+                    System.err.print("NEdefinovaný stav! " + Json.toJson(report));
+                }
             }
 
 

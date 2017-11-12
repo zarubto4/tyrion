@@ -184,7 +184,7 @@ public class Model_BootLoader extends Model {
                     .setChainType(Enum_Notification_type.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
                     .setId(plan.id.toString())
                     .setText(new Notification_Text().setText("Attention. You have entered the bootloader update command for Bootloader version "))
-                    .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.bootloader.version_identificator + " "))
+                    .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.get_bootloader().version_identificator + " "))
                     .setText(new Notification_Text().setText(" for device "))
                     .setObject(plan.get_board())
                     .setText(new Notification_Text().setText(". "))
@@ -214,7 +214,7 @@ public class Model_BootLoader extends Model {
                     .setChainType(Enum_Notification_type.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
                     .setId(plan.id.toString())
                     .setText(new Notification_Text().setText("Success! Bootloader version "))
-                    .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.bootloader.version_identificator + " "))
+                    .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.get_bootloader().version_identificator + " "))
                     .setText(new Notification_Text().setText("  is done for device "))
                     .setObject(plan.get_board())
                     .setText(new Notification_Text().setText(". "))
@@ -249,7 +249,7 @@ public class Model_BootLoader extends Model {
                         .setChainType(Enum_Notification_type.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
                         .setId(plans.get(0).actualization_procedure.id.toString())
                         .setText(new Notification_Text().setText("Attention. I have entered the bootloader update command for Bootloader version "))
-                        .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plans.get(0).bootloader.version_identificator + " "))
+                        .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plans.get(0).get_bootloader().version_identificator + " "))
                         .setText(new Notification_Text().setText("for " + plans.size() + " devices. "))
                         .setText(new Notification_Text().setText("Bootloader update is a critical action. " +
                                 "Do not disconnect the device from the power supply during the update. " +

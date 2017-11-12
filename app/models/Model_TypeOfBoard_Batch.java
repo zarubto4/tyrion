@@ -7,6 +7,7 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
+import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
 import utilities.logger.Class_Logger;
 
 import javax.persistence.*;
@@ -42,7 +43,7 @@ public class Model_TypeOfBoard_Batch extends Model {
 
     public Long mac_address_start;
     public Long mac_address_end;
-    public Long latest_used_mac_address;  // Pro přiřazení je vždy nutné zvednout novou verzi
+    @JsonIgnore  public Long latest_used_mac_address;  // Pro přiřazení je vždy nutné zvednout novou verzi - tato hodnota se dosynchronizovává se serverem
 
     public Long ean_number;
 
@@ -51,10 +52,26 @@ public class Model_TypeOfBoard_Batch extends Model {
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
+    @JsonProperty  @Transient public Long latest_used_mac_address(){
+        if(latest_used_mac_address == null) {
+            Hardware_Registration_Authority.synchronize_mac_address_with_authority();
+            this.refresh();
+        }
+
+        return latest_used_mac_address;
+    }
+
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
 
     @JsonIgnore @Transient
     public String get_nextMacAddress_just_for_check() throws IllegalCharsetNameException{
+
+        if(latest_used_mac_address == null) {
+            Hardware_Registration_Authority.synchronize_mac_address_with_authority();
+            this.refresh();
+        }
+
 
         // Its used only for check - if some other server dont use this mac address and if its not registred in central hardware registration authority
         if(latest_used_mac_address == null) {
@@ -70,6 +87,11 @@ public class Model_TypeOfBoard_Batch extends Model {
 
     @JsonIgnore @Transient
     public String get_new_MacAddress() throws IllegalCharsetNameException{
+
+        if(latest_used_mac_address == null) {
+            Hardware_Registration_Authority.synchronize_mac_address_with_authority();
+            this.refresh();
+        }
 
         if(latest_used_mac_address == null){
             latest_used_mac_address = mac_address_start;

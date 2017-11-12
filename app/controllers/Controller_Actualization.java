@@ -10,6 +10,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utilities.enums.Enum_CProgram_updater_state;
 import utilities.enums.Enum_Firmware_type;
 import utilities.enums.Enum_Update_type_of_update;
 import utilities.logger.Class_Logger;
@@ -283,6 +284,7 @@ public class Controller_Actualization extends Controller {
                     Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
                     plan.board = board;
                     plan.firmware_type = firmware_type;
+                    plan.state = Enum_CProgram_updater_state.not_start_yet;
 
                     if(firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP) {
                         plan.c_program_version_for_update = c_program_version;

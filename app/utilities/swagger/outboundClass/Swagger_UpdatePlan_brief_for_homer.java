@@ -20,7 +20,7 @@ public class Swagger_UpdatePlan_brief_for_homer {
 
     @JsonProperty public boolean progress_subscribe = false;                // Tyrion asks for information about the progress of the update
 
-    @JsonProperty public Swagger_UpdatePlan_brief_for_homer_BinaryComponent binnary;
+    @JsonProperty public Swagger_UpdatePlan_brief_for_homer_BinaryComponent binary;
 
 
 }

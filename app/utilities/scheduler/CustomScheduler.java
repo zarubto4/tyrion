@@ -1,5 +1,6 @@
 package utilities.scheduler;
 
+import models.Model_ActualizationProcedure;
 import models.Model_HomerInstanceRecord;
 import org.quartz.*;
 
@@ -174,7 +175,7 @@ public class CustomScheduler {
                             .build()
                 );
 
-                // 8) Update libraries and bootloaders from github
+                // 9) Update libraries and bootloaders from github
                 terminal_logger.debug("start: Scheduling new Job - Library and Bootloader Synchronization from GitHub");
                 scheduler.scheduleJob( newJob(Job_CheckCompilationLibraries.class).withIdentity( JobKey.jobKey("synchronize_libraries_with_github") ).build(),
                         newTrigger().withIdentity(every_minute_key).startNow()
@@ -182,6 +183,8 @@ public class CustomScheduler {
                                 .build()
                 );
 
+                // X-1 Start With CRON for Planed Homer Instancies
+                // TODO - je nutné zajistit i kontrolu toho co se neudělalo v historii - třeba když spadne server, tak tu hodinu zpětně je třeba odstartovat
                 try {
 
                     List<Model_HomerInstanceRecord> records = Model_HomerInstanceRecord.find.where().gt("planed_when", new Date()).findList();
@@ -189,6 +192,21 @@ public class CustomScheduler {
                     terminal_logger.debug("start: Scheduling new Job - Upload Blocko To Cloud for {} record(s)", records.size());
 
                     records.forEach(CustomScheduler::scheduleBlockoUpload);
+
+                } catch (Exception e) {
+                    terminal_logger.internalServerError(e);
+                }
+
+
+                // X-2 Start With CRON for Planed Update Procedures
+                // TODO - je nutné zajistit i kontrolu toho co se neudělalo v historii - třeba když spadne server, tak tu hodinu zpětně je třeba odstartovat
+                try {
+
+                    List<Model_ActualizationProcedure> procedures = Model_ActualizationProcedure.find.where().gt("date_of_planing", new Date()).findList();
+
+                    terminal_logger.debug("start: Scheduling new Job - Start With {} update procedures for Hardware.", procedures.size());
+
+                    procedures.forEach(CustomScheduler::scheduleUpdateProcedure);
 
                 } catch (Exception e) {
                     terminal_logger.internalServerError(e);
@@ -233,10 +251,29 @@ public class CustomScheduler {
 
             String name = "upload-" + record.main_instance_history.id;
 
-            terminal_logger.debug("scheduleJob: Scheduling new Job - {}", name);
+            terminal_logger.debug("scheduleJob: scheduleBlockoUpload:: Scheduling new Job - {}", name);
 
             customScheduler.scheduler.scheduleJob(newJob(Job_UploadBlockoToCloud.class).withIdentity(JobKey.jobKey(name)).usingJobData("record_id", record.id).build(),
                     newTrigger().withIdentity(name + "-key").startNow().withSchedule(toCron(record.planed_when)).build()); // Spuštění na základě data
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+        }
+    }
+
+    /**
+     * Schedules a new job to be executed on the given date. Job will be executed only once and start update procedure on all hardware.
+     * @param procedure
+     */
+    public static void scheduleUpdateProcedure(Model_ActualizationProcedure procedure) {
+        try {
+
+            String name = "actualization-procedure-update-" + procedure.id.toString();
+
+            terminal_logger.debug("scheduleJob: scheduleUpdateProcedure:: Scheduling new Job - {}", name);
+
+            customScheduler.scheduler.scheduleJob(newJob(Job_StartUpdateProcedure.class).withIdentity(JobKey.jobKey(name)).usingJobData("procedure_id", procedure.id.toString()).build(),
+                    newTrigger().withIdentity(name + "-key").startNow().withSchedule(toCron(procedure.date_of_planing)).build()); // Spuštění na základě data
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);

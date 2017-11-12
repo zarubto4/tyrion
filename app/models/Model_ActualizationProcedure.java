@@ -12,6 +12,7 @@ import utilities.enums.*;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.scheduler.CustomScheduler;
 import utilities.swagger.outboundClass.Swagger_ActualizationProcedure_Short_Detail;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
@@ -271,8 +272,20 @@ public class Model_ActualizationProcedure extends Model {
         cache.put(this.id.toString(), this);
 
         // Call notification about model update
-        if(get_project_id() != null)
-        new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_HomerInstance.class, get_project_id(), this.id.toString()))).start();
+        if(get_project_id() != null) {
+            new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo(Model_ActualizationProcedure.class, get_project_id(), this.id.toString()))).start();
+        }
+
+        // If immidietly
+        if(date_of_planing == null || date_of_planing.getTime() < new Date().getTime()){
+
+            terminal_logger.debug("save: Start with update Procedure Immediately");
+            this.execute_update_procedure();
+
+        }else {
+            terminal_logger.debug("save: Set the update Procedure by Time scheduler (not now) ");
+            CustomScheduler.scheduleUpdateProcedure(this);
+        }
     }
 
     @JsonIgnore @Override
@@ -331,7 +344,7 @@ public class Model_ActualizationProcedure extends Model {
                     else  if(updates.get(0).firmware_type == Enum_Firmware_type.BOOTLOADER)
                         notification.setText(new Notification_Text().setText(" for Board "))
                                 .setObject(updates.get(0).get_board())
-                                .setText( new Notification_Text().setText(" Bootloader version " + updates.get(0).bootloader.version_identificator ))
+                                .setText( new Notification_Text().setText(" Bootloader version " + updates.get(0).get_bootloader().version_identificator ))
                                 .setText( new Notification_Text().setText("."));
 
                 }

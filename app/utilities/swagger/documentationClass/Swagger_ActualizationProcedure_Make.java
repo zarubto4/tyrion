@@ -2,6 +2,7 @@ package utilities.swagger.documentationClass;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import play.data.validation.Constraints;
 import utilities.enums.Enum_Update_group_procedure_state;
 import utilities.enums.Enum_Update_type_of_update;
 
@@ -14,10 +15,10 @@ import java.util.List;
 public class Swagger_ActualizationProcedure_Make {
 
 
-    @ApiModelProperty(required = true,  readOnly = true) public String project_id;
-    @ApiModelProperty(required = true,  readOnly = true) public String firmware_type;       // Enum_Firmware_type
+    @Constraints.Required @ApiModelProperty(required = true,  readOnly = true) public String project_id;
+    @Constraints.Required @ApiModelProperty(required = true,  readOnly = true) public String firmware_type;       // Enum_Firmware_type
 
-    @ApiModelProperty(required = true, readOnly = true)  public String hardware_group_id;
+    @Constraints.Required @ApiModelProperty(required = true, readOnly = true)  public String hardware_group_id;
 
     @Valid
     @ApiModelProperty(required = true,  readOnly = true) public List<Swagger_ActualizationProcedure_Make_TypeOfBoard> type_of_boards_settings = new ArrayList<>();

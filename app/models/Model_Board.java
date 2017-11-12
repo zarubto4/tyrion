@@ -162,7 +162,7 @@ public class Model_Board extends Model {
                Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.get_byId(plan_not_cached.id.toString());
 
                if(plan != null) {
-                   return plan.bootloader.id.toString();
+                   return plan.get_bootloader().id.toString();
                }
            }
 
@@ -1077,7 +1077,6 @@ public class Model_Board extends Model {
                 if (form.hasErrors()) {
                     terminal_logger.warn("get_devices_overview:: Json Incorrect value. {}", result);
                     terminal_logger.warn("get_devices_overview:: Response. {}", form.errorsAsJson(Lang.forCode("en-US")).toString());
-
                     throw new Exception("WS_Message_Hardware_overview: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
                 }
 
@@ -1340,8 +1339,11 @@ public class Model_Board extends Model {
                 terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Board ID:: {}" , procedure.id , plan.id,  plan.get_board().id);
                 terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Status:: {} ", procedure.id , plan.id,  plan.state);
 
-                terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Number of tries  ", procedure.id , plan.id,  plan.count_of_tries);
+                terminal_logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Number of tries {} ", procedure.id , plan.id,  plan.count_of_tries);
 
+                if(plan.count_of_tries == null) {
+                    plan.count_of_tries = 0;
+                }
                 if( plan.count_of_tries > 5 ){
                     plan.state = Enum_CProgram_updater_state.critical_error;
                     plan.error = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message();
@@ -1484,8 +1486,14 @@ public class Model_Board extends Model {
             set_web_view(web_view);
         }
 
+        // Pokud žádný port nikdy nastaven nebyl, dosynchronizuji do databáze
+        if(overview.webport != null && this.web_port == null) {
+            this.web_port = overview.webport;
+            this.update();
+        }
+
         // Synchronizace portu na kterém běží webview
-        if((overview.webport == null ||  !overview.webport.equals(web_port)) && web_port != null){
+        if((overview.webport == null && this.web_port != null) || (overview.webport != null && this.web_port != null && overview.webport.intValue() != this.web_port.intValue()) ){
             terminal_logger.warn("check_settings - inconsistent state: web_port");
             set_web_port(web_port);
         }
@@ -1536,20 +1544,34 @@ public class Model_Board extends Model {
 
         if(!firmware_plans.isEmpty()){
 
-            terminal_logger.debug("check_firmware není empty");
+            terminal_logger.debug("existují nedokončené procedury");
+
 
             Model_CProgramUpdatePlan plan = firmware_plans.get(0);
+
+            terminal_logger.debug("Plan:: {} status: {} ", plan.id, plan.state);
 
             // Mám shodu firmwaru oproti očekávánemů
             if (get_actual_c_program_version() != null) {
 
+                terminal_logger.debug("Co aktuálně je na HW podle Tyriona??:: {}", get_actual_c_program_version().c_compilation.firmware_build_id);
+                terminal_logger.debug("Co aktuálně je na HW podle Homera??:: {}", overview.binaries.firmware.build_id);
+                terminal_logger.debug("Co očekává nedokončená procedura??:: {}", plan.c_program_version_for_update.c_compilation.firmware_build_id);
+
                 // Verze se rovnají
-                if (get_actual_c_program_version().c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
-                    terminal_logger.debug("check_firmware verze se shodují");
+                if (overview.binaries.firmware.build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
+                    terminal_logger.debug("check_firmware verze se shodují - tím pádem je procedura dokončená a uzavírám");
+
+                    this.actual_c_program_version = plan.c_program_version_for_update;
+                    this.cache_value_actual_c_program_version_id = plan.c_program_version_for_update.id;
+                    this.cache_value_actual_c_program_id = plan.c_program_version_for_update.get_c_program().id;
+                    this.update();
 
                     terminal_logger.debug("check_firmware - up to date, procedure is done");
                     plan.state = Enum_CProgram_updater_state.complete;
+                    plan.date_of_finish = new Date();
                     plan.update();
+                    return;
 
                 } else {
                     terminal_logger.debug("check_firmware verze se neshodují");
@@ -1573,6 +1595,12 @@ public class Model_Board extends Model {
 
         // Nemám Updaty - ale verze se neshodují
         if(get_actual_c_program_version() != null && firmware_plans.isEmpty()){
+
+            terminal_logger.debug("check_firmware - Nemám žádné update Procedury a N2jaká výchozí firmware podle databáze už mám");
+
+            terminal_logger.debug("Co aktuálně je na HW podle Tyriona??:: {}", get_actual_c_program_version().c_compilation.firmware_build_id);
+            terminal_logger.debug("Co aktuálně je na HW podle Homera?? :: {}", overview.binaries.firmware.build_id);
+
 
             if(!get_actual_c_program_version().c_compilation.firmware_build_id.equals(overview.binaries.firmware.build_id)){
                 // Na HW není to co by na něm mělo být.
@@ -1828,11 +1856,15 @@ public class Model_Board extends Model {
             if (plan.get_board().get_actual_bootloader() != null) {
 
                 // Verze se rovnají
-                if (plan.get_board().get_actual_bootloader().version_identificator.equals(plan.bootloader.version_identificator)) {
+                if (plan.get_board().get_actual_bootloader().version_identificator.equals(plan.get_bootloader().version_identificator)) {
 
                     terminal_logger.debug("check_bootloader - up to date, procedure is done");
                     plan.state = Enum_CProgram_updater_state.complete;
                     plan.update();
+
+                    this.actual_boot_loader = plan.get_bootloader();
+                    this.cache_value_actual_boot_loader_id = plan.get_bootloader().id.toString();
+                    update();
 
                 } else {
 

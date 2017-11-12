@@ -730,10 +730,6 @@ public class Controller_ExternalServer extends Controller {
     public Result cloud_file_get_c_program_compilation(String compilation_id){
         try{
 
-            System.out.println("cloud_file_get_c_program_version--------------------------------------------------------");
-            System.out.println("cloud_file_get_c_program_version: " + compilation_id);
-            System.out.println("cloud_file_get_c_program_version--------------------------------------------------------");
-
             // Získám soubor
             Model_CCompilation compilation = Model_CCompilation.find.byId(compilation_id);
 

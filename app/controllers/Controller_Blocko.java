@@ -689,16 +689,6 @@ public class Controller_Blocko extends Controller{
             }
             record.save();
 
-            // If immidietly
-            if(help.upload_time == null){
-
-                terminal_logger.debug("bProgramVersion_deploy: Set the instants immediately");
-                record.set_record_into_cloud();
-
-            }else {
-                terminal_logger.debug("bProgramVersion_deploy: Set the instants by Time scheduler (not now) ");
-                CustomScheduler.scheduleBlockoUpload(record);
-            }
 
             return GlobalResult.result_ok();
 
