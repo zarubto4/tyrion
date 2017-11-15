@@ -87,7 +87,9 @@ public class Model_Project extends Model {
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Model_ProjectParticipant> participants() {
 
-        List<Model_ProjectParticipant> project_participants = this.participants;
+        List<Model_ProjectParticipant> project_participants = new ArrayList<>();
+
+        project_participants.addAll(this.participants);
 
         for(Model_Invitation invitation : invitations){
 
@@ -98,14 +100,18 @@ public class Model_Project extends Model {
             if(person != null){
 
                 project_participant.person = person;
-            }else project_participant.user_email = invitation.mail;
+            } else {
+                project_participant.user_email = invitation.mail;
+            }
 
             project_participant.state = Enum_Participant_status.invited;
 
-            project_participants.add(project_participant);
+            if (!project_participants.contains(project_participant)) {
+                project_participants.add(project_participant);
+            }
         }
 
-        return  project_participants;
+        return project_participants;
     }
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -142,12 +148,13 @@ public class Model_Project extends Model {
 
     @JsonIgnore @Override public void save() {
 
-        terminal_logger.debug("save :: Creating new Object");
         while(true){ // I need Unique Value
             this.id = UUID.randomUUID().toString();
             this.blob_project_link = product.get_path() + "/projects/" + this.id;
             if (Model_Project.find.byId(this.id) == null) break;
         }
+
+        terminal_logger.debug("save - saving to database, id: {}", this.id);
 
         super.save();
 
@@ -155,7 +162,7 @@ public class Model_Project extends Model {
 
     @JsonIgnore @Override public void update() {
 
-        terminal_logger.debug("update: Update object value: {}",  this.id);
+        terminal_logger.debug("update - updating in database, id: {}",  this.id);
 
         try {
 
@@ -170,11 +177,12 @@ public class Model_Project extends Model {
 
     @JsonIgnore @Override public void delete() {
 
-        terminal_logger.debug("delete: Delete object Id: {} ", this.id);
+        terminal_logger.debug("delete - deleting from database, id: {} ", this.id);
         removed_by_user = true;
 
-
-        cache.remove(this.id);
+        if (cache.containsKey(this.id)) {
+            cache.remove(this.id);
+        }
 
         update();
     }
@@ -773,6 +781,13 @@ public class Model_Project extends Model {
         }
 
         return idlist.list;
+    }
+
+    public void cache_refresh() {
+        if (cache.containsKey(this.id)) {
+            this.refresh();
+            cache.replace(this.id, this);
+        }
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
