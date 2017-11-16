@@ -114,8 +114,7 @@ public class Model_Project extends Model {
         return project_participants;
     }
 
-/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
-
+/* JSON IGNORE METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public Swagger_Project_Short_Detail project_short_detail(){
 
@@ -136,9 +135,6 @@ public class Model_Project extends Model {
         return short_detail;
 
     }
-
-
-/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public boolean isParticipant(Model_Person person){
