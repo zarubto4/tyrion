@@ -65,6 +65,8 @@ public class NotificationActionHandler {
         project.notification_project_invitation_accepted(person, invitation.owner);
 
         invitation.delete();
+
+        project.cache_refresh();
     }
 
     /**

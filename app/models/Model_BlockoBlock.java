@@ -210,7 +210,7 @@ public class Model_BlockoBlock extends Model {
             help.delete_permission = delete_permission();
             help.update_permission = update_permission();
 
-            if( this.publish_type == Enum_Publishing_type.public_program) {
+            if (this.publish_type == Enum_Publishing_type.public_program) {
                 help.active = active;
             }
 
@@ -243,6 +243,12 @@ public class Model_BlockoBlock extends Model {
         terminal_logger.debug("update :: Update object Id: " + this.id);
 
         super.update();
+
+        if (cache.containsKey(this.id.toString())) {
+            cache.replace(this.id.toString(), this);
+        } else {
+            cache.put(this.id.toString(), this);
+        }
 
         if(type_of_block.project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BlockoBlock.class, type_of_block.project_id(), id.toString()))).start();
     }

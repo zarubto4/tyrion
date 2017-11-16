@@ -56,18 +56,19 @@ public class Model_Invitation extends Model{
    @JsonIgnore @Transient @Override
     public void save() {
 
-        terminal_logger.debug("save :: Creating new Object");
-
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
-            if (Model_Invitation.find.byId(this.id) == null) break;
+            if (find.byId(this.id) == null) break;
         }
+
+        terminal_logger.debug("save - saving to database, id: {}", this.id);
+
         super.save();
     }
 
     @JsonIgnore @Transient @Override public void update() {
 
-        terminal_logger.debug("update :: Update object Id: {}",  this.id);
+        terminal_logger.debug("update - updating in database, id: {}",  this.id);
 
         super.update();
 
@@ -76,7 +77,7 @@ public class Model_Invitation extends Model{
 
     @JsonIgnore @Transient @Override public void delete() {
 
-        terminal_logger.debug("delete: Delete object Id: {} ", this.id);
+        terminal_logger.debug("delete - deleting from database, id: {}", this.id);
 
         super.delete();
     }

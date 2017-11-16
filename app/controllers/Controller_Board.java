@@ -3388,7 +3388,7 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 404, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error", response = Result_InternalServerError.class)
     })
-    public Result board_group_get_list_project( String project_id) {
+    public Result board_group_get_list_project(String project_id) {
         try {
 
             // Kontrola validity objektu

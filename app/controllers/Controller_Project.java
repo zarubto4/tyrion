@@ -29,7 +29,7 @@ public class Controller_Project extends Controller {
 
 // LOGGER ##############################################################################################################
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Person.class);
+    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Project.class);
     
 // GENERAL PROJECT #####################################################################################################
 
@@ -352,10 +352,15 @@ public class Controller_Project extends Controller {
             }
             help.persons_mail.removeAll(toRemove);
 
+            terminal_logger.debug("project_invite - registered users {}", Json.toJson(listIn));
+            terminal_logger.debug("project_invite - unregistered users {}", Json.toJson(help.persons_mail));
+
             String full_name = Controller_Security.get_person().full_name;
 
             // Vytvoření pozvánky pro nezaregistrované uživatele
             for (String mail :  help.persons_mail){
+
+                terminal_logger.debug("project_invite - creating invitation for {}", mail);
 
                 Model_Invitation invitation = Model_Invitation.find.where().eq("mail", mail).eq("project.id", project.id).findUnique();
                 if(invitation == null){
@@ -387,6 +392,8 @@ public class Controller_Project extends Controller {
 
                 if (project.isParticipant(person)) continue;
 
+                terminal_logger.debug("project_invite - creating invitation for {}", person.mail);
+
                 Model_Invitation invitation = Model_Invitation.find.where().eq("mail", person.mail).eq("project.id", project.id).findUnique();
                 if(invitation == null){
                     invitation = new Model_Invitation();
@@ -411,7 +418,7 @@ public class Controller_Project extends Controller {
             }
 
             // Uložení do DB
-            project.update();
+            project.cache_refresh();
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(project));

@@ -1342,11 +1342,15 @@ public class Controller_Blocko extends Controller{
                 if(project == null )return GlobalResult.result_notFound("Project not found");
                 if(!project.read_permission())return GlobalResult.result_forbidden();
 
-                query.where().eq("project.id", help.project_id);
+                if (help.public_programs) {
+                    query.where().or(Expr.eq("project.id", help.project_id), Expr.isNull("project"));
+                } else {
+                    query.where().eq("project.id", help.project_id);
+                }
             }
 
             if (!Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name())) {
-                query.where().eq("active", true);
+                query.where().or(Expr.isNotNull("project"), Expr.and(Expr.isNull("project"), Expr.eq("active", true)));
             }
 
             // Vytvoření odchozího JSON
@@ -1569,7 +1573,7 @@ public class Controller_Blocko extends Controller{
             blockoBlock.name                = help.name;
             blockoBlock.author              = Controller_Security.get_person();
             blockoBlock.type_of_block       = typeOfBlock;
-            blockoBlock.publish_type        = Enum_Publishing_type.private_program;
+            blockoBlock.publish_type        = typeOfBlock.publish_type;
 
             // Kontrola oprávnění těsně před uložením
             if (!blockoBlock.create_permission()) return GlobalResult.result_forbidden();
