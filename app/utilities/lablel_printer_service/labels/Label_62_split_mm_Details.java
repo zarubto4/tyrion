@@ -128,7 +128,7 @@ public class Label_62_split_mm_Details {
 
         Font boldFont = new Font(Font.FontFamily.TIMES_ROMAN, 5.7F, Font.BOLD);
         Font normalFont = new Font(Font.FontFamily.TIMES_ROMAN, 5.2F, Font.NORMAL);
-        Font registFont = new Font(Font.FontFamily.TIMES_ROMAN, 4.8F, Font.BOLD);
+        Font registFont = new Font(Font.FontFamily.TIMES_ROMAN, 4.6F, Font.BOLD);
 
         Font font_space = new Font(Font.FontFamily.COURIER, 1.3F, Font.NORMAL, BaseColor.WHITE);
 
@@ -137,7 +137,7 @@ public class Label_62_split_mm_Details {
 
         Phrase phrase_firstLine = new Phrase("MAC: " +board.mac_address + " \n", boldFont);
         Phrase secondLine = new Phrase("ID: "+ board.id +  " \n" , normalFont );
-        Phrase thirthLine = new Phrase("Registration: " + board.hash_for_adding.substring(0, 15) + "\n" + board.hash_for_adding.substring(16), registFont);
+        Phrase thirthLine = new Phrase("Registration: " + board.hash_for_adding + "\n", registFont);
 
 
         Phrase mac_address = new Phrase();

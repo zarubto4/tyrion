@@ -9,6 +9,7 @@ import models.*;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
+import utilities.document_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_mm_package;
@@ -26,6 +27,7 @@ import web_socket.message_objects.compilator_with_tyrion.WS_Message_Make_compila
 import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 import web_socket.message_objects.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
+import java.lang.reflect.Field;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.*;
 
@@ -2241,8 +2243,9 @@ public class Controller_Board extends Controller {
             // Kontrola oprávnění
             if(!board.edit_permission()) return GlobalResult.result_forbidden();
 
+            DM_Board_Bootloader_DefaultConfig config = board.bootloader_core_configuration();
 
-            switch (help.parameter_type){
+            decision: switch (help.parameter_type.toLowerCase()){
 
                 case "developer_kit" :{
 
@@ -2252,30 +2255,30 @@ public class Controller_Board extends Controller {
                     break;
                 }
 
+                case "alias" :{
+                    // Synchronizace s Homer serverem a databází
+                    board.set_alias(help.string_value);
+                    break;
+                }
+
                 case "database_synchronize" :{
                     // Synchronizace s Homer serverem a databází
                     board.set_database_synchronize(help.boolean_value);
                     break;
                 }
 
-                case "web_view" :{
-                    // Synchronizace s Homer serverem a databázíw
-                    board.set_web_view(help.boolean_value);
-                    break;
-                }
-
-                case "web_port" :{
-                    // Synchronizace s Homer serverem a databází
-                    if(help.integer_value < 2001 && help.integer_value > 9999) return GlobalResult.result_badRequest("The port must be between 2001 and 9999. We also recommend not using commonly used ports such as Postgres 5432 and etc ..");
-                    if(help.integer_value == 8502 ) return GlobalResult.result_badRequest("The port is used by some other entity in the system."); // Zde hlídáme aby nedošlo ke kolizím na portech, které má homer server
-                    if(help.integer_value == 8501 ) return GlobalResult.result_badRequest("The port is used by some other entity in the system."); // Zde hlídáme aby nedošlo ke kolizím na portech, které má homer server
-                    board.set_web_port(help.integer_value);
-                    break;
-                }
-
                 default: {
-                    terminal_logger.warn("parameter_type" + help.parameter_type + "not recognized");
-                    return GlobalResult.result_notFound("parameter_type not recognized");
+
+                    try {
+                        WS_Message_Hardware_set_settings settings =  board.set_hardware_configuration_parameter(help);
+                        return GlobalResult.result_ok(Json.toJson(board));
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("IllegalArgumentException" + e.getMessage());
+                        return GlobalResult.badRequest(e.getMessage());
+                    } catch (Exception e){
+                        System.out.println("Exception" + e.getMessage());
+                        return GlobalResult.badRequest(e.getMessage());
+                    }
                 }
 
             }
@@ -2455,9 +2458,13 @@ public class Controller_Board extends Controller {
                 // Pokud je nastaven autobackup na true
                 if(board_backup_pair.backup_mode) {
 
-
                     // Na devicu byla nastavená statická - Proto je potřeba jí odstranit a nahradit autobackupem
                     if(!board.backup_mode) {
+
+                        DM_Board_Bootloader_DefaultConfig config = board.bootloader_core_configuration();
+                        config.autobackup = board_backup_pair.backup_mode;
+                        board.update_bootloader_comfiguration(config);
+
                         terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} has own Static Backup - Removing static backup procedure required", board_backup_pair.board_id);
 
                         board.actual_backup_c_program_version = null;
@@ -2522,10 +2529,13 @@ public class Controller_Board extends Controller {
                         board.backup_mode = false;
                         board.update();
                     }
+
+                    DM_Board_Bootloader_DefaultConfig config = board.bootloader_core_configuration();
+                    config.autobackup = board_backup_pair.backup_mode;
+                    board.update_bootloader_comfiguration(config);
                 }
 
             }
-
 
             if(!board_pairs.isEmpty()){
                 new Thread( () -> {

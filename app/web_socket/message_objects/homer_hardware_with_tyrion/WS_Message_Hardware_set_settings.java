@@ -4,11 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.Model_Board;
+import models.Model_BoardGroup;
 import play.libs.Json;
 import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class WS_Message_Hardware_set_settings extends WS_AbstractMessage {
 
@@ -21,116 +24,65 @@ public class WS_Message_Hardware_set_settings extends WS_AbstractMessage {
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public  ObjectNode make_request_alias(List<Model_Board> devices) {
-
-        List<Pair> device_pair = new ArrayList<>();
-        for(Model_Board device : devices) {
-
-            Pair pair = new Pair();
-            pair.hardware_id = device.id;
-
-            Set_Alias_Pair settings = new Set_Alias_Pair();
-            settings.alias = device.name;
-            pair.settings = settings;
-
-            device_pair.add(pair);
-        }
-
-        return make_request_only_pair(device_pair);
-    }
 
     @JsonIgnore
-    public  ObjectNode make_request_autobackup(List<Model_Board> devices) {
-
-        List<Pair> device_pair = new ArrayList<>();
-        for(Model_Board device : devices) {
-
-            Pair pair = new Pair();
-            pair.hardware_id = device.id;
-
-            Set_AutoBackup_Pair settings = new Set_AutoBackup_Pair();
-            pair.settings = settings;
-
-            device_pair.add(pair);
-        }
-
-        return make_request_only_pair(device_pair);
-    }
+    public  ObjectNode make_request(List<Model_Board> devices, String key, Boolean value) {
 
 
-    @JsonIgnore
-    public  ObjectNode make_request_synchronize_with_database(List<Model_Board> devices) {
+        List<String> hardware_ids        = devices.stream().map(Model_Board::get_id).collect(Collectors.toList());
 
-        List<Pair> device_pair = new ArrayList<>();
-        for(Model_Board device : devices) {
+        Set_CONF_Boolean_Parameter settings = new Set_CONF_Boolean_Parameter();
+        settings.key = key;
+        settings.value = value;
 
-            Pair pair = new Pair();
-            pair.hardware_id = device.id;
-
-            Set_Database_synchronize_Pair settings = new Set_Database_synchronize_Pair();
-            settings.database_synchronize = device.database_synchronize;
-            pair.settings = settings;
-
-            device_pair.add(pair);
-        }
-
-        return make_request_only_pair(device_pair);
-    }
-
-    @JsonIgnore
-    public  ObjectNode make_request_synchronize_Web_port(List<Model_Board> devices) {
-
-        List<Pair> device_pair = new ArrayList<>();
-        for(Model_Board device : devices) {
-
-            Pair pair = new Pair();
-            pair.hardware_id = device.id;
-
-            Set_Web_Port_Pair settings = new Set_Web_Port_Pair();
-            settings.webport = device.web_port;
-            pair.settings = settings;
-
-            device_pair.add(pair);
-        }
-
-        return make_request_only_pair(device_pair);
-    }
-
-    @JsonIgnore
-    public  ObjectNode make_request_synchronize_Web_view(List<Model_Board> devices) {
-
-        List<Pair> device_pair = new ArrayList<>();
-        for(Model_Board device : devices) {
-
-            Pair pair = new Pair();
-            pair.hardware_id = device.id;
-
-            Set_Web_View_Pair settings = new Set_Web_View_Pair();
-            settings.webview = device.web_view;
-            pair.settings = settings;
-
-            device_pair.add(pair);
-        }
-
-        return make_request_only_pair(device_pair);
-    }
-
-
-
-/* Create Final CLASS  -------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore
-    private  ObjectNode make_request_only_pair(List<Pair> pairs) {
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
         request.put("message_channel", Model_Board.CHANNEL);
-        request.set("hardware_list", Json.toJson(pairs));
+        request.set("hardware_ids", Json.toJson(hardware_ids) );
+        request.set("settings", Json.toJson(settings));
 
         return request;
     }
+
+    @JsonIgnore
+    public  ObjectNode make_request(List<Model_Board> devices, String key, String value) {
+
+        List<String> hardware_ids        = devices.stream().map(Model_Board::get_id).collect(Collectors.toList());
+
+        Set_CONF_String_Parameter settings = new Set_CONF_String_Parameter();
+        settings.key = key;
+        settings.value = value;
+
+        // Potvrzení Homer serveru, že je vše v pořádku
+        ObjectNode request = Json.newObject();
+        request.put("message_type", message_type);
+        request.put("message_channel", Model_Board.CHANNEL);
+        request.set("hardware_ids", Json.toJson(hardware_ids) );
+        request.set("settings", Json.toJson(settings));
+
+        return request;
+    }
+
+    @JsonIgnore
+    public  ObjectNode make_request(List<Model_Board> devices, String key, Integer value) {
+        List<String> hardware_ids        = devices.stream().map(Model_Board::get_id).collect(Collectors.toList());
+
+        Set_CONF_Integer_Parameter settings = new Set_CONF_Integer_Parameter();
+        settings.key = key;
+        settings.value = value;
+
+        // Potvrzení Homer serveru, že je vše v pořádku
+        ObjectNode request = Json.newObject();
+        request.put("message_type", message_type);
+        request.put("message_channel", Model_Board.CHANNEL);
+        request.set("hardware_ids", Json.toJson(hardware_ids) );
+        request.set("settings", Json.toJson(settings));
+
+        return request;
+    }
+
 
 
 /* HELP CLASS  -------------------------------------------------------------------------------------------------------*/
@@ -139,35 +91,21 @@ public class WS_Message_Hardware_set_settings extends WS_AbstractMessage {
      * Každý objekt zastupuje nastavení konkrétní hodnoty na hardwaru,
      * rozdělujeme je, aby nikdy nedošlo k záměně a aktualizaci hodnot postupně - nikoliv masivní dávnou.
      */
-
-    
-    class Pair{
-        @JsonProperty public String hardware_id;
-        @JsonProperty public Settings settings;
-    }
-
     interface Settings{}
 
-    class Set_Alias_Pair implements Settings{
-       @JsonProperty public String alias;
+    class Set_CONF_Boolean_Parameter implements Settings{
+        @JsonProperty public String key;
+        @JsonProperty public String type = "boolean";   // Boolean // String // Integer
+        @JsonProperty public Boolean value;
     }
-
-    class Set_AutoBackup_Pair implements Settings{
-        @JsonProperty public boolean auto_backup = true;    // Autobackup is always set to true - only static firmware (backup) can override that
+    class Set_CONF_String_Parameter implements Settings{
+        @JsonProperty public String key;
+        @JsonProperty public String type = "string";   // Boolean // String // Integer
+        @JsonProperty public String value;
     }
-
-    class Set_Database_synchronize_Pair implements Settings{
-        @JsonProperty public boolean database_synchronize;
+    class Set_CONF_Integer_Parameter implements Settings{
+        @JsonProperty public String key;
+        @JsonProperty public String type = "number";   // Boolean // String // Integer
+        @JsonProperty public Integer value;
     }
-
-    class Set_Web_Port_Pair implements Settings{
-        @JsonProperty public Integer webport;
-    }
-
-    class Set_Web_View_Pair implements Settings{
-        @JsonProperty public boolean webview;
-    }
-
-
-
 }

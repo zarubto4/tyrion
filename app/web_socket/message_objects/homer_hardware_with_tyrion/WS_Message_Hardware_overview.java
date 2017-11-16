@@ -92,7 +92,16 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
                 "mac",                          // mac adress of device
                 "binaries",                     // Binaries info of firwmare, bootloader and backup
                 "webport",                      // Port, where you can get webserver with device information
-                "webview"                       // Boolean if device support webview
+                "webview",                       // Boolean if device support webview
+                "blreport",                       // Boolean if device support webview
+                "wdenable",                       // Boolean if device support webview
+                "backuptime",                       // Boolean if device support webview
+                "timeoffset",                       // Boolean if device support webview
+                "timesync",                       // Boolean if device support webview
+                "lowpanbr",                       // Boolean if device support webview
+                "autojump",                       // Boolean if device support webview
+                "wdtime",                       // Boolean if device support webview
+                "netsource"                       // Boolean if device support webview
 
         )));
 

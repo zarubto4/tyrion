@@ -183,10 +183,10 @@ public class Hardware_Registration_Authority extends Controller {
                          batch.latest_used_mac_address = latest_from_mongo;
                          batch.update();
                      }
+
                 }else {
                     terminal_logger_start.error("Hardware_Registration_Authority:: mac_address_already_registered not find by Filter parameters from local database!");
                 }
-
 
             }catch (Exception e){
                 terminal_logger_start.internalServerError(e);

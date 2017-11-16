@@ -15,7 +15,7 @@ public class Swagger_Board_Developer_parameters {
 
 
     @ApiModelProperty(required = false, value = "only for boolean parameters")
-    public boolean boolean_value;
+    public Boolean boolean_value;
 
     @ApiModelProperty(required = false, value = "only for text label parameters")
     public String string_value;

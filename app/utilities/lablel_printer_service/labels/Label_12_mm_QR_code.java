@@ -69,7 +69,7 @@ public class Label_12_mm_QR_code {
             contentByte = writer.getDirectContent();
 
             // Step 6.  Add QR kode
-            document.add(device_hash_for_Add(this.board.hash_for_adding));
+            document.add(device_hash_for_Add());
 
 
 
@@ -84,7 +84,7 @@ public class Label_12_mm_QR_code {
     }
 
 
-    private PdfPTable device_hash_for_Add(String hash_for_Add) throws DocumentException {
+    private PdfPTable device_hash_for_Add() throws DocumentException {
 
         PdfPTable table = new PdfPTable(1);
                 table.setTotalWidth(Label_12_mm.getWidth());

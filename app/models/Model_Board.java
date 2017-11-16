@@ -5,6 +5,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClientException;
@@ -15,9 +16,11 @@ import org.ehcache.Cache;
 import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
+import play.mvc.WebSocket;
 import utilities.Server;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.document_db.document_objects.DM_Board_BackupIncident;
+import utilities.document_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.document_db.document_objects.DM_Board_Connect;
 import utilities.document_db.document_objects.DM_Board_Disconnected;
 import utilities.enums.*;
@@ -25,6 +28,7 @@ import utilities.errors.ErrorCode;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.swagger.documentationClass.Swagger_Board_Developer_parameters;
 import utilities.swagger.documentationClass.Swagger_Board_for_fast_upload_detail;
 import utilities.swagger.outboundClass.*;
 import web_socket.message_objects.homer_hardware_with_tyrion.*;
@@ -36,6 +40,8 @@ import web_socket.services.WS_HomerServer;
 import web_socket.services.helps_class.ParallelTask;
 
 import javax.persistence.*;
+import javax.persistence.Transient;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -70,9 +76,10 @@ public class Model_Board extends Model {
 
                                        public String name;                          // Jméno, které si uživatel pro hardware nasatvil
     @Column(columnDefinition = "TEXT") public String description;                   // Popisek, který si uživatel na hardwaru nastavil
+    @Column(columnDefinition = "TEXT") @JsonIgnore public String json_bootloader_core_configuration; // DM_Board_Configuration.java Počáteční konfigurace - kde je uložený JSON mapovaný pomocí Objektů konkrétního typu hardwaru  //
 
-    @JsonIgnore @OneToOne(fetch = FetchType.LAZY) public Model_FileRecord picture;
-                                        public Date date_of_user_registration;      // Datum, kdy si uživatel desku zaregistroval
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)  public Model_FileRecord picture;
+                                       public Date date_of_user_registration;      // Datum, kdy si uživatel desku zaregistroval
 
     // Parametry při výrobě a osazení a registraci
     @JsonIgnore public Date date_of_create;                 // Datum vytvoření objektu (vypálení dat do procesoru)
@@ -83,9 +90,10 @@ public class Model_Board extends Model {
     // Pozor v Controller_Board jsou parametry v metodě board_update_parameters používány
                  public boolean developer_kit;
     @JsonIgnore  public boolean backup_mode;                 // True znamená automatické zálohování po 5* minutách po nahrátí - verze se označuje mezi hardwarářema jako stabilní  - Opakej je statický backup - vázaný na objekty
+                                                             // Pozor tato hodna se také propisuje do json_bootloader_core_configuration!!!!
                  public boolean database_synchronize;        // Defautlní hodnota je True. Je možnost vypnout synchronizaci a to pro případy, že uživatel vypaluje firmwaru lokálně pomocí svého programaátoru a IIDE
-                 public boolean web_view;                    // Podpora webového rozhraní informací o hardwaru ze strany byzance - neuživatelský webserver
-                 public Integer web_port;
+                 // public boolean web_view;                    // Podpora webového rozhraní informací o hardwaru ze strany byzance - neuživatelský webserver
+                 // public Integer web_port;
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_TypeOfBoard type_of_board;     // Typ desky - (Cachováno)
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_Project project;         // Projekt, pod který Hardware spadá
@@ -216,7 +224,6 @@ public class Model_Board extends Model {
         }
     }
     @JsonProperty  @Transient  public List<Enum_Board_Alert> alert_list(){
-
         try {
 
             List<Enum_Board_Alert> list = new ArrayList<>();
@@ -231,6 +238,34 @@ public class Model_Board extends Model {
 
     }
 
+    @JsonProperty  @Transient public DM_Board_Bootloader_DefaultConfig bootloader_core_configuration(){
+        try {
+
+            if (json_bootloader_core_configuration == null || json_bootloader_core_configuration.equals("{}") || json_bootloader_core_configuration.equals("null") || json_bootloader_core_configuration.length() == 0) {
+                json_bootloader_core_configuration = Json.toJson(DM_Board_Bootloader_DefaultConfig.generateConfig()).toString();
+                this.update();
+            }
+
+            JsonNode node = Json.parse(json_bootloader_core_configuration);
+
+            ObjectNode json = (ObjectNode) new ObjectMapper().readTree(json_bootloader_core_configuration);
+            final Form<DM_Board_Bootloader_DefaultConfig> form = Form.form(DM_Board_Bootloader_DefaultConfig.class).bind(node);
+            if (form.hasErrors()){
+                throw new Exception("bootloader_core_configuration: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            }
+
+            DM_Board_Bootloader_DefaultConfig config = form.get();
+
+            // Manuálně doplněné hodnoty - ty které nejsou ve statickém Json
+            config.autobackup = backup_mode;
+
+            return config;
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
 
     // TODO updates a required_updates předělat do filtru - Updaty nad HW (jeden, projekt, více atd..)
     @JsonProperty  @Transient  public List<Swagger_C_Program_Update_plan_Short_Detail> updates(){
@@ -586,6 +621,11 @@ public class Model_Board extends Model {
 
 /* JSON IGNORE  --------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient public void update_bootloader_comfiguration(DM_Board_Bootloader_DefaultConfig configuration){
+        this.json_bootloader_core_configuration = Json.toJson(configuration).toString();
+        this.update();
+    }
+
 /* SERVER WEBSOCKET ----------------------------------------------------------------------------------------------------*/
 
     public static final String CHANNEL = "hardware";
@@ -682,6 +722,8 @@ public class Model_Board extends Model {
             }
         }).start();
     }
+
+    @JsonIgnore @Transient public String get_id(){return id;}
 
     // Kontrola připojení - Echo o připojení
     @JsonIgnore @Transient public static void device_Connected(WS_Message_Hardware_connected help){
@@ -1103,7 +1145,7 @@ public class Model_Board extends Model {
                 this.update();
             }
 
-            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_alias(Collections.singletonList(this)), 1000 * 5, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), "ALIAS", alias), 1000 * 5, 0, 2);
 
             final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
@@ -1125,31 +1167,7 @@ public class Model_Board extends Model {
                 this.update();
             }
 
-            write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_synchronize_with_database(Collections.singletonList(this)), 1000 * 5, 0, 2);
-
-            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_synchronize_with_database(Collections.singletonList(this)), 1000 * 5, 0, 2);
-
-            final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-            return form.get();
-
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return new WS_Message_Hardware_set_settings();
-        }
-    }
-
-    // Change Hardware web view support --//
-    @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_web_view(boolean settings){
-        try {
-
-            if(this.web_view != settings) {
-                this.web_view = settings;
-                this.update();
-            }
-
-            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_synchronize_Web_view(Collections.singletonList(this)), 1000 * 5, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this),"DATABASE_SYNCHRONIZE", settings), 1000 * 5, 0, 2);
 
             final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
@@ -1163,25 +1181,54 @@ public class Model_Board extends Model {
     }
 
     // Change Hardware web view port --//
-    @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_web_port(Integer settings){
-        try {
+    @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_hardware_configuration_parameter(Swagger_Board_Developer_parameters help) throws IllegalArgumentException, Exception{
 
-            if(!this.web_port .equals( settings)) {
-                this.web_port = settings;
-                this.update();
+
+            DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
+
+            for(Field field : configuration.getClass().getFields()) {
+
+                if(help.parameter_type.toLowerCase().equals(field.getName())){
+
+                    if (field.getType().getCanonicalName().equals(Boolean.class.getSimpleName().toLowerCase())) {
+
+                        field.setBoolean(configuration, help.boolean_value); //setting field value to 10 in object
+                        this.update_bootloader_comfiguration(configuration);
+
+                        JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.boolean_value), 1000 * 5, 0, 2);
+                        final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
+                        if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                        return form.get();
+                    }
+
+                    if (field.getType().getCanonicalName().toLowerCase().equals(String.class.getSimpleName().toLowerCase())) {
+
+                        field.set(configuration, help.string_value);
+                        this.update_bootloader_comfiguration(configuration);
+
+                        JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.string_value), 1000 * 5, 0, 2);
+                        final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
+                        if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                        return form.get();
+
+                    }
+
+                    if (field.getType().getCanonicalName().toLowerCase().equals(Integer.class.getSimpleName().toLowerCase())) {
+                        field.setInt(configuration, help.integer_value);
+                        this.update_bootloader_comfiguration(configuration);
+
+                        JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.integer_value), 1000 * 5, 0, 2);
+                        final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
+                        if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                        return form.get();
+                    }
+
+                }
             }
 
-            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_synchronize_Web_port(Collections.singletonList(this)), 1000 * 5, 0, 2);
+            throw  new IllegalArgumentException("Incoming Value " + help.parameter_type.toUpperCase() + " not recognized");
 
-            final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
-            return form.get();
-
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return new WS_Message_Hardware_set_settings();
-        }
     }
 
     //-- ADD or Remove // Change Server --//
@@ -1216,7 +1263,7 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_auto_backup(){
         try{
 
-            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request_autobackup(Collections.singletonList(this)), 1000*5, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), "AUTOBACKUP", true), 1000*5, 0, 2);
 
             final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
             if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_autobackup: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
@@ -1228,7 +1275,6 @@ public class Model_Board extends Model {
             return new WS_Message_Hardware_set_settings();
         }
     }
-
 
     ///-- Send Update Procedure to All Hardware's  --//
     @JsonIgnore @Transient public static void execute_update_plan(Model_CProgramUpdatePlan plan){
@@ -1286,8 +1332,6 @@ public class Model_Board extends Model {
         }
 
     }
-
-
 
     @JsonIgnore @Transient public static void execute_update_procedure(Model_ActualizationProcedure procedure){
 
@@ -1480,23 +1524,67 @@ public class Model_Board extends Model {
             this.update();
         }
 
-        // Synchronizace webview - což je web stránka kterou generuje hardware pro vývojáře na sledování zátěže, vlákna atd..
-        if(overview.webview != web_view){
-            terminal_logger.warn("check_settings - inconsistent state: web_view");
-            set_web_view(web_view);
+
+        DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
+
+        /*
+            Tato smyčka prochází všechny položky v objektu DM_Board_Bootloader_DefaultConfig jeden po druhém a pak hledá
+             ty samé config parametry v příchozím objektu - pokud je nazelzne následě porovná očekávanou ohnotu od té
+             reálné a popřípadě upraví na hardwaru
+         */
+        outCycle: for(Field config_field : configuration.getClass().getFields()) {
+
+            try {
+                Field incoming_report_right_filed = null;
+
+                inCycle:
+                for (Field incoming_filed : overview.getClass().getFields()) {
+                    if (config_field.getName().equals(incoming_filed.getName())) {
+                        incoming_report_right_filed = incoming_filed;
+                        break inCycle;
+                    }
+                }
+
+                if (incoming_report_right_filed == null) {
+                    continue outCycle;
+                }
+
+                if (config_field.getType().getCanonicalName().equals(Boolean.class.getSimpleName().toLowerCase())) {
+
+
+                    if (config_field.getBoolean(configuration) != incoming_report_right_filed.getBoolean(overview)) {
+                        write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), config_field.getName(), config_field.getBoolean(configuration)), 1000 * 5, 0, 2);
+                    }
+
+                    continue outCycle;
+                }
+
+                if (config_field.getType().getCanonicalName().toLowerCase().equals(String.class.getSimpleName().toLowerCase())) {
+
+                    if (!config_field.get(configuration).toString().equals(incoming_report_right_filed.get(overview).toString())) {
+                        write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), config_field.getName(), config_field.get(configuration).toString()), 1000 * 5, 0, 2);
+                    }
+
+                    continue outCycle;
+
+                }
+
+                if (config_field.getType().getCanonicalName().toLowerCase().equals(Integer.class.getSimpleName().toLowerCase())) {
+
+                    if (config_field.getInt(configuration) != incoming_report_right_filed.getInt(overview)) {
+                        write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), config_field.getName(), config_field.getInt(configuration)), 1000 * 5, 0, 2);
+                    }
+
+                    continue outCycle;
+                }
+
+            }catch (Exception e){
+                terminal_logger.internalServerError(e);
+            }
         }
 
-        // Pokud žádný port nikdy nastaven nebyl, dosynchronizuji do databáze
-        if(overview.webport != null && this.web_port == null) {
-            this.web_port = overview.webport;
-            this.update();
-        }
 
-        // Synchronizace portu na kterém běží webview
-        if((overview.webport == null && this.web_port != null) || (overview.webport != null && this.web_port != null && overview.webport.intValue() != this.web_port.intValue()) ){
-            terminal_logger.warn("check_settings - inconsistent state: web_port");
-            set_web_port(web_port);
-        }
+
 
     }
     /**
@@ -1664,8 +1752,27 @@ public class Model_Board extends Model {
 
         // Set Defualt Program protože žádný teď nemáš
         if(get_actual_c_program_version() == null && firmware_plans.isEmpty()){
+
             terminal_logger.debug("check_firmware - Actual firmware_id is not recognized by the DB - Device has not firmware from Tyrion");
             terminal_logger.debug("check_firmware - Tyrion will try to find Default C Program Main Version for this type of hardware. If is it set, Tyrion will update device to starting state");
+
+            // Ověřím - jestli nemám nově nahraný firmware na Hardwaru (to je ten co je teď výcohí firmware pro aktuální typ hardwaru)
+            if ( overview.binaries != null && overview.binaries.firmware != null
+                    && overview.binaries.firmware.build_id != null
+                    && get_type_of_board().get_main_c_program().default_main_version != null
+                    && get_type_of_board().get_main_c_program().default_main_version.c_compilation.firmware_build_id != null
+                    && overview.binaries.firmware.build_id.equals(get_type_of_board().get_main_c_program().default_main_version.c_compilation.firmware_build_id)
+                    ){
+
+                terminal_logger.debug("check_firmware -HARDWARE IS ABSOLUTELY NEW - BUT WITH REQUIRED FIRST DEFAULT FIRMWARE");
+
+                this.actual_c_program_version = get_type_of_board().get_main_c_program().default_main_version;
+                this.actual_backup_c_program_version = get_type_of_board().get_main_c_program().default_main_version; // Udělám rovnou zálohu, protože taková by tam měla být
+                this.update();
+                return;
+            }
+
+
 
             // Nastavím default firmware podle schématu Tyriona!
             // Defaultní firmware je v v backandu určený výchozí program k typu desky.
@@ -2225,6 +2332,10 @@ public class Model_Board extends Model {
         database_synchronize = true;
 
         if(hash_for_adding == null) this.hash_for_adding = generate_hash();
+
+        if (json_bootloader_core_configuration == null || json_bootloader_core_configuration.equals("{}") || json_bootloader_core_configuration.equals("null") || json_bootloader_core_configuration.length() == 0) {
+            json_bootloader_core_configuration = Json.toJson(DM_Board_Bootloader_DefaultConfig.generateConfig()).toString();
+        }
 
         super.save();
 

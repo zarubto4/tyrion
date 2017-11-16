@@ -71,6 +71,9 @@ public class Model_BoardGroup extends Model {
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient public String get_id(){
+        return id.toString();
+    }
     @JsonIgnore @Transient public Swagger_HardwareGroup_Short_Detail get_group_short_detail(){
 
         Swagger_HardwareGroup_Short_Detail short_detail = new Swagger_HardwareGroup_Short_Detail();
