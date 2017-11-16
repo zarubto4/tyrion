@@ -2969,7 +2969,6 @@ public class Controller_Board extends Controller {
                 }
             }
 
-            System.out.println("Jsem na konci a budu ukládat");
             project.cache_list_board_ids.add(board.id);
             board.update();
 

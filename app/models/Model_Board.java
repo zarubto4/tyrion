@@ -741,6 +741,13 @@ public class Model_Board extends Model {
             // Aktualizuji cache status online HW
             cache_status.put(help.hardware_id, Boolean.TRUE);
 
+            if(device.project_id() == null) {
+                terminal_logger.warn("Hardware {} is not in project!!!!!!!!!", device.id);
+                terminal_logger.warn("Hardware {} is not in project!!!!!!!!!", device.id);
+                terminal_logger.warn("Hardware {} is not in project!!!!!!!!!", device.id);
+                terminal_logger.warn("Hardware {} is not in project!!!!!!!!!", device.id);
+            }
+
             // Notifikce
             if(device.developer_kit) {
                 try {
@@ -1188,7 +1195,9 @@ public class Model_Board extends Model {
 
             for(Field field : configuration.getClass().getFields()) {
 
-                if(help.parameter_type.toLowerCase().equals(field.getName())){
+                if(help.parameter_type.toLowerCase().equals(field.getName().toLowerCase())){
+
+                    System.out.println("Mám shodu " + help.parameter_type + " s " + field.getName());
 
                     if (field.getType().getCanonicalName().equals(Boolean.class.getSimpleName().toLowerCase())) {
 
@@ -1226,7 +1235,7 @@ public class Model_Board extends Model {
                 }
             }
 
-            throw  new IllegalArgumentException("Incoming Value " + help.parameter_type.toUpperCase() + " not recognized");
+            throw  new IllegalArgumentException("Incoming Value " + help.parameter_type.toLowerCase() + " not recognized");
 
 
     }
