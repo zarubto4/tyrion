@@ -374,6 +374,7 @@ DELETE    /board/deactivateBoard/:board_id                              @control
 DELETE    /board/:board_id                                              @controllers.Controller_Board.board_disconnectProject(board_id)
 PUT       /board/picture/upload/:board_id                               @controllers.Controller_Board.board_uploadPicture(board_id)
 PUT       /board/picture/remove/:board_id                               @controllers.Controller_Board.board_removePicture(board_id)
+PUT       /board/command                                                @controllers.Controller_Board.board_command_execution()
 
 
 #Board_Group

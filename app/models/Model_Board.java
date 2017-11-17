@@ -16,7 +16,6 @@ import org.ehcache.Cache;
 import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
-import play.mvc.WebSocket;
 import utilities.Server;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.document_db.document_objects.DM_Board_BackupIncident;
@@ -29,7 +28,7 @@ import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.documentationClass.Swagger_Board_Developer_parameters;
-import utilities.swagger.documentationClass.Swagger_Board_for_fast_upload_detail;
+import utilities.swagger.outboundClass.Swagger_Board_for_fast_upload_detail;
 import utilities.swagger.outboundClass.*;
 import web_socket.message_objects.homer_hardware_with_tyrion.*;
 import web_socket.message_objects.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
@@ -694,10 +693,10 @@ public class Model_Board extends Model {
 
 
                     // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
-                    case WS_Message_Hardware_set_settings.message_type      : {terminal_logger.warn("WS_Message_Hardware_set_settings: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Hardware_Restart.message_type        : {terminal_logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Hardware_overview.message_type       : {terminal_logger.warn("WS_Message_Hardware_overview: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Hardware_change_server.message_type  : {terminal_logger.warn("WS_Message_Hardware_change_server: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Hardware_set_settings.message_type     : {terminal_logger.warn("WS_Message_Hardware_set_settings: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Hardware_command_execute.message_type          : {terminal_logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Hardware_overview.message_type         : {terminal_logger.warn("WS_Message_Hardware_overview: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Hardware_change_server.message_type    : {terminal_logger.warn("WS_Message_Hardware_change_server: A message with a very high delay has arrived.");return;}
 
                     default: {
 
@@ -1198,8 +1197,22 @@ public class Model_Board extends Model {
                 if(help.parameter_type.toLowerCase().equals(field.getName().toLowerCase())){
 
                     System.out.println("Mám shodu " + help.parameter_type + " s " + field.getName());
+                    System.out.println("Typ proměné:: " + field.getType().getSimpleName().toLowerCase());
 
-                    if (field.getType().getCanonicalName().equals(Boolean.class.getSimpleName().toLowerCase())) {
+                    System.out.println("Typ Integeru k proovnání:: " + Integer.class.getSimpleName().toLowerCase());
+                    System.out.println("Typ Booleanu k proovnání:: " + String.class.getSimpleName().toLowerCase());
+                    System.out.println("Typ String   k proovnání:: " + Boolean.class.getSimpleName().toLowerCase());
+
+                    if (field.getType().getSimpleName().equals(Boolean.class.getSimpleName().toLowerCase())) {
+
+                        System.out.println("JE to boolean");
+
+                        // Jediná přístupná vyjímka je pro autoback - ten totiž je zároven v COnfig Json (DM_Board_Bootloader_DefaultConfig)
+                        // Ale zároveň je také přímo přístupný v databázi Tyriona
+                        if(help.parameter_type.equals("autobackup")){
+                            this.backup_mode = help.boolean_value;
+                            // Update bude proveden v   this.update_bootloader_comfiguration
+                        }
 
                         field.setBoolean(configuration, help.boolean_value); //setting field value to 10 in object
                         this.update_bootloader_comfiguration(configuration);
@@ -1210,7 +1223,9 @@ public class Model_Board extends Model {
                         return form.get();
                     }
 
-                    if (field.getType().getCanonicalName().toLowerCase().equals(String.class.getSimpleName().toLowerCase())) {
+                    if (field.getType().getSimpleName().toLowerCase().equals(String.class.getSimpleName().toLowerCase())) {
+
+                        System.out.println("Je to String");
 
                         field.set(configuration, help.string_value);
                         this.update_bootloader_comfiguration(configuration);
@@ -1222,14 +1237,22 @@ public class Model_Board extends Model {
 
                     }
 
-                    if (field.getType().getCanonicalName().toLowerCase().equals(Integer.class.getSimpleName().toLowerCase())) {
-                        field.setInt(configuration, help.integer_value);
-                        this.update_bootloader_comfiguration(configuration);
+                    if (field.getType().getSimpleName().toLowerCase().equals(Integer.class.getSimpleName().toLowerCase())) {
 
-                        JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.integer_value), 1000 * 5, 0, 2);
-                        final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
-                        if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
-                        return form.get();
+                        System.out.println("Je to Integer");
+                        try {
+                            System.out.println("Jaká je integer value:: " + help.integer_value);
+                            field.set(configuration, help.integer_value);
+                            this.update_bootloader_comfiguration(configuration);
+
+                            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.integer_value), 1000 * 5, 0, 2);
+                            final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
+                            if (form.hasErrors())
+                                throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                            return form.get();
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
                     }
 
                 }
@@ -1275,7 +1298,9 @@ public class Model_Board extends Model {
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), "AUTOBACKUP", true), 1000*5, 0, 2);
 
             final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_autobackup: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            if(form.hasErrors()){
+                throw new Exception("WS_Message_Hardware_set_autobackup: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            }
 
             return form.get();
 
@@ -1455,6 +1480,23 @@ public class Model_Board extends Model {
 
     }
 
+    //-- Restart Device Command --//
+    @JsonIgnore @Transient public void execute_command(Enum_Board_Command command){
+        try{
+
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_command_execute().make_request(this.id, command), 1000 * 5, 0, 2);
+
+            // Execute Command
+            final Form<WS_Message_Hardware_command_execute> form = Form.form(WS_Message_Hardware_command_execute.class).bind(node);
+            if(form.hasErrors()){
+                throw new Exception("WS_Message_Hardware_set_autobackup: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            }
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+        }
+
+    }
 
 /* CHECK BOARD RIGHT FIRMWARE || BACKUP || BOOTLOADER STATUS -----------------------------------------------------------*/
 

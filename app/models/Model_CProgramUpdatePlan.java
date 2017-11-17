@@ -382,7 +382,7 @@ public class Model_CProgramUpdatePlan extends Model {
                 }
 
 
-                case SENDING_PART: {
+                case PHASE_UPLOADING: {
                     try {
 
                         Model_Notification notification = new Model_Notification();

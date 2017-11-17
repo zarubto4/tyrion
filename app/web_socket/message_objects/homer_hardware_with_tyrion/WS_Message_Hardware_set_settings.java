@@ -36,12 +36,13 @@ public class WS_Message_Hardware_set_settings extends WS_AbstractMessage {
         settings.value = value;
 
 
+
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
         request.put("message_channel", Model_Board.CHANNEL);
         request.set("hardware_ids", Json.toJson(hardware_ids) );
-        request.set("settings_list", Json.toJson(settings));
+        request.set("settings_list", Json.toJson(Collections.singletonList(settings)));
 
         return request;
     }
@@ -60,7 +61,7 @@ public class WS_Message_Hardware_set_settings extends WS_AbstractMessage {
         request.put("message_type", message_type);
         request.put("message_channel", Model_Board.CHANNEL);
         request.set("hardware_ids", Json.toJson(hardware_ids));
-        request.set("settings_list", Json.toJson(settings));
+        request.set("settings_list", Json.toJson(Collections.singletonList(settings)));
 
         return request;
     }
@@ -78,7 +79,7 @@ public class WS_Message_Hardware_set_settings extends WS_AbstractMessage {
         request.put("message_type", message_type);
         request.put("message_channel", Model_Board.CHANNEL);
         request.set("hardware_ids", Json.toJson(hardware_ids) );
-        request.set("settings_list", Json.toJson(settings));
+        request.set("settings_list", Json.toJson(Collections.singletonList(settings)));
 
         return request;
     }

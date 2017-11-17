@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class WS_Message_Hardware_Set_Hardware_groups extends WS_AbstractMessage {
+public class WS_Message_Hardware_set_hardware_groups extends WS_AbstractMessage {
 
     // MessageType
     @JsonIgnore public static final String message_type = "hardware_hardware_group_setting";

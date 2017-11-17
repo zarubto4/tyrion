@@ -27,7 +27,6 @@ import web_socket.message_objects.compilator_with_tyrion.WS_Message_Make_compila
 import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 import web_socket.message_objects.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
-import java.lang.reflect.Field;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.*;
 
@@ -2718,6 +2717,57 @@ public class Controller_Board extends Controller {
         }
     }
 
+    @ApiOperation(value = "command Board execution",
+            tags = {"Board"},
+            notes = "Removes picture of logged person",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_Board_Command",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result board_command_execution(){
+        try {
+
+            // Získání JSON
+            final Form<Swagger_Board_Command> form = Form.form(Swagger_Board_Command.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_Board_Command help = form.get();
+
+
+            Model_Board board = Model_Board.get_byId(help.board_id);
+            if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
+            if(!board.edit_permission()) return GlobalResult.result_forbidden();
+
+
+            if(help.command == Enum_Board_Command.RESTART){
+                System.out.print("JEdná se o restart command");
+
+            }
+
+            board.execute_command(help.command);
+
+            return GlobalResult.result_ok();
+        }catch (Exception e){
+            return ServerLogger.result_internalServerError(e, request());
+        }
+    }
+
+
     @ApiOperation(value = "delete Board picture",
             tags = {"Board"},
             notes = "Removes picture of logged person",
@@ -2731,7 +2781,6 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_API.class)
     public Result board_removePicture(String board_id){
         try {
 
@@ -3354,7 +3403,6 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @BodyParser.Of(BodyParser.Json.class)
     public Result board_group_delete(String board_group_id) {
         try {
 
