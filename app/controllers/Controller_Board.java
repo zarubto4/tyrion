@@ -2759,7 +2759,7 @@ public class Controller_Board extends Controller {
 
             }
 
-            board.execute_command(help.command);
+            board.execute_command(help.command, true);
 
             return GlobalResult.result_ok();
         }catch (Exception e){

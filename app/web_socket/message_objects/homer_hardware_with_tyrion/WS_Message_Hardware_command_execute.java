@@ -20,7 +20,7 @@ public class WS_Message_Hardware_command_execute extends WS_AbstractMessage_Inst
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public ObjectNode make_request(String device_id, Enum_Board_Command command) {
+    public ObjectNode make_request(String device_id, Enum_Board_Command command, boolean priority) {
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
@@ -28,6 +28,7 @@ public class WS_Message_Hardware_command_execute extends WS_AbstractMessage_Inst
         request.put("message_channel", Model_Board.CHANNEL);
         request.put("command", command.name());
         request.put("hardware_id", device_id);
+        request.put("priority", priority);
 
         return request;
     }
