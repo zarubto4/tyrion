@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.Model_Board;
 import models.Model_BoardGroup;
 import play.libs.Json;
+import utilities.enums.Enum_type_of_command;
 import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import web_socket.message_objects.common.abstract_class.WS_AbstractMessage;
 
@@ -27,18 +28,17 @@ public class WS_Message_Hardware_set_hardware_groups extends WS_AbstractMessage 
 
 
     @JsonIgnore
-    public  ObjectNode make_request_add(List<Model_Board> devices, List<Model_BoardGroup> groups) {
+    public  ObjectNode make_request(List<Model_Board> devices, List<String> groups_id, Enum_type_of_command command_type) {
 
         List<String> hardware_ids        = devices.stream().map(Model_Board::get_id).collect(Collectors.toList());
-        List<String> hardware_group_ids  = groups.stream().map(Model_BoardGroup::get_id).collect(Collectors.toList());
-
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
         request.put("message_channel", Model_Board.CHANNEL);
         request.set("hardware_ids", Json.toJson(hardware_ids) );
-        request.set("hardware_group_ids", Json.toJson(hardware_group_ids));
+        request.set("hardware_group_ids", Json.toJson(groups_id));
+        request.put("command_type", command_type.name() );
 
         return request;
     }

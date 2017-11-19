@@ -14,6 +14,7 @@ import utilities.logger.ServerLogger;
 import utilities.response.GlobalResult;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Online_Change_status;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -111,6 +112,7 @@ public class Controller_ZZZ_Tester extends Controller {
     public Result test3(){
         try {
 
+            /*
             System.out.println("Testuji Apu Printer");
 
             Printer_Api api = new Printer_Api();
@@ -132,6 +134,7 @@ public class Controller_ZZZ_Tester extends Controller {
             //api.printFile(279211, 1, "Garfield Print QR Hash", label_12_package.get_label(), null);
             api.printFile(279211, 1, "Garfield Print QR Hash", label_12_mm_details.get_label(), null);
 
+            */
 
             return GlobalResult.result_ok();
         }catch (Exception e){

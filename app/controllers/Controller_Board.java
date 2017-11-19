@@ -2462,7 +2462,7 @@ public class Controller_Board extends Controller {
 
                         DM_Board_Bootloader_DefaultConfig config = board.bootloader_core_configuration();
                         config.autobackup = board_backup_pair.backup_mode;
-                        board.update_bootloader_comfiguration(config);
+                        board.update_bootloader_configuration(config);
 
                         terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} has own Static Backup - Removing static backup procedure required", board_backup_pair.board_id);
 
@@ -2531,7 +2531,7 @@ public class Controller_Board extends Controller {
 
                     DM_Board_Bootloader_DefaultConfig config = board.bootloader_core_configuration();
                     config.autobackup = board_backup_pair.backup_mode;
-                    board.update_bootloader_comfiguration(config);
+                    board.update_bootloader_configuration(config);
                 }
 
             }
@@ -2766,7 +2766,6 @@ public class Controller_Board extends Controller {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
-
 
     @ApiOperation(value = "delete Board picture",
             tags = {"Board"},
@@ -3313,19 +3312,15 @@ public class Controller_Board extends Controller {
 
                 terminal_logger.debug("board_group_update_device_list - board: {}", board.id);
 
-                // Pouze získání aktuálního stavu do Cache paměti ID listu
-                if(board.cache_hardware_groups_id == null){
-                    terminal_logger.debug("board_group_update_device_list - loading from cache");
-                    board.get_hardware_groups();
-                }
 
-                terminal_logger.debug("board_group_update_device_list - cached groups: {}", Json.toJson(board.cache_hardware_groups_id));
+                terminal_logger.debug("board_group_update_device_list - cached groups: {}", Json.toJson(board.get_hardware_groups_ids()));
 
+                List<String> hw_list = board.get_hardware_groups_ids();
                 // Cyklus pro přidávání
                 for(String board_group_id: help.device_synchro.group_ids) {
 
                     // Přidám všechny, které nejsou už součásti cache_hardware_groups_id
-                    if(!board.cache_hardware_groups_id.contains(board_group_id)){
+                    if(!hw_list.contains(board_group_id)){
 
                         terminal_logger.debug("board_group_update_device_list - adding group {}", board_group_id );
 
@@ -3333,7 +3328,7 @@ public class Controller_Board extends Controller {
                         if (group == null) return GlobalResult.result_notFound("BoardGroup not found");
                         if (!group.update_permission()) return GlobalResult.result_forbidden();
 
-                        board.cache_hardware_groups_id.add(board_group_id);
+                        board.get_hardware_groups_ids().add(board_group_id);
                         board.board_groups.add(group);
                         group.cache_group_size +=1;
                     }
@@ -3359,6 +3354,7 @@ public class Controller_Board extends Controller {
                     }
                 }
 
+                board.set_hardware_groups_on_hardware(board.get_hardware_groups_ids(),  Enum_type_of_command.SET);
                 board.update();
             }
 

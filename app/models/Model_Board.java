@@ -612,6 +612,15 @@ public class Model_Board extends Model {
         return groups;
     }
 
+    @JsonIgnore @Transient @TyrionCachedList public List<String> get_hardware_groups_ids() {
+        if(cache_hardware_groups_id == null){
+            get_hardware_groups();
+            return cache_hardware_groups_id;
+        }else {
+           return cache_hardware_groups_id;
+        }
+    }
+
     @JsonIgnore @Transient @TyrionCachedList public boolean update_boot_loader_required(){
         if(get_type_of_board().main_boot_loader == null || get_actual_bootloader() == null) return true;
         return (!this.get_type_of_board().main_boot_loader.id.equals(get_actual_bootloader().id));
@@ -620,7 +629,7 @@ public class Model_Board extends Model {
 
 /* JSON IGNORE  --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public void update_bootloader_comfiguration(DM_Board_Bootloader_DefaultConfig configuration){
+    @JsonIgnore @Transient public void update_bootloader_configuration(DM_Board_Bootloader_DefaultConfig configuration){
         this.json_bootloader_core_configuration = Json.toJson(configuration).toString();
         this.update();
     }
@@ -1123,9 +1132,11 @@ public class Model_Board extends Model {
 
                 final Form<WS_Message_Hardware_overview> form = Form.form(WS_Message_Hardware_overview.class).bind(json_result);
                 if (form.hasErrors()) {
-                    terminal_logger.warn("get_devices_overview:: Json Incorrect value. {}", result);
-                    terminal_logger.warn("get_devices_overview:: Response. {}", form.errorsAsJson(Lang.forCode("en-US")).toString());
-                    throw new Exception("WS_Message_Hardware_overview: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                    if( ! (form.get().status.equals("success") && form.get().hardware_list.isEmpty())) {
+                        terminal_logger.warn("get_devices_overview:: Json Incorrect value. {}", result);
+                        terminal_logger.warn("get_devices_overview:: Response. {}", form.errorsAsJson(Lang.forCode("en-US")).toString());
+                        throw new Exception("WS_Message_Hardware_overview: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                    }
                 }
 
                 result.status = form.get().status;
@@ -1173,6 +1184,7 @@ public class Model_Board extends Model {
                 this.update();
             }
 
+            // Homer by měl přestat do odvolání posílat všechny sračky co se dějí na hardwaru - ale asi to ještě není implementováno // TODO??
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this),"DATABASE_SYNCHRONIZE", settings), 1000 * 5, 0, 2);
 
             final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
@@ -1183,6 +1195,22 @@ public class Model_Board extends Model {
         }catch (Exception e){
             terminal_logger.internalServerError(e);
             return new WS_Message_Hardware_set_settings();
+        }
+    }
+
+    // Set Hardware groups in Hardware Instance on Homer --//
+    @JsonIgnore @Transient public WS_Message_Hardware_set_hardware_groups set_hardware_groups_on_hardware(List<String> get_hardware_groups_ids, Enum_type_of_command command){
+        try {
+
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_hardware_groups().make_request(Collections.singletonList(this), get_hardware_groups_ids, command), 1000 * 5, 0, 2);
+            final Form<WS_Message_Hardware_set_hardware_groups> form = Form.form(WS_Message_Hardware_set_hardware_groups.class).bind(node);
+            if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+
+            return form.get();
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return new WS_Message_Hardware_set_hardware_groups();
         }
     }
 
@@ -1211,11 +1239,11 @@ public class Model_Board extends Model {
                         // Ale zároveň je také přímo přístupný v databázi Tyriona
                         if(help.parameter_type.equals("autobackup")){
                             this.backup_mode = help.boolean_value;
-                            // Update bude proveden v   this.update_bootloader_comfiguration
+                            // Update bude proveden v   this.update_bootloader_configuration
                         }
 
                         field.setBoolean(configuration, help.boolean_value); //setting field value to 10 in object
-                        this.update_bootloader_comfiguration(configuration);
+                        this.update_bootloader_configuration(configuration);
 
                         JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.boolean_value), 1000 * 5, 0, 2);
                         final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
@@ -1228,7 +1256,7 @@ public class Model_Board extends Model {
                         System.out.println("Je to String");
 
                         field.set(configuration, help.string_value);
-                        this.update_bootloader_comfiguration(configuration);
+                        this.update_bootloader_configuration(configuration);
 
                         JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.string_value), 1000 * 5, 0, 2);
                         final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
@@ -1243,7 +1271,7 @@ public class Model_Board extends Model {
                         try {
                             System.out.println("Jaká je integer value:: " + help.integer_value);
                             field.set(configuration, help.integer_value);
-                            this.update_bootloader_comfiguration(configuration);
+                            this.update_bootloader_configuration(configuration);
 
                             JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.integer_value), 1000 * 5, 0, 2);
                             final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
@@ -1295,12 +1323,35 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_auto_backup(){
         try{
 
-
+            // 1) změna registru v configur
             DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
             configuration.autobackup = true;
-            this.update_bootloader_comfiguration(configuration);
+            this.update_bootloader_configuration(configuration);
+            // V databázi
             this.backup_mode = true;
             this.update();
+
+            //Zabít všechny procedury kde je nastaven backup a ještě nebyly provedeny - ty co jsou teprve v plánu budou provedeny standartně
+            List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.where().eq("board.id", this.id)
+                    .disjunction()
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
+                    .endJunction()
+                    .eq("firmware_type", Enum_Firmware_type.BACKUP.name())
+                    .lt("actualization_procedure.date_of_planing", new Date())
+                    .order().desc("actualization_procedure.date_of_planing")
+                    .select("id")
+                    .findList();
+
+            // Zaloha kdyby byly stále platné aktualizace na backup
+            for (int i = 0; i < firmware_plans.size(); i++) {
+                firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
+                firmware_plans.get(i).update();
+            }
 
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), "AUTOBACKUP", true), 1000*5, 0, 2);
 
@@ -1429,6 +1480,23 @@ public class Model_Board extends Model {
                 if(plan.count_of_tries == null) {
                     plan.count_of_tries = 0;
                 }
+
+                // Pokud HW nemá nastavený Backup Mode - nastaví se
+                if(plan.firmware_type == Enum_Firmware_type.BACKUP) {
+                    if(!plan.get_board().backup_mode) {
+                        // Na Homera Nemusím posílat příkaz o změně registru, protože Homer při updatu Backupu vždy sám přepne register hardwaru pokud tak nahardwaru není
+                        // JE to trochu vybočení ze standardu, ale byl problém s tím, že se registr nastavil a pak se mohlo posrat ještě milion věcí.
+                        // Takto Homer register mění až ve chvíli, kdy přenese bynárku do bufru hardwaru a řekne udělej z toho backup (což je jen zpoždění jedné mqtt nstrukce)
+                        // V Configu
+                        DM_Board_Bootloader_DefaultConfig configuration = plan.get_board().bootloader_core_configuration();
+                        configuration.autobackup = false;
+                        plan.get_board().update_bootloader_configuration(configuration);
+                        // V databázi
+                        plan.get_board().backup_mode = false;
+                        plan.get_board().update();
+                    }
+                }
+
                 if( plan.count_of_tries > 5 ){
                     plan.state = Enum_CProgram_updater_state.critical_error;
                     plan.error = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message();
@@ -1604,7 +1672,16 @@ public class Model_Board extends Model {
         }
 
 
-        DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
+        // Kontrola Skupin Hardware Groups - To není synchronizace s HW ale s Instancí HW na Homerovi
+        for(String hardware_group_id : get_hardware_groups_ids()){
+            // Pokud neobsahuje přidám - ale abych si ušetřil čas - nastavím rovnou celý seznam - Homer si s tím poradí
+            if(!overview.hardware_group_ids.contains(hardware_group_id)){
+                set_hardware_groups_on_hardware(get_hardware_groups_ids(), Enum_type_of_command.SET);
+                break;
+            }
+        }
+
+
 
         /*
             Tato smyčka prochází všechny položky v objektu DM_Board_Bootloader_DefaultConfig jeden po druhém a pak hledá
@@ -1614,8 +1691,8 @@ public class Model_Board extends Model {
             Pokud se něco změnilo - nastaví se change register na true
 
          */
-
-        boolean change_register = false;
+        DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
+        boolean change_register = false; // Pokud došlo ke změně
 
         outCycle:
         for(Field config_field : configuration.getClass().getFields()) {

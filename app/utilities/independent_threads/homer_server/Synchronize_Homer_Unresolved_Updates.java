@@ -76,7 +76,6 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
                 // Pokud je počet stránek shodný
                 if( paging_list.getTotalPageCount() == page) break;
 
-                System.out.println("Page == " + page);
                 page++;
 
             }

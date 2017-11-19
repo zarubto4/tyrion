@@ -31,24 +31,18 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
 
         try {
 
-            System.out.println("3. Spouštím Sycnhronizační proceduru Synchronize_Homer_Instance_after_connection");
+
 
             terminal_logger.info("Synchronize_Homer_Instance_after_connection:: run:: Tyrion send to Homer Server request for listInstances");
 
-            System.out.println("3.1 Hledám instance co jsou na serveru");
             List<String> instances_required_by_tyrion = required_instance_on_server();
-
-            System.out.println("3.2 Hledám co mají být na server");
             List<String> instances_actual_on_server = actual_on_server();
 
             List<String> instances_for_removing = new ArrayList<>();
             List<String> instances_for_add = new ArrayList<>();
 
 
-
             for(String instance_id : instances_required_by_tyrion){
-
-
                 if(!instances_actual_on_server.contains(instance_id)){
                     System.out.println("3.4 Našel jsem instanci kterou chci doplnit na server:: " + instance_id);
                     instances_for_add.add(instance_id);
@@ -69,7 +63,6 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
             if (!instances_for_removing.isEmpty()) {
 
                 terminal_logger.trace("Synchronize_Homer_Instance_after_connection:: run::  The number of instance_ids for removing from homer server:: {}" , instances_for_removing.size());
-
                 WS_Message_Homer_Instance_destroy remove_result  = Model_HomerServer.get_byId(ws_homerServer.identifikator).remove_instance(instances_for_removing);
                 if (!remove_result.status.equals("success")){
                     terminal_logger.internalServerError(new Exception("Blocko Server: Error while removing instances: " + remove_result.toString()));
@@ -78,15 +71,10 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
             }
 
             if(!instances_for_add.isEmpty()){
-
-                System.out.println("3.6 instances_for_add není prázdný " );
-
                 terminal_logger.trace("Synchronize_Homer_Instance_after_connection:: run:: Connection::Starting to upload new instance_ids to cloud_blocko_server. Size: {}" , instances_for_add.size());
 
                 for (String instance_id : instances_for_add) {
                     try {
-
-                        System.out.println("3.7 Nahrávám na server instanci :: " + instance_id);
 
                         Model_HomerInstance.get_byId(instance_id).upload_to_cloud();
                         sleep(50);

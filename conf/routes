@@ -11,7 +11,7 @@ OPTIONS   /*all                                                         @control
 ### DEVELOPERS TEST ############ DEVELOPERS TEST ############### DEVELOPERS TEST ################ DEVELOPERS TEST ###################################################
 POST      /test                                                         @controllers.Controller_ZZZ_Tester.test1()
 POST      /test2                                                        @controllers.Controller_ZZZ_Tester.test2()
-POST      /test3                                                        @controllers.Controller_ZZZ_Tester.test3()
+GET       /test3                                                        @controllers.Controller_ZZZ_Tester.test3()
 GET       /test4                                                        @controllers.Controller_ZZZ_Tester.test4()
 GET       /demodata                                                     @utilities.demo_data.Utilities_Demo_data_Controller.all_for_becki()
 

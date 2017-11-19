@@ -14,6 +14,7 @@ import play.Configuration;
 import play.api.Play;
 import play.data.Form;
 import play.i18n.Lang;
+import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
@@ -348,7 +349,8 @@ public class Job_CheckCompilationLibraries implements Job {
 
                 terminal_logger.trace("check_version_thread:: all Bootloader in type of Board synchronized");
 
-
+            } catch (F.PromiseTimeoutException e ){
+                terminal_logger.error("Job_CheckCompilationLibraries:: PromiseTimeoutException! - Probably Network is unreachable", new Date());
             } catch (ConnectException e) {
                 terminal_logger.error("Job_CheckCompilationLibraries:: ConnectException! - Probably Network is unreachable", new Date());
             } catch (Exception e) {
