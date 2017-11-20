@@ -16,7 +16,6 @@ import org.ehcache.Cache;
 import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
-import play.mvc.WebSocket;
 import utilities.Server;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.document_db.document_objects.DM_Board_BackupIncident;
@@ -29,7 +28,7 @@ import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.documentationClass.Swagger_Board_Developer_parameters;
-import utilities.swagger.documentationClass.Swagger_Board_for_fast_upload_detail;
+import utilities.swagger.outboundClass.Swagger_Board_for_fast_upload_detail;
 import utilities.swagger.outboundClass.*;
 import web_socket.message_objects.homer_hardware_with_tyrion.*;
 import web_socket.message_objects.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
@@ -613,6 +612,15 @@ public class Model_Board extends Model {
         return groups;
     }
 
+    @JsonIgnore @Transient @TyrionCachedList public List<String> get_hardware_groups_ids() {
+        if(cache_hardware_groups_id == null){
+            get_hardware_groups();
+            return cache_hardware_groups_id;
+        }else {
+           return cache_hardware_groups_id;
+        }
+    }
+
     @JsonIgnore @Transient @TyrionCachedList public boolean update_boot_loader_required(){
         if(get_type_of_board().main_boot_loader == null || get_actual_bootloader() == null) return true;
         return (!this.get_type_of_board().main_boot_loader.id.equals(get_actual_bootloader().id));
@@ -621,7 +629,7 @@ public class Model_Board extends Model {
 
 /* JSON IGNORE  --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public void update_bootloader_comfiguration(DM_Board_Bootloader_DefaultConfig configuration){
+    @JsonIgnore @Transient public void update_bootloader_configuration(DM_Board_Bootloader_DefaultConfig configuration){
         this.json_bootloader_core_configuration = Json.toJson(configuration).toString();
         this.update();
     }
@@ -694,10 +702,10 @@ public class Model_Board extends Model {
 
 
                     // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
-                    case WS_Message_Hardware_set_settings.message_type      : {terminal_logger.warn("WS_Message_Hardware_set_settings: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Hardware_Restart.message_type        : {terminal_logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Hardware_overview.message_type       : {terminal_logger.warn("WS_Message_Hardware_overview: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Hardware_change_server.message_type  : {terminal_logger.warn("WS_Message_Hardware_change_server: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Hardware_set_settings.message_type     : {terminal_logger.warn("WS_Message_Hardware_set_settings: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Hardware_command_execute.message_type          : {terminal_logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Hardware_overview.message_type         : {terminal_logger.warn("WS_Message_Hardware_overview: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Hardware_change_server.message_type    : {terminal_logger.warn("WS_Message_Hardware_change_server: A message with a very high delay has arrived.");return;}
 
                     default: {
 
@@ -740,6 +748,13 @@ public class Model_Board extends Model {
 
             // Aktualizuji cache status online HW
             cache_status.put(help.hardware_id, Boolean.TRUE);
+
+            if(device.project_id() == null) {
+                terminal_logger.warn("Hardware {} is not in project!!!!!!!!!", device.id);
+                terminal_logger.warn("Hardware {} is not in project!!!!!!!!!", device.id);
+                terminal_logger.warn("Hardware {} is not in project!!!!!!!!!", device.id);
+                terminal_logger.warn("Hardware {} is not in project!!!!!!!!!", device.id);
+            }
 
             // Notifikce
             if(device.developer_kit) {
@@ -1117,9 +1132,11 @@ public class Model_Board extends Model {
 
                 final Form<WS_Message_Hardware_overview> form = Form.form(WS_Message_Hardware_overview.class).bind(json_result);
                 if (form.hasErrors()) {
-                    terminal_logger.warn("get_devices_overview:: Json Incorrect value. {}", result);
-                    terminal_logger.warn("get_devices_overview:: Response. {}", form.errorsAsJson(Lang.forCode("en-US")).toString());
-                    throw new Exception("WS_Message_Hardware_overview: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                    if( ! (form.get().status.equals("success") && form.get().hardware_list.isEmpty())) {
+                        terminal_logger.warn("get_devices_overview:: Json Incorrect value. {}", result);
+                        terminal_logger.warn("get_devices_overview:: Response. {}", form.errorsAsJson(Lang.forCode("en-US")).toString());
+                        throw new Exception("WS_Message_Hardware_overview: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                    }
                 }
 
                 result.status = form.get().status;
@@ -1167,6 +1184,7 @@ public class Model_Board extends Model {
                 this.update();
             }
 
+            // Homer by měl přestat do odvolání posílat všechny sračky co se dějí na hardwaru - ale asi to ještě není implementováno // TODO??
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this),"DATABASE_SYNCHRONIZE", settings), 1000 * 5, 0, 2);
 
             final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
@@ -1180,6 +1198,22 @@ public class Model_Board extends Model {
         }
     }
 
+    // Set Hardware groups in Hardware Instance on Homer --//
+    @JsonIgnore @Transient public WS_Message_Hardware_set_hardware_groups set_hardware_groups_on_hardware(List<String> get_hardware_groups_ids, Enum_type_of_command command){
+        try {
+
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_hardware_groups().make_request(Collections.singletonList(this), get_hardware_groups_ids, command), 1000 * 5, 0, 2);
+            final Form<WS_Message_Hardware_set_hardware_groups> form = Form.form(WS_Message_Hardware_set_hardware_groups.class).bind(node);
+            if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+
+            return form.get();
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return new WS_Message_Hardware_set_hardware_groups();
+        }
+    }
+
     // Change Hardware web view port --//
     @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_hardware_configuration_parameter(Swagger_Board_Developer_parameters help) throws IllegalArgumentException, Exception{
 
@@ -1188,12 +1222,28 @@ public class Model_Board extends Model {
 
             for(Field field : configuration.getClass().getFields()) {
 
-                if(help.parameter_type.toLowerCase().equals(field.getName())){
+                if(help.parameter_type.toLowerCase().equals(field.getName().toLowerCase())){
 
-                    if (field.getType().getCanonicalName().equals(Boolean.class.getSimpleName().toLowerCase())) {
+                    System.out.println("Mám shodu " + help.parameter_type + " s " + field.getName());
+                    System.out.println("Typ proměné:: " + field.getType().getSimpleName().toLowerCase());
+
+                    System.out.println("Typ Integeru k proovnání:: " + Integer.class.getSimpleName().toLowerCase());
+                    System.out.println("Typ Booleanu k proovnání:: " + String.class.getSimpleName().toLowerCase());
+                    System.out.println("Typ String   k proovnání:: " + Boolean.class.getSimpleName().toLowerCase());
+
+                    if (field.getType().getSimpleName().equals(Boolean.class.getSimpleName().toLowerCase())) {
+
+                        System.out.println("JE to boolean");
+
+                        // Jediná přístupná vyjímka je pro autoback - ten totiž je zároven v COnfig Json (DM_Board_Bootloader_DefaultConfig)
+                        // Ale zároveň je také přímo přístupný v databázi Tyriona
+                        if(help.parameter_type.equals("autobackup")){
+                            this.backup_mode = help.boolean_value;
+                            // Update bude proveden v   this.update_bootloader_configuration
+                        }
 
                         field.setBoolean(configuration, help.boolean_value); //setting field value to 10 in object
-                        this.update_bootloader_comfiguration(configuration);
+                        this.update_bootloader_configuration(configuration);
 
                         JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.boolean_value), 1000 * 5, 0, 2);
                         final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
@@ -1201,10 +1251,12 @@ public class Model_Board extends Model {
                         return form.get();
                     }
 
-                    if (field.getType().getCanonicalName().toLowerCase().equals(String.class.getSimpleName().toLowerCase())) {
+                    if (field.getType().getSimpleName().toLowerCase().equals(String.class.getSimpleName().toLowerCase())) {
+
+                        System.out.println("Je to String");
 
                         field.set(configuration, help.string_value);
-                        this.update_bootloader_comfiguration(configuration);
+                        this.update_bootloader_configuration(configuration);
 
                         JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.string_value), 1000 * 5, 0, 2);
                         final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
@@ -1213,20 +1265,28 @@ public class Model_Board extends Model {
 
                     }
 
-                    if (field.getType().getCanonicalName().toLowerCase().equals(Integer.class.getSimpleName().toLowerCase())) {
-                        field.setInt(configuration, help.integer_value);
-                        this.update_bootloader_comfiguration(configuration);
+                    if (field.getType().getSimpleName().toLowerCase().equals(Integer.class.getSimpleName().toLowerCase())) {
 
-                        JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.integer_value), 1000 * 5, 0, 2);
-                        final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
-                        if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
-                        return form.get();
+                        System.out.println("Je to Integer");
+                        try {
+                            System.out.println("Jaká je integer value:: " + help.integer_value);
+                            field.set(configuration, help.integer_value);
+                            this.update_bootloader_configuration(configuration);
+
+                            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.integer_value), 1000 * 5, 0, 2);
+                            final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
+                            if (form.hasErrors())
+                                throw new Exception("WS_Message_Hardware_set_settings: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                            return form.get();
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
                     }
 
                 }
             }
 
-            throw  new IllegalArgumentException("Incoming Value " + help.parameter_type.toUpperCase() + " not recognized");
+            throw  new IllegalArgumentException("Incoming Value " + help.parameter_type.toLowerCase() + " not recognized");
 
 
     }
@@ -1263,10 +1323,42 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_auto_backup(){
         try{
 
+            // 1) změna registru v configur
+            DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
+            configuration.autobackup = true;
+            this.update_bootloader_configuration(configuration);
+            // V databázi
+            this.backup_mode = true;
+            this.update();
+
+            //Zabít všechny procedury kde je nastaven backup a ještě nebyly provedeny - ty co jsou teprve v plánu budou provedeny standartně
+            List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.where().eq("board.id", this.id)
+                    .disjunction()
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
+                    .endJunction()
+                    .eq("firmware_type", Enum_Firmware_type.BACKUP.name())
+                    .lt("actualization_procedure.date_of_planing", new Date())
+                    .order().desc("actualization_procedure.date_of_planing")
+                    .select("id")
+                    .findList();
+
+            // Zaloha kdyby byly stále platné aktualizace na backup
+            for (int i = 0; i < firmware_plans.size(); i++) {
+                firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
+                firmware_plans.get(i).update();
+            }
+
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), "AUTOBACKUP", true), 1000*5, 0, 2);
 
             final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Hardware_set_autobackup: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            if(form.hasErrors()){
+                throw new Exception("WS_Message_Hardware_set_autobackup: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            }
 
             return form.get();
 
@@ -1388,6 +1480,23 @@ public class Model_Board extends Model {
                 if(plan.count_of_tries == null) {
                     plan.count_of_tries = 0;
                 }
+
+                // Pokud HW nemá nastavený Backup Mode - nastaví se
+                if(plan.firmware_type == Enum_Firmware_type.BACKUP) {
+                    if(!plan.get_board().backup_mode) {
+                        // Na Homera Nemusím posílat příkaz o změně registru, protože Homer při updatu Backupu vždy sám přepne register hardwaru pokud tak nahardwaru není
+                        // JE to trochu vybočení ze standardu, ale byl problém s tím, že se registr nastavil a pak se mohlo posrat ještě milion věcí.
+                        // Takto Homer register mění až ve chvíli, kdy přenese bynárku do bufru hardwaru a řekne udělej z toho backup (což je jen zpoždění jedné mqtt nstrukce)
+                        // V Configu
+                        DM_Board_Bootloader_DefaultConfig configuration = plan.get_board().bootloader_core_configuration();
+                        configuration.autobackup = false;
+                        plan.get_board().update_bootloader_configuration(configuration);
+                        // V databázi
+                        plan.get_board().backup_mode = false;
+                        plan.get_board().update();
+                    }
+                }
+
                 if( plan.count_of_tries > 5 ){
                     plan.state = Enum_CProgram_updater_state.critical_error;
                     plan.error = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message();
@@ -1446,7 +1555,35 @@ public class Model_Board extends Model {
 
     }
 
+    //-- Restart Device Command --//
+    @JsonIgnore @Transient public void execute_command(Enum_Board_Command command, boolean priority){
+        try{
 
+            // Priority false - pokud má hardware v ukolníčk předchozí úkony, tento se zařadí do fronty
+            // true - všechny přeskočí - muže se stát že pak některé stratí smysl a platnost a homer je zahodí
+
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_command_execute().make_request(this.id, command, priority), 1000 * 5, 0, 2);
+
+            // Execute Command
+            final Form<WS_Message_Hardware_command_execute> form = Form.form(WS_Message_Hardware_command_execute.class).bind(node);
+            if(form.hasErrors()){
+                throw new Exception("WS_Message_Hardware_set_autobackup: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            }
+
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+        }
+
+    }
+
+
+    /**
+     * Kontrola po připojení zařízení - každé připojení zařízení odstartuje kontrolní proceduru,
+     * nejdříve korekntí nastavení s očekávaným podel DM_Board_Bootloader_DefaultConfig,
+     * dále firmware, bootloader a backup.
+     *
+     *
+      */
 /* CHECK BOARD RIGHT FIRMWARE || BACKUP || BOOTLOADER STATUS -----------------------------------------------------------*/
 
     // Kontrola up_to_date harwaru
@@ -1478,7 +1615,7 @@ public class Model_Board extends Model {
             terminal_logger.debug("hardware_firmware_state_check - Summary information of connected master board: ID = {}", this.id);
 
             terminal_logger.debug("hardware_firmware_state_check - Settings check ",this.id);
-            check_settings(report);
+            if(!check_settings(report)) return;
 
             terminal_logger.debug("hardware_firmware_state_check - Firmware check ",this.id);
             check_firmware(report);
@@ -1495,29 +1632,39 @@ public class Model_Board extends Model {
     }
 
     /**
-     * Zde se kontroluje jestli je na HW to co na něm reálně být má
+     * Zde se kontroluje jestli je na HW to co na něm reálně být má.
+     * Pokud některý parametr je jiný než se očekává, metoda ho změní (for cyklus), jenže je nutné zařízení restartovat,
+     * protože může teoreticky dojít k tomu, že se register změní, ale na zařízení se to neprojeví.
+     * Například změna portu www stránky pro vývojáře. Proto se vrací TRUE pokud vše sedí a připojovací procedura muže pokračovat nebo false, protože device byl restartován.
+     *
      * @param overview
      */
-    @JsonIgnore @Transient private void check_settings(WS_Message_Hardware_overview_Board overview){
+    @JsonIgnore @Transient private boolean check_settings(WS_Message_Hardware_overview_Board overview){
+
+        // Pokud uživatel nechce DB synchronizaci ingoruji
+        if(!this.database_synchronize){
+            terminal_logger.trace("check_settings - database_synchronize is forbidden - change parameters not allowed!");
+            return true;
+        }
 
         // Kontrola zda je stejný
-        if(overview.autobackup != this.backup_mode){
-            terminal_logger.warn("check_settings - inconsistent state: autobackup");
+        if(this.backup_mode && !overview.autobackup){
+            terminal_logger.warn("check_settings - inconsistent state: set autobackup from static backup");
             set_auto_backup();
         }
 
-        // Kontrola Akuasz
+        // Kontrola Aliasu
         if((overview.alias == null || !overview.alias.equals(this.name)) && name != null){
             terminal_logger.warn("check_settings - inconsistent state: alias");
             set_alias(this.name);
         }
 
-        // Uložení do Cache paměti
+        // Uložení do Cache paměti // PORT je synchronizován v následujícím for cyklu
         if(cache_latest_know_ip_address == null || !cache_latest_know_ip_address.equals(overview.ip)){
             cache_latest_know_ip_address = overview.ip;
         }
 
-        // Synchronizace mac_adressy pokuk k tomu ještě nedošlo
+        // Synchronizace mac_adressy pokud k tomu ještě nedošlo
         if(mac_address == null){
             if(overview.mac != null)
             mac_address = overview.mac;
@@ -1525,14 +1672,30 @@ public class Model_Board extends Model {
         }
 
 
-        DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
+        // Kontrola Skupin Hardware Groups - To není synchronizace s HW ale s Instancí HW na Homerovi
+        for(String hardware_group_id : get_hardware_groups_ids()){
+            // Pokud neobsahuje přidám - ale abych si ušetřil čas - nastavím rovnou celý seznam - Homer si s tím poradí
+            if(!overview.hardware_group_ids.contains(hardware_group_id)){
+                set_hardware_groups_on_hardware(get_hardware_groups_ids(), Enum_type_of_command.SET);
+                break;
+            }
+        }
+
+
 
         /*
             Tato smyčka prochází všechny položky v objektu DM_Board_Bootloader_DefaultConfig jeden po druhém a pak hledá
-             ty samé config parametry v příchozím objektu - pokud je nazelzne následě porovná očekávanou ohnotu od té
-             reálné a popřípadě upraví na hardwaru
+            ty samé config parametry v příchozím objektu - pokud je nazelzne následě porovná očekávanou ohnotu od té
+            reálné a popřípadě upraví na hardwaru.
+
+            Pokud se něco změnilo - nastaví se change register na true
+
          */
-        outCycle: for(Field config_field : configuration.getClass().getFields()) {
+        DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
+        boolean change_register = false; // Pokud došlo ke změně
+
+        outCycle:
+        for(Field config_field : configuration.getClass().getFields()) {
 
             try {
                 Field incoming_report_right_filed = null;
@@ -1554,6 +1717,7 @@ public class Model_Board extends Model {
 
                     if (config_field.getBoolean(configuration) != incoming_report_right_filed.getBoolean(overview)) {
                         write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), config_field.getName(), config_field.getBoolean(configuration)), 1000 * 5, 0, 2);
+                        change_register = true;
                     }
 
                     continue outCycle;
@@ -1563,6 +1727,7 @@ public class Model_Board extends Model {
 
                     if (!config_field.get(configuration).toString().equals(incoming_report_right_filed.get(overview).toString())) {
                         write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), config_field.getName(), config_field.get(configuration).toString()), 1000 * 5, 0, 2);
+                        change_register = true;
                     }
 
                     continue outCycle;
@@ -1573,6 +1738,7 @@ public class Model_Board extends Model {
 
                     if (config_field.getInt(configuration) != incoming_report_right_filed.getInt(overview)) {
                         write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), config_field.getName(), config_field.getInt(configuration)), 1000 * 5, 0, 2);
+                        change_register = true;
                     }
 
                     continue outCycle;
@@ -1580,10 +1746,18 @@ public class Model_Board extends Model {
 
             }catch (Exception e){
                 terminal_logger.internalServerError(e);
+                return true;
             }
         }
 
-
+        if(change_register) {
+            // Priority false - protože v ukolníčku má Hardware předchozí úkony k updatu registrů - kdyby byl true,
+            // tak všechny přeskočí
+            this.execute_command(Enum_Board_Command.RESTART, false);
+            return false;
+        }else {
+            return true;
+        }
 
 
     }
@@ -1595,7 +1769,10 @@ public class Model_Board extends Model {
 
 
         // Pokud uživatel nechce DB synchronizaci ingoruji
-        if(!this.database_synchronize) return;
+        if(!this.database_synchronize){
+            terminal_logger.trace("check_firmware - database_synchronize is forbidden - change parameters not allowed!");
+            return;
+        }
 
         if (get_actual_c_program_version() == null) {
             terminal_logger.trace("check_firmware -: Actual firmware by DB not recognized :: ", overview.binaries.firmware.build_id);
@@ -1642,9 +1819,9 @@ public class Model_Board extends Model {
             // Mám shodu firmwaru oproti očekávánemů
             if (get_actual_c_program_version() != null) {
 
-                terminal_logger.debug("Co aktuálně je na HW podle Tyriona??:: {}", get_actual_c_program_version().c_compilation.firmware_build_id);
-                terminal_logger.debug("Co aktuálně je na HW podle Homera??:: {}", overview.binaries.firmware.build_id);
-                terminal_logger.debug("Co očekává nedokončená procedura??:: {}", plan.c_program_version_for_update.c_compilation.firmware_build_id);
+                terminal_logger.debug("Firmware:: Co aktuálně je na HW podle Tyriona??:: {}", get_actual_c_program_version().c_compilation.firmware_build_id);
+                terminal_logger.debug("Firmware:: Co aktuálně je na HW podle Homera??:: {}", overview.binaries.firmware.build_id);
+                terminal_logger.debug("Firmware:: Co očekává nedokončená procedura??:: {}", plan.c_program_version_for_update.c_compilation.firmware_build_id);
 
                 // Verze se rovnají
                 if (overview.binaries.firmware.build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
@@ -1804,26 +1981,47 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient private void check_backup(WS_Message_Hardware_overview_Board overview){
 
         // Pokud uživatel nechce DB synchronizaci ingoruji
-        if(!this.database_synchronize) return;
+        if(!this.database_synchronize){
+            terminal_logger.trace("check_backup - database_synchronize is forbidden - change parameters not allowed!");
+            return;
+        }
 
         // když je autobackup tak sere pes - změna autobacku je rovnou z devicu
-        if(backup_mode) return;
+        if(backup_mode) {
+            terminal_logger.trace("check_backup - autobacku is true change parameters not allowed!");
+            return;
+        }
+
+        terminal_logger.debug("check_backup:: third check backup! - Backup is static!! ");
 
 
-        terminal_logger.debug("check_backup - third check backup! ");
+        // Backup je takový jaký očekává tyrion
+        if(get_backup_c_program_version() != null && get_backup_c_program_version().c_compilation.firmware_build_id.equals(overview.binaries.backup.build_id)){
+            terminal_logger.debug("check_backup:: Backup is same as on hardware as on Tyrion");
+            return;
+        }
 
-        Model_VersionObject version = Model_VersionObject.find.where().eq("c_compilation.firmware_build_id", overview.binaries.backup.build_id).findUnique();
+        // Backup není - to by se stát nemělo - ale šup sem sním
+        if(get_backup_c_program_version() == null){
+            terminal_logger.warn("check_backup:: Static Backup is required - but tyrion not set any backup!");
 
-        if(version != null && get_backup_c_program_version() == null){
+            if(overview.binaries.backup != null && ( overview.binaries.backup.build_id == null || !overview.binaries.backup.build_id.equals(""))) {
 
-            actual_backup_c_program_version = version;
-            update();
+                // Try to find it in User programs and
+                Model_VersionObject version_not_cached = Model_VersionObject.find.where().eq("c_compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findUnique();
 
-        }else if(version != null && !get_backup_c_program_version().c_compilation.firmware_build_id.equals(overview.binaries.backup.build_id) ){
-
-            actual_backup_c_program_version = version;
-            update();
-
+                if(version_not_cached != null) {
+                    terminal_logger.debug("check_backup:: Ještě nebyla přiřazena žádná Backup verze k HW v Tyrionovi - ale program se podařilo najít");
+                    Model_VersionObject cached_version = Model_VersionObject.get_byId(version_not_cached.id);
+                    this.actual_backup_c_program_version = cached_version;
+                    this.update();
+                }else {
+                    terminal_logger.warn("check_backup:: Nastal stav, kdy mám statický backup, Tyrion v databázi nic nemá a ani se mi nepodařilo najít program (build_id)"
+                            + "který by byl kompatibilní. Což je trochu problém. Uvidíme co nabízí update procedury. \n" +
+                            "Možnosti jsou 1.) Nahrát první určený plan na hardware a tato metoda začne v podmínce najdi fungovat \n" +
+                            "nebo 2) přepnu do autobacku");
+                }
+            }
         }
 
         List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.where().eq("board.id", this.id)
@@ -1833,6 +2031,7 @@ public class Model_Board extends Model {
                     .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
+                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
                 .endJunction()
                 .eq("firmware_type", Enum_Firmware_type.BACKUP.name())
                 .lt("actualization_procedure.date_of_planing", new Date())
@@ -1840,13 +2039,11 @@ public class Model_Board extends Model {
                 .findList();
 
          // Zaloha kdyby byly stále platné aktualizace na backup
-         if(backup_mode){
-             for (int i = 1; i < firmware_plans.size(); i++) {
-                 firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
-                 firmware_plans.get(i).update();
-             }
-             return;
-         }
+        for (int i = 1; i < firmware_plans.size(); i++) {
+            firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
+            firmware_plans.get(i).update();
+        }
+
 
         // Kontrola Firmwaru a přepsání starých
         // Je žádoucí přepsat všechny předhozí update plány - ale je nutné se podívat jestli nejsou rozdílné!
@@ -1860,58 +2057,53 @@ public class Model_Board extends Model {
             }
         }
 
-        if(!firmware_plans.isEmpty()){
+        // Mám updaty a tak kontroluji
+        if(!firmware_plans.isEmpty()) {
 
             Model_CProgramUpdatePlan plan = firmware_plans.get(0);
 
-            if(plan.firmware_type == Enum_Firmware_type.BACKUP) {
+            terminal_logger.debug("Backup:: Co aktuálně je na HW podle Tyriona??:: {}", get_backup_c_program_version().c_compilation.firmware_build_id);
+            terminal_logger.debug("Backup:: Co aktuálně je na HW podle Homera??:: {}", overview.binaries.backup.build_id);
+            terminal_logger.debug("Backup:: Co očekává nedokončená procedura??:: {}", plan.c_program_version_for_update.c_compilation.firmware_build_id);
 
-                if (plan.get_board().get_backup_c_program_version() != null) {
 
-                    // Verze se rovnají
-                    if (plan.get_board().get_backup_c_program_version().c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
+            if (plan.get_board().get_backup_c_program_version() != null) {
 
-                        terminal_logger.debug("check_backup - up to date, procedure is done");
-                        plan.state = Enum_CProgram_updater_state.complete;
-                        plan.update();
+                // Verze se rovnají
+                if (get_backup_c_program_version().c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
 
-                    } else {
-
-                        terminal_logger.debug("check_backup - need update, system starts a new update, number of tries {}", plan.count_of_tries);
-                        plan.state = Enum_CProgram_updater_state.not_start_yet;
-                        plan.count_of_tries++;
-                        plan.update();
-                        execute_update_procedure(plan.actualization_procedure);
-
-                    }
+                    terminal_logger.debug("check_backup - up to date, procedure is done");
+                    plan.state = Enum_CProgram_updater_state.complete;
+                    plan.date_of_finish = new Date();
+                    plan.update();
 
                 } else {
 
-                    terminal_logger.debug("check_backup - no backup, system starts a new update");
+                    terminal_logger.debug("check_backup - need update, system starts a new update, number of tries {}", plan.count_of_tries);
                     plan.state = Enum_CProgram_updater_state.not_start_yet;
                     plan.count_of_tries++;
                     plan.update();
-
                     execute_update_procedure(plan.actualization_procedure);
+
                 }
+
+            } else {
+
+                terminal_logger.debug("check_backup - no backup, system starts a new update");
+                plan.state = Enum_CProgram_updater_state.not_start_yet;
+                plan.count_of_tries++;
+                plan.update();
+
+                execute_update_procedure(plan.actualization_procedure);
             }
 
-       // Pokud mám vypnutý autobackup a nastavený statický a ten nesedí - tak aktualizuji
-        }else if(!backup_mode && get_backup_c_program_version() != null && !get_backup_c_program_version().c_compilation.firmware_build_id.equals(overview.binaries.backup.build_id)){
 
-            // Nastavuji nový systémový update
-            List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
-
-            WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
-            b_pair.board = this;
-            b_pair.c_program_version = get_actual_c_program_version();
-
-            b_pairs.add(b_pair);
-
-            Model_ActualizationProcedure procedure = create_update_procedure(Enum_Firmware_type.BACKUP, Enum_Update_type_of_update.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
-            procedure.execute_update_procedure();
             return;
+        }
 
+       // Nemám updaty ale verze se neshodují
+        if(get_backup_c_program_version() == null && firmware_plans.isEmpty()){
+            set_auto_backup();
         }
 
 
@@ -1967,6 +2159,7 @@ public class Model_Board extends Model {
 
                     terminal_logger.debug("check_bootloader - up to date, procedure is done");
                     plan.state = Enum_CProgram_updater_state.complete;
+                    plan.date_of_finish = new Date();
                     plan.update();
 
                     this.actual_boot_loader = plan.get_bootloader();
@@ -2019,6 +2212,8 @@ public class Model_Board extends Model {
         }
 
     }
+
+
 
 
 /* UPDATE --------------------------------------------------------------------------------------------------------------*/
@@ -2328,14 +2523,16 @@ public class Model_Board extends Model {
 
         terminal_logger.debug("save - inserting to database");
 
-        //Default starting state
-        database_synchronize = true;
-
         if(hash_for_adding == null) this.hash_for_adding = generate_hash();
 
         if (json_bootloader_core_configuration == null || json_bootloader_core_configuration.equals("{}") || json_bootloader_core_configuration.equals("null") || json_bootloader_core_configuration.length() == 0) {
             json_bootloader_core_configuration = Json.toJson(DM_Board_Bootloader_DefaultConfig.generateConfig()).toString();
         }
+
+        //Default starting state
+        this.database_synchronize = true;
+        this.developer_kit = false;
+        this.backup_mode = bootloader_core_configuration().autobackup;
 
         super.save();
 

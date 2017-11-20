@@ -27,7 +27,6 @@ import web_socket.message_objects.compilator_with_tyrion.WS_Message_Make_compila
 import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 import web_socket.message_objects.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
-import java.lang.reflect.Field;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.*;
 
@@ -2463,7 +2462,7 @@ public class Controller_Board extends Controller {
 
                         DM_Board_Bootloader_DefaultConfig config = board.bootloader_core_configuration();
                         config.autobackup = board_backup_pair.backup_mode;
-                        board.update_bootloader_comfiguration(config);
+                        board.update_bootloader_configuration(config);
 
                         terminal_logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} has own Static Backup - Removing static backup procedure required", board_backup_pair.board_id);
 
@@ -2532,7 +2531,7 @@ public class Controller_Board extends Controller {
 
                     DM_Board_Bootloader_DefaultConfig config = board.bootloader_core_configuration();
                     config.autobackup = board_backup_pair.backup_mode;
-                    board.update_bootloader_comfiguration(config);
+                    board.update_bootloader_configuration(config);
                 }
 
             }
@@ -2718,6 +2717,56 @@ public class Controller_Board extends Controller {
         }
     }
 
+    @ApiOperation(value = "command Board execution",
+            tags = {"Board"},
+            notes = "Removes picture of logged person",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_Board_Command",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result board_command_execution(){
+        try {
+
+            // Získání JSON
+            final Form<Swagger_Board_Command> form = Form.form(Swagger_Board_Command.class).bindFromRequest();
+            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_Board_Command help = form.get();
+
+
+            Model_Board board = Model_Board.get_byId(help.board_id);
+            if(board == null ) return GlobalResult.result_notFound("Board board_id not found");
+            if(!board.edit_permission()) return GlobalResult.result_forbidden();
+
+
+            if(help.command == Enum_Board_Command.RESTART){
+                System.out.print("JEdná se o restart command");
+
+            }
+
+            board.execute_command(help.command, true);
+
+            return GlobalResult.result_ok();
+        }catch (Exception e){
+            return ServerLogger.result_internalServerError(e, request());
+        }
+    }
+
     @ApiOperation(value = "delete Board picture",
             tags = {"Board"},
             notes = "Removes picture of logged person",
@@ -2731,7 +2780,6 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_API.class)
     public Result board_removePicture(String board_id){
         try {
 
@@ -2969,7 +3017,6 @@ public class Controller_Board extends Controller {
                 }
             }
 
-            System.out.println("Jsem na konci a budu ukládat");
             project.cache_list_board_ids.add(board.id);
             board.update();
 
@@ -3265,19 +3312,15 @@ public class Controller_Board extends Controller {
 
                 terminal_logger.debug("board_group_update_device_list - board: {}", board.id);
 
-                // Pouze získání aktuálního stavu do Cache paměti ID listu
-                if(board.cache_hardware_groups_id == null){
-                    terminal_logger.debug("board_group_update_device_list - loading from cache");
-                    board.get_hardware_groups();
-                }
 
-                terminal_logger.debug("board_group_update_device_list - cached groups: {}", Json.toJson(board.cache_hardware_groups_id));
+                terminal_logger.debug("board_group_update_device_list - cached groups: {}", Json.toJson(board.get_hardware_groups_ids()));
 
+                List<String> hw_list = board.get_hardware_groups_ids();
                 // Cyklus pro přidávání
                 for(String board_group_id: help.device_synchro.group_ids) {
 
                     // Přidám všechny, které nejsou už součásti cache_hardware_groups_id
-                    if(!board.cache_hardware_groups_id.contains(board_group_id)){
+                    if(!hw_list.contains(board_group_id)){
 
                         terminal_logger.debug("board_group_update_device_list - adding group {}", board_group_id );
 
@@ -3285,7 +3328,7 @@ public class Controller_Board extends Controller {
                         if (group == null) return GlobalResult.result_notFound("BoardGroup not found");
                         if (!group.update_permission()) return GlobalResult.result_forbidden();
 
-                        board.cache_hardware_groups_id.add(board_group_id);
+                        board.get_hardware_groups_ids().add(board_group_id);
                         board.board_groups.add(group);
                         group.cache_group_size +=1;
                     }
@@ -3311,6 +3354,7 @@ public class Controller_Board extends Controller {
                     }
                 }
 
+                board.set_hardware_groups_on_hardware(board.get_hardware_groups_ids(),  Enum_type_of_command.SET);
                 board.update();
             }
 
@@ -3355,7 +3399,6 @@ public class Controller_Board extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    @BodyParser.Of(BodyParser.Json.class)
     public Result board_group_delete(String board_group_id) {
         try {
 

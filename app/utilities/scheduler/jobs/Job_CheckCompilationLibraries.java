@@ -14,6 +14,7 @@ import play.Configuration;
 import play.api.Play;
 import play.data.Form;
 import play.i18n.Lang;
+import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
@@ -31,6 +32,7 @@ import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Chec
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -107,7 +109,7 @@ public class Job_CheckCompilationLibraries implements Job {
                         .get()
                         .get(10000);
 
-                if(ws_response_get_all_releases.getStatus() != 200){
+                if (ws_response_get_all_releases.getStatus() != 200) {
                     terminal_logger.error("Permission Error in Job_CheckCompilationLibraries. Please Check it");
                     terminal_logger.error("Error Message from Github: {}", ws_response_get_all_releases.getBody());
                     return;
@@ -119,7 +121,7 @@ public class Job_CheckCompilationLibraries implements Job {
 
                 final Form<Swagger_GitHubReleases_List> form = Form.form(Swagger_GitHubReleases_List.class).bind(request_list);
                 if (form.hasErrors()) {
-                    throw  new Exception("check_version_thread: Incoming Json from GitHub has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                    throw new Exception("check_version_thread: Incoming Json from GitHub has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
                 }
 
                 // Seznam Release z GitHubu v upravené podobě
@@ -129,29 +131,29 @@ public class Job_CheckCompilationLibraries implements Job {
                 // Do každého typu desky - který má Tyrion v DB doplní podporované knihovny
 
                 //System.out.println("Počet procházených typeOfBoard dohromady je:: " + typeOfBoards.size());
-                for(Model_TypeOfBoard typeOfBoard_from_DB_not_cached : typeOfBoards_from_DB_not_cached) {
+                for (Model_TypeOfBoard typeOfBoard_from_DB_not_cached : typeOfBoards_from_DB_not_cached) {
 
                     Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(typeOfBoard_from_DB_not_cached.id);
 
                     // Pokud není pole, vytvořím ho
-                    if(typeOfBoard.cache_library_list == null) {
+                    if (typeOfBoard.cache_library_list == null) {
                         typeOfBoard.cache_library_list = new ArrayList<>();
                     }
 
-                   // Aktuální podporované knihovny
-                   List<Swagger_CompilationLibrary> library_list = typeOfBoard.supported_libraries();
+                    // Aktuální podporované knihovny
+                    List<Swagger_CompilationLibrary> library_list = typeOfBoard.supported_libraries();
 
-                   // List který budu doplnovat
-                   List<Swagger_CompilationLibrary> library_list_for_add = new ArrayList<>();
+                    // List který budu doplnovat
+                    List<Swagger_CompilationLibrary> library_list_for_add = new ArrayList<>();
 
 
                     // Pokud knihovnu
                     synchro_libraries:
-                    for(Swagger_GitHubReleases release : releases) {
+                    for (Swagger_GitHubReleases release : releases) {
 
                         // Projdu každý release a zda je v library listu
                         for (Swagger_CompilationLibrary library : library_list) {
-                            if(library.tag_name.equals(release.tag_name)){
+                            if (library.tag_name.equals(release.tag_name)) {
                                 continue synchro_libraries;
                             }
                         }
@@ -159,7 +161,7 @@ public class Job_CheckCompilationLibraries implements Job {
 
                         // Ignorujeme všechny tagy, které se týkají bootloader
                         // ZDe mohou přibýt další ignore filtry
-                        if(release.tag_name.contains("bootloader") || release.tag_name.toLowerCase().contains("bootloader")){
+                        if (release.tag_name.contains("bootloader") || release.tag_name.toLowerCase().contains("bootloader")) {
                             continue;
                         }
 
@@ -170,34 +172,34 @@ public class Job_CheckCompilationLibraries implements Job {
 
 
                         Pattern pattern = null;
-                        if(Server.server_mode == Enum_Tyrion_Server_mode.production) {
+                        if (Server.server_mode == Enum_Tyrion_Server_mode.production) {
                             pattern = Pattern.compile(regex_beta);                          // Záměrně - uživatelům to umožnujeme průběžně řešit
-                        }else if(Server.server_mode == Enum_Tyrion_Server_mode.stage) {
+                        } else if (Server.server_mode == Enum_Tyrion_Server_mode.stage) {
                             pattern = Pattern.compile(regex_beta);
-                        }else if(Server.server_mode == Enum_Tyrion_Server_mode.developer) {
+                        } else if (Server.server_mode == Enum_Tyrion_Server_mode.developer) {
                             pattern = Pattern.compile(regex_apha_beta);
                         }
 
-                        if(pattern == null) {
+                        if (pattern == null) {
                             terminal_logger.error("check_version_thread:: Pattern is null -  Server.server_mode not set!");
                             continue;
                         }
 
                         Matcher matcher = pattern.matcher(release.tag_name);
 
-                        if(matcher.matches()){
+                        if (matcher.matches()) {
                             terminal_logger.info("check_version_thread:: Code Library Version TAG name {} match regex", release.tag_name);
-                        }else {
+                        } else {
                             terminal_logger.warn("check_version_thread:: Code Library Version  TAG name {} not match regex {} ", release.tag_name, pattern.pattern());
                             continue;
                         }
 
-                        if(release.prerelease || release.draft){
+                        if (release.prerelease || release.draft) {
                             terminal_logger.trace("check_version_thread:: prerelease == true");
                             continue;
                         }
 
-                        if(release.assets.size() == 0){
+                        if (release.assets.size() == 0) {
                             terminal_logger.trace("check_version_thread:: not any assets - its required!");
                             continue;
                         }
@@ -221,11 +223,9 @@ public class Job_CheckCompilationLibraries implements Job {
                 }
 
 
-
-
                 terminal_logger.trace("check_version_thread:: all Library type of Board synchronized");
 
-                for(Model_TypeOfBoard typeOfBoard_from_DB_not_cached : typeOfBoards_from_DB_not_cached) {
+                for (Model_TypeOfBoard typeOfBoard_from_DB_not_cached : typeOfBoards_from_DB_not_cached) {
 
                     Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(typeOfBoard_from_DB_not_cached.id);
 
@@ -251,12 +251,12 @@ public class Job_CheckCompilationLibraries implements Job {
                         //System.out.println("Board Type:: " + subStrings_main_parts[0]);
                         //System.out.println("Version Type:: " + subStrings_main_parts[1]);
 
-                        if(subStrings_main_parts[0] == null){
+                        if (subStrings_main_parts[0] == null) {
                             terminal_logger.error("Required Part in Release Tag name for Booloader missing): Type Of Board (compiler_target_name) ");
                             continue;
                         }
 
-                        if(subStrings_main_parts[1] == null){
+                        if (subStrings_main_parts[1] == null) {
                             terminal_logger.error("Required Part in Release Tag name for Booloader missing): Version (v1.0.1)");
                             continue;
                         }
@@ -270,7 +270,6 @@ public class Job_CheckCompilationLibraries implements Job {
                                 continue synchro_bootloaders;
                             }
                         }
-
 
 
                         // Nejedná se o správný typ desky
@@ -311,7 +310,7 @@ public class Job_CheckCompilationLibraries implements Job {
                         //System.out.println("Assets URL for downloading:: " + asset_url);
 
                         WSResponse ws_download_file = download_file(asset_url);
-                        if(ws_download_file == null){
+                        if (ws_download_file == null) {
                             terminal_logger.error("Error in downloading file");
                             continue;
                         }
@@ -323,10 +322,10 @@ public class Job_CheckCompilationLibraries implements Job {
                             return;
                         }
 
-                        String file_body =  Model_FileRecord.get_encoded_binary_string_from_body(ws_download_file.asByteArray());
+                        String file_body = Model_FileRecord.get_encoded_binary_string_from_body(ws_download_file.asByteArray());
 
                         // Naheraji na Azure
-                        String file_name =  "bootloader.bin";
+                        String file_name = "bootloader.bin";
                         String file_path = new_bootLoader.get_Container().getName() + "/" + UUID.randomUUID().toString() + "/" + file_name;
 
                         terminal_logger.debug("check_version_thread:: bootLoader_uploadFile::  File Name " + file_name);
@@ -350,7 +349,10 @@ public class Job_CheckCompilationLibraries implements Job {
 
                 terminal_logger.trace("check_version_thread:: all Bootloader in type of Board synchronized");
 
-
+            } catch (F.PromiseTimeoutException e ){
+                terminal_logger.error("Job_CheckCompilationLibraries:: PromiseTimeoutException! - Probably Network is unreachable", new Date());
+            } catch (ConnectException e) {
+                terminal_logger.error("Job_CheckCompilationLibraries:: ConnectException! - Probably Network is unreachable", new Date());
             } catch (Exception e) {
                 terminal_logger.internalServerError(e);
             }
