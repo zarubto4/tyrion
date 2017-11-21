@@ -1202,7 +1202,7 @@ public class Controller_Finance extends Controller {
 
             if(payment_details.isCompleteCompany()){
                 System.out.println("payment_details.isCompleteCompany()");
-                System.out.println(Json.toJson(payment_details).toString());
+                System.out.println("payment_details::" + Json.toJson(payment_details).toString());
 
             }
 

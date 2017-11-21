@@ -269,7 +269,14 @@ public class Model_TypeOfBoard extends Model {
                 cache_main_c_program_id = c_program.id;
             }
 
-            return Model_CProgram.get_byId(cache_main_c_program_id);
+            if(cache_main_c_program_id != null) {
+
+                return Model_CProgram.get_byId(cache_main_c_program_id);
+            }else {
+                terminal_logger.error("get_main_c_program: cache_main_c_program_id is null!");
+                return null;
+            }
+
 
         }catch (Exception e){
             terminal_logger.internalServerError(e);

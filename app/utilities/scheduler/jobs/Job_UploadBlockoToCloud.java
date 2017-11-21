@@ -47,7 +47,7 @@ public class Job_UploadBlockoToCloud implements Job {
 
                 terminal_logger.trace("upload_blocko_thread: uploading the record");
 
-                record.set_record_into_cloud();
+                record.put_record_into_cloud();
 
             } catch (Exception e) {
                 terminal_logger.internalServerError(e);

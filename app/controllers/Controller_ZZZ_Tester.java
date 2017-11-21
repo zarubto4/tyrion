@@ -37,8 +37,6 @@ public class Controller_ZZZ_Tester extends Controller {
 
              String tag = json.get("tag").asText();
 
-             System.out.println(tag);
-
              switch (json.get("mode").asText()) {
                  case "developer": {
                      Pattern pattern = Pattern.compile("^(v)(\\d+\\.)(\\d+\\.)(\\d+)(-(.)*)?$");

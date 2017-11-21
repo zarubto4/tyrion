@@ -20,7 +20,6 @@ import utilities.logger.ServerLogger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
 import utilities.response.response_objects.*;
-import utilities.scheduler.CustomScheduler;
 import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Blocko_Block_List;
@@ -782,7 +781,7 @@ public class Controller_Blocko extends Controller{
 
             // Pokud má aktuální instance "Actual Instance record - znaemná to, že má běžet v cloudu"
             // Proto tento záznam odstraním
-            if(homer_instance.actual_instance != null){
+            if(homer_instance.get_actual_instance() != null){
 
                 homer_instance.remove_from_cloud();
 
@@ -798,7 +797,7 @@ public class Controller_Blocko extends Controller{
                 homer_instance.actual_instance = homer_instance.instance_history.get(0);
                 homer_instance.update();
 
-                homer_instance.actual_instance.set_record_into_cloud();
+                homer_instance.get_actual_instance().put_record_into_cloud();
 
                 return GlobalResult.result_ok();
 

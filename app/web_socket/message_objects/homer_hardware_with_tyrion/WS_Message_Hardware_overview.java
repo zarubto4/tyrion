@@ -41,7 +41,7 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
         // System.out.println("WS_Message_Hardware_overview get_device_from_list " +  device_id);
 
         if (map.isEmpty() && hardware_list.isEmpty()) {
-            System.out.println("WS_Message_Hardware_overview: Seznam je prázdný :( " +  device_id);
+            // System.out.println("WS_Message_Hardware_overview: Seznam je prázdný :( " +  device_id);
             return null;
         } else if (map.isEmpty()) {
 
@@ -83,7 +83,7 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
 
         request.set("info_keys", Json.toJson(Arrays.asList(
 
-                "target",                       // for example: Yoda_G3E
+                "target",                  // for example: Yoda_G3E
                 "alias",                        // for example: WashingMAchine_31234
                 "normal_mqtt_connection",       // for example: url:port
                 "backup_mqtt_connection",       // for example: url:port
@@ -93,17 +93,16 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
                 "autobackup",                   // get backup
                 "binaries",                     // Binaries info of firwmare, bootloader and backup
                 "webport",                      // Port, where you can get webserver with device information
-                "webview",                       // Boolean if device support webview
-                "blreport",                       // Boolean if device support webview
-                "wdenable",                       // Boolean if device support webview
-                "backuptime",                       // Boolean if device support webview
-                "timeoffset",                       // Boolean if device support webview
-                "timesync",                       // Boolean if device support webview
-                "lowpanbr",                       // Boolean if device support webview
-                "autojump",                       // Boolean if device support webview
+                "webview",                      // Boolean if device support webview
+                "blreport",                     // Boolean if device support webview
+                "wdenable",                     // Boolean if device support webview
+                "backuptime",                   // Boolean if device support webview
+                "timeoffset",                   // Boolean if device support webview
+                "timesync",                     // Boolean if device support webview
+                "lowpanbr",                     // Boolean if device support webview
+                "autojump",                     // Boolean if device support webview
                 "wdtime",                       // Boolean if device support webview
-                "netsource"                       // Boolean if device support webview
-
+                "netsource"                     // Boolean if device support webview
         )));
 
         return request;

@@ -402,6 +402,7 @@ public class Model_CProgramUpdatePlan extends Model {
                         System.out.println("----------------UPDATE PROCEDURA JE OZNACENA JAKO  DONE");
 
                         plan.state = Enum_CProgram_updater_state.complete;
+                        plan.date_of_finish = new Date();
                         plan.update();
 
                         Model_Board board = plan.get_board();

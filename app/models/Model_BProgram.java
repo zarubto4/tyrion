@@ -95,17 +95,17 @@ public class Model_BProgram extends Model {
 
             state.online_state = Model_HomerInstance.get_byId(instance_id()).online_state();
 
-            if (Server.server_mode == Enum_Tyrion_Server_mode.developer && instance().actual_instance != null) {
+            if (Server.server_mode == Enum_Tyrion_Server_mode.developer && instance().get_actual_instance() != null) {
                 // /#token - frontend pouze nahradí substring - můžeme tedy do budoucna za adresu přidávat další parametry
                 state.instance_remote_url = "ws://" + Model_HomerServer.get_byId(instance().server_id()).get_WebView_APP_URL() + instance_id() + "/#token";
             } else {
                 state.instance_remote_url = "wss://" + Model_HomerServer.get_byId(instance().server_id()).get_WebView_APP_URL()  + instance_id() + "/#token";
             }
 
-            if (instance().actual_instance != null) {
+            if (instance().get_actual_instance() != null) {
                 // Jaká verze Blocko Programu je aktuální?
-                state.version_id = instance().actual_instance.get_b_program_version().id;
-                state.version_name = instance().actual_instance.get_b_program_version().version_name;
+                state.version_id = instance().get_actual_instance().get_b_program_version().id;
+                state.version_name = instance().get_actual_instance().get_b_program_version().version_name;
 
                 // Vracím naposledy použitou - Becki si to vyřeší sama
             }else if(!instance().instance_history.isEmpty()){

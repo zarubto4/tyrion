@@ -831,8 +831,6 @@ public class Controller_Code extends Controller{
 
             if(help.decision){
 
-                System.out.println("help.decision je true!!!");
-
                 // Odkomentuj až odzkoušíš že emaily jsou hezky naformátované - můžeš totiž Verzi hodnotit pořád dokola!!
                 version_old.approval_state = Enum_Approval_state.approved;
                 version_old.update();

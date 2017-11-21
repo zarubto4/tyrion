@@ -165,7 +165,7 @@ public class Model_HomerInstanceRecord extends Model {
      * nasazení blocko programu, snchronizace hardaru a verzí atd..
      */
     @Transient
-    public void set_record_into_cloud() {
+    public void put_record_into_cloud() {
         new Thread(() -> {
 
             // Step 1
@@ -233,13 +233,13 @@ public class Model_HomerInstanceRecord extends Model {
 
             Model_HomerInstance instance = main_instance_history;
 
-            if( instance.actual_instance != null) {
+            if( instance.get_actual_instance() != null) {
 
-                terminal_logger.debug("upload_record Actual Instnace != null -> InstanceRecord ID: {}", instance.actual_instance.id);
+                terminal_logger.debug("upload_record Actual Instnace != null -> InstanceRecord ID: {}", instance.get_actual_instance().id);
 
-                terminal_logger.debug("upload_record: Record overwriting previous instance record:: " + instance.actual_instance.id);
+                terminal_logger.debug("upload_record: Record overwriting previous instance record:: " + instance.get_actual_instance().id);
 
-                Model_HomerInstanceRecord previous_version = instance.actual_instance;
+                Model_HomerInstanceRecord previous_version = instance.get_actual_instance();
 
                 previous_version.running_to = new Date();
                 previous_version.actual_running_instance = null;
@@ -442,7 +442,7 @@ public class Model_HomerInstanceRecord extends Model {
         if(planed_when == null || planed_when.getTime() < new Date().getTime()){
 
             terminal_logger.debug("bProgramVersion_deploy: Set the instants immediately");
-            this.set_record_into_cloud();
+            this.put_record_into_cloud();
 
         }else {
             terminal_logger.debug("bProgramVersion_deploy: Set the instants by Time scheduler (not now) ");

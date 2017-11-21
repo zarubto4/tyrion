@@ -1720,6 +1720,17 @@ public class Model_Board extends Model {
             terminal_logger.trace("check_firmware -: Actual firmware by DB not recognized :: ", overview.binaries.firmware.build_id);
         }
 
+        if(overview.binaries.firmware == null) {
+            terminal_logger.error("check_firmware -: overview.binaries.firmware is null!!");
+            return;
+        }
+
+
+        if(overview.binaries.firmware.build_id == null || overview.binaries.firmware.build_id.equals("")) {
+            terminal_logger.error("check_firmware -: overview.binaries.firmware.build_id is null");
+            return;
+        }
+
         // Vylistuji seznam úkolů k updatu
         List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.where().eq("board.id", this.id)
                 .disjunction()
@@ -1795,6 +1806,8 @@ public class Model_Board extends Model {
 
                 execute_update_plan(plan);
             }
+
+            return;
         }
 
         // Nemám Updaty - ale verze se neshodují
@@ -1906,6 +1919,8 @@ public class Model_Board extends Model {
                 terminal_logger.error("Attention please! This is not a critical bug - Tyrion server is not just set for this type of device! Set main C_Program and version!");
                 terminal_logger.error("Default main code version is not set for Type Of Board " + get_type_of_board().name + " please set that!");
             }
+
+            return;
         }
     }
 

@@ -151,7 +151,7 @@ public class Model_HomerInstance extends Model {
 
         // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
         // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
-        if(actual_instance == null){
+        if(get_actual_instance() == null){
 
             if(instance_history.isEmpty()){
                 return Enum_Online_status.not_yet_first_connected;
@@ -211,7 +211,7 @@ public class Model_HomerInstance extends Model {
     @Transient @JsonProperty @ApiModelProperty(required = true) public String instance_remote_url(){
         try {
 
-            if(actual_instance != null) {
+            if(get_actual_instance() != null) {
 
                 if(Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
                     return "ws://" + Model_HomerServer.get_byId(server_id()).server_url + ":" + Model_HomerServer.get_byId(server_id()).web_view_port + "/" + id + "/#token";
@@ -245,9 +245,9 @@ public class Model_HomerInstance extends Model {
                 help.b_program_description = b_program_description();
             }
 
-            if(actual_instance!= null) {
-                help.b_program_version_id = actual_instance.b_program_version_id();
-                help.b_program_version_name = actual_instance.b_program_version_name();
+            if(get_actual_instance()!= null) {
+                help.b_program_version_id = get_actual_instance().b_program_version_id();
+                help.b_program_version_name = get_actual_instance().b_program_version_name();
             }
 
             help.server_name = server_name();
@@ -274,6 +274,21 @@ public class Model_HomerInstance extends Model {
 
     }
 
+    @JsonIgnore @Transient  public Model_HomerInstanceRecord get_actual_instance() {
+
+        if (cache_actual_instance_id == null) {
+            Model_HomerInstanceRecord record_not_cached = Model_HomerInstanceRecord.find.where().eq("actual_running_instance.id", this.id).select("id").findUnique();
+            if(record_not_cached != null) {
+                this.cache_actual_instance_id = record_not_cached.id;
+                return get_actual_instance();
+            }else {
+                return null;
+            }
+        }else {
+            return Model_HomerInstanceRecord.get_byId(cache_actual_instance_id);
+        }
+    }
+
     @JsonIgnore @Transient  public String get_project_id() {
 
         if(cache_project_id == null) {
@@ -286,7 +301,7 @@ public class Model_HomerInstance extends Model {
     }
 
     @JsonIgnore @Transient  public List<String> get_boards_id_required_by_record() {
-        return actual_instance.get_boards_required_by_record();
+        return get_actual_instance().get_boards_required_by_record();
     }
 
     @JsonIgnore @Transient  public Model_BProgram getB_program(){
@@ -353,10 +368,10 @@ public class Model_HomerInstance extends Model {
                 .setImportance(Enum_Notification_importance.low)
                 .setLevel(Enum_Notification_level.info)
                 .setText( new Notification_Text().setText("Server started creating new Blocko Instance of Blocko Version "))
-                .setText( new Notification_Text().setText(this.actual_instance.get_b_program_version().get_b_program().name).setBoldText())
-                .setObject(this.actual_instance.get_b_program_version())
+                .setText( new Notification_Text().setText(this.get_actual_instance().get_b_program_version().get_b_program().name).setBoldText())
+                .setObject(this.get_actual_instance().get_b_program_version())
                 .setText( new Notification_Text().setText(" from Blocko program "))
-                .setObject(this.actual_instance.get_b_program_version().get_b_program())
+                .setObject(this.get_actual_instance().get_b_program_version().get_b_program())
                 .send(Controller_Security.get_person());
 
         }catch (Exception e){
@@ -372,9 +387,9 @@ public class Model_HomerInstance extends Model {
                     .setImportance(Enum_Notification_importance.low)
                     .setLevel(Enum_Notification_level.success)
                     .setText(new Notification_Text().setText("Server successfully created the instance of Blocko Version "))
-                    .setObject(this.actual_instance.get_b_program_version())
+                    .setObject(this.get_actual_instance().get_b_program_version())
                     .setText(new Notification_Text().setText(" from Blocko program "))
-                    .setObject(this.actual_instance.get_b_program_version().get_b_program())
+                    .setObject(this.get_actual_instance().get_b_program_version().get_b_program())
                     .send_under_project(get_project_id());
 
         }catch (Exception e){
@@ -390,14 +405,14 @@ public class Model_HomerInstance extends Model {
                     .setImportance(Enum_Notification_importance.low)
                     .setLevel(Enum_Notification_level.warning)
                     .setText( new Notification_Text().setText("Server did not upload instance to cloud on Blocko Version "))
-                    .setText( new Notification_Text().setText(this.actual_instance.get_b_program_version().version_name ).setBoldText())
+                    .setText( new Notification_Text().setText(this.get_actual_instance().get_b_program_version().version_name ).setBoldText())
                     .setText( new Notification_Text().setText(" from Blocko program "))
                     .setText( new Notification_Text().setText(this.b_program.name).setBoldText())
                     .setText( new Notification_Text().setText(" for reason: ").setBoldText() )
                     .setText( new Notification_Text().setText(reason + " ").setBoldText())
-                    .setObject(this.actual_instance.get_b_program_version())
+                    .setObject(this.get_actual_instance().get_b_program_version())
                     .setText( new Notification_Text().setText(" from Blocko program "))
-                    .setObject(this.b_program)
+                    .setObject(this.getB_program())
                     .setText( new Notification_Text().setText(". Server will try to do that as soon as possible."))
                     .send_under_project(get_project_id());
 
@@ -414,7 +429,7 @@ public class Model_HomerInstance extends Model {
                     .setImportance(Enum_Notification_importance.low)
                     .setLevel(Enum_Notification_level.info)
                     .setText( new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
-                    .setObject(this.actual_instance.get_b_program_version())
+                    .setObject(this.get_actual_instance().get_b_program_version())
                     .send_under_project(get_project_id());
 
         }catch (Exception e){
@@ -616,7 +631,7 @@ public class Model_HomerInstance extends Model {
     //-- Helper Commands --//
     @JsonIgnore @Transient
     public void upload_to_cloud(){
-        actual_instance.set_record_into_cloud();
+        get_actual_instance().put_record_into_cloud();
     }
 
 
@@ -626,12 +641,12 @@ public class Model_HomerInstance extends Model {
         Model_HomerInstance.cache_status.put(this.id, false);
         WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerInstance.class, this.id, true, project_id);
 
-        if(actual_instance != null) {
+        if(get_actual_instance() != null) {
 
-            actual_instance.actual_running_instance = null;
-            actual_instance.update();
+            get_actual_instance().actual_running_instance = null;
+            get_actual_instance().update();
 
-            actual_instance.refresh();
+            get_actual_instance().refresh();
 
             actual_instance = null;
             this.update();
