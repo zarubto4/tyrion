@@ -17,7 +17,6 @@ import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
-import utilities.Server;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_Compile_status;
@@ -87,18 +86,17 @@ public class Model_VersionObject extends Model {
                                                                                          @OneToOne @JsonIgnore  public Model_CProgram default_program;
 
     // B_Programs --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)   public Model_BProgram b_program;
 
     @JsonIgnore  @OneToMany(mappedBy="c_program_version", cascade=CascadeType.ALL)   public List<Model_BPair>   b_pairs_c_program = new ArrayList<>(); // Určeno pro aktualizaci
 
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)     public List<Model_BProgramHwGroup> b_program_hw_groups = new ArrayList<>();
 
-
     @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "instance_versions") public List<Model_MProjectProgramSnapShot> b_program_version_snapshots = new ArrayList<>();    // Vazba kvůli puštěným B_programům
 
     // B_Program - Instance
     @JsonIgnore  @OneToMany(mappedBy="version_object", fetch = FetchType.LAZY) public List<Model_HomerInstanceRecord> instance_record = new ArrayList<>();
-
 
     // M_Program --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -107,11 +105,10 @@ public class Model_VersionObject extends Model {
 
     @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "m_program_version") public List<Model_MProgramInstanceParameter> m_program_instance_parameters = new ArrayList<>();
 
-
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty
-    public Swagger_Person_Short_Detail author(){
+    public Swagger_Person_Short_Detail author() {
         if (this.author == null) {
 
             this.author = Model_Person.find.where().eq("version_objects.id", this.id).findUnique();
@@ -123,35 +120,33 @@ public class Model_VersionObject extends Model {
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
     @JsonIgnore @TyrionCachedList
-    public Model_BProgram get_b_program(){
+    public Model_BProgram get_b_program() {
 
-        if(cache_b_program_id == null){
+        if (cache_b_program_id == null) {
             Model_BProgram bProgram = Model_BProgram.find.where().eq("version_objects.id", id).select("id").findUnique();
-            if(bProgram == null) return null;
+            if (bProgram == null) return null;
             cache_b_program_id = bProgram.id;
         }
-        if(cache_b_program_id == null) return null;
+        if (cache_b_program_id == null) return null;
         return Model_BProgram.get_byId(cache_b_program_id);
-
     }
 
     @JsonIgnore @TyrionCachedList
-    public Model_CProgram get_c_program(){
+    public Model_CProgram get_c_program() {
 
-        if(cache_c_program_id == null){
+        if (cache_c_program_id == null) {
             Model_CProgram cProgram = Model_CProgram.find.where().eq("version_objects.id", id).select("id").findUnique();
             cache_c_program_id = cProgram.id;
         }
 
-        if(cache_c_program_id == null){
+        if (cache_c_program_id == null) {
             return null;
         }
 
         return Model_CProgram.get_byId(cache_c_program_id);
-
     }
 
-    @Transient @JsonIgnore public Swagger_Library_Version_Short_Detail  get_short_library_version(){
+    @Transient @JsonIgnore public Swagger_Library_Version_Short_Detail  get_short_library_version() {
         try {
 
             Swagger_Library_Version_Short_Detail help = new Swagger_Library_Version_Short_Detail();
@@ -163,20 +158,20 @@ public class Model_VersionObject extends Model {
             help.update_permission = library.update_permission();
             help.author = this.author.get_short_person();
 
-            if(approval_state != null){
+            if (approval_state != null) {
                 help.publish_status = approval_state;
                 help.community_publishing_permission = library.community_publishing_permission();
             }
 
             return help;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
             return null;
         }
     }
 
-    @Transient @JsonIgnore public Swagger_C_Program_Version_Short_Detail get_short_c_program_version(){
+    @Transient @JsonIgnore public Swagger_C_Program_Version_Short_Detail get_short_c_program_version() {
         try {
 
             Swagger_C_Program_Version_Short_Detail help = new Swagger_C_Program_Version_Short_Detail();
@@ -184,16 +179,16 @@ public class Model_VersionObject extends Model {
             help.version_id = id;
             help.version_name = version_name;
             help.version_description = version_description;
-            help.library_compilation_version = c_compilation.firmware_version_lib;
             help.delete_permission = get_c_program().delete_permission();
             help.update_permission = get_c_program().update_permission();
             help.author = this.author.get_short_person();
 
             // Compilation status
-            if(this.c_compilation != null){
+            if (this.c_compilation != null) {
                 help.status = this.c_compilation.status;
+                help.library_compilation_version = c_compilation.firmware_version_lib;
 
-                if(this.c_compilation.status == Enum_Compile_status.successfully_compiled_and_restored) {
+                if (this.c_compilation.status == Enum_Compile_status.successfully_compiled_and_restored) {
                   help.download_link_bin_file = this.c_compilation.file_path();
                 }
 
@@ -201,26 +196,25 @@ public class Model_VersionObject extends Model {
                 help.status = Enum_Compile_status.file_with_code_not_found;
             }
 
-            if(approval_state != null){
+            if (approval_state != null) {
                 help.publish_status = approval_state;
                 help.community_publishing_permission = get_c_program().community_publishing_permission();
             }
 
             // Main status
-            if(this.default_program != null){
+            if (this.default_program != null) {
                 help.main_mark = true;
             }
 
-
             return help;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
             return null;
         }
     }
 
-    @Transient @JsonIgnore public Swagger_B_Program_Version_Short_Detail get_short_b_program_version(){
+    @Transient @JsonIgnore public Swagger_B_Program_Version_Short_Detail get_short_b_program_version() {
        try {
 
            Swagger_B_Program_Version_Short_Detail help = new Swagger_B_Program_Version_Short_Detail();
@@ -234,13 +228,13 @@ public class Model_VersionObject extends Model {
 
            return help;
 
-       }catch (Exception e){
+       } catch (Exception e) {
            terminal_logger.internalServerError(e);
            return null;
        }
     }
 
-    @Transient @JsonIgnore public Swagger_M_Program_Version_Short_Detail get_short_m_program_version(){
+    @Transient @JsonIgnore public Swagger_M_Program_Version_Short_Detail get_short_m_program_version() {
         try {
 
             Swagger_M_Program_Version_Short_Detail help = new Swagger_M_Program_Version_Short_Detail();
@@ -254,12 +248,11 @@ public class Model_VersionObject extends Model {
 
             return help;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
             return null;
         }
     }
-
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -267,7 +260,7 @@ public class Model_VersionObject extends Model {
 
         Model_VersionObject version = this;
 
-        if(this.c_compilation == null) {
+        if (this.c_compilation == null) {
 
             Model_CCompilation cCompilation = new Model_CCompilation();
             cCompilation.status = Enum_Compile_status.compilation_in_progress;
@@ -285,7 +278,7 @@ public class Model_VersionObject extends Model {
             public void run() {
                 try {
                     version.compile_program_procedure();
-                }catch (Exception e){
+                } catch (Exception e) {
                     terminal_logger.internalServerError(e);
                 }
             }
@@ -295,11 +288,10 @@ public class Model_VersionObject extends Model {
 
     }
 
-    @JsonIgnore @Transient public Response_Interface compile_program_procedure(){
-
+    @JsonIgnore @Transient public Response_Interface compile_program_procedure() {
 
         Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("c_programs.id", this.get_c_program().id).findUnique();
-        if(typeOfBoard == null){
+        if (typeOfBoard == null) {
 
             terminal_logger.internalServerError(new Exception("compile_program_procedure:: Type_of_Board not found! Not found way how to compile version."));
 
@@ -309,20 +301,18 @@ public class Model_VersionObject extends Model {
         }
 
         // Něco se kriticky posralo a soubor nebyl vytvořen, kde byl pozanmenán tag kompilace
-        if(this.c_compilation == null) {
+        if (this.c_compilation == null) {
 
             terminal_logger.internalServerError(new Exception("compile_program_procedure:: this.c_compilation == null"));
 
             Model_CCompilation cCompilation = new Model_CCompilation();
             cCompilation.version_object = this;
 
-
-            if(!typeOfBoard.cache_library_list.isEmpty()) {
+            if (!typeOfBoard.cache_library_list.isEmpty()) {
                 cCompilation.firmware_version_lib = typeOfBoard.cache_library_list.get(typeOfBoard.cache_library_list.size()).tag_name;
             }
 
             cCompilation.save();
-
 
             this.c_compilation = cCompilation;
             this.update();
@@ -332,7 +322,7 @@ public class Model_VersionObject extends Model {
         c_compilation.update();
 
         Model_FileRecord file = Model_FileRecord.find.where().eq("file_name", "code.json").eq("version_object.id", id).findUnique();
-        if(file == null){
+        if (file == null) {
 
             terminal_logger.internalServerError(new Exception("File not found! Version is not compilable!"));
 
@@ -342,14 +332,13 @@ public class Model_VersionObject extends Model {
             Result_BadRequest result = new Result_BadRequest();
             result.message = "Server has no content from version";
             return result;
-
         }
 
         // Zpracování Json
         JsonNode json = Json.parse( file.get_fileRecord_from_Azure_inString() );
 
         Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
-        if(form.hasErrors()){
+        if (form.hasErrors()) {
 
             terminal_logger.internalServerError(new Exception("File was found but json is not parsable!"));
             c_compilation.status = Enum_Compile_status.json_code_is_broken;
@@ -367,27 +356,27 @@ public class Model_VersionObject extends Model {
         for (String lib_id : code_file.imported_libraries) {
 
             Model_VersionObject lib_version = Model_VersionObject.get_byId(lib_id);
-            if (lib_version == null){
+            if (lib_version == null) {
 
                 Result_BadRequest result = new Result_BadRequest();
                 result.message = "Error getting libraries - library version not found";
                 return result;
             }
 
-            if (lib_version.library == null){
+            if (lib_version.library == null) {
 
                 Result_BadRequest result = new Result_BadRequest();
                 result.message = "Error getting libraries - some file is not a library";
                 return result;
             }
 
-            if (!lib_version.files.isEmpty()){
+            if (!lib_version.files.isEmpty()) {
                 for (Model_FileRecord f : lib_version.files) {
 
                     JsonNode j = Json.parse(f.get_fileRecord_from_Azure_inString());
 
                     Form<Swagger_Library_File_Load> lib_form = Form.form(Swagger_Library_File_Load.class).bind(j);
-                    if (lib_form.hasErrors()){
+                    if (lib_form.hasErrors()) {
 
                         Result_BadRequest result = new Result_BadRequest();
                         result.message = "Error importing libraries";
@@ -395,12 +384,12 @@ public class Model_VersionObject extends Model {
                     }
                     Swagger_Library_File_Load lib_help = lib_form.get();
 
-                    for (Swagger_Library_Record lib_file : lib_help.files){
-                        for (Swagger_Library_Record user_file : code_file.files){
+                    for (Swagger_Library_Record lib_file : lib_help.files) {
+                        for (Swagger_Library_Record user_file : code_file.files) {
 
                             if (!library_files.contains(lib_file)) library_files.add(lib_file);
 
-                            if (lib_file.file_name.equals(user_file.file_name)){
+                            if (lib_file.file_name.equals(user_file.file_name)) {
                                 if (library_files.contains(lib_file)) library_files.remove(lib_file);
                                 break;
                             }
@@ -412,15 +401,15 @@ public class Model_VersionObject extends Model {
 
         ObjectNode includes = Json.newObject();
 
-        for(Swagger_Library_Record file_lib : library_files){
+        for (Swagger_Library_Record file_lib : library_files) {
             includes.put(file_lib.file_name , file_lib.content);
         }
 
-        if(code_file.files != null)
-            for(Swagger_Library_Record user_file : code_file.files){
-                includes.put(user_file.file_name , user_file.content);
+        if (code_file.files != null) {
+            for (Swagger_Library_Record user_file : code_file.files) {
+                includes.put(user_file.file_name, user_file.content);
             }
-
+        }
 
         // Kontroluji zda je nějaký kompilační cloud_compilation_server připojený
         if (!Model_CompilationServer.is_online()) {
@@ -435,14 +424,10 @@ public class Model_VersionObject extends Model {
             return result;
         }
 
-
-
         WS_Message_Make_compilation compilation = Model_CompilationServer.make_Compilation( new WS_Message_Make_compilation().make_request(typeOfBoard, c_compilation.firmware_version_lib, this.id, code_file.main, includes   ));
 
-
-
         // Když obsahuje chyby - vrátím rovnou Becki - Toto je regulérní správná odpověd - chyby způsobil v c++ kodu uživatel
-        if(!compilation.build_errors.isEmpty()) {
+        if (!compilation.build_errors.isEmpty()) {
 
             terminal_logger.trace("compile_program_procedure:: compilation contains user Errors");
 
@@ -464,7 +449,7 @@ public class Model_VersionObject extends Model {
             return result;
         }
 
-        if(compilation.interface_code == null || compilation.build_url == null){
+        if (compilation.interface_code == null || compilation.build_url == null) {
 
             terminal_logger.internalServerError(new Exception("Missing fields ('interface_code' or 'build_url') in result from Code Server. Result: " + Json.toJson(compilation).toString()));
 
@@ -476,7 +461,7 @@ public class Model_VersionObject extends Model {
             return result;
         }
 
-        if(compilation.error_message != null || !compilation.status.equals("success")){
+        if (compilation.error_message != null || !compilation.status.equals("success")) {
 
             terminal_logger.internalServerError(new Exception("Error is empty, but status is not 'success' in result from Code Server. Result: " + Json.toJson(compilation).toString()));
 
@@ -486,12 +471,11 @@ public class Model_VersionObject extends Model {
             Result_ExternalServerSideError result = new Result_ExternalServerSideError();
             result.message = "Server side Error!";
             return result;
-
         }
 
-        if(compilation.status.equals("success")) {
+        if (compilation.status.equals("success")) {
 
-            terminal_logger.trace("compile_program_procedure:: compilation was successfull");
+            terminal_logger.trace("compile_program_procedure:: compilation was successful");
 
             try {
 
@@ -505,7 +489,7 @@ public class Model_VersionObject extends Model {
 
                 byte[] body = responsePromise.get(7500).asByteArray();
 
-                if (body == null || body.length == 0){
+                if (body == null || body.length == 0) {
                     throw new FileExistsException("Body length is 0");
                 }
 
@@ -514,7 +498,7 @@ public class Model_VersionObject extends Model {
                 // Daný soubor potřebuji dostat na Azure a Propojit s verzí
                 c_compilation.bin_compilation_file = Model_FileRecord.create_Binary_file(c_compilation.get_path(), body, "firmware.bin");
 
-                terminal_logger.trace("compile_program_procedure:: Body is ok - uploading to Azure was succesfull");
+                terminal_logger.trace("compile_program_procedure:: Body is ok - uploading to Azure was successful");
                 c_compilation.status = Enum_Compile_status.successfully_compiled_and_restored;
                 c_compilation.c_comp_build_url = compilation.build_url;
                 c_compilation.firmware_build_id = compilation.build_id;
@@ -526,7 +510,7 @@ public class Model_VersionObject extends Model {
 
              //   return (ObjectNode) Json.toJson(new Swagger_Compilation_Ok());
 
-            }catch (StorageException e){
+            } catch (StorageException e) {
 
                 terminal_logger.internalServerError(new Exception("Azure Save StorageException" + compilation.build_url, e));
                 c_compilation.status = Enum_Compile_status.compilation_server_error;
@@ -536,7 +520,7 @@ public class Model_VersionObject extends Model {
                 result.message = "Server side Error!";
                 return result;
 
-            }catch (ConnectException e){
+            } catch (ConnectException e) {
 
                 terminal_logger.internalServerError(new Exception("Compilation Server is probably offline on URL: " + compilation.build_url, e));
                 c_compilation.status = Enum_Compile_status.successfully_compiled_not_restored;
@@ -546,8 +530,7 @@ public class Model_VersionObject extends Model {
                 result.message = "Server side Error!";
                 return result;
 
-
-            }catch (FileExistsException e){
+            } catch (FileExistsException e) {
 
                 terminal_logger.internalServerError(new Exception("Compilation body is empty.", e));
 
@@ -557,7 +540,6 @@ public class Model_VersionObject extends Model {
                 Result_ExternalServerSideError result = new Result_ExternalServerSideError();
                 result.message = "Server side Error!";
                 return result;
-
 
             } catch (Exception e) {
 
@@ -588,7 +570,7 @@ public class Model_VersionObject extends Model {
 
     @JsonIgnore public String blob_version_link;
 
-    @JsonIgnore @Transient public String get_path(){
+    @JsonIgnore @Transient public String get_path() {
         return  blob_version_link;
     }
 
@@ -600,31 +582,30 @@ public class Model_VersionObject extends Model {
         this.blob_version_link = "/versions/" + this.id;
 
         try {
-            if(this.author == null) this.author = Controller_Security.get_person();
-        }catch (Exception e){
+            if (this.author == null) this.author = Controller_Security.get_person();
+        } catch (Exception e) {
             // this.author = null;
         }
 
-
-        if(date_of_create == null) {
+        if (date_of_create == null) {
             date_of_create = new Date();
         }
 
         super.save();
 
-        if(library != null){
+        if (library != null) {
             library.cache_list_version_objects_ids.add(0, id);
         }
 
-        if(c_program != null){
+        if (c_program != null) {
             c_program.cache_list_version_objects_ids.add(0, id);
         }
 
-        if(get_b_program() != null){
+        if (get_b_program() != null) {
             get_b_program().cache_list_version_objects_ids.add(0, id);
         }
 
-        if(m_program != null){
+        if (m_program != null) {
             m_program.cache_list_version_objects_ids.add(0, id);
         }
 
@@ -632,7 +613,7 @@ public class Model_VersionObject extends Model {
     }
 
     @JsonIgnore @Transient @Override
-    public void update(){
+    public void update() {
 
         // TODO informace o změně směr Becki!
         super.update();
@@ -640,23 +621,22 @@ public class Model_VersionObject extends Model {
         cache_refresh();
     }
 
-
     @JsonIgnore @Transient @Override
-    public void delete(){
+    public void delete() {
 
         removed_by_user = true;
 
         System.out.println("Mažu Verzi ---- ");
-        if(get_c_program() != null){
+        if (get_c_program() != null) {
             System.out.println("čistím cache");
             get_c_program().cache_list_version_objects_ids.remove(id);
         }
 
-        if(get_b_program() != null){
+        if (get_b_program() != null) {
             get_b_program().cache_list_version_objects_ids.remove(id);
         }
 
-        if(m_program != null){
+        if (m_program != null) {
             m_program.cache_list_version_objects_ids.remove(id);
         }
 
@@ -665,10 +645,9 @@ public class Model_VersionObject extends Model {
     }
 
     @JsonIgnore @Transient
-    public Model_VersionObject cache_refresh(){
+    public Model_VersionObject cache_refresh() {
         return get_byId(id);
     }
-
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
@@ -687,7 +666,7 @@ public class Model_VersionObject extends Model {
     public static Model_VersionObject get_byId(String id) {
 
         Model_VersionObject version = cache.get(id);
-        if (version == null){
+        if (version == null) {
 
             version = Model_VersionObject.find.byId(id);
             if (version == null) return null;
@@ -697,7 +676,6 @@ public class Model_VersionObject extends Model {
 
         return version;
     }
-
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

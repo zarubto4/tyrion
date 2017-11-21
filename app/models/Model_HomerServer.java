@@ -627,11 +627,8 @@ public class Model_HomerServer extends Model {
         terminal_logger.debug("is_disconnect:: Tyrion lost connection with Homer server: " + id);
         make_log_disconnect();
 
-        System.out.println("Odpojení serveru");
         // Send echo to all connected users (its public servers)
         if (server_type == Enum_Cloud_HomerServer_type.public_server || server_type == Enum_Cloud_HomerServer_type.main_server || server_type == Enum_Cloud_HomerServer_type.backup_server) {
-            System.out.println("Podmínky splněny");
-
             WS_Message_Online_Change_status.synchronize_online_state_with_becki_public_objects(Model_HomerServer.class, id.toString(), false);
         }
     }

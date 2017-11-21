@@ -89,7 +89,8 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
                 "backup_mqtt_connection",       // for example: url:port
                 "console",                      // Boolean - If device sending logs to Homer
                 "ip",                           // Ip in local network
-                "mac",                          // mac adress of device
+                "mac",                          // mac address of device
+                "autobackup",                   // get backup
                 "binaries",                     // Binaries info of firwmare, bootloader and backup
                 "webport",                      // Port, where you can get webserver with device information
                 "webview",                       // Boolean if device support webview

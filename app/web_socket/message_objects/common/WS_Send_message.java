@@ -37,7 +37,7 @@ public class WS_Send_message {
             json.put("error_message", ErrorCode.WEBSOCKET_TIME_OUT_EXCEPTION.error_message());
             json.put("error_code", ErrorCode.WEBSOCKET_TIME_OUT_EXCEPTION.error_code());
 
-        if(messageId!= null) sender_object.sendMessageMap.remove(messageId);
+        if (messageId!= null) sender_object.sendMessageMap.remove(messageId);
 
         return request;
     }
@@ -64,8 +64,7 @@ public class WS_Send_message {
 
     public void insert_result(ObjectNode result) {
 
-
-        terminal_logger.trace("insert_result:: MessageID:: {}  insert result {} ", result.get("message_id").asText() , result.toString());
+        terminal_logger.trace("insert_result - message_id: {}, result: {} ", result.get("message_id").asText(), result.toString());
 
         // Pokud existuje zpráva v zásobníku a Json obsahuje message_id - smažu ze zásobníku
         try {
@@ -73,18 +72,15 @@ public class WS_Send_message {
             if(sender_object.sendMessageMap.size() > 10) terminal_logger.internalServerError(new Exception("insert_result:: Map contains " + sender_object.sendMessageMap.size() + " objects"));
             sender_object.sendMessageMap.remove(messageId);
 
-        }catch (Exception e){/* Nic neprovedu - pro jistotu - většinou sem zapadne zpráva z kompilátoru - která je ale odchycená v jiné vrstvě */}
+        } catch (Exception e) {/* Nic neprovedu - pro jistotu - většinou sem zapadne zpráva z kompilátoru - která je ale odchycená v jiné vrstvě */}
 
-
-        terminal_logger.trace("insert_result: MessageID: {}  saving result to variable " , messageId );
+        terminal_logger.trace("insert_result - message_id: {} saving result to variable" , messageId);
         this.result = result;
 
         this.result.put("websocket_identificator", sender_object.get_identificator());
 
         future.cancel(true);
     }
-
-
 
     public ObjectNode send_with_response() throws TimeoutException, ExecutionException, InterruptedException {
         try {
@@ -95,14 +91,13 @@ public class WS_Send_message {
 
             return future.get();
 
-        }catch (NullPointerException e ){
-            terminal_logger.internalServerError(new Exception("future parameter is null"));
+        } catch (NullPointerException e ) {
+            terminal_logger.internalServerError(new Exception("future parameter is null", e));
             throw new TimeoutException();
-        }catch (CancellationException e){
+        } catch (CancellationException e) {
             return result;
         }
     }
-
 
     class Confirmation_Thread implements Callable<ObjectNode> {
 
@@ -117,10 +112,9 @@ public class WS_Send_message {
 
                 while (number_of_retries >= 0) {
 
-                    if(json != null) {
+                    if (json != null) {
 
                         terminal_logger.trace("thread: MessageID: {} , MessageType: {} , Number of RetiresTime: {} , Time to wait: {} ", messageId, json.get("message_type"), number_of_retries, time);
-
 
                         sender_object.out.write(json.toString());
 
@@ -130,7 +124,7 @@ public class WS_Send_message {
                             return result;
                         }
 
-                    }else {
+                    } else {
                         terminal_logger.trace("thread: MessageID: {}, Waiting for the result", messageId);
                     }
 
