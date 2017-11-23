@@ -74,12 +74,12 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bProgram_create(@ApiParam(value = "project_id String path", required = true) String project_id){
+    public Result bProgram_create(@ApiParam(value = "project_id String path", required = true) String project_id) {
         try {
 
             // Zpracování Json
             final Form<Swagger_B_Program_New> form = Form.form(Swagger_B_Program_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_B_Program_New help = form.get();
 
             // Kontrola objektu
@@ -129,8 +129,8 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result bProgram_get(@ApiParam(value = "b_program_id String path", required = true) String b_program_id){
-        try{
+    public Result bProgram_get(@ApiParam(value = "b_program_id String path", required = true) String b_program_id) {
+        try {
 
             // Kontrola objektu
             Model_BProgram b_program = Model_BProgram.get_byId(b_program_id);
@@ -176,12 +176,12 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 401, message = "Unauthorized request",  response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
     })
-    public Result bProgram_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
+    public Result bProgram_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number) {
         try {
 
             // Získání JSON
             final Form<Swagger_B_Program_Filter> form = Form.form(Swagger_B_Program_Filter.class).bindFromRequest();
-            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_B_Program_Filter help = form.get();
 
             // Získání všech objektů a následné filtrování podle vlastníka
@@ -189,7 +189,7 @@ public class Controller_Blocko extends Controller{
             query.where().eq("project.participants.person.id", Controller_Security.get_person_id());
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
-            if(help.project_id != null){
+            if (help.project_id != null) {
 
                 query.where().eq("project.id", help.project_id);
             }
@@ -200,7 +200,7 @@ public class Controller_Blocko extends Controller{
             // Vrácení výsledku
             return GlobalResult.result_ok(Json.toJson(result));
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
@@ -237,12 +237,12 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bProgram_update(@ApiParam(value = "b_program_id String path", required = true) String b_program_id){
-        try{
+    public Result bProgram_update(@ApiParam(value = "b_program_id String path", required = true) String b_program_id) {
+        try {
 
             // Zpracování Json
             final Form<Swagger_B_Program_New> form = Form.form(Swagger_B_Program_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_B_Program_New help = form.get();
 
             // Kontrola objektu
@@ -287,8 +287,8 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result bProgram_delete(@ApiParam(value = "b_program_id String path", required = true) String b_program_id){
-        try{
+    public Result bProgram_delete(@ApiParam(value = "b_program_id String path", required = true) String b_program_id) {
+        try {
 
             // Kontrola objektu
             Model_BProgram program = Model_BProgram.get_byId(b_program_id);
@@ -343,12 +343,12 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bProgramVersion_create(@ApiParam(value = "b_program_id String path", required = true) String b_program_id){
-        try{
+    public Result bProgramVersion_create(@ApiParam(value = "b_program_id String path", required = true) String b_program_id) {
+        try {
 
             // Zpracování Json
             final Form<Swagger_B_Program_Version_New> form = Form.form(Swagger_B_Program_Version_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_B_Program_Version_New help = form.get();
 
             // Program který budu ukládat do data Storage v Azure
@@ -370,7 +370,7 @@ public class Controller_Blocko extends Controller{
             version_object.author                  = Controller_Security.get_person();
 
             // Vytvořím Snapshoty Verze M_Programu
-            if(help.m_project_snapshots != null) {
+            if (help.m_project_snapshots != null) {
 
                 for (Swagger_B_Program_Version_New.M_Project_SnapShot help_m_project_snap : help.m_project_snapshots) {
 
@@ -398,53 +398,53 @@ public class Controller_Blocko extends Controller{
                 }
             }
             // Definování main Board
-            for( Swagger_B_Program_Version_New.Hardware_group group : help.hardware_group) {
+            for ( Swagger_B_Program_Version_New.Hardware_group group : help.hardware_group) {
 
                 Model_BProgramHwGroup b_program_hw_group = new Model_BProgramHwGroup();
 
                 // Definuji Main Board - Tedy yodu pokud v Json přišel (není podmínkou)
-                if(group.main_board_pair != null) {
+                if (group.main_board_pair != null) {
 
                     Model_BPair b_pair = new Model_BPair();
 
                     b_pair.board = Model_Board.get_byId(group.main_board_pair.board_id);
                     if ( b_pair.board == null) return GlobalResult.result_notFound("Board board_id not found");
                     if (!b_pair.board.get_type_of_board().connectible_to_internet)  return GlobalResult.result_badRequest("Main Board must be internet connectible!");
-                    if(!b_pair.board.update_permission()) return GlobalResult.result_forbidden();
+                    if (!b_pair.board.update_permission()) return GlobalResult.result_forbidden();
 
                     b_pair.c_program_version = Model_VersionObject.get_byId(group.main_board_pair.c_program_version_id);
                     if ( b_pair.c_program_version == null) return GlobalResult.result_notFound("C_Program Version_Object c_program_version_id not found");
                     if ( b_pair.c_program_version.get_c_program() == null)  return GlobalResult.result_badRequest("Version is not from C_Program");
 
 
-                    if( Model_TypeOfBoard.find.where().eq("c_programs.id",  b_pair.c_program_version.get_c_program().id ).where().eq("boards.id",  b_pair.board.id).findRowCount() < 1){
+                    if ( Model_TypeOfBoard.find.where().eq("c_programs.id",  b_pair.c_program_version.get_c_program().id ).where().eq("boards.id",  b_pair.board.id).findRowCount() < 1) {
                         return GlobalResult.result_badRequest("You want upload C++ program version id: " +  b_pair.c_program_version.id + " thats not compatible with hardware " + b_pair.board.id);
                     }
 
                     b_program_hw_group.main_board_pair = b_pair;
 
-                }else {
+                } else {
                     return GlobalResult.result_badRequest("Hardware Group hasn't Main Board!");
                 }
 
                 // Definuji Devices - Tedy yodu pokud v Json přišly (není podmínkou)
 
-                if(group.device_board_pairs != null && !group.device_board_pairs.isEmpty() ) {
+                if (group.device_board_pairs != null && !group.device_board_pairs.isEmpty() ) {
 
-                    for(Swagger_Board_CProgram_Pair connected_board : group.device_board_pairs ){
+                    for (Swagger_Board_CProgram_Pair connected_board : group.device_board_pairs ) {
 
                         Model_BPair b_pair = new Model_BPair();
 
                         b_pair.board = Model_Board.get_byId(connected_board.board_id);
                         if ( b_pair.board == null) return GlobalResult.result_notFound("Board board_id not found");
-                        if(!b_pair.board.update_permission()) return GlobalResult.result_forbidden();
+                        if (!b_pair.board.update_permission()) return GlobalResult.result_forbidden();
 
 
                         b_pair.c_program_version = Model_VersionObject.get_byId(connected_board.c_program_version_id);
                         if ( b_pair.c_program_version == null) return GlobalResult.result_notFound("C_Program Version_Object c_program_version_id not found");
                         if ( b_pair.c_program_version.c_program == null)  return GlobalResult.result_badRequest("Version is not from C_Program");
 
-                        if( Model_TypeOfBoard.find.where().eq("c_programs.id",  b_pair.c_program_version.get_c_program().id ).where().eq("boards.id",  b_pair.board.id).findRowCount() < 1){
+                        if ( Model_TypeOfBoard.find.where().eq("c_programs.id",  b_pair.c_program_version.get_c_program().id ).where().eq("boards.id",  b_pair.board.id).findRowCount() < 1) {
                             return GlobalResult.result_badRequest("You want upload C++ program version id: " +  b_pair.c_program_version.id + " thats not compatible with hardware " + b_pair.board.id);
                         }
 
@@ -487,8 +487,8 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result bProgramVersion_get(@ApiParam(value = "version_id String path", required = true) String version_id){
-        try{
+    public Result bProgramVersion_get(@ApiParam(value = "version_id String path", required = true) String version_id) {
+        try {
 
             // Kontrola objektu
             Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
@@ -541,12 +541,12 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bProgramVersion_update(@ApiParam(value = "version_id String path", required = true) String version_id){
-        try{
+    public Result bProgramVersion_update(@ApiParam(value = "version_id String path", required = true) String version_id) {
+        try {
 
             // Zpracování Json
             final Form<Swagger_B_Program_Version_Edit> form = Form.form(Swagger_B_Program_Version_Edit.class).bindFromRequest();
-            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_B_Program_Version_Edit help = form.get();
 
             // Získání objektu
@@ -591,8 +591,8 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result bProgramVersion_delete(@ApiParam(value = "version_id String path", required = true) String version_id){
-        try{
+    public Result bProgramVersion_delete(@ApiParam(value = "version_id String path", required = true) String version_id) {
+        try {
 
             // Získání objektu
             Model_VersionObject version_object  = Model_VersionObject.get_byId(version_id);
@@ -649,12 +649,12 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bProgramVersion_deploy(@ApiParam(value = "version_id String path", required = true) String version_id){
+    public Result bProgramVersion_deploy(@ApiParam(value = "version_id String path", required = true) String version_id) {
         try {
 
             // Získání JSON
             final Form<Swagger_B_Program_Upload_Instance> form = Form.form(Swagger_B_Program_Upload_Instance.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_B_Program_Upload_Instance help = form.get();
 
             // Kontrola objektu: Verze B programu kterou budu nahrávat do cloudu
@@ -673,15 +673,15 @@ public class Controller_Blocko extends Controller{
             record.version_object = version_object;
             record.date_of_created = new Date();
 
-            if(help.upload_time != null) {
+            if (help.upload_time != null) {
 
                 Date upload_time = new Date(help.upload_time);
 
                 // Zkontroluji smysluplnost časové známky
-                if (!upload_time.after(new Date()))  return GlobalResult.result_badRequest("time must be set in the future");
+                if (!upload_time.after(new Date())) return GlobalResult.result_badRequest("time must be set in the future");
                 record.planed_when = upload_time;
 
-            } else{
+            } else {
                 Date date_from = new Date();
                 record.running_from = date_from;
                 record.planed_when = date_from;
@@ -726,12 +726,12 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result instance_edit(@ApiParam(value = "instance_id String path", required = true) String instance_id){
-        try{
+    public Result instance_edit(@ApiParam(value = "instance_id String path", required = true) String instance_id) {
+        try {
 
             // Zpracování Json
             final Form<Swagger_Instance_Edit> form = Form.form(Swagger_Instance_Edit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Instance_Edit help = form.get();
 
             // Kontrola objektu
@@ -740,8 +740,8 @@ public class Controller_Blocko extends Controller{
 
             if (!homer_instance.getB_program().update_permission() ) return GlobalResult.result_forbidden();
 
-            if(help.name != null && !help.name.equals("")) homer_instance.name = help.name;
-            if(help.description != null && !help.description.equals("")) homer_instance.description = help.description;
+            if (help.name != null && !help.name.equals("")) homer_instance.name = help.name;
+            if (help.description != null && !help.description.equals("")) homer_instance.description = help.description;
 
             homer_instance.update();
 
@@ -769,8 +769,8 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result instance_start_or_shut_down(String instance_name){
-        try{
+    public Result instance_start_or_shut_down(String instance_name) {
+        try {
 
             // Kontrola objektu
             Model_HomerInstance homer_instance = Model_HomerInstance.get_byId(instance_name);
@@ -778,19 +778,16 @@ public class Controller_Blocko extends Controller{
 
             if (!homer_instance.getB_program().update_permission() ) return GlobalResult.result_forbidden();
 
-
             // Pokud má aktuální instance "Actual Instance record - znaemná to, že má běžet v cloudu"
             // Proto tento záznam odstraním
-            if(homer_instance.get_actual_instance() != null){
+            if(homer_instance.get_actual_instance() != null) {
 
                 homer_instance.remove_from_cloud();
-
-
                 return GlobalResult.result_ok();
 
-            }else{
+            } else {
 
-                if(homer_instance.instance_history.isEmpty()){
+                if (homer_instance.instance_history.isEmpty()) {
                      return GlobalResult.result_badRequest("We did not find any previous version running in the cloud. Please first select version in Blocko editor run.");
                 }
 
@@ -800,7 +797,6 @@ public class Controller_Blocko extends Controller{
                 homer_instance.get_actual_instance().put_record_into_cloud();
 
                 return GlobalResult.result_ok();
-
             }
 
         } catch (Exception e) {
@@ -826,9 +822,8 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result get_b_program_instance_under_project(String project_id){
-        try{
-
+    public Result get_b_program_instance_under_project(String project_id) {
+        try {
 
             List<Model_HomerInstance> instances = Model_HomerInstance.find.where()
                     .isNotNull("actual_instance")
@@ -837,7 +832,7 @@ public class Controller_Blocko extends Controller{
 
             List<Swagger_Instance_Short_Detail> list = new ArrayList<>();
 
-            for(Model_HomerInstance instance : instances){
+            for (Model_HomerInstance instance : instances) {
                 list.add(instance.get_instance_short_detail());
             }
 
@@ -868,14 +863,14 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result get_b_program_instance(String instance_id){
-        try{
+    public Result get_b_program_instance(String instance_id) {
+        try {
 
             Model_HomerInstance instance = Model_HomerInstance.get_byId(instance_id);
             if (instance == null) return GlobalResult.result_notFound("Homer_Instance instance_id not found");
-            if(instance.getB_program() == null ) return GlobalResult.result_notFound("Homer_Instance is virtual!!");
+            if (instance.getB_program() == null ) return GlobalResult.result_notFound("Homer_Instance is virtual!!");
 
-            if(!instance.getB_program().read_permission()) return GlobalResult.result_forbidden();
+            if (!instance.getB_program().read_permission()) return GlobalResult.result_forbidden();
 
             return GlobalResult.result_ok(Json.toJson(instance));
 
@@ -910,28 +905,27 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_b_program_instance_by_filter(){
-        try{
+    public Result get_b_program_instance_by_filter() {
+        try {
 
             // Zpracování Json
             final Form<Swagger_Instance_Filter> form = Form.form(Swagger_Instance_Filter.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Instance_Filter help = form.get();
 
             // Tvorba parametru dotazu
             Query<Model_HomerInstance> query = Ebean.find(Model_HomerInstance.class);
 
             // If Json contains TypeOfBoards list of id's
-            if(!help.instance_types.isEmpty() ){
+            if (!help.instance_types.isEmpty() ) {
                 query.where().in("instance_type", help.instance_types);
             }
 
-            if(help.project_id != null ){
+            if (help.project_id != null ) {
                 query.where().eq("project.id", help.project_id);
             }
 
-
-            if(!help.server_unique_ids.isEmpty()){
+            if (!help.server_unique_ids.isEmpty()) {
                 query.where().in("cloud_homer_server.id", help.server_unique_ids);
             }
 
@@ -942,7 +936,6 @@ public class Controller_Blocko extends Controller{
             return GlobalResult.result_ok(Json.toJson(result));
 
         } catch (Exception e) {
-
             return ServerLogger.result_internalServerError(e, request());
         }
     }
@@ -972,7 +965,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result instance_change_settings_grid_App(){
+    public Result instance_change_settings_grid_App() {
         try {
 
             // Zpracování Json
@@ -1024,14 +1017,13 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result get_b_program_instance_record(String instance_record_id){
-        try{
-
+    public Result get_b_program_instance_record(String instance_record_id) {
+        try {
 
             Model_HomerInstanceRecord instance = Model_HomerInstanceRecord.get_byId(instance_record_id);
             if (instance == null) return GlobalResult.result_notFound("Homer_Instance instance_id not found");
 
-            if(!instance.main_instance_history.getB_program().read_permission()) return GlobalResult.result_forbidden();
+            if (!instance.main_instance_history.getB_program().read_permission()) return GlobalResult.result_forbidden();
 
             return GlobalResult.result_ok(Json.toJson(instance));
 
@@ -1078,12 +1070,12 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result typeOfBlock_create(){
-        try{
+    public Result typeOfBlock_create() {
+        try {
 
             // Zpracování Json
             final Form<Swagger_TypeOfBlock_New> form = Form.form(Swagger_TypeOfBlock_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_TypeOfBlock_New help = form.get();
 
             // Vytvoření objektu
@@ -1092,19 +1084,19 @@ public class Controller_Blocko extends Controller{
             typeOfBlock.name        = help.name;
 
             // Nejedná se o privátní Typ Bločku
-            if(help.project_id != null){
+            if (help.project_id != null) {
 
                 // Kontrola objektu
                 Model_Project project = Model_Project.get_byId(help.project_id);
-                if(project == null) return GlobalResult.result_notFound("Project project_id not found");
-                if(! project.update_permission()) return GlobalResult.result_forbidden();
+                if (project == null) return GlobalResult.result_notFound("Project project_id not found");
+                if (! project.update_permission()) return GlobalResult.result_forbidden();
 
                 // Úprava objektu
                 typeOfBlock.project = project;
                 typeOfBlock.publish_type = Enum_Publishing_type.private_program;
 
-            }else {
-                if(Model_TypeOfBlock.get_publicByName(help.name) != null)
+            } else {
+                if (Model_TypeOfBlock.get_publicByName(help.name) != null)
                     return GlobalResult.result_badRequest("TypeOfBlock with this name already exists, type a new one.");
 
                 typeOfBlock.publish_type = Enum_Publishing_type.public_program;
@@ -1149,12 +1141,12 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result typeOfBlock_get(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
+    public Result typeOfBlock_get(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id) {
         try {
 
             // Kontrola objektu
             Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
-            if(typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock not found");
+            if (typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock not found");
 
             // Kontrola oprávnění
             if (!typeOfBlock.read_permission()) return GlobalResult.result_forbidden();
@@ -1165,8 +1157,6 @@ public class Controller_Blocko extends Controller{
         } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }
-
-
     }
 
     @ApiOperation(value = "edit TypeOfBlock",
@@ -1202,17 +1192,17 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result typeOfBlock_edit(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
-        try{
+    public Result typeOfBlock_edit(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id) {
+        try {
 
             // Zpracování Json
             final Form<Swagger_TypeOfBlock_New> form = Form.form(Swagger_TypeOfBlock_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_TypeOfBlock_New help = form.get();
 
             // Kontrola objektu
             Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
-            if(typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock not found");
+            if (typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock not found");
 
             // Kontrola oprávnění
             if (!typeOfBlock.edit_permission()) return GlobalResult.result_forbidden();
@@ -1221,11 +1211,11 @@ public class Controller_Blocko extends Controller{
             typeOfBlock.description = help.description;
             typeOfBlock.name        = help.name;
 
-            if(help.project_id != null){
+            if (help.project_id != null) {
 
                 // Kontrola objektu
                 Model_Project project = Model_Project.get_byId(help.project_id);
-                if(project == null) return GlobalResult.result_notFound("Project project_id not found");
+                if (project == null) return GlobalResult.result_notFound("Project project_id not found");
 
                 // Úprava objektu
                 typeOfBlock.project = project;
@@ -1263,12 +1253,12 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result typeOfBlock_delete(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id){
-        try{
+    public Result typeOfBlock_delete(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id) {
+        try {
 
             // Kontrola objektu
             Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
-            if(typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock type_of_block_id not found");
+            if (typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock type_of_block_id not found");
 
             // Kontrola oprávnění
             if (! typeOfBlock.delete_permission()) return GlobalResult.result_forbidden();
@@ -1314,12 +1304,12 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result typeOfBlock_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
+    public Result typeOfBlock_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number) {
         try {
 
             // Získání JSON
             final Form<Swagger_TypeOfBlock_Filter> form = Form.form(Swagger_TypeOfBlock_Filter.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_TypeOfBlock_Filter help = form.get();
 
             // Získání všech objektů a následné odfiltrování soukormých TypeOfBlock
@@ -1338,8 +1328,8 @@ public class Controller_Blocko extends Controller{
                 terminal_logger.debug("typeOfBlock_getByFilter - filtering by project");
 
                 Model_Project project = Model_Project.get_byId(help.project_id);
-                if(project == null )return GlobalResult.result_notFound("Project not found");
-                if(!project.read_permission())return GlobalResult.result_forbidden();
+                if (project == null) return GlobalResult.result_notFound("Project not found");
+                if (!project.read_permission()) return GlobalResult.result_forbidden();
 
                 if (help.public_programs) {
                     query.where().or(Expr.eq("project.id", help.project_id), Expr.isNull("project"));
@@ -1358,7 +1348,7 @@ public class Controller_Blocko extends Controller{
             // Vrácení výsledku
             return GlobalResult.result_ok(Json.toJson(result));
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
@@ -1378,21 +1368,21 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result typeOfBlock_deactivate(String type_of_block_id){
+    public Result typeOfBlock_deactivate(String type_of_block_id) {
         try {
 
             Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
-            if(typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock not found");
+            if (typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock not found");
 
             // Kontrola oprávnění
-            if (! typeOfBlock.edit_permission() ) return GlobalResult.result_forbidden();
+            if (!typeOfBlock.edit_permission()) return GlobalResult.result_forbidden();
 
-            if(typeOfBlock.project_id() != null ) return GlobalResult.result_forbidden();
+            if (typeOfBlock.project_id() != null) return GlobalResult.result_forbidden();
 
 
             if (!typeOfBlock.active) return GlobalResult.result_badRequest("TypeOfBlock is already deactivated");
 
-            if(!typeOfBlock.update_permission()) return GlobalResult.result_forbidden();
+            if (!typeOfBlock.update_permission()) return GlobalResult.result_forbidden();
 
             typeOfBlock.active = false;
 
@@ -1400,7 +1390,7 @@ public class Controller_Blocko extends Controller{
 
             return GlobalResult.result_ok();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
@@ -1420,16 +1410,15 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result typeOfBlock_activate(String type_of_block_id){
+    public Result typeOfBlock_activate(String type_of_block_id) {
         try {
 
-
             Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
-            if(typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock not found");
+            if (typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock not found");
 
-            if(typeOfBlock.project_id() != null ) return GlobalResult.result_forbidden();
+            if (typeOfBlock.project_id() != null ) return GlobalResult.result_forbidden();
 
-            if(!typeOfBlock.update_permission()) return GlobalResult.result_forbidden();
+            if (!typeOfBlock.update_permission()) return GlobalResult.result_forbidden();
 
             if (typeOfBlock.active) return GlobalResult.result_badRequest("TypeOfBlock is already activated");
 
@@ -1439,7 +1428,7 @@ public class Controller_Blocko extends Controller{
 
             return GlobalResult.result_ok();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
@@ -1459,11 +1448,11 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result typeOfBlock_orderUp(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
-        try{
+    public Result typeOfBlock_orderUp(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id) {
+        try {
 
             Model_TypeOfBlock typeOfBlocks =  Model_TypeOfBlock.get_byId(blocko_block_id);
-            if(typeOfBlocks == null) return GlobalResult.result_notFound("TypeOfBlock not found");
+            if (typeOfBlocks == null) return GlobalResult.result_notFound("TypeOfBlock not found");
 
             // Kontrola oprávnění
             if (!typeOfBlocks.edit_permission()) return GlobalResult.result_forbidden();
@@ -1472,7 +1461,7 @@ public class Controller_Blocko extends Controller{
 
             return GlobalResult.result_ok();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
@@ -1492,11 +1481,11 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result typeOfBlock_orderDown(@ApiParam(value = "type_of_block_id String path",   required = true) String type_of_block_id){
-        try{
+    public Result typeOfBlock_orderDown(@ApiParam(value = "type_of_block_id String path",   required = true) String type_of_block_id) {
+        try {
 
             Model_TypeOfBlock typeOfBlocks =  Model_TypeOfBlock.get_byId(type_of_block_id);
-            if(typeOfBlocks == null) return GlobalResult.result_notFound("TypeOfBlock not found");
+            if (typeOfBlocks == null) return GlobalResult.result_notFound("TypeOfBlock not found");
 
             // Kontrola oprávnění
             if (!typeOfBlocks.edit_permission()) return GlobalResult.result_forbidden();
@@ -1505,7 +1494,7 @@ public class Controller_Blocko extends Controller{
 
             return GlobalResult.result_ok();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
@@ -1549,19 +1538,19 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result blockoBlock_create(){
-        try{
+    public Result blockoBlock_create() {
+        try {
 
             // Zpracování Json
             final Form<Swagger_BlockoBlock_New> form = Form.form(Swagger_BlockoBlock_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_BlockoBlock_New help = form.get();
 
             // Kontrola objektu
             Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId( help.type_of_block_id);
-            if(typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock type_of_block_id not found");
+            if (typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock type_of_block_id not found");
 
-            if (typeOfBlock.project == null && Model_BlockoBlock.get_publicByName(help.name) != null){
+            if (typeOfBlock.project == null && Model_BlockoBlock.get_publicByName(help.name) != null) {
                 return GlobalResult.result_badRequest("BlockoBlock with this name already exists, type a new one.");
             }
 
@@ -1584,7 +1573,7 @@ public class Controller_Blocko extends Controller{
             Model_BlockoBlockVersion scheme = Model_BlockoBlockVersion.get_scheme();
 
             // Kontrola objektu
-            if(scheme == null) return GlobalResult.result_created(Json.toJson(blockoBlock));
+            if (scheme == null) return GlobalResult.result_created(Json.toJson(blockoBlock));
 
             // Vytvoření objektu první verze
             Model_BlockoBlockVersion blockoBlockVersion = new Model_BlockoBlockVersion();
@@ -1643,28 +1632,27 @@ public class Controller_Blocko extends Controller{
 
             // Vyhledám Objekt
             Model_BlockoBlock blocko_block_old = Model_BlockoBlock.get_byId(help.blocko_block_id);
-            if(blocko_block_old == null) return GlobalResult.result_notFound("Model_GridWidget blocko_block_id not found");
+            if (blocko_block_old == null) return GlobalResult.result_notFound("Model_GridWidget blocko_block_id not found");
 
             // Zkontroluji oprávnění
-            if(!blocko_block_old.read_permission())  return GlobalResult.result_forbidden();
+            if (!blocko_block_old.read_permission())  return GlobalResult.result_forbidden();
 
             // Vyhledám Objekt
             Model_Project project = Model_Project.get_byId(help.project_id);
             if (project == null) return GlobalResult.result_notFound("Project project_id not found");
 
             // Zkontroluji oprávnění
-            if(!project.update_permission())  return GlobalResult.result_forbidden();
-
+            if (!project.update_permission())  return GlobalResult.result_forbidden();
 
             // Kontrola objektu
             Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(help.type_of_blocks_id);
-            if(typeOfBlock != null) {
+            if (typeOfBlock != null) {
                 if (!Model_Project.get_byId(typeOfBlock.project_id()).update_permission()) {
                     return GlobalResult.result_forbidden();
                 }
             }
 
-            if(typeOfBlock == null) {
+            if (typeOfBlock == null) {
                 typeOfBlock = new Model_TypeOfBlock();
                 typeOfBlock.description = "Yea! My First Blocko Group with Community Widget";
                 typeOfBlock.name        = "Private Widget Group";
@@ -1674,7 +1662,6 @@ public class Controller_Blocko extends Controller{
                 typeOfBlock.refresh();
             }
 
-
             Model_BlockoBlock blocko_block_new =  new Model_BlockoBlock();
             blocko_block_new.name = help.name;
             blocko_block_new.description = help.description;
@@ -1683,8 +1670,7 @@ public class Controller_Blocko extends Controller{
 
             blocko_block_new.refresh();
 
-
-            for(Model_BlockoBlockVersion version : blocko_block_old.get_blocko_block_versions()){
+            for (Model_BlockoBlockVersion version : blocko_block_old.get_blocko_block_versions()) {
 
                 Model_BlockoBlockVersion copy_object = new Model_BlockoBlockVersion();
                 copy_object.version_name        = version.version_name;
@@ -1698,7 +1684,6 @@ public class Controller_Blocko extends Controller{
 
                 // Zkontroluji oprávnění
                 copy_object.save();
-
             }
 
             blocko_block_new.refresh();
@@ -1744,12 +1729,12 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result blockoBlock_update(@ApiParam(value = "blocko_block_id String path",   required = true)  String blocko_block_id){
+    public Result blockoBlock_update(@ApiParam(value = "blocko_block_id String path",   required = true)  String blocko_block_id) {
         try {
 
             // Zpracování Json
             final Form<Swagger_BlockoBlock_New> form = Form.form(Swagger_BlockoBlock_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_BlockoBlock_New help = form.get();
 
             // Kontrola objektu
@@ -1765,7 +1750,7 @@ public class Controller_Blocko extends Controller{
 
             // Kontrola objektu
             Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(  help.type_of_block_id);
-            if(typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock type_of_block_id not found");
+            if (typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock type_of_block_id not found");
 
             // Úprava objektu
             blockoBlock.type_of_block = typeOfBlock;
@@ -1805,11 +1790,11 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlock_get(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
+    public Result blockoBlock_get(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id) {
         try {
             // Kontrola objektu
             Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
-            if(blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock not found");
+            if (blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock not found");
 
             // Kontrola oprávnění
             if (! blockoBlock.read_permission() ) return GlobalResult.result_forbidden();
@@ -1853,12 +1838,12 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result blockoBlock_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number){
+    public Result blockoBlock_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number) {
         try {
 
             // Získání JSON
             final Form<Swagger_Blocko_Block_Filter> form = Form.form(Swagger_Blocko_Block_Filter.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_Blocko_Block_Filter help = form.get();
 
             // Získání všech objektů a následné filtrování podle vlastníka
@@ -1866,7 +1851,7 @@ public class Controller_Blocko extends Controller{
             query.where().eq("author.id", Controller_Security.get_person_id());
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
-            if(help.project_id != null){
+            if (help.project_id != null) {
 
                 query.where().eq("type_of_block.project.id", help.project_id);
             }
@@ -1877,7 +1862,7 @@ public class Controller_Blocko extends Controller{
             // Vrácení výsledku
             return GlobalResult.result_ok(Json.toJson(result));
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
@@ -1902,12 +1887,12 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlock_delete(@ApiParam(value = "blocko_block_id String path",   required = true)  String blocko_block_id){
+    public Result blockoBlock_delete(@ApiParam(value = "blocko_block_id String path",   required = true)  String blocko_block_id) {
         try {
 
             // Kontrola objektu
             Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
-            if(blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
+            if (blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
 
             // Kontrola oprávnění
             if (!blockoBlock.delete_permission()) return GlobalResult.result_forbidden();
@@ -1938,20 +1923,20 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlock_orderUp(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_id){
-        try{
+    public Result blockoBlock_orderUp(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_id) {
+        try {
 
-            Model_BlockoBlock blockoBlock =  Model_BlockoBlock.get_byId(blocko_block_id);
-            if(blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock not found");
+            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
+            if (blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock not found");
 
             // Kontrola oprávnění
-            if (! blockoBlock.edit_permission()) return GlobalResult.result_forbidden();
+            if (!blockoBlock.edit_permission()) return GlobalResult.result_forbidden();
 
             blockoBlock.up();
 
             return GlobalResult.result_ok();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
@@ -1971,11 +1956,11 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlock_orderDown(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_id){
-        try{
+    public Result blockoBlock_orderDown(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_id) {
+        try {
 
             Model_BlockoBlock blockoBlock =  Model_BlockoBlock.get_byId(blocko_block_id);
-            if(blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock not found");
+            if (blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock not found");
 
             // Kontrola oprávnění
             if (!blockoBlock.edit_permission()) return GlobalResult.result_forbidden();
@@ -1984,7 +1969,7 @@ public class Controller_Blocko extends Controller{
 
             return GlobalResult.result_ok();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
@@ -2004,19 +1989,19 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlock_deactivate(String blocko_block_id){
+    public Result blockoBlock_deactivate(String blocko_block_id) {
         try {
 
             Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
-            if(blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
+            if (blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
 
             // Kontrola oprávnění
-            if (! blockoBlock.edit_permission() ) return GlobalResult.result_forbidden();
+            if (!blockoBlock.edit_permission()) return GlobalResult.result_forbidden();
 
 
             if (!blockoBlock.active) return GlobalResult.result_badRequest("BlockoBlock is already deactivated");
 
-            if(!blockoBlock.update_permission()) return GlobalResult.result_forbidden();
+            if (!blockoBlock.update_permission()) return GlobalResult.result_forbidden();
 
             blockoBlock.active = false;
 
@@ -2024,7 +2009,7 @@ public class Controller_Blocko extends Controller{
 
             return GlobalResult.result_ok();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
@@ -2044,15 +2029,15 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlock_activate(String blocko_block_id){
+    public Result blockoBlock_activate(String blocko_block_id) {
         try {
 
             Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
-            if(blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
+            if (blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
 
             if (blockoBlock.active) return GlobalResult.result_badRequest("BlockoBlock is already activated");
 
-            if(!blockoBlock.update_permission()) return GlobalResult.result_forbidden();
+            if (!blockoBlock.update_permission()) return GlobalResult.result_forbidden();
 
             blockoBlock.active = true;
 
@@ -2060,7 +2045,7 @@ public class Controller_Blocko extends Controller{
 
             return GlobalResult.result_ok();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
@@ -2097,11 +2082,11 @@ public class Controller_Blocko extends Controller{
 
             // Získání JSON
             final Form<Swagger_BlockoBlock_Publish_Response> form = Form.form(Swagger_BlockoBlock_Publish_Response.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_BlockoBlock_Publish_Response help = form.get();
 
             // Kontrola názvu
-            if(help.version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
+            if (help.version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
 
             // Kontrola objektu
             Model_BlockoBlockVersion private_blocko_block_version = Model_BlockoBlockVersion.get_byId(help.version_id);
@@ -2111,12 +2096,11 @@ public class Controller_Blocko extends Controller{
             Model_BlockoBlock block_old = private_blocko_block_version.get_blocko_block();
 
             // Zkontroluji oprávnění
-            if(!block_old.community_publishing_permission()){
+            if (!block_old.community_publishing_permission()) {
                 return GlobalResult.result_forbidden();
             }
 
-
-            if(help.decision) {
+            if (help.decision) {
 
                 // Kontrola skupiny kam se widget zařadí
                 Model_TypeOfBlock type_of_block_public = Model_TypeOfBlock.find.byId(help.blocko_block_type_of_block_id);
@@ -2128,14 +2112,12 @@ public class Controller_Blocko extends Controller{
                     return GlobalResult.result_badRequest("You cannot register Widget to non-public group");
                 }
 
-                System.out.println("help.decision je true!!!");
-
                 private_blocko_block_version.approval_state = Enum_Approval_state.approved;
                 private_blocko_block_version.update();
 
                 Model_BlockoBlock blocko_block = Model_BlockoBlock.find.where().eq("id",block_old.id.toString() + "_public_copy").findUnique();
 
-                if(blocko_block == null) {
+                if (blocko_block == null) {
                     // Vytvoření objektu
                     blocko_block = new Model_BlockoBlock();
                     blocko_block.name = help.program_name;
@@ -2163,7 +2145,7 @@ public class Controller_Blocko extends Controller{
 
                 return GlobalResult.result_ok();
 
-            }else {
+            } else {
                 // Změna stavu schválení
                 private_blocko_block_version.approval_state = Enum_Approval_state.disapproved;
 
@@ -2173,7 +2155,7 @@ public class Controller_Blocko extends Controller{
                     new Email()
                             .text("Version of Widget " + private_blocko_block_version.get_blocko_block().name + ": " + Email.bold(private_blocko_block_version.version_name) + " was not approved for this reason: ")
                             .text(help.reason)
-                            .send(private_blocko_block_version.get_blocko_block().get_author().mail, "Version of Widget disapproved" );
+                            .send(private_blocko_block_version.get_blocko_block().get_author().mail, "Version of Widget disapproved");
 
                 } catch (Exception e) {
                     terminal_logger.internalServerError (e);
@@ -2186,7 +2168,7 @@ public class Controller_Blocko extends Controller{
                 return GlobalResult.result_ok();
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
@@ -2221,20 +2203,20 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result blockoBlockVersion_create(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id){
+    public Result blockoBlockVersion_create(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id) {
         try {
 
             // Zpracování Json
             final Form<Swagger_BlockoBlock_BlockoVersion_New> form = Form.form(Swagger_BlockoBlock_BlockoVersion_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_BlockoBlock_BlockoVersion_New help = form.get();
 
             // Kontrola názvu
-            if(help.version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
+            if (help.version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
 
             // Kontrola objektu
             Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
-            if(blockoBlock == null) return GlobalResult.result_notFound("blockoBlock not found");
+            if (blockoBlock == null) return GlobalResult.result_notFound("blockoBlock not found");
 
             // Vytvoření objektu
             Model_BlockoBlockVersion version = new Model_BlockoBlockVersion();
@@ -2285,11 +2267,11 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlockVersion_get(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
+    public Result blockoBlockVersion_get(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id) {
         try {
             // Kontrola objektu
             Model_BlockoBlockVersion blocko_version = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
-            if(blocko_version == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
+            if (blocko_version == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
 
             // Kontrola oprávnění
             if (! blocko_version.read_permission() ) return GlobalResult.result_forbidden("You have no permission to get that");
@@ -2300,7 +2282,6 @@ public class Controller_Blocko extends Controller{
         } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }
-
     }
 
     @ApiOperation(value = "edit BlockoBlock_Version",
@@ -2338,20 +2319,20 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result blockoBlockVersion_update(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
+    public Result blockoBlockVersion_update(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id) {
         try {
 
             // Zpracování Json
             final Form<Swagger_BlockoBlock_BlockoVersion_Edit> form = Form.form(Swagger_BlockoBlock_BlockoVersion_Edit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_BlockoBlock_BlockoVersion_Edit help = form.get();
 
             // Kontrola názvu
-            if(help.version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
+            if (help.version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
 
             // Kontrola objektu
             Model_BlockoBlockVersion version = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
-            if(version == null) return GlobalResult.result_notFound("blocko_block_version_id not found");
+            if (version == null) return GlobalResult.result_notFound("blocko_block_version_id not found");
 
             // Úprava objektu
             version.version_name = help.version_name;
@@ -2388,12 +2369,12 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlockVersion_delete(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
+    public Result blockoBlockVersion_delete(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id) {
         try {
 
             // Kontrola objektu
             Model_BlockoBlockVersion version = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
-            if(version == null) return GlobalResult.result_notFound("BlockoBlockVersion blocko_block_version_id not found");
+            if (version == null) return GlobalResult.result_notFound("BlockoBlockVersion blocko_block_version_id not found");
 
             // Kontrola oprávnění
             if (!version.delete_permission()) return GlobalResult.result_forbidden();
@@ -2423,15 +2404,15 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlockVersion_makePublic(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id){
-        try{
+    public Result blockoBlockVersion_makePublic(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id) {
+        try {
 
             // Kontrola objektu
             Model_BlockoBlockVersion blockoBlockVersion = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
-            if(blockoBlockVersion == null) return GlobalResult.result_notFound("BlockoBlockVersion blocko_block_version_id not found");
+            if (blockoBlockVersion == null) return GlobalResult.result_notFound("BlockoBlockVersion blocko_block_version_id not found");
 
             // Kontrola orávnění
-            if(!(blockoBlockVersion.edit_permission())) return GlobalResult.result_forbidden();
+            if (!(blockoBlockVersion.edit_permission())) return GlobalResult.result_forbidden();
 
             // Úprava objektu
             blockoBlockVersion.approval_state = Enum_Approval_state.pending;
@@ -2442,7 +2423,7 @@ public class Controller_Blocko extends Controller{
             // Vrácení výsledku
             return GlobalResult.result_ok(Json.toJson(blockoBlockVersion));
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
@@ -2467,22 +2448,22 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result blockoBlockVersion_set_main(String blocko_block_version_id){
+    public Result blockoBlockVersion_set_main(String blocko_block_version_id) {
         try {
 
             // Kontrola objektu
             Model_BlockoBlockVersion version = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
-            if(version == null) return GlobalResult.result_notFound("BlockoBlockVersion blocko_block_version_id not found");
+            if (version == null) return GlobalResult.result_notFound("BlockoBlockVersion blocko_block_version_id not found");
 
             // Kontrola oprávnění
             if (!version.edit_permission()) return GlobalResult.result_forbidden();
 
-            if(!version.get_blocko_block_id().equals("00000000-0000-0000-0000-000000000001")){
+            if (!version.get_blocko_block_id().equals("00000000-0000-0000-0000-000000000001")) {
                 return GlobalResult.result_notFound("BlockoBlockVersion blocko_block_version_id not from default program");
             }
 
             Model_BlockoBlockVersion old_version = Model_BlockoBlockVersion.find.where().eq("publish_type", Enum_Publishing_type.default_version.name()).select("id").findUnique();
-            if(old_version != null) {
+            if (old_version != null) {
                 old_version = Model_BlockoBlockVersion.get_byId(old_version.id);
                 old_version.publish_type = null;
                 old_version.update();
@@ -2516,12 +2497,12 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result blockoDisapprove(){
+    public Result blockoDisapprove() {
         try {
 
             // Získání JSON
             final Form<Swagger_BlockoObject_Approval> form = Form.form(Swagger_BlockoObject_Approval.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_BlockoObject_Approval help = form.get();
 
             // Kontrola objektu
@@ -2548,9 +2529,8 @@ public class Controller_Blocko extends Controller{
             // Vrácení potvrzení
             return GlobalResult.result_ok();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
-
         }
     }
 
@@ -2570,16 +2550,15 @@ public class Controller_Blocko extends Controller{
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result blockoApproval() {
-
         try {
 
             // Získání JSON
             final Form<Swagger_BlockoObject_Approve_withChanges> form = Form.form(Swagger_BlockoObject_Approve_withChanges.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_BlockoObject_Approve_withChanges help = form.get();
 
             // Kontrola názvu
-            if(help.blocko_block_version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
+            if (help.blocko_block_version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
 
             // Kontrola objektu
             Model_BlockoBlockVersion privateBlockoBlockVersion = Model_BlockoBlockVersion.get_byId(help.object_id);
@@ -2608,9 +2587,8 @@ public class Controller_Blocko extends Controller{
             blockoBlockVersion.date_of_create = new Date();
             blockoBlockVersion.save();
 
-
             // Pokud jde o schválení po ediatci
-            if(help.state.equals("edit")) {
+            if (help.state.equals("edit")) {
                 privateBlockoBlockVersion.approval_state = Enum_Approval_state.edited;
 
                 // Odeslání emailu
@@ -2632,7 +2610,7 @@ public class Controller_Blocko extends Controller{
             // Vrácení výsledku
             return GlobalResult.result_ok();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
@@ -2640,13 +2618,13 @@ public class Controller_Blocko extends Controller{
     /**
     @ApiOperation(value = "", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
-    public Result blockoBlockVersion_editScheme(){
+    public Result blockoBlockVersion_editScheme() {
 
         try {
 
             // Získání JSON
             final Form<Swagger_BlockoBlock_BlockoVersion_Scheme_Edit> form = Form.form(Swagger_BlockoBlock_BlockoVersion_Scheme_Edit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_BlockoBlock_BlockoVersion_Scheme_Edit help = form.get();
 
             // Kontrola objektu
@@ -2662,14 +2640,14 @@ public class Controller_Blocko extends Controller{
 
             // Vrácení výsledku
             return GlobalResult.result_ok();
-        }catch (Exception e) {
+        } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
 
     @ApiOperation(value = "", hidden = true)
     @Security.Authenticated(Secured_Admin.class)
-    public Result blockoBlockVersion_createScheme(){
+    public Result blockoBlockVersion_createScheme() {
 
         try {
 
@@ -2678,7 +2656,7 @@ public class Controller_Blocko extends Controller{
 
             // Získání JSON
             final Form<Swagger_BlockoBlock_BlockoVersion_Scheme_Edit> form = Form.form(Swagger_BlockoBlock_BlockoVersion_Scheme_Edit.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
             Swagger_BlockoBlock_BlockoVersion_Scheme_Edit help = form.get();
 
             // Úprava objektu
@@ -2692,7 +2670,7 @@ public class Controller_Blocko extends Controller{
 
             // Vrácení výsledku
             return GlobalResult.result_ok();
-        }catch (Exception e) {
+        } catch (Exception e) {
             return Server_Logger.result_internalServerError(e, request());
         }
     }
