@@ -18,18 +18,16 @@ public class WS_Message_Instance_terminal_set_snap extends WS_AbstractMessage_In
     @JsonIgnore
     public static final String message_type = "instance_set_terminals";
 
-
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
-
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public ObjectNode make_request(List<Model_MProgramInstanceParameter> parameters) {
-
+    public ObjectNode make_request(List<String> terminalIds) {
+/*
         List<Terminal_parameter> terminal_parameters = new ArrayList<>();
 
-        for(Model_MProgramInstanceParameter parameter : parameters){
+        for (Model_MProgramInstanceParameter parameter : parameters){
 
             Terminal_parameter terminal_parameter = new Terminal_parameter();
             terminal_parameter.terminal_id = parameter.id.toString();
@@ -38,26 +36,21 @@ public class WS_Message_Instance_terminal_set_snap extends WS_AbstractMessage_In
 
             terminal_parameters.add(terminal_parameter);
         }
-
+*/
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
         request.put("message_channel", Model_HomerInstance.CHANNEL);
-        request.set("terminals", Json.toJson(terminal_parameters) );
+        request.set("terminals", Json.toJson(terminalIds) );
 
         return request;
-
     }
 
+    public class Terminal_parameter {
 
-    public class Terminal_parameter{
+        public String terminal_id; // M_Program_snap_parameter_ID
+        public String target_id;   // m_project_id
 
-        public String terminal_id;  // Toto chtěl David U. - nikdo tomu nerozumí proč... Ale je to prý terminologie Homera  // M_Program_snap_parameter_ID
-        public String target_id;    // Toto chtěl David U. - nikdo tomu nerozumí proč... Ale je to prý terminologie Homera  // m_project_id
-
-        public Enum_MProgram_SnapShot_settings settings;    // absolutely_public, with token etc.
-
+        public Enum_MProgram_SnapShot_settings settings; // absolutely_public, with token etc.
     }
-
-
 }

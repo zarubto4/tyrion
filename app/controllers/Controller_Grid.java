@@ -762,26 +762,24 @@ public class Controller_Grid extends Controller {
                     .isNotNull("m_project_program_snapshot.instance_versions.instance_record.actual_running_instance")
                     .findUnique();
 
-            if(parameter == null) return GlobalResult.result_notFound("MProgramInstanceParameter by token not found in database");
+            if (parameter == null) return GlobalResult.result_notFound("MProgramInstanceParameter by token not found in database");
 
-            try{
+            try {
 
                 return GlobalResult.result_ok(Json.toJson(parameter.get_connection_summary( ctx())));
 
-            }catch (Tyrion_Exp_ForbidenPermission e){
+            } catch (Tyrion_Exp_ForbidenPermission e) {
 
                 return GlobalResult.result_forbidden();
 
-            }catch (Tyrion_Exp_ObjectNotValidAnymore e){
+            } catch (Tyrion_Exp_ObjectNotValidAnymore e) {
 
                 return GlobalResult.result_badRequest("QR token is not valid anymore");
 
-            }catch (Tyrion_Exp_Unauthorized e){
+            } catch (Tyrion_Exp_Unauthorized e) {
 
                 return GlobalResult.result_unauthorized();
-
             }
-
 
         }catch (Exception e){
             return ServerLogger.result_internalServerError(e, request());

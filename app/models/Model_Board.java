@@ -907,17 +907,13 @@ public class Model_Board extends Model {
 
             List<JsonNode> results = new ArrayList<>();
 
-            executor.invokeAll(callables)
-                    .stream()
-                    .map(future -> {
-                        try {
-                            results.add(future.get());
-
-                            return null;
-                        } catch (Exception e) {
-                            throw new IllegalStateException(e);
-                        }
-                    }).forEach(System.out::println);
+            executor.invokeAll(callables).forEach(future -> {
+                try {
+                    results.add(future.get());
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+            });
 
             return results;
 

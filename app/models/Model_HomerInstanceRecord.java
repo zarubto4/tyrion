@@ -16,6 +16,7 @@ import utilities.scheduler.CustomScheduler;
 import utilities.swagger.outboundClass.Swagger_ActualizationProcedure_Short_Detail;
 import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_device_set_snap;
 import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_status;
+import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_terminal_set_snap;
 import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Instance_add;
 import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_upload_blocko_program;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Online_Change_status;
@@ -72,8 +73,8 @@ public class Model_HomerInstanceRecord extends Model {
     @Transient @JsonProperty  public List<Model_MProjectProgramSnapShot> m_project_snapshot()    {  return get_b_program_version().b_program_version_snapshots;}
     @Transient @JsonProperty  public Enum_Homer_instance_record_status status()    {
 
-        if(planed_when.getTime() > new Date().getTime()) return Enum_Homer_instance_record_status.FUTURE;
-        if(actual_running_instance != null) return Enum_Homer_instance_record_status.NOW;
+        if (planed_when.getTime() > new Date().getTime()) return Enum_Homer_instance_record_status.FUTURE;
+        if (actual_running_instance != null) return Enum_Homer_instance_record_status.NOW;
         else return Enum_Homer_instance_record_status.HISTORY;
 
     }
@@ -94,9 +95,9 @@ public class Model_HomerInstanceRecord extends Model {
 
 
     @JsonIgnore @Transient @TyrionCachedList
-    public Model_VersionObject get_b_program_version(){
+    public Model_VersionObject get_b_program_version() {
 
-        if(cache_version_object_id == null){
+        if (cache_version_object_id == null) {
             Model_VersionObject version = Model_VersionObject.find.where().eq("instance_record.id", id).select("id").findUnique();
             cache_version_object_id = version.id;
         }
@@ -108,7 +109,7 @@ public class Model_HomerInstanceRecord extends Model {
     @JsonIgnore @Transient @TyrionCachedList public List<Model_ActualizationProcedure> get_actualization_procedures() {
         try{
 
-            if(cache_procedures_ids.isEmpty()){
+            if (cache_procedures_ids.isEmpty()) {
 
                 List<Model_ActualizationProcedure> procedures = Model_ActualizationProcedure.find.where().eq("homer_instance_record.id", id).select("id").findList();
 
@@ -121,13 +122,13 @@ public class Model_HomerInstanceRecord extends Model {
 
             List<Model_ActualizationProcedure> procedures  = new ArrayList<>();
 
-            for(String procedure_id : cache_procedures_ids){
+            for (String procedure_id : cache_procedures_ids) {
                 procedures.add(Model_ActualizationProcedure.get_byId(procedure_id));
             }
 
             return procedures;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
             return new ArrayList<Model_ActualizationProcedure>();
         }
@@ -135,20 +136,20 @@ public class Model_HomerInstanceRecord extends Model {
 
 
     @JsonIgnore @Transient
-    public Model_Product getProduct(){
+    public Model_Product getProduct() {
         return this.actual_running_instance.get_project().get_product();
 
     }
 
 
-    @JsonIgnore @Transient public List<String>get_boards_required_by_record(){
+    @JsonIgnore @Transient public List<String>get_boards_required_by_record() {
 
         List<String> board_ids = new ArrayList<>();
 
         // Contains All Hardware for Update
-        for(Model_BProgramHwGroup group : get_b_program_version().b_program_hw_groups) {
+        for (Model_BProgramHwGroup group : get_b_program_version().b_program_hw_groups) {
             board_ids.add(group.main_board_pair.board.id);
-            for(Model_BPair model_bPair : group.device_board_pairs){
+            for (Model_BPair model_bPair : group.device_board_pairs) {
                 board_ids.add(model_bPair.board.id);
             }
         }
@@ -170,12 +171,12 @@ public class Model_HomerInstanceRecord extends Model {
 
             // Step 1
             terminal_logger.debug("Set Instance Record into Cloud ");
-            if(this.actual_running_instance == null){
+            if (this.actual_running_instance == null) {
                 terminal_logger.debug("Actual_running_instance its  null - Its required set this intance record as actual running into database");
                 this.change_record_as_main();
             }
 
-            if(main_instance_history.server_online_state() != Enum_Online_status.online) {
+            if (main_instance_history.server_online_state() != Enum_Online_status.online) {
                 terminal_logger.debug("Server je offline  - Its not possible to continue");
                 return;
             }
@@ -184,15 +185,15 @@ public class Model_HomerInstanceRecord extends Model {
 
             WS_Message_Instance_status.InstanceStatus instanceStatus = status.get_status(actual_running_instance.id);
 
-            if(instanceStatus.error_code != null ){
+            if (instanceStatus.error_code != null ) {
                 terminal_logger.warn("Instance " + actual_running_instance.id + " Instance not set in Homer Server ");
             }
 
             // Instance status
-            if(!instanceStatus.status){
+            if (!instanceStatus.status) {
                 // Vytvořím Instanci
                 WS_Message_Homer_Instance_add result_instance   = actual_running_instance.cloud_homer_server.add_instance(actual_running_instance);
-                if(!result_instance.status.equals("success")){
+                if (!result_instance.status.equals("success")) {
                     terminal_logger.internalServerError(new Exception("Failed to add Instance. ErrorCode: " + result_instance.error_code + ". Error: " + result_instance.error));
                     return;
                 }
@@ -200,15 +201,22 @@ public class Model_HomerInstanceRecord extends Model {
 
             // Step 2
             WS_Message_Instance_upload_blocko_program result_step_2 = this.upload_blocko_program();
-            if(!result_step_2.status.equals("success")){
+            if (!result_step_2.status.equals("success")) {
                 terminal_logger.warn("Instance " + actual_running_instance.id + " Krok dva nevyšel Error :: Error Code:: " + result_step_2.error_code);
                 return;
             }
 
             // Step 3
             WS_Message_Instance_device_set_snap result_step_3 =  this.update_device_summary_collection();
-            if(!result_step_3.status.equals("success")){
-                terminal_logger.warn("Instance " + actual_running_instance.id + " Krok dva nevyšel Error :: Error Code:: " + result_step_3.error_code);
+            if (!result_step_3.status.equals("success")) {
+                terminal_logger.warn("Instance " + actual_running_instance.id + " Krok tři nevyšel Error :: Error Code:: " + result_step_3.error_code);
+                return;
+            }
+
+            // Step 4
+            WS_Message_Instance_terminal_set_snap result_step_4 =  this.update_terminals();
+            if (!result_step_4.status.equals("success")) {
+                terminal_logger.warn("Instance " + actual_running_instance.id + " Krok čtyři nevyšel Error :: Error Code:: " + result_step_4.error_code);
                 return;
             }
 
@@ -233,7 +241,7 @@ public class Model_HomerInstanceRecord extends Model {
 
             Model_HomerInstance instance = main_instance_history;
 
-            if( instance.actual_instance != null) {
+            if (instance.actual_instance != null) {
 
                 terminal_logger.debug("upload_record Actual Instnace != null -> InstanceRecord ID: {}", instance.actual_instance.id);
 
@@ -246,7 +254,7 @@ public class Model_HomerInstanceRecord extends Model {
 
                 previous_version.update();
 
-            }else {
+            } else {
                 terminal_logger.debug("upload_record: First uploading of instance");
             }
 
@@ -255,19 +263,19 @@ public class Model_HomerInstanceRecord extends Model {
             // record that was turned off and on again.
             Model_HomerInstanceRecord latest_version = Model_HomerInstanceRecord.find.where().eq("main_instance_history.id", main_instance_history.id).isNotNull("running_to").orderBy().desc("running_to").setMaxRows(1).findUnique();
 
-            if(latest_version != null){
+            if (latest_version != null) {
 
-                for(Model_MProjectProgramSnapShot snap_shot : latest_version.get_b_program_version().b_program_version_snapshots){
+                for (Model_MProjectProgramSnapShot snap_shot : latest_version.get_b_program_version().b_program_version_snapshots) {
 
                     // Programy
-                    for(Model_MProgramInstanceParameter old_parameter : snap_shot.m_program_snapshots()){
+                    for (Model_MProgramInstanceParameter old_parameter : snap_shot.m_program_snapshots()) {
 
                         Model_MProgramInstanceParameter new_parameter = Model_MProgramInstanceParameter.find.where()
                                 .eq("m_project_program_snapshot.instance_versions.instance_record.id", id)
                                 .eq("m_program_version.id", old_parameter.m_program_version.id)
                                 .findUnique();
 
-                        if(new_parameter == null){
+                        if (new_parameter == null) {
                             continue;
                         }
 
@@ -288,17 +296,14 @@ public class Model_HomerInstanceRecord extends Model {
             instance.update();
             instance.refresh();
 
-
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
         }
-
-
     }
 
     //Add Record to cloud Step 2
     @JsonIgnore @Transient
-    private WS_Message_Instance_upload_blocko_program upload_blocko_program(){
+    private WS_Message_Instance_upload_blocko_program upload_blocko_program() {
         try {
 
             Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", get_b_program_version().id).eq("file_name", "program.js").findUnique();
@@ -306,13 +311,13 @@ public class Model_HomerInstanceRecord extends Model {
             JsonNode node =  main_instance_history.write_with_confirmation(new WS_Message_Instance_upload_blocko_program().make_request(main_instance_history, get_b_program_version()), 1000 * 3, 0, 2);
 
             final Form<WS_Message_Instance_upload_blocko_program> form = Form.form(WS_Message_Instance_upload_blocko_program.class).bind(node);
-            if(form.hasErrors()) throw new Exception("WS_Message_Instance_upload_blocko_program: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+            if (form.hasErrors()) throw new Exception("WS_Message_Instance_upload_blocko_program: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
             return form.get();
 
-        }catch (InterruptedException|TimeoutException e){
+        } catch (InterruptedException|TimeoutException e) {
             return  new WS_Message_Instance_upload_blocko_program();
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
             return  new WS_Message_Instance_upload_blocko_program();
         }
@@ -320,24 +325,48 @@ public class Model_HomerInstanceRecord extends Model {
 
     //Add Record to cloud Step 3
     @JsonIgnore @Transient
-    private WS_Message_Instance_device_set_snap update_device_summary_collection(){
+    private WS_Message_Instance_device_set_snap update_device_summary_collection() {
         try {
 
             // Seznam - který by na instanci měl běžet!
             List<String> hardware_ids_required_by_instance = actual_running_instance.get_boards_id_required_by_record();
 
             // Přidat nový otisk hardwaru
-            if(!hardware_ids_required_by_instance.isEmpty()){
+            if (!hardware_ids_required_by_instance.isEmpty()) {
                 return actual_running_instance.set_device_to_instance(hardware_ids_required_by_instance);
-            }else {
+            } else {
                 WS_Message_Instance_device_set_snap result = new WS_Message_Instance_device_set_snap();
                 result.status = "success";
                 return result;
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
             return new WS_Message_Instance_device_set_snap();
+        }
+    }
+
+    @JsonIgnore @Transient
+    private WS_Message_Instance_terminal_set_snap update_terminals() {
+        try {
+
+            List<String> terminalIds = new ArrayList<>();
+
+            for (Model_MProjectProgramSnapShot snapShot : this.get_b_program_version().b_program_version_snapshots) {
+                terminalIds.add(snapShot.m_project_id());
+            }
+
+            if (!terminalIds.isEmpty()) {
+                return actual_running_instance.setTerminals(terminalIds);
+            } else {
+                WS_Message_Instance_terminal_set_snap result = new WS_Message_Instance_terminal_set_snap();
+                result.status = "success";
+                return result;
+            }
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+            return new WS_Message_Instance_terminal_set_snap();
         }
     }
 
@@ -352,7 +381,7 @@ public class Model_HomerInstanceRecord extends Model {
             actualization_procedure.project_id = actual_running_instance.get_project_id();
             actualization_procedure.date_of_create = new Date();
 
-            if(running_from != null) actualization_procedure.date_of_planing = running_from;
+            if (running_from != null) actualization_procedure.date_of_planing = running_from;
 
             actualization_procedure.homer_instance_record = this;
             actualization_procedure.type_of_update = Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP;
@@ -365,7 +394,7 @@ public class Model_HomerInstanceRecord extends Model {
             List<Model_BPair> model_bPairs = new ArrayList<>();
 
             // Contains All Hardware for Update
-            for(Model_BProgramHwGroup group : get_b_program_version().b_program_hw_groups) {
+            for (Model_BProgramHwGroup group : get_b_program_version().b_program_hw_groups) {
                 model_bPairs.add(group.main_board_pair);
                 model_bPairs.addAll(group.device_board_pairs);
             }
@@ -373,7 +402,7 @@ public class Model_HomerInstanceRecord extends Model {
             //actualization_procedure.refresh();
 
             // Projedu seznam HW - podle skupin instancí jak jsou poskládané podle Yody
-            for(Model_BPair model_bPair : model_bPairs) {
+            for (Model_BPair model_bPair : model_bPairs) {
 
                 List<Model_CProgramUpdatePlan> old_plans_main_board = Model_CProgramUpdatePlan.find.where()
                         .eq("firmware_type", Enum_Firmware_type.FIRMWARE.name())
@@ -403,7 +432,7 @@ public class Model_HomerInstanceRecord extends Model {
                 updates.add(plan_master_board);
             }
 
-            if(updates.isEmpty()){
+            if (updates.isEmpty()) {
                 terminal_logger.debug("create_actualization_request: nothing for update");
                 return;
             }
@@ -411,8 +440,8 @@ public class Model_HomerInstanceRecord extends Model {
             actualization_procedure.updates.addAll(updates);
             actualization_procedure.save();
 
-            for(Model_CProgramUpdatePlan plan_update : actualization_procedure.updates){
-                if(plan_update.state != Enum_CProgram_updater_state.complete){
+            for (Model_CProgramUpdatePlan plan_update : actualization_procedure.updates) {
+                if (plan_update.state != Enum_CProgram_updater_state.complete) {
                     actualization_procedure.execute_update_procedure();
                     return;
                 }
@@ -422,7 +451,7 @@ public class Model_HomerInstanceRecord extends Model {
             actualization_procedure.date_of_finish = actualization_procedure.date_of_create;
             actualization_procedure.update();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError( e);
         }
     }
@@ -430,7 +459,7 @@ public class Model_HomerInstanceRecord extends Model {
 /* JSON Override  Method -----------------------------------------------------------------------------------------*/
 
     @Override @Transient
-    public void save(){
+    public void save() {
 
         while (true) { // I need Unique Value
             this.id = UUID.randomUUID().toString();
@@ -439,12 +468,12 @@ public class Model_HomerInstanceRecord extends Model {
         super.save();
 
         // If immidietly
-        if(planed_when == null || planed_when.getTime() < new Date().getTime()){
+        if (planed_when == null || planed_when.getTime() < new Date().getTime()) {
 
             terminal_logger.debug("bProgramVersion_deploy: Set the instants immediately");
             this.set_record_into_cloud();
 
-        }else {
+        } else {
             terminal_logger.debug("bProgramVersion_deploy: Set the instants by Time scheduler (not now) ");
             CustomScheduler.scheduleBlockoUpload(this);
         }
@@ -452,7 +481,7 @@ public class Model_HomerInstanceRecord extends Model {
     }
 
     @Override @Transient
-    public void update(){
+    public void update() {
 
         terminal_logger.debug("update :: Update object id: {}",  this.id);
 

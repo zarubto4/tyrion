@@ -2,7 +2,6 @@ package utilities.independent_threads.homer_server;
 
 import com.avaje.ebean.Expr;
 import com.avaje.ebean.PagedList;
-import models.Model_Board;
 import models.Model_CProgramUpdatePlan;
 import models.Model_HomerServer;
 import utilities.enums.Enum_CProgram_updater_state;

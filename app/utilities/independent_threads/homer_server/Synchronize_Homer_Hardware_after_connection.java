@@ -1,16 +1,13 @@
 package utilities.independent_threads.homer_server;
 
-import com.avaje.ebean.PagedList;
 import models.*;
 import play.libs.Json;
 import utilities.logger.Class_Logger;
 import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_connected;
-import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_overview;
 import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_overview_Board;
 import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_Hardware_list;
 import web_socket.services.WS_HomerServer;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -93,10 +90,6 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                 terminal_logger.warn("Something is wrong with WS_Help_Hardware_board_overview message");
                 terminal_logger.warn("Incoming message WS_Help_Hardware_board_overview {}", Json.toJson(overview));
             }
-
-
         }
     }
-
-
 }
