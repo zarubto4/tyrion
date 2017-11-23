@@ -53,7 +53,7 @@ public class Controller_Actualization extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result get_Actualization_Procedure(@ApiParam(required = true) String actualization_procedure_id){
+    public Result get_Actualization_Procedure(@ApiParam(required = true) String actualization_procedure_id) {
         try {
 
             // Kontrola objektu
@@ -61,7 +61,7 @@ public class Controller_Actualization extends Controller {
             if (procedure == null) return GlobalResult.result_notFound("Actualization_Procedure actualization_procedure_id not found");
 
             // Kontrola oprávnění
-            if (! procedure.read_permission()) return GlobalResult.result_forbidden();
+            if (!procedure.read_permission()) return GlobalResult.result_forbidden();
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(procedure));
@@ -97,23 +97,21 @@ public class Controller_Actualization extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_Actualization_Procedures_by_filter(int page_number){
+    public Result get_Actualization_Procedures_by_filter(int page_number) {
         try {
 
             // Získání JSON
             final Form<Swagger_ActualizationProcedure_Filter> form = Form.form(Swagger_ActualizationProcedure_Filter.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_ActualizationProcedure_Filter help = form.get();
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_ActualizationProcedure> query = Ebean.find(Model_ActualizationProcedure.class);
             query.order().desc("date_of_create");
 
+            if (!help.project_ids.isEmpty()) {
 
-
-            if(!help.project_ids.isEmpty()) {
-
-                for(String project_id : help.project_ids) {
+                for (String project_id : help.project_ids) {
                     Model_Project project = Model_Project.get_byId(project_id);
                     if (project == null) return GlobalResult.result_notFound("Model_Project project_id not found");
                     if (!project.read_permission()) return GlobalResult.result_forbidden();
@@ -121,10 +119,9 @@ public class Controller_Actualization extends Controller {
 
                 query.where().in("project_id", help.project_ids);
 
-            }else {
+            } else {
                 return GlobalResult.result_notFound("Project project_id not included");
             }
-
 
             // Vyvoření odchozího JSON
             Swagger_ActualizationProcedure_List result = new Swagger_ActualizationProcedure_List(query,page_number);
@@ -159,7 +156,7 @@ public class Controller_Actualization extends Controller {
             if (procedure == null) return GlobalResult.result_notFound("Actualization_Procedure actualization_procedure_id not found");
 
             // Kontrola oprávnění
-            if (! procedure.read_permission()) return GlobalResult.result_forbidden();
+            if (!procedure.read_permission()) return GlobalResult.result_forbidden();
 
             procedure.cancel_procedure();
 
@@ -200,24 +197,22 @@ public class Controller_Actualization extends Controller {
 
             // Získání JSON
             final Form<Swagger_ActualizationProcedure_Make> form = Form.form(Swagger_ActualizationProcedure_Make.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_ActualizationProcedure_Make help = form.get();
-
-
 
             // Kontrola Firmware Type
             Enum_Firmware_type firmware_type = Enum_Firmware_type.getFirmwareType(help.firmware_type);
-            if(firmware_type == null)  return GlobalResult.result_notFound("firmware_type not found");
+            if (firmware_type == null)  return GlobalResult.result_notFound("firmware_type not found");
 
             // Kontrola Projektu
             Model_Project project = Model_Project.get_byId(help.project_id);
-            if(project == null)  return GlobalResult.result_notFound("firmware_type not found");
-            if(!project.update_permission()) return GlobalResult.result_forbidden();
+            if (project == null)  return GlobalResult.result_notFound("firmware_type not found");
+            if (!project.update_permission()) return GlobalResult.result_forbidden();
 
             // Kontrola
 
             // Only for controling
-            if(help.time != null && help.time != 0L) {
+            if (help.time != null && help.time != 0L) {
                 try {
                     Date date_of_planing = new Date(help.time);
                     if (date_of_planing.getTime() < (new Date().getTime() - 5000)) {
@@ -229,9 +224,8 @@ public class Controller_Actualization extends Controller {
             }
 
             Model_BoardGroup group = Model_BoardGroup.get_byId(help.hardware_group_id);
-            if(group == null)  return GlobalResult.result_notFound("Model_BoardGroup group_id recognized");
-            if(!group.read_permission()) return GlobalResult.result_forbidden();
-
+            if (group == null)  return GlobalResult.result_notFound("Model_BoardGroup group_id recognized");
+            if (!group.read_permission()) return GlobalResult.result_forbidden();
 
             Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
             procedure.type_of_update = Enum_Update_type_of_update.MANUALLY_RELEASE_MANAGER;
@@ -246,16 +240,14 @@ public class Controller_Actualization extends Controller {
                 procedure.date_of_planing = new Date();
             }
 
-
-            for(Swagger_ActualizationProcedure_Make_TypeOfBoard type_of_boards_settings : help.type_of_boards_settings) {
+            for (Swagger_ActualizationProcedure_Make_TypeOfBoard type_of_boards_settings : help.type_of_boards_settings) {
 
                 Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(type_of_boards_settings.type_of_board_id);
-                if(typeOfBoard == null) return GlobalResult.result_notFound("firmware_type not found");
-
+                if (typeOfBoard == null) return GlobalResult.result_notFound("firmware_type not found");
 
                 Model_VersionObject c_program_version = null;
 
-                if(firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP) {
+                if (firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP) {
                     c_program_version = Model_VersionObject.get_byId(type_of_boards_settings.c_program_version_id);
                     if (c_program_version == null) return GlobalResult.result_notFound("firmware_type not found");
                     if (c_program_version.get_c_program() == null) return GlobalResult.result_notFound("Version is not c Program");
@@ -265,7 +257,7 @@ public class Controller_Actualization extends Controller {
 
                 Model_BootLoader bootLoader = null;
 
-                if(firmware_type == Enum_Firmware_type.BOOTLOADER) {
+                if (firmware_type == Enum_Firmware_type.BOOTLOADER) {
                     bootLoader = Model_BootLoader.get_byId(type_of_boards_settings.bootloader_id);
                     if (bootLoader == null) return GlobalResult.result_notFound("firmware_type  found");
                     if (!bootLoader.read_permission()) return GlobalResult.result_forbidden();
@@ -286,17 +278,16 @@ public class Controller_Actualization extends Controller {
                     plan.firmware_type = firmware_type;
                     plan.state = Enum_CProgram_updater_state.not_start_yet;
 
-                    if(firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP) {
+                    if (firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP) {
                         plan.c_program_version_for_update = c_program_version;
                     }
 
-                    if(firmware_type == Enum_Firmware_type.BOOTLOADER){
+                    if (firmware_type == Enum_Firmware_type.BOOTLOADER) {
                         plan.bootloader = bootLoader;
                     }
 
                     procedure.updates.add(plan);
                 }
-
             }
 
             procedure.save();
@@ -306,6 +297,4 @@ public class Controller_Actualization extends Controller {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
-
-
 }

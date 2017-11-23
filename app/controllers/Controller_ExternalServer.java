@@ -63,12 +63,12 @@ public class Controller_ExternalServer extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_API.class)
-    public Result homer_server_create(){
-        try{
+    public Result homer_server_create() {
+        try {
 
             // Zpracování Json
             final Form<Swagger_Cloud_Homer_Server_New> form = Form.form(Swagger_Cloud_Homer_Server_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Cloud_Homer_Server_New help = form.get();
 
             // Vytvoření objektu
@@ -86,7 +86,7 @@ public class Controller_ExternalServer extends Controller {
             server.server_url = help.server_url;
 
             // Kontrola oprávnění
-            if(!server.create_permission()) return GlobalResult.result_forbidden();
+            if (!server.create_permission()) return GlobalResult.result_forbidden();
 
             // Uložení objektu
             server.save();
@@ -115,16 +115,16 @@ public class Controller_ExternalServer extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_API.class)
-    public Result homer_server_set_main_server(String homer_server_id){
-        try{
+    public Result homer_server_set_main_server(String homer_server_id) {
+        try {
 
             Model_HomerServer server = Model_HomerServer.get_byId(homer_server_id);
-            if(server == null) return GlobalResult.result_notFound("HomerServer homer_server_id not found");
+            if (server == null) return GlobalResult.result_notFound("HomerServer homer_server_id not found");
 
             Model_HomerServer main_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.main_server).findUnique();
-            if(main_server != null) return GlobalResult.result_badRequest("HomerServer Main server is already set.");
+            if (main_server != null) return GlobalResult.result_badRequest("HomerServer Main server is already set.");
 
-            if(!server.edit_permission()) return GlobalResult.result_forbidden();
+            if (!server.edit_permission()) return GlobalResult.result_forbidden();
 
             server.server_type = Enum_Cloud_HomerServer_type.main_server;
             server.update();
@@ -152,18 +152,17 @@ public class Controller_ExternalServer extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_API.class)
-    public Result homer_server_set_backup_server(String homer_server_id){
-        try{
+    public Result homer_server_set_backup_server(String homer_server_id) {
+        try {
 
             Model_HomerServer server = Model_HomerServer.get_byId(homer_server_id);
-            if(server == null) return GlobalResult.result_notFound("HomerServer homer_server_id not found");
-            if(server.server_type != Enum_Cloud_HomerServer_type.public_server) return GlobalResult.result_badRequest("Server must be in public group!");
-
+            if (server == null) return GlobalResult.result_notFound("HomerServer homer_server_id not found");
+            if (server.server_type != Enum_Cloud_HomerServer_type.public_server) return GlobalResult.result_badRequest("Server must be in public group!");
 
             Model_HomerServer backup_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.backup_server).findUnique();
-            if(backup_server != null) return GlobalResult.result_badRequest("HomerServer Main server is already set.");
+            if (backup_server != null) return GlobalResult.result_badRequest("HomerServer Main server is already set.");
 
-            if(!server.edit_permission()) return GlobalResult.result_forbidden();
+            if (!server.edit_permission()) return GlobalResult.result_forbidden();
 
             server.server_type = Enum_Cloud_HomerServer_type.backup_server;
             server.update();
@@ -208,12 +207,12 @@ public class Controller_ExternalServer extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Secured_API.class)
-    public Result homer_server_edit(String unique_identifier ){
-        try{
+    public Result homer_server_edit(String unique_identifier ) {
+        try {
 
             // Zpracování Json
             final Form<Swagger_Cloud_Homer_Server_New> form = Form.form(Swagger_Cloud_Homer_Server_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Cloud_Homer_Server_New help = form.get();
 
             // Kontrola objektu
@@ -221,7 +220,7 @@ public class Controller_ExternalServer extends Controller {
             if (server == null) return GlobalResult.result_notFound("Cloud_Blocko_Server server_id not found");
 
             // Kontrola oprávnění
-            if(!server.edit_permission()) return GlobalResult.result_forbidden();
+            if (!server.edit_permission()) return GlobalResult.result_forbidden();
 
             // Úprava objektu
             server.personal_server_name = help.personal_server_name;
@@ -268,15 +267,15 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
-    public Result homer_server_get_all(){
-        try{
+    public Result homer_server_get_all() {
+        try {
 
             // Získání seznamu
             List<Model_HomerServer> servers = Model_HomerServer.get_all();
 
             // Vylistování informací
             List<Swagger_HomerServer_public_Detail> servers_short = new ArrayList<>();
-            for(Model_HomerServer server : servers) servers_short.add(server.get_public_info());
+            for (Model_HomerServer server : servers) servers_short.add(server.get_public_info());
 
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson(servers_short));
@@ -301,15 +300,14 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
-    public Result homer_server_get(String server_id){
-        try{
+    public Result homer_server_get(String server_id) {
+        try {
 
             // Získání seznamu
             Model_HomerServer serves = Model_HomerServer.get_byId(server_id);
             if (serves == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
 
-            if(!serves.read_permission()) return GlobalResult.result_forbidden();
-
+            if (!serves.read_permission()) return GlobalResult.result_forbidden();
 
             // Vrácení seznamu
             return GlobalResult.result_ok(Json.toJson(serves));
@@ -339,15 +337,15 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
-    public Result homer_server_delete(String server_id){
-        try{
+    public Result homer_server_delete(String server_id) {
+        try {
 
             // Kontrola objektu
             Model_HomerServer server = Model_HomerServer.get_byId(server_id);
             if (server == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
 
             // Kontrola oprávnění
-            if(!server.delete_permission()) return GlobalResult.result_forbidden();
+            if (!server.delete_permission()) return GlobalResult.result_forbidden();
 
             // Smzání objektu
             server.delete();
@@ -394,14 +392,13 @@ public class Controller_ExternalServer extends Controller {
     })
     @Security.Authenticated(Secured_API.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result compilation_server_create(){
-        try{
+    public Result compilation_server_create() {
+        try {
 
             // Zpracování Json
             Form<Swagger_Cloud_Compilation_Server_New> form = Form.form(Swagger_Cloud_Compilation_Server_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Cloud_Compilation_Server_New help = form.get();
-
 
             // Vytvářím objekt
             Model_CompilationServer server = new Model_CompilationServer();
@@ -409,7 +406,7 @@ public class Controller_ExternalServer extends Controller {
             server.server_url = help.server_url;
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if(! server.create_permission())  return GlobalResult.result_forbidden();
+            if (!server.create_permission())  return GlobalResult.result_forbidden();
 
             // Ukládám objekt
             server.save();
@@ -454,20 +451,20 @@ public class Controller_ExternalServer extends Controller {
     })
     @Security.Authenticated(Secured_API.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result compilation_server_edit(String server_id ){
-        try{
+    public Result compilation_server_edit(String server_id ) {
+        try {
 
             // Zpracování Json
             Form<Swagger_Cloud_Compilation_Server_New> form = Form.form(Swagger_Cloud_Compilation_Server_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Cloud_Compilation_Server_New help = form.get();
 
-            //Zkontroluji validitu
+            // Zkontroluji validitu
             Model_CompilationServer server = Model_CompilationServer.get_byId(server_id);
             if (server == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
 
             // Zkontroluji oprávnění
-            if(!server.edit_permission()) return GlobalResult.result_forbidden();
+            if (!server.edit_permission()) return GlobalResult.result_forbidden();
 
             // Upravím objekt
             server.personal_server_name = help.personal_server_name;
@@ -496,15 +493,15 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
-    public Result compilation_server_get_all(){
-        try{
+    public Result compilation_server_get_all() {
+        try {
 
             // Vyhledám všechny objekty
             List<Model_CompilationServer> servers = Model_CompilationServer.find.all();
 
             // Vylistování informací
             List<Swagger_CompilerServer_public_Detail> servers_short = new ArrayList<>();
-            for(Model_CompilationServer server : servers) servers_short.add(server.get_public_info());
+            for (Model_CompilationServer server : servers) servers_short.add(server.get_public_info());
 
             // Vracím Objekty
             return GlobalResult.result_ok(Json.toJson(servers_short));
@@ -535,15 +532,15 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
-    public Result compilation_server_get(String server_id ){
-        try{
+    public Result compilation_server_get(String server_id ) {
+        try {
 
             //Zkontroluji validitu
             Model_CompilationServer server = Model_CompilationServer.get_byId(server_id);
             if (server == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if(! server.read_permission())  return GlobalResult.result_forbidden();
+            if (! server.read_permission())  return GlobalResult.result_forbidden();
 
             // Vracím odpověď
             return GlobalResult.result_ok(Json.toJson(server));
@@ -574,15 +571,15 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_API.class)
-    public Result compilation_server_delete(String server_id ){
-        try{
+    public Result compilation_server_delete(String server_id ) {
+        try {
 
             //Zkontroluji validitu
             Model_CompilationServer server = Model_CompilationServer.get_byId(server_id);
             if (server == null) return GlobalResult.result_notFound("Cloud_Compilation_Server server_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if(! server.delete_permission())  return GlobalResult.result_forbidden();
+            if (! server.delete_permission())  return GlobalResult.result_forbidden();
 
             // Smažu objekt
             server.delete();
@@ -612,18 +609,17 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_Homer_Server.class)
-    public Result cloud_file_get_b_program_version(String b_program_version_id){
-        try{
+    public Result cloud_file_get_b_program_version(String b_program_version_id) {
+        try {
 
             // Získám soubor
             Model_VersionObject version_object = Model_VersionObject.get_byId(b_program_version_id);
 
-            if(version_object== null){
+            if (version_object== null) {
                return GlobalResult.result_notFound("File not found");
             }
 
-
-            if(version_object.get_b_program() == null){
+            if (version_object.get_b_program() == null) {
                 return GlobalResult.result_forbidden();
             }
 
@@ -634,7 +630,6 @@ public class Controller_ExternalServer extends Controller {
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 
-
             // Create Policy
             Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
             cal.setTime(new Date());
@@ -644,17 +639,11 @@ public class Controller_ExternalServer extends Controller {
             policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
             policy.setSharedAccessExpiryTime(cal.getTime());
 
-
             String sas = blob.generateSharedAccessSignature(policy, null);
 
             String total_link = blob.getUri().toString() + "?" + sas;
 
-            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
-            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
-            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
-            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
-            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
-            terminal_logger.warn("cloud_file_get_b_program_version:: Total Link:: " + total_link);
+            terminal_logger.warn("cloud_file_get_b_program_version - download link: {}", total_link);
 
             // Přesměruji na link
             return GlobalResult.redirect(total_link);
@@ -678,26 +667,26 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
-    public Result cloud_file_bin_get_c_program_version(String version_id){
-        try{
+    public Result cloud_file_bin_get_c_program_version(String version_id) {
+        try {
 
             // Ověření objektu
             Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
             if (version_object == null) return GlobalResult.result_notFound("Version version_id not found");
 
             // Zkontroluji validitu Verze zda sedí k C_Programu
-            if(version_object.get_c_program() == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
+            if (version_object.get_c_program() == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
 
-            if(!version_object.get_c_program().read_permission()) return GlobalResult.result_forbidden();
+            if (!version_object.get_c_program().read_permission()) return GlobalResult.result_forbidden();
 
             // Získám soubor
             Model_CCompilation compilation = version_object.c_compilation;
 
-            if(compilation == null){
+            if (compilation == null) {
                 return GlobalResult.result_notFound("File not found");
             }
 
-            if(compilation.status != Enum_Compile_status.successfully_compiled_and_restored){
+            if (compilation.status != Enum_Compile_status.successfully_compiled_and_restored) {
                 return GlobalResult.result_notFound("File not successfully compiled and restored");
             }
 
@@ -710,7 +699,6 @@ public class Controller_ExternalServer extends Controller {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
-
 
     @ApiOperation(value = "get C_Program File",
             tags = {"Homer-Server-API"},
@@ -727,21 +715,19 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_Homer_Server.class)
-    public Result cloud_file_get_c_program_compilation(String compilation_id){
-        try{
+    public Result cloud_file_get_c_program_compilation(String compilation_id) {
+        try {
 
             // Získám soubor
             Model_CCompilation compilation = Model_CCompilation.find.byId(compilation_id);
 
-            if(compilation == null){
+            if (compilation == null) {
                 return GlobalResult.result_notFound("File not found");
             }
 
-
-            if(compilation.status != Enum_Compile_status.successfully_compiled_and_restored){
+            if (compilation.status != Enum_Compile_status.successfully_compiled_and_restored) {
                 return GlobalResult.result_notFound("File not successfully compiled and restored");
             }
-
 
             // Separace na Container a Blob
             int slash = compilation.bin_compilation_file.file_path.indexOf("/");
@@ -749,7 +735,6 @@ public class Controller_ExternalServer extends Controller {
             String real_file_path = compilation.bin_compilation_file.file_path.substring(slash+1);
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
-
 
             // Create Policy
             Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
@@ -760,12 +745,11 @@ public class Controller_ExternalServer extends Controller {
             policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
             policy.setSharedAccessExpiryTime(cal.getTime());
 
-
             String sas = blob.generateSharedAccessSignature(policy, null);
 
             String total_link = blob.getUri().toString() + "?" + sas;
 
-            terminal_logger.debug("cloud_file_get_c_program_version:: Total Link:: " + total_link);
+            terminal_logger.debug("cloud_file_get_c_program_version - download link: {}", total_link);
 
             // Přesměruji na link
             return GlobalResult.redirect(total_link);
@@ -790,13 +774,13 @@ public class Controller_ExternalServer extends Controller {
             @ApiResponse(code = 500, message = "Server side Error")
     })
     @Security.Authenticated(Secured_Homer_Server.class)
-    public Result cloud_file_get_bootloader(String bootloader_id){
-        try{
+    public Result cloud_file_get_bootloader(String bootloader_id) {
+        try {
 
             // Získám soubor
             Model_BootLoader bootLoader = Model_BootLoader.get_byId(bootloader_id);
 
-            if(bootLoader == null){
+            if (bootLoader == null) {
                 return GlobalResult.result_notFound("File not found");
             }
 
@@ -816,12 +800,11 @@ public class Controller_ExternalServer extends Controller {
             policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
             policy.setSharedAccessExpiryTime(cal.getTime());
 
-
             String sas = blob.generateSharedAccessSignature(policy, null);
 
             String total_link = blob.getUri().toString() + "?" + sas;
 
-            terminal_logger.debug("cloud_file_get_bootloader_version:: Total Link:: " + total_link);
+            terminal_logger.debug("cloud_file_get_bootloader_version - download link: {}", total_link);
 
             // Přesměruji na link
             return GlobalResult.redirect(total_link);
@@ -830,5 +813,4 @@ public class Controller_ExternalServer extends Controller {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
-
 }

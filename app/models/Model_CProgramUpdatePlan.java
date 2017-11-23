@@ -399,7 +399,7 @@ public class Model_CProgramUpdatePlan extends Model {
                 case UPDATE_DONE: {
                     try {
 
-                        System.out.println("----------------UPDATE PROCEDURA JE OZNACENA JAKO  DONE");
+                        terminal_logger.debug("update_procedure_progress - procedure {} is completed", plan.id);
 
                         plan.state = Enum_CProgram_updater_state.complete;
                         plan.date_of_finish = new Date();
@@ -416,7 +416,6 @@ public class Model_CProgramUpdatePlan extends Model {
 
                             board.actual_boot_loader = plan.get_bootloader();
                             board.update();
-
 
                         } else if (plan.firmware_type == Enum_Firmware_type.BACKUP) {
                             board.actual_backup_c_program_version = plan.c_program_version_for_update;
