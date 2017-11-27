@@ -170,14 +170,14 @@ public class Model_HomerInstanceRecord extends Model {
         new Thread(() -> {
 
             // Step 1
-            terminal_logger.debug("Set Instance Record into Cloud ");
+            terminal_logger.debug("put_record_into_cloud - deploy begins");
             if (this.actual_running_instance == null) {
-                terminal_logger.debug("Actual_running_instance its  null - Its required set this intance record as actual running into database");
+                terminal_logger.debug("put_record_into_cloud - actual_running_instance is null -> change record as main");
                 this.change_record_as_main();
             }
 
             if (main_instance_history.server_online_state() != Enum_Online_status.online) {
-                terminal_logger.debug("Server je offline  - Its not possible to continue");
+                terminal_logger.debug("put_record_into_cloud - server is offline, it is not possible to continue");
                 return;
             }
 
@@ -234,18 +234,17 @@ public class Model_HomerInstanceRecord extends Model {
     //Add Record to cloud Step 1
     @Transient
     private void change_record_as_main() {
-
         try {
 
-            terminal_logger.debug("upload_record: thread is running under record ID:: {} ", id);
+            terminal_logger.debug("change_record_as_main - id: {}", id);
 
             Model_HomerInstance instance = main_instance_history;
 
             if (instance.get_actual_instance() != null) {
 
-                terminal_logger.debug("upload_record Actual Instnace != null -> InstanceRecord ID: {}", instance.get_actual_instance().id);
+                terminal_logger.debug("change_record_as_main - Actual Instance != null -> InstanceRecord ID: {}", instance.get_actual_instance().id);
 
-                terminal_logger.debug("upload_record: Record overwriting previous instance record:: " + instance.get_actual_instance().id);
+                terminal_logger.debug("change_record_as_main - unlink previous instance record {}", instance.get_actual_instance().id);
 
                 Model_HomerInstanceRecord previous_version = instance.get_actual_instance();
 
@@ -255,11 +254,11 @@ public class Model_HomerInstanceRecord extends Model {
                 previous_version.update();
 
             } else {
-                terminal_logger.debug("upload_record: First uploading of instance");
+                terminal_logger.debug("change_record_as_main - deploying for the first time");
             }
 
             // Synchronize Grid App settings from last config
-            // Try Find Latest runing Record with latest configuration - it can be instance.actual_instance from previous step or
+            // Try Find Latest running Record with latest configuration - it can be instance.actual_instance from previous step or
             // record that was turned off and on again.
             Model_HomerInstanceRecord latest_version = Model_HomerInstanceRecord.find.where().eq("main_instance_history.id", main_instance_history.id).isNotNull("running_to").orderBy().desc("running_to").setMaxRows(1).findUnique();
 
@@ -282,19 +281,15 @@ public class Model_HomerInstanceRecord extends Model {
                         new_parameter.connection_token = old_parameter.connection_token;
                         new_parameter.snapshot_settings = old_parameter.snapshot_settings;
                         new_parameter.update();
-
                     }
                 }
             }
 
-            instance.refresh();
-            instance.actual_instance = this;
             this.actual_running_instance = instance;
-            update();
-            refresh();
+            this.update();
 
-            instance.update();
-            instance.refresh();
+            instance.cache_refresh();
+            instance.getB_program().cache_refresh();
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
@@ -302,7 +297,7 @@ public class Model_HomerInstanceRecord extends Model {
     }
 
     //Add Record to cloud Step 2
-    @JsonIgnore @Transient
+    @JsonIgnore
     private WS_Message_Instance_upload_blocko_program upload_blocko_program() {
         try {
 
@@ -467,23 +462,22 @@ public class Model_HomerInstanceRecord extends Model {
         }
         super.save();
 
-        // If immidietly
+        // If immediately
         if (planed_when == null || planed_when.getTime() < new Date().getTime()) {
 
-            terminal_logger.debug("bProgramVersion_deploy: Set the instants immediately");
+            terminal_logger.debug("save - deploy the instance immediately");
             this.put_record_into_cloud();
 
         } else {
-            terminal_logger.debug("bProgramVersion_deploy: Set the instants by Time scheduler (not now) ");
+            terminal_logger.debug("save - deploy the instance by the scheduler in future");
             CustomScheduler.scheduleBlockoUpload(this);
         }
-
     }
 
     @Override @Transient
     public void update() {
 
-        terminal_logger.debug("update :: Update object id: {}",  this.id);
+        terminal_logger.debug("update - update database, id: {}",  this.id);
 
         super.update();
         // cache.put(this.id, this);

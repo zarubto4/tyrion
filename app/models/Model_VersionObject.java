@@ -192,7 +192,7 @@ public class Model_VersionObject extends Model {
                   help.download_link_bin_file = this.c_compilation.file_path();
                 }
 
-            }else {
+            } else {
                 help.status = Enum_Compile_status.file_with_code_not_found;
             }
 
@@ -285,7 +285,6 @@ public class Model_VersionObject extends Model {
         };
 
         compile_that.start();
-
     }
 
     @JsonIgnore @Transient public Response_Interface compile_program_procedure() {

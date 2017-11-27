@@ -369,6 +369,14 @@ public class Model_HomerInstance extends Model {
         }
     }
 
+    public void cache_refresh() {
+        if (cache.containsKey(this.id)) {
+            cache.replace(this.id, this);
+        } else {
+            cache.put(this.id, this);
+        }
+    }
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/

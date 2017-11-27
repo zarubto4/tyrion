@@ -410,7 +410,6 @@ public class Model_Board extends Model {
                     }).start();
 
                     return Enum_Online_status.synchronization_in_progress;
-
                 }
             } else {
                 return Enum_Online_status.unknown_lost_connection_with_server;
@@ -421,7 +420,14 @@ public class Model_Board extends Model {
             return Enum_Online_status.offline;
         }
     }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_HardwareGroup_Short_Detail>  hardware_groups() { List<Swagger_HardwareGroup_Short_Detail>    l = new ArrayList<>();   for( Model_BoardGroup m : get_hardware_groups()) l.add(m.get_group_short_detail());  return l;}
+
+    @JsonProperty @ApiModelProperty(required = true)
+    public List<Swagger_HardwareGroup_Short_Detail> hardware_groups() {
+        List<Swagger_HardwareGroup_Short_Detail> l = new ArrayList<>();
+        for (Model_BoardGroup m : get_hardware_groups())
+            l.add(m.get_group_short_detail());
+        return l;
+    }
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
@@ -664,7 +670,6 @@ public class Model_Board extends Model {
                         Model_Board.device_online_synchronization(form.get());
                         return;
                     }
-
 
                     case WS_Message_Hardware_autobackup_made.message_type: {
 
@@ -1089,21 +1094,21 @@ public class Model_Board extends Model {
 
         // Common Result for fill
         WS_Message_Hardware_overview result = new WS_Message_Hardware_overview();
+        result.status = "success";
 
-        for(JsonNode json_result : results ) {
+        for (JsonNode json_result : results) {
             try {
 
                 final Form<WS_Message_Hardware_overview> form = Form.form(WS_Message_Hardware_overview.class).bind(json_result);
-                if (form.hasErrors()) {
-                    if ( ! (form.get().status.equals("success") && form.get().hardware_list.isEmpty())) {
-                        terminal_logger.warn("get_devices_overview:: Json Incorrect value. {}", result);
-                        terminal_logger.warn("get_devices_overview:: Response. {}", form.errorsAsJson(Lang.forCode("en-US")).toString());
-                        throw new Exception("WS_Message_Hardware_overview: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-                    }
+                if (form.hasErrors()) throw new Exception("WS_Message_Hardware_overview: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                WS_Message_Hardware_overview overview = form.get();
+
+                // TODO should the exception be really thrown here? [AT]
+                if (!overview.status.equals("success") && overview.hardware_list.isEmpty()) {
+                    throw new Exception("WS_Message_Hardware_overview: Status is not success or hw list is empty");
                 }
 
-                result.status = form.get().status;
-                result.hardware_list.addAll(form.get().hardware_list);
+                result.hardware_list.addAll(overview.hardware_list);
 
             } catch (Exception e) {
                 terminal_logger.internalServerError(e);
@@ -1184,16 +1189,7 @@ public class Model_Board extends Model {
 
                 if (help.parameter_type.toLowerCase().equals(field.getName().toLowerCase())) {
 
-                    System.out.println("Mám shodu " + help.parameter_type + " s " + field.getName());
-                    System.out.println("Typ proměné:: " + field.getType().getSimpleName().toLowerCase());
-
-                    System.out.println("Typ Integeru k proovnání:: " + Integer.class.getSimpleName().toLowerCase());
-                    System.out.println("Typ Booleanu k proovnání:: " + String.class.getSimpleName().toLowerCase());
-                    System.out.println("Typ String   k proovnání:: " + Boolean.class.getSimpleName().toLowerCase());
-
                     if (field.getType().getSimpleName().equals(Boolean.class.getSimpleName().toLowerCase())) {
-
-                        System.out.println("JE to boolean");
 
                         // Jediná přístupná vyjímka je pro autoback - ten totiž je zároven v COnfig Json (DM_Board_Bootloader_DefaultConfig)
                         // Ale zároveň je také přímo přístupný v databázi Tyriona
@@ -1213,8 +1209,6 @@ public class Model_Board extends Model {
 
                     if (field.getType().getSimpleName().toLowerCase().equals(String.class.getSimpleName().toLowerCase())) {
 
-                        System.out.println("Je to String");
-
                         field.set(configuration, help.string_value);
                         this.update_bootloader_configuration(configuration);
 
@@ -1226,7 +1220,6 @@ public class Model_Board extends Model {
 
                     if (field.getType().getSimpleName().toLowerCase().equals(Integer.class.getSimpleName().toLowerCase())) {
 
-                        System.out.println("Je to Integer");
                         try {
                             System.out.println("Jaká je integer value:: " + help.integer_value);
                             field.set(configuration, help.integer_value);
@@ -1267,7 +1260,7 @@ public class Model_Board extends Model {
             }
 
             // Make Parallel Operation
-            List<JsonNode> results = this.server_parallel(request_collection,1000 * 10, 0, 1);
+            List<JsonNode> results = server_parallel(request_collection,1000 * 10, 0, 1);
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
@@ -1372,7 +1365,7 @@ public class Model_Board extends Model {
 
             Model_HomerServer.get_byId(plan.get_board().connected_server_id).update_devices_firmware(Collections.singletonList(plan.get_brief_for_update_homer_server()));
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
             plan.state = Enum_CProgram_updater_state.critical_error;
             plan.update();
@@ -1448,7 +1441,7 @@ public class Model_Board extends Model {
                     }
                 }
 
-                if ( plan.count_of_tries > 5 ) {
+                if (plan.count_of_tries > 5) {
                     plan.state = Enum_CProgram_updater_state.critical_error;
                     plan.error = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message();
                     plan.error_code = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code();
@@ -1481,7 +1474,7 @@ public class Model_Board extends Model {
                 plan.state = Enum_CProgram_updater_state.in_progress;
                 plan.update();
 
-            } catch(Exception e) {
+            } catch (Exception e) {
                 terminal_logger.internalServerError(e);
                 plan.state = Enum_CProgram_updater_state.critical_error;
                 plan.update();
@@ -1721,7 +1714,6 @@ public class Model_Board extends Model {
             return;
         }
 
-
         if(overview.binaries.firmware.build_id == null || overview.binaries.firmware.build_id.equals("")) {
             terminal_logger.error("check_firmware -: overview.binaries.firmware.build_id is null");
             return;
@@ -1935,7 +1927,6 @@ public class Model_Board extends Model {
         }
 
         terminal_logger.debug("check_backup:: third check backup! - Backup is static!! ");
-
 
         // Backup je takový jaký očekává tyrion
         if (get_backup_c_program_version() != null && get_backup_c_program_version().c_compilation.firmware_build_id.equals(overview.binaries.backup.build_id)) {
@@ -2489,7 +2480,6 @@ public class Model_Board extends Model {
 
         super.delete();
     }
-
 
 /* BlOB DATA  ----------------------------------------------------------------------------------------------------------*/
 

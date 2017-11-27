@@ -49,8 +49,6 @@ public class Model_BProgram extends Model {
 
     @JsonIgnore @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_VersionObject> version_objects = new ArrayList<>();
 
-
-
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_version_objects_ids = new ArrayList<>();
@@ -60,9 +58,9 @@ public class Model_BProgram extends Model {
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient public String project_id(){
+    @JsonProperty @Transient public String project_id() {
 
-        if(cache_value_project_id == null){
+        if (cache_value_project_id == null) {
             Model_Project project = Model_Project.find.where().eq("b_programs.id", id).select("id").findUnique();
             cache_value_project_id = project.id;
         }
@@ -76,19 +74,19 @@ public class Model_BProgram extends Model {
 
             List<Swagger_B_Program_Version_Short_Detail> versions = new ArrayList<>();
 
-            for(Model_VersionObject version : getVersion_objects().stream().sorted((element1, element2) -> element2.date_of_create.compareTo(element1.date_of_create)).collect(Collectors.toList())){
+            for (Model_VersionObject version : getVersion_objects().stream().sorted((element1, element2) -> element2.date_of_create.compareTo(element1.date_of_create)).collect(Collectors.toList())) {
                 versions.add(version.get_short_b_program_version());
             }
 
             return versions;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
 
-    @JsonProperty @Transient public Swagger_B_Program_State instance_details(){
+    @JsonProperty @Transient public Swagger_B_Program_State instance_details() {
         try {
 
             Swagger_B_Program_State state = new Swagger_B_Program_State();
@@ -108,7 +106,7 @@ public class Model_BProgram extends Model {
                 state.version_name = instance().get_actual_instance().get_b_program_version().version_name;
 
                 // Vracím naposledy použitou - Becki si to vyřeší sama
-            }else if(!instance().instance_history.isEmpty()){
+            } else if (!instance().instance_history.isEmpty()) {
                 state.version_id = instance().instance_history.get(0).get_b_program_version().id;
                 state.version_name = instance().instance_history.get(0).get_b_program_version().version_name;
             }
@@ -123,17 +121,16 @@ public class Model_BProgram extends Model {
 
             return state;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
             return null;
         }
     }
 
-
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
 
-    @Transient @JsonIgnore public Swagger_B_Program_Short_Detail get_b_program_short_detail(){
+    @Transient @JsonIgnore public Swagger_B_Program_Short_Detail get_b_program_short_detail() {
         try {
 
             Swagger_B_Program_Short_Detail help = new Swagger_B_Program_Short_Detail();
@@ -147,13 +144,13 @@ public class Model_BProgram extends Model {
 
             return help;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
             return null;
         }
     }
     // Objekt určený k vracení verze
-    @JsonIgnore @Transient public Swagger_B_Program_Version program_version(Model_VersionObject version_object){
+    @JsonIgnore @Transient public Swagger_B_Program_Version program_version(Model_VersionObject version_object) {
 
         Swagger_B_Program_Version b_program_version = new Swagger_B_Program_Version();
 
@@ -166,7 +163,7 @@ public class Model_BProgram extends Model {
         b_program_version.m_project_program_snapshots   = version_object.b_program_version_snapshots;
 
         Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "program.js").findUnique();
-        if(fileRecord != null) b_program_version.program             = fileRecord.get_fileRecord_from_Azure_inString();
+        if (fileRecord != null) b_program_version.program             = fileRecord.get_fileRecord_from_Azure_inString();
 
         return b_program_version;
     }
@@ -174,10 +171,9 @@ public class Model_BProgram extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public List<Model_VersionObject> getVersion_objects() {
+        try {
 
-        try{
-
-            if(cache_list_version_objects_ids.isEmpty()){
+            if (cache_list_version_objects_ids.isEmpty()) {
 
                 List<Model_VersionObject> versions =  Model_VersionObject.find.where().eq("b_program.id", id).eq("removed_by_user", false).order().desc("date_of_create").select("id").findList();
 
@@ -185,18 +181,17 @@ public class Model_BProgram extends Model {
                 for (Model_VersionObject version : versions) {
                     cache_list_version_objects_ids.add(version.id);
                 }
-
             }
 
             List<Model_VersionObject> versions  = new ArrayList<>();
 
-            for(String version_id : cache_list_version_objects_ids){
+            for (String version_id : cache_list_version_objects_ids) {
                 versions.add(Model_VersionObject.get_byId(version_id));
             }
 
             return versions;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
             return new ArrayList<>();
         }
@@ -204,15 +199,13 @@ public class Model_BProgram extends Model {
     }
 
     @JsonIgnore @Transient public String instance_id() {
-
         try {
 
-
-            if(this.cache_instance_id == null){
+            if (this.cache_instance_id == null) {
 
                Model_HomerInstance instance =  Model_HomerInstance.find.where().eq("b_program.id", id).select("id").findUnique();
 
-               if(instance != null) {
+               if (instance != null) {
                    cache_instance_id = instance.id;
                }
             }
@@ -229,7 +222,7 @@ public class Model_BProgram extends Model {
     @JsonIgnore @Transient public Model_HomerInstance instance() {
         try {
 
-            if(this.instance_id() != null){
+            if (this.instance_id() != null) {
                 this.instance = Model_HomerInstance.get_byId(instance_id());
                 return instance;
             }
@@ -242,7 +235,6 @@ public class Model_BProgram extends Model {
         }
     }
 
-
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -254,7 +246,7 @@ public class Model_BProgram extends Model {
         this.id = UUID.randomUUID().toString();
         this.azure_b_program_link = project.get_path() + "/b-programs/"  + this.id;
 
-        if(instance == null){
+        if (instance == null) {
 
             Model_HomerInstance instance = new Model_HomerInstance();
             instance.instance_type = Enum_Homer_instance_type.INDIVIDUAL;
@@ -271,7 +263,7 @@ public class Model_BProgram extends Model {
 
         cache.put(id, this);
 
-        if(project_id() != null) {
+        if (project_id() != null) {
             new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, project_id(), project_id()))).start();
         }
     }
@@ -282,7 +274,7 @@ public class Model_BProgram extends Model {
 
         super.update();
 
-        if(project_id() != null) {
+        if (project_id() != null) {
             new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BProgram.class, project_id(), id))).start();
         }
     }
@@ -295,7 +287,7 @@ public class Model_BProgram extends Model {
 
             instance().remove_from_cloud();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
         }
 
@@ -303,7 +295,7 @@ public class Model_BProgram extends Model {
         instance().update();
 
 
-        if(project_id() != null){
+        if (project_id() != null) {
             Model_Project.get_byId(project_id()).cache_list_b_program_ids.remove(id);
         }
 
@@ -311,7 +303,7 @@ public class Model_BProgram extends Model {
 
         super.update();
 
-        if(project_id() != null) {
+        if (project_id() != null) {
             new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_BProgram.class, project_id(), project_id()))).start();
         }
 
@@ -322,7 +314,7 @@ public class Model_BProgram extends Model {
     @JsonIgnore private String azure_b_program_link;
 
     @JsonIgnore @Transient
-    public String get_path(){
+    public String get_path() {
         return azure_b_program_link;
     }
 
@@ -337,7 +329,7 @@ public class Model_BProgram extends Model {
     public static Model_BProgram get_byId(String id) {
 
         Model_BProgram b_program = cache.get(id);
-        if (b_program == null){
+        if (b_program == null) {
 
             b_program = Model_BProgram.find.byId(id);
             if (b_program == null) return null;
@@ -348,22 +340,31 @@ public class Model_BProgram extends Model {
         return b_program;
     }
 
+    public void cache_refresh() {
+        this.refresh();
+        if (cache.containsKey(this.id)) {
+            cache.replace(this.id, this);
+        } else {
+            cache.put(this.id, this);
+        }
+    }
+
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore   @Transient public boolean create_permission()  {
 
-        if(Controller_Security.get_person().has_permission("B_Program_create")) return true;
+        if (Controller_Security.get_person().has_permission("B_Program_create")) return true;
         return project != null && project.update_permission();
 
     }
     @JsonProperty @Transient public boolean update_permission()  {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().has_permission("b_program_update_" + id)) return Controller_Security.get_person().has_permission("b_program_update_"+ id);
-        if(Controller_Security.get_person().has_permission("B_Program_update")) return true;
+        if (Controller_Security.get_person().has_permission("b_program_update_" + id)) return Controller_Security.get_person().has_permission("b_program_update_"+ id);
+        if (Controller_Security.get_person().has_permission("B_Program_update")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+        if ( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0) {
             Controller_Security.get_person().cache_permission("b_program_update_" + id, true);
             return true;
         }
@@ -376,11 +377,11 @@ public class Model_BProgram extends Model {
     @JsonIgnore   @Transient public boolean read_permission()    {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().has_permission("b_program_read_" + id)) return Controller_Security.get_person().has_permission("b_program_read_"+ id);
-        if(Controller_Security.get_person().has_permission("B_Program_read")) return true;
+        if (Controller_Security.get_person().has_permission("b_program_read_" + id)) return Controller_Security.get_person().has_permission("b_program_read_"+ id);
+        if (Controller_Security.get_person().has_permission("B_Program_read")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-        if( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+        if ( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0) {
             Controller_Security.get_person().cache_permission("b_program_read_" + id, true);
             return true;
         }
@@ -393,11 +394,11 @@ public class Model_BProgram extends Model {
     @JsonProperty @Transient public boolean edit_permission()    {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().has_permission("b_program_edit_" + id)) return Controller_Security.get_person().has_permission("b_program_edit_"+ id);
-        if(Controller_Security.get_person().has_permission("B_Program_edit")) return true;
+        if (Controller_Security.get_person().has_permission("b_program_edit_" + id)) return Controller_Security.get_person().has_permission("b_program_edit_"+ id);
+        if (Controller_Security.get_person().has_permission("B_Program_edit")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+        if ( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0) {
             Controller_Security.get_person().cache_permission("b_program_edit_" + id, true);
             return true;
         }
@@ -409,11 +410,11 @@ public class Model_BProgram extends Model {
     }
     @JsonProperty @Transient public boolean delete_permission()  {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().has_permission("b_program_delete_" + id)) return Controller_Security.get_person().has_permission("b_program_delete_"+ id);
-        if(Controller_Security.get_person().has_permission("B_Program_delete")) return true;
+        if (Controller_Security.get_person().has_permission("b_program_delete_" + id)) return Controller_Security.get_person().has_permission("b_program_delete_"+ id);
+        if (Controller_Security.get_person().has_permission("B_Program_delete")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0){
+        if ( Model_BProgram.find.where().where().eq("project.participants.person.id", Controller_Security.get_person().id ).where().eq("id", id).findRowCount() > 0) {
             Controller_Security.get_person().cache_permission("b_program_delete_" + id, true);
             return true;
         }
