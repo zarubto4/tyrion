@@ -267,8 +267,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             cloud_server_1.server_url = "localhost3";
             cloud_server_1.grid_port = 8500;
             cloud_server_1.mqtt_port = 1881;
-            cloud_server_1.mqtt_password = "pass";
-            cloud_server_1.mqtt_username = "user";
             cloud_server_1.web_view_port = 8501;
             cloud_server_1.server_type = Enum_Cloud_HomerServer_type.main_server;
             cloud_server_1.connection_identificator = "aaaaaaaaaaaaaaa";
@@ -280,8 +278,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             cloud_server_2.server_url = "localhost3";
             cloud_server_2.grid_port = 8500;
             cloud_server_2.mqtt_port = 1881;
-            cloud_server_2.mqtt_password = "pass";
-            cloud_server_2.mqtt_username = "user";
             cloud_server_2.web_view_port = 8501;
             cloud_server_2.server_type = Enum_Cloud_HomerServer_type.backup_server;
             cloud_server_2.save();
@@ -292,8 +288,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             cloud_server_3.server_url = "localhost3";
             cloud_server_3.grid_port = 8500;
             cloud_server_3.mqtt_port = 1881;
-            cloud_server_3.mqtt_password = "pass";
-            cloud_server_2.mqtt_username = "user";
             cloud_server_3.web_view_port = 8501;
             cloud_server_3.server_type = Enum_Cloud_HomerServer_type.public_server;
             cloud_server_3.save();
@@ -303,8 +297,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             cloud_server_4.server_url = "localhost4";
             cloud_server_4.grid_port = 8500;
             cloud_server_4.mqtt_port = 1881;
-            cloud_server_4.mqtt_password = "pass";
-            cloud_server_4.mqtt_username = "user";
             cloud_server_4.web_view_port = 8501;
             cloud_server_4.server_type = Enum_Cloud_HomerServer_type.public_server;
             cloud_server_4.save();

@@ -3,6 +3,7 @@ package utilities.swagger.outboundClass;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.Model_TypeOfBoardFeatures;
+import utilities.document_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +19,8 @@ public class Swagger_Hardware_New_Settings_Result {
     @ApiModelProperty(required = true, readOnly = true)  public String   backup_mqtt_hostname;
     @ApiModelProperty(required = true, readOnly = true)  public int      backup_mqtt_port;
 
-    @ApiModelProperty(required = true, readOnly = true)  public String   normal_mqtt_username;
-    @ApiModelProperty(required = true, readOnly = true)  public String   normal_mqtt_password;
+    @ApiModelProperty(required = true, readOnly = true)  public String   mqtt_username;
+    @ApiModelProperty(required = true, readOnly = true)  public String   mqtt_password;
 
     @ApiModelProperty(required = true, readOnly = true)  public String   backup_mqtt_username;
     @ApiModelProperty(required = true, readOnly = true)  public String   backup_mqtt_password;
@@ -27,4 +28,6 @@ public class Swagger_Hardware_New_Settings_Result {
     @ApiModelProperty(required = true, readOnly = true)  public String   mac_address;            // [addr in format XX:XX:XX:XX:XX:XX
     @ApiModelProperty(required = false, readOnly = true) public String   full_id;                 // [číslo procesoru - přiloží se jen když ho zašle request (oprava vypálení)
 
+
+    @ApiModelProperty(required = true, readOnly = true) public DM_Board_Bootloader_DefaultConfig configuration;
 }

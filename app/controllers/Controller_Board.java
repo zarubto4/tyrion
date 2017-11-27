@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.*;
+import org.mindrot.jbcrypt.BCrypt;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.*;
@@ -1976,6 +1977,10 @@ public class Controller_Board extends Controller {
 
             Model_Board board = Model_Board.find.byId(help.full_id);
 
+            String mqtt_password_not_hashed = UUID.randomUUID().toString();
+            String mqtt_username_not_hashed = UUID.randomUUID().toString();
+
+
             // Pokud neexistuje vytvořím
             if (board == null) {
 
@@ -1994,12 +1999,11 @@ public class Controller_Board extends Controller {
                 board = new Model_Board();
                 board.id = help.full_id;
                 board.is_active = false;
-                board.date_of_create = new Date();
                 board.type_of_board = typeOfBoard;
                 board.batch_id = batch.id.toString();
                 board.mac_address = batch.get_new_MacAddress();
-                board.hash_for_adding = Model_Board.generate_hash();
-
+                board.mqtt_username = BCrypt.hashpw(mqtt_username_not_hashed, BCrypt.gensalt());
+                board.mqtt_password = BCrypt.hashpw(mqtt_password_not_hashed, BCrypt.gensalt());
 
                 if (Hardware_Registration_Authority.register_device(board, typeOfBoard, batch)) {
                     board.save();
@@ -2013,6 +2017,10 @@ public class Controller_Board extends Controller {
                 }
 
                 board.refresh();
+            }else {
+                board.mqtt_username = BCrypt.hashpw(mqtt_username_not_hashed, BCrypt.gensalt());
+                board.mqtt_password = BCrypt.hashpw(mqtt_password_not_hashed, BCrypt.gensalt());
+                board.update();
             }
 
             // Vytisknu štítky
@@ -2049,15 +2057,14 @@ public class Controller_Board extends Controller {
                 result.full_id = board.id;
                 result.normal_mqtt_hostname = main_server.server_url;
                 result.normal_mqtt_port = main_server.mqtt_port;
-                result.normal_mqtt_username = main_server.mqtt_username;
-                result.normal_mqtt_password = main_server.mqtt_password;
+                result.mqtt_username = mqtt_password_not_hashed;
+                result.mqtt_password = mqtt_username_not_hashed;
 
                 result.backup_mqtt_hostname = backup_server.server_url;
                 result.backup_mqtt_port = backup_server.mqtt_port;
-                result.backup_mqtt_username = backup_server.mqtt_username;
-                result.backup_mqtt_password = backup_server.mqtt_password;
 
                 result.mac_address = board.mac_address;
+                result.configuration = board.bootloader_core_configuration();
 
                 return GlobalResult.result_created(Json.toJson(result));
             }

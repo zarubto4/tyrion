@@ -13,6 +13,7 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
+import org.mindrot.jbcrypt.BCrypt;
 import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
@@ -84,6 +85,8 @@ public class Model_Board extends Model {
     @JsonIgnore public Date date_of_create;                 // Datum vytvoření objektu (vypálení dat do procesoru)
     @JsonIgnore public String batch_id;                     // Výrobní šarže
     @JsonIgnore public boolean is_active;                   // Příznak, že deska byla oživena a je použitelná v platformě
+    @JsonIgnore public String mqtt_password;                // V BCryptu uložený UUID
+    @JsonIgnore public String mqtt_username;                // V BCryptu uložený UUID
 
     // Parametry konfigurovate uživatelem z frontendu
     // Pozor v Controller_Board jsou parametry v metodě board_update_parameters používány
@@ -689,12 +692,21 @@ public class Model_Board extends Model {
                         return;
                     }
 
-                    case WS_Message_Hardware_UpdateProcedure_Progress.messageType: {
+                    case WS_Message_Hardware_UpdateProcedure_Progress.message_type: {
 
                         final Form<WS_Message_Hardware_UpdateProcedure_Progress> form = Form.form(WS_Message_Hardware_UpdateProcedure_Progress.class).bind(json);
                         if (form.hasErrors()) throw new Exception("WS_Message_Hardware_UpdateProcedure_Progress: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
                         Model_CProgramUpdatePlan.update_procedure_progress(form.get());
+                        return;
+                    }
+
+                    case WS_Message_Hardware_validation_request.message_type: {
+
+                        final Form<WS_Message_Hardware_validation_request> form = Form.form(WS_Message_Hardware_validation_request.class).bind(json);
+                        if (form.hasErrors()) throw new Exception("WS_Message_Hardware_UpdateProcedure_Progress: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+
+                        Model_Board.check_hardware_validation(homer, form.get());
                         return;
                     }
 
@@ -881,6 +893,22 @@ public class Model_Board extends Model {
             }
 
         } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+        }
+    }
+
+
+    @JsonIgnore @Transient public static void check_hardware_validation(WS_HomerServer homer, WS_Message_Hardware_validation_request request){
+        try {
+
+            Model_Board board = request.get_hardware();
+            if(board.mqtt_password.equals(request.bcrypt_password) && board.mqtt_username.equals(request.bcrypt_user_name)){
+                homer.write_without_confirmation(request.get_result(true));
+            } else {
+                homer.write_without_confirmation(request.get_result(false));
+            }
+
+        } catch (Exception e){
             terminal_logger.internalServerError(e);
         }
     }
@@ -2436,8 +2464,8 @@ public class Model_Board extends Model {
 
         terminal_logger.debug("save - inserting to database");
 
+        this.date_of_create = new Date();
         if (hash_for_adding == null) this.hash_for_adding = generate_hash();
-
         if (json_bootloader_core_configuration == null || json_bootloader_core_configuration.equals("{}") || json_bootloader_core_configuration.equals("null") || json_bootloader_core_configuration.length() == 0) {
             json_bootloader_core_configuration = Json.toJson(DM_Board_Bootloader_DefaultConfig.generateConfig()).toString();
         }

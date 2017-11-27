@@ -76,10 +76,7 @@ public class Controller_ExternalServer extends Controller {
             server.personal_server_name = help.personal_server_name;
             server.server_type = Enum_Cloud_HomerServer_type.public_server;
 
-            server.mqtt_password = help.mqtt_password;
             server.mqtt_port = help.mqtt_port;
-            server.mqtt_username = help.mqtt_username;
-
             server.grid_port = help.grid_port;
             server.web_view_port = help.web_view_port;
 
@@ -226,8 +223,6 @@ public class Controller_ExternalServer extends Controller {
             server.personal_server_name = help.personal_server_name;
 
             server.mqtt_port = help.mqtt_port;
-            server.mqtt_password = help.mqtt_password;
-            server.mqtt_username = help.mqtt_username;
 
             server.grid_port = help.grid_port;
             server.web_view_port = help.web_view_port;

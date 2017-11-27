@@ -29,8 +29,6 @@ public class WS_Message_Hardware_change_server  extends WS_AbstractMessage {
         request.put("message_channel", Model_Board.CHANNEL);
         request.put("mqtt_host", server.server_url);
         request.put("mqtt_port", server.mqtt_port);
-        request.put("mqtt_password", server.mqtt_password);
-        request.put("mqtt_user_name", server.mqtt_username);
         request.set("device_ids", Json.toJson(device_ids) );
 
         return request;

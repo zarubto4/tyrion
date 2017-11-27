@@ -9,7 +9,7 @@ import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Insta
 public class WS_Message_Hardware_UpdateProcedure_Progress extends WS_AbstractMessage_Instance {
 
     // MessageType
-    @JsonIgnore public static final String messageType = "update_hardware_progress";
+    @JsonIgnore public static final String message_type = "update_hardware_progress";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 

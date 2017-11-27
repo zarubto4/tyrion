@@ -66,12 +66,9 @@ public class Model_HomerServer extends Model {
     @Column(columnDefinition = "TEXT")
     public String json_additional_parameter;        // DB dokument - smožností rozšíření na cokoliv
 
-    @ApiModelProperty(required = true, readOnly = true)
-    public Integer mqtt_port;                       // Přidává se destination_address + "/" mqtt_port
-    @ApiModelProperty(required = true, readOnly = true)
-    public String mqtt_username;
-    @ApiModelProperty(required = true, readOnly = true)
-    public String mqtt_password;
+    @ApiModelProperty(required = true, readOnly = true) public Integer mqtt_port;                       // Přidává se destination_address + "/" mqtt_port
+    // @ApiModelProperty(required = true, readOnly = true) public String mqtt_username;
+    // @ApiModelProperty(required = true, readOnly = true) public String mqtt_password;
 
 
     @ApiModelProperty(required = true, readOnly = true)

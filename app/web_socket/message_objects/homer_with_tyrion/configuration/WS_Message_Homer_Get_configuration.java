@@ -25,8 +25,6 @@ public class WS_Message_Homer_Get_configuration extends WS_AbstractMessage {
         request_conf.put("status", "success");
         request_conf.put("server_name", server.personal_server_name);
         request_conf.put("mqtt_port", server.mqtt_port);
-        request_conf.put("mqtt_password", server.mqtt_password);
-        request_conf.put("mqtt_user", server.mqtt_username);
         request_conf.put("grid_port", server.grid_port);
         request_conf.put("web_port", server.server_remote_port);
         request_conf.put("becki_port", server.web_view_port);

@@ -134,6 +134,8 @@ public class Hardware_Registration_Authority extends Controller {
         board_registration_central_authority.pcb_manufacture_id = batch.pcb_manufacture_id;
         board_registration_central_authority.assembly_manufacture_name = batch.assembly_manufacture_name;
         board_registration_central_authority.assembly_manufacture_id = batch.assembly_manufacture_id;
+        board_registration_central_authority.mqtt_username = board.mqtt_username;
+        board_registration_central_authority.mqtt_password = board.mqtt_password;
 
         Document document = Document.parse(Json.toJson(board_registration_central_authority).toString());
         collection.insertOne(document);
@@ -263,6 +265,8 @@ public class Hardware_Registration_Authority extends Controller {
                     board.mac_address = help.mac_address;
                     board.hash_for_adding = help.hash_for_adding;
                     board.name = help.personal_name;
+                    board.mqtt_username = help.mqtt_username;
+                    board.mqtt_password = help.mqtt_password;
                     board.is_active = false;
                     board.date_of_create = help.date_of_create;
                     board.type_of_board = typeOfBoard;
