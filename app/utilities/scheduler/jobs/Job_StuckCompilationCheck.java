@@ -44,6 +44,7 @@ public class Job_StuckCompilationCheck implements Job {
                     while (true) {
                         // Vyhledání všech, které je nutné projit
                         List<Model_VersionObject> version_objects = Model_VersionObject.find.where()
+                                .eq("removed_by_user", false)
                                 .disjunction()
                                 .eq("c_compilation.status", Enum_Compile_status.server_was_offline.name())
                                 .eq("c_compilation.status", Enum_Compile_status.compilation_server_error.name())

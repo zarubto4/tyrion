@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import org.hibernate.validator.constraints.Email;
+import org.mindrot.jbcrypt.BCrypt;
 import play.data.validation.Constraints;
 import play.libs.Json;
 import utilities.Server;
@@ -161,7 +162,7 @@ public class Model_Person extends Model {
 
     @JsonIgnore @Transient
     public void setPassword(String password){
-        //this.shaPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+        // this.shaPassword = BCrypt.hashpw(password, BCrypt.gensalt());
     }
 
     @JsonIgnore @Transient

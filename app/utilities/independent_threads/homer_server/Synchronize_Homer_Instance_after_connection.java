@@ -27,11 +27,8 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
     }
 
     @Override
-    public void run(){
-
+    public void run() {
         try {
-
-
 
             terminal_logger.info("Synchronize_Homer_Instance_after_connection:: run:: Tyrion send to Homer Server request for listInstances");
 
@@ -41,24 +38,17 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
             List<String> instances_for_removing = new ArrayList<>();
             List<String> instances_for_add = new ArrayList<>();
 
-
             for(String instance_id : instances_required_by_tyrion){
                 if(!instances_actual_on_server.contains(instance_id)){
-                    System.out.println("3.4 Našel jsem instanci kterou chci doplnit na server:: " + instance_id);
                     instances_for_add.add(instance_id);
                 }
             }
 
-
             for(String instance_id : instances_actual_on_server){
                 if(!instances_required_by_tyrion.contains(instance_id)){
-                    System.out.println("3.5 Našel jsem instanci kterou chci odstranit ze serveru:: " + instance_id);
                     instances_for_removing.add(instance_id);
                 }
             }
-
-
-
 
             if (!instances_for_removing.isEmpty()) {
 
@@ -67,7 +57,6 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
                 if (!remove_result.status.equals("success")){
                     terminal_logger.internalServerError(new Exception("Blocko Server: Error while removing instances: " + remove_result.toString()));
                 }
-
             }
 
             if(!instances_for_add.isEmpty()){
@@ -110,7 +99,6 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
                         .select("id")
                         .findList());
 
-
         List<String> instance_ids = new ArrayList<>();
 
         for(Model_HomerInstance homerInstance : instances_in_database_for_uploud){
@@ -118,11 +106,9 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
         }
 
         return instance_ids;
-
     }
 
     private List<String> actual_on_server() throws InterruptedException{
-
         try {
 
             WS_Message_Homer_Instance_list list_instances = Model_HomerServer.get_byId(ws_homerServer.identifikator).get_homer_server_list_of_instance();
@@ -134,5 +120,4 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
             throw new InterruptedException();
         }
     }
-
 }

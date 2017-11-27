@@ -185,8 +185,6 @@ public class Model_HomerInstance extends Model {
 
                             WS_Message_Instance_status status = get_instance_status();
 
-                            System.out.println("online_state project id: " + project_id);
-
                             if (status.status.equals("success")) cache_status.put(id, status.get_status(id).status);
                             WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerInstance.class, this.id, status.get_status(id).status, project_id);
 
@@ -196,7 +194,6 @@ public class Model_HomerInstance extends Model {
                     }).start();
 
                     return Enum_Online_status.synchronization_in_progress;
-
                 //}
 
             } else {
@@ -370,6 +367,8 @@ public class Model_HomerInstance extends Model {
     }
 
     public void cache_refresh() {
+        this.refresh();
+        this.cache_actual_instance_id = null;
         if (cache.containsKey(this.id)) {
             cache.replace(this.id, this);
         } else {

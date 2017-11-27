@@ -37,17 +37,16 @@ public class Model_MProjectProgramSnapShot extends Model {
     @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public String m_project_name()        { return m_project.name;}
     @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public String m_project_description() { return m_project.description;}
 
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_MProgramInstanceParameter> m_program_snapshots(){
-        try{
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_MProgramInstanceParameter> m_program_snapshots() {
+        try {
 
             return Model_MProgramInstanceParameter.find.where().eq("m_project_program_snapshot.id", id).order().asc("m_program_version.m_program.name").findList();
 
-        }catch (Exception e){
+        } catch (Exception e) {
 
             terminal_logger.internalServerError(e);
             return null;
         }
-
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

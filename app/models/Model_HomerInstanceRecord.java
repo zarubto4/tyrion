@@ -289,7 +289,6 @@ public class Model_HomerInstanceRecord extends Model {
             this.update();
 
             instance.cache_refresh();
-            instance.getB_program().cache_refresh();
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
