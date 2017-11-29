@@ -6,12 +6,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.Model_Board;
 import play.data.validation.Constraints;
 import play.libs.Json;
+import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Hardware;
 import web_socket.message_objects.common.abstract_class.WS_AbstractMessage_Instance;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class WS_Message_Hardware_autobackup_made extends WS_AbstractMessage_Instance {
+public class WS_Message_Hardware_autobackup_made extends WS_AbstractMessage_Hardware {
 
     // MessageType
     @JsonIgnore public static final String message_type = "hardware_autobackup_made";
@@ -19,7 +20,7 @@ public class WS_Message_Hardware_autobackup_made extends WS_AbstractMessage_Inst
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Constraints.Required public String hardware_id;
+
     @Constraints.Required public String build_id;
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/

@@ -104,6 +104,7 @@ public class WS_HomerServer extends WS_Interface_type {
 
         terminal_logger.trace(identifikator + " onMessage: " + json.toString());
 
+
         // Pokud není token - není dovoleno zasílat nic do WebSocketu a ani nic z něj - Odchytím zprávu a buď naní odpovím zamítavě nebo
         // v případě že je to zpráva s tokenem jí zařadím to metody ověřující oprávnění
 

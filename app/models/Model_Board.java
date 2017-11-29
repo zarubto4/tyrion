@@ -902,7 +902,8 @@ public class Model_Board extends Model {
         try {
 
             Model_Board board = request.get_hardware();
-            if(board.mqtt_password.equals(request.bcrypt_password) && board.mqtt_username.equals(request.bcrypt_user_name)){
+
+            if (BCrypt.checkpw(request.password, board.mqtt_password) && BCrypt.checkpw(request.user_name, board.mqtt_username)){
                 homer.write_without_confirmation(request.get_result(true));
             } else {
                 homer.write_without_confirmation(request.get_result(false));

@@ -14,8 +14,8 @@ public class WS_Message_Hardware_validation_request extends WS_AbstractMessage_H
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Constraints.Required public String bcrypt_user_name;
-    @Constraints.Required public String bcrypt_password;
+    @Constraints.Required public String user_name;
+    @Constraints.Required public String password;
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
@@ -28,8 +28,8 @@ public class WS_Message_Hardware_validation_request extends WS_AbstractMessage_H
         result.put("message_id", message_id);
         result.put("hardware_id", hardware_id);
         result.put("status" , "success");
-        result.put("bcrypt_password" , bcrypt_password);
-        result.put("bcrypt_user_name" , bcrypt_user_name);
+        result.put("password" , password);
+        result.put("user_name" , user_name);
         return result;
 
     }
