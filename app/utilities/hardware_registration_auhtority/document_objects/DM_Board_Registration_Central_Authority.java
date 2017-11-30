@@ -29,6 +29,6 @@ public class DM_Board_Registration_Central_Authority {
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String assembly_manufacture_name;              // Jméno firmy co osazovala DPS
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String assembly_manufacture_id;                // Kod firmy co osazovala DPS
 
-    @ApiModelProperty(required = true, readOnly = true) public String mqtt_password;                              // Kod firmy co osazovala DPS
-    @ApiModelProperty(required = true, readOnly = true) public String mqtt_username;                              // Kod firmy co osazovala DPS
+    @ApiModelProperty(required = true, readOnly = true) public String mqtt_password;                                                 // Kod firmy co osazovala DPS
+    @ApiModelProperty(required = true, readOnly = true) public String mqtt_username;                                                 // Kod firmy co osazovala DPS
 }
