@@ -302,7 +302,7 @@ public class Model_HomerInstanceRecord extends Model {
 
             Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", get_b_program_version().id).eq("file_name", "program.js").findUnique();
 
-            JsonNode node =  main_instance_history.write_with_confirmation(new WS_Message_Instance_upload_blocko_program().make_request(main_instance_history, get_b_program_version()), 1000 * 3, 0, 2);
+            JsonNode node =  main_instance_history.write_with_confirmation(new WS_Message_Instance_upload_blocko_program().make_request(main_instance_history, get_b_program_version()), 1000 * 6, 0, 2);
 
             final Form<WS_Message_Instance_upload_blocko_program> form = Form.form(WS_Message_Instance_upload_blocko_program.class).bind(node);
             if (form.hasErrors()) throw new Exception("WS_Message_Instance_upload_blocko_program: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());

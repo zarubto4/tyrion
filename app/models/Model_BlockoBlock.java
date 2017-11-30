@@ -227,7 +227,7 @@ public class Model_BlockoBlock extends Model {
     @JsonIgnore @Override
     public void save() {
 
-        terminal_logger.debug("save :: Creating new Object");
+        terminal_logger.debug("save - saving to database");
 
         if(type_of_block != null) {
             order_position = Model_BlockoBlock.find.where().eq("type_of_block.id", type_of_block.id).findRowCount() + 1;
@@ -235,12 +235,14 @@ public class Model_BlockoBlock extends Model {
 
         super.save();
 
+        this.type_of_block.cache_refresh();
+
         if(type_of_block != null && type_of_block.project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, type_of_block.project_id(), type_of_block.project_id()))).start();
     }
 
     @JsonIgnore @Override public void update() {
 
-        terminal_logger.debug("update :: Update object Id: " + this.id);
+        terminal_logger.debug("update - update database, id: {}", this.id);
 
         super.update();
 
@@ -255,7 +257,7 @@ public class Model_BlockoBlock extends Model {
 
     @JsonIgnore @Override public void delete() {
 
-        terminal_logger.debug("delete :: Delete object Id: " + this.id);
+        terminal_logger.debug("delete - delete from database, id: {}", this.id);
 
         removed_by_user = true;
         super.update();

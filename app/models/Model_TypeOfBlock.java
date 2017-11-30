@@ -176,6 +176,16 @@ public class Model_TypeOfBlock extends Model {
 
     }
 
+    @JsonIgnore
+    public void cache_refresh() {
+        this.refresh();
+        this.blocko_block_ids = new ArrayList<>();
+        if (cache.containsKey(this.id)) {
+            cache.replace(this.id, this);
+        } else {
+            cache.put(this.id, this);
+        }
+    }
 
 /* ORDER ---------------------------------------------------------------------------------------------------------------*/
 

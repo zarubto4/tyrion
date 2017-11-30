@@ -712,7 +712,7 @@ public class Model_Board extends Model {
 
                     // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
                     case WS_Message_Hardware_set_settings.message_type     : {terminal_logger.warn("WS_Message_Hardware_set_settings: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Hardware_command_execute.message_type          : {terminal_logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Hardware_command_execute.message_type  : {terminal_logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");return;}
                     case WS_Message_Hardware_overview.message_type         : {terminal_logger.warn("WS_Message_Hardware_overview: A message with a very high delay has arrived.");return;}
                     case WS_Message_Hardware_change_server.message_type    : {terminal_logger.warn("WS_Message_Hardware_change_server: A message with a very high delay has arrived.");return;}
 

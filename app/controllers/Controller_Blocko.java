@@ -79,7 +79,7 @@ public class Controller_Blocko extends Controller{
 
             // Zpracování Json
             final Form<Swagger_B_Program_New> form = Form.form(Swagger_B_Program_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_B_Program_New help = form.get();
 
             // Kontrola objektu
@@ -242,7 +242,7 @@ public class Controller_Blocko extends Controller{
 
             // Zpracování Json
             final Form<Swagger_B_Program_New> form = Form.form(Swagger_B_Program_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_B_Program_New help = form.get();
 
             // Kontrola objektu
@@ -348,7 +348,7 @@ public class Controller_Blocko extends Controller{
 
             // Zpracování Json
             final Form<Swagger_B_Program_Version_New> form = Form.form(Swagger_B_Program_Version_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_B_Program_Version_New help = form.get();
 
             // Program který budu ukládat do data Storage v Azure
@@ -970,7 +970,7 @@ public class Controller_Blocko extends Controller{
 
             // Zpracování Json
             final Form<Swagger_Instance_GridApp_Settings> form = Form.form(Swagger_Instance_GridApp_Settings.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Instance_GridApp_Settings help = form.get();
 
             // Hledám objekt
@@ -1197,7 +1197,7 @@ public class Controller_Blocko extends Controller{
 
             // Zpracování Json
             final Form<Swagger_TypeOfBlock_New> form = Form.form(Swagger_TypeOfBlock_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_TypeOfBlock_New help = form.get();
 
             // Kontrola objektu
@@ -1309,7 +1309,7 @@ public class Controller_Blocko extends Controller{
 
             // Získání JSON
             final Form<Swagger_TypeOfBlock_Filter> form = Form.form(Swagger_TypeOfBlock_Filter.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_TypeOfBlock_Filter help = form.get();
 
             // Získání všech objektů a následné odfiltrování soukormých TypeOfBlock
@@ -1543,7 +1543,7 @@ public class Controller_Blocko extends Controller{
 
             // Zpracování Json
             final Form<Swagger_BlockoBlock_New> form = Form.form(Swagger_BlockoBlock_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_BlockoBlock_New help = form.get();
 
             // Kontrola objektu
@@ -1588,7 +1588,7 @@ public class Controller_Blocko extends Controller{
             blockoBlockVersion.save();
 
             // Vrácení objektu
-            return GlobalResult.result_created( Json.toJson(blockoBlock) );
+            return GlobalResult.result_created(Json.toJson(blockoBlock));
 
         } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
@@ -1627,7 +1627,7 @@ public class Controller_Blocko extends Controller{
 
             // Zpracování Json
             final Form<Swagger_Blocko_Block_Copy> form = Form.form(Swagger_Blocko_Block_Copy.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Blocko_Block_Copy help = form.get();
 
             // Vyhledám Objekt
@@ -1734,7 +1734,7 @@ public class Controller_Blocko extends Controller{
 
             // Zpracování Json
             final Form<Swagger_BlockoBlock_New> form = Form.form(Swagger_BlockoBlock_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_BlockoBlock_New help = form.get();
 
             // Kontrola objektu
@@ -1843,7 +1843,7 @@ public class Controller_Blocko extends Controller{
 
             // Získání JSON
             final Form<Swagger_Blocko_Block_Filter> form = Form.form(Swagger_Blocko_Block_Filter.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_Blocko_Block_Filter help = form.get();
 
             // Získání všech objektů a následné filtrování podle vlastníka
@@ -2082,7 +2082,7 @@ public class Controller_Blocko extends Controller{
 
             // Získání JSON
             final Form<Swagger_BlockoBlock_Publish_Response> form = Form.form(Swagger_BlockoBlock_Publish_Response.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_BlockoBlock_Publish_Response help = form.get();
 
             // Kontrola názvu
@@ -2208,7 +2208,7 @@ public class Controller_Blocko extends Controller{
 
             // Zpracování Json
             final Form<Swagger_BlockoBlock_BlockoVersion_New> form = Form.form(Swagger_BlockoBlock_BlockoVersion_New.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_BlockoBlock_BlockoVersion_New help = form.get();
 
             // Kontrola názvu
@@ -2324,7 +2324,7 @@ public class Controller_Blocko extends Controller{
 
             // Zpracování Json
             final Form<Swagger_BlockoBlock_BlockoVersion_Edit> form = Form.form(Swagger_BlockoBlock_BlockoVersion_Edit.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_BlockoBlock_BlockoVersion_Edit help = form.get();
 
             // Kontrola názvu
@@ -2502,7 +2502,7 @@ public class Controller_Blocko extends Controller{
 
             // Získání JSON
             final Form<Swagger_BlockoObject_Approval> form = Form.form(Swagger_BlockoObject_Approval.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_BlockoObject_Approval help = form.get();
 
             // Kontrola objektu
@@ -2554,7 +2554,7 @@ public class Controller_Blocko extends Controller{
 
             // Získání JSON
             final Form<Swagger_BlockoObject_Approve_withChanges> form = Form.form(Swagger_BlockoObject_Approve_withChanges.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_BlockoObject_Approve_withChanges help = form.get();
 
             // Kontrola názvu
@@ -2624,7 +2624,7 @@ public class Controller_Blocko extends Controller{
 
             // Získání JSON
             final Form<Swagger_BlockoBlock_BlockoVersion_Scheme_Edit> form = Form.form(Swagger_BlockoBlock_BlockoVersion_Scheme_Edit.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_BlockoBlock_BlockoVersion_Scheme_Edit help = form.get();
 
             // Kontrola objektu
@@ -2656,7 +2656,7 @@ public class Controller_Blocko extends Controller{
 
             // Získání JSON
             final Form<Swagger_BlockoBlock_BlockoVersion_Scheme_Edit> form = Form.form(Swagger_BlockoBlock_BlockoVersion_Scheme_Edit.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_BlockoBlock_BlockoVersion_Scheme_Edit help = form.get();
 
             // Úprava objektu
