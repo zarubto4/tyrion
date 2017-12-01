@@ -5,32 +5,31 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.Model_ActualizationProcedure;
 import models.Model_CProgramUpdatePlan;
-import models.Model_Library;
 import utilities.swagger.outboundClass.Swagger_ActualizationProcedure_Short_Detail;
-import utilities.swagger.outboundClass.Swagger_Library_Short_Detail;
+import utilities.swagger.outboundClass.Swagger_C_Program_Update_plan_Short_Detail;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel(description = "",
-    value = "ActualizationProcedure_List")
-public class Swagger_ActualizationProcedure_List extends Filter_Common {
+@ApiModel(description = "", value = "ActualizationProcedureTask_List")
+public class Swagger_ActualizationProcedureTask_List extends Filter_Common {
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Swagger_ActualizationProcedure_Short_Detail> content = new ArrayList<>();
+    public List<Model_CProgramUpdatePlan> content = new ArrayList<>();
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
-    public Swagger_ActualizationProcedure_List(Query<Model_ActualizationProcedure> query , int page_number){
+    public Swagger_ActualizationProcedureTask_List(Query<Model_CProgramUpdatePlan> query , int page_number){
 
         if(page_number < 1) page_number = 1;
+        List<Model_CProgramUpdatePlan> list =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).select("id").findList();
 
-        for(Model_ActualizationProcedure procedure_not_cached : query.setFirstRow((page_number - 1) * 25).setMaxRows(25).select("id").findList()){
-            Model_ActualizationProcedure procedure = Model_ActualizationProcedure.get_byId(procedure_not_cached.id.toString());
-            if(procedure == null) continue;
-            this.content.add(procedure.short_detail());
+        for(Model_CProgramUpdatePlan task_not_cached : list) {
+            Model_CProgramUpdatePlan task = Model_CProgramUpdatePlan.get_byId(task_not_cached.id.toString());
+            if(task == null) continue;
+            this.content.add(task);
         }
 
         this.total   = query.findRowCount();

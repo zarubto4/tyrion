@@ -4,6 +4,7 @@ import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
@@ -39,7 +40,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
                                          @Id @ApiModelProperty(required = true) public UUID id;
 
-                                                       @JsonIgnore @ManyToOne() public Model_ActualizationProcedure actualization_procedure;
+                                                       @JsonIgnore @ManyToOne() public Model_ActualizationProcedure actualization_procedure;    // TODO CACHE
 
                                             @ApiModelProperty(required = true, 
                                                     value = "UNIX time in ms",
@@ -69,6 +70,21 @@ public class Model_CProgramUpdatePlan extends Model {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
+    @JsonProperty @Transient @ApiModelProperty(required = false, readOnly = true)
+    public Enum_Update_type_of_update type_of_update (){
+       return actualization_procedure.type_of_update;
+    }
+
+    @JsonProperty @Transient @ApiModelProperty(required = false, readOnly = true)
+    public String actualization_procedure_id(){
+        if(cache_actualization_procedure_id == null){
+            Model_ActualizationProcedure procedure_not_cached = Model_ActualizationProcedure.find.where().eq("updates.id", id).select("id").findUnique();
+            cache_actualization_procedure_id = procedure_not_cached.id.toString();
+        }
+        return cache_actualization_procedure_id;
+    }
+
+
     @JsonProperty @Transient
     public Date date_of_planing() {
         return actualization_procedure.date_of_planing;
@@ -77,6 +93,16 @@ public class Model_CProgramUpdatePlan extends Model {
     @JsonProperty @Transient
     public Date date_of_create() {
         return actualization_procedure.date_of_create;
+    }
+
+    @JsonProperty @Transient
+    public Swagger_Board_Short_Detail board() {
+        try {
+            return get_board().get_short_board();
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
+            return null;
+        }
     }
 
     @ApiModelProperty(required = false, value = "Is visible only if update is for Firmware or Backup")
@@ -488,7 +514,14 @@ public class Model_CProgramUpdatePlan extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+    @JsonIgnore @Transient  public boolean read_permission()      {
+        return actualization_procedure.read_permission() || Controller_Security.get_person().has_permission("Actualization_procedure_read");
+    }
+
+    @JsonProperty @Transient  public boolean edit_permission()      {
+        return actualization_procedure.edit_permission() || Controller_Security.get_person().has_permission("Actualization_procedure_edit");
+    }
+    /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     public static final String CACHE = Model_CProgramUpdatePlan.class.getName() + "_MODEL";
 

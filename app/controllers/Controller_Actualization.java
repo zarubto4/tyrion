@@ -20,9 +20,11 @@ import utilities.response.GlobalResult;
 import utilities.response.response_objects.Result_NotFound;
 import utilities.response.response_objects.Result_Forbidden;
 import utilities.response.response_objects.Result_Unauthorized;
+import utilities.swagger.documentationClass.Swagger_ActualizationProcedureTask_Filter;
 import utilities.swagger.documentationClass.Swagger_ActualizationProcedure_Filter;
 import utilities.swagger.documentationClass.Swagger_ActualizationProcedure_Make;
 import utilities.swagger.documentationClass.Swagger_ActualizationProcedure_Make_TypeOfBoard;
+import utilities.swagger.outboundClass.Filter_List.Swagger_ActualizationProcedureTask_List;
 import utilities.swagger.outboundClass.Filter_List.Swagger_ActualizationProcedure_List;
 import utilities.swagger.outboundClass.Swagger_ActualizationProcedure_Short_Detail;
 
@@ -37,9 +39,9 @@ public class Controller_Actualization extends Controller {
 
     private static final Class_Logger terminal_logger = new Class_Logger(Controller_Actualization.class);
 
-// REST - API ----------------------------------------------------------------------------------------------------------
+// ACTUALIZATION PROCEDURE #############################################################################################
 
-    @ApiOperation(value = "get actualizationProcedure",
+    @ApiOperation(value = "get ActualizationProcedure",
             tags = {"Actualization"},
             notes = "get Actualization Procedure by ID",
             produces = "application/json",
@@ -73,7 +75,7 @@ public class Controller_Actualization extends Controller {
 
     @ApiOperation(value = "get ActualizationProcedure by Filter",
             tags = {"Actualization"},
-            notes = "get actualization Procedure by Project",
+            notes = "get actualization Procedure by query",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -297,4 +299,122 @@ public class Controller_Actualization extends Controller {
             return ServerLogger.result_internalServerError(e, request());
         }
     }
+
+
+// C PROGRAM ACTUALIZATION PLAN ########################################################################################
+
+    @ApiOperation(value = "get ActualizationTask",
+            tags = {"Actualization"},
+            notes = "get Actualization task by ID",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_CProgramUpdatePlan.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    public Result get_Actualization_CProgramUpdatePlan(@ApiParam(required = true) String plan_id) {
+        try {
+
+            // Kontrola objektu
+            Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.get_byId(plan_id);
+            if (plan == null) return GlobalResult.result_notFound("Model_CProgramUpdatePlan plan_id not found");
+
+            // Kontrola oprávnění
+            if (!plan.read_permission()) return GlobalResult.result_forbidden();
+
+            // Vrácení objektu
+            return GlobalResult.result_ok(Json.toJson(plan));
+
+        } catch (Exception e) {
+            return ServerLogger.result_internalServerError(e, request());
+        }
+    }
+
+    @ApiOperation(value = "get ActualizationTask by Filter",
+            tags = {"Actualization"},
+            notes = "get actualization Tasks by query",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.documentationClass.Swagger_ActualizationProcedureTask_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_ActualizationProcedureTask_List.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result get_Actualization_CProgramUpdatePlan_by_filter(int page_number) {
+        try {
+
+            // Získání JSON
+            final Form<Swagger_ActualizationProcedureTask_Filter> form = Form.form(Swagger_ActualizationProcedureTask_Filter.class).bindFromRequest();
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_ActualizationProcedureTask_Filter help = form.get();
+
+            // Získání všech objektů a následné filtrování podle vlastníka
+            Query<Model_CProgramUpdatePlan> query = Ebean.find(Model_CProgramUpdatePlan.class);
+            query.order().desc("actualization_procedure.date_of_create");
+
+            if (!help.board_ids.isEmpty()) {
+
+                for (String board_id : help.board_ids) {
+                    Model_Board board = Model_Board.get_byId(board_id);
+                    if (board == null) return GlobalResult.result_notFound("Model_Board board_id not found");
+                    if (!board.read_permission()) return GlobalResult.result_forbidden();
+                }
+
+                query.where().in("board.id", help.board_ids);
+            }
+
+            if (!help.instance_ids.isEmpty()) {
+
+                for (String instance_id : help.instance_ids) {
+                    Model_HomerInstance instance = Model_HomerInstance.get_byId(instance_id);
+                    if (instance == null) return GlobalResult.result_notFound("Model_HomerInstance board_id not found");
+                    if (!instance.read_permission()) return GlobalResult.result_forbidden();
+                }
+
+                query.where().in("actualization_procedure.homer_instance_record.main_instance_history.id", help.instance_ids);
+            }
+
+            if (!help.actualization_procedure_ids.isEmpty()) {
+
+                for (String procedure_id : help.actualization_procedure_ids) {
+                    Model_ActualizationProcedure procedure = Model_ActualizationProcedure.get_byId(procedure_id);
+                    if (procedure == null) return GlobalResult.result_notFound("Model_ActualizationProcedure procedure_id not found");
+                    if (!procedure.read_permission()) return GlobalResult.result_forbidden();
+                }
+
+                query.where().in("actualization_procedure.id", help.actualization_procedure_ids);
+            }
+
+            // Vyvoření odchozího JSON
+            Swagger_ActualizationProcedureTask_List result = new Swagger_ActualizationProcedureTask_List(query,page_number);
+
+            // Vrácení objektu
+            return GlobalResult.result_ok(Json.toJson(result));
+
+        } catch (Exception e) {
+            return ServerLogger.result_internalServerError(e, request());
+        }
+    }
+
 }

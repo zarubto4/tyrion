@@ -36,7 +36,7 @@ public class Model_ActualizationProcedure extends Model {
 
                                                     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerInstanceRecord homer_instance_record; // For updates under instance snapshot records
 
-    @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL) @OrderBy("date_of_finish DESC") public List<Model_CProgramUpdatePlan> updates = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("date_of_finish DESC") public List<Model_CProgramUpdatePlan> updates = new ArrayList<>();
 
     @ApiModelProperty(required = true, value = "UNIX time in ms")  public Date date_of_create;
     @ApiModelProperty(required = true, value = "UNIX time in ms")  public Date date_of_planing;

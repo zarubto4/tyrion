@@ -302,6 +302,10 @@ GET       /actualization_procedure/object/:actualization_procedure_id   @control
 POST      /actualization_procedure/make                                 @controllers.Controller_Actualization.make_actualization_procedure()
 PUT       /actualization_procedure/cancel/:actualization_procedure_id   @controllers.Controller_Actualization.canceled_procedure(actualization_procedure_id)
 
+#Task
+PUT       /actualization_task/filter/:page_number                       @controllers.Controller_Actualization.get_Actualization_CProgramUpdatePlan_by_filter(page_number: Int)
+PUT       /actualization_task/object/:task_id                           @controllers.Controller_Actualization.get_Actualization_CProgramUpdatePlan(task_id)
+
 ### COMPILATION & LIBRARIES ############ COMPILATION & LIBRARIES ############### COMPILATION & LIBRARIES ################ COMPILATION & LIBRARIES ##############################
 ################################################################################################################################################################################
 

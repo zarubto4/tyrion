@@ -441,8 +441,8 @@ public class Model_Project extends Model {
 
             List<Model_HomerInstance> instances  = new ArrayList<>();
 
-            for(String type_of_blocks_id : cache_list_instance_ids){
-                instances.add(Model_HomerInstance.get_byId(type_of_blocks_id));
+            for(String instance_id : cache_list_instance_ids){
+                instances.add(Model_HomerInstance.get_byId(instance_id));
             }
 
             return instances;

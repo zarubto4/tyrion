@@ -3,6 +3,7 @@ package utilities.swagger.outboundClass.Filter_List;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import models.Model_Board;
 import models.Model_HomerInstance;
 
 import java.util.ArrayList;
@@ -10,33 +11,25 @@ import java.util.List;
 
 @ApiModel(description = "List of instancies by Filter Query",
         value = "Instance_List")
-public class Swagger_Instance_List {
+public class Swagger_Instance_List extends Filter_Common {
 
     /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
     public List<Model_HomerInstance> content;
 
-/* Basic Filter Value --------------------------------------------------------------------------------------------------*/
-
-    @ApiModelProperty(required = true, readOnly = true, value = "First value position from all subjects. Minimum is 0.")
-    public int from;
-
-    @ApiModelProperty(required = true, readOnly = true, value = "Minimum is \"from\" Maximum is \"total\"")
-    public int to;
-
-    @ApiModelProperty(required = true, readOnly = true, value = "Total subjects")
-    public int total;
-
-    @ApiModelProperty(required = true, readOnly = true, value = "Numbers of pages, which you can call")
-    public int pages;
-
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
     public Swagger_Instance_List(Query<Model_HomerInstance> query , int page_number){
 
         if(page_number < 1) page_number = 1;
-        this.content =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList();
+
+        for(Model_HomerInstance instance_not_cached : query.setFirstRow((page_number - 1) * 25).setMaxRows(25).select("id").findList()){
+            Model_HomerInstance instance = Model_HomerInstance.get_byId(instance_not_cached.id);
+            if(instance == null) continue;
+            content.add(instance);
+        }
+
         this.total   = query.findRowCount();
         this.from   = (page_number - 1) * 25;
         this.to     = (page_number - 1) * 25 + content.size();

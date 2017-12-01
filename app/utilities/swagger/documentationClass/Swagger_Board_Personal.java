@@ -9,9 +9,8 @@ import play.data.validation.Constraints;
           value = "Board_Personal_Description")
 public class Swagger_Board_Personal {
 
-    @Constraints.Required
-    @Constraints.MaxLength(value = 255, message = "The name must not have more than 255 characters.")
-    @ApiModelProperty(required = true, value = "Length must be between 0 and 255 characters.")
+    @Constraints.MaxLength(value = 31, message = "The name must not have more than 32 characters.")
+    @ApiModelProperty(required = true, value = "Length must be between 0 and 32 characters.")
     public String name;
 
 

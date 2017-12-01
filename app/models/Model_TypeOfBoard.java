@@ -135,7 +135,7 @@ public class Model_TypeOfBoard extends Model {
 
             if (cache_bootloaders_id == null) {
 
-                List<Model_BootLoader> bootLoaders = Model_BootLoader.find.where().eq("type_of_board.id", id).select("id").findList();
+                List<Model_BootLoader> bootLoaders = Model_BootLoader.find.where().eq("type_of_board.id", id).order().desc("name").select("id").findList();
                 cache_bootloaders_id = new ArrayList<>();
 
                 // Získání seznamu

@@ -37,4 +37,3 @@ public class WS_Message_Hardware_UpdateProcedure_Command extends WS_AbstractMess
         return request;
     }
 }
-

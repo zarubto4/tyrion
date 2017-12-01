@@ -250,6 +250,7 @@ public class Model_Notification extends Model {
             case "ActualizationProcedure" : {
                 Model_ActualizationProcedure actualizationProcedure = (Model_ActualizationProcedure) object;
                 element.name = class_name;
+                element.text = actualizationProcedure.id.toString().substring(0,12);
                 element.id = actualizationProcedure.id.toString();
                 element.project_id = actualizationProcedure.get_project_id();
                 break;

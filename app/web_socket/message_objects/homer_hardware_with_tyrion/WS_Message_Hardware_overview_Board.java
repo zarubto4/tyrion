@@ -22,7 +22,7 @@ public class WS_Message_Hardware_overview_Board {
     @Valid public WS_Message_Hardware_overview_Board_Binaries binaries;
 
     @Constraints.Required  public String target;  // třeba Yoda G3
-    @Constraints.Required  public String alias; // "John 33"
+                           public String alias; // "John 33" - can be null
     @Constraints.Required  public String ip;
     @Constraints.Required  public boolean console;
     @Constraints.Required  public boolean autobackup;                // Default 0                    // user configurable ( 0 or 1)

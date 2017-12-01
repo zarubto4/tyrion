@@ -5,6 +5,7 @@ import com.avaje.ebean.Model;
 import com.avaje.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import models.Model_ActualizationProcedure;
 import models.Model_Board;
 import utilities.swagger.outboundClass.Swagger_Board_Short_Detail;
 
@@ -13,26 +14,12 @@ import java.util.List;
 
 @ApiModel(description = "Individual Board List",
           value = "Board_List")
-public class Swagger_Board_List {
+public class Swagger_Board_List extends Filter_Common {
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
     public List<Swagger_Board_Short_Detail> content = new ArrayList<>();
-
-/* Basic Filter Value --------------------------------------------------------------------------------------------------*/
-
-    @ApiModelProperty(required = true, readOnly = true, value = "First value position from all subjects. Minimum is 0.")
-    public int from;
-
-    @ApiModelProperty(required = true, readOnly = true, value = "Minimum is \"from\" Maximum is \"total\"")
-    public int to;
-
-    @ApiModelProperty(required = true, readOnly = true, value = "Total subjects")
-    public int total;
-
-    @ApiModelProperty(required = true, readOnly = true, value = "Numbers of pages, which you can call")
-    public int pages;
 
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
@@ -41,7 +28,9 @@ public class Swagger_Board_List {
 
         if(page_number < 1) page_number = 1;
 
-        for(Model_Board board : query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findList()){
+        for(Model_Board board_not_cached : query.setFirstRow((page_number - 1) * 25).setMaxRows(25).select("id").findList()){
+            Model_Board board = Model_Board.get_byId(board_not_cached.id);
+            if(board == null) continue;
             content.add(board.get_short_board());
         }
 

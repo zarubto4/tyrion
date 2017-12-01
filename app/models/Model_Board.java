@@ -268,33 +268,10 @@ public class Model_Board extends Model {
         }
     }
 
-    // TODO updates a required_updates předělat do filtru - Updaty nad HW (jeden, projekt, více atd..)
-    @JsonProperty  @Transient  public List<Swagger_C_Program_Update_plan_Short_Detail> updates() {
+    @JsonProperty  @Transient  public List<Model_CProgramUpdatePlan> required_updates() {
 
         try {
 
-            List<Swagger_C_Program_Update_plan_Short_Detail> plans = new ArrayList<>();
-
-            for (Model_CProgramUpdatePlan plan : Model_CProgramUpdatePlan.find.where().eq("board.id", this.id).order().desc("actualization_procedure.date_of_create").findList()) {
-                try {
-                    plans.add(plan.get_short_version_for_board());
-
-                } catch (Exception e) {
-                    terminal_logger.internalServerError(e);
-                }
-            }
-
-            return plans;
-
-        } catch (Exception e) {
-            terminal_logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonProperty  @Transient  public List<Swagger_C_Program_Update_plan_Short_Detail> required_updates() {
-
-        try {
             List<Model_CProgramUpdatePlan> c_program_plans = Model_CProgramUpdatePlan.find.where()
                     .disjunction()
                     .eq("state", Enum_CProgram_updater_state.in_progress)
@@ -304,11 +281,7 @@ public class Model_Board extends Model {
                     .endJunction()
                     .eq("board.id", id).order().asc("actualization_procedure.date_of_create").findList();
 
-            List<Swagger_C_Program_Update_plan_Short_Detail> required_c_programs = new ArrayList<>();
-
-            for (Model_CProgramUpdatePlan plan : c_program_plans) required_c_programs.add(plan.get_short_version_for_board());
-
-            return required_c_programs;
+            return c_program_plans;
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
@@ -1148,7 +1121,8 @@ public class Model_Board extends Model {
         return result;
     }
 
-    // Change Hardware Alias  --//
+
+    // Change Hardware Alias  --//GRID Apps
     @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_alias(String alias) {
         try {
 
@@ -1580,6 +1554,11 @@ public class Model_Board extends Model {
                 return;
             }
 
+            if(project_id() == null){
+                terminal_logger.debug("hardware_firmware_state_check device id:: {} - No project - synchronize is not allowed.", this.id);
+                return;
+            }
+
             terminal_logger.debug("hardware_firmware_state_check - Summary information of connected master board: ID = {}", this.id);
 
             terminal_logger.debug("hardware_firmware_state_check - Settings check ",this.id);
@@ -1727,6 +1706,7 @@ public class Model_Board extends Model {
      * @param overview
      */
     @JsonIgnore @Transient private void check_firmware(WS_Message_Hardware_overview_Board overview) {
+
 
         // Pokud uživatel nechce DB synchronizaci ingoruji
         if (!this.database_synchronize) {
@@ -2067,7 +2047,10 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient private void check_bootloader(WS_Message_Hardware_overview_Board overview) {
 
         // Pokud uživatel nechce DB synchronizaci ingoruji
-        if (!this.database_synchronize) return;
+        if (!this.database_synchronize){
+            terminal_logger.trace("check_bootloader - database_synchronize is forbidden - change parameters not allowed!");
+            return;
+        }
 
         if (get_actual_bootloader() == null) {
             terminal_logger.trace("check_bootloader -: Actual bootloader_id by DB not recognized :: ", overview.binaries.bootloader.build_id);
@@ -2138,12 +2121,24 @@ public class Model_Board extends Model {
 
                 execute_update_procedure(plan.actualization_procedure);
             }
+
+            return;
         }
 
         // Pokud na HW opravdu žádný bootloader není a není ani vytvořená update procedura
         if (get_actual_bootloader() == null && firmware_plans.isEmpty()) {
 
             terminal_logger.debug("check_bootloader:: noo default bootloader on hardware - required automatic update");
+
+            // Zkontroluji jestli tam nějaká verze už je!
+            Model_BootLoader bootloader = Model_BootLoader.find.where().eq("version_identificator", overview.binaries.bootloader.build_id).findUnique();
+
+            if(bootloader != null ){
+                terminal_logger.debug("check_bootloader:: Bootloader identificator {} recognized and found in database", overview.binaries.bootloader.build_id);
+                actual_boot_loader = bootloader;
+                update();
+                return;
+            }
 
             if (get_type_of_board().main_boot_loader() == null) {
                 terminal_logger.error("check_bootloader::Main Bootloader for Type Of Board {} is not set for update device {}", this.type_of_board_name(), this.id);

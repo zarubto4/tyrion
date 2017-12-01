@@ -2831,6 +2831,7 @@ public class Controller_Board extends Controller {
 
             // Úprava stavu
             board.is_active = false;
+            board.cache_value_project_id = null;
 
             // Uložení do databáze
             board.update();
