@@ -264,10 +264,11 @@ public class Utilities_Demo_data_Controller extends Controller {
             // Nasstavím Homer servery
             Model_HomerServer cloud_server_1 = new Model_HomerServer();
             cloud_server_1.personal_server_name = "Alfa";
-            cloud_server_1.server_url = "localhost3";
-            cloud_server_1.grid_port = 8500;
+            cloud_server_1.server_url = "localhost";
+            cloud_server_1.grid_port = 8503;
             cloud_server_1.mqtt_port = 1881;
-            cloud_server_1.web_view_port = 8501;
+            cloud_server_1.web_view_port = 8502;
+            cloud_server_1.server_remote_port = 8505;
             cloud_server_1.server_type = Enum_Cloud_HomerServer_type.main_server;
             cloud_server_1.connection_identificator = "aaaaaaaaaaaaaaa";
             cloud_server_1.hash_certificate = "bbbbbbbbbbbbbbb";
@@ -275,29 +276,32 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             Model_HomerServer cloud_server_2 = new Model_HomerServer();
             cloud_server_2.personal_server_name = "Hydra";
-            cloud_server_2.server_url = "localhost3";
-            cloud_server_2.grid_port = 8500;
+            cloud_server_2.server_url = "localhost";
+            cloud_server_2.grid_port = 8503;
             cloud_server_2.mqtt_port = 1881;
-            cloud_server_2.web_view_port = 8501;
+            cloud_server_2.web_view_port = 8502;
+            cloud_server_2.server_remote_port = 8505;
             cloud_server_2.server_type = Enum_Cloud_HomerServer_type.backup_server;
             cloud_server_2.save();
 
 
             Model_HomerServer cloud_server_3 = new Model_HomerServer();
             cloud_server_3.personal_server_name = "Andromeda";
-            cloud_server_3.server_url = "localhost3";
-            cloud_server_3.grid_port = 8500;
+            cloud_server_3.server_url = "localhost";
+            cloud_server_3.grid_port = 8503;
             cloud_server_3.mqtt_port = 1881;
-            cloud_server_3.web_view_port = 8501;
+            cloud_server_3.web_view_port = 8502;
+            cloud_server_3.server_remote_port = 8505;
             cloud_server_3.server_type = Enum_Cloud_HomerServer_type.public_server;
             cloud_server_3.save();
 
             Model_HomerServer cloud_server_4 = new Model_HomerServer();
             cloud_server_4.personal_server_name = "Gemini";
             cloud_server_4.server_url = "localhost4";
-            cloud_server_4.grid_port = 8500;
+            cloud_server_4.grid_port = 8503;
             cloud_server_4.mqtt_port = 1881;
-            cloud_server_4.web_view_port = 8501;
+            cloud_server_4.web_view_port = 8502;
+            cloud_server_4.server_remote_port = 8505;
             cloud_server_4.server_type = Enum_Cloud_HomerServer_type.public_server;
             cloud_server_4.save();
 

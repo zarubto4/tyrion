@@ -79,6 +79,7 @@ public class Controller_ExternalServer extends Controller {
             server.mqtt_port = help.mqtt_port;
             server.grid_port = help.grid_port;
             server.web_view_port = help.web_view_port;
+            server.server_remote_port = help.server_remote_port;
 
             server.server_url = help.server_url;
 
@@ -227,6 +228,7 @@ public class Controller_ExternalServer extends Controller {
             server.grid_port = help.grid_port;
             server.web_view_port = help.web_view_port;
             server.server_url = help.server_url;
+            server.server_remote_port = help.server_remote_port;
 
             // Uložení objektu
             server.update();

@@ -13,9 +13,11 @@ import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.logger.Class_Logger;
+import utilities.models_update_echo.Update_echo_handler;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.outboundClass.*;
 import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
+import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -311,20 +313,28 @@ public class Model_CProgramUpdatePlan extends Model {
 
         super.update();
 
-        if (actualization_procedure.state == Enum_Update_group_procedure_state.not_start_yet || actualization_procedure.state == Enum_Update_group_procedure_state.in_progress) {
+        Model_ActualizationProcedure procedure = Model_ActualizationProcedure.get_byId(actualization_procedure_id());
+        if(procedure != null) {
+            if (procedure.state == Enum_Update_group_procedure_state.not_start_yet || procedure.state == Enum_Update_group_procedure_state.in_progress) {
 
-            if (this.state == Enum_CProgram_updater_state.overwritten
-               || this.state  == Enum_CProgram_updater_state.complete
-               || this.state  == Enum_CProgram_updater_state.not_updated
-               || this.state  == Enum_CProgram_updater_state.critical_error
-               ) {
+                if (this.state == Enum_CProgram_updater_state.overwritten
+                        || this.state == Enum_CProgram_updater_state.complete
+                        || this.state == Enum_CProgram_updater_state.not_updated
+                        || this.state == Enum_CProgram_updater_state.critical_error
+                        ) {
 
-                terminal_logger.trace("update :: call in new thread actualization_procedure.update_state()");
-                new Thread(() -> actualization_procedure.update_state()).start();
+                    terminal_logger.trace("update :: call in new thread actualization_procedure.update_state()");
+                    new Thread(() -> procedure.update_state()).start();
+                }
+            }
 
+            // Call notification about model update
+            if(procedure.get_project_id() != null) {
+                new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_CProgramUpdatePlan.class, procedure.get_project_id() , this.id.toString()))).start();
             }
 
         }
+
 
         cache.put(id.toString(), this);
     }
@@ -375,6 +385,8 @@ public class Model_CProgramUpdatePlan extends Model {
                 case PHASE_UPLOADING: {
                     try {
 
+                        terminal_logger.debug("update_procedure_progress - procedure {} is PHASE_UPLOADING", plan.id);
+
                         Model_Notification notification = new Model_Notification();
 
                         notification
@@ -399,6 +411,8 @@ public class Model_CProgramUpdatePlan extends Model {
 
                 case ERASING_FLASH_STARTED: {
                     try {
+
+                        terminal_logger.debug("update_procedure_progress - procedure {} is ERASING_FLASH_STARTED", plan.id);
 
                         Model_Notification notification = new Model_Notification();
 
@@ -425,7 +439,7 @@ public class Model_CProgramUpdatePlan extends Model {
                 case UPDATE_DONE: {
                     try {
 
-                        terminal_logger.debug("update_procedure_progress - procedure {} is completed", plan.id);
+                        terminal_logger.debug("update_procedure_progress - procedure {} is UPDATE_DONE", plan.id);
 
                         plan.state = Enum_CProgram_updater_state.complete;
                         plan.date_of_finish = new Date();
@@ -459,6 +473,8 @@ public class Model_CProgramUpdatePlan extends Model {
                 case PHASE_WAITING: {
                     try {
 
+                        terminal_logger.debug("update_procedure_progress - procedure {} is PHASE_WAITING", plan.id);
+
                         plan.state = Enum_CProgram_updater_state.waiting_for_device;
                         plan.update();
                         Model_ActualizationProcedure.get_byId(report.tracking_group_id).change_state(plan, plan.state);
@@ -471,6 +487,8 @@ public class Model_CProgramUpdatePlan extends Model {
 
                 case NEW_VERSION_DOESNT_MATCH: {
                     try {
+
+                        terminal_logger.error("update_procedure_progress - procedure {} is NEW_VERSION_DOESNT_MATCH", plan.id);
 
                         plan.state = Enum_CProgram_updater_state.not_updated;
                         plan.error_code = ErrorCode.NEW_VERSION_DOESNT_MATCH.error_code();
@@ -488,7 +506,9 @@ public class Model_CProgramUpdatePlan extends Model {
                 case ALREADY_SAME: {
                     try {
 
-                        plan.state = Enum_CProgram_updater_state.overwritten;
+                        terminal_logger.error("update_procedure_progress - procedure {} is NEW_VERSION_DOESNT_MATCH", plan.id);
+
+                        plan.state = Enum_CProgram_updater_state.complete;
                         plan.update();
 
                         return;

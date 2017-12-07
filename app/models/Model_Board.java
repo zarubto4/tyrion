@@ -679,7 +679,16 @@ public class Model_Board extends Model {
                         final Form<WS_Message_Hardware_validation_request> form = Form.form(WS_Message_Hardware_validation_request.class).bind(json);
                         if (form.hasErrors()) throw new Exception("WS_Message_Hardware_UpdateProcedure_Progress: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
-                        Model_Board.check_hardware_validation(homer, form.get());
+                        Model_Board.check_mqtt_hardware_connection_validation(homer, form.get());
+                        return;
+                    }
+
+                    case WS_Message_Hardware_terminal_logger_validation_request.message_type: {
+
+                        final Form<WS_Message_Hardware_terminal_logger_validation_request> form = Form.form(WS_Message_Hardware_terminal_logger_validation_request.class).bind(json);
+                        if (form.hasErrors()) throw new Exception("WS_Message_Hardware_terminal_logger_validation_request: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+
+                        Model_Board.check_hardware_logger_access_terminal_validation(homer, form.get());
                         return;
                     }
 
@@ -691,7 +700,7 @@ public class Model_Board extends Model {
 
                     default: {
 
-                        terminal_logger.warn("Incoming Message not recognized::" + json.toString());
+                        terminal_logger.error("Incoming Message not recognized::" + json.toString());
 
                         // Zarážka proti nevadliní odpovědi a zacyklení
                         if (json.has("status") && json.get("status").asText().equals("error")) {
@@ -871,7 +880,7 @@ public class Model_Board extends Model {
     }
 
 
-    @JsonIgnore @Transient public static void check_hardware_validation(WS_HomerServer homer, WS_Message_Hardware_validation_request request){
+    @JsonIgnore @Transient public static void check_mqtt_hardware_connection_validation(WS_HomerServer homer, WS_Message_Hardware_validation_request request){
         try {
 
             Model_Board board = request.get_hardware();
@@ -881,6 +890,53 @@ public class Model_Board extends Model {
             } else {
                 homer.write_without_confirmation(request.get_result(false));
             }
+
+        } catch (Exception e){
+            terminal_logger.internalServerError(e);
+        }
+    }
+
+    @JsonIgnore @Transient public static void check_hardware_logger_access_terminal_validation(WS_HomerServer homer, WS_Message_Hardware_terminal_logger_validation_request request){
+        try {
+
+            String project_id = null;
+
+            for(String hardware_id : request.hardware_ids){
+
+                Model_Board board =  Model_Board.get_byId(hardware_id);
+                if(board == null) {
+                    System.out.println("Board je null");
+                    homer.write_without_confirmation(request.get_result(false));
+                    return;
+                }
+
+                if(project_id != null  && project_id.equals(board.project_id())) continue;
+                if(project_id != null && !project_id.equals(board.project_id())) project_id = null;
+
+                // P5edpokládá se že project_id bude u všech desek stejné - tak se podle toho bude taky kontrolovat
+                if(project_id == null){
+                    System.out.println("project_id je null");
+                    Model_Person person = Model_Person.get_byAuthToken(request.token);
+                    if(person == null){
+                        System.out.println("person je null");
+                        homer.write_without_confirmation(request.get_result(false));
+                        return;
+                    }
+
+                    Model_Project project = Model_Project.find.where().eq("participants.person.id", person.id).eq("id", board.project_id()).findUnique();
+
+                    if(project == null) {
+                        System.out.println("project je null");
+                        homer.write_without_confirmation(request.get_result(false));
+                        return;
+                    }
+
+                    System.out.println("project id je" +  project.id);
+                    project_id = project.id;
+                }
+            }
+
+            homer.write_without_confirmation(request.get_result(true));
 
         } catch (Exception e){
             terminal_logger.internalServerError(e);

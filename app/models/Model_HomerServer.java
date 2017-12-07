@@ -34,6 +34,7 @@ import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Chec
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Online_Change_status;
 import web_socket.services.WS_HomerServer;
 
+import javax.management.BadAttributeValueExpException;
 import javax.persistence.*;
 import java.nio.channels.ClosedChannelException;
 import java.util.*;
@@ -116,8 +117,10 @@ public class Model_HomerServer extends Model {
         detail.server_type = server_type;
         detail.online_state = online_state();
         detail.edit_permission = this.edit_permission();
-        detail.update_permission = false; // TODO: Doplnit až půjde rekonfigurovat server nadálku - Long term task
+        detail.update_permission = false;   // TODO: Doplnit až půjde rekonfigurovat server nadálku - Long term task
         detail.delete_permission = this.delete_permission();
+        detail.server_url = server_url;     //
+        detail.hardware_log_port = server_remote_port;
 
         return detail;
     }
@@ -300,6 +303,18 @@ public class Model_HomerServer extends Model {
                         return;
                     }
 
+                    case WS_Message_Homer_Token_validation_request.message_type: {
+
+                        final Form<WS_Message_Homer_Token_validation_request> form = Form.form(WS_Message_Homer_Token_validation_request.class).bind(json);
+                        if (form.hasErrors())
+                            throw new Exception("WS_Message_Homer_Token_validation_request: Incoming Json from Homer Server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+
+                        validate_incoming_user_connection_to_hardware_logger(homer, form.get());
+                        return;
+                    }
+
+
+
                     default: {
                         terminal_logger.warn("Incoming Message not recognized::" + json.toString());
                         homer.write_without_confirmation(json.put("error_message", "message_type not recognized").put("error_code", 400));
@@ -457,6 +472,55 @@ public class Model_HomerServer extends Model {
         }
     }
 
+    @JsonIgnore
+    @Transient
+    public static void validate_incoming_user_connection_to_hardware_logger(WS_HomerServer ws_homer_server, WS_Message_Homer_Token_validation_request message){
+        try {
+
+
+            Model_HomerServer server = Model_HomerServer.get_byId(ws_homer_server.get_identificator());
+            if(server == null) {
+                terminal_logger.error("validate_incoming_user_connection_to_hardware_logger:: homer server is null");
+                return;
+            }
+
+           // Permition for everyone!
+           if( server.server_type == Enum_Cloud_HomerServer_type.public_server ||
+                   server.server_type == Enum_Cloud_HomerServer_type.backup_server ||
+                   server.server_type == Enum_Cloud_HomerServer_type.main_server){
+
+
+               // Zjistím, zda v Cache už token není Pokud není - vyhledám Token objekt a ověřím jeho platnost
+               if(!Model_Person.token_cache.containsKey(message.client_token)){
+
+                   Model_FloatingPersonToken model_token = Model_FloatingPersonToken.find.where().eq("authToken", message.client_token).findUnique();
+                   if(model_token == null || !model_token.isValid()){
+                       terminal_logger.warn("validate_incoming_user_connection_to_hardware_logger:: Token::" + message.client_token + " is not t is no longer valid according time");
+                       ws_homer_server.write_without_confirmation(message.get_result(false));
+                       return;
+                   }
+
+                   if(model_token.person != null) {
+                       Model_Person.token_cache.put(message.client_token, model_token.person.id);
+                   }else {
+                       terminal_logger.warn("getUsername:: Model_FloatingPersonToken not contains Person!");
+                   }
+
+               }
+
+
+               terminal_logger.trace("validate_incoming_user_connection_to_hardware_logger:: validation true for token {}", message.client_token);
+               ws_homer_server.write_without_confirmation(message.get_result(true));
+
+
+           }else {
+               terminal_logger.internalServerError(new BadAttributeValueExpException("Dopíče není zde dořešen privátní server!!! "));
+           }
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+        }
+    }
 
     // Settings
     /*

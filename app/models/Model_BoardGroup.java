@@ -2,6 +2,7 @@ package models;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -43,6 +44,7 @@ public class Model_BoardGroup extends Model {
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @TyrionCachedList public Integer cache_group_size = null;
+    @JsonIgnore @Transient @TyrionCachedList public String  cache_value_project_id = null;
     @JsonIgnore @Transient @TyrionCachedList public List<String> cache_type_of_boards = new ArrayList<>();
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -115,6 +117,18 @@ public class Model_BoardGroup extends Model {
         }
     }
 
+    @JsonProperty @Transient @JsonInclude(JsonInclude.Include.NON_NULL) public String project_id()           {
+
+        if(cache_value_project_id == null){
+            Model_Project project = Model_Project.find.where().eq("board_groups.id", id).select("id").findUnique();
+            if(project == null) return null;
+            cache_value_project_id = project.id;
+        }
+
+        return cache_value_project_id;
+
+
+    }
 
     // TODO teoreticky cachovat?
     @JsonIgnore @Transient public List<String> get_hardware_id_list(){
@@ -169,9 +183,15 @@ public class Model_BoardGroup extends Model {
         // new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( _Model_ExampleModelName.class, "project.id", "model.id"))).start();
 
         // Case 2.1 :: We delete the object with change of ORM parameter  @JsonIgnore  public boolean removed_by_user;
+        this.boards.clear();
+
         this.removed_by_user = true;
-        project.cache_hardware_groups_ids.remove(id.toString());
         this.update();
+
+        if(project_id() != null) {
+            Model_Project project = Model_Project.get_byId(project_id());
+            if(project != null) project.cache_hardware_groups_ids.remove(id.toString());
+        }
 
         // Case 1.2 :: After Delete - we send notification to frontend (Only if it is desirable)
         //new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, "project.id", "model.id"))).start();
@@ -187,16 +207,6 @@ public class Model_BoardGroup extends Model {
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
-
-    public void make_log_to_non_sql_database(){
-        new Thread( () -> {
-            try {
-                //Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
-            } catch (Exception e) {
-                terminal_logger.internalServerError(e);
-            }
-        }).start();
-    }
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 

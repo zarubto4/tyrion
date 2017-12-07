@@ -2053,18 +2053,36 @@ public class Controller_Board extends Controller {
                 Model_HomerServer main_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.main_server).findUnique();
                 if (main_server == null) return GlobalResult.result_notFound("Main server not found!!!");
 
+
+                DM_Board_Bootloader_DefaultConfig conf = board.bootloader_core_configuration();
+
+
                 Swagger_Hardware_New_Settings_Result result = new Swagger_Hardware_New_Settings_Result();
                 result.full_id = board.id;
-                result.normal_mqtt_hostname = main_server.server_url;
-                result.normal_mqtt_port = main_server.mqtt_port;
-                result.mqtt_username = mqtt_password_not_hashed;
-                result.mqtt_password = mqtt_username_not_hashed;
 
-                result.backup_mqtt_hostname = backup_server.server_url;
-                result.backup_mqtt_port = backup_server.mqtt_port;
 
-                result.mac_address = board.mac_address;
-                result.configuration = board.bootloader_core_configuration();
+                Swagger_Hardware_New_Settings_Result_Configuration configuration = new Swagger_Hardware_New_Settings_Result_Configuration();
+
+                configuration.normal_mqtt_hostname = main_server.server_url;
+                configuration.normal_mqtt_port = main_server.mqtt_port;
+                configuration.mqtt_username = mqtt_password_not_hashed;
+                configuration.mqtt_password = mqtt_username_not_hashed;
+
+                configuration.backup_mqtt_hostname = backup_server.server_url;
+                configuration.backup_mqtt_port = backup_server.mqtt_port;
+                configuration.mac_address = board.mac_address;
+
+                configuration.autobackup = conf.autobackup;
+                configuration.blreport = conf.blreport;
+                configuration.wdenable = conf.wdenable;
+                configuration.netsource = conf.netsource;
+                configuration.backuptime = conf.backuptime;
+                configuration.webview = conf.webview;
+                configuration.webport = conf.webport;
+                configuration.timeoffset = conf.timeoffset;
+                configuration.lowpanbr = conf.lowpanbr;
+                configuration.autojump = conf.autojump;
+                configuration.wdtime = conf.wdtime;
 
                 return GlobalResult.result_created(Json.toJson(result));
             }

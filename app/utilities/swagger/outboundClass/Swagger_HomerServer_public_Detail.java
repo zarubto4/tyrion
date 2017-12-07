@@ -32,4 +32,10 @@ public class Swagger_HomerServer_public_Detail {
     @ApiModelProperty(required = true, readOnly = true)
     public boolean delete_permission;
 
+    @ApiModelProperty(required = true, readOnly = true)
+    public Integer hardware_log_port;
+
+    @ApiModelProperty(required = true, readOnly = true)
+    public String server_url;
+
 }
