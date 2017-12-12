@@ -131,10 +131,11 @@ public class Model_Board extends Model {
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_boot_loader_id;                   // Bootloader
 
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_id;                     // C Program
-    @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_version_id;
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_version_id;             // C Program - version
 
     @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_backup_id;              // Backup
-    @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_backup_version_id;
+    @Transient @JsonIgnore @TyrionCachedList public String cache_value_actual_c_program_backup_version_id;      // Backup - version
+
     @Transient @JsonIgnore @TyrionCachedList public String cache_latest_know_ip_address;
     @Transient @JsonIgnore @TyrionCachedList public List<String> cache_hardware_groups_id;
 
@@ -1360,7 +1361,7 @@ public class Model_Board extends Model {
                 firmware_plans.get(i).update();
             }
 
-            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), "AUTOBACKUP", true), 1000*5, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), "autobackup", true), 1000*5, 0, 2);
 
             final Form<WS_Message_Hardware_set_settings> form = Form.form(WS_Message_Hardware_set_settings.class).bind(node);
             if (form.hasErrors()) {

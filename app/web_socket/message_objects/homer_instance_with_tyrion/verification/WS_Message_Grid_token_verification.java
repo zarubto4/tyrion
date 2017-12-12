@@ -14,6 +14,7 @@ public class WS_Message_Grid_token_verification extends WS_AbstractMessage_Insta
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
     @Constraints.Required public String token;
+    @Constraints.Required public String snapshot_id;
 
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/

@@ -48,8 +48,8 @@ public class Model_GridTerminal extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
 
-    public static final String private_prefix = "tprt_";
-    public static final String public_prefix  = "tprt_";
+    public static final String private_prefix = "tprt_"; // Token PRiviT
+    public static final String public_prefix  = "tpuk_"; // Token PUbliK
 
     @JsonIgnore @Override
     public void save() {

@@ -377,11 +377,82 @@ public class Model_CProgramUpdatePlan extends Model {
                 plan.error = report.error;
                 plan.update();
                 Model_ActualizationProcedure.get_byId(report.tracking_group_id).change_state(plan, plan.state);
+
+                Model_Notification notification = new Model_Notification();
+
+                notification
+                        .setChainType(Enum_Notification_type.CHAIN_END)
+                        .setId(plan.actualization_procedure.id.toString())
+                        .setImportance(Enum_Notification_importance.low)
+                        .setLevel(Enum_Notification_level.error);
+
+                notification.setText(new Notification_Text().setText("Update of Procedure "))
+                        .setObject(plan.actualization_procedure)
+                        .setText(new Notification_Text().setText(". Transfer firmware to device "))
+                        .setObject(plan.get_board())
+                        .setText(new Notification_Text().setText(" failed. Error Code " + report.error_code + "."))
+                        .send_under_project(plan.actualization_procedure.get_project_id());
+
+
                 return;
             }
 
+            // Fáze jsou volány jen tehdá, když má homer instrukce je zasílat
             switch (phase) {
 
+                case PHASE_UPLOAD_START: {
+                    try {
+                        terminal_logger.debug("update_procedure_progress - procedure {} is PHASE_UPLOAD_START", plan.id);
+
+
+
+                        Model_Notification notification = new Model_Notification();
+
+                        notification
+                                .setChainType(Enum_Notification_type.CHAIN_START)
+                                .setId(plan.actualization_procedure.id.toString())
+                                .setImportance(Enum_Notification_importance.low)
+                                .setLevel(Enum_Notification_level.info);
+
+                        notification.setText(new Notification_Text().setText("Update of Procedure "))
+                                .setObject(plan.actualization_procedure)
+                                .setText(new Notification_Text().setText(". Transfer firmware to device "))
+                                .setObject(plan.get_board())
+                                .setText(new Notification_Text().setText(" start."))
+                                .send_under_project(plan.actualization_procedure.get_project_id());
+
+                        return;
+                    } catch (Exception e) {
+                        terminal_logger.internalServerError(e);
+                    }
+                }
+
+                case PHASE_UPLOAD_DONE: {
+                    try {
+                        terminal_logger.debug("update_procedure_progress - procedure {} is PHASE_UPLOAD_DONE", plan.id);
+
+                        Model_Notification notification = new Model_Notification();
+
+                        notification
+                                .setChainType(Enum_Notification_type.CHAIN_UPDATE)
+                                .setId(plan.actualization_procedure.id.toString())
+                                .setImportance(Enum_Notification_importance.low)
+                                .setLevel(Enum_Notification_level.info);
+
+                        notification.setText(new Notification_Text().setText("Update of Procedure "))
+                                .setObject(plan.actualization_procedure)
+                                .setText(new Notification_Text().setText(". Transfer firmware to "))
+                                .setObject(plan.get_board())
+                                .setText(new Notification_Text().setText(" firmware file  was transferred and stored in memory."))
+                                .send_under_project(plan.actualization_procedure.get_project_id());
+
+                        return;
+                    } catch (Exception e) {
+                        terminal_logger.internalServerError(e);
+                    }
+                }
+
+                // Je nejčastěji proto je nahoře
                 case PHASE_UPLOADING: {
                     try {
 
@@ -399,7 +470,7 @@ public class Model_CProgramUpdatePlan extends Model {
                                 .setObject(plan.actualization_procedure)
                                 .setText(new Notification_Text().setText(". Transfer firmware to "))
                                 .setObject(plan.get_board())
-                                .setText(new Notification_Text().setText(" finished:: " + report.percentage_progress + "%"))
+                                .setText(new Notification_Text().setText(" progress:: " + report.percentage_progress + "%"))
                                 .send_under_project(plan.actualization_procedure.get_project_id());
 
                         return;
@@ -409,10 +480,10 @@ public class Model_CProgramUpdatePlan extends Model {
                     }
                 }
 
-                case ERASING_FLASH_STARTED: {
+                case PHASE_FLASH_ERASING: {
                     try {
 
-                        terminal_logger.debug("update_procedure_progress - procedure {} is ERASING_FLASH_STARTED", plan.id);
+                        terminal_logger.debug("update_procedure_progress - procedure {} is PHASE_FLASH_ERASING", plan.id);
 
                         Model_Notification notification = new Model_Notification();
 
@@ -427,6 +498,7 @@ public class Model_CProgramUpdatePlan extends Model {
                                 .setText(new Notification_Text().setText(". We are making backup on board "))
                                 .setObject(plan.get_board())
                                 .setText(new Notification_Text().setText("finished:: " + report.percentage_progress + "%"))
+                                .setText(new Notification_Text().setText("Flash Memory Erasing..."))
                                 .send_under_project(plan.actualization_procedure.get_project_id());
 
                         return;
@@ -436,33 +508,133 @@ public class Model_CProgramUpdatePlan extends Model {
                     }
                 }
 
-                case UPDATE_DONE: {
+                case PHASE_FLASH_ERASED: {
                     try {
+
+                        terminal_logger.debug("update_procedure_progress - procedure {} is PHASE_FLASH_ERASED", plan.id);
+
+                        Model_Notification notification = new Model_Notification();
+
+                        notification
+                                .setChainType(Enum_Notification_type.CHAIN_UPDATE)
+                                .setId(plan.actualization_procedure.id.toString())
+                                .setImportance(Enum_Notification_importance.low)
+                                .setLevel(Enum_Notification_level.info);
+
+                        notification.setText(new Notification_Text().setText("Update of Procedure "))
+                                .setObject(plan.actualization_procedure)
+                                .setText(new Notification_Text().setText(". We are making backup on board "))
+                                .setObject(plan.get_board())
+                                .setText(new Notification_Text().setText("finished:: " + report.percentage_progress + "%"))
+                                .setText(new Notification_Text().setText("Flash Memory Erased"))
+                                .send_under_project(plan.actualization_procedure.get_project_id());
+
+                        return;
+
+                    } catch (Exception e) {
+                        terminal_logger.internalServerError(e);
+                    }
+                }
+
+                case PHASE_RESTARTING: {
+
+                    terminal_logger.debug("update_procedure_progress - procedure {} is PHASE_RESTARTING", plan.id);
+
+                    Model_Notification notification = new Model_Notification();
+
+                    notification
+                            .setChainType(Enum_Notification_type.CHAIN_UPDATE)
+                            .setId(plan.actualization_procedure.id.toString())
+                            .setImportance(Enum_Notification_importance.low)
+                            .setLevel(Enum_Notification_level.info);
+
+                    notification.setText(new Notification_Text().setText("Update of Procedure "))
+                            .setObject(plan.actualization_procedure)
+                            .setText(new Notification_Text().setText(". Transfer firmware to "))
+                            .setObject(plan.get_board())
+                            .setText(new Notification_Text().setText(" finished:: " + report.percentage_progress + "%"))
+                            .setText(new Notification_Text().setText("The device is just rebooting."))
+                            .send_under_project(plan.actualization_procedure.get_project_id());
+
+                    return;
+                }
+
+                case PHASE_CONNECTED_AFTER_RESTART: {
+
+                    terminal_logger.debug("update_procedure_progress - procedure {} is PHASE_CONNECTED_AFTER_RESTART", plan.id);
+
+                    Model_Notification notification = new Model_Notification();
+
+                    notification
+                            .setChainType(Enum_Notification_type.CHAIN_UPDATE)
+                            .setId(plan.actualization_procedure.id.toString())
+                            .setImportance(Enum_Notification_importance.low)
+                            .setLevel(Enum_Notification_level.info);
+
+                    notification.setText(new Notification_Text().setText("Update of Procedure "))
+                            .setObject(plan.actualization_procedure)
+                            .setText(new Notification_Text().setText(". Transfer firmware to "))
+                            .setObject(plan.get_board())
+                            .setText(new Notification_Text().setText(" finished:: " + report.percentage_progress + "%"))
+                            .setText(new Notification_Text().setText("Device Restarted successfully - system check all registers"))
+                            .send_under_project(plan.actualization_procedure.get_project_id());
+
+                    return;
+                }
+
+
+                case PHASE_UPDATE_DONE: {
+                    try {
+
+                        Model_Notification notification = new Model_Notification();
+
+                        notification
+                                .setChainType(Enum_Notification_type.CHAIN_END)
+                                .setId(plan.actualization_procedure.id.toString())
+                                .setImportance(Enum_Notification_importance.low)
+                                .setLevel(Enum_Notification_level.info);
+                        notification.setText(new Notification_Text().setText("Update of Procedure "))
+                                .setObject(plan.actualization_procedure)
+                                .setText(new Notification_Text().setText(". Transfer firmware to "))
+                                .setObject(plan.get_board())
+                                .setText(new Notification_Text().setText(" successfully done."))
+                                .send_under_project(plan.actualization_procedure.get_project_id());
+
 
                         terminal_logger.debug("update_procedure_progress - procedure {} is UPDATE_DONE", plan.id);
 
-                        plan.state = Enum_CProgram_updater_state.complete;
-                        plan.date_of_finish = new Date();
-                        plan.update();
 
                         Model_Board board = plan.get_board();
 
                         if (plan.firmware_type == Enum_Firmware_type.FIRMWARE) {
 
+                            terminal_logger.debug("update_procedure_progress: firmware:: on HW now:: {} ",  board.get_actual_c_program_version().c_compilation.firmware_build_id);
+                            terminal_logger.debug("update_procedure_progress: required by update: {} ",  plan.c_program_version_for_update.c_compilation.firmware_build_id);
+
                             board.actual_c_program_version = plan.c_program_version_for_update;
+                            board.cache_value_actual_c_program_id = plan.c_program_version_for_update.get_c_program().id;
+                            board.cache_value_actual_c_program_version_id = plan.c_program_version_for_update.id;
                             board.update();
 
                         } else if (plan.firmware_type == Enum_Firmware_type.BOOTLOADER) {
 
                             board.actual_boot_loader = plan.get_bootloader();
+                            board.cache_value_actual_boot_loader_id = plan.get_bootloader().id.toString();
                             board.update();
 
                         } else if (plan.firmware_type == Enum_Firmware_type.BACKUP) {
+
                             board.actual_backup_c_program_version = plan.c_program_version_for_update;
+                            board.cache_value_actual_c_program_backup_id =plan.c_program_version_for_update.get_c_program().id;
+                            board.cache_value_actual_c_program_backup_version_id = plan.c_program_version_for_update.id;
                             board.update();
 
                             board.make_log_backup_arrise_change();
                         }
+
+                        plan.state = Enum_CProgram_updater_state.complete;
+                        plan.date_of_finish = new Date();
+                        plan.update();
 
                         return;
                     } catch (Exception e) {
@@ -506,10 +678,50 @@ public class Model_CProgramUpdatePlan extends Model {
                 case ALREADY_SAME: {
                     try {
 
-                        terminal_logger.error("update_procedure_progress - procedure {} is NEW_VERSION_DOESNT_MATCH", plan.id);
+                        terminal_logger.error("update_procedure_progress - procedure {} is ALREADY_SAME", plan.id);
+
+                        Model_Notification notification = new Model_Notification();
+
+                        notification
+                                .setChainType(Enum_Notification_type.INDIVIDUAL)
+                                .setId(plan.actualization_procedure.id.toString())
+                                .setImportance(Enum_Notification_importance.low)
+                                .setLevel(Enum_Notification_level.info);
+
+                        notification.setText(new Notification_Text().setText("Update of Procedure "))
+                                .setObject(plan.actualization_procedure)
+                                .setText(new Notification_Text().setText(" to Hardware "))
+                                .setObject(plan.get_board())
+                                .setText(new Notification_Text().setText(" is done. The required firmware on the device is already running."))
+                                .send_under_project(plan.actualization_procedure.get_project_id());
+
+                        terminal_logger.error("update_procedure_progress - procedure {} is ALREADY_SAME", plan.id);
 
                         plan.state = Enum_CProgram_updater_state.complete;
                         plan.update();
+
+                        Model_Board board = plan.get_board();
+
+                        if (plan.firmware_type == Enum_Firmware_type.FIRMWARE) {
+
+                            board.actual_c_program_version = plan.c_program_version_for_update;
+                            board.cache_value_actual_c_program_id = plan.c_program_version_for_update.get_c_program().id;
+                            board.cache_value_actual_c_program_version_id = plan.c_program_version_for_update.id;
+                            board.update();
+
+                        } else if (plan.firmware_type == Enum_Firmware_type.BOOTLOADER) {
+
+                            board.actual_boot_loader = plan.get_bootloader();
+                            board.cache_value_actual_boot_loader_id = plan.get_bootloader().id.toString();
+                            board.update();
+
+                        } else if (plan.firmware_type == Enum_Firmware_type.BACKUP) {
+                            board.cache_value_actual_c_program_backup_id =plan.c_program_version_for_update.get_c_program().id;
+                            board.cache_value_actual_c_program_backup_version_id = plan.c_program_version_for_update.id;
+                            board.update();
+
+                            board.make_log_backup_arrise_change();
+                        }
 
                         return;
                     } catch (Exception e) {
@@ -517,7 +729,6 @@ public class Model_CProgramUpdatePlan extends Model {
                     }
                 }
 
-                case PHASE_RESTARTING: return;
 
                 default: {
                     throw new UnsupportedOperationException("Unknown update phase. Report: " + Json.toJson(report));

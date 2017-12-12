@@ -7,13 +7,7 @@ public enum Enum_HardwareHomerUpdate_state {
 
     // events
     @EnumValue("UPDATE_STARTED")                    UPDATE_STARTED,
-    @EnumValue("ERASING_FLASH_STARTED")             ERASING_FLASH_STARTED,      // Creating backup
-    @EnumValue("PHASE_FLASH_ERASED")                PHASE_FLASH_ERASED,      // Creating backup
     @EnumValue("UPLOAD_STARTED")                    UPLOAD_STARTED,
-    @EnumValue("SENDING_PART")                      SENDING_PART,
-    @EnumValue("UPLOAD_END")                        UPLOAD_END,
-    @EnumValue("RESTART_SENT")                      RESTART_SENT,
-    @EnumValue("CONNECTED_AFTER_RESTART")           CONNECTED_AFTER_RESTART,
     @EnumValue("UPDATE_DONE")                       UPDATE_DONE,
     @EnumValue("UPDATE_FAILED")                     UPDATE_FAILED,
 
@@ -32,12 +26,16 @@ public enum Enum_HardwareHomerUpdate_state {
     @EnumValue("ERROR_INFO_STATUS")                  ERROR_INFO_STATUS,
     @EnumValue("NEW_VERSION_DOESNT_MATCH")           NEW_VERSION_DOESNT_MATCH,
     
-    // phase 
-    @EnumValue("PHASE_WAITING")                             PHASE_WAITING,
-    @EnumValue("PHASE_FLASH_ERASING")                       PHASE_FLASH_ERASING,
-    @EnumValue("PHASE_UPLOADING")                           PHASE_UPLOADING,
-    @EnumValue("PHASE_RESTARTING")                          PHASE_RESTARTING;
-
+    // phase
+    @EnumValue("PHASE_UPLOAD_START")                  PHASE_UPLOAD_START,      // Creating backup
+    @EnumValue("PHASE_FLASH_ERASING")                 PHASE_FLASH_ERASING,      // Creating backup
+    @EnumValue("PHASE_FLASH_ERASED")                  PHASE_FLASH_ERASED,      // Creating backup
+    @EnumValue("PHASE_WAITING")                       PHASE_WAITING,
+    @EnumValue("PHASE_UPLOADING")                     PHASE_UPLOADING,
+    @EnumValue("PHASE_UPLOAD_DONE")                   PHASE_UPLOAD_DONE,
+    @EnumValue("PHASE_RESTARTING")                    PHASE_RESTARTING,
+    @EnumValue("PHASE_CONNECTED_AFTER_RESTART")       PHASE_CONNECTED_AFTER_RESTART,
+    @EnumValue("PHASE_UPDATE_DONE")                   PHASE_UPDATE_DONE;
 
 
     public static Enum_HardwareHomerUpdate_state get_state(String value){
@@ -46,18 +44,22 @@ public enum Enum_HardwareHomerUpdate_state {
 
         // events
         else if(value.equalsIgnoreCase(UPDATE_STARTED.toString()))              return Enum_HardwareHomerUpdate_state.UPDATE_STARTED;
-        else if(value.equalsIgnoreCase(ERASING_FLASH_STARTED.toString()))       return Enum_HardwareHomerUpdate_state.ERASING_FLASH_STARTED;
-        else if(value.equalsIgnoreCase(PHASE_FLASH_ERASED.toString()))          return Enum_HardwareHomerUpdate_state.PHASE_FLASH_ERASED;
         else if(value.equalsIgnoreCase(UPLOAD_STARTED.toString()))              return Enum_HardwareHomerUpdate_state.UPLOAD_STARTED;
-        else if(value.equalsIgnoreCase(SENDING_PART.toString()))                return Enum_HardwareHomerUpdate_state.SENDING_PART;
-        else if(value.equalsIgnoreCase(UPLOAD_END.toString()))                  return Enum_HardwareHomerUpdate_state.UPLOAD_END;
-        else if(value.equalsIgnoreCase(RESTART_SENT.toString() ))               return Enum_HardwareHomerUpdate_state.RESTART_SENT;
-        else if(value.equalsIgnoreCase(CONNECTED_AFTER_RESTART.toString()))     return Enum_HardwareHomerUpdate_state.CONNECTED_AFTER_RESTART;
         else if(value.equalsIgnoreCase(UPDATE_DONE.toString()))                 return Enum_HardwareHomerUpdate_state.UPDATE_DONE;
         else if(value.equalsIgnoreCase(UPDATE_FAILED.toString()))               return Enum_HardwareHomerUpdate_state.UPDATE_FAILED;
 
+        // phase
+        else if(value.equalsIgnoreCase(PHASE_UPLOAD_START.toString()))          return Enum_HardwareHomerUpdate_state.PHASE_UPLOAD_START;
+        else if(value.equalsIgnoreCase(PHASE_FLASH_ERASING.toString()))         return Enum_HardwareHomerUpdate_state.PHASE_FLASH_ERASING;
+        else if(value.equalsIgnoreCase(PHASE_FLASH_ERASED.toString()))          return Enum_HardwareHomerUpdate_state.PHASE_FLASH_ERASED;
+        else if(value.equalsIgnoreCase(PHASE_WAITING.toString()))               return Enum_HardwareHomerUpdate_state.PHASE_WAITING;
+        else if(value.equalsIgnoreCase(PHASE_UPLOADING.toString()))             return Enum_HardwareHomerUpdate_state.PHASE_UPLOADING;
+        else if(value.equalsIgnoreCase(PHASE_UPLOAD_DONE.toString()))           return Enum_HardwareHomerUpdate_state.PHASE_UPLOAD_DONE;
+        else if(value.equalsIgnoreCase(PHASE_RESTARTING.toString()))              return Enum_HardwareHomerUpdate_state.PHASE_RESTARTING;
+        else if(value.equalsIgnoreCase(PHASE_CONNECTED_AFTER_RESTART.toString())) return Enum_HardwareHomerUpdate_state.PHASE_CONNECTED_AFTER_RESTART;
+        else if(value.equalsIgnoreCase(PHASE_UPDATE_DONE.toString()))             return Enum_HardwareHomerUpdate_state.PHASE_UPDATE_DONE;
 
-            // errors
+        // errors
         else if(value.equalsIgnoreCase(ALREADY_SAME.toString()))                 return Enum_HardwareHomerUpdate_state.ALREADY_SAME;
         else if(value.equalsIgnoreCase(ERROR_NO_BINNARY.toString()))             return Enum_HardwareHomerUpdate_state.ERROR_NO_BINNARY;
         else if(value.equalsIgnoreCase(WATCHDOG_TIMEOUT.toString()))             return Enum_HardwareHomerUpdate_state.WATCHDOG_TIMEOUT;
@@ -71,12 +73,6 @@ public enum Enum_HardwareHomerUpdate_state {
         else if(value.equalsIgnoreCase(ERROR_INFO_STATUS.toString()))            return Enum_HardwareHomerUpdate_state.ERROR_INFO_STATUS;
         else if(value.equalsIgnoreCase(NEW_VERSION_DOESNT_MATCH.toString()))     return Enum_HardwareHomerUpdate_state.NEW_VERSION_DOESNT_MATCH;
 
-
-        // phase
-        else if(value.equalsIgnoreCase(PHASE_WAITING.toString()))              return Enum_HardwareHomerUpdate_state.PHASE_WAITING;
-        else if(value.equalsIgnoreCase(PHASE_FLASH_ERASING.toString() ))       return Enum_HardwareHomerUpdate_state.PHASE_FLASH_ERASING;
-        else if(value.equalsIgnoreCase(PHASE_UPLOADING.toString()))            return Enum_HardwareHomerUpdate_state.PHASE_UPLOADING;
-        else if(value.equalsIgnoreCase(PHASE_RESTARTING.toString()))           return Enum_HardwareHomerUpdate_state.PHASE_RESTARTING;
 
         return null;
     }

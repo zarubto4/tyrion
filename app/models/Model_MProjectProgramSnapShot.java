@@ -27,9 +27,9 @@ public class Model_MProjectProgramSnapShot extends Model {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)      public Model_MProject m_project;
 
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER) @JoinTable(name = "b_program_version_snapshots") public List<Model_VersionObject> instance_versions = new ArrayList<>(); // Vazba na version Blocka (zatím je využívaná jen jako M:1
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY) @JoinTable(name = "b_program_version_snapshots") public List<Model_VersionObject> instance_versions = new ArrayList<>(); // Vazba na version Blocka (zatím je využívaná jen jako M:1
 
-    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "m_project_program_snapshot") public List<Model_MProgramInstanceParameter> m_program_snapshots = new ArrayList<>();    // Verze M_Programu
+    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "m_project_program_snapshot") public List<Model_MProgramInstanceParameter> m_program_snapshots = new ArrayList<>();    // Verze M_Programu // TODO CACHE
 
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 

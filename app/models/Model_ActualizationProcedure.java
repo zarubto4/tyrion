@@ -8,6 +8,7 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
+import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
 import utilities.models_update_echo.Update_echo_handler;
@@ -46,6 +47,13 @@ public class Model_ActualizationProcedure extends Model {
 
     @JsonIgnore public String project_id;
 
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    // For Faster reload
+    @Transient @JsonIgnore @TyrionCachedList  public Integer cache_procedure_size_all;
+    @Transient @JsonIgnore @TyrionCachedList  public String  cache_homer_instance_record_id;
+
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient @ApiModelProperty(required = true ) public Enum_Update_group_procedure_state state (){
@@ -54,9 +62,14 @@ public class Model_ActualizationProcedure extends Model {
 
     @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true)
     public Integer procedure_size_all(){
-        return   Model_CProgramUpdatePlan.find.where()
-                .eq("actualization_procedure.id", id)
-                .findRowCount();
+
+        if(cache_procedure_size_all == null) {
+            cache_procedure_size_all = Model_CProgramUpdatePlan.find.where()
+                    .eq("actualization_procedure.id", id)
+                    .findRowCount();
+        }
+
+        return cache_procedure_size_all;
     }
 
     @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true)
@@ -109,6 +122,26 @@ public class Model_ActualizationProcedure extends Model {
     }
 
 
+    @JsonIgnore @Transient
+    public String get_HomerInstanceRecord_id() {
+        try {
+            if(cache_homer_instance_record_id == null) {
+                Model_HomerInstanceRecord record = Model_HomerInstanceRecord.find.where()
+                        .eq("procedures.id", id)
+                        .select("id")
+                        .findUnique();
+
+                if(record != null) {
+                    cache_homer_instance_record_id = record.id;
+                }
+            }
+
+            return cache_homer_instance_record_id;
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+            return null;
+        }
+    }
     @JsonIgnore @Transient
     public void update_state(){
         try {
@@ -219,12 +252,17 @@ public class Model_ActualizationProcedure extends Model {
                                                     .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
                                                     .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
                                                     .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
+                                                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
                                                     .add(Expr.isNull("state"))
+                                            .select("id")
                                             .findList();
 
-       for(Model_CProgramUpdatePlan plan : list) {
-           plan.state = Enum_CProgram_updater_state.canceled;
-           plan.update();
+       for(Model_CProgramUpdatePlan plan_not_cached : list) {
+           Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.get_byId(plan_not_cached.id.toString());
+           if(plan != null) {
+               plan.state = Enum_CProgram_updater_state.canceled;
+               plan.update();
+           }
        }
 
        state = Enum_Update_group_procedure_state.canceled;
@@ -235,7 +273,6 @@ public class Model_ActualizationProcedure extends Model {
 
     @JsonIgnore @Transient
     public String get_project_id(){
-
        return project_id;
     }
 
@@ -356,8 +393,9 @@ public class Model_ActualizationProcedure extends Model {
 
             }else if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP || type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME ){
 
+
                 notification.setText(new Notification_Text().setText("Update under Instance "))
-                .setObject(homer_instance_record.actual_running_instance);
+                .setObject(Model_HomerInstanceRecord.get_byId(get_HomerInstanceRecord_id()).actual_running_instance);
 
                 if(updates.size() == 1){
 
@@ -516,6 +554,10 @@ public class Model_ActualizationProcedure extends Model {
                 // Individual update
                 if(type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL){
 
+                    if(procedure_size_all() == 1){
+                        return;
+                    }
+
                     if(state == Enum_Update_group_procedure_state.successful_complete) {
                         notification.setText(new Notification_Text().setText("Update Procedure "))
                                 .setObject(this)
@@ -529,6 +571,8 @@ public class Model_ActualizationProcedure extends Model {
                     notification.send_under_project(get_project_id());
                     return;
                 }
+
+                // Možná tady zauvažovat o progressu?? TYRION-599
 
                 if(state == Enum_Update_group_procedure_state.successful_complete) {
 

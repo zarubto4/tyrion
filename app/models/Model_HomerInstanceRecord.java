@@ -49,12 +49,13 @@ public class Model_HomerInstanceRecord extends Model {
     @ApiModelProperty(required = false, readOnly = true, value = "can be null")   public Date planed_when;
 
     @JsonIgnore @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.LAZY)       public Model_VersionObject version_object;
-    @JsonIgnore @OneToOne(cascade=CascadeType.ALL)                                public Model_HomerInstance actual_running_instance;      // Aktuálně běžící instnace na Serveru (Pokud není null má běžet- má běžet na serveru)
+    @JsonIgnore @OneToOne(cascade=CascadeType.ALL)                                public Model_HomerInstance actual_running_instance; // TODO Cache!!!  // Aktuálně běžící instnace na Serveru (Pokud není null má běžet- má běžet na serveru)
     @JsonIgnore @OneToMany(mappedBy="homer_instance_record", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ActualizationProcedure> procedures = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @TyrionCachedList private String cache_main_instance_history_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_actual_running_instance_id; // TODO Cache!!!
+    @JsonIgnore @Transient @TyrionCachedList private String cache_main_instance_history_id; // TODO Cache!!!
     @JsonIgnore @Transient @TyrionCachedList private String cache_version_object_id;
     @JsonIgnore @Transient @TyrionCachedList private List<String> cache_procedures_ids = new ArrayList<>();
 

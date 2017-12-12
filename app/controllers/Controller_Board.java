@@ -2770,12 +2770,7 @@ public class Controller_Board extends Controller {
             if (board == null ) return GlobalResult.result_notFound("Board board_id not found");
             if (!board.edit_permission()) return GlobalResult.result_forbidden();
 
-
-            if (help.command == Enum_Board_Command.RESTART) {
-                System.out.print("JEdná se o restart command");
-
-            }
-
+            if(help.command == null ) return GlobalResult.result_notFound("Board command not recognized");
             board.execute_command(help.command, true);
 
             return GlobalResult.result_ok();

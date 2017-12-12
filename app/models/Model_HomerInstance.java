@@ -475,12 +475,7 @@ public class Model_HomerInstance extends Model {
                         if (form.hasErrors()) throw new Exception("WS_Message_Grid_token_verification: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
                         WS_Message_Grid_token_verification help = form.get();
-                        Model_HomerInstance instance = get_byId(help.instance_id);
-                        if (instance != null) {
-                            instance.cloud_verification_token_GRID(homer.get_model(), help);
-                        } else {
-                            homer.write_without_confirmation(help.get_result(false));
-                        }
+                        help.get_instance().cloud_verification_token_GRID(homer, help );
                         return;
                     }
 
@@ -490,7 +485,7 @@ public class Model_HomerInstance extends Model {
                         if (form.hasErrors()) throw new Exception("token_webView_verification: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
 
                         WS_Message_WebView_token_verification help = form.get();
-                        help.get_instance().cloud_verification_token_WEBVIEW(homer.get_model(), help);
+                        help.get_instance().cloud_verification_token_WEBVIEW(homer, help);
                         return;
                     }
 
@@ -707,46 +702,98 @@ public class Model_HomerInstance extends Model {
 
     //-- Verification --//
     @JsonIgnore
-    public void cloud_verification_token_GRID(Model_HomerServer homer, WS_Message_Grid_token_verification help) {
+    public void cloud_verification_token_GRID(WS_HomerServer homer, WS_Message_Grid_token_verification help) {
         try {
 
-            terminal_logger.debug("cloud_GRID verification_token::  Checking Token");
+            terminal_logger.debug("cloud_verification_token_GRID::  Checking Token");
+            terminal_logger.debug("cloud_verification_token_GRID::  Token:: {} ", help.token);
+            terminal_logger.debug("cloud_verification_token_GRID::  Instance ID:: {} ", help.instance_id);
+            terminal_logger.debug("cloud_verification_token_GRID::  App ID:: {}", help.snapshot_id);
 
             Model_GridTerminal terminal = Model_GridTerminal.find.where().eq("terminal_token", help.token).findUnique();
-            Model_MProgramInstanceParameter parameter = null;
 
+            // Pokud je terminall null - nikdy se uživatel nepřihlásit a nevytvořil se o tom záznam - ale to stále neznamená že není možno povolit přístup
             if (terminal == null) {
-                parameter = Model_MProgramInstanceParameter.find.where()
+
+                System.out.println("terminal == null");
+                Model_MProgramInstanceParameter parameter = Model_MProgramInstanceParameter.find.where()
                         .eq("connection_token", help.token)
                         .isNotNull("m_project_program_snapshot.instance_versions.instance_record.actual_running_instance")
                         .findUnique();
-            } else {
-                Integer size;
 
-                if (terminal.person == null) {
-                    terminal_logger.debug("cloud_verification_token:: Grid_Terminal object has not own Person - its probably public - Trying to find Instance");
-                    size = Model_HomerInstance.find.where().eq("id", help.instance_id).eq("actual_instance.version_object.public_version", true).findRowCount();
-                } else {
-                    terminal_logger.debug("cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
-                    size = Model_HomerInstance.find.where().eq("id", help.instance_id)
-                            .or(Expr.eq("b_program.project.participants.person.id", terminal.person.id), Expr.eq("actual_instance.version_object.public_version", true))
-                            .findRowCount();
-                }
-
-                if (size > 0) {
-                    terminal_logger.debug("Cloud_Homer_server:: cloud_verification_token:: Token found and user have permission");
-                    homer.write_without_confirmation(help.get_result(true));
+                if(parameter == null) {
+                    terminal_logger.error("cloud_verification_token_GRID:: Model_MProgramInstanceParameter parameter is null");
+                    homer.write_without_confirmation(help.get_result(false));
                     return;
                 }
-            }
+                Enum_MProgram_SnapShot_settings settings = parameter.snapshot_settings();
+                terminal_logger.debug("Enum_MProgram_SnapShot_settings {}", settings.name());
 
-            if (parameter != null) {
-                homer.write_without_confirmation(help.get_result(parameter.verify_token_for_homer_grid_connection(help)));
-                return;
-            }
+                switch (settings) {
 
-            terminal_logger.warn("cloud_verification_token:: Token found but this user has not permission!");
-            homer.write_without_confirmation(help.get_result(false));
+                    case absolutely_public: {
+                        System.out.println("Je to plnohodnotně public");
+                        homer.write_without_confirmation(help.get_result(true));
+                        return;
+                    }
+
+                    case only_for_project_members: {
+                        System.out.println("Pouze pro registrované v projektu ale jekilož neexistuje přihlášení nelze připojit???");
+                        homer.write_without_confirmation(help.get_result(false));
+                        return;
+                    }
+
+                    case not_in_instance:{
+                        System.out.println("Grid se snaží připojit na něco co není instancí!");
+                        homer.write_without_confirmation(help.get_result(false));
+                        return;
+                    }
+
+                    default: {
+                        System.out.println("parameter.snapshot_settings() default parameter!! return FALSE");
+                        homer.write_without_confirmation(help.get_result(false));
+                        return;
+                    }
+                }
+            }else {
+
+                System.out.println("terminal != null");
+                terminal_logger.debug("cloud_verification_token_GRID::  Person id:: {}", terminal.person.id);
+                terminal_logger.debug("cloud_verification_token_GRID::  Person mail:: {}", terminal.person.mail);
+                terminal_logger.debug("cloud_verification_token_GRID::  Instance ID:: {} ", help.instance_id);
+                terminal_logger.debug("cloud_verification_token_GRID::  App ID:: {}", help.snapshot_id);
+
+
+                if (terminal.person == null) {
+                   System.out.println("Person is null");
+                   terminal_logger.debug("cloud_verification_token:: Grid_Terminal object has not own Person - its probably public - Trying to find Instance");
+
+                   if( Model_HomerInstance.find.where().eq("id", help.instance_id).eq("actual_instance.version_object.public_version", true).findRowCount() > 0) {
+                       System.out.println("Permission found");
+                       homer.write_without_confirmation(help.get_result(true));
+                       return;
+                   }else {
+                       System.out.println("Permission not found");
+                       homer.write_without_confirmation(help.get_result(false));
+                       return;
+                   }
+
+                } else {
+                    System.out.println("Person is not null!");
+                    terminal_logger.debug("cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
+                    if( Model_HomerInstance.find.where().eq("id", help.instance_id)
+                            .or(Expr.eq("b_program.project.participants.person.id", terminal.person.id), Expr.eq("actual_instance.version_object.public_version", true))
+                            .findRowCount() > 0) {
+                        System.out.println("Permission found");
+                        homer.write_without_confirmation(help.get_result(true));
+                        return;
+                    }else {
+                        System.out.println("Permission not found");
+                        homer.write_without_confirmation(help.get_result(false));
+                        return;
+                    }
+                }
+            }
 
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
@@ -754,7 +801,7 @@ public class Model_HomerInstance extends Model {
     }
 
     @JsonIgnore
-    public void cloud_verification_token_WEBVIEW(Model_HomerServer server, WS_Message_WebView_token_verification help) {
+    public void cloud_verification_token_WEBVIEW(WS_HomerServer homer, WS_Message_WebView_token_verification help) {
         try {
 
             terminal_logger.debug("cloud_verification_token:: WebView  Checking Token");
@@ -763,18 +810,18 @@ public class Model_HomerInstance extends Model {
 
             if (floatingPersonToken == null) {
                 terminal_logger.warn("cloud_verification_token:: FloatingPersonToken not found!");
-
-                server.write_without_confirmation(help.get_result(false));
+                homer.write_without_confirmation(help.get_result(false));
                 return;
             }
 
             terminal_logger.debug("Cloud_Homer_server:: cloud_verification_token:: WebView FloatingPersonToken Token found and user have permission");
 
+
             // Kontola operávnění ke konkrétní instanci??
             if (Model_HomerInstance.find.where().eq("id", help.instance_id).eq("b_program.project.participants.person.id", floatingPersonToken.person.id).findRowCount() > 0) {
-                server.write_without_confirmation(help.get_result(true));
+                homer.write_without_confirmation(help.get_result(true));
             } else {
-                server.write_without_confirmation(help.get_result(false));
+                homer.write_without_confirmation(help.get_result(false));
             }
 
         } catch (Exception e) {

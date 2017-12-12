@@ -52,7 +52,7 @@ public class Model_MProgramInstanceParameter extends Model {
 
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 
-    public static final String parameter_prefix = "part_";
+    private static final String parameter_prefix = "part_";
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public Enum_MProgram_SnapShot_settings snapshot_settings() {
@@ -188,28 +188,13 @@ public class Model_MProgramInstanceParameter extends Model {
 
                 return summary;
             }
+
             */
         }
 
         throw new VerifyError("Invalid settings on Instance Grid App permissions");
     }
 
-    @JsonIgnore
-    public boolean verify_token_for_homer_grid_connection(WS_Message_Grid_token_verification verification) {
-
-       if (!get_instance().id.equals( verification.instance_id)) return false;
-
-       switch (snapshot_settings()) {
-
-           case not_in_instance:{
-               return true;
-           }
-
-           default: {
-              return connection_token.equals(verification.token);
-           }
-       }
-    }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
