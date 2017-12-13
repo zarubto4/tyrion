@@ -16,7 +16,7 @@ public class Swagger_Instance_List extends Filter_Common {
     /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Model_HomerInstance> content;
+    public List<Model_HomerInstance> content = new ArrayList<>();
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 

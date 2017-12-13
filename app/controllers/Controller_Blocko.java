@@ -905,7 +905,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_b_program_instance_by_filter() {
+    public Result get_b_program_instance_by_filter(Integer page_number) {
         try {
 
             // Zpracování Json
@@ -922,7 +922,7 @@ public class Controller_Blocko extends Controller{
             }
 
             if (help.project_id != null ) {
-                query.where().eq("project.id", help.project_id);
+                query.where().eq("project_id", help.project_id);
             }
 
             if (!help.server_unique_ids.isEmpty()) {
@@ -930,7 +930,7 @@ public class Controller_Blocko extends Controller{
             }
 
             // Vytvářím seznam podle stránky
-            Swagger_Instance_List result = new Swagger_Instance_List(query, help.page_number);
+            Swagger_Instance_List result = new Swagger_Instance_List(query, page_number);
 
             // Vracím seznam
             return GlobalResult.result_ok(Json.toJson(result));
