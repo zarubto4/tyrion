@@ -323,8 +323,8 @@ GET       /c_program/version/get/:version_id                            @control
 PUT       /c_program/version/edit/:version_id                           @controllers.Controller_Code.c_program_version_edit(version_id)
 DELETE    /c_program/version/delete/:version_id                         @controllers.Controller_Code.c_program_version_delete(version_id)
 
-POST      /c_program/version/compile                                    @controllers.Controller_Board.compile_c_program_code()
-PUT       /c_program/version/compile/:version_id                        @controllers.Controller_Board.compile_c_program_version(version_id)
+POST      /c_program/version/compile                                    @controllers.Controller_Code.compile_c_program_code()
+PUT       /c_program/version/compile/:version_id                        @controllers.Controller_Code.compile_c_program_version(version_id)
 
 PUT       /c_program/default/mark/:version_id                           @controllers.Controller_Code.c_program_markScheme(version_id)
 

@@ -625,7 +625,7 @@ public class Model_CProgramUpdatePlan extends Model {
                         } else if (plan.firmware_type == Enum_Firmware_type.BACKUP) {
 
                             board.actual_backup_c_program_version = plan.c_program_version_for_update;
-                            board.cache_value_actual_c_program_backup_id =plan.c_program_version_for_update.get_c_program().id;
+                            board.cache_value_actual_c_program_backup_id = plan.c_program_version_for_update.get_c_program().id;
                             board.cache_value_actual_c_program_backup_version_id = plan.c_program_version_for_update.id;
                             board.update();
 

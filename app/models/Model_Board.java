@@ -796,13 +796,16 @@ public class Model_Board extends Model {
             // Uprava Cache Paměti
             device.cache_value_latest_online = new Date().getTime();
 
+
             // Standartní synchronizace
             if (device.project_id() != null) {
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Board.class, device.id, false, device.project_id());
+                    WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Board.class, device.id, false, device.project_id());
             }
 
-            // Notifikace
-            device.notification_board_disconnect();
+            if (device.developer_kit) {
+                // Notifikace
+                device.notification_board_disconnect();
+             }
 
             // Záznam do DM databáze
             device.make_log_disconnect();
@@ -1428,6 +1431,8 @@ public class Model_Board extends Model {
         } catch (Exception e) {
             terminal_logger.internalServerError(e);
             plan.state = Enum_CProgram_updater_state.critical_error;
+            plan.error_code = ErrorCode.CRITICAL_TYRION_SERVER_SIDE_ERROR.error_code();
+            plan.error = ErrorCode.CRITICAL_TYRION_SERVER_SIDE_ERROR.error_message();
             plan.update();
         }
     }
@@ -1537,6 +1542,8 @@ public class Model_Board extends Model {
             } catch (Exception e) {
                 terminal_logger.internalServerError(e);
                 plan.state = Enum_CProgram_updater_state.critical_error;
+                plan.error_code = ErrorCode.CRITICAL_TYRION_SERVER_SIDE_ERROR.error_code();
+                plan.error = ErrorCode.CRITICAL_TYRION_SERVER_SIDE_ERROR.error_message();
                 plan.update();
                 break;
             }
@@ -1764,340 +1771,368 @@ public class Model_Board extends Model {
      */
     @JsonIgnore @Transient private void check_firmware(WS_Message_Hardware_overview_Board overview) {
 
+        try {
+            // Pokud uživatel nechce DB synchronizaci ingoruji
+            if (!this.database_synchronize) {
+                terminal_logger.trace("check_firmware - database_synchronize is forbidden - change parameters not allowed!");
+                return;
+            }
 
-        // Pokud uživatel nechce DB synchronizaci ingoruji
-        if (!this.database_synchronize) {
-            terminal_logger.trace("check_firmware - database_synchronize is forbidden - change parameters not allowed!");
-            return;
-        }
+            if (get_actual_c_program_version() == null) {
+                terminal_logger.trace("check_firmware -: Actual firmware by DB not recognized :: ", overview.binaries.firmware.build_id);
+            }
 
-        if (get_actual_c_program_version() == null) {
-            terminal_logger.trace("check_firmware -: Actual firmware by DB not recognized :: ", overview.binaries.firmware.build_id);
-        }
+            if (overview.binaries.firmware == null) {
+                terminal_logger.error("check_firmware -: overview.binaries.firmware is null!!");
+                return;
+            }
 
-        if(overview.binaries.firmware == null) {
-            terminal_logger.error("check_firmware -: overview.binaries.firmware is null!!");
-            return;
-        }
+            if (overview.binaries.firmware.build_id == null || overview.binaries.firmware.build_id.equals("")) {
+                terminal_logger.error("check_firmware -: overview.binaries.firmware.build_id is null");
+                return;
+            }
 
-        if(overview.binaries.firmware.build_id == null || overview.binaries.firmware.build_id.equals("")) {
-            terminal_logger.error("check_firmware -: overview.binaries.firmware.build_id is null");
-            return;
-        }
-
-        // Vylistuji seznam úkolů k updatu
-        List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.where().eq("board.id", this.id)
-                .disjunction()
+            // Vylistuji seznam úkolů k updatu
+            List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.where().eq("board.id", this.id)
+                    .disjunction()
                     .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
-                .endJunction()
-                .eq("firmware_type", Enum_Firmware_type.FIRMWARE.name())
-                .lt("actualization_procedure.date_of_planing", new Date())
-                .order().desc("actualization_procedure.date_of_planing")
-                .findList();
+                    .endJunction()
+                    .eq("firmware_type", Enum_Firmware_type.FIRMWARE.name())
+                    .lt("actualization_procedure.date_of_planing", new Date())
+                    .order().desc("actualization_procedure.date_of_planing")
+                    .findList();
 
-        // Kontrola Firmwaru a přepsání starých
-        // Je žádoucí přepsat všechny předhozí update plány - ale je nutné se podívat jestli nejsou rozdílné!
-        // To jest pokud mám 2 updaty firmwaru pak ten starší zahodím
-        // Ale jestli mám udpate firmwaru a backupu pak k tomu dojít nesmí!
-        // Poměrně krkolomné řešení a HNUS kod - ale chyba je výjmečná a stává se jen sporadicky těsně před nebo po restartu serveru
-        if (firmware_plans.size() > 1) {
-            for (int i = 1; i < firmware_plans.size(); i++) {
+            // Kontrola Firmwaru a přepsání starých
+            // Je žádoucí přepsat všechny předhozí update plány - ale je nutné se podívat jestli nejsou rozdílné!
+            // To jest pokud mám 2 updaty firmwaru pak ten starší zahodím
+            // Ale jestli mám udpate firmwaru a backupu pak k tomu dojít nesmí!
+            // Poměrně krkolomné řešení a HNUS kod - ale chyba je výjmečná a stává se jen sporadicky těsně před nebo po restartu serveru
+            if (firmware_plans.size() > 1) {
+                for (int i = 1; i < firmware_plans.size(); i++) {
                     firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
                     firmware_plans.get(i).update();
+                }
             }
-        }
 
-        if (!firmware_plans.isEmpty()) {
+            if (!firmware_plans.isEmpty()) {
 
-            terminal_logger.debug("existují nedokončené procedury");
+                terminal_logger.debug("existují nedokončené procedury");
 
-            Model_CProgramUpdatePlan plan = firmware_plans.get(0);
+                Model_CProgramUpdatePlan plan = firmware_plans.get(0);
 
-            terminal_logger.debug("Plan:: {} status: {} ", plan.id, plan.state);
+                terminal_logger.debug("Plan:: {} status: {} ", plan.id, plan.state);
 
-            // Mám shodu firmwaru oproti očekávánemů
-            if (get_actual_c_program_version() != null) {
+                // Mám shodu firmwaru oproti očekávánemů
+                if (get_actual_c_program_version() != null) {
 
-                terminal_logger.debug("Firmware:: Co aktuálně je na HW podle Tyriona??:: {}", get_actual_c_program_version().c_compilation.firmware_build_id);
-                terminal_logger.debug("Firmware:: Co aktuálně je na HW podle Homera??:: {}", overview.binaries.firmware.build_id);
-                terminal_logger.debug("Firmware:: Co očekává nedokončená procedura??:: {}", plan.c_program_version_for_update.c_compilation.firmware_build_id);
+                    terminal_logger.debug("Firmware:: Co aktuálně je na HW podle Tyriona??:: {}", get_actual_c_program_version().c_compilation.firmware_build_id);
+                    terminal_logger.debug("Firmware:: Co aktuálně je na HW podle Homera??:: {}", overview.binaries.firmware.build_id);
+                    terminal_logger.debug("Firmware:: Co očekává nedokončená procedura??:: {}", plan.c_program_version_for_update.c_compilation.firmware_build_id);
 
-                // Verze se rovnají
-                if (overview.binaries.firmware.build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
-                    terminal_logger.debug("check_firmware verze se shodují - tím pádem je procedura dokončená a uzavírám");
+                    // Verze se rovnají
+                    if (overview.binaries.firmware.build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
+                        terminal_logger.debug("check_firmware verze se shodují - tím pádem je procedura dokončená a uzavírám");
 
-                    this.actual_c_program_version = plan.c_program_version_for_update;
-                    this.cache_value_actual_c_program_version_id = plan.c_program_version_for_update.id;
-                    this.cache_value_actual_c_program_id = plan.c_program_version_for_update.get_c_program().id;
-                    this.update();
+                        this.actual_c_program_version = plan.c_program_version_for_update;
+                        this.cache_value_actual_c_program_version_id = plan.c_program_version_for_update.id;
+                        this.cache_value_actual_c_program_id = plan.c_program_version_for_update.get_c_program().id;
+                        this.update();
 
-                    terminal_logger.debug("check_firmware - up to date, procedure is done");
-                    plan.state = Enum_CProgram_updater_state.complete;
-                    plan.date_of_finish = new Date();
-                    plan.update();
-                    return;
+                        terminal_logger.debug("check_firmware - up to date, procedure is done");
+                        plan.state = Enum_CProgram_updater_state.complete;
+                        plan.date_of_finish = new Date();
+                        plan.update();
+                        return;
+
+                    } else {
+                        terminal_logger.debug("check_firmware verze se neshodují");
+                        terminal_logger.debug("check_firmware - need update, system starts a update again, number of tries {}", plan.count_of_tries);
+                        plan.state = Enum_CProgram_updater_state.not_start_yet;
+                        plan.count_of_tries++;
+                        plan.update();
+                        execute_update_plan(plan);
+                    }
 
                 } else {
-                    terminal_logger.debug("check_firmware verze se neshodují");
-                    terminal_logger.debug("check_firmware - need update, system starts a update again, number of tries {}", plan.count_of_tries);
+
+                    terminal_logger.debug("check_firmware - no firmware, system starts a new update");
                     plan.state = Enum_CProgram_updater_state.not_start_yet;
                     plan.count_of_tries++;
                     plan.update();
+
                     execute_update_plan(plan);
                 }
 
-            } else {
-
-                terminal_logger.debug("check_firmware - no firmware, system starts a new update");
-                plan.state = Enum_CProgram_updater_state.not_start_yet;
-                plan.count_of_tries++;
-                plan.update();
-
-                execute_update_plan(plan);
+                return;
             }
 
-            return;
-        }
+            // Nemám Updaty - ale verze se neshodují
+            if (get_actual_c_program_version() != null && firmware_plans.isEmpty()) {
 
-        // Nemám Updaty - ale verze se neshodují
-        if (get_actual_c_program_version() != null && firmware_plans.isEmpty()) {
+                terminal_logger.debug("check_firmware - no update procedures found, but versions are not equal");
+                terminal_logger.debug("check_firmware - current firmware according to Tyrion: {}", get_actual_c_program_version().c_compilation.firmware_build_id);
+                terminal_logger.debug("check_firmware - current firmware according to Homer: {}", overview.binaries.firmware.build_id);
 
-            terminal_logger.debug("check_firmware - no update procedures found, but versions are not equal");
-            terminal_logger.debug("check_firmware - current firmware according to Tyrion: {}", get_actual_c_program_version().c_compilation.firmware_build_id);
-            terminal_logger.debug("check_firmware - current firmware according to Homer: {}", overview.binaries.firmware.build_id);
+                if (!get_actual_c_program_version().c_compilation.firmware_build_id.equals(overview.binaries.firmware.build_id)) {
+                    // Na HW není to co by na něm mělo být.
 
-            if (!get_actual_c_program_version().c_compilation.firmware_build_id.equals(overview.binaries.firmware.build_id)) {
-                // Na HW není to co by na něm mělo být.
+                    terminal_logger.debug("check_firmware - Different firmware versions versus database");
 
-                terminal_logger.debug("check_firmware - Different firmware versions versus database");
+                    if (get_backup_c_program_version() != null && get_backup_c_program_version().c_compilation.firmware_build_id.equals(overview.binaries.bootloader.build_id)) {
 
-                if (get_backup_c_program_version() != null && get_backup_c_program_version().c_compilation.firmware_build_id.equals(overview.binaries.bootloader.build_id)) {
+                        terminal_logger.warn("check_firmware - We have problem with firmware version. Backup is now running");
 
-                    terminal_logger.warn("check_firmware - We have problem with firmware version. Backup is now running");
+                        // Notifikace uživatelovi
+                        this.notification_board_unstable_actual_firmware_version(get_actual_c_program_version());
 
-                    // Notifikace uživatelovi
-                    this.notification_board_unstable_actual_firmware_version(get_actual_c_program_version());
+                        // Označit firmare za nestabilní
+                        get_actual_c_program_version().c_compilation.status = Enum_Compile_status.hardware_unstable;
+                        get_actual_c_program_version().c_compilation.update();
 
-                    // Označit firmare za nestabilní
-                    get_actual_c_program_version().c_compilation.status = Enum_Compile_status.hardware_unstable;
-                    get_actual_c_program_version().c_compilation.update();
+                        // Přemapovat hardware
+                        actual_c_program_version = get_backup_c_program_version();
 
-                    // Přemapovat hardware
-                    actual_c_program_version = get_backup_c_program_version();
+                        this.cache_value_actual_c_program_id = actual_c_program_version.id;                     // C Program
+                        this.cache_value_actual_c_program_version_id = actual_c_program_version.id;
+                        this.cache_value_actual_c_program_backup_id = actual_c_program_version.id;              // Backup
+                        this.cache_value_actual_c_program_backup_version_id = actual_c_program_version.id;
 
-                    this.cache_value_actual_c_program_id = actual_c_program_version.id;                     // C Program
-                    this.cache_value_actual_c_program_version_id = actual_c_program_version.id;
-                    this.cache_value_actual_c_program_backup_id = actual_c_program_version.id;              // Backup
-                    this.cache_value_actual_c_program_backup_version_id  = actual_c_program_version.id;
+                        this.update();
 
+                        return;
+                    }
+
+                    // Backup to není
+                    else {
+
+                        terminal_logger.warn("check_firmware - Wrong version on hardware - or null version on hardware");
+                        terminal_logger.warn("check_firmware - Now System set Default Firmware or Firmware by Database!!!");
+
+                        // Nastavuji nový systémový update
+                        List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
+
+                        WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
+                        b_pair.board = this;
+                        b_pair.c_program_version = get_actual_c_program_version();
+
+                        b_pairs.add(b_pair);
+
+                        Model_ActualizationProcedure procedure = create_update_procedure(Enum_Firmware_type.FIRMWARE, Enum_Update_type_of_update.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
+                        procedure.execute_update_procedure();
+
+                        return;
+                    }
+
+                } else {
+                    // Na HW je to co by na něm podle databáze mělo být.
+                    terminal_logger.debug("check_firmware - hardware is up to date");
+                    return;
+                }
+            }
+
+            // Set Defualt Program protože žádný teď nemáš
+            if (get_actual_c_program_version() == null && firmware_plans.isEmpty()) {
+
+                terminal_logger.debug("check_firmware - Actual firmware_id is not recognized by the DB - Device has not firmware from Tyrion");
+                terminal_logger.debug("check_firmware - Tyrion will try to find Default C Program Main Version for this type of hardware. If is it set, Tyrion will update device to starting state");
+
+                // Ověřím - jestli nemám nově nahraný firmware na Hardwaru (to je ten co je teď výcohí firmware pro aktuální typ hardwaru)
+                if (overview.binaries != null && overview.binaries.firmware != null
+                        && overview.binaries.firmware.build_id != null
+                        && get_type_of_board().get_main_c_program().default_main_version != null
+                        && get_type_of_board().get_main_c_program().default_main_version.c_compilation.firmware_build_id != null
+                        && overview.binaries.firmware.build_id.equals(get_type_of_board().get_main_c_program().default_main_version.c_compilation.firmware_build_id)
+                        ) {
+
+                    terminal_logger.debug("check_firmware - board is brand new, but already has required firmware");
+
+                    this.actual_c_program_version = get_type_of_board().get_main_c_program().default_main_version;
+                    this.cache_value_actual_c_program_id = get_type_of_board().get_main_c_program().id;
+                    this.cache_value_actual_c_program_version_id = get_type_of_board().get_main_c_program().default_main_version.id;
+
+
+                    this.actual_backup_c_program_version = get_type_of_board().get_main_c_program().default_main_version; // Udělám rovnou zálohu, protože taková by tam měla být
+                    this.cache_value_actual_c_program_backup_id = get_type_of_board().get_main_c_program().id;
+                    this.cache_value_actual_c_program_backup_version_id = get_type_of_board().get_main_c_program().default_main_version.id;
                     this.update();
-
                     return;
                 }
 
-                // Backup to není
-                else {
+                // Nastavím default firmware podle schématu Tyriona!
+                // Defaultní firmware je v v backandu určený výchozí program k typu desky.
+                if (get_type_of_board().get_main_c_program() != null && get_type_of_board().get_main_c_program().default_main_version != null) {
 
-                    terminal_logger.warn("check_firmware - Wrong version on hardware - or null version on hardware");
-                    terminal_logger.warn("check_firmware - Now System set Default Firmware or Firmware by Database!!!");
+                    terminal_logger.debug("check_firmware - Yes, Default Version for Type Of Device {} is set", get_type_of_board().name);
 
-                    // Nastavuji nový systémový update
                     List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
 
                     WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
                     b_pair.board = this;
-                    b_pair.c_program_version = get_actual_c_program_version();
+                    b_pair.c_program_version = get_type_of_board().get_main_c_program().default_main_version;
 
                     b_pairs.add(b_pair);
+
+                    this.notification_board_not_databased_version();
 
                     Model_ActualizationProcedure procedure = create_update_procedure(Enum_Firmware_type.FIRMWARE, Enum_Update_type_of_update.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
                     procedure.execute_update_procedure();
 
-                    return;
+                } else {
+                    terminal_logger.error("Attention please! This is not a critical bug - Tyrion server is not just set for this type of device! Set main C_Program and version!");
+                    terminal_logger.error("Default main code version is not set for Type Of Board " + get_type_of_board().name + " please set that!");
                 }
 
-            } else {
-                // Na HW je to co by na něm podle databáze mělo být.
-                terminal_logger.debug("check_firmware - hardware is up to date");
                 return;
             }
-        }
-
-        // Set Defualt Program protože žádný teď nemáš
-        if (get_actual_c_program_version() == null && firmware_plans.isEmpty()) {
-
-            terminal_logger.debug("check_firmware - Actual firmware_id is not recognized by the DB - Device has not firmware from Tyrion");
-            terminal_logger.debug("check_firmware - Tyrion will try to find Default C Program Main Version for this type of hardware. If is it set, Tyrion will update device to starting state");
-
-            // Ověřím - jestli nemám nově nahraný firmware na Hardwaru (to je ten co je teď výcohí firmware pro aktuální typ hardwaru)
-            if ( overview.binaries != null && overview.binaries.firmware != null
-                    && overview.binaries.firmware.build_id != null
-                    && get_type_of_board().get_main_c_program().default_main_version != null
-                    && get_type_of_board().get_main_c_program().default_main_version.c_compilation.firmware_build_id != null
-                    && overview.binaries.firmware.build_id.equals(get_type_of_board().get_main_c_program().default_main_version.c_compilation.firmware_build_id)
-                    ) {
-
-                terminal_logger.debug("check_firmware - board is brand new, but already has required firmware");
-
-                this.actual_c_program_version = get_type_of_board().get_main_c_program().default_main_version;
-                this.actual_backup_c_program_version = get_type_of_board().get_main_c_program().default_main_version; // Udělám rovnou zálohu, protože taková by tam měla být
-                this.update();
-                return;
-            }
-
-            // Nastavím default firmware podle schématu Tyriona!
-            // Defaultní firmware je v v backandu určený výchozí program k typu desky.
-            if (get_type_of_board().get_main_c_program() != null && get_type_of_board().get_main_c_program().default_main_version != null) {
-
-                terminal_logger.debug("check_firmware - Yes, Default Version for Type Of Device {} is set", get_type_of_board().name);
-
-                List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
-
-                WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
-                b_pair.board = this;
-                b_pair.c_program_version = get_type_of_board().get_main_c_program().default_main_version;
-
-                b_pairs.add(b_pair);
-
-                this.notification_board_not_databased_version();
-
-                Model_ActualizationProcedure procedure = create_update_procedure(Enum_Firmware_type.FIRMWARE, Enum_Update_type_of_update.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
-                procedure.execute_update_procedure();
-
-            } else {
-                terminal_logger.error("Attention please! This is not a critical bug - Tyrion server is not just set for this type of device! Set main C_Program and version!");
-                terminal_logger.error("Default main code version is not set for Type Of Board " + get_type_of_board().name + " please set that!");
-            }
-
-            return;
+        }catch (Exception e){
+            terminal_logger.internalServerError(e);
         }
     }
 
     @JsonIgnore @Transient private void check_backup(WS_Message_Hardware_overview_Board overview) {
+        try {
+            // Pokud uživatel nechce DB synchronizaci ingoruji
+            if (!this.database_synchronize) {
+                terminal_logger.trace("check_backup - database_synchronize is forbidden - change parameters not allowed!");
+                return;
+            }
 
-        // Pokud uživatel nechce DB synchronizaci ingoruji
-        if (!this.database_synchronize) {
-            terminal_logger.trace("check_backup - database_synchronize is forbidden - change parameters not allowed!");
-            return;
-        }
+            // když je autobackup tak sere pes - změna autobacku je rovnou z devicu
+            if (backup_mode) {
+                terminal_logger.trace("check_backup - autobacku is true change parameters not allowed!");
+                // Ale mohl bych udělat áznam o tom co tam je - kdyby to nebylo stejné s tím co si myslí tyrion že tam je:
 
-        // když je autobackup tak sere pes - změna autobacku je rovnou z devicu
-        if (backup_mode) {
-            terminal_logger.trace("check_backup - autobacku is true change parameters not allowed!");
-            return;
-        }
+                if (overview.binaries.backup != null && (overview.binaries.backup.build_id == null || !overview.binaries.backup.build_id.equals(""))) {
+                    Model_VersionObject version_not_cached = Model_VersionObject.find.where().eq("c_compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findUnique();
+                    if (version_not_cached != null) {
+                        terminal_logger.debug("check_backup:: Ještě nebyla přiřazena žádná Backup verze k HW v Tyrionovi - ale program se podařilo najít");
+                        Model_VersionObject cached_version = Model_VersionObject.get_byId(version_not_cached.id);
+                        this.actual_backup_c_program_version = cached_version;
+                        this.cache_value_actual_c_program_backup_id = cached_version.get_c_program().id;
+                        this.cache_value_actual_c_program_backup_version_id = cached_version.id;
+                        this.update();
+                    }
+                }
 
-        terminal_logger.debug("check_backup:: third check backup! - Backup is static!! ");
+                return;
+            }
 
-        // Backup je takový jaký očekává tyrion
-        if (get_backup_c_program_version() != null && get_backup_c_program_version().c_compilation.firmware_build_id.equals(overview.binaries.backup.build_id)) {
-            terminal_logger.debug("check_backup:: Backup is same as on hardware as on Tyrion");
-            return;
-        }
+            terminal_logger.debug("check_backup:: third check backup! - Backup is static!! ");
 
-        // Backup není - to by se stát nemělo - ale šup sem sním
-        if (get_backup_c_program_version() == null) {
-            terminal_logger.warn("check_backup:: Static Backup is required - but tyrion not set any backup!");
+            // Backup je takový jaký očekává tyrion
+            if (get_backup_c_program_version() != null && get_backup_c_program_version().c_compilation.firmware_build_id.equals(overview.binaries.backup.build_id)) {
+                terminal_logger.debug("check_backup:: Backup is same as on hardware as on Tyrion");
+                return;
+            }
 
-            if (overview.binaries.backup != null && ( overview.binaries.backup.build_id == null || !overview.binaries.backup.build_id.equals(""))) {
+            // Backup není - to by se stát nemělo - ale šup sem sním
+            if (get_backup_c_program_version() == null) {
+                terminal_logger.warn("check_backup:: Static Backup is required - but tyrion not set any backup!");
 
-                // Try to find it in User programs and
-                Model_VersionObject version_not_cached = Model_VersionObject.find.where().eq("c_compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findUnique();
+                if (overview.binaries.backup != null && (overview.binaries.backup.build_id == null || !overview.binaries.backup.build_id.equals(""))) {
 
-                if (version_not_cached != null) {
-                    terminal_logger.debug("check_backup:: Ještě nebyla přiřazena žádná Backup verze k HW v Tyrionovi - ale program se podařilo najít");
-                    Model_VersionObject cached_version = Model_VersionObject.get_byId(version_not_cached.id);
-                    this.actual_backup_c_program_version = cached_version;
-                    this.update();
-                } else {
-                    terminal_logger.warn("check_backup:: Nastal stav, kdy mám statický backup, Tyrion v databázi nic nemá a ani se mi nepodařilo najít program (build_id)"
-                            + "který by byl kompatibilní. Což je trochu problém. Uvidíme co nabízí update procedury. \n" +
-                            "Možnosti jsou 1.) Nahrát první určený plan na hardware a tato metoda začne v podmínce najdi fungovat \n" +
-                            "nebo 2) přepnu do autobacku");
+                    // Try to find it in User programs and
+                    Model_VersionObject version_not_cached = Model_VersionObject.find.where().eq("c_compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findUnique();
+
+                    if (version_not_cached != null) {
+                        terminal_logger.debug("check_backup:: Ještě nebyla přiřazena žádná Backup verze k HW v Tyrionovi - ale program se podařilo najít");
+                        Model_VersionObject cached_version = Model_VersionObject.get_byId(version_not_cached.id);
+                        this.actual_backup_c_program_version = cached_version;
+                        this.cache_value_actual_c_program_backup_id = cached_version.get_c_program().id;
+                        this.cache_value_actual_c_program_backup_version_id = cached_version.id;
+                        this.update();
+                    } else {
+                        terminal_logger.warn("check_backup:: Nastal stav, kdy mám statický backup, Tyrion v databázi nic nemá a ani se mi nepodařilo najít program (build_id)"
+                                + "který by byl kompatibilní. Což je trochu problém. Uvidíme co nabízí update procedury. \n" +
+                                "Možnosti jsou 1.) Nahrát první určený plan na hardware a tato metoda začne v podmínce najdi fungovat \n" +
+                                "nebo 2) přepnu do autobacku");
+                    }
                 }
             }
-        }
 
-        List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.where().eq("board.id", this.id)
-                .disjunction()
+            List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.where().eq("board.id", this.id)
+                    .disjunction()
                     .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
                     .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
-                .endJunction()
-                .eq("firmware_type", Enum_Firmware_type.BACKUP.name())
-                .lt("actualization_procedure.date_of_planing", new Date())
-                .order().desc("actualization_procedure.date_of_planing")
-                .findList();
+                    .endJunction()
+                    .eq("firmware_type", Enum_Firmware_type.BACKUP.name())
+                    .lt("actualization_procedure.date_of_planing", new Date())
+                    .order().desc("actualization_procedure.date_of_planing")
+                    .findList();
 
-         // Zaloha kdyby byly stále platné aktualizace na backup
-        for (int i = 1; i < firmware_plans.size(); i++) {
-            firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
-            firmware_plans.get(i).update();
-        }
-
-        // Kontrola Firmwaru a přepsání starých
-        // Je žádoucí přepsat všechny předhozí update plány - ale je nutné se podívat jestli nejsou rozdílné!
-        // To jest pokud mám 2 updaty firmwaru pak ten starší zahodím
-        // Ale jestli mám udpate firmwaru a backupu pak k tomu dojít nesmí!
-        // Poměrně krkolomné řešení a HNUS kod - ale chyba je výjmečná a stává se jen sporadicky těsně před nebo po restartu serveru
-        if (firmware_plans.size() > 1) {
+            // Zaloha kdyby byly stále platné aktualizace na backup
             for (int i = 1; i < firmware_plans.size(); i++) {
                 firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
                 firmware_plans.get(i).update();
             }
-        }
 
-        // Mám updaty a tak kontroluji
-        if (!firmware_plans.isEmpty()) {
+            // Kontrola Firmwaru a přepsání starých
+            // Je žádoucí přepsat všechny předhozí update plány - ale je nutné se podívat jestli nejsou rozdílné!
+            // To jest pokud mám 2 updaty firmwaru pak ten starší zahodím
+            // Ale jestli mám udpate firmwaru a backupu pak k tomu dojít nesmí!
+            // Poměrně krkolomné řešení a HNUS kod - ale chyba je výjmečná a stává se jen sporadicky těsně před nebo po restartu serveru
+            if (firmware_plans.size() > 1) {
+                for (int i = 1; i < firmware_plans.size(); i++) {
+                    firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
+                    firmware_plans.get(i).update();
+                }
+            }
 
-            Model_CProgramUpdatePlan plan = firmware_plans.get(0);
+            // Mám updaty a tak kontroluji
+            if (!firmware_plans.isEmpty()) {
 
-            terminal_logger.debug("check_backup - Actual backup according to Tyrion: {}", get_backup_c_program_version().c_compilation.firmware_build_id);
-            terminal_logger.debug("check_backup - Actual backup according to Homer: {}", overview.binaries.backup.build_id);
-            terminal_logger.debug("check_backup - incomplete procedure expects: {}", plan.c_program_version_for_update.c_compilation.firmware_build_id);
+                Model_CProgramUpdatePlan plan = firmware_plans.get(0);
 
-            if (plan.get_board().get_backup_c_program_version() != null) {
+                terminal_logger.debug("check_backup - Actual backup according to Tyrion: {}", get_backup_c_program_version().c_compilation.firmware_build_id);
+                terminal_logger.debug("check_backup - Actual backup according to Homer: {}", overview.binaries.backup.build_id);
+                terminal_logger.debug("check_backup - incomplete procedure expects: {}", plan.c_program_version_for_update.c_compilation.firmware_build_id);
 
-                // Verze se rovnají
-                if (get_backup_c_program_version().c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
+                if (plan.get_board().get_backup_c_program_version() != null) {
 
-                    terminal_logger.debug("check_backup - up to date, procedure is done");
-                    plan.state = Enum_CProgram_updater_state.complete;
-                    plan.date_of_finish = new Date();
-                    plan.update();
+                    // Verze se rovnají
+                    if (get_backup_c_program_version().c_compilation.firmware_build_id.equals(plan.c_program_version_for_update.c_compilation.firmware_build_id)) {
+
+                        terminal_logger.debug("check_backup - up to date, procedure is done");
+                        plan.state = Enum_CProgram_updater_state.complete;
+                        plan.date_of_finish = new Date();
+                        plan.update();
+
+                    } else {
+
+                        terminal_logger.debug("check_backup - need update, system starts a new update, number of tries {}", plan.count_of_tries);
+                        plan.state = Enum_CProgram_updater_state.not_start_yet;
+                        plan.count_of_tries++;
+                        plan.update();
+                        execute_update_procedure(plan.actualization_procedure);
+                    }
 
                 } else {
 
-                    terminal_logger.debug("check_backup - need update, system starts a new update, number of tries {}", plan.count_of_tries);
+                    terminal_logger.debug("check_backup - no backup, system starts a new update");
                     plan.state = Enum_CProgram_updater_state.not_start_yet;
                     plan.count_of_tries++;
                     plan.update();
+
                     execute_update_procedure(plan.actualization_procedure);
                 }
-
-            } else {
-
-                terminal_logger.debug("check_backup - no backup, system starts a new update");
-                plan.state = Enum_CProgram_updater_state.not_start_yet;
-                plan.count_of_tries++;
-                plan.update();
-
-                execute_update_procedure(plan.actualization_procedure);
+                return;
             }
-            return;
-        }
 
-       // Nemám updaty ale verze se neshodují
-        if (get_backup_c_program_version() == null && firmware_plans.isEmpty()) {
-            set_auto_backup();
+            // Nemám updaty ale verze se neshodují
+            if (get_backup_c_program_version() == null && firmware_plans.isEmpty()) {
+                set_auto_backup();
+            }
+        }catch (Exception e) {
+           terminal_logger.internalServerError(e);
         }
     }
 

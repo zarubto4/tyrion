@@ -24,6 +24,7 @@ import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.lablel_printer_service.printNodeModels.Printer;
 import utilities.lablel_printer_service.printNodeModels.PrinterList;
 import utilities.logger.Class_Logger;
+import utilities.slack.Slack;
 import utilities.swagger.documentationClass.Swagger_CompilationLibrary;
 import utilities.swagger.documentationClass.Swagger_GitHubReleases;
 import utilities.swagger.documentationClass.Swagger_GitHubReleases_Asset;
@@ -200,7 +201,9 @@ public class Job_CheckCompilationLibraries implements Job {
                         }
 
                         if (release.assets.size() == 0) {
-                            terminal_logger.trace("check_version_thread:: not any assets - its required!");
+                            terminal_logger.error("check_version_thread:: not any assets for {} - its required!",  release.tag_name);
+                            terminal_logger.error("check_version_thread:: not any assets for {} - its required!",  release.tag_name);
+                            Slack.post_invalid_release(release.tag_name);
                             continue;
                         }
 
@@ -304,6 +307,7 @@ public class Job_CheckCompilationLibraries implements Job {
 
                         if (asset_url == null) {
                             terminal_logger.error("check_version_thread:: Required file bootloader.bin in release {} not found", release.tag_name);
+                            Slack.post_invalid_bootloader(release.name);
                             continue;
                         }
 

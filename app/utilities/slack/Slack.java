@@ -46,7 +46,61 @@ public class Slack {
             json.put("mrkdwn", true);
             //json.set("attachments", Json.toJson(attachments));
 
-            ws.url(Server.slack_webhook_url)
+            ws.url(Server.slack_webhook_url_channel_servers)
+                    .setRequestTimeout(10000)
+                    .post(json.toString())
+                    .get(10000);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Posts an error to Byzance Slack, chanel #hardware
+     * @param release
+     */
+    public static void post_invalid_release(String release){
+        try {
+
+            WSClient ws = Play.current().injector().instanceOf(WSClient.class);
+
+            ObjectNode json = Json.newObject();
+            json.put("username", "Tyrion");
+            json.put("icon_emoji", ":tyrion:");
+            json.put("title", "Výstražná zpráva");
+            json.put("color", "danger");
+            json.put("text", "Toto je automatická zpráva kterou vygeneroval všemocný Tyrion Server. \n Někdo *(nějaký vobšoust)* vytvořil release *" + release + "* bez požadovaných parametrů. \n" +
+                    " Například soubor (dist.zip)");
+
+            ws.url(Server.slack_webhook_url_channel_hardware)
+                    .setRequestTimeout(10000)
+                    .post(json.toString())
+                    .get(10000);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Posts an error to Byzance Slack, chanel #hardware
+     * @param version
+     */
+    public static void post_invalid_bootloader(String version){
+        try {
+
+            WSClient ws = Play.current().injector().instanceOf(WSClient.class);
+
+            ObjectNode json = Json.newObject();
+            json.put("username", "Tyrion");
+            json.put("icon_emoji", ":tyrion:");
+            json.put("title", "Výstražná zpráva");
+            json.put("color", "danger");
+            json.put("text", "Toto je automatická zpráva kterou vygeneroval všemocný Tyrion Server. \n Někdo *(nějaký vobšoust)* vytvořil nový bootloader *" + version + "* bez požadovaných parametrů. \n" +
+                    " Například soubor (dist.zip)");
+
+            ws.url(Server.slack_webhook_url_channel_hardware)
                     .setRequestTimeout(10000)
                     .post(json.toString())
                     .get(10000);
@@ -71,7 +125,7 @@ public class Slack {
             json.put("text", "*" + message + "*" );
             json.put("mrkdwn", true);
 
-            ws.url(Server.slack_webhook_url)
+            ws.url(Server.slack_webhook_url_channel_servers)
                     .setRequestTimeout(10000)
                     .post(json.toString())
                     .get(10000);

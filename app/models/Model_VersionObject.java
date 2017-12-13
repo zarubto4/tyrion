@@ -7,12 +7,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.storage.StorageException;
 import controllers.Controller_Security;
+import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.io.FileExistsException;
 import org.ehcache.Cache;
 import play.api.Play;
 import play.data.Form;
+import play.i18n.Lang;
 import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
@@ -320,8 +322,8 @@ public class Model_VersionObject extends Model {
         c_compilation.status = Enum_Compile_status.compilation_in_progress;
         c_compilation.update();
 
-        Model_FileRecord file = Model_FileRecord.find.where().eq("file_name", "code.json").eq("version_object.id", id).findUnique();
-        if (file == null) {
+        Model_FileRecord file_record = Model_FileRecord.find.where().eq("file_name", "code.json").eq("version_object.id", id).findUnique();
+        if (file_record == null) {
 
             terminal_logger.internalServerError(new Exception("File not found! Version is not compilable!"));
 
@@ -334,7 +336,7 @@ public class Model_VersionObject extends Model {
         }
 
         // Zpracování Json
-        JsonNode json = Json.parse( file.get_fileRecord_from_Azure_inString() );
+        JsonNode json = Json.parse( file_record.get_fileRecord_from_Azure_inString() );
 
         Form<Swagger_C_Program_Version_Update> form = Form.form(Swagger_C_Program_Version_Update.class).bind(json);
         if (form.hasErrors()) {
@@ -354,22 +356,27 @@ public class Model_VersionObject extends Model {
 
         for (String lib_id : code_file.imported_libraries) {
 
+            terminal_logger.trace("compile_C_Program_code:: Looking for library Version Id " + lib_id);
             Model_VersionObject lib_version = Model_VersionObject.get_byId(lib_id);
-            if (lib_version == null) {
 
+            if (lib_version == null) {
+                terminal_logger.error("compile_C_Program_code:: lib_version is null ");
                 Result_BadRequest result = new Result_BadRequest();
                 result.message = "Error getting libraries - library version not found";
                 return result;
             }
 
             if (lib_version.library == null) {
-
+                terminal_logger.error("compile_C_Program_code:: library is null ");
                 Result_BadRequest result = new Result_BadRequest();
                 result.message = "Error getting libraries - some file is not a library";
                 return result;
             }
 
             if (!lib_version.files.isEmpty()) {
+
+                terminal_logger.trace("compile_program_procedure:: Library contains files");
+
                 for (Model_FileRecord f : lib_version.files) {
 
                     JsonNode j = Json.parse(f.get_fileRecord_from_Azure_inString());
@@ -377,22 +384,17 @@ public class Model_VersionObject extends Model {
                     Form<Swagger_Library_File_Load> lib_form = Form.form(Swagger_Library_File_Load.class).bind(j);
                     if (lib_form.hasErrors()) {
 
+                        terminal_logger.error("compile_C_Program_code:: lib_version error parser:: {}", form.errorsAsJson(Lang.forCode("en-US")).toString());
+                        terminal_logger.trace("Files has error:: Library contains files");
                         Result_BadRequest result = new Result_BadRequest();
                         result.message = "Error importing libraries";
                         return result;
                     }
-                    Swagger_Library_File_Load lib_help = lib_form.get();
 
-                    for (Swagger_Library_Record lib_file : lib_help.files) {
-                        for (Swagger_Library_Record user_file : code_file.files) {
+                    Swagger_Library_File_Load lib_file = lib_form.get();
 
-                            if (!library_files.contains(lib_file)) library_files.add(lib_file);
-
-                            if (lib_file.file_name.equals(user_file.file_name)) {
-                                if (library_files.contains(lib_file)) library_files.remove(lib_file);
-                                break;
-                            }
-                        }
+                    for (Swagger_Library_Record file : lib_file.files) {
+                        library_files.add(file);
                     }
                 }
             }
@@ -401,7 +403,8 @@ public class Model_VersionObject extends Model {
         ObjectNode includes = Json.newObject();
 
         for (Swagger_Library_Record file_lib : library_files) {
-            includes.put(file_lib.file_name , file_lib.content);
+            if (file_lib.file_name.equals("README.md") || file_lib.file_name.equals("readme.md")) continue;
+            includes.put(file_lib.file_name, file_lib.content);
         }
 
         if (code_file.files != null) {
@@ -411,7 +414,7 @@ public class Model_VersionObject extends Model {
         }
 
         // Kontroluji zda je nějaký kompilační cloud_compilation_server připojený
-        if (!Model_CompilationServer.is_online()) {
+        if (Controller_WebSocket.compiler_cloud_servers.isEmpty()) {
 
             terminal_logger.warn("compile_program_procedure:: Server is offline!!!");
 

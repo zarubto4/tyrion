@@ -25,7 +25,7 @@ public class Model_Invitation extends Model{
 
     @Id @ApiModelProperty(required = true)        public String id;
     @JsonIgnore                        @ManyToOne public Model_Person owner;
-    @ApiModelProperty(required = true) @ManyToOne public Model_Project project;
+    @ApiModelProperty(required = true) @ManyToOne public Model_Project project; // TODO ID
     @JsonIgnore @Constraints.Email                public String mail;
     @JsonIgnore                                   public Date date_of_creation;
     @JsonIgnore                                   public String notification_id;

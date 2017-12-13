@@ -7,6 +7,7 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
+import play.libs.Json;
 import utilities.cache.helps_objects.IdsList;
 import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.*;
@@ -558,7 +559,7 @@ public class Model_Project extends Model {
         if(Controller_Security.get_person().has_permission("Project_update")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if( Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).where().eq("id", id).findRowCount() > 0){
+        if( Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).eq("id", id).findRowCount() > 0){
             Controller_Security.get_person().cache_permission("project_update_" + id, true);
             return true;
         }
@@ -574,7 +575,7 @@ public class Model_Project extends Model {
         if(Controller_Security.get_person().has_permission("Project_read")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-        if( Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).where().eq("id", id).findRowCount() > 0){
+        if( Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).eq("id", id).findRowCount() > 0){
             Controller_Security.get_person().cache_permission("project_read_" + id, true);
             return true;
         }
@@ -592,7 +593,7 @@ public class Model_Project extends Model {
         if(Controller_Security.get_person().has_permission("Project_edit")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if( Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).where().eq("id", id).findRowCount() > 0){
+        if( Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).eq("id", id).findRowCount() > 0){
             Controller_Security.get_person().cache_permission("project_edit_" + id, true);
             return true;
         }
@@ -606,11 +607,15 @@ public class Model_Project extends Model {
     @JsonProperty public boolean delete_permission()    {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().has_permission("project_delete_" + id)) return Controller_Security.get_person().has_permission("project_delete_"+ id);
-        if(Controller_Security.get_person().has_permission("Project_delete")) return true;
+        if(Controller_Security.get_person().has_permission("project_delete_" + id)) {
+            return Controller_Security.get_person().has_permission("project_delete_"+ id);
+        }
+        if(Controller_Security.get_person().has_permission("Project_delete")){
+            return true;
+        }
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person_id()).where().eq("state", Enum_Participant_status.owner).findRowCount() > 0){
+        if( Model_ProjectParticipant.find.where().eq("project.id", id).eq("person.id", Controller_Security.get_person_id()).eq("state", Enum_Participant_status.owner).findRowCount() > 0){
             Controller_Security.get_person().cache_permission("project_delete_" + id, true);
             return true;
         }
@@ -628,7 +633,7 @@ public class Model_Project extends Model {
         if(Controller_Security.get_person().has_permission("Project_unshare")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person_id()).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount()> 0){
+        if( Model_ProjectParticipant.find.where().eq("project.id", id).eq("person.id", Controller_Security.get_person_id()).disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount()> 0){
             Controller_Security.get_person().cache_permission("project_share_" + id, true);
             return true;
         }
@@ -645,7 +650,7 @@ public class Model_Project extends Model {
         if(Controller_Security.get_person().has_permission("Project_share")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if( Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person_id()).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount()> 0){
+        if( Model_ProjectParticipant.find.where().eq("project.id", id).eq("person.id", Controller_Security.get_person_id()).disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount()> 0){
             Controller_Security.get_person().cache_permission("project_unshare_" + id, true);
             return true;
         }

@@ -17,6 +17,7 @@ import utilities.financial.goPay.GoPay_PaymentCheck;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.grid_support.utils.IP_Founder;
 import utilities.logger.Class_Logger;
+import utilities.models_update_echo.RefresTuch_echo_handler;
 import utilities.models_update_echo.Update_echo_handler;
 import utilities.notifications.NotificationHandler;
 import utilities.scheduler.CustomScheduler;
@@ -113,7 +114,8 @@ public class Server {
 
     public static String  link_api_swagger;
 
-    public static String slack_webhook_url;
+    public static String slack_webhook_url_channel_servers;
+    public static String slack_webhook_url_channel_hardware;
 
     public static void setServerValues() throws Exception{
 
@@ -255,7 +257,8 @@ public class Server {
 
         link_api_swagger    = "http://swagger.byzance.cz/?url=" + tyrion_serverAddress + "/api-docs";
 
-        slack_webhook_url = Configuration.root().getString("Slack.webhook_url");
+        slack_webhook_url_channel_servers = Configuration.root().getString("Slack.servers");
+        slack_webhook_url_channel_hardware = Configuration.root().getString("Slack.hardware");
     }
 
     /**
@@ -438,6 +441,8 @@ public class Server {
         Fakturoid_InvoiceCheck.startThread();
 
         Update_echo_handler.startEchoUpdateThread();
+
+        RefresTuch_echo_handler.startEchoUpdateThread();
     }
 
     public static void startSchedulingProcedures() {

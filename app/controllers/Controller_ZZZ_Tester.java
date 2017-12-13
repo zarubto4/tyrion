@@ -7,16 +7,13 @@ import models.*;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
-import utilities.lablel_printer_service.Printer_Api;
-import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Class_Logger;
 import utilities.logger.ServerLogger;
 import utilities.response.GlobalResult;
+import utilities.slack.Slack;
 import web_socket.message_objects.tyrion_with_becki.WS_Message_Online_Change_status;
 
-import java.util.Arrays;
 import java.util.Date;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -109,6 +106,8 @@ public class Controller_ZZZ_Tester extends Controller {
     @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test3(){
         try {
+
+            new Slack().post_invalid_release("v1.1.4-alpha");
 
             /*
             System.out.println("Testuji Apu Printer");

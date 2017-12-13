@@ -23,7 +23,6 @@ public enum ErrorCode {
 
 
     // ----- Update status ----
-
     @EnumValue("NEW_VERSION_DOESNT_MATCH")        NEW_VERSION_DOESNT_MATCH( 501, "Version not match with required"),
     @EnumValue("NUMBER_OF_ATTEMPTS_EXCEEDED")     NUMBER_OF_ATTEMPTS_EXCEEDED( 502, "Number of attempts exceeded"),
 
@@ -34,7 +33,6 @@ public enum ErrorCode {
 
 
     // ---- Homer status ------
-
     @EnumValue("HOMER_IS_OFFLINE")                      HOMER_IS_OFFLINE( 502, "Homer is offline"),
     @EnumValue("WEBSOCKET_TIME_OUT_EXCEPTION")          WEBSOCKET_TIME_OUT_EXCEPTION ( 503 ,  "Time for sending Message with required response is up!"),
     @EnumValue("HOMER_NOT_EXIST")                       HOMER_NOT_EXIST ( 504 ,  "Server not Exist!"),
@@ -45,9 +43,10 @@ public enum ErrorCode {
     @EnumValue("MISSING_LABEL")                         MISSING_LABEL                           ( 2, "Missing some Label"),
     @EnumValue("UNKNOWN_LABEL")                         UNKNOWN_LABEL                           ( 3, "Not recognize some Label"),
     @EnumValue("MALLOC ERROR")                          MALLOC_ERROR                            ( 4, "Not recognize some Label"),
-    @EnumValue("ERROR")                                 ERROR                                   ( 50 , "Undefined Error - In Logger");
+    @EnumValue("ERROR")                                 ERROR                                   ( 50 , "Undefined Error - In Logger"),
 
 
+    @EnumValue("CRITICAL_TYRION_SERVER_SIDE_ERROR")     CRITICAL_TYRION_SERVER_SIDE_ERROR( 400, "Something happend on Tyrion server side.");
 
 
     /*
