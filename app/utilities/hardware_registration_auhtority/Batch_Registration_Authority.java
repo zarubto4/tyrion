@@ -26,15 +26,13 @@ import utilities.login_entities.Secured_API;
 
 import java.util.List;
 
-import static com.mongodb.client.model.Sorts.descending;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Secured_API.class)
 public class Batch_Registration_Authority extends Controller {
 
-    private static final Class_Logger terminal_logger_start = new Class_Logger(Server.class);
+    private static final Class_Logger terminal_logger_start = new Class_Logger(Batch_Registration_Authority.class);
     private static final Class_Logger terminal_logger_registration = new Class_Logger(Batch_Registration_Authority.class);
-
 
     /**
      * Tohle rozhodně nemazat!!!!!! A ani neměnit - naprosto klíčová konfigurace záměrně zahrabaná v kodu!
@@ -146,8 +144,11 @@ public class Batch_Registration_Authority extends Controller {
 
                     Model_TypeOfBoard_Batch batch_database = Model_TypeOfBoard_Batch.find.byId(help.id.toString());
                     if(batch_database != null) {
+                        terminal_logger_start.info("Batch_Registration_Authority:: Batch id {} revision is already registered in database", help.id, help.revision );
                         // Already Registred
                         continue;
+                    }else {
+                        terminal_logger_start.info("Batch_Registration_Authority:: Batch id {} revision is not registered in database ", help.id, help.revision );
                     }
 
                     Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("compiler_target_name", help.type_of_board_compiler_target_name).findUnique();
@@ -177,21 +178,28 @@ public class Batch_Registration_Authority extends Controller {
                     batch.customer_company_name = help.customer_company_name;
                     batch.customer_company_made_description = help.customer_company_made_description;
 
-                    batch.mac_address_start = Long.getLong(help.mac_address_start);
-                    batch.mac_address_end = Long.getLong(help.mac_address_end);
-                    batch.latest_used_mac_address = Long.getLong(help.mac_address_end);
+                    batch.mac_address_start = Long.parseLong(help.mac_address_start, 10);
+                    batch.mac_address_end = Long.parseLong(help.mac_address_end, 10);
+                    batch.latest_used_mac_address = Long.parseLong(help.latest_used_mac_address, 10);
 
-                    batch.ean_number = Long.getLong(help.ean_number);
+                    if(batch.mac_address_start == null ||  batch.mac_address_end == null ||   batch.latest_used_mac_address == null ) {
+                        terminal_logger_start.error("Batch_Registration_Authority:: incompatible Mac address ");
+                        return;
+                    }
+
+                    batch.ean_number = Long.parseLong(help.ean_number, 10);
                     batch.description = help.description;
 
                     // Uložení objektu do DB
                     batch.save_from_central_atuhority();
 
                 } catch (Exception e) {
+                    e.printStackTrace();
                     terminal_logger_registration.internalServerError(e);
                 }
             }
         } catch (Exception e) {
+            e.printStackTrace();
             terminal_logger_registration.internalServerError(e);
         }
     }

@@ -34,7 +34,7 @@ public class DM_Batch_Registration_Central_Authority {
     @ApiModelProperty(required = true) @Constraints.Required  public String latest_used_mac_address;  // Pro přiřazení je vždy nutné zvednout novou verzi - tato hodnota se dosynchronizovává se serverem
 
     @ApiModelProperty(required = true) @Constraints.Required  public String ean_number;
-    @ApiModelProperty(required = true) @Constraints.Required  public String description;
+    @ApiModelProperty(required = true)                         public String description;
 
     // Typoe of board conections
     @ApiModelProperty(required = true) @Constraints.Required  public String type_of_board_compiler_target_name;

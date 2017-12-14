@@ -107,8 +107,6 @@ public class Controller_ZZZ_Tester extends Controller {
     public Result test3(){
         try {
 
-            new Slack().post_invalid_release("v1.1.4-alpha");
-
             /*
             System.out.println("Testuji Apu Printer");
 
@@ -293,7 +291,7 @@ public class Controller_ZZZ_Tester extends Controller {
             board12.hash_for_adding = Model_Board.generate_hash();
             Hardware_Registration_Authority.register_device(board12, typeOfBoard, batch_1);
 
-            */
+
 
             Model_Board board_g49 = new Model_Board();
             board_g49.id = "003A00463136510236363332";
@@ -316,6 +314,8 @@ public class Controller_ZZZ_Tester extends Controller {
             board_g50.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901144L);
             board_g50.hash_for_adding = Model_Board.generate_hash();
             Hardware_Registration_Authority.register_device(board_g50, typeOfBoard, batch_1);
+
+            */
 
             return GlobalResult.result_ok();
 
