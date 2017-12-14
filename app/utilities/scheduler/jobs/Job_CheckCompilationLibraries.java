@@ -42,6 +42,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Updates & Synchronize Compilation versions from GitHub HW-Libs
@@ -236,7 +237,7 @@ public class Job_CheckCompilationLibraries implements Job {
                     List<Model_BootLoader> bootLoaders = typeOfBoard.boot_loaders_get_for_github_include_removed();
 
                     // List který budu doplnovat
-                    List<Model_BootLoader> bootLoaders_for_add = new ArrayList<>();
+                    //List<Model_BootLoader> bootLoaders_for_add = new ArrayList<>();
 
                     // Pokud knihovnu
                     synchro_bootloaders:
@@ -343,11 +344,7 @@ public class Job_CheckCompilationLibraries implements Job {
                         new_bootLoader.file.update();
                         new_bootLoader.refresh();
 
-                        bootLoaders_for_add.add(new_bootLoader);
-
-                        typeOfBoard.boot_loaders().addAll(bootLoaders_for_add);
-                        typeOfBoard.update();
-
+                        typeOfBoard.cache_bootloaders_id.add(0, new_bootLoader.id.toString());
                     }
                 }
 

@@ -26,5 +26,6 @@ public class Swagger_TypeOfBoardBatch_New {
     @Constraints.Required @ApiModelProperty(required = true) public Long mac_address_end;
 
     @Constraints.Required @ApiModelProperty(required = true) public Long ean_number;
+                          @ApiModelProperty(required = false) public String description;
 
 }

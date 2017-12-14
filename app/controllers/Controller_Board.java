@@ -995,6 +995,8 @@ public class Controller_Board extends Controller {
 
             batch.ean_number = help.ean_number;
 
+            batch.description = help.description;
+
             // Kontorluji oprávnění
             if (!batch.create_permission()) return GlobalResult.result_forbidden();
 
@@ -1110,6 +1112,8 @@ public class Controller_Board extends Controller {
             batch.mac_address_end = help.mac_address_end;
 
             batch.ean_number = help.ean_number;
+
+            batch.description = help.description;
 
             // Kontorluji oprávnění
             if (!batch.create_permission()) return GlobalResult.result_forbidden();

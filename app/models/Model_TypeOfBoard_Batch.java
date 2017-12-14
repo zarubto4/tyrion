@@ -7,6 +7,7 @@ import controllers.Controller_Security;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
+import utilities.hardware_registration_auhtority.Batch_Registration_Authority;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
 import utilities.logger.Class_Logger;
 
@@ -50,9 +51,12 @@ public class Model_TypeOfBoard_Batch extends Model {
     @JsonIgnore @ManyToOne() public Model_TypeOfBoard type_of_board;
     @JsonIgnore public boolean removed_by_user;
 
+    @Column(columnDefinition = "TEXT")  public String description;
+
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty  @Transient public Long latest_used_mac_address(){
+
         if(latest_used_mac_address == null) {
             Hardware_Registration_Authority.synchronize_mac_address_with_authority();
             this.refresh();
@@ -128,12 +132,19 @@ public class Model_TypeOfBoard_Batch extends Model {
         return m.toString().toUpperCase();
     }
 
-
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
 
     @JsonIgnore @Override
     public void save() {
+        this.id = UUID.randomUUID();
+
+        if(latest_used_mac_address == null) latest_used_mac_address = mac_address_start;
+        Batch_Registration_Authority.register_batch(type_of_board, this);
+        super.save();
+    }
+
+    @JsonIgnore
+    public void save_from_central_atuhority() {
         super.save();
     }
 

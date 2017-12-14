@@ -65,6 +65,7 @@ public class Hardware_Registration_Authority extends Controller {
     public Result synchronize_script(){
         try{
 
+            Batch_Registration_Authority.synchronize_batch_with_authority();
 
             synchronize_mac_address_with_authority();
             synchronize_device_with_authority();
@@ -136,6 +137,24 @@ public class Hardware_Registration_Authority extends Controller {
         board_registration_central_authority.assembly_manufacture_id = batch.assembly_manufacture_id;
         board_registration_central_authority.mqtt_username = board.mqtt_username;
         board_registration_central_authority.mqtt_password = board.mqtt_password;
+
+        // Validation test - simulation of save and get from
+
+        try {
+            String string_json = Json.toJson(board_registration_central_authority).toString();
+            ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
+
+            final Form<DM_Board_Registration_Central_Authority> form = Form.form(DM_Board_Registration_Central_Authority.class).bind(json);
+            if (form.hasErrors()) {
+                terminal_logger_start.error("Hardware_Registration_Authority:: Document Registration and Validation test " + string_json);
+                terminal_logger_start.error("Hardware_Registration_Authority:: Probably some value is missing in by Required object " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                return false;
+            }
+
+        }catch (Exception e){
+            terminal_logger_registration.internalServerError(e);
+            return false;
+        }
 
         Document document = Document.parse(Json.toJson(board_registration_central_authority).toString());
         collection.insertOne(document);
