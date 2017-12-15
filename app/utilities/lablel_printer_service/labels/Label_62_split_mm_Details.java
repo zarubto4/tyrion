@@ -39,11 +39,11 @@ public class Label_62_split_mm_Details {
         ByteArrayOutputStream out = make_label();
 
         // TODO smazat protože to nebude potřeba
-        try(OutputStream outputStream = new FileOutputStream(System.getProperty("user.dir") + "/label_printers/" + "generate_12_mm_detail_" + new Date().getTime()  + ".pdf")) {
+        /*try(OutputStream outputStream = new FileOutputStream(System.getProperty("user.dir") + "/label_printers/" + "generate_12_mm_detail_" + new Date().getTime()  + ".pdf")) {
             out.writeTo(outputStream);
         }catch (Exception e){
             e.printStackTrace();
-        }
+        }*/
         return out;
     }
 

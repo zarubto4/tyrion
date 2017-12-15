@@ -1,13 +1,10 @@
 package utilities.scheduler.jobs;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.swagger.annotations.ApiModelProperty;
 import models.Model_BootLoader;
 import models.Model_FileRecord;
-import models.Model_HomerServer;
 import models.Model_TypeOfBoard;
 import org.quartz.Job;
-import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import play.Configuration;
@@ -21,22 +18,14 @@ import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 import utilities.Server;
 import utilities.enums.Enum_Tyrion_Server_mode;
-import utilities.lablel_printer_service.printNodeModels.Printer;
-import utilities.lablel_printer_service.printNodeModels.PrinterList;
 import utilities.logger.Class_Logger;
 import utilities.swagger.documentationClass.Swagger_CompilationLibrary;
 import utilities.swagger.documentationClass.Swagger_GitHubReleases;
 import utilities.swagger.documentationClass.Swagger_GitHubReleases_Asset;
 import utilities.swagger.documentationClass.Swagger_GitHubReleases_List;
-import web_socket.message_objects.homer_with_tyrion.verification.WS_Message_Check_homer_server_permission;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.URLDecoder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
