@@ -131,8 +131,6 @@ public class Batch_Registration_Authority extends Controller {
                     String string_json = cursor.next().toJson();
                     ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
 
-                    System.out.println("Kontrolní výpis:: " + json);
-
                     final Form<DM_Batch_Registration_Central_Authority> form = Form.form(DM_Batch_Registration_Central_Authority.class).bind(json);
                     if (form.hasErrors()) {
                         terminal_logger_start.error("Batch_Registration_Authority:: Document Read " + string_json);
@@ -142,17 +140,17 @@ public class Batch_Registration_Authority extends Controller {
 
                     DM_Batch_Registration_Central_Authority help = form.get();
 
-                    Model_TypeOfBoard_Batch batch_database = Model_TypeOfBoard_Batch.find.byId(help.id.toString());
-                    if(batch_database != null) {
+                    Model_TypeOfBoard_Batch batch_database = Model_TypeOfBoard_Batch.find.where().eq("revision", help.revision).eq("production_batch", help.production_batch).findUnique();
+                    if (batch_database != null) {
                         terminal_logger_start.info("Batch_Registration_Authority:: Batch id {} revision is already registered in database", help.id, help.revision );
                         // Already Registred
                         continue;
-                    }else {
+                    } else {
                         terminal_logger_start.info("Batch_Registration_Authority:: Batch id {} revision is not registered in database ", help.id, help.revision );
                     }
 
                     Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("compiler_target_name", help.type_of_board_compiler_target_name).findUnique();
-                    if(typeOfBoard == null) {
+                    if (typeOfBoard == null) {
                         terminal_logger_start.error("Batch_Registration_Authority:: Required Type Of Board Read {} is missing!", help.type_of_board_compiler_target_name);
                         continue;
                     }
@@ -182,7 +180,7 @@ public class Batch_Registration_Authority extends Controller {
                     batch.mac_address_end = Long.parseLong(help.mac_address_end, 10);
                     batch.latest_used_mac_address = Long.parseLong(help.latest_used_mac_address, 10);
 
-                    if(batch.mac_address_start == null ||  batch.mac_address_end == null ||   batch.latest_used_mac_address == null ) {
+                    if (batch.mac_address_start == null || batch.mac_address_end == null || batch.latest_used_mac_address == null ) {
                         terminal_logger_start.error("Batch_Registration_Authority:: incompatible Mac address ");
                         return;
                     }

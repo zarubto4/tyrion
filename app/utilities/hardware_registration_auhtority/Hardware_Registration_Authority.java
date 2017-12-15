@@ -215,7 +215,6 @@ public class Hardware_Registration_Authority extends Controller {
         }
     }
 
-
     /*
         Synchronizace s centrální autoritou je provedena vždy na začátku spuštní serveru a také ji lze aktivovat manuálně
         pomocí URL GET z routru. V rámci časových úspor byla zvolena strategie kdy v každé databázi je nutné vytvořit typ desky a výrobní kolekci, které mají shodné názvy,
@@ -249,7 +248,6 @@ public class Hardware_Registration_Authority extends Controller {
 
                     terminal_logger_start.info("Hardware_Registration_Authority:: There is Hardware, witch is not registered in local Database!" + string_json);
 
-
                     // Nejdříve Najdeme jestli existuje typ desky - Ten se porovnává podle Target Name
                     // a revision name. Ty musí!!! být naprosto shodné!!!
                     Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("revision", help.type_of_board_revision_name).eq("compiler_target_name", help.type_of_board_compiler_target_name).findUnique();
@@ -265,7 +263,6 @@ public class Hardware_Registration_Authority extends Controller {
                         break;
                     }
 
-
                     Model_TypeOfBoard_Batch typeOfBoard_batch = Model_TypeOfBoard_Batch.find.where().eq("type_of_board.id", typeOfBoard.id).eq("revision", help.revision).findUnique();
                     if(typeOfBoard_batch == null) {
                         terminal_logger_start.error("Hardware_Registration_Authority: Something is wrong! System try to register Byzance-hardware to local database, but " +
@@ -277,7 +274,6 @@ public class Hardware_Registration_Authority extends Controller {
                         terminal_logger_start.error("Hardware_Registration_Authority:: synchronize_device_with_authority:: Synchronize process not continue!");
                         break;
                     }
-
 
                     board = new Model_Board();
                     board.id = help.board_id;
@@ -304,5 +300,4 @@ public class Hardware_Registration_Authority extends Controller {
             cursor.close();
         }
     }
-
 }
