@@ -19,8 +19,7 @@ public class Swagger_Hardware_New_Settings_Result_Configuration {
     @ApiModelProperty(required = true, readOnly = true)  @Constraints.Required  public String   mqtt_username;
     @ApiModelProperty(required = true, readOnly = true)  @Constraints.Required  public String   mqtt_password;
 
-    @ApiModelProperty(required = true, readOnly = true)  @Constraints.Required  public String   mac_address;             // [addr in format XX:XX:XX:XX:XX:XX
-
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String  mac;              // [addr in format XX:XX:XX:XX:XX:XX
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean autobackup;                // Default 0                    // user configurable ( 0 or 1)
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean blreport;         // Default 0                    // user configurable
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean wdenable;          // Default 1                    // user configurable

@@ -1666,7 +1666,7 @@ public class Controller_Board extends Controller {
                 }
 
                 board.refresh();
-            }else {
+            } else {
                 board.mqtt_username = BCrypt.hashpw(mqtt_username_not_hashed, BCrypt.gensalt());
                 board.mqtt_password = BCrypt.hashpw(mqtt_password_not_hashed, BCrypt.gensalt());
                 board.update();
@@ -1719,7 +1719,7 @@ public class Controller_Board extends Controller {
 
                 configuration.backup_mqtt_hostname = backup_server.server_url;
                 configuration.backup_mqtt_port = backup_server.mqtt_port;
-                configuration.mac_address = board.mac_address;
+                configuration.mac = board.mac_address;
 
                 configuration.autobackup = conf.autobackup;
                 configuration.blreport = conf.blreport;
@@ -1732,6 +1732,8 @@ public class Controller_Board extends Controller {
                 configuration.lowpanbr = conf.lowpanbr;
                 configuration.autojump = conf.autojump;
                 configuration.wdtime = conf.wdtime;
+
+                result.configuration = configuration;
 
                 return GlobalResult.result_created(Json.toJson(result));
             }

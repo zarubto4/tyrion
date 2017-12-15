@@ -65,13 +65,10 @@ public class Label_12_mm_QR_code {
             // step 5. Open file
             document.open();
 
-
             contentByte = writer.getDirectContent();
 
             // Step 6.  Add QR kode
             document.add(device_hash_for_Add());
-
-
 
             document.close();
 
