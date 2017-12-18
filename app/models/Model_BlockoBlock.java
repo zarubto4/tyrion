@@ -231,11 +231,10 @@ public class Model_BlockoBlock extends Model {
 
         if(type_of_block != null) {
             order_position = Model_BlockoBlock.find.where().eq("type_of_block.id", type_of_block.id).findRowCount() + 1;
+            this.type_of_block.cache_refresh();
         }
 
         super.save();
-
-        this.type_of_block.cache_refresh();
 
         if(type_of_block != null && type_of_block.project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, type_of_block.project_id(), type_of_block.project_id()))).start();
     }
