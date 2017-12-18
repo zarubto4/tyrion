@@ -153,7 +153,6 @@ public class Utilities_Demo_data_Controller extends Controller {
             typeOfBoard_2.name = "IODA G3";
             typeOfBoard_2.description = " Ioda - Master Board with Ethernet and Wifi - third generation";
             typeOfBoard_2.compiler_target_name = "BYZANCE_IODAG3E";
-            typeOfBoard_2.revision = "12/2015 V1.0 #0000";
             typeOfBoard_2.processor = processor_1;
             typeOfBoard_2.producer = producer;
             typeOfBoard_2.connectible_to_internet = true;

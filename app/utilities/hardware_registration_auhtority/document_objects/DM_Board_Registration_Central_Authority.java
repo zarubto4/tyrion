@@ -17,7 +17,6 @@ public class DM_Board_Registration_Central_Authority {
     @ApiModelProperty(required = false, readOnly = true)                       public String personal_name; // Latest know name
 
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String type_of_board_compiler_target_name;
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String type_of_board_revision_name;
 
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Date date_of_create;
 

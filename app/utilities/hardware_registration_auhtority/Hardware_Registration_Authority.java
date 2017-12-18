@@ -126,7 +126,6 @@ public class Hardware_Registration_Authority extends Controller {
         board_registration_central_authority.hash_for_adding = board.hash_for_adding;
         board_registration_central_authority.personal_name = board.name;
         board_registration_central_authority.type_of_board_compiler_target_name =  typeOfBoard.compiler_target_name;
-        board_registration_central_authority.type_of_board_revision_name =  typeOfBoard.revision;
         board_registration_central_authority.date_of_create = board.date_of_create;
         board_registration_central_authority.revision = batch.revision;
         board_registration_central_authority.production_batch = batch.production_batch;
@@ -250,11 +249,10 @@ public class Hardware_Registration_Authority extends Controller {
 
                     // Nejdříve Najdeme jestli existuje typ desky - Ten se porovnává podle Target Name
                     // a revision name. Ty musí!!! být naprosto shodné!!!
-                    Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("revision", help.type_of_board_revision_name).eq("compiler_target_name", help.type_of_board_compiler_target_name).findUnique();
+                    Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("compiler_target_name", help.type_of_board_compiler_target_name).findUnique();
 
                     if(typeOfBoard == null) {
                         terminal_logger_start.error("Hardware_Registration_Authority: synchronize_device_with_authority:: Something is wrong! System try to register Byzance-hardware to local database, but " +
-                                "\n typeOfBoard with required parameters \"revision:\" " + help.type_of_board_revision_name +
                                 ". \"compiler_target_name:\" " + help.type_of_board_compiler_target_name +
                                 " not find in Database - Please Create it!"
                         );
@@ -263,7 +261,7 @@ public class Hardware_Registration_Authority extends Controller {
                         break;
                     }
 
-                    Model_TypeOfBoard_Batch typeOfBoard_batch = Model_TypeOfBoard_Batch.find.where().eq("type_of_board.id", typeOfBoard.id).eq("revision", help.revision).findUnique();
+                    Model_TypeOfBoard_Batch typeOfBoard_batch = Model_TypeOfBoard_Batch.find.where().eq("type_of_board.id", typeOfBoard.id).eq("revision", help.revision).eq("production_batch", help.production_batch).findUnique();
                     if(typeOfBoard_batch == null) {
                         terminal_logger_start.error("Hardware_Registration_Authority: Something is wrong! System try to register Byzance-hardware to local database, but " +
                                 " typeOfBoard_batch with required parameters \"revision:\" " + help.revision +

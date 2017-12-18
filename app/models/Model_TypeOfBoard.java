@@ -38,7 +38,6 @@ public class Model_TypeOfBoard extends Model {
                                 @Id    public String id;
                   @Column(unique=true) public String name;
                   @Column(unique=true) public String compiler_target_name;
-                                       public String revision;
     @Column(columnDefinition = "TEXT")  public String description;
 
     @JsonIgnore @ManyToOne public Model_Producer producer;
