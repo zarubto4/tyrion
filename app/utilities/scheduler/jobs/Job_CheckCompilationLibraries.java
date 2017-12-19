@@ -137,7 +137,6 @@ public class Job_CheckCompilationLibraries implements Job {
                     // List který budu doplnovat
                     List<Swagger_CompilationLibrary> library_list_for_add = new ArrayList<>();
 
-
                     // Pokud knihovnu
                     synchro_libraries:
                     for (Swagger_GitHubReleases release : releases) {
@@ -149,6 +148,17 @@ public class Job_CheckCompilationLibraries implements Job {
                             }
                         }
 
+                        if (release.prerelease || release.draft) {
+                            terminal_logger.trace("check_version_thread:: prerelease == true");
+                            continue;
+                        }
+
+                        if (release.assets.size() == 0) {
+                            terminal_logger.error("check_version_thread:: not any assets for {} - its required!",  release.tag_name);
+                            terminal_logger.error("check_version_thread:: not any assets for {} - its required!",  release.tag_name);
+                            Slack.post_invalid_release(release.tag_name);
+                            continue;
+                        }
 
                         // Ignorujeme všechny tagy, které se týkají bootloader
                         // ZDe mohou přibýt další ignore filtry
@@ -156,19 +166,17 @@ public class Job_CheckCompilationLibraries implements Job {
                             continue;
                         }
 
-
-                        String regex_apha_beta = "^(v)(\\d+\\.)(\\d+\\.)(\\d+)((-alpha|-beta)((\\.\\d+){0,3})?)?$"; // - alfa nebo beta
-                        String regex_beta = "^(v)(\\d+\\.)(\\d+\\.)(\\d+)((-beta)((\\.\\d+){0,3})?)?$ ";  // - jenom Beta
-                        String regex_production = "^(v)(\\d+\\.)(\\d+\\.)(\\d+)$ "; // - Jenom čistá verze
-
+                        String regex_developer = "^(v)(\\d+\\.)(\\d+\\.)(\\d+)((-alpha|-beta)((\\.\\d+){0,3})?)?$"; // alpha or beta
+                        String regex_stage = "^(v)(\\d+\\.)(\\d+\\.)(\\d+)((-beta)((\\.\\d+){0,3})?)?$";  // just beta
+                        String regex_production = "^(v)(\\d+\\.)(\\d+\\.)(\\d+)$"; // only pure version
 
                         Pattern pattern = null;
                         if (Server.server_mode == Enum_Tyrion_Server_mode.production) {
-                            pattern = Pattern.compile(regex_beta);                          // Záměrně - uživatelům to umožnujeme průběžně řešit
+                            pattern = Pattern.compile(regex_stage);                          // Záměrně - uživatelům to umožnujeme průběžně řešit
                         } else if (Server.server_mode == Enum_Tyrion_Server_mode.stage) {
-                            pattern = Pattern.compile(regex_beta);
+                            pattern = Pattern.compile(regex_stage);
                         } else if (Server.server_mode == Enum_Tyrion_Server_mode.developer) {
-                            pattern = Pattern.compile(regex_apha_beta);
+                            pattern = Pattern.compile(regex_developer);
                         }
 
                         if (pattern == null) {
@@ -185,19 +193,6 @@ public class Job_CheckCompilationLibraries implements Job {
                             continue;
                         }
 
-                        if (release.prerelease || release.draft) {
-                            terminal_logger.trace("check_version_thread:: prerelease == true");
-                            continue;
-                        }
-
-                        if (release.assets.size() == 0) {
-                            terminal_logger.error("check_version_thread:: not any assets for {} - its required!",  release.tag_name);
-                            terminal_logger.error("check_version_thread:: not any assets for {} - its required!",  release.tag_name);
-                            Slack.post_invalid_release(release.tag_name);
-                            continue;
-                        }
-
-
                         Swagger_CompilationLibrary new_library = new Swagger_CompilationLibrary();
                         new_library.tag_name = release.tag_name;
                         new_library.name = release.name;
@@ -207,14 +202,11 @@ public class Job_CheckCompilationLibraries implements Job {
                         new_library.created_at = release.created_at;
                         new_library.published_at = release.published_at;
                         library_list_for_add.add(new_library);
-
                     }
 
                     typeOfBoard.cache_library_list.addAll(library_list_for_add);
                     typeOfBoard.update();
-
                 }
-
 
                 terminal_logger.trace("check_version_thread:: all Library type of Board synchronized");
 
@@ -232,8 +224,6 @@ public class Job_CheckCompilationLibraries implements Job {
                     synchro_bootloaders:
                     for (Swagger_GitHubReleases release : releases) {
 
-                        // System.out.println("V Bootloader sekci zkoumám release " + release.tag_name);
-
                         // Nejedná se o bootloader
                         if (!release.tag_name.contains("bootloader")) {
                             //System.out.println("Releasse neobsahuje slovo bootloader");
@@ -241,8 +231,6 @@ public class Job_CheckCompilationLibraries implements Job {
                         }
 
                         String[] subStrings_main_parts = release.tag_name.split("_bootloader_");
-                        //System.out.println("Board Type:: " + subStrings_main_parts[0]);
-                        //System.out.println("Version Type:: " + subStrings_main_parts[1]);
 
                         if (subStrings_main_parts[0] == null) {
                             terminal_logger.error("Required Part in Release Tag name for Booloader missing): Type Of Board (compiler_target_name) ");
@@ -254,7 +242,6 @@ public class Job_CheckCompilationLibraries implements Job {
                             continue;
                         }
 
-
                         // Kontrola zda už neexistuje
                         for (Model_BootLoader bootLoader : bootLoaders) {
                             if (bootLoader.version_identificator.equals(subStrings_main_parts[1])) {
@@ -263,7 +250,6 @@ public class Job_CheckCompilationLibraries implements Job {
                                 continue synchro_bootloaders;
                             }
                         }
-
 
                         // Nejedná se o správný typ desky
                         if (!release.tag_name.contains(typeOfBoard.compiler_target_name)) {
@@ -276,7 +262,6 @@ public class Job_CheckCompilationLibraries implements Job {
                             terminal_logger.trace("check_version_thread:: prerelease == true");
                             continue;
                         }
-
 
                         Model_BootLoader new_bootLoader = new Model_BootLoader();
                         new_bootLoader.date_of_create = new Date();
