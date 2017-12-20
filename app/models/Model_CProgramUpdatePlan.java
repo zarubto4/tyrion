@@ -746,11 +746,11 @@ public class Model_CProgramUpdatePlan extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient  public boolean read_permission()      {
-        return actualization_procedure.read_permission() || Controller_Security.get_person().has_permission("Actualization_procedure_read");
+        return Model_ActualizationProcedure.get_byId(actualization_procedure_id()).read_permission() || Controller_Security.get_person().has_permission("Actualization_procedure_read");
     }
 
     @JsonProperty @Transient  public boolean edit_permission()      {
-        return actualization_procedure.edit_permission() || Controller_Security.get_person().has_permission("Actualization_procedure_edit");
+        return Model_ActualizationProcedure.get_byId(actualization_procedure_id()).edit_permission() || Controller_Security.get_person().has_permission("Actualization_procedure_edit");
     }
     /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
