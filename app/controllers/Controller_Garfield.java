@@ -422,7 +422,7 @@ public class Controller_Garfield extends Controller {
 
                 Model_Board board = new Model_Board();
                 board.id = "123456789123456789123456";
-                board.hash_for_adding = UUID.randomUUID().toString();
+                board.hash_for_adding = Model_Board.generate_hash();
 
                 Model_TypeOfBoard_Batch info = new Model_TypeOfBoard_Batch();
                 info.revision = "1.9.9";

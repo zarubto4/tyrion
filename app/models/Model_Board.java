@@ -2552,8 +2552,6 @@ public class Model_Board extends Model {
 
         terminal_logger.debug("save - inserting to database");
 
-        this.date_of_create = new Date();
-        if (hash_for_adding == null) this.hash_for_adding = generate_hash();
         if (json_bootloader_core_configuration == null || json_bootloader_core_configuration.equals("{}") || json_bootloader_core_configuration.equals("null") || json_bootloader_core_configuration.length() == 0) {
             json_bootloader_core_configuration = Json.toJson(DM_Board_Bootloader_DefaultConfig.generateConfig()).toString();
         }
