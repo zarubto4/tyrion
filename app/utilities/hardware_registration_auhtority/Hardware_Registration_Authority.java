@@ -99,7 +99,7 @@ public class Hardware_Registration_Authority extends Controller {
         terminal_logger_registration.info("Registration new Device " + board.id);
 
         // Kontroluji Device ID
-        if( check_if_value_is_registered(board.id,"board_id")) {
+        if (check_if_value_is_registered(board.id,"board_id")) {
             terminal_logger_registration.error("Hardware_Registration_Authority:: check_if_value_is_registered:: Collection name:: " + DM_Board_Registration_Central_Authority.COLLECTION_NAME);
             terminal_logger_registration.error("Hardware_Registration_Authority:: check_if_value_is_registered:: In Database is registered device with Same device ID!");
             synchronize_mac_address_with_authority();
@@ -150,7 +150,7 @@ public class Hardware_Registration_Authority extends Controller {
                 return false;
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger_registration.internalServerError(e);
             return false;
         }

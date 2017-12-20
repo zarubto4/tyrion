@@ -1556,6 +1556,7 @@ public class Controller_Board extends Controller {
             board.is_active = false;
             board.date_of_create = new Date();
             board.type_of_board = typeOfBoard;
+            board.hash_for_adding = Model_Board.generate_hash();
 
             // Uložení desky do DB
             board.save();
@@ -1621,19 +1622,16 @@ public class Controller_Board extends Controller {
             if (batch == null) return GlobalResult.result_notFound("TypeOfBoard_Batch type_of_board_batch_id not found");
 
             // Kontrola Objektu
-            Model_Garfield garfiled = Model_Garfield.get_byId(help.garfield_station_id);
-            if (garfiled == null) return GlobalResult.result_notFound("Garfield Station not found");
-
-            Model_Board board = Model_Board.find.byId(help.full_id);
+            Model_Garfield garfield = Model_Garfield.get_byId(help.garfield_station_id);
+            if (garfield == null) return GlobalResult.result_notFound("Garfield Station not found");
 
             String mqtt_password_not_hashed = UUID.randomUUID().toString();
             String mqtt_username_not_hashed = UUID.randomUUID().toString();
 
-
-            // Pokud neexistuje vytvořím
+            Model_Board board = Model_Board.find.byId(help.full_id);
             if (board == null) {
 
-                terminal_logger.warn("New Device Registration ID: {}", help.full_id);
+                terminal_logger.warn("board_create_garfield - device not found in local DB, registering board, id: {}", help.full_id);
 
                 // Try to Find it on Registration Authority
                 if (Hardware_Registration_Authority.check_if_value_is_registered(help.full_id, "board_id")) {
@@ -1653,6 +1651,8 @@ public class Controller_Board extends Controller {
                 board.mac_address = batch.get_new_MacAddress();
                 board.mqtt_username = BCrypt.hashpw(mqtt_username_not_hashed, BCrypt.gensalt());
                 board.mqtt_password = BCrypt.hashpw(mqtt_password_not_hashed, BCrypt.gensalt());
+                board.date_of_create = new Date();
+                board.hash_for_adding = Model_Board.generate_hash();
 
                 if (Hardware_Registration_Authority.register_device(board, typeOfBoard, batch)) {
                     board.save();
@@ -1679,18 +1679,17 @@ public class Controller_Board extends Controller {
             // Label 62 mm
             try {
                 // Test for creating - Controlling all prerequisites and requirements
-                new Label_62_mm_package(board, batch, garfiled);
+                new Label_62_mm_package(board, batch, garfield);
             } catch (IllegalArgumentException e) {
                 return GlobalResult.badRequest("Something is wrong: " + e.getMessage());
             }
 
-            Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(board, batch, garfiled);
-            api.printFile(garfiled.print_sticker_id, 1, "Garfield Print Label", label_62_mmPackage.get_label(), null);
+            Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(board, batch, garfield);
+            api.printFile(garfield.print_sticker_id, 1, "Garfield Print Label", label_62_mmPackage.get_label(), null);
 
             // Label qith QR kode on Ethernet connector
             Label_62_split_mm_Details label_12_mm_details = new Label_62_split_mm_Details(board);
-            api.printFile(garfiled.print_label_id_1, 1, "Garfield Print QR Hash", label_12_mm_details.get_label(), null);
-
+            api.printFile(garfield.print_label_id_1, 1, "Garfield Print QR Hash", label_12_mm_details.get_label(), null);
 
             if (typeOfBoard.connectible_to_internet) {
 
@@ -1702,25 +1701,16 @@ public class Controller_Board extends Controller {
                 Model_HomerServer main_server = Model_HomerServer.find.where().eq("server_type", Enum_Cloud_HomerServer_type.main_server).findUnique();
                 if (main_server == null) return GlobalResult.result_notFound("Main server not found!!!");
 
-
                 DM_Board_Bootloader_DefaultConfig conf = board.bootloader_core_configuration();
 
-
-                Swagger_Hardware_New_Settings_Result result = new Swagger_Hardware_New_Settings_Result();
-                result.full_id = board.id;
-
-
                 Swagger_Hardware_New_Settings_Result_Configuration configuration = new Swagger_Hardware_New_Settings_Result_Configuration();
-
                 configuration.normal_mqtt_hostname = main_server.server_url;
                 configuration.normal_mqtt_port = main_server.mqtt_port;
                 configuration.mqtt_username = mqtt_password_not_hashed;
                 configuration.mqtt_password = mqtt_username_not_hashed;
-
                 configuration.backup_mqtt_hostname = backup_server.server_url;
                 configuration.backup_mqtt_port = backup_server.mqtt_port;
                 configuration.mac = board.mac_address;
-
                 configuration.autobackup = conf.autobackup;
                 configuration.blreport = conf.blreport;
                 configuration.wdenable = conf.wdenable;
@@ -1733,6 +1723,8 @@ public class Controller_Board extends Controller {
                 configuration.autojump = conf.autojump;
                 configuration.wdtime = conf.wdtime;
 
+                Swagger_Hardware_New_Settings_Result result = new Swagger_Hardware_New_Settings_Result();
+                result.full_id = board.id;
                 result.configuration = configuration;
 
                 return GlobalResult.result_created(Json.toJson(result));
