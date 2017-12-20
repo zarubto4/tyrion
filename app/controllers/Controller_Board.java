@@ -2385,6 +2385,45 @@ public class Controller_Board extends Controller {
         }
     }
 
+    @ApiOperation(value = "generate_mqtt_password Board",
+            tags = {"Board"},
+            notes = "Generate new connection password for Hardware",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK Result",               response = Swagger_Hardware_New_Password.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    public Result board_generate_new_password(String board_id) {
+        try {
+
+            Model_Board board = Model_Board.get_byId(board_id);
+            if (board == null ) return GlobalResult.result_notFound("Board board_id not found");
+            if (!board.edit_permission()) return GlobalResult.result_forbidden();
+
+
+            String mqtt_password_not_hashed = UUID.randomUUID().toString();
+            String mqtt_username_not_hashed = UUID.randomUUID().toString();
+
+            board.mqtt_username = BCrypt.hashpw(mqtt_username_not_hashed, BCrypt.gensalt());
+            board.mqtt_password = BCrypt.hashpw(mqtt_password_not_hashed, BCrypt.gensalt());
+            board.update();
+
+            Swagger_Hardware_New_Password pss = new Swagger_Hardware_New_Password();
+            pss.mqtt_password = mqtt_password_not_hashed;
+            pss.mqtt_username = mqtt_username_not_hashed;
+
+            return GlobalResult.result_ok(Json.toJson(pss));
+        } catch (Exception e) {
+            return ServerLogger.result_internalServerError(e, request());
+        }
+    }
+
+
     @ApiOperation(value = "command Board execution",
             tags = {"Board"},
             notes = "Removes picture of logged person",
