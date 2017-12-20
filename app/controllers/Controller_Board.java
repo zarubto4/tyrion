@@ -1715,7 +1715,6 @@ public class Controller_Board extends Controller {
                 configuration.blreport = conf.blreport;
                 configuration.wdenable = conf.wdenable;
                 configuration.netsource = conf.netsource;
-                configuration.backuptime = conf.backuptime;
                 configuration.webview = conf.webview;
                 configuration.webport = conf.webport;
                 configuration.timeoffset = conf.timeoffset;

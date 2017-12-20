@@ -29,7 +29,6 @@ public class WS_Message_Hardware_overview_Board {
     @Constraints.Required  public boolean blreport;                  // Default 0                    // user configurable
     @Constraints.Required  public boolean wdenable;                  // Default 1                    // user configurable
     @Constraints.Required  public String  netsource;                 // Default ethernet   // user configurable ( 0 or 1)
-    @Constraints.Required  public Integer backuptime;                // Default  60                  // user configurable
     @Constraints.Required  public boolean webview;                   // Default  1                   // user configurable via Bootloader & Portal ( 0 or 1)
     @Constraints.Required  public Integer webport;                   // Default  80                  // user configurable via Bootloader & Portal ( 80 - 9999)
     @Constraints.Required  public Integer timeoffset;                // Default  0                   // user configurable

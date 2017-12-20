@@ -96,7 +96,6 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
                 "webview",                      // Boolean if device support webview
                 "blreport",                     // Boolean if device support webview
                 "wdenable",                     // Boolean if device support webview
-                "backuptime",                   // Boolean if device support webview
                 "timeoffset",                   // Boolean if device support webview
                 "timesync",                     // Boolean if device support webview
                 "lowpanbr",                     // Boolean if device support webview

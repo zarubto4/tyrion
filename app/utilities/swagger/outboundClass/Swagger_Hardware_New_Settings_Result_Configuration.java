@@ -24,7 +24,6 @@ public class Swagger_Hardware_New_Settings_Result_Configuration {
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean blreport;         // Default 0                    // user configurable
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean wdenable;          // Default 1                    // user configurable
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String  netsource;                 // Default ethernet   // user configurable ( 0 or 1)
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Integer backuptime;                // Default  60                  // user configurable
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean webview;                   // Default  1                   // user configurable via Bootloader & Portal ( 0 or 1)
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Integer webport;                   // Default  80                  // user configurable via Bootloader & Portal ( 80 - 9999)
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Integer timeoffset;                // Default  0                   // user configurable

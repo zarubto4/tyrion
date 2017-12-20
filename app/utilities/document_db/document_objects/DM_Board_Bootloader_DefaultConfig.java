@@ -17,7 +17,6 @@ public class DM_Board_Bootloader_DefaultConfig {
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean blreport;         // Default 0                    // user configurable
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean wdenable;          // Default 1                    // user configurable
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String  netsource;                 // Default ethernet   // user configurable ( 0 or 1)
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Integer backuptime;                // Default  60                  // user configurable
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean webview;                   // Default  1                   // user configurable via Bootloader & Portal ( 0 or 1)
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Integer webport;                   // Default  80                  // user configurable via Bootloader & Portal ( 80 - 9999)
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Integer timeoffset;                // Default  0                   // user configurable
@@ -38,7 +37,6 @@ public class DM_Board_Bootloader_DefaultConfig {
         configuration.webview = true;                         // command::   webview=1              (1/0)                         Zapnutí nebo vypnutí webového rozhraní
         configuration.webport = 80;                           // command::   webport=80             (počet sekund 32b)            Port na kterém běží stránka
         configuration.wdtime = 1;                             // command::   wdtime=1              (počet sekund od 0 do 32b)     Nastavení periody resetu watchdogu
-        configuration.backuptime = 60;                        // command::   backuptime=60          (počet sekund od 0 do 32b)    Nastavení času, po kterém se spustí automatická záloha firmware.
         configuration.timeoffset = 0;                         // command::     timeoffset=0           (po vteřinách - takže hodina  3600 povolené je i munus hodnota)  Slouží pro lokalizovanou práci s časem. Nastavení offsetu lokálního času od UTC času.
         configuration.timesync = true;                        // command::   timesync=1             (1/0)                         Zapnutí synchronizace času s Homerem - Homer čas přidělí - Hardware to buď ignoruje - nebo to uloží
         configuration.lowpanbr = false;                       // command::   lowpanbr=1             (1/0)                         Zap nebo vyp funkce [[feature:lowpanbr|lowpan border router]]
