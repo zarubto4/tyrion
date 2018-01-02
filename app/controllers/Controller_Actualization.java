@@ -202,6 +202,10 @@ public class Controller_Actualization extends Controller {
             if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_ActualizationProcedure_Make help = form.get();
 
+            System.out.println("Co přišlo:: " +  Json.toJson(help));
+
+            if(help != null) return GlobalResult.result_created(Json.toJson(help));
+
             // Kontrola Firmware Type
             Enum_Firmware_type firmware_type = Enum_Firmware_type.getFirmwareType(help.firmware_type);
             if (firmware_type == null)  return GlobalResult.result_notFound("firmware_type not found");

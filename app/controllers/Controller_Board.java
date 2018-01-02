@@ -25,6 +25,7 @@ import utilities.swagger.documentationClass.*;
 import utilities.swagger.outboundClass.Filter_List.Swagger_Board_List;
 import utilities.swagger.outboundClass.*;
 import web_socket.message_objects.compilator_with_tyrion.WS_Message_Make_compilation;
+import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_change_server;
 import web_socket.message_objects.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 import web_socket.message_objects.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
@@ -2409,6 +2410,83 @@ public class Controller_Board extends Controller {
             pss.mqtt_username = mqtt_username_not_hashed;
 
             return GlobalResult.result_ok(Json.toJson(pss));
+        } catch (Exception e) {
+            return ServerLogger.result_internalServerError(e, request());
+        }
+    }
+
+
+    @ApiOperation(value = "change_server Board",
+            tags = { "Board"},
+            notes = "Redirect Board to another server (Change Server)",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_Board_Server_Redirect",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message",    response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result board_redirect_to_server(String board_id) {
+        try {
+
+            // Získání JSON
+            final Form<Swagger_Board_Server_Redirect> form = Form.form(Swagger_Board_Server_Redirect.class).bindFromRequest();
+            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            Swagger_Board_Server_Redirect help = form.get();
+
+            System.out.println("board_redirect_to_server:: Příjem zprávy:: " + Json.toJson(help));
+
+            Model_Board board = Model_Board.get_byId(board_id);
+            if (board == null) return GlobalResult.result_notFound("Board does not exist");
+            if (!board.edit_permission()){
+                System.out.println(" board.edit_permission - false!");
+                return GlobalResult.result_forbidden();
+            }
+
+            // Jedná se o přesměrování na server v rámci stejné hierarchie - na server co mám v DB
+            if(help.server_id != null){
+
+                Model_HomerServer server = Model_HomerServer.get_byId(help.server_id);
+                if(server == null) return GlobalResult.result_notFound("Board does not exist");
+                if(!server.read_permission()){
+                    System.out.println("!server.read_permission() - false!");
+                    return GlobalResult.result_forbidden();
+                }
+
+                board.device_relocate_server(server);
+
+            // Jedná se o server mimo náš svět - například z dev na stage, nebo z produkce na dev
+            }else {
+                if(help.server_port == null || help.server_url == null){
+                    return GlobalResult.result_badRequest("its required send server_id  or server_url + server_port ");
+                }
+
+
+                WS_Message_Hardware_change_server response = board.device_relocate_server(help.server_url, help.server_port);
+                if(response.status.equals("success")) {
+                    return GlobalResult.result_ok();
+                }else {
+                    return GlobalResult.result_badRequest("Cloud Device Execution Error: " + response.error_message);
+                }
+
+            }
+
+            return GlobalResult.result_ok();
         } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
         }

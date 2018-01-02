@@ -1310,6 +1310,21 @@ public class Model_Board extends Model {
         device_relocate_server(devices, future_server);
     }
 
+    @JsonIgnore @Transient public WS_Message_Hardware_change_server device_relocate_server(String mqtt_host, String mqtt_port) {
+        try {
+            JsonNode node = write_with_confirmation( new WS_Message_Hardware_change_server().make_request(mqtt_host, mqtt_port, Collections.singletonList(this.id)), 1000 * 5, 0, 2);
+
+            final Form<WS_Message_Hardware_change_server> form = Form.form(WS_Message_Hardware_change_server.class).bind(node);
+            if (form.hasErrors()) throw new Exception("WS_Message_Hardware_change_server: Incoming Json from Homer server has not right Form: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
+
+            return form.get();
+
+        } catch (Exception e) {
+            terminal_logger.internalServerError(e);
+            return new WS_Message_Hardware_change_server();
+        }
+    }
+
     @JsonIgnore @Transient public void device_relocate_server(List<Model_Board> devices, Model_HomerServer future_server) {
         try {
 
@@ -1319,7 +1334,7 @@ public class Model_Board extends Model {
             // Create Server Parralell command
             HashMap<String, ObjectNode> request_collection = new HashMap<>();
             for(String key : serverHashMap.keySet()) {
-                request_collection.put(key, new WS_Message_Hardware_change_server().make_request(future_server, serverHashMap.get(key)) );
+                request_collection.put(key, new WS_Message_Hardware_change_server().make_request(future_server, serverHashMap.get(key)));
             }
 
             // Make Parallel Operation

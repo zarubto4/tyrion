@@ -380,6 +380,7 @@ PUT       /board/picture/upload/:board_id                               @control
 PUT       /board/picture/remove/:board_id                               @controllers.Controller_Board.board_removePicture(board_id)
 PUT       /board/command                                                @controllers.Controller_Board.board_command_execution()
 PUT       /board/mqtt_password_reset/:board_id                          @controllers.Controller_Board.board_generate_new_password(board_id)
+PUT       /board/change_server/:board_id                                @controllers.Controller_Board.board_redirect_to_server(board_id)
 
 
 #Board_Group

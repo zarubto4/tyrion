@@ -2,6 +2,7 @@ package models;
 
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -53,31 +54,21 @@ public class Model_HomerServer extends Model {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id
-    public UUID id;
-    @JsonIgnore
-    public String connection_identificator;
-    @JsonIgnore
-    public String hash_certificate;
+    @Id public UUID id;
 
-    @JsonIgnore
-    public Date date_of_create;
+    @JsonIgnore public String connection_identificator;
+    @JsonIgnore public String hash_certificate;
+
+    @JsonIgnore public Date date_of_create;
 
     public String personal_server_name;
-    @Column(columnDefinition = "TEXT")
-    public String json_additional_parameter;        // DB dokument - smožností rozšíření na cokoliv
+
+    @Column(columnDefinition = "TEXT") public String json_additional_parameter;        // DB dokument - smožností rozšíření na cokoliv
 
     @ApiModelProperty(required = true, readOnly = true) public Integer mqtt_port;                       // Přidává se destination_address + "/" mqtt_port
-    // @ApiModelProperty(required = true, readOnly = true) public String mqtt_username;
-    // @ApiModelProperty(required = true, readOnly = true) public String mqtt_password;
-
-
-    @ApiModelProperty(required = true, readOnly = true)
-    public Integer grid_port;                       // Přidává se destination_address + "/" grid_ulr
-    @ApiModelProperty(required = true, readOnly = true)
-    public Integer web_view_port;                   // Přidává se destination_address + "/" web_view_port
-    @ApiModelProperty(required = true, readOnly = true)
-    public Integer server_remote_port;              // Přidává se destination_address + "/" web_view_port
+    @ApiModelProperty(required = true, readOnly = true) public Integer grid_port;                       // Přidává se destination_address + "/" grid_ulr
+    @ApiModelProperty(required = true, readOnly = true) public Integer web_view_port;                   // Přidává se destination_address + "/" web_view_port
+    @ApiModelProperty(required = true, readOnly = true) public Integer server_remote_port;              // Přidává se destination_address + "/" web_view_port
 
     @ApiModelProperty(required = true, readOnly = true)
     public String server_url;  // Může být i IP adresa
@@ -103,6 +94,32 @@ public class Model_HomerServer extends Model {
     public Enum_Online_status online_state() {
 
         return Controller_WebSocket.homer_servers.containsKey(id.toString()) ? Enum_Online_status.online : Enum_Online_status.offline;
+    }
+
+    @ApiModelProperty(required = false, readOnly = true)
+    @JsonProperty
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String connection_identificator() {
+
+        if(this.edit_permission()) {
+            return connection_identificator;
+        }
+
+        return null;
+    }
+
+    @ApiModelProperty(required = false, readOnly = true)
+    @JsonProperty
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String hash_certificate() {
+
+        if(this.edit_permission()) {
+            return hash_certificate;
+        }
+
+        return null;
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
