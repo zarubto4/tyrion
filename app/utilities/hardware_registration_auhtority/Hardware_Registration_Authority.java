@@ -127,7 +127,7 @@ public class Hardware_Registration_Authority extends Controller {
         board_registration_central_authority.hash_for_adding = board.hash_for_adding;
         board_registration_central_authority.personal_name = board.name;
         board_registration_central_authority.type_of_board_compiler_target_name =  typeOfBoard.compiler_target_name;
-        board_registration_central_authority.date_of_create = board.date_of_create.getTime();
+        board_registration_central_authority.date_of_create = ((Long)board.date_of_create.getTime()).toString();
         board_registration_central_authority.revision = batch.revision;
         board_registration_central_authority.production_batch = batch.production_batch;
         board_registration_central_authority.date_of_assembly = batch.date_of_assembly;
@@ -282,7 +282,7 @@ public class Hardware_Registration_Authority extends Controller {
                     board.mqtt_username = help.mqtt_username;
                     board.mqtt_password = help.mqtt_password;
                     board.is_active = false;
-                    board.date_of_create = new Date(help.date_of_create);
+                    board.date_of_create = new Date(new Long(help.date_of_create));
                     board.type_of_board = typeOfBoard;
                     board.batch_id = typeOfBoard_batch.id.toString();
                     board.save();
