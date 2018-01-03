@@ -33,7 +33,7 @@ cd ./$NEWSERVER
 
 # Run instance of new verion
 echo " == Starting new server =="
-./bin/tyrion 2>&1 >> ./server.log &
+./start_server.sh
 
 # Go one level below current instance
 cd ..
@@ -51,7 +51,7 @@ case $RESPONSE in
                 echo "$CURRENTSERVER" > ./OLDSERVER && echo "$NEWSERVER" > ./CURRENTSERVER && rm -rf ./dist.zip && rm -rf ./$OLDSERVER
                 ;;
         *)
-                echo " !! Server did not started or is in fault state !!"
+                echo " !! Server did not start or is in fault state !!"
 
                 # If server started but is in fault state - stopping it
                 if [ $RESPONSE -eq 500 ] && [ -e ./$NEWSERVER/RUNNING_PID ] ; then
@@ -64,7 +64,7 @@ case $RESPONSE in
 
                 # Run instance of last version
                 echo " == Starting previous server =="
-                ./bin/tyrion 2>&1 >> ./server.log &
+                ./start_server.sh
 
                 # Go back down
                 cd ..
