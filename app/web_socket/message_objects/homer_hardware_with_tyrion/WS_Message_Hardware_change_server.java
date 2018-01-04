@@ -30,7 +30,7 @@ public class WS_Message_Hardware_change_server  extends WS_AbstractMessage {
         request.put("message_channel", Model_Board.CHANNEL);
         request.put("mqtt_host", server.server_url);
         request.put("mqtt_port", server.mqtt_port);
-        request.set("device_ids", Json.toJson(device_ids) );
+        request.set("hardware_ids", Json.toJson(device_ids) );
 
         return request;
     }
@@ -43,7 +43,7 @@ public class WS_Message_Hardware_change_server  extends WS_AbstractMessage {
         request.put("message_channel", Model_Board.CHANNEL);
         request.put("mqtt_host", mqtt_host);
         request.put("mqtt_port", mqtt_port);
-        request.set("device_ids", Json.toJson(device_ids) );
+        request.set("hardware_ids", Json.toJson(device_ids) );
 
         return request;
     }
