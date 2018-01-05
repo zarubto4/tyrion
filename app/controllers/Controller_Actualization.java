@@ -374,9 +374,21 @@ public class Controller_Actualization extends Controller {
             if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
             Swagger_ActualizationProcedureTask_Filter help = form.get();
 
+            System.out.println(Json.toJson(help));
+
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_CProgramUpdatePlan> query = Ebean.find(Model_CProgramUpdatePlan.class);
             query.order().desc("actualization_procedure.date_of_create");
+
+
+            if(help.update_states != null && !help.update_states.isEmpty()) {
+                query.where().in("state", help.update_states);
+            }
+
+            if(help.type_of_updates != null && !help.type_of_updates.isEmpty()) {
+                query.where().in("actualization_procedure.type_of_update", help.type_of_updates);
+            }
+
 
             if (!help.board_ids.isEmpty()) {
 

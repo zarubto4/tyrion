@@ -2461,6 +2461,8 @@ public class Controller_Board extends Controller {
             // Jedná se o přesměrování na server v rámci stejné hierarchie - na server co mám v DB
             if(help.server_id != null){
 
+                System.out.println("Bude se přesměrovávat z databáze");
+
                 Model_HomerServer server = Model_HomerServer.get_byId(help.server_id);
                 if(server == null) return GlobalResult.result_notFound("Board does not exist");
                 if(!server.read_permission()){
