@@ -162,6 +162,8 @@ public class Model_BProgram extends Model {
         b_program_version.hardware_group                = version_object.b_program_hw_groups;
         b_program_version.m_project_program_snapshots   = version_object.b_program_version_snapshots;
 
+        b_program_version.group_pairs = version_object.get_group_pairs();
+
         Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "program.js").findUnique();
         if (fileRecord != null) b_program_version.program             = fileRecord.get_fileRecord_from_Azure_inString();
 

@@ -3,6 +3,7 @@ package controllers;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Expr;
 import com.avaje.ebean.Query;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.*;
 import models.*;
 import play.data.Form;
@@ -397,8 +398,11 @@ public class Controller_Blocko extends Controller{
                     version_object.b_program_version_snapshots.add(snap);
                 }
             }
+
+            version_object.additional_configuration = Json.toJson(Json.newObject().set("group_pairs", Json.toJson(help.group_pairs))).toString();
+
             // Definování main Board
-            for ( Swagger_B_Program_Version_New.Hardware_group group : help.hardware_group) {
+            for (Swagger_B_Program_Version_New.Hardware_group group : help.hardware_group) {
 
                 Model_BProgramHwGroup b_program_hw_group = new Model_BProgramHwGroup();
 
@@ -408,16 +412,16 @@ public class Controller_Blocko extends Controller{
                     Model_BPair b_pair = new Model_BPair();
 
                     b_pair.board = Model_Board.get_byId(group.main_board_pair.board_id);
-                    if ( b_pair.board == null) return GlobalResult.result_notFound("Board board_id not found");
+                    if (b_pair.board == null) return GlobalResult.result_notFound("Board board_id not found");
                     if (!b_pair.board.get_type_of_board().connectible_to_internet)  return GlobalResult.result_badRequest("Main Board must be internet connectible!");
                     if (!b_pair.board.update_permission()) return GlobalResult.result_forbidden();
 
                     b_pair.c_program_version = Model_VersionObject.get_byId(group.main_board_pair.c_program_version_id);
-                    if ( b_pair.c_program_version == null) return GlobalResult.result_notFound("C_Program Version_Object c_program_version_id not found");
-                    if ( b_pair.c_program_version.get_c_program() == null)  return GlobalResult.result_badRequest("Version is not from C_Program");
+                    if (b_pair.c_program_version == null) return GlobalResult.result_notFound("C_Program Version_Object c_program_version_id not found");
+                    if (b_pair.c_program_version.get_c_program() == null)  return GlobalResult.result_badRequest("Version is not from C_Program");
 
 
-                    if ( Model_TypeOfBoard.find.where().eq("c_programs.id",  b_pair.c_program_version.get_c_program().id ).where().eq("boards.id",  b_pair.board.id).findRowCount() < 1) {
+                    if (Model_TypeOfBoard.find.where().eq("c_programs.id", b_pair.c_program_version.get_c_program().id).where().eq("boards.id", b_pair.board.id).findRowCount() < 1) {
                         return GlobalResult.result_badRequest("You want upload C++ program version id: " +  b_pair.c_program_version.id + " thats not compatible with hardware " + b_pair.board.id);
                     }
 

@@ -110,7 +110,6 @@ public class Model_Board extends Model {
     @JsonIgnore public String connected_server_id;      // Latest know Server ID
     @JsonIgnore public String connected_instance_id;    // Latest know Instance ID
 
-
     // Hardware Groups
     @JsonIgnore @ManyToMany(mappedBy = "boards", fetch = FetchType.LAZY)  public List<Model_BoardGroup> board_groups = new ArrayList<>();
 
