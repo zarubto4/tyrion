@@ -49,13 +49,14 @@ public class Model_HomerInstance extends Model {
 
                                                        @JsonIgnore  public String project_id; // Předpřipravené pro další implementaci
 
-    @JsonIgnore @OneToOne(mappedBy="instance",cascade=CascadeType.ALL, fetch = FetchType.LAZY) public Model_BProgram b_program;                   //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
+    // todo odstranit
+  // @JsonIgnore @OneToOne(mappedBy="instance",cascade=CascadeType.ALL, fetch = FetchType.LAZY) public Model_BProgram b_program;                   //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
 
-                @OneToOne(mappedBy="actual_running_instance", cascade=CascadeType.ALL)         public Model_HomerInstanceRecord actual_instance;  // Aktuálně běžící instnace na Serveru (Pokud není null má běžet- má běžet na serveru)
+                @OneToOne(mappedBy="actual_running_instance", cascade=CascadeType.ALL)         public String actual_instance_id;  // Aktuálně běžící instnace na Serveru (Pokud není null má běžet- má běžet na serveru)
 
                 @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("planed_when DESC") public List<Model_HomerInstanceRecord> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
 
-                 public Enum_Homer_instance_type instance_type;
+               // TODO odstranit public Enum_Homer_instance_type instance_type;
 
      @JsonIgnore public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
 

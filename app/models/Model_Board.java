@@ -104,7 +104,7 @@ public class Model_Board extends Model {
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_VersionObject actual_backup_c_program_version;        // Ověřený statický backup - nebo aktuálně zazálohovaný firmware (Cachováno)
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_BootLoader    actual_boot_loader;                     // Aktuální bootloader (Cachováno)
 
-    @JsonIgnore @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_BPair> b_pair = new ArrayList<>();    // Vazba firmwaru a Hardwaru - používáno pro snapshoty v Blocku
+    // TODO odstranit @JsonIgnore @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_BPair> b_pair = new ArrayList<>();    // Vazba firmwaru a Hardwaru - používáno pro snapshoty v Blocku
     @JsonIgnore @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();   // Seznam update procedur s tímto hardware.
 
     @JsonIgnore public String connected_server_id;      // Latest know Server ID
@@ -781,7 +781,14 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient public static void device_Disconnected(WS_Message_Hardware_disconnected help) {
         try {
 
+            Model_Board device = Model_Board.get_byId(help.hardware_id);
+
+            if (device == null) {
+                return;
+            }
+
             terminal_logger.debug("master_device_Disconnected:: Updating device status " +  help.hardware_id + " on offline ");
+
 
             // CHACHE OFFLINE
             cache_status.put(help.hardware_id, Boolean.FALSE);

@@ -39,7 +39,7 @@ public class Model_BProgram extends Model {
                                                              public String name;
                         @Column(columnDefinition = "TEXT")   public String description;
 
-    @JsonIgnore @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Model_HomerInstance instance; // TODO - do budoucna více instnací!!!! http://youtrack.byzance.cz/youtrack/issue/TYRION-502
+    // TODO smazat @JsonIgnore @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Model_HomerInstance instance; // TODO - do budoucna více instnací!!!! http://youtrack.byzance.cz/youtrack/issue/TYRION-502
 
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time in ms", example = "1466163478925") public Date last_update;
     @ApiModelProperty(required = true, dataType = "integer", readOnly = true, value = "UNIX time in ms", example = "1466163478925") public Date date_of_create;

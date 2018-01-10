@@ -41,16 +41,18 @@ public class Model_HomerInstanceRecord extends Model {
 
     @JsonIgnore @Id   public String id;
 
-    @JsonIgnore @ManyToOne(cascade = CascadeType.ALL,  fetch = FetchType.LAZY)     public Model_HomerInstance main_instance_history;
+    @JsonIgnore @ManyToOne(cascade = CascadeType.ALL,  fetch = FetchType.LAZY)    public Model_HomerInstance main_instance_history;
 
     @ApiModelProperty(required = false, readOnly = true, value = "can be null")   public Date date_of_created;
     @ApiModelProperty(required = false, readOnly = true, value = "can be null")   public Date running_from;
     @ApiModelProperty(required = false, readOnly = true, value = "can be null")   public Date running_to;
     @ApiModelProperty(required = false, readOnly = true, value = "can be null")   public Date planed_when;
 
-    @JsonIgnore @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.LAZY)       public Model_VersionObject version_object;
-    @JsonIgnore @OneToOne(cascade=CascadeType.ALL)                                public Model_HomerInstance actual_running_instance; // TODO Cache!!!  // Aktuálně běžící instnace na Serveru (Pokud není null má běžet- má běžet na serveru)
-    @JsonIgnore @OneToMany(mappedBy="homer_instance_record", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ActualizationProcedure> procedures = new ArrayList<>();
+
+    @JsonIgnore @ManyToOne(cascade=CascadeType.ALL, fetch = FetchType.LAZY)       public Model_VersionObject version_object; // Dopsat do nazvu že jde o b_rogram verzi
+    // TODO odstranit @JsonIgnore @OneToOne(cascade=CascadeType.ALL)               public Model_HomerInstance actual_running_instance; // TODO Cache!!!  // Aktuálně běžící instnace na Serveru (Pokud není null má běžet- má běžet na serveru)
+
+     @JsonIgnore @OneToMany(mappedBy="homer_instance_record", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ActualizationProcedure> procedures = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -174,6 +176,7 @@ public class Model_HomerInstanceRecord extends Model {
             terminal_logger.debug("put_record_into_cloud - deploy begins");
             if (this.actual_running_instance == null) {
                 terminal_logger.debug("put_record_into_cloud - actual_running_instance is null -> change record as main");
+                // TODO nahradit stringem který byl nově definován v instanci
                 this.change_record_as_main();
             }
 
