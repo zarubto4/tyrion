@@ -57,6 +57,7 @@ public class Swagger_B_Program_Version_New {
 
     @ApiModel(value = "GroupPair")
     public static class GroupPair {
+        public GroupPair(){};
         public String group_id;
         public String version_id;
     }

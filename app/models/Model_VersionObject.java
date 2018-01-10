@@ -584,7 +584,8 @@ public class Model_VersionObject extends Model {
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
-    public class AdditionalConfiguration {
+    public static class AdditionalConfiguration {
+        public AdditionalConfiguration() {};
         public List<Swagger_B_Program_Version_New.GroupPair> group_pairs = new ArrayList<>();
     }
 

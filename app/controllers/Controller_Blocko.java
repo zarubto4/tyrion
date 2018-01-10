@@ -502,7 +502,7 @@ public class Controller_Blocko extends Controller{
             if (version_object.get_b_program() == null) return GlobalResult.result_notFound("Version_Object is not version of B_Program");
 
             // Kontrola oprávnění
-            if (! version_object.get_b_program().read_permission() ) return GlobalResult.result_forbidden();
+            if (!version_object.get_b_program().read_permission()) return GlobalResult.result_forbidden();
 
             // Vrácení objektu
             return GlobalResult.result_ok(Json.toJson(version_object.get_b_program().program_version(version_object)));
