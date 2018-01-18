@@ -24,7 +24,6 @@ import utilities.enums.Enum_Online_status;
 import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.errors.ErrorCode;
 import utilities.logger.Class_Logger;
-import utilities.swagger.outboundClass.Swagger_HomerServer_public_Detail;
 import utilities.swagger.outboundClass.Swagger_UpdatePlan_brief_for_homer;
 import web_socket.message_objects.common.service_class.WS_Message_Invalid_Message;
 import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Command;
@@ -61,20 +60,21 @@ public class Model_HomerServer extends Model {
 
     @JsonIgnore public Date date_of_create;
 
-    public String personal_server_name;
+    @ApiModelProperty(required = true, readOnly = true) public String personal_server_name;
 
-    @Column(columnDefinition = "TEXT") public String json_additional_parameter;        // DB dokument - smožností rozšíření na cokoliv
+    @JsonIgnore @Column(columnDefinition = "TEXT") public String json_additional_parameter;        // DB dokument - smožností rozšíření na cokoliv
 
-    @ApiModelProperty(required = true, readOnly = true) public Integer mqtt_port;                       // Přidává se destination_address + "/" mqtt_port
-    @ApiModelProperty(required = true, readOnly = true) public Integer grid_port;                       // Přidává se destination_address + "/" grid_ulr
-    @ApiModelProperty(required = true, readOnly = true) public Integer web_view_port;                   // Přidává se destination_address + "/" web_view_port
-    @ApiModelProperty(required = true, readOnly = true) public Integer server_remote_port;              // Přidává se destination_address + "/" web_view_port
+    @ApiModelProperty(required = true, readOnly = true) public Integer mqtt_port;                       // MqTT Port
+    @ApiModelProperty(required = true, readOnly = true) public Integer grid_port;                       // Grid APP
+    @ApiModelProperty(required = true, readOnly = true) public Integer web_view_port;                   // Blocko web View
+    @ApiModelProperty(required = true, readOnly = true) public Integer server_remote_port;              // HW logger
+    @ApiModelProperty(required = true, readOnly = true) public Integer rest_api_port;                   // Rest APi Port
 
-    @ApiModelProperty(required = true, readOnly = true)
-    public String server_url;  // Může být i IP adresa
+    @ApiModelProperty(required = true, readOnly = true) public String server_url;  // Může být i IP adresa
+    @ApiModelProperty(required = true, readOnly = true) public String server_version;  // Může být i IP adresa
 
     public Enum_Cloud_HomerServer_type server_type;  // Určující typ serveru
-    public Date time_stamp_configuration;
+    public Date time_stamp_configuration;            // Čas konfigurace
 
     public Integer days_in_archive;
     public boolean logging;
@@ -123,24 +123,6 @@ public class Model_HomerServer extends Model {
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
-
-    @JsonIgnore
-    @Transient
-    public Swagger_HomerServer_public_Detail get_public_info() {
-
-        Swagger_HomerServer_public_Detail detail = new Swagger_HomerServer_public_Detail();
-        detail.id = id.toString();
-        detail.personal_server_name = personal_server_name;
-        detail.server_type = server_type;
-        detail.online_state = online_state();
-        detail.edit_permission = this.edit_permission();
-        detail.update_permission = false;   // TODO: Doplnit až půjde rekonfigurovat server nadálku - Long term task
-        detail.delete_permission = this.delete_permission();
-        detail.server_url = server_url;     //
-        detail.hardware_log_port = server_remote_port;
-
-        return detail;
-    }
 
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/

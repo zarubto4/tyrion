@@ -23,7 +23,6 @@ import utilities.response.response_objects.*;
 import utilities.swagger.documentationClass.Swagger_Cloud_Compilation_Server_New;
 import utilities.swagger.documentationClass.Swagger_Cloud_Homer_Server_New;
 import utilities.swagger.outboundClass.Swagger_CompilerServer_public_Detail;
-import utilities.swagger.outboundClass.Swagger_HomerServer_public_Detail;
 
 import java.util.*;
 
@@ -259,7 +258,7 @@ public class Controller_ExternalServer extends Controller {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",      response = Swagger_HomerServer_public_Detail.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result",      response = Model_HomerServer.class, responseContainer = "List"),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error")
     })
@@ -270,12 +269,8 @@ public class Controller_ExternalServer extends Controller {
             // Získání seznamu
             List<Model_HomerServer> servers = Model_HomerServer.get_all();
 
-            // Vylistování informací
-            List<Swagger_HomerServer_public_Detail> servers_short = new ArrayList<>();
-            for (Model_HomerServer server : servers) servers_short.add(server.get_public_info());
-
             // Vrácení seznamu
-            return GlobalResult.result_ok(Json.toJson(servers_short));
+            return GlobalResult.result_ok(Json.toJson(servers));
 
         } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());
@@ -357,7 +352,7 @@ public class Controller_ExternalServer extends Controller {
 
 ///###################################################################################################################*/
 
-    @ApiOperation(value = "Create Compilation_Server",
+    @ApiOperation(value = "create Compilation_Server",
             tags = {"Admin-External-Server"},
             notes = "Create new Gate for Compilation_Server",
             produces = "application/json",

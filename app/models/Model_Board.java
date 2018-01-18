@@ -289,7 +289,7 @@ public class Model_Board extends Model {
         }
     }
 
-    @JsonProperty  @Transient  public Swagger_HomerServer_public_Detail server() { try { if (connected_server_id == null) return null; return Model_HomerServer.get_byId(connected_server_id).get_public_info(); } catch (Exception e) {terminal_logger.internalServerError(e); return null;}}
+    @JsonProperty  @Transient  public Model_HomerServer server() { try { if (connected_server_id == null) return null; return Model_HomerServer.get_byId(connected_server_id); } catch (Exception e) {terminal_logger.internalServerError(e); return null;}}
     @JsonProperty  @Transient @ApiModelProperty(value = "Can be null, if device is not in Instance") public Swagger_Instance_Short_Detail actual_instance() {
 
         Model_HomerInstance instance = get_instance();
@@ -780,10 +780,6 @@ public class Model_Board extends Model {
     @JsonIgnore @Transient public static void device_Disconnected(WS_Message_Hardware_disconnected help) {
         try {
 
-            terminal_logger.debug("master_device_Disconnected:: Updating device status " +  help.hardware_id + " on offline ");
-
-            // CHACHE OFFLINE
-            cache_status.put(help.hardware_id, Boolean.FALSE);
 
             Model_Board device =  Model_Board.get_byId(help.hardware_id);
 
@@ -791,6 +787,12 @@ public class Model_Board extends Model {
                 terminal_logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.hardware_id);
                 return;
             }
+
+            terminal_logger.debug("master_device_Disconnected:: Updating device status " +  help.hardware_id + " on offline ");
+
+            // CHACHE OFFLINE
+            cache_status.put(help.hardware_id, Boolean.FALSE);
+
 
             // Uprava Cache Paměti
             device.cache_value_latest_online = new Date().getTime();

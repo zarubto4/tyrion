@@ -57,6 +57,7 @@ public class WS_HomerServer extends WS_Interface_type {
     public boolean is_online() {
         try {
 
+            System.out.println("WS_HomerServer_Online_TEST");
             terminal_logger.trace("Homer Server is_online: Test online state Server ID {} ", identifikator);
 
             ObjectNode status = write_with_confirmation( new WS_Message_Homer_ping().make_request(), 1000 * 10, 0, 0);

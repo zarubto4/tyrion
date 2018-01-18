@@ -141,7 +141,7 @@ public class Controller_WebSocket extends Controller {
 
                 WS_Message_Homer_ping result = homer_server.ping();
                 if(!result.status.equals("success")){
-                    terminal_logger.warn("homer_cloud_server_connection:: Ping Failed - Tyrion remove previous connection");
+                    terminal_logger.error("homer_cloud_server_connection:: Ping Failed - Tyrion remove previous connection");
                     if(homer_servers.containsKey(homer_server.id.toString())){
                         homer_servers.get(homer_server.id.toString()).onClose();
                     }
