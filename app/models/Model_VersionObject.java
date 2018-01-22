@@ -532,7 +532,7 @@ public class Model_VersionObject extends Model {
 
             } catch (StorageException e) {
 
-                terminal_logger.internalServerError(new Exception("Azure Save StorageException" + compilation.build_url, e));
+                terminal_logger.internalServerError(new Exception("StorageException" + compilation.build_url, e));
                 c_compilation.status = Enum_Compile_status.compilation_server_error;
                 c_compilation.update();
 
