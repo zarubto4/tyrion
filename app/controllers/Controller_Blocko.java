@@ -698,6 +698,42 @@ public class Controller_Blocko extends Controller{
 
 // INSTANCE ############################################################################################################
 
+    public Result instance_create() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Instance_New> form = Form.form(Swagger_Instance_New.class).bindFromRequest();
+            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            Swagger_Instance_New help = form.get();
+
+            // Kontrola objektu
+            Model_HomerInstance instance = new Model_HomerInstance();
+            if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
+
+            if (!homer_instance.getB_program().update_permission() ) return GlobalResult.result_forbidden();
+
+            if (help.name != null && !help.name.equals("")) homer_instance.name = help.name;
+            if (help.description != null && !help.description.equals("")) homer_instance.description = help.description;
+
+            homer_instance.update();
+
+            return GlobalResult.result_ok(Json.toJson(homer_instance));
+
+        } catch (Exception e) {
+            return ServerLogger.result_internalServerError(e, request());
+        }
+    }
+
+    public Result instance_get() {
+        try {
+
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return ServerLogger.result_internalServerError(e, request());
+        }
+    }
+
     @ApiOperation(value = "edit Instance",
             tags = {"Instance"},
             notes = "",
@@ -726,7 +762,7 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result instance_edit(@ApiParam(value = "instance_id String path", required = true) String instance_id) {
+    public Result instance_update(@ApiParam(value = "instance_id String path", required = true) String instance_id) {
         try {
 
             // Zpracování Json
@@ -746,6 +782,56 @@ public class Controller_Blocko extends Controller{
             homer_instance.update();
 
             return GlobalResult.result_ok(Json.toJson(homer_instance));
+
+        } catch (Exception e) {
+            return ServerLogger.result_internalServerError(e, request());
+        }
+    }
+
+    public Result instance_delete() {
+        try {
+
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return ServerLogger.result_internalServerError(e, request());
+        }
+    }
+
+    public Result instanceSnapshot_create() {
+        try {
+
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return ServerLogger.result_internalServerError(e, request());
+        }
+    }
+
+    public Result instanceSnapshot_deploy() {
+        try {
+
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return ServerLogger.result_internalServerError(e, request());
+        }
+    }
+
+    public Result instanceSnapshot_shutdown() {
+        try {
+
+            return GlobalResult.result_ok();
+
+        } catch (Exception e) {
+            return ServerLogger.result_internalServerError(e, request());
+        }
+    }
+
+    public Result instanceSnapshot_delete() {
+        try {
+
+            return GlobalResult.result_ok();
 
         } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());

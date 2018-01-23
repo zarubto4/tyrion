@@ -43,15 +43,13 @@ public class Model_HomerInstance extends Model {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                   @Id               public UUID id;
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerServer cloud_homer_server_default;
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerServer cloud_homer_server_backup;
-                                                                    public String name;
-    @Column(columnDefinition = "TEXT") public String description;
+                                                    public String name;
+                @Column(columnDefinition = "TEXT")  public String description;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerServer homer_server_default;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerServer homer_server_backup;
+
 
     public String project_id; // Shortcuts Reference
-
-    // todo odstranit
-    // @JsonIgnore @OneToOne(mappedBy="instance",cascade=CascadeType.ALL, fetch = FetchType.LAZY) public Model_BProgram b_program;                   //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
 
     @OneToOne(mappedBy="actual_running_instance", cascade=CascadeType.ALL)  public String actual_instance_id;  // Aktuálně běžící instnace na Serveru (Pokud není null má běžet- má běžet na serveru)
     @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL)

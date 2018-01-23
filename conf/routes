@@ -219,7 +219,7 @@ GET       /instance/project/:project_id                                 @control
 GET       /instance/get/:instance_id                                    @controllers.Controller_Blocko.get_b_program_instance(instance_id)
 PUT       /instance/filter/:page_number                                 @controllers.Controller_Blocko.get_b_program_instance_by_filter(page_number:Int)
 PUT       /instance/grid_app                                            @controllers.Controller_Blocko.instance_change_settings_grid_App()
-PUT       /instance/edit/:instance_id                                   @controllers.Controller_Blocko.instance_edit(instance_id)
+PUT       /instance/edit/:instance_id                                   @controllers.Controller_Blocko.instance_update(instance_id)
 
 #Instance/Record
 GET       /instance_record/get/:instance_record_id                      @controllers.Controller_Blocko.get_b_program_instance_record(instance_record_id)
