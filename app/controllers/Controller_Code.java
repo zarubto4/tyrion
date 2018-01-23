@@ -946,10 +946,10 @@ public class Controller_Code extends Controller{
             if (version_object.get_c_program() == null) return GlobalResult.result_badRequest("Version_Object its not version of C_Program");
 
             // Zkontroluji oprávnění
-            if (!version_object.get_c_program() .read_permission())  return GlobalResult.result_forbidden();
+            if (!version_object.get_c_program().read_permission())  return GlobalResult.result_forbidden();
 
             // Vracím Objekt
-            return GlobalResult.result_ok(Json.toJson(version_object.get_c_program() .program_version(version_object)));
+            return GlobalResult.result_ok(Json.toJson(version_object.get_c_program().program_version(version_object)));
 
         } catch (Exception e) {
             return ServerLogger.result_internalServerError(e, request());

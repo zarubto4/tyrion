@@ -51,11 +51,12 @@ public class Controller_Admin extends Controller {
     @Inject
     Application application;
 
-    @ApiOperation(value = "get Report_Admin_Dashboard",
+    @ApiOperation(
+            value = "get Report_Admin_Dashboard",
             tags = {"Admin-Report"},
-            notes = "",
+            notes = "Special API only For PRIVATE use",
             produces = "application/json",
-            consumes = "text/html",
+            consumes = "application/json",
             protocols = "https",
             code = 200
     )

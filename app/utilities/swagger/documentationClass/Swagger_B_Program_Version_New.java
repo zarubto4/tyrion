@@ -28,6 +28,9 @@ public class Swagger_B_Program_Version_New {
     @Constraints.MaxLength(value = 4550000, message = "The program must not have more than 4550000 characters.")
     public String program;
 
+    @ApiModelProperty(value = "Board groups")
+    public List<GroupPair> group_pairs = new ArrayList<>();
+
     @Valid
     @ApiModelProperty(value = "Connected groups of all hardware - User can create Blocko program without hardware.", required = false)
     public List<Hardware_group> hardware_group  = new ArrayList<>();
@@ -50,6 +53,13 @@ public class Swagger_B_Program_Version_New {
         @Valid @ApiModelProperty(required = false)
         public List<Swagger_Board_CProgram_Pair> device_board_pairs = new ArrayList<>();
 
+    }
+
+    @ApiModel(value = "GroupPair")
+    public static class GroupPair {
+        public GroupPair(){};
+        public String group_id;
+        public String version_id;
     }
 
     public static class M_Project_SnapShot {

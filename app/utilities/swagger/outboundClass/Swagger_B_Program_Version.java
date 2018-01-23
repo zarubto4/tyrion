@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import models.Model_VersionObject;
 import models.Model_BProgramHwGroup;
 import models.Model_MProjectProgramSnapShot;
+import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,9 @@ public class Swagger_B_Program_Version {
 
     @ApiModelProperty(required = true, readOnly = true)
     public Model_VersionObject version_object;
+
+    @ApiModelProperty(required = true, readOnly = true)
+    public List<Swagger_B_Program_Version_New.GroupPair> group_pairs = new ArrayList<>();
 
     @ApiModelProperty(required = true, readOnly = true)
     public List<Model_BProgramHwGroup> hardware_group = new ArrayList<>();

@@ -13,6 +13,7 @@ import utilities.cache.helps_objects.TyrionCachedList;
 import utilities.enums.*;
 import utilities.logger.Class_Logger;
 import utilities.scheduler.CustomScheduler;
+import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import utilities.swagger.outboundClass.Swagger_ActualizationProcedure_Short_Detail;
 import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_device_set_snap;
 import web_socket.message_objects.homer_instance_with_tyrion.WS_Message_Instance_status;
@@ -149,11 +150,20 @@ public class Model_HomerInstanceRecord extends Model {
 
         List<String> board_ids = new ArrayList<>();
 
+        Model_VersionObject version = get_b_program_version();
+
         // Contains All Hardware for Update
-        for (Model_BProgramHwGroup group : get_b_program_version().b_program_hw_groups) {
+        for (Model_BProgramHwGroup group : version.b_program_hw_groups) {
             board_ids.add(group.main_board_pair.board.id);
             for (Model_BPair model_bPair : group.device_board_pairs) {
                 board_ids.add(model_bPair.board.id);
+            }
+        }
+
+        // Add all boards from BoardGroups in blocko
+        for (Swagger_B_Program_Version_New.GroupPair groupPair : version.get_group_pairs()) {
+            for (Model_BoardGroup boardGroup : Model_BoardGroup.find.where().idEq(groupPair.group_id).findList()) {
+                board_ids.addAll(boardGroup.get_hardware_id_list());
             }
         }
 

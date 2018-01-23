@@ -3,7 +3,9 @@ package models;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.storage.StorageException;
 import controllers.Controller_Security;
@@ -24,6 +26,7 @@ import utilities.enums.Enum_Approval_state;
 import utilities.enums.Enum_Compile_status;
 import utilities.logger.Class_Logger;
 import utilities.response.response_objects.*;
+import utilities.swagger.documentationClass.Swagger_B_Program_Version_New;
 import utilities.swagger.documentationClass.Swagger_C_Program_Version_Update;
 import utilities.swagger.documentationClass.Swagger_Library_Record;
 import utilities.swagger.documentationClass.Swagger_Library_File_Load;
@@ -91,7 +94,9 @@ public class Model_VersionObject extends Model {
 
     @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)   public Model_BProgram b_program;
 
-    // TODO smazat  @JsonIgnore  @OneToMany(mappedBy="c_program_version", cascade=CascadeType.ALL)   public List<Model_BPair>   b_pairs_c_program = new ArrayList<>(); // Určeno pro aktualizaci
+                                                                        @JsonIgnore  public String additional_configuration;
+
+    @JsonIgnore  @OneToMany(mappedBy="c_program_version", cascade=CascadeType.ALL)   public List<Model_BPair>   b_pairs_c_program = new ArrayList<>(); // Určeno pro aktualizaci
 
     // TODO smazat  @JsonIgnore  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)     public List<Model_BProgramHwGroup> b_program_hw_groups = new ArrayList<>();
 
@@ -257,6 +262,19 @@ public class Model_VersionObject extends Model {
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient  public List<Swagger_B_Program_Version_New.GroupPair> get_group_pairs() {
+
+        if (this.additional_configuration != null) {
+            try {
+                return new ObjectMapper().<AdditionalConfiguration>readValue(this.additional_configuration, new TypeReference<AdditionalConfiguration>(){}).group_pairs;
+            } catch (Exception e) {
+                terminal_logger.error("get_group_pairs - error parsing config", e);
+            }
+        }
+
+        return new ArrayList<>();
+    }
 
     @JsonIgnore @Transient  public void compile_program_thread(String library_compilation_version) {
 
@@ -514,7 +532,7 @@ public class Model_VersionObject extends Model {
 
             } catch (StorageException e) {
 
-                terminal_logger.internalServerError(new Exception("Azure Save StorageException" + compilation.build_url, e));
+                terminal_logger.internalServerError(new Exception("StorageException" + compilation.build_url, e));
                 c_compilation.status = Enum_Compile_status.compilation_server_error;
                 c_compilation.update();
 
@@ -565,6 +583,11 @@ public class Model_VersionObject extends Model {
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+    public static class AdditionalConfiguration {
+        public AdditionalConfiguration() {};
+        public List<Swagger_B_Program_Version_New.GroupPair> group_pairs = new ArrayList<>();
+    }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 

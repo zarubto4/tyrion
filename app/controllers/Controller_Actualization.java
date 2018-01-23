@@ -17,6 +17,7 @@ import utilities.logger.Class_Logger;
 import utilities.logger.ServerLogger;
 import utilities.login_entities.Secured_API;
 import utilities.response.GlobalResult;
+import utilities.response.response_objects.Result_InternalServerError;
 import utilities.response.response_objects.Result_NotFound;
 import utilities.response.response_objects.Result_Forbidden;
 import utilities.response.response_objects.Result_Unauthorized;
@@ -53,7 +54,7 @@ public class Controller_Actualization extends Controller {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     public Result get_Actualization_Procedure(@ApiParam(required = true) String actualization_procedure_id) {
         try {
@@ -96,7 +97,7 @@ public class Controller_Actualization extends Controller {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result get_Actualization_Procedures_by_filter(int page_number) {
@@ -148,7 +149,7 @@ public class Controller_Actualization extends Controller {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     public Result canceled_procedure(@ApiParam(required = true) String actualization_procedure_id) {
         try {
@@ -191,7 +192,7 @@ public class Controller_Actualization extends Controller {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result make_actualization_procedure() {
@@ -319,7 +320,7 @@ public class Controller_Actualization extends Controller {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     public Result get_Actualization_CProgramUpdatePlan(@ApiParam(required = true) String plan_id) {
         try {
@@ -362,7 +363,7 @@ public class Controller_Actualization extends Controller {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result get_Actualization_CProgramUpdatePlan_by_filter(int page_number) {

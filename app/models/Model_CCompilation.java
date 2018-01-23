@@ -3,7 +3,6 @@ package models;
 import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.azure.documentdb.DocumentClientException;
 import com.microsoft.azure.storage.blob.CloudAppendBlob;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
@@ -12,9 +11,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
 import utilities.cache.helps_objects.TyrionCachedList;
-import utilities.document_db.DocumentDB;
-import utilities.document_db.document_objects.DM_CompilationServer_Connect;
-import utilities.document_db.document_objects.DM_CompilationServer_Disconnect;
 import utilities.enums.Enum_Compile_status;
 import utilities.enums.Enum_Notification_importance;
 import utilities.enums.Enum_Notification_level;
@@ -41,9 +37,10 @@ public class Model_CCompilation extends Model {
 
     @JsonIgnore public Date date_of_create;
 
-    @JsonIgnore @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY) @JoinColumn(name="c_compilation_version") public Model_VersionObject version_object;
+    @JsonIgnore @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name="c_compilation_version") public Model_VersionObject version_object;
 
-                                                                @JsonIgnore  public Enum_Compile_status status;
+                                 @JsonIgnore  public Enum_Compile_status status;
 
     @ApiModelProperty(required = true, value = virtual_input_output_docu) @Column(columnDefinition = "TEXT")                public String virtual_input_output;
                                                             @JsonIgnore   @Column(columnDefinition = "TEXT")                public String c_comp_build_url;
@@ -55,26 +52,24 @@ public class Model_CCompilation extends Model {
     @JsonIgnore  public String firmware_build_id;
     @JsonIgnore  public Date firmware_build_datetime;
 
-
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
     @JsonIgnore @Transient @TyrionCachedList public String cache_value_file_id;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public Model_FileRecord compilation(){
+    public Model_FileRecord compilation() {
         return Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "firmware.bin").findUnique();
     }
 
-
     @Transient @JsonProperty
-    public String file_path(){
+    public String file_path() {
         try {
 
-            if(cache_value_file_id != null ) {
+            if (cache_value_file_id != null ) {
                 String link = Model_FileRecord.cache_public_link.get(cache_value_file_id + "_" + Model_CCompilation.class.getSimpleName());
                 if (link != null) return link;
             }
@@ -101,26 +96,22 @@ public class Model_CCompilation extends Model {
             policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
             policy.setSharedAccessExpiryTime(cal.getTime());
 
-
             String sas = blob.generateSharedAccessSignature(policy, null);
-
 
             String total_link = blob.getUri().toString() + "?" + sas;
 
             terminal_logger.debug("file_path:: Total Link:: " + total_link);
-
 
             Model_FileRecord.cache_public_link.put(cache_value_file_id + "_" + Model_BootLoader.class.getSimpleName(), total_link);
 
             // Přesměruji na link
             return total_link;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
             return null;
         }
     }
-
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -146,19 +137,17 @@ public class Model_CCompilation extends Model {
         this.version_object.cache_refresh();
     }
 
-
     @JsonIgnore @Transient @Override
     public void delete() {
         terminal_logger.internalServerError(new Exception("This object is not legitimate to remove."));
     }
-
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public void notification_compilation_start(){
+    public void notification_compilation_start() {
         try {
 
             new Model_Notification()
@@ -168,13 +157,13 @@ public class Model_CCompilation extends Model {
                     .setObject(this)
                     .send(Controller_Security.get_person());
 
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
         }
     }
 
     @JsonIgnore @Transient
-    public void notification_compilation_success(){
+    public void notification_compilation_success() {
         try {
 
             new Model_Notification()
@@ -185,14 +174,13 @@ public class Model_CCompilation extends Model {
                     .setText(new Notification_Text().setText("was successful."))
                     .send(Controller_Security.get_person());
 
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
         }
-
     }
 
     @JsonIgnore @Transient
-    public void notification_compilation_unsuccessful_warn(String reason){
+    public void notification_compilation_unsuccessful_warn(String reason) {
         try {
             new Model_Notification()
                     .setImportance(Enum_Notification_importance.normal)
@@ -202,13 +190,13 @@ public class Model_CCompilation extends Model {
                     .setText(new Notification_Text().setText("was unsuccessful, for reason:"))
                     .setText(new Notification_Text().setText(reason).setBoldText())
                     .send(Controller_Security.get_person());
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
         }
     }
 
     @JsonIgnore @Transient
-    public void notification_compilation_unsuccessful_error(String result){
+    public void notification_compilation_unsuccessful_error(String result) {
         try {
             new Model_Notification()
                     .setImportance(Enum_Notification_importance.normal)
@@ -218,13 +206,13 @@ public class Model_CCompilation extends Model {
                     .setText(new Notification_Text().setText("with critical Error:"))
                     .setText(new Notification_Text().setText(result).setBoldText())
                     .send(Controller_Security.get_person());
-        }catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
         }
     }
 
     @JsonIgnore @Transient
-    public void notification_new_actualization_request_on_version(){
+    public void notification_new_actualization_request_on_version() {
 
         new Thread(() -> {
             try {
@@ -242,12 +230,10 @@ public class Model_CCompilation extends Model {
         }).start();
     }
 
-
-
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public String get_path(){
+    public String get_path() {
         return version_object.c_program.get_path() + version_object.get_path();
     }
 
@@ -264,4 +250,3 @@ public class Model_CCompilation extends Model {
     @JsonIgnore @Transient public final static String virtual_input_output_docu = "dsafsdfsdf"; // TODO https://youtrack.byzance.cz/youtrack/issue/TYRION-304
 
 }
-

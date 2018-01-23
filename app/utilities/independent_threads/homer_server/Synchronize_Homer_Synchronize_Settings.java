@@ -36,8 +36,6 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
 
     @Override
     public void run() {
-
-
         try{
 
             terminal_logger.trace("Spouštím Sycnhronizační proceduru Synchronize_Homer_Synchronize_Settings");
@@ -47,11 +45,12 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
             final Form<WS_Message_Homer_Get_homer_server_configuration> form = Form.form(WS_Message_Homer_Get_homer_server_configuration.class).bind(ask_for_configuration);
             if(form.hasErrors()){
 
-                terminal_logger.trace("run:: invalid incoming message {}", ask_for_configuration);
-                terminal_logger.trace("run:: response", form.errorsAsJson(Lang.forCode("en-US")).toString());
+                terminal_logger.error("run:: invalid incoming message {}", ask_for_configuration);
+                terminal_logger.error("run:: response", form.errorsAsJson(Lang.forCode("en-US")).toString());
 
                 homer_server.write_without_confirmation( ask_for_configuration.has("message_id") ? ask_for_configuration.get("message_id").asText() : UUID.randomUUID().toString(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Get_homer_server_configuration.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
 
+                terminal_logger.error("Close Connection");
                 homer_server.onClose();
 
                 return;
@@ -59,59 +58,40 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
 
             WS_Message_Homer_Get_homer_server_configuration help = form.get();
 
-            /** TODO - Doplnit až bude opět Homer Config hotový
-            if(help.get_Date().compareTo(Model_HomerServer.get_byId(homer_server.identifikator).time_stamp_configuration) == 0){
-                // Nedochází k žádným změnám
-                terminal_logger.trace("synchronize_configuration: configuration without changes");
+            // Homer server má novější novou konfiguraci
+            terminal_logger.debug("synchronize_configuration: Homer server {} has new configuration", homer_server.identifikator);
 
-            }else if(help.get_Date().compareTo( Model_HomerServer.get_byId(homer_server.identifikator).time_stamp_configuration) > 0){
-                // Homer server má novější novou konfiguraci
-                terminal_logger.debug("synchronize_configuration: Homer server {} has new configuration", homer_server.identifikator);
+            Model_HomerServer homer = Model_HomerServer.get_byId(homer_server.identifikator);
 
-                Model_HomerServer homer = Model_HomerServer.get_byId(homer_server.identifikator);
-
-                //homer.personal_server_name = help.server_name;
-                homer.mqtt_port = help.mqtt_port;
-               // homer.mqtt_password = help.mqtt_password;
-               // homer.mqtt_username = help.mqtt_user;
-                homer.grid_port = help.grid_port;
-
-                homer.web_view_port = help.becki_port;
-                //homer.server_remote_port = help.web_port;
-
-                //homer.mqtt_username = help.mqtt_user;
-                homer.grid_port = help.grid_port;
-
+            //homer.personal_server_name = help.server_name;
+            if(homer.mqtt_port != help.mqtt_port || homer.grid_port != help.grid_port || homer.web_view_port != help.web_view_port ||  homer.server_remote_port != help.hw_logger_port ||  homer.rest_api_port != help.rest_api_port) {
+                homer.mqtt_port = help.mqtt_port;   // 1881
+                homer.grid_port = help.grid_port;   // 8503
+                homer.web_view_port = help.web_view_port;  //8501
+                homer.server_remote_port = help.hw_logger_port; // 8505
+                homer.rest_api_port = help.rest_api_port; // 3000
                 homer.update();
-
-            }else {
-                // Tyrion server má novější konfiguraci
-
-                terminal_logger.trace("synchronize_configuration::  " + homer_server.identifikator + " Sending new Configuration to Homer Server");
-                JsonNode result = homer_server.write_with_confirmation( new WS_Message_Homer_Get_configuration().make_request( Model_HomerServer.get_byId(homer_server.identifikator)) , 1000 * 5, 0, 2);
-
-                final Form<WS_Message_Homer_Get_configuration> form_set = Form.form(WS_Message_Homer_Get_configuration.class).bind(result);
-                if(form_set.hasErrors()) throw new Exception("WS_Message_Homer_Get_configuration: Incoming Json for Yoda has not right Form: " + form_set.errorsAsJson(Lang.forCode("en-US")).toString());
-
-                WS_Message_Homer_Get_configuration help_conf = form_set.get();
-
-                if(help_conf.status.equals("success")){
-                    terminal_logger.trace("synchronize_configuration:: New Config state:: success! ");
-                }else {
-                    terminal_logger.internalServerError(new Exception("New Config state: unsuccessful!"));
-                }
             }
-             */
+
+            if(homer.server_version == null || homer.server_version.equals(help.server_version)) {
+                homer.server_version = help.server_version;
+                homer.update();
+            }
+
+            if(homer.server_url == null ||  homer.server_url.equals(help.server_url)) {
+                homer.server_url = help.server_url;
+                homer.update();
+            }
 
             terminal_logger.trace(" " + homer_server.identifikator + "synchronize_configuration: done!");
 
         }catch(ClosedChannelException e){
             System.out.println("synchronize_configuration: ClosedChannelException");
-            terminal_logger.warn("synchronize_configuration: ClosedChannelException");
+            terminal_logger.error("synchronize_configuration: ClosedChannelException");
             homer_server.onClose();
         }catch (TimeoutException e){
             System.out.println("synchronize_configuration: TimeoutException");
-            terminal_logger.warn("synchronize_configuration: TimeoutException");
+            terminal_logger.error("synchronize_configuration: TimeoutException");
             homer_server.onClose();
         }catch (Exception e){
             System.out.println("synchronize_configuration: TimeoutException");
