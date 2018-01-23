@@ -42,30 +42,31 @@ public class Model_HomerInstance extends Model {
     
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                  @Id               public String id;
-                    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerServer cloud_homer_server;
+                                  @Id               public UUID id;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerServer cloud_homer_server_default;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_HomerServer cloud_homer_server_backup;
                                                                     public String name;
-                                 @Column(columnDefinition = "TEXT") public String description;
+    @Column(columnDefinition = "TEXT") public String description;
 
-                                                       @JsonIgnore  public String project_id; // Předpřipravené pro další implementaci
+    public String project_id; // Shortcuts Reference
 
     // todo odstranit
-  // @JsonIgnore @OneToOne(mappedBy="instance",cascade=CascadeType.ALL, fetch = FetchType.LAZY) public Model_BProgram b_program;                   //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
+    // @JsonIgnore @OneToOne(mappedBy="instance",cascade=CascadeType.ALL, fetch = FetchType.LAZY) public Model_BProgram b_program;                   //LAZY!! - přes Getter!! // BLocko program ke kterému se Homer Instance váže
 
-                @OneToOne(mappedBy="actual_running_instance", cascade=CascadeType.ALL)         public String actual_instance_id;  // Aktuálně běžící instnace na Serveru (Pokud není null má běžet- má běžet na serveru)
+    @OneToOne(mappedBy="actual_running_instance", cascade=CascadeType.ALL)  public String actual_instance_id;  // Aktuálně běžící instnace na Serveru (Pokud není null má běžet- má běžet na serveru)
+    @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL)
+    @OrderBy("planed_when DESC") public List<Model_HomerInstanceRecord> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
 
-                @OneToMany(mappedBy="main_instance_history", cascade=CascadeType.ALL) @OrderBy("planed_when DESC") public List<Model_HomerInstanceRecord> instance_history = new ArrayList<>(); // Setříděné pořadí různě nasazovaných verzí Blocko programu
-
-               // TODO odstranit public Enum_Homer_instance_type instance_type;
-
-     @JsonIgnore public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
+    // TODO odstranit public Enum_Homer_instance_type instance_type;
+    @JsonIgnore public boolean removed_by_user; // Defaultně false - když true - tak se to nemá uživateli vracet!
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @TyrionCachedList private String cache_bprogram_id;
     @JsonIgnore @Transient @TyrionCachedList private String cache_actual_instance_id;
     @JsonIgnore @Transient @TyrionCachedList private String cache_server_name;
-    @JsonIgnore @Transient @TyrionCachedList private String cache_server_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_server_main_id;
+    @JsonIgnore @Transient @TyrionCachedList private String cache_server_backup_id;
     @JsonIgnore @Transient @TyrionCachedList private String cache_project_id;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -104,6 +105,7 @@ public class Model_HomerInstance extends Model {
             return null;
         }
     }
+
     @JsonProperty @ApiModelProperty(required = true)
     public String server_name()              {
 
