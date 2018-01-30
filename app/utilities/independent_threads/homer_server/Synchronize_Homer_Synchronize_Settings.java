@@ -64,11 +64,27 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
             Model_HomerServer homer = Model_HomerServer.get_byId(homer_server.identifikator);
 
             //homer.personal_server_name = help.server_name;
-            if(homer.mqtt_port != help.mqtt_port || homer.grid_port != help.grid_port || homer.web_view_port != help.web_view_port ||  homer.server_remote_port != help.hw_logger_port ||  homer.rest_api_port != help.rest_api_port) {
+            if(homer.mqtt_port == null || homer.mqtt_port != help.mqtt_port) {
                 homer.mqtt_port = help.mqtt_port;   // 1881
+                homer.update();
+            }
+
+            if(homer.grid_port == null || homer.grid_port != help.grid_port) {
                 homer.grid_port = help.grid_port;   // 8503
+                homer.update();
+            }
+
+            if(homer.web_view_port == null || homer.web_view_port != help.web_view_port) {
                 homer.web_view_port = help.web_view_port;  //8501
+                homer.update();
+            }
+
+            if(homer.server_remote_port == null || homer.server_remote_port != help.hw_logger_port) {
                 homer.server_remote_port = help.hw_logger_port; // 8505
+                homer.update();
+            }
+
+            if(homer.rest_api_port == null || homer.rest_api_port != help.rest_api_port) {
                 homer.rest_api_port = help.rest_api_port; // 3000
                 homer.update();
             }
