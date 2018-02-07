@@ -1,15 +1,16 @@
 package utilities.scheduler.jobs;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.inject.Inject;
+import com.typesafe.config.Config;
+import models.Model_Blob;
 import models.Model_BootLoader;
-import models.Model_FileRecord;
 import models.Model_TypeOfBoard;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import play.Configuration;
-import play.api.Play;
 import play.data.Form;
+import play.data.FormFactory;
 import play.i18n.Lang;
 import play.libs.F;
 import play.libs.Json;
@@ -17,59 +18,50 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 import utilities.Server;
-import utilities.enums.Enum_Tyrion_Server_mode;
-import utilities.logger.Class_Logger;
-import utilities.slack.Slack;
-import utilities.swagger.documentationClass.Swagger_CompilationLibrary;
-import utilities.swagger.documentationClass.Swagger_GitHubReleases;
-import utilities.swagger.documentationClass.Swagger_GitHubReleases_Asset;
-import utilities.swagger.documentationClass.Swagger_GitHubReleases_List;
+import utilities.enums.ServerMode;
+import utilities.logger.Logger;
+import utilities.scheduler.Scheduled;
+import utilities.swagger.input.Swagger_CompilationLibrary;
+import utilities.swagger.input.Swagger_GitHubReleases;
+import utilities.swagger.input.Swagger_GitHubReleases_Asset;
+import utilities.swagger.input.Swagger_GitHubReleases_List;
 
 import java.net.ConnectException;
 import java.net.URLDecoder;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
- * Updates & Synchronize Compilation versions from GitHub HW-Libs
- *
- * Tato třída slouží k pravidelnému dotazování GitHubu, a to bez jeho přičinění (nepodporuje WebHook).
- * Vesměs v běžném režimu je to jen jeden request, kde se porovná délka odpovědi a pokud je stejná jako ta předchozí,
- * vlákno ví, že se nic nezměnilo a vrátí se do stavu spánku. Tato synchronizace je záměrně napsaná jako automatická
- * (bez přičinění vývojáře, nebo administrátora, protože pouze synchronizuje obsah "názvy" knihoven, kterými lze buildit
- * kod v Code Editoru na Becki (zasílat komandy na Compilační server). To co se načte v této třídě je pak pomocí Cache
- * manažeru vloženo do Model_TypeofBoard - protože ten pak vrací Becki seznam dostupných kompilačních knihoven.
- *
- * Tyrion neaktualizuje!!! Obsah knihoven na kompilačních server, ty si to dělají jen a pouze sami! Můžou mít třeba milion
- * samostatných knihoven, ale dokud jim Tyrion nedá pokyn pomocí kterého mají příchozí kod kompilovat, je to jen zbytečně uložený soubor.
- * Což je samo o sobě ochranou celého flow.
+ * This job synchronizes compilation libraries from GitHub releases.
  */
+@Scheduled("30 0/1 * * * ?")
 public class Job_CheckCompilationLibraries implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Job_CheckCompilationLibraries.class);
+    private static final Logger logger = new Logger(Job_CheckCompilationLibraries.class);
 
 //**********************************************************************************************************************
 
+    private WSClient ws;
+    private Config config;
+    private FormFactory formFactory;
 
-    public Job_CheckCompilationLibraries(){}
+    @Inject
+    public Job_CheckCompilationLibraries(WSClient ws, Config config, FormFactory formFactory) {
+        this.ws = ws;
+        this.config = config;
+        this.formFactory = formFactory;
+    }
 
-    /*
-        Zde ukládáme proměné, které se používají v dalších iteracích provádění Jobu
-        Například se zde UDělá záznam "otisk" přišlé zprávy z Githubu - ta se porovná - a pokud jsou stejné - Job ví,
-        že zpráva je tootžná a nemá smysl jí dále louskat a kontrolovat obsah a konfiguraci serveru.
-    */
-
-    // Metoda volána z implements Job  (zásobníku Jobs)
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        terminal_logger.info("execute: Executing Job_CheckCompilationLibraries");
+        logger.info("execute: Executing Job_CheckCompilationLibraries");
 
-        if(!check_version_thread.isAlive()) check_version_thread.start();
+        if (!check_version_thread.isAlive()) check_version_thread.start();
     }
 
     private Thread check_version_thread = new Thread() {
@@ -78,9 +70,7 @@ public class Job_CheckCompilationLibraries implements Job {
         public void run() {
             try {
 
-                WSClient ws = Play.current().injector().instanceOf(WSClient.class);
-
-                terminal_logger.trace("check_version_thread: concurrent thread started on {}", new Date());
+                logger.trace("check_version_thread: concurrent thread started on {}", new Date());
 
                 /**
                  * Stáhnu si seznam všech releasů z GitHubu. Podle dohody je zde mix releasů.
@@ -95,14 +85,15 @@ public class Job_CheckCompilationLibraries implements Job {
                  * doplní si údaje a dále distribuje.
                  */
                 WSResponse ws_response_get_all_releases = ws.url("https://api.github.com/repos/ByzanceIoT/hw-libs/releases")
-                        .setHeader("Authorization", "token " + Configuration.root().getString("GitHub.apiKey"))
-                        .setHeader("Accept", "application/json")
+                        .addHeader("Authorization", "token " + config.getString("GitHub.apiKey"))
+                        .addHeader("Accept", "application/json")
                         .get()
-                        .get(10000);
+                        .toCompletableFuture()
+                        .get();
 
                 if (ws_response_get_all_releases.getStatus() != 200) {
-                    terminal_logger.error("Permission Error in Job_CheckCompilationLibraries. Please Check it");
-                    terminal_logger.error("Error Message from Github: {}", ws_response_get_all_releases.getBody());
+                    logger.error("Permission Error in Job_CheckCompilationLibraries. Please Check it");
+                    logger.error("Error Message from Github: {}", ws_response_get_all_releases.getBody());
                     return;
                 }
 
@@ -110,7 +101,7 @@ public class Job_CheckCompilationLibraries implements Job {
                 ObjectNode request_list = Json.newObject();
                 request_list.set("list", ws_response_get_all_releases.asJson());
 
-                final Form<Swagger_GitHubReleases_List> form = Form.form(Swagger_GitHubReleases_List.class).bind(request_list);
+                final Form<Swagger_GitHubReleases_List> form = formFactory.form(Swagger_GitHubReleases_List.class).bind(request_list);
                 if (form.hasErrors()) {
                     throw new Exception("check_version_thread: Incoming Json from GitHub has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
                 }
@@ -118,13 +109,13 @@ public class Job_CheckCompilationLibraries implements Job {
                 // Seznam Release z GitHubu v upravené podobě
                 List<Swagger_GitHubReleases> releases = form.get().list;
 
-                List<Model_TypeOfBoard> typeOfBoards_from_DB_not_cached = Model_TypeOfBoard.find.where().eq("removed_by_user", false).select("id").findList();
+                List<Model_TypeOfBoard> typeOfBoards_from_DB_not_cached = Model_TypeOfBoard.find.query().where().eq("deleted", false).select("id").findList();
                 // Do každého typu desky - který má Tyrion v DB doplní podporované knihovny
 
                 //System.out.println("Počet procházených typeOfBoard dohromady je:: " + typeOfBoards.size());
                 for (Model_TypeOfBoard typeOfBoard_from_DB_not_cached : typeOfBoards_from_DB_not_cached) {
 
-                    Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(typeOfBoard_from_DB_not_cached.id);
+                    Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.getById(typeOfBoard_from_DB_not_cached.id);
 
                     // Pokud není pole, vytvořím ho
                     if (typeOfBoard.cache_library_list == null) {
@@ -137,6 +128,7 @@ public class Job_CheckCompilationLibraries implements Job {
                     // List který budu doplnovat
                     List<Swagger_CompilationLibrary> library_list_for_add = new ArrayList<>();
 
+
                     // Pokud knihovnu
                     synchro_libraries:
                     for (Swagger_GitHubReleases release : releases) {
@@ -148,17 +140,6 @@ public class Job_CheckCompilationLibraries implements Job {
                             }
                         }
 
-                        if (release.prerelease || release.draft) {
-                            terminal_logger.trace("check_version_thread:: prerelease == true");
-                            continue;
-                        }
-
-                        if (release.assets.size() == 0) {
-                            terminal_logger.error("check_version_thread:: not any assets for {} - its required!",  release.tag_name);
-                            terminal_logger.error("check_version_thread:: not any assets for {} - its required!",  release.tag_name);
-                            Slack.post_invalid_release(release.tag_name);
-                            continue;
-                        }
 
                         // Ignorujeme všechny tagy, které se týkají bootloader
                         // ZDe mohou přibýt další ignore filtry
@@ -166,30 +147,42 @@ public class Job_CheckCompilationLibraries implements Job {
                             continue;
                         }
 
-                        String regex_developer = "^(v)(\\d+\\.)(\\d+\\.)(\\d+)((-alpha|-beta)((\\.\\d+){0,3})?)?$"; // alpha or beta
-                        String regex_stage = "^(v)(\\d+\\.)(\\d+\\.)(\\d+)((-beta)((\\.\\d+){0,3})?)?$";  // just beta
-                        String regex_production = "^(v)(\\d+\\.)(\\d+\\.)(\\d+)$"; // only pure version
+
+                        String regex_apha_beta = "^(v)(\\d+\\.)(\\d+\\.)(\\d+)((-alpha|-beta)((\\.\\d+){0,3})?)?$"; // - alfa nebo beta
+                        String regex_beta = "^(v)(\\d+\\.)(\\d+\\.)(\\d+)((-beta)((\\.\\d+){0,3})?)?$";  // - jenom Beta
+                        String regex_production = "^(v)(\\d+\\.)(\\d+\\.)(\\d+)$"; // - Jenom čistá verze
+
 
                         Pattern pattern = null;
-                        if (Server.server_mode == Enum_Tyrion_Server_mode.production) {
-                            pattern = Pattern.compile(regex_stage);                          // Záměrně - uživatelům to umožnujeme průběžně řešit
-                        } else if (Server.server_mode == Enum_Tyrion_Server_mode.stage) {
-                            pattern = Pattern.compile(regex_stage);
-                        } else if (Server.server_mode == Enum_Tyrion_Server_mode.developer) {
-                            pattern = Pattern.compile(regex_developer);
+                        if (Server.mode == ServerMode.PRODUCTION) {
+                            pattern = Pattern.compile(regex_beta);                          // Záměrně - uživatelům to umožnujeme průběžně řešit
+                        } else if (Server.mode == ServerMode.STAGE) {
+                            pattern = Pattern.compile(regex_beta);
+                        } else if (Server.mode == ServerMode.DEVELOPER) {
+                            pattern = Pattern.compile(regex_apha_beta);
                         }
 
                         if (pattern == null) {
-                            terminal_logger.error("check_version_thread:: Pattern is null -  Server.server_mode not set!");
+                            logger.error("check_version_thread:: Pattern is null -  Server.server_mode not set!");
                             continue;
                         }
 
                         Matcher matcher = pattern.matcher(release.tag_name);
 
-                        if (matcher.find()) {
-                            terminal_logger.info("check_version_thread:: Code Library Version TAG name {} match regex", release.tag_name);
+                        if (matcher.matches()) {
+                            logger.info("check_version_thread:: Code Library Version TAG name {} match regex", release.tag_name);
                         } else {
-                            terminal_logger.warn("check_version_thread:: Code Library Version  TAG name {} not match regex {} ", release.tag_name, pattern.pattern());
+                            logger.warn("check_version_thread:: Code Library Version  TAG name {} not match regex {} ", release.tag_name, pattern.pattern());
+                            continue;
+                        }
+
+                        if (release.prerelease || release.draft) {
+                            logger.trace("check_version_thread:: prerelease == true");
+                            continue;
+                        }
+
+                        if (release.assets.size() == 0) {
+                            logger.trace("check_version_thread:: not any assets - its required!");
                             continue;
                         }
 
@@ -208,17 +201,17 @@ public class Job_CheckCompilationLibraries implements Job {
                     typeOfBoard.update();
                 }
 
-                terminal_logger.trace("check_version_thread:: all Library type of Board synchronized");
+                logger.trace("check_version_thread:: all Library type of Board synchronized");
 
                 for (Model_TypeOfBoard typeOfBoard_from_DB_not_cached : typeOfBoards_from_DB_not_cached) {
 
-                    Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.get_byId(typeOfBoard_from_DB_not_cached.id);
+                    Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.getById(typeOfBoard_from_DB_not_cached.id);
 
                     //System.out.println("Získávám z databáze všechny bootloadery");
                     List<Model_BootLoader> bootLoaders = typeOfBoard.boot_loaders_get_for_github_include_removed();
 
                     // List který budu doplnovat
-                    //List<Model_BootLoader> bootLoaders_for_add = new ArrayList<>();
+                    List<Model_BootLoader> bootLoaders_for_add = new ArrayList<>();
 
                     // Pokud knihovnu
                     synchro_bootloaders:
@@ -226,51 +219,46 @@ public class Job_CheckCompilationLibraries implements Job {
 
                         // Nejedná se o bootloader
                         if (!release.tag_name.contains("bootloader")) {
-                            //System.out.println("Releasse neobsahuje slovo bootloader");
                             continue;
                         }
 
                         String[] subStrings_main_parts = release.tag_name.split("_bootloader_");
 
                         if (subStrings_main_parts[0] == null) {
-                            terminal_logger.error("Required Part in Release Tag name for Booloader missing): Type Of Board (compiler_target_name) ");
+                            logger.error("Required Part in Release Tag name for Booloader missing): Type Of Board (compiler_target_name) ");
                             continue;
                         }
 
                         if (subStrings_main_parts[1] == null) {
-                            terminal_logger.error("Required Part in Release Tag name for Booloader missing): Version (v1.0.1)");
+                            logger.error("Required Part in Release Tag name for Booloader missing): Version (v1.0.1)");
                             continue;
                         }
 
                         // Kontrola zda už neexistuje
                         for (Model_BootLoader bootLoader : bootLoaders) {
-                            if (bootLoader.version_identificator.equals(subStrings_main_parts[1])) {
+                            if (bootLoader.version_identifier.equals(subStrings_main_parts[1])) {
                                 // Je již vytvořen
-                                //System.out.println("Releasse" + release.tag_name + " už je dávno vytvořen");
                                 continue synchro_bootloaders;
                             }
                         }
 
                         // Nejedná se o správný typ desky
                         if (!release.tag_name.contains(typeOfBoard.compiler_target_name)) {
-                            //System.out.println("Releasse neobsahuje správný typ desky - očekávaný pro tento cykl je" + typeOfBoard.compiler_target_name);
                             continue;
                         }
 
                         // nebráno v potaz
                         if (release.prerelease || release.draft) {
-                            terminal_logger.trace("check_version_thread:: prerelease == true");
+                            logger.trace("check_version_thread:: prerelease == true");
                             continue;
                         }
 
                         Model_BootLoader new_bootLoader = new Model_BootLoader();
-                        new_bootLoader.date_of_create = new Date();
                         new_bootLoader.name = release.name;
                         new_bootLoader.changing_note = release.body;
                         new_bootLoader.description = "Bootloader - automatic synchronize with GitHub Repository";
-                        new_bootLoader.version_identificator = subStrings_main_parts[1];
+                        new_bootLoader.version_identifier = subStrings_main_parts[1];
                         new_bootLoader.type_of_board = typeOfBoard;
-
 
                         // Find in Assest required file
                         String asset_url = null;
@@ -281,36 +269,33 @@ public class Job_CheckCompilationLibraries implements Job {
                         }
 
                         if (asset_url == null) {
-                            terminal_logger.error("check_version_thread:: Required file bootloader.bin in release {} not found", release.tag_name);
-                            Slack.post_invalid_bootloader(release.name);
+                            logger.error("check_version_thread:: Required file bootloader.bin in release {} not found", release.tag_name);
                             continue;
                         }
 
-                        //System.out.println("Assets URL for downloading:: " + asset_url);
-
                         WSResponse ws_download_file = download_file(asset_url);
                         if (ws_download_file == null) {
-                            terminal_logger.error("Error in downloading file");
+                            logger.error("Error in downloading file");
                             continue;
                         }
 
 
                         if (ws_download_file.getStatus() != 200) {
-                            terminal_logger.error("check_version_thread:: Download Bootloader [] unsuccessful", release.tag_name);
-                            terminal_logger.error("reason", ws_download_file.getBody());
+                            logger.error("check_version_thread:: Download Bootloader [] unsuccessful", release.tag_name);
+                            logger.error("reason", ws_download_file.getBody());
                             return;
                         }
 
-                        String file_body = Model_FileRecord.get_encoded_binary_string_from_body(ws_download_file.asByteArray());
+                        String file_body = Model_Blob.get_encoded_binary_string_from_body(ws_download_file.asByteArray());
 
                         // Naheraji na Azure
                         String file_name = "bootloader.bin";
                         String file_path = new_bootLoader.get_Container().getName() + "/" + UUID.randomUUID().toString() + "/" + file_name;
 
-                        terminal_logger.debug("check_version_thread:: bootLoader_uploadFile::  File Name " + file_name);
-                        terminal_logger.debug("check_version_thread:: bootLoader_uploadFile::  File Path " + file_path);
+                        logger.debug("check_version_thread:: bootLoader_uploadFile::  File Name " + file_name);
+                        logger.debug("check_version_thread:: bootLoader_uploadFile::  File Path " + file_path);
 
-                        new_bootLoader.file = Model_FileRecord.uploadAzure_File(file_body, "application/octet-stream", file_name, file_path);
+                        new_bootLoader.file = Model_Blob.uploadAzure_File(file_body, "application/octet-stream", file_name, file_path);
                         new_bootLoader.save();
 
                         // Nefungovalo to korektně občas - tak se to ukládá oboustraně!
@@ -318,59 +303,66 @@ public class Job_CheckCompilationLibraries implements Job {
                         new_bootLoader.file.update();
                         new_bootLoader.refresh();
 
-                        typeOfBoard.cache_bootloaders_id.add(0, new_bootLoader.id.toString());
+                        bootLoaders_for_add.add(new_bootLoader);
+
+                        typeOfBoard.boot_loaders().addAll(bootLoaders_for_add);
+                        typeOfBoard.update();
                     }
                 }
 
-                terminal_logger.trace("check_version_thread:: all Bootloader in type of Board synchronized");
+                logger.trace("check_version_thread:: all Bootloader in type of Board synchronized");
 
-            } catch (F.PromiseTimeoutException e ){
-                terminal_logger.error("Job_CheckCompilationLibraries:: PromiseTimeoutException! - Probably Network is unreachable", new Date());
+            } catch (F.PromiseTimeoutException e ) {
+                logger.error("Job_CheckCompilationLibraries:: PromiseTimeoutException! - Probably Network is unreachable", new Date());
             } catch (ConnectException e) {
-                terminal_logger.error("Job_CheckCompilationLibraries:: ConnectException! - Probably Network is unreachable", new Date());
+                logger.error("Job_CheckCompilationLibraries:: ConnectException! - Probably Network is unreachable", new Date());
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                logger.internalServerError(e);
             }
 
-            terminal_logger.trace("check_version_thread: thread stopped on {}", new Date());
+            logger.trace("check_version_thread: thread stopped on {}", new Date());
         }
     };
 
-    public static WSResponse download_file(String assets_url){
+    private WSResponse download_file(String assets_url) {
         try {
 
-            WSClient ws = Play.current().injector().instanceOf(WSClient.class);
-
             WSResponse wsResponse = ws.url(assets_url)
-                    .setHeader("Authorization", "token 4d89903b259510a1257a67d396bd4aaf10cdde6a")
-                    .setHeader("Accept", "application/octet-stream")
+                    .addHeader("Authorization", "token 4d89903b259510a1257a67d396bd4aaf10cdde6a")
+                    .addHeader("Accept", "application/octet-stream")
                     .setFollowRedirects(false)
                     .get()
-                    .get(10000);
+                    .toCompletableFuture()
+                    .get();
 
-            terminal_logger.trace("update_server_thread: Got file download url");
-            terminal_logger.trace(wsResponse.getHeader("location"));
+            logger.trace("update_server_thread: Got file download url");
 
-            // Redirect URL from response
-            String url = wsResponse.getHeader("location");
+            String url;
+
+            Optional<String> optional = wsResponse.getSingleHeader("location");
+            if (optional.isPresent()) {
+                url = optional.get();
+            } else {
+                return null;
+            }
+
+            logger.trace("update_server_thread - url: {}", url);
 
             // Request for URL without query params
             WSRequest request = ws.url(url.substring(0, url.indexOf("?")))
-                    .setRequestTimeout(-1);
+                    .setRequestTimeout(Duration.ofMinutes(30));
 
             // Query params must be decoded and added one by one, because of bug in Play! (query was getting double encoded)
             String[] pairs = url.substring(url.indexOf("?") + 1).split("&");
             for (String pair : pairs) {
                 int idx = pair.indexOf("=");
-                request.setQueryParameter(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+                request.addQueryParameter(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
             }
 
+            return request.get().toCompletableFuture().get(30, TimeUnit.MINUTES);
 
-            return request.get().get(30, TimeUnit.MINUTES);
-
-
-        }catch (Exception e){
-            terminal_logger.error(e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage());
             return null;
         }
     }

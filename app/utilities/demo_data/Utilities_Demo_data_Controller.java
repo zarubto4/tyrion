@@ -1,37 +1,37 @@
 package utilities.demo_data;
 
+import controllers.BaseController;
 import io.swagger.annotations.Api;
 import models.*;
 import play.Application;
-import play.mvc.Controller;
 import play.mvc.Result;
-import utilities.enums.*;
-import utilities.logger.Class_Logger;
+import utilities.enums.BusinessModel;
+import utilities.enums.ExtensionType;
+import utilities.enums.HomerType;
+import utilities.enums.ProgramType;
+import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
-import utilities.response.GlobalResult;
 
 import javax.inject.Inject;
+import java.util.UUID;
 
 
 @Api(value = "Dashboard Private Api", hidden = true)
-public class Utilities_Demo_data_Controller extends Controller {
+public class Utilities_Demo_data_Controller extends BaseController {
 
 // LOGGER ##############################################################################################################
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Utilities_Demo_data_Controller.class);
-
-    @Inject
-    Application application;
+    private static final Logger terminal_logger = new Logger(Utilities_Demo_data_Controller.class);
 
     public Result test() {
         try {
 
             System.out.println("Demo_Data_Controller :: test :: start");
 
-            return  ok();
+            return okEmpty();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -56,12 +56,12 @@ public class Utilities_Demo_data_Controller extends Controller {
     }
 
     public Result garfield() {
-        try{
+        try {
 
             System.out.println("garfield()");
 
-            if (Model_Garfield.find.where().eq("name", "Garfield").findUnique() != null)
-                return GlobalResult.result_badRequest("Its Already done!");
+            if (Model_Garfield.find.query().where().eq("name", "Garfield").findOne() != null)
+                return badRequest("Its Already done!");
 
             Model_Garfield garfield = new Model_Garfield();
 
@@ -73,19 +73,19 @@ public class Utilities_Demo_data_Controller extends Controller {
             garfield.print_sticker_id =  279211;  // 65 mm
 
 
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("name", "IODA G3").findUnique();
-            Model_Producer producer = Model_Producer.find.where().eq("name", "Byzance ltd").findUnique();
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.query().where().eq("name", "IODA G3").findOne();
+            Model_Producer producer = Model_Producer.find.query().where().eq("name", "Byzance ltd").findOne();
 
 
             garfield.type_of_board_id = typeOfBoard.id;
-            garfield.producer_id = producer.id.toString();
+            garfield.producer_id = producer.id;
 
             garfield.save();
 
-            return GlobalResult.result_ok();
+            return okEmpty();
 
-        }catch (Exception e){
-            return ServerLogger.result_internalServerError(e, request());
+        } catch (Exception e) {
+            return internalServerError(e);
         }
     }
 
@@ -95,8 +95,8 @@ public class Utilities_Demo_data_Controller extends Controller {
         try {
 
             // Ochranná zarážka proti znovu vytvoření
-            if (Model_Producer.find.where().eq("name", "Byzance ltd").findUnique() != null)
-                return GlobalResult.result_badRequest("Its Already done!");
+            if (Model_Producer.find.query().where().eq("name", "Byzance ltd").findOne() != null)
+                return badRequest("Its Already done!");
 
             // Nastavím Producer
             Model_Producer producer = new Model_Producer();
@@ -104,9 +104,9 @@ public class Utilities_Demo_data_Controller extends Controller {
             producer.description = "Developed with love from Byzance";
             producer.save();
 
-            return GlobalResult.result_ok();
+            return okEmpty();
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -135,14 +135,14 @@ public class Utilities_Demo_data_Controller extends Controller {
             wireless.save();
 
             // Ochranná zarážka proti znovu vytvoření
-            Model_Producer producer = Model_Producer.find.where().eq("name", "Byzance ltd").findUnique();
-            if (producer == null) return GlobalResult.result_badRequest("Create Producer first");
-            if (Model_Processor.find.where().eq("processor_name", "ARM STM32 FR17").findUnique() != null)
-                return GlobalResult.result_badRequest("Its Already done!");
+            Model_Producer producer = Model_Producer.find.query().where().eq("name", "Byzance ltd").findOne();
+            if (producer == null) return badRequest("Create Producer first");
+            if (Model_Processor.find.query().where().eq("name", "ARM STM32 FR17").findOne() != null)
+                return badRequest("Its Already done!");
 
             // Nastavím Processor - YODA
             Model_Processor processor_1 = new Model_Processor();
-            processor_1.processor_name = "ARM STM32 FR17";
+            processor_1.name = "ARM STM32 FR17";
             processor_1.description = "VET6 HPABT VQ KOR HP501";
             processor_1.processor_code = "STM32FR17";
             processor_1.speed = 3000;
@@ -167,7 +167,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             c_program_2.description = "Default program for this device type";
             c_program_2.type_of_board_default = typeOfBoard_2;
             c_program_2.type_of_board =  typeOfBoard_2;
-            c_program_2.publish_type  = Enum_Publishing_type.default_main_program;
+            c_program_2.publish_type  = ProgramType.DEFAULT_MAIN;
             c_program_2.save();
 
             typeOfBoard_2.refresh();
@@ -178,7 +178,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             c_program_test_2.description = "Test program for this device type";
             c_program_test_2.type_of_board_test = typeOfBoard_2;
             c_program_test_2.type_of_board =  typeOfBoard_2;
-            c_program_test_2.publish_type  = Enum_Publishing_type.default_test_program;
+            c_program_test_2.publish_type  = ProgramType.DEFAULT_TEST;
             c_program_test_2.save();
 
             typeOfBoard_2.refresh();
@@ -240,9 +240,9 @@ public class Utilities_Demo_data_Controller extends Controller {
             // batch_final_first.save(); Odkomentovat s finální produkcí
 
 
-            return GlobalResult.result_ok();
+            return okEmpty();
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -253,11 +253,11 @@ public class Utilities_Demo_data_Controller extends Controller {
         try {
 
             // Ochranná zarážka proti znovu vytvoření
-            if (Model_HomerServer.find.where().eq("personal_server_name", "Alfa").findUnique() != null)
-                return GlobalResult.result_badRequest("Its Already done!");
+            if (Model_HomerServer.find.query().where().eq("personal_server_name", "Alfa").findOne() != null)
+                return badRequest("Its Already done!");
 
-            if(Model_HomerServer.find.where().eq("server_type",Enum_Cloud_HomerServer_type.main_server ).findRowCount() > 0){
-                return GlobalResult.result_badRequest("Its Already done!");
+            if (Model_HomerServer.find.query().where().eq("server_type", HomerType.MAIN).findCount() > 0) {
+                return badRequest("Its Already done!");
             }
 
             // Nasstavím Homer servery
@@ -268,8 +268,8 @@ public class Utilities_Demo_data_Controller extends Controller {
             cloud_server_1.mqtt_port = 1881;
             cloud_server_1.web_view_port = 8502;
             cloud_server_1.server_remote_port = 8505;
-            cloud_server_1.server_type = Enum_Cloud_HomerServer_type.main_server;
-            cloud_server_1.connection_identificator = "aaaaaaaaaaaaaaa";
+            cloud_server_1.server_type = HomerType.MAIN;
+            cloud_server_1.connection_identifier = "aaaaaaaaaaaaaaa";
             cloud_server_1.hash_certificate = "bbbbbbbbbbbbbbb";
             cloud_server_1.save();
 
@@ -280,7 +280,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             cloud_server_2.mqtt_port = 1881;
             cloud_server_2.web_view_port = 8502;
             cloud_server_2.server_remote_port = 8505;
-            cloud_server_2.server_type = Enum_Cloud_HomerServer_type.backup_server;
+            cloud_server_2.server_type = HomerType.BACKUP;
             cloud_server_2.save();
 
 
@@ -291,7 +291,7 @@ public class Utilities_Demo_data_Controller extends Controller {
             cloud_server_3.mqtt_port = 1881;
             cloud_server_3.web_view_port = 8502;
             cloud_server_3.server_remote_port = 8505;
-            cloud_server_3.server_type = Enum_Cloud_HomerServer_type.public_server;
+            cloud_server_3.server_type = HomerType.PUBLIC;
             cloud_server_3.save();
 
             Model_HomerServer cloud_server_4 = new Model_HomerServer();
@@ -301,23 +301,23 @@ public class Utilities_Demo_data_Controller extends Controller {
             cloud_server_4.mqtt_port = 1881;
             cloud_server_4.web_view_port = 8502;
             cloud_server_4.server_remote_port = 8505;
-            cloud_server_4.server_type = Enum_Cloud_HomerServer_type.public_server;
+            cloud_server_4.server_type = HomerType.PUBLIC;
             cloud_server_4.save();
 
             // Nastavím kompilační servery
             Model_CompilationServer compilation_server_1 = new Model_CompilationServer();
             compilation_server_1.personal_server_name = "Perseus";
             compilation_server_1.hash_certificate = "test";
-            compilation_server_1.connection_identificator = "test";
+            compilation_server_1.connection_identifier = "test";
             compilation_server_1.save();
 
             Model_CompilationServer compilation_server_2 = new Model_CompilationServer();
             compilation_server_2.personal_server_name = "Pegas";
             compilation_server_2.save();
 
-            return GlobalResult.result_ok();
+            return okEmpty();
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -325,15 +325,15 @@ public class Utilities_Demo_data_Controller extends Controller {
         try {
 
             // Ochranná zarážka proti znovu vytvoření
-            if (Model_Tariff.find.where().eq("name", "Alfa account").findUnique() != null) {
-                return GlobalResult.result_badRequest("Its Already done!");
+            if (Model_Tariff.find.query().where().eq("name", "Alfa account").findOne() != null) {
+                return badRequest("Its Already done!");
             }
 
             // Alfa
             Model_Tariff tariff_1 = new Model_Tariff();
             tariff_1.order_position = 1;
             tariff_1.active = true;
-            tariff_1.business_model = Enum_BusinessModel.alpha;
+            tariff_1.business_model = BusinessModel.ALPHA;
             tariff_1.name = "Alfa account";
             tariff_1.description = "Unlimited account for testing";
             tariff_1.identifier = "alpha";
@@ -350,9 +350,9 @@ public class Utilities_Demo_data_Controller extends Controller {
             Model_ProductExtension extensions_1 = new Model_ProductExtension();
             extensions_1.name = "Extension 1";
             extensions_1.description = "description extension 1";
-            extensions_1.type = Enum_ExtensionType.project;
+            extensions_1.type = ExtensionType.project;
             extensions_1.active = true;
-            extensions_1.removed = false;
+            extensions_1.deleted = false;
             extensions_1.color = "blue-madison";
             extensions_1.tariff_included = tariff_1;
             extensions_1.configuration = "{\"price\":1000,\"count\":100}";
@@ -361,25 +361,25 @@ public class Utilities_Demo_data_Controller extends Controller {
             Model_ProductExtension extensions_2 = new Model_ProductExtension();
             extensions_2.name = "Extension 2";
             extensions_2.description = "description extension 2";
-            extensions_2.type = Enum_ExtensionType.log;
+            extensions_2.type = ExtensionType.log;
             extensions_2.active = true;
-            extensions_2.removed = false;
+            extensions_2.deleted = false;
             extensions_2.color = "blue-chambray";
             extensions_2.tariff_optional = tariff_1;
             extensions_2.configuration = "{\"price\":400,\"count\":2}";
             extensions_2.save();
 
-            return GlobalResult.result_ok();
+            return okEmpty();
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
     public Result person_test_user() {
         try {
 
-            if (Model_Person.find.where().eq("nick_name", "Pepíno").findUnique() != null)
-                return GlobalResult.result_badRequest("Its Already done!");
+            if (Model_Person.find.query().where().eq("nick_name", "Pepíno").findOne() != null)
+                return badRequest("Its Already done!");
 
             System.err.println("Vytvářím uživatele s emailem:  test_user@byzance.cz");
             System.err.println("Heslem: 123456789");
@@ -387,24 +387,25 @@ public class Utilities_Demo_data_Controller extends Controller {
 
             // Vytvoří osobu
             Model_Person person = new Model_Person();
-            person.full_name = "Pačmund Pepa";
+            person.first_name = "Pačmund";
+            person.last_name = "Pepa";
             person.nick_name = "Pepíno";
-            person.mail = "test_user@byzance.cz";
-            person.freeze_account = false;
-            person.mailValidated = true;
-            person.setSha("123456789");
+            person.email = "test_user@byzance.cz";
+            person.frozen = false;
+            person.validated = true;
+            person.setPassword("123456789");
             person.save();
 
-            Model_FloatingPersonToken token = new Model_FloatingPersonToken();
+            Model_AuthorizationToken token = new Model_AuthorizationToken();
             token.person = person;
-            token.authToken = "token";
+            token.token = UUID.randomUUID();
             token.setDate();
             token.save();
 
-            return GlobalResult.result_ok();
+            return okEmpty();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 }

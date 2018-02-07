@@ -7,7 +7,7 @@ import javax.validation.Valid;
  */
 public class Printer {
 
-    public Printer(){}
+    public Printer() {}
 
     public int id;
     public String name;

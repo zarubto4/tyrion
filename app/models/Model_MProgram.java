@@ -1,70 +1,59 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.Controller_Security;
+import controllers.BaseController;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.libs.Json;
-import utilities.cache.helps_objects.TyrionCachedList;
-import utilities.logger.Class_Logger;
-import utilities.models_update_echo.Update_echo_handler;
-import utilities.swagger.documentationClass.Swagger_M_Program_Version;
-import utilities.swagger.documentationClass.Swagger_M_Program_Version_Interface;
-import utilities.swagger.outboundClass.Swagger_M_Program_Short_Detail;
-import utilities.swagger.outboundClass.Swagger_M_Program_Version_Short_Detail;
-import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
+import utilities.cache.CacheField;
+import utilities.cache.Cached;
+import utilities.logger.Logger;
+import utilities.model.NamedModel;
+import utilities.models_update_echo.EchoHandler;
+import utilities.swagger.output.Swagger_M_Program_Version;
+import utilities.swagger.output.Swagger_M_Program_Version_Interface;
+import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Entity
-@ApiModel(description = "Model of M_Program",
-        value = "M_Program")
-@Table(name="MProgram")
-public class Model_MProgram extends Model{
+@ApiModel(value = "MProgram", description = "Model of M_Program")
+@Table(name = "MProgram")
+public class Model_MProgram extends NamedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_MProgram.class);
+    private static final Logger logger = new Logger(Model_MProgram.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                                                @Id public String id;
-    @JsonInclude(JsonInclude.Include.NON_NULL)                                      public String name;         // Název programu
-    @JsonInclude(JsonInclude.Include.NON_NULL)  @Column(columnDefinition = "TEXT")  public String description;  // Uživatelský popis programu
-
-    @JsonIgnore  public boolean removed_by_user;
-
-    @ApiModelProperty(required = true,
-            dataType = "integer", readOnly = true,
-            value = "UNIX time stamp in millis", example = "1458315085338")         public Date date_of_create;
-
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                                  public Model_MProject m_project;
-    @JsonIgnore @OneToMany(mappedBy="m_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_VersionObject> version_objects = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="m_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Version> versions = new ArrayList<>();
 
-
-
+    @ManyToMany public List<Model_Tag> tags = new ArrayList<>();
 
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public  String m_project_id()             {  return m_project.id;}
+    @JsonProperty @ApiModelProperty(required = true)
+    public UUID m_project_id() {
+        return m_project.id;
+    }
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Program_Version_Short_Detail> program_versions() {
+    @JsonProperty @ApiModelProperty(required = true)
+    public List<Swagger_M_Program_Version> program_versions() {
 
-        List<Swagger_M_Program_Version_Short_Detail> versions = new ArrayList<>();
+        List<Swagger_M_Program_Version> versions = new ArrayList<>();
 
-        for(Model_VersionObject v : getVersion_objects_not_removed_by_person().stream().sorted((element1, element2) -> element2.date_of_create.compareTo(element1.date_of_create)).collect(Collectors.toList())){
-            versions.add(v.get_short_m_program_version());
+        for (Model_Version v : getVersions_not_removed_by_person().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())) {
+            versions.add(program_version(v));
         }
 
         return versions;
@@ -72,74 +61,49 @@ public class Model_MProgram extends Model{
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_version_objects_ids = new ArrayList<>();
+    @JsonIgnore @Transient @Cached public List<UUID> cache_version_ids = new ArrayList<>();
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    /* GET Variable short type of objects ------------------------------------------------------------------------------*/
-    @Transient @JsonIgnore public Swagger_M_Program_Short_Detail get_m_program_short_detail(){
+    @JsonIgnore
+    public List<Model_Version> getVersions_not_removed_by_person() {
         try {
 
-            Swagger_M_Program_Short_Detail help = new Swagger_M_Program_Short_Detail();
-            help.id = id;
-            help.name = name;
-            help.description = description;
+            if (cache_version_ids.isEmpty()) {
 
-            help.delete_permission = delete_permission();
-            help.edit_permission = edit_permission();
-
-            return help;
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return null;
-        }
-    }
-
-
-    @JsonIgnore @Transient @TyrionCachedList
-    public List<Model_VersionObject> getVersion_objects_not_removed_by_person() {
-
-        try{
-
-            if(cache_list_version_objects_ids.isEmpty()){
-
-                List<Model_VersionObject> versions =  Model_VersionObject.find.where().eq("m_program.id", this.id).eq("removed_by_user", false).order().desc("date_of_create").select("id").findList();
+                List<Model_Version> versions =  Model_Version.find.query().where().eq("m_program.id", this.id).eq("deleted", false).order().desc("created").select("id").findList();
 
                 // Získání seznamu
-                for (Model_VersionObject version : versions) {
-                    cache_list_version_objects_ids.add(version.id);
+                for (Model_Version version : versions) {
+                    cache_version_ids.add(version.id);
                 }
-
             }
 
-            List<Model_VersionObject> versions  = new ArrayList<>();
+            List<Model_Version> versions  = new ArrayList<>();
 
-            for(String version_id : cache_list_version_objects_ids){
-                versions.add(Model_VersionObject.get_byId(version_id));
+            for (UUID version_id : cache_version_ids) {
+                versions.add(Model_Version.getById(version_id));
             }
 
             return versions;
 
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return new ArrayList<Model_VersionObject>();
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new ArrayList<>();
         }
-
     }
-
-
-    @JsonIgnore @Transient
-    public static Swagger_M_Program_Version program_version(Model_VersionObject version_object){
+    
+    public static Swagger_M_Program_Version program_version(Model_Version version) {
         try {
 
             Swagger_M_Program_Version m_program_versions = new Swagger_M_Program_Version();
 
-            m_program_versions.version_object = version_object;
-            m_program_versions.public_mode = version_object.public_version;
+            m_program_versions.version = version;
+            m_program_versions.public_mode = version.public_version;
 
-            m_program_versions.virtual_input_output = version_object.m_program_virtual_input_output;
+            m_program_versions.virtual_input_output = version.m_program_virtual_input_output;
 
-            Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "m_program.json").findUnique();
+            Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version.id).eq("file_name", "m_program.json").findOne();
 
             if (fileRecord != null) {
 
@@ -150,16 +114,17 @@ public class Model_MProgram extends Model{
 
             return m_program_versions;
 
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
 
-    @JsonIgnore @Transient public static JsonNode get_m_code(Model_VersionObject version_object) {
-        try{
+    @JsonIgnore
+    public static JsonNode get_m_code(Model_Version version_object) {
+        try {
 
-            Model_FileRecord fileRecord = Model_FileRecord.find.where().eq("version_object.id", version_object.id).eq("file_name", "m_program.json").findUnique();
+            Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version_object.id).eq("file_name", "m_program.json").findOne();
 
             if (fileRecord != null) {
                 JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
@@ -168,19 +133,19 @@ public class Model_MProgram extends Model{
 
             return Json.newObject();
 
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return Json.newObject();
         }
     }
 
-
-    @JsonIgnore @Transient public List<Swagger_M_Program_Version_Interface> program_versions_interface() {
+    @JsonIgnore
+    public List<Swagger_M_Program_Version_Interface> program_versions_interface() {
         try {
 
             List<Swagger_M_Program_Version_Interface> versions = new ArrayList<>();
 
-            for (Model_VersionObject v : getVersion_objects_not_removed_by_person()) {
+            for (Model_Version v : getVersions_not_removed_by_person()) {
                 Swagger_M_Program_Version_Interface help = new Swagger_M_Program_Version_Interface();
                 help.version_object = v;
                 help.virtual_input_output = v.m_program_virtual_input_output;
@@ -188,62 +153,57 @@ public class Model_MProgram extends Model{
             }
             return versions;
 
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override public void save() {
+    @JsonIgnore @Override
+    public void save() {
 
-        terminal_logger.debug("save :: Creating new Object");
+        this.azure_m_program_link = m_project.get_path()  + "/m-programs/"  + UUID.randomUUID();
 
-        while(true){ // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            this.azure_m_program_link = m_project.get_path()  + "/m-programs/"  + this.id;
-            if (Model_MProgram.get_byId(this.id) == null) break;
-        }
-
-        if(m_project.project_id() != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_MProject.class, m_project.project_id(), m_project.id))).start();
+        if (m_project.project_id() != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_MProject.class, m_project.project_id(), m_project.id))).start();
 
         super.save();
 
-        if(m_project != null){
+        if (m_project != null) {
             m_project.m_programs_ids.add(id);
         }
 
         cache.put(this.id, this);
-
-
     }
 
-    @JsonIgnore @Override public void update() {
+    @JsonIgnore @Override
+    public void update() {
 
-        terminal_logger.debug("update :: Update object Id: {}",  this.id);
+        logger.debug("update :: Update object Id: {}",  this.id);
 
         super.update();
 
-        if(m_project.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_MProgram.class, m_project.project_id(), id))).start();
-
+        if (m_project.project != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_MProgram.class, m_project.project_id(), id))).start();
     }
 
 
-    @JsonIgnore @Override public void delete() {
-        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
+    @JsonIgnore @Override
+    public boolean delete() {
+        logger.debug("update :: Delete object Id: {} ", this.id);
 
-        removed_by_user = true;
+        deleted = true;
         super.update();
 
-        if(m_project_id() != null){
-            Model_MProject.get_byId(m_project_id()).m_programs_ids.remove(id);
+        if (m_project_id() != null) {
+            Model_MProject.getById(m_project_id()).m_programs_ids.remove(id);
         }
 
         cache.remove(id);
 
-        if(m_project.project != null) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_MProject.class, m_project.project_id(), m_project.id))).start();
+        if (m_project.project != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_MProject.class, m_project.project_id(), m_project.id))).start();
 
+        return false;
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -252,10 +212,11 @@ public class Model_MProgram extends Model{
 
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore            private String azure_m_program_link;
+    @JsonIgnore
+    private String azure_m_program_link;
 
-    @JsonIgnore @Transient
-    public String get_path(){
+    @JsonIgnore
+    public String get_path() {
         return  azure_m_program_link;
     }
 
@@ -268,95 +229,100 @@ public class Model_MProgram extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient public boolean create_permission(){
+    @JsonIgnore
+    public boolean create_permission() {
 
-        if(Controller_Security.get_person().has_permission("M_Program_create")) return true;
+        if (BaseController.person().has_permission("MProgram_create")) return true;
         return m_project != null && m_project.update_permission();
-
     }
 
-    @JsonProperty @Transient public boolean update_permission()  {
+    @JsonProperty
+    public boolean update_permission() {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().has_permission("m_program_update_" + id)) return Controller_Security.get_person().has_permission("m_program_update_"+ id);
-        if(Controller_Security.get_person().has_permission("M_Program_update")) return true;
+        if (BaseController.person().has_permission("m_program_update_" + id)) return BaseController.person().has_permission("m_program_update_"+ id);
+        if (BaseController.person().has_permission("M_Program_update")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if( Model_MProgram.find.where().eq("m_project.project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0){
-            Controller_Security.get_person().cache_permission("m_program_update_" + id, true);
+        if ( Model_MProgram.find.query().where().eq("m_project.project.participants.person.id", BaseController.person().id).eq("id", id).findCount() > 0) {
+            BaseController.person().cache_permission("m_program_update_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().cache_permission("m_program_update_" + id, false);
+        BaseController.person().cache_permission("m_program_update_" + id, false);
         return false;
-
     }
-    @JsonIgnore   @Transient public boolean read_permission()    {
+
+    @JsonIgnore
+    public boolean read_permission() {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().has_permission("m_program_read_" + id)) return Controller_Security.get_person().has_permission("m_program_read_"+ id);
-        if(Controller_Security.get_person().has_permission("M_Program_read")) return true;
+        if (BaseController.person().has_permission("m_program_read_" + id)) return BaseController.person().has_permission("m_program_read_"+ id);
+        if (BaseController.person().has_permission("MProgram_read")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-        if(Model_MProgram.find.where().eq("m_project.project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0){
-            Controller_Security.get_person().cache_permission("m_program_read_" + id, true);
+        if (Model_MProgram.find.query().where().eq("m_project.project.participants.person.id", BaseController.person().id).eq("id", id).findCount() > 0) {
+            BaseController.person().cache_permission("m_program_read_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().cache_permission("m_program_read_" + id, false);
+        BaseController.person().cache_permission("m_program_read_" + id, false);
         return false;
-
     }
-    @JsonProperty @Transient public boolean edit_permission()    {
+
+    @JsonProperty
+    public boolean edit_permission() {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().has_permission("m_program_edit_" + id)) return Controller_Security.get_person().has_permission("m_program_edit_"+ id);
-        if(Controller_Security.get_person().has_permission("M_Program_edit")) return true;
+        if (BaseController.person().has_permission("m_program_edit_" + id)) return BaseController.person().has_permission("m_program_edit_"+ id);
+        if (BaseController.person().has_permission("MProgram_edit")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if( Model_MProgram.find.where().eq("m_project.project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0){
-            Controller_Security.get_person().cache_permission("m_program_edit_" + id, true);
+        if ( Model_MProgram.find.query().where().eq("m_project.project.participants.person.id", BaseController.person().id).eq("id", id).findCount() > 0) {
+            BaseController.person().cache_permission("m_program_edit_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().cache_permission("edit_" + id, false);
+        BaseController.person().cache_permission("edit_" + id, false);
         return false;
-
     }
-    @JsonProperty @Transient public boolean delete_permission()  {
+
+    @JsonProperty
+    public boolean delete_permission() {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if(Controller_Security.get_person().has_permission("m_program_delete_" + id)) return Controller_Security.get_person().has_permission("m_program_delete_"+ id);
-        if(Controller_Security.get_person().has_permission("M_Program_delete")) return true;
+        if (BaseController.person().has_permission("m_program_delete_" + id)) return BaseController.person().has_permission("m_program_delete_"+ id);
+        if (BaseController.person().has_permission("MProgram_delete")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if( Model_MProgram.find.where().eq("m_project.project.participants.person.id", Controller_Security.get_person().id).eq("id", id).findRowCount() > 0){
-            Controller_Security.get_person().cache_permission("m_program_delete_" + id, true);
+        if ( Model_MProgram.find.query().where().eq("m_project.project.participants.person.id", BaseController.person().id).eq("id", id).findCount() > 0) {
+            BaseController.person().cache_permission("m_program_delete_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().cache_permission("m_program_delete_" + id, false);
+        BaseController.person().cache_permission("m_program_delete_" + id, false);
         return false;
-
     }
 
-    public enum permissions{ M_Program_create, M_Program_read, M_Program_edit, M_Program_delete }
+    public enum Permission { MProgram_create, MProgram_read, MProgram_edit, MProgram_delete}
 
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static final String CACHE = Model_MProgram.class.getSimpleName();
+    @CacheField(Model_MProgram.class)
+    public static Cache<UUID, Model_MProgram> cache;
 
-    public static Cache<String, Model_MProgram> cache = null; // < ID, Model_BProgram>
-
-    @JsonIgnore
-    public static Model_MProgram get_byId(String id) {
+    public static Model_MProgram getById(String id) {
+        return getById(UUID.fromString(id));
+    }
+    
+    public static Model_MProgram getById(UUID id) {
 
         Model_MProgram m_program = cache.get(id);
-        if (m_program == null){
+        if (m_program == null) {
 
             m_program = Model_MProgram.find.byId(id);
             if (m_program == null) return null;
@@ -369,5 +335,5 @@ public class Model_MProgram extends Model{
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Model.Finder<String,Model_MProgram> find = new Finder<>(Model_MProgram.class);
+    public static Finder<UUID, Model_MProgram> find = new Finder<>(Model_MProgram.class);
 }

@@ -1,101 +1,50 @@
 package controllers;
 
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.scribejava.core.model.*;
-import com.github.scribejava.core.oauth.OAuth20Service;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
-import models.Model_FloatingPersonToken;
-import models.Model_HomerInstanceRecord;
-import models.Model_Permission;
-import models.Model_Person;
+import models.*;
 import play.data.Form;
-import play.libs.F;
+import play.data.FormFactory;
 import play.libs.Json;
 import play.libs.ws.WSClient;
-import play.libs.ws.WSRequest;
-import play.libs.ws.WSResponse;
 import play.mvc.*;
-import utilities.Server;
-import utilities.UtilTools;
-import utilities.enums.Enum_Token_type;
-import utilities.enums.Enum_Where_logged_tag;
+import responses.*;
+import utilities.authentication.Authentication;
+import utilities.enums.TokenType;
+import utilities.enums.PlatformAccess;
 import utilities.financial.FinancialPermission;
-import utilities.independent_threads.Check_Online_Status_after_user_login;
-import utilities.logger.Class_Logger;
-import utilities.logger.ServerLogger;
-import utilities.login_entities.Secured_API;
-import utilities.login_entities.Socials;
-import utilities.response.CoreResponse;
-import utilities.response.GlobalResult;
-import utilities.response.response_objects.*;
-import utilities.swagger.documentationClass.Login_IncomingLogin;
-import utilities.swagger.documentationClass.Swagger_Blocko_Token_validation_request;
-import utilities.swagger.documentationClass.Swagger_SocialNetwork_Login;
-import utilities.swagger.outboundClass.Swagger_SocialNetwork_Result;
-import utilities.swagger.outboundClass.Swagger_Blocko_Token_validation_result;
-import utilities.swagger.outboundClass.Swagger_Login_Token;
-import utilities.swagger.outboundClass.Swagger_Person_All_Details;
-import web_socket.services.WS_Becki_Website;
+import utilities.swagger.output.Swagger_Blocko_Token_validation_result;
+import utilities.swagger.output.Swagger_Login_Token;
+import utilities.swagger.output.Swagger_Person_All_Details;
+import utilities.threads.Check_Online_Status_after_user_login;
+import utilities.logger.Logger;
+import utilities.swagger.input.Swagger_Login;
+import utilities.swagger.input.Swagger_Blocko_Token_validation_request;
+import websocket.interfaces.WS_Portal;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static utilities.response.GlobalResult.result_ok;
-
+/**
+ * Třída Controller_Security slouží k ověřování uživatelů pro přihlášení i odhlášení a to jak pro Becki, tak i Administraci Tyriona.
+ *
+ * Dále ověřuje validitu tokenů na Homer serveru, na Compilačním serveru, platnost Rest-API reqest tokenů (a jejich počet)
+ */
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class Controller_Security extends Controller {
-
-/*  Rest Api call client -----------------------------------------------------------------------------------------------*/
-    @Inject WSClient ws;
+public class Controller_Security extends BaseController {
 
 // LOGGER ##############################################################################################################
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Security.class);
-    
-/** ######################################################################################################################
- *
- *   Třída Controller_Security slouží k ověřování uživatelů pro přihlášení i odhlášení a to jak pro Becki, tak i Administraci Tyriona.
- *
- *   Dále ověřuje validitu tokenů na Homer serveru, na Compilačním serveru, platnost Rest-API reqest tokenů (a jejich počet)
- *
- *   Na třídě se volá nejčastěji get_person a get_person_id() které pomáhají z HTTP contextu vytáhnout token z cookie a díky
- *   tomu rozpoznat uživatele a co za operace dělá.
- *
- */
+    private static final Logger logger = new Logger(Controller_Security.class);
 
 //######################################################################################################################
 
-    public static boolean has_token() {
-        return get_person() != null;
-    }
+    private FormFactory formFactory;
+    private WSClient ws;
 
-    public static String get_person_id() {
-        try {
-
-            String token = (String) Http.Context.current().args.get("person_token");
-            if(token == null){
-                return null;
-            }
-
-            String person_id = Model_Person.token_cache.get( token  );
-
-            return person_id;
-
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    public static Model_Person get_person() {
-
-        String person_id = get_person_id();
-
-        return person_id != null ? Model_Person.get_byId(person_id) : null;
-
+    @Inject
+    public Controller_Security(FormFactory formFactory, WSClient ws) {
+        this.formFactory = formFactory;
+        this.ws = ws;
     }
 
 //######################################################################################################################
@@ -112,7 +61,7 @@ public class Controller_Security extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Blocko_Token_validation_request",
+                            dataType = "utilities.swagger.input.Swagger_Blocko_Token_validation_request",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -126,41 +75,41 @@ public class Controller_Security extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result get_status_request_token(){
+    public Result get_status_request_token() {
         try {
 
             // Zpracování Json
-            final Form<Swagger_Blocko_Token_validation_request> form = Form.form(Swagger_Blocko_Token_validation_request.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            final Form<Swagger_Blocko_Token_validation_request> form = formFactory.form(Swagger_Blocko_Token_validation_request.class).bindFromRequest();
+            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
             Swagger_Blocko_Token_validation_request help = form.get();
 
-            Enum_Token_type token_type = Enum_Token_type.getType(help.type_of_token);
-            if (token_type == null) return GlobalResult.result_badRequest("Wrong type of token");
+            TokenType token_type = TokenType.getType(help.type_of_token);
+            if (token_type == null) return badRequest("Wrong type of token");
 
             Swagger_Blocko_Token_validation_result result = new Swagger_Blocko_Token_validation_result();
 
-            if(token_type == Enum_Token_type.PERSON_TOKEN){
+            if (token_type == TokenType.PERSON_TOKEN) {
 
-                Model_Person person = Model_Person.get_byAuthToken(help.token);
-                if(person == null) return GlobalResult.result_notFound("Token not found");
+                Model_Person person = Model_Person.getByAuthToken(UUID.fromString(help.token));
+                if (person == null) return notFound("Token not found");
 
                 result.token = help.token;
                 result.available_requests = 50L;
             }
 
-            if(token_type == Enum_Token_type.INSTANCE_TOKEN){
+            if (token_type == TokenType.INSTANCE_TOKEN) {
 
-                Model_HomerInstanceRecord instanceRecord = Model_HomerInstanceRecord.get_byId(help.token);
-                if (instanceRecord == null) return GlobalResult.result_notFound("Token not found");
+                Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(help.token);
+                if (snapshot == null) return notFound("Token not found");
 
                 result.token = help.token;
-                result.available_requests = FinancialPermission.checkRestApiRequest(instanceRecord.getProduct(), instanceRecord.id);
+                result.available_requests = FinancialPermission.checkRestApiRequest(snapshot.getProduct(), snapshot.id);
             }
 
-            return GlobalResult.result_ok(Json.toJson(result));
+            return ok(Json.toJson(result));
 
-        }catch (Exception e){
-            return ServerLogger.result_internalServerError(e, request());
+        } catch (Exception e) {
+            return internalServerError(e);
         }
     }
 
@@ -175,7 +124,7 @@ public class Controller_Security extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Login_IncomingLogin",
+                            dataType = "utilities.swagger.input.Swagger_Login",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -194,53 +143,53 @@ public class Controller_Security extends Controller {
         try {
 
             // Kontrola JSON
-            final Form<Login_IncomingLogin> form = Form.form(Login_IncomingLogin.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Login_IncomingLogin help = form.get();
+            final Form<Swagger_Login> form = formFactory.form(Swagger_Login.class).bindFromRequest();
+            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
+            Swagger_Login help = form.get();
 
             // Ověření Person - Heslo a email
-            Model_Person person = Model_Person.findByEmailAddressAndPassword(help.mail, help.password);
-            if (person == null){
-                terminal_logger.trace("Email {} or password are wrong", help.mail);
-                return GlobalResult.result_forbidden("Email or password are wrong");
+            Model_Person person = Model_Person.getByEmail(help.mail);
+            if (person == null || !person.checkPassword(help.password)) {
+                logger.trace("Email {} or password are wrong", help.mail);
+                return forbidden("Email or password is wrong");
             }
 
             // Kontrola validity - jestli byl ověřen přes email
             // Jestli není účet blokován
-            if (!person.mailValidated) return GlobalResult.result_notValidated();
-            if (person.freeze_account) return GlobalResult.result_badRequest("Your account has been temporarily suspended");
+            if (!person.validated) return notValidated();
+            if (person.frozen) return badRequest("Your account has been temporarily suspended");
 
             // Volání Cache
             new Check_Online_Status_after_user_login(person.id).run();
 
             // Vytvářim objekt tokenu pro přihlášení (na něj jsou vázány co uživatel kde a jak dělá) - Historie pro využití v MongoDB widgety atd..
-            Model_FloatingPersonToken floatingPersonToken = new Model_FloatingPersonToken();
-            floatingPersonToken.person = person;
-            floatingPersonToken.where_logged  = Enum_Where_logged_tag.BECKI_WEBSITE;
+            Model_AuthorizationToken token = new Model_AuthorizationToken();
+            token.person = person;
+            token.where_logged  = PlatformAccess.BECKI_WEBSITE;
 
             // Zjistím kde je přihlášení (user-Agent je třeba "Safari v1.30" nebo "Chrome 12.43" atd..)
-            if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
-            else  floatingPersonToken.user_agent = "Unknown browser";
+            if ( Http.Context.current().request().headers().get("User-Agent")[0] != null) token.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
+            else  token.user_agent = "Unknown browser";
 
             // Ukládám do databáze
-            floatingPersonToken.save();
+            token.save();
 
             // Ukládám do Cahce pamětí pro další operace
-            Model_Person.token_cache.put(floatingPersonToken.authToken, person.id);
+            Model_Person.token_cache.put(token.token, person.id);
 
             // Chache Update
-            Model_Person.get_byId(person.id);
+            Model_Person.getById(person.id);
 
 
             // Vytvářím objekt, který zasílám zpět frontendu
             Swagger_Login_Token swagger_login_token = new Swagger_Login_Token();
-            swagger_login_token.authToken = floatingPersonToken.authToken;
+            swagger_login_token.authToken = token.token;
 
             // Odesílám odpověď
-            return result_ok( Json.toJson( swagger_login_token ) );
+            return ok(Json.toJson(swagger_login_token));
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -262,15 +211,12 @@ public class Controller_Security extends Controller {
             @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_API.class)
-    public  Result person_get_by_token(){
-        try{
+    @Security.Authenticated(Authentication.class)
+    public  Result person_get_by_token() {
+        try {
 
-            // Get token from Request
-            String token = request().getHeader("X-AUTH-TOKEN");
-
-            Model_Person person = Model_Person.get_byAuthToken(token);
-            if(person == null) return GlobalResult.result_forbidden("Account is not authorized");
+            Model_Person person = person();
+            if (person == null) return forbidden("Account is not authorized");
 
             Swagger_Person_All_Details result = new Swagger_Person_All_Details();
             result.person = person;
@@ -278,15 +224,15 @@ public class Controller_Security extends Controller {
             result.roles = person.roles;
 
             List<String> permissions = new ArrayList<>();
-            for( Model_Permission m :  Model_Permission.find.where().eq("roles.persons.id", person.id).findList() ) permissions.add(m.permission_key);
+            for ( Model_Permission m :  Model_Permission.find.query().where().eq("roles.persons.id", person.id).findList() ) permissions.add(m.name);
 
             result.permissions = permissions;
 
-            return result_ok( Json.toJson( result ) );
+            return ok(Json.toJson(result));
 
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -305,49 +251,37 @@ public class Controller_Security extends Controller {
             @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
+    @Security.Authenticated(Authentication.class)
     public Result logout() {
         try {
-            try {
 
-                // Pokus o smazání Tokenu
-                String token = request().getHeader("X-AUTH-TOKEN");
-                if(token == null) return GlobalResult.result_ok();
+            Optional<String> optional = request().header("X-AUTH-TOKEN");
+            if (optional.isPresent()) {
 
-                if (Model_Person.token_cache.containsKey(token)) {
-                    String person_id = Model_Person.token_cache.get(token);
-                    Model_Person.token_cache.remove(token);
+                UUID token = UUID.fromString(optional.get());
+                Model_Person.token_cache.remove(token);
 
-                    if (Model_Person.cache.containsKey(person_id)) {
-                        Model_Person.cache.remove(person_id);
-                    }
-                }
-
-                Model_FloatingPersonToken token_model = Model_FloatingPersonToken.find.where().eq("authToken", token).findUnique();
-
-                //Pokud token existuje jednak ho smažu - ale pořeší i odpojení websocketu
-                if(token_model != null){
+                Model_AuthorizationToken token_model = Model_AuthorizationToken.getByToken(token);
+                if (token_model != null) {
 
                     // Úklid přihlášených websocketů
-                    WS_Becki_Website becki_website = (WS_Becki_Website) Controller_WebSocket.becki_website.get(token_model.person.id);
-                    if(becki_website != null) becki_website.onClose();
+                    WS_Portal portal = Controller_WebSocket.portals.get(personId());
+                    if (portal != null) portal.close(token);
 
-                    token_model.deleteAuthToken();
+                    token_model.delete();
                 }
-
-            }catch (Exception e){
-                terminal_logger.internalServerError(e);
             }
 
-            // JE nutné garantovat vždy odpověď ok za všech situací kromě kritického selhální
-            return GlobalResult.result_ok();
+            return okEmpty();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            logger.internalServerError(e);
+            return okEmpty();
         }
     }
 
 //#### Oaut pro příjem Requestů zvenčí ################################################################################
-
+/* TODO
 
     // Metoda slouží pro příjem autentifikačních klíču ze sociálních sítí když se přihlásí uživatel.
     // Taktéž spojuje přihlášené účty pod jednu cvirtuální Person - aby v systému bylo jendotné rozpoznávání.
@@ -357,17 +291,17 @@ public class Controller_Security extends Controller {
     public Result github_oauth_get(String url) {
         try {
 
-            terminal_logger.debug("GET_github_oauth:: " + url);
+            logger.debug("GET_github_oauth:: " + url);
 
             Map<String, String> map = UtilTools.getMap_From_query(request().queryString().entrySet());
 
             if (map.containsKey("error")) {
 
-                terminal_logger.warn("GET_github_oauth::  contains Error: {} " , map.get("error"));
+                logger.warn("GET_github_oauth::  contains Error: {} " , map.get("error"));
 
-                if (map.containsKey("state")){
+                if (map.containsKey("state")) {
 
-                    Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("provider_key", map.get("state")).findUnique();
+                    Model_AuthorizationToken floatingPersonToken = Model_AuthorizationToken.find.query().where().eq("provider_key", map.get("state")).findOne();
                     floatingPersonToken.delete();
 
                     return redirect(floatingPersonToken.return_url.replace("[_status_]", "fail"));
@@ -379,13 +313,13 @@ public class Controller_Security extends Controller {
             String code = map.get("code").replace("[", "").replace("]", "");
 
 
-            terminal_logger.debug("GET_github_oauth:: state" + state);
-            terminal_logger.debug("GET_github_oauth:: code" + code);
+            logger.debug("GET_github_oauth:: state" + state);
+            logger.debug("GET_github_oauth:: code" + code);
 
-            Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("provider_key", state).findUnique();
-            if (floatingPersonToken == null){
+            Model_AuthorizationToken floatingPersonToken = Model_AuthorizationToken.find.query().where().eq("provider_key", state).findOne();
+            if (floatingPersonToken == null) {
 
-               terminal_logger.internalServerError(new Exception("GET_github_oauth:: Not recognize URL fragment!"));
+               logger.internalServerError(new Exception("GET_github_oauth:: Not recognize URL fragment!"));
 
                 return redirect(floatingPersonToken.return_url.replace("[_status_]", "fail")); // TODO TOM musí vyhodit NullPointerException
             }
@@ -411,7 +345,7 @@ public class Controller_Security extends Controller {
             floatingPersonToken.update();
 
 
-            Model_Person person = Model_Person.find.where().eq("github_oauth_id",json_response_from_github.get("id").asText() ).findUnique();
+            Model_Person person = Model_Person.find.query().where().eq("github_oauth_id",json_response_from_github.get("id").asText() ).findOne();
             if (person != null) {
 
                 System.out.println("Tento uživatel se nepřihlašuje poprvné");
@@ -431,20 +365,20 @@ public class Controller_Security extends Controller {
                 System.out.println("Tento uživatel se přihlašuje poprvé");
                 System.out.println("Json::" + json_response_from_github.toString());
 
-                if(json_response_from_github.has("mail")) person = Model_Person.find.where().eq("mail", json_response_from_github.get("mail").asText()).findUnique();
+                if (json_response_from_github.has("mail")) person = Model_Person.find.query().where().eq("mail", json_response_from_github.get("mail").asText()).findOne();
 
 
-                if(person != null){
+                if (person != null) {
 
                     System.out.println("13. Uživatel existuje s emailem ale bez github tokenu - a tak jen doplním token");
 
-                    person = Model_Person.find.where().eq("mail", json_response_from_github.get("mail").asText()).findUnique();
+                    person = Model_Person.find.query().where().eq("mail", json_response_from_github.get("mail").asText()).findOne();
                     person.github_oauth_id = json_response_from_github.get("id").asText();
                     if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").equals("") && !json_response_from_github.get("name").equals("null")) person.full_name = json_response_from_github.get("name").asText();
                     if (person.picture == null && json_response_from_github.has("avatar_url")) person.alternative_picture_link = json_response_from_github.get("avatar_url").asText();
                     person.update();
 
-                }else {
+                } else {
 
                     System.out.println("13. Uživatel neexistuje - tvořím nového ");
 
@@ -453,7 +387,7 @@ public class Controller_Security extends Controller {
                     if (json_response_from_github.has("mail"))   person.mail = json_response_from_github.get("mail").asText();
 
 
-                    if (json_response_from_github.has("login") && Model_Person.find.where().eq("nick_name", json_response_from_github.get("login").asText()).findUnique() == null) person.nick_name = json_response_from_github.get("login").asText();
+                    if (json_response_from_github.has("login") && Model_Person.find.query().where().eq("nick_name", json_response_from_github.get("login").asText()).findOne() == null) person.nick_name = json_response_from_github.get("login").asText();
                     if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").equals("") && !json_response_from_github.get("name").equals("null"))  person.full_name = json_response_from_github.get("name").asText();
                     if (json_response_from_github.has("avatar_url")) person.alternative_picture_link = json_response_from_github.get("avatar_url").asText();
                     person.save();
@@ -464,15 +398,15 @@ public class Controller_Security extends Controller {
 
             }
 
-            terminal_logger.debug("GET_github_oauth:: Return URL:: " + floatingPersonToken.return_url);
+            logger.debug("GET_github_oauth:: Return URL:: " + floatingPersonToken.return_url);
 
             new Check_Online_Status_after_user_login(person.id).run();
             return redirect(floatingPersonToken.return_url.replace("[_status_]", "success"));
 
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
-            return ServerLogger.result_internalServerError(e, request());
+            logger.internalServerError(e);
+            return internalServerError(e);
         }
 
     }
@@ -482,20 +416,20 @@ public class Controller_Security extends Controller {
     public Result facebook_oauth_get(String url) {
         try {
 
-            terminal_logger.debug("GET_facebook_oauth:: URL:: {} ", url);
+            logger.debug("GET_facebook_oauth:: URL:: {} ", url);
             Map<String, String> map = UtilTools.getMap_From_query(request().queryString().entrySet());
 
             if (map.containsKey("error")) {
 
-                terminal_logger.warn("GET_facebook_oauth:: Map Contains Error");
+                logger.warn("GET_facebook_oauth:: Map Contains Error");
 
                 if (map.containsKey("state"))
-                Model_FloatingPersonToken.find.where().eq("provider_key", map.get("state")).findUnique().delete();
+                Model_AuthorizationToken.find.query().where().eq("provider_key", map.get("state")).findOne().delete();
                 return redirect(url.replace("[_status_]", "fail"));
             }
 
 
-            for(String parameter : map.keySet()){
+            for (String parameter : map.keySet()) {
 
                 System.out.println("Facebook parameter: " + parameter);
                 System.out.println("Facebook contains: "  + map.get(parameter));
@@ -509,14 +443,14 @@ public class Controller_Security extends Controller {
             System.out.println("Code: " + code);
 
 
-            Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.find.where().eq("provider_key", state).findUnique();
-            if (floatingPersonToken == null){
+            Model_AuthorizationToken floatingPersonToken = Model_AuthorizationToken.find.query().where().eq("provider_key", state).findOne();
+            if (floatingPersonToken == null) {
 
-                terminal_logger.warn("GET_facebook_oauth:: floatingPersonToken not found! ");
+                logger.warn("GET_facebook_oauth:: floatingPersonToken not found! ");
                 return redirect(url.replace("[_status_]", "fail"));
             }
 
-            terminal_logger.debug("GET_facebook_oauth:: floatingPersonToken set as verified! ");
+            logger.debug("GET_facebook_oauth:: floatingPersonToken set as verified! ");
 
             floatingPersonToken.social_token_verified = true;
             floatingPersonToken.setDate();
@@ -544,9 +478,9 @@ public class Controller_Security extends Controller {
             System.out.println("6. Code: " + response.getCode());
 
 
-            if (!response.isSuccessful()){
+            if (!response.isSuccessful()) {
 
-                terminal_logger.warn("GET_facebook_oauth:: Get Response wasnt succesfull :(  ");
+                logger.warn("GET_facebook_oauth:: Get Response wasnt succesfull :(  ");
 
                 return redirect(url.replace("[_status_]", "fail"));
             }
@@ -572,7 +506,7 @@ public class Controller_Security extends Controller {
 
 
 
-            Model_Person person = Model_Person.find.where().eq("facebook_oauth_id",json_response_from_facebook.get("id").asText() ).findUnique();
+            Model_Person person = Model_Person.find.query().where().eq("facebook_oauth_id",json_response_from_facebook.get("id").asText() ).findOne();
             if (person != null) {
 
                 System.out.println("Tento uživatel se nepřihlašuje poprvné - pouze updajtuji jeho informace");
@@ -587,22 +521,22 @@ public class Controller_Security extends Controller {
                 floatingPersonToken.provider_user_id = jsonNode.get("id").asText();
                 floatingPersonToken.update();
             }
-            else{
+            else {
 
                 System.out.println("13. Uživatel neexistuje s tímto id tvořím nového ale ještě před tím zkontroluji zda už nění registrovaný klasicky přes email");
 
-                if(json_response_from_facebook.has("email")) person = Model_Person.find.where().eq("mail", json_response_from_facebook.get("email").asText()).findUnique();
+                if (json_response_from_facebook.has("email")) person = Model_Person.find.query().where().eq("mail", json_response_from_facebook.get("email").asText()).findOne();
 
-                if(person != null){
+                if (person != null) {
 
                     System.out.println("13. Uživatel existuje s emailem ale bez facebook tokenu - a tak jen doplním token");
 
-                    person = Model_Person.find.where().eq("mail", json_response_from_facebook.get("email").asText()).findUnique();
+                    person = Model_Person.find.query().where().eq("mail", json_response_from_facebook.get("email").asText()).findOne();
                     person.facebook_oauth_id = jsonNode.get("id").asText();
                     if (json_response_from_facebook.has("name")) person.full_name = json_response_from_facebook.get("name").asText();
                     person.update();
 
-                }else {
+                } else {
 
                     person = new Model_Person();
                     person.facebook_oauth_id = jsonNode.get("id").asText();
@@ -624,8 +558,8 @@ public class Controller_Security extends Controller {
 
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
-            return ServerLogger.result_internalServerError(e, request());
+            logger.internalServerError(e);
+            return internalServerError(e);
         }
     }
 
@@ -647,7 +581,7 @@ public class Controller_Security extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_SocialNetwork_Login",
+                            dataType = "utilities.swagger.input.Swagger_SocialNetwork_Login",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -661,28 +595,28 @@ public class Controller_Security extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result GitHub(){
+    public Result GitHub() {
         try {
 
 
             // Zpracování Json
-            final Form<Swagger_SocialNetwork_Login> form = Form.form(Swagger_SocialNetwork_Login.class).bindFromRequest();
-            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            final Form<Swagger_SocialNetwork_Login> form = formFactory.form(Swagger_SocialNetwork_Login.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
             Swagger_SocialNetwork_Login help = form.get();
 
 
             System.out.print("Link k přesměrování při přihlášení přes github:: " + help.redirect_url);
 
-            terminal_logger.debug("GitHub  request for login:: return link:: {}", help.redirect_url);
+            logger.debug("GitHub  request for login:: return link:: {}", help.redirect_url);
 
 
-            Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.setProviderKey("GitHub");
+            Model_AuthorizationToken floatingPersonToken = Model_AuthorizationToken.setProviderKey("GitHub");
 
             floatingPersonToken.return_url = help.redirect_url;
-            floatingPersonToken.where_logged = Enum_Where_logged_tag.BECKI_WEBSITE;
+            floatingPersonToken.where_logged = PlatformAccess.BECKI_WEBSITE;
 
 
-            if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
+            if ( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
 
             floatingPersonToken.update();
@@ -696,15 +630,15 @@ public class Controller_Security extends Controller {
             Swagger_SocialNetwork_Result result = new Swagger_SocialNetwork_Result();
             result.type = "GitHub";
             result.redirect_url = service.getAuthorizationUrl(null);
-            result.authToken = floatingPersonToken.authToken;
+            result.authToken = floatingPersonToken.token;
 
-            terminal_logger.debug("GitHub  request for login:: response:: {}", Json.toJson(result));
+            logger.debug("GitHub  request for login:: response:: {}", Json.toJson(result));
 
             return result_ok(Json.toJson(result));
 
-        }catch (Exception e) {
-            terminal_logger.internalServerError(e);
-            return ServerLogger.result_internalServerError(e, request());
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return internalServerError(e);
         }
     }
 
@@ -723,7 +657,7 @@ public class Controller_Security extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_SocialNetwork_Login",
+                            dataType = "utilities.swagger.input.Swagger_SocialNetwork_Login",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -737,29 +671,29 @@ public class Controller_Security extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result Facebook(){
+    public Result Facebook() {
         try {
 
 
             // Zpracování Json
-            final Form<Swagger_SocialNetwork_Login> form = Form.form(Swagger_SocialNetwork_Login.class).bindFromRequest();
-            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            final Form<Swagger_SocialNetwork_Login> form = formFactory.form(Swagger_SocialNetwork_Login.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
             Swagger_SocialNetwork_Login help = form.get();
             
             System.out.println("Link k přesměrování při přihlášení přes facebook:: " + help.redirect_url);
 
-            terminal_logger.debug("Facebook request for login:: return link:: {}", help.redirect_url);
+            logger.debug("Facebook request for login:: return link:: {}", help.redirect_url);
 
-            Model_FloatingPersonToken floatingPersonToken = Model_FloatingPersonToken.setProviderKey("Facebook");
+            Model_AuthorizationToken floatingPersonToken = Model_AuthorizationToken.setProviderKey("Facebook");
 
-            if(help.redirect_url.contains("/login-failed")){
+            if (help.redirect_url.contains("/login-failed")) {
                 help.redirect_url = "https://portal.stage.byzance.cz/dashboard";
-                terminal_logger.warn("Na Becki jsou líní to fixnout už měsíc!");
+                logger.warn("Na Becki jsou líní to fixnout už měsíc!");
             }
 
             floatingPersonToken.return_url = help.redirect_url;
 
-            if( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
+            if ( Http.Context.current().request().headers().get("User-Agent")[0] != null) floatingPersonToken.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  floatingPersonToken.user_agent = "Unknown browser";
 
             floatingPersonToken.update();
@@ -769,32 +703,26 @@ public class Controller_Security extends Controller {
             Swagger_SocialNetwork_Result result = new Swagger_SocialNetwork_Result();
             result.type = "Facebook";
             result.redirect_url = service.getAuthorizationUrl(null);
-            result.authToken = floatingPersonToken.authToken;
+            result.authToken = floatingPersonToken.token;
 
             return result_ok(Json.toJson(result));
 
-        }catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+        } catch (Exception e) {
+            return internalServerError(e);
         }
-    }
+    }*/
 
 
 ///###### Option########################################################################################################
 
     @ApiOperation( value = "option", hidden = true)
-    public Result option(){
+    public Result option() {
 
-        return result_ok();
+        return okEmpty();
     }
 
-
-
-
     @ApiOperation( value = "optionLink", hidden = true)
-    public Result optionLink(String url){
-
-        CoreResponse.cors(url);
-        return ok();
-
+    public Result optionLink(String url) {
+        return okEmpty();
     }
 }

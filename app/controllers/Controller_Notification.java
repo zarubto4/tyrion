@@ -1,33 +1,39 @@
 package controllers;
 
-import com.avaje.ebean.Query;
+import com.google.inject.Inject;
+import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.Model_Notification;
 import play.data.Form;
+import play.data.FormFactory;
 import play.libs.Json;
-import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.enums.Enum_Notification_importance;
-import utilities.enums.Enum_Notification_state;
-import utilities.logger.Class_Logger;
-import utilities.logger.ServerLogger;
-import utilities.login_entities.Secured_API;
+import responses.*;
+import utilities.authentication.Authentication;
+import utilities.enums.NotificationImportance;
+import utilities.enums.NotificationState;
+import utilities.logger.Logger;
 import utilities.notifications.NotificationActionHandler;
-import utilities.response.GlobalResult;
-import utilities.response.response_objects.*;
-import utilities.swagger.documentationClass.Swagger_Notification_Confirm;
-import utilities.swagger.documentationClass.Swagger_Notification_Read;
-import utilities.swagger.outboundClass.Filter_List.Swagger_Notification_List;
+import utilities.swagger.input.Swagger_Notification_Confirm;
+import utilities.swagger.input.Swagger_Notification_Read;
+import utilities.swagger.output.filter_results.Swagger_Notification_List;
 
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class Controller_Notification extends Controller {
+public class Controller_Notification extends BaseController {
 
 // LOGGER ##############################################################################################################
 
-  private static final Class_Logger terminal_logger = new Class_Logger(Controller_Notification.class);
+  private static final Logger logger = new Logger(Controller_Notification.class);
+
+    private FormFactory formFactory;
+
+    @Inject
+    public Controller_Notification(FormFactory formFactory) {
+        this.formFactory = formFactory;
+    }
 
 // PUBLIC CONTROLLER METHODS ###########################################################################################
 
@@ -46,18 +52,18 @@ public class Controller_Notification extends Controller {
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
           @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
   })
-  @Security.Authenticated(Secured_API.class)
-  public Result notification_getByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2... " + " For first call, use 1", required = false) Integer page_number){
+  @Security.Authenticated(Authentication.class)
+  public Result notification_getByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2... " + " For first call, use 1", required = false) Integer page_number) {
      try {
 
-        Query<Model_Notification> query =  Model_Notification.find.where().eq("person.id", Controller_Security.get_person_id()).order().desc("created");
+        Query<Model_Notification> query =  Model_Notification.find.query().where().eq("person.id", BaseController.personId()).order().desc("created");
 
         Swagger_Notification_List result = new Swagger_Notification_List(query, page_number);
 
-        return GlobalResult.result_ok(Json.toJson(result));
+        return ok(Json.toJson(result));
 
      } catch (Exception e) {
-       return ServerLogger.result_internalServerError(e, request());
+       return internalServerError(e);
      }
   }
 
@@ -78,20 +84,20 @@ public class Controller_Notification extends Controller {
           @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
           @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
   })
-  @Security.Authenticated(Secured_API.class)
-  public Result notification_delete(@ApiParam(value = "notification_id String path", required = true) String notification_id){
+  @Security.Authenticated(Authentication.class)
+  public Result notification_delete(@ApiParam(value = "notification_id String path", required = true) String notification_id) {
     try {
 
-      Model_Notification notification = Model_Notification.get_byId(notification_id);
-      if (notification == null) return GlobalResult.result_notFound("Notification does not exist");
+      Model_Notification notification = Model_Notification.getById(notification_id);
+      if (notification == null) return notFound("Notification does not exist");
 
-      if( !notification.delete_permission()) return GlobalResult.result_forbidden();
+      if ( !notification.delete_permission()) return forbiddenEmpty();
 
       notification.delete();
-      return GlobalResult.result_ok();
+      return okEmpty();
 
     } catch (Exception e) {
-      return ServerLogger.result_internalServerError(e, request());
+      return internalServerError(e);
     }
   }
 
@@ -106,7 +112,7 @@ public class Controller_Notification extends Controller {
           {
                   @ApiImplicitParam(
                           name = "body",
-                          dataType = "utilities.swagger.documentationClass.Swagger_Notification_Read",
+                          dataType = "utilities.swagger.input.Swagger_Notification_Read",
                           required = true,
                           paramType = "body",
                           value = "Contains Json with values"
@@ -119,27 +125,27 @@ public class Controller_Notification extends Controller {
           @ApiResponse(code = 401, message = "Unauthorized request",        response = Result_Unauthorized.class),
           @ApiResponse(code = 500, message = "Server side Error",           response = Result_InternalServerError.class)
   })
-  @Security.Authenticated(Secured_API.class)
-  public Result notification_read(){
+  @Security.Authenticated(Authentication.class)
+  public Result notification_read() {
     try {
 
-      final Form<Swagger_Notification_Read> form = Form.form(Swagger_Notification_Read.class).bindFromRequest();
-      if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+      final Form<Swagger_Notification_Read> form = formFactory.form(Swagger_Notification_Read.class).bindFromRequest();
+      if (form.hasErrors()) return invalidBody(form.errorsAsJson());
       Swagger_Notification_Read help = form.get();
 
-      List<Model_Notification> notifications = Model_Notification.find.where().idIn(help.notification_id).findList();
+      List<Model_Notification> notifications = Model_Notification.find.query().where().idIn(help.notification_id).findList();
 
-      for(Model_Notification notification : notifications) {
+      for (Model_Notification notification : notifications) {
 
         notification.set_read();
-        notification.state = Enum_Notification_state.updated;
+        notification.state = NotificationState.UPDATED;
         notification.send();
       }
 
-      return GlobalResult.result_ok();
+      return okEmpty();
 
     } catch (Exception e) {
-      return ServerLogger.result_internalServerError(e, request());
+      return internalServerError(e);
     }
   }
 
@@ -156,22 +162,22 @@ public class Controller_Notification extends Controller {
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
           @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
   })
-  @Security.Authenticated(Secured_API.class)
-  public Result notifications_getUnconfirmed(){
-    try{
+  @Security.Authenticated(Authentication.class)
+  public Result notifications_getUnconfirmed() {
+    try {
 
-      List<Model_Notification> notifications = Model_Notification.find.where().eq("person.id", Controller_Security.get_person_id()).eq("notification_importance", Enum_Notification_importance.high).eq("confirmed", false).findList();
-      if(notifications.isEmpty()) return GlobalResult.result_ok("No new notifications");
+      List<Model_Notification> notifications = Model_Notification.find.query().where().eq("person.id", BaseController.personId()).eq("notification_importance", NotificationImportance.HIGH).eq("confirmed", false).findList();
+      if (notifications.isEmpty()) return ok("No new notifications");
 
-      for (Model_Notification notification : notifications){
-          notification.state = Enum_Notification_state.unconfirmed;
+      for (Model_Notification notification : notifications) {
+          notification.state = NotificationState.UNCONFIRMED;
           notification.send();
       }
 
-      return GlobalResult.result_ok("Notifications were sent again");
+      return ok("Notifications were sent again");
 
-    }catch (Exception e){
-      return ServerLogger.result_internalServerError(e, request());
+    } catch (Exception e) {
+      return internalServerError(e);
     }
   }
 
@@ -187,7 +193,7 @@ public class Controller_Notification extends Controller {
           {
                   @ApiImplicitParam(
                           name = "body",
-                          dataType = "utilities.swagger.documentationClass.Swagger_Notification_Confirm",
+                          dataType = "utilities.swagger.input.Swagger_Notification_Confirm",
                           required = true,
                           paramType = "body",
                           value = "Contains Json with values"
@@ -203,36 +209,36 @@ public class Controller_Notification extends Controller {
           @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
           @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
   })
-  @Security.Authenticated(Secured_API.class)
-  public Result notification_confirm(@ApiParam(value = "notification_id String path", required = true) String notification_id){
-      try{
+  @Security.Authenticated(Authentication.class)
+  public Result notification_confirm(@ApiParam(value = "notification_id String path", required = true) String notification_id) {
+      try {
 
-          final Form<Swagger_Notification_Confirm> form = Form.form(Swagger_Notification_Confirm.class).bindFromRequest();
-          if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+          final Form<Swagger_Notification_Confirm> form = formFactory.form(Swagger_Notification_Confirm.class).bindFromRequest();
+          if (form.hasErrors()) return invalidBody(form.errorsAsJson());
           Swagger_Notification_Confirm help = form.get();
 
-          Model_Notification notification = Model_Notification.get_byId(notification_id);
-          if(notification == null) return GlobalResult.result_notFound("Notification no longer exists");
+          Model_Notification notification = Model_Notification.getById(notification_id);
+          if (notification == null) return notFound("Notification no longer exists");
 
-          if (!notification.confirm_permission()) return GlobalResult.result_forbidden();
+          if (!notification.confirm_permission()) return forbiddenEmpty();
 
-          if (notification.confirmed) return GlobalResult.result_badRequest("Notification is already confirmed");
+          if (notification.confirmed) return badRequest("Notification is already confirmed");
 
           try {
 
               NotificationActionHandler.perform(help.action, help.payload);
 
           } catch (IllegalArgumentException e) {
-              Controller_Security.get_person().notification_error(e.getMessage());
+              BaseController.person().notification_error(e.getMessage());
           } catch (Exception e) {
-              terminal_logger.internalServerError(e);
+              logger.internalServerError(e);
           }
 
           notification.confirm();
 
-          return GlobalResult.result_ok();
-      } catch (Exception e){
-          return ServerLogger.result_internalServerError(e, request());
+          return okEmpty();
+      } catch (Exception e) {
+          return internalServerError(e);
       }
   }
 }

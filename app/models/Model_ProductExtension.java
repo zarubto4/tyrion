@@ -1,29 +1,22 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.Controller_Security;
+import controllers.BaseController;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
-import play.data.Form;
-import play.i18n.Lang;
 import play.libs.Json;
-import play.mvc.Result;
-import utilities.cache.helps_objects.TyrionCachedList;
-import utilities.enums.Enum_ExtensionType;
+import utilities.cache.CacheField;
+import utilities.enums.ExtensionType;
 import utilities.financial.extensions.extensions.Extension;
 import utilities.financial.extensions.configurations.*;
-import utilities.logger.Class_Logger;
-import utilities.swagger.documentationClass.Swagger_ProductExtension_New;
-import utilities.swagger.outboundClass.Swagger_ProductExtension_Type;
+import utilities.logger.Logger;
+import utilities.model.NamedModel;
 
 import javax.persistence.*;
-
-import java.util.ArrayList;
-import java.util.Date;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,43 +24,34 @@ import java.util.UUID;
 @Entity
 @ApiModel(value = "ProductExtension", description = "Model of ProductExtension")
 @Table(name="ProductExtension")
-public class Model_ProductExtension extends Model{
+public class Model_ProductExtension extends NamedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_ProductExtension.class);
+    private static final Logger logger = new Logger(Model_ProductExtension.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                    @Id @ApiModelProperty(required = true) public String id;
-                                        @ApiModelProperty(required = true) public String name;
-                                        @ApiModelProperty(required = true) public String description;
-
                                         @ApiModelProperty(required = true) public String color;
 
-           @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_ExtensionType type;
+           @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public ExtensionType type;
                             @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
                                         @ApiModelProperty(required = true) public Integer order_position;
 
     @JsonProperty  @ApiModelProperty(required = true) public boolean active;
-                                                               @JsonIgnore public boolean removed;
-
-                                        @ApiModelProperty(required = true) public Date created;
 
                                                     @JsonIgnore @ManyToOne public Model_Product product;
 
                                                     @JsonIgnore @ManyToOne public Model_Tariff tariff_included;
                                                     @JsonIgnore @ManyToOne public Model_Tariff tariff_optional;
 
-
-
-  /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true) @Transient
-    public Double price(){
+    public Double price() {
         try {
             return getDoubleDailyPrice();
         } catch (Exception e) {
@@ -77,9 +61,9 @@ public class Model_ProductExtension extends Model{
 
 
     @JsonProperty @ApiModelProperty(required = true, value = "Only for Administration used") @Transient  @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Boolean include(){
+    public Boolean include() {
         try {
-            if(edit_permission()) return tariff_included!= null;
+            if (edit_permission()) return tariff_included!= null;
             return null;
         } catch (Exception e) {
             return null;
@@ -87,14 +71,14 @@ public class Model_ProductExtension extends Model{
     }
 
     @JsonProperty @ApiModelProperty(required = false, value = "only with edit permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
-    public String config(){
+    public String config() {
         try {
 
-            if(!edit_permission()) return null;
+            if (!edit_permission()) return null;
             return Json.toJson(Configuration.getConfiguration(type, configuration)).toString();
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return "{\"error\":\"config file error\"}";
         }
     }
@@ -102,30 +86,24 @@ public class Model_ProductExtension extends Model{
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
     @JsonIgnore @Override
-    public void save(){
+    public void save() {
 
-        created = new Date();
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString().substring(0,8);
-            if (find.byId(this.id) == null) break;
-        }
         if (product == null) {
             if (tariff_included != null) {
-                order_position = find.where().eq("tariff_included.id", tariff_included.id).findRowCount() + 1;
+                order_position = find.query().where().eq("tariff_included.id", tariff_included.id).findCount() + 1;
             } else {
-                order_position = find.where().eq("tariff_optional.id", tariff_optional.id).findRowCount() + 1;
+                order_position = find.query().where().eq("tariff_optional.id", tariff_optional.id).findCount() + 1;
             }
         }
         super.save();
     }
 
     @JsonIgnore @Override
-    public void delete(){
+    public boolean delete() {
 
         int pointer = 1;
 
-        if(tariff_included != null) {
+        if (tariff_included != null) {
             for (Model_ProductExtension extension : tariff_included.extensions_included()) {
 
                 if (!extension.id.equals(this.id)) {
@@ -134,7 +112,7 @@ public class Model_ProductExtension extends Model{
                 }
             }
         }
-        if(tariff_optional != null) {
+        if (tariff_optional != null) {
             for (Model_ProductExtension extension : tariff_optional.extensions_optional()) {
 
                 if (!extension.id.equals(this.id)) {
@@ -143,7 +121,7 @@ public class Model_ProductExtension extends Model{
                 }
             }
         }
-        if(product != null) {
+        if (product != null) {
             for (Model_ProductExtension extension : product.extensions) {
 
                 if (!extension.id.equals(this.id)) {
@@ -152,11 +130,11 @@ public class Model_ProductExtension extends Model{
                 }
             }
         }
-        super.delete();
+        return super.delete();
     }
 
     @JsonIgnore @Override
-    public void update(){
+    public void update() {
 
         cache_price.put(this.id, this.getDailyPrice());
         super.update();
@@ -165,14 +143,14 @@ public class Model_ProductExtension extends Model{
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public void up(){
+    public void up() {
 
-        if(order_position == 1) return;
+        if (order_position == 1) return;
 
-        if(tariff_included != null) {
+        if (tariff_included != null) {
             tariff_included.extensions_included.get(order_position - 2).order_position = this.order_position;
             tariff_included.extensions_included.get(order_position - 2).update();
-        }else {
+        } else {
 
             tariff_optional.extensions_optional.get(order_position - 2).order_position = this.order_position;
             tariff_optional.extensions_optional.get(order_position - 2).update();
@@ -183,15 +161,15 @@ public class Model_ProductExtension extends Model{
     }
 
     @JsonIgnore
-    public void down(){
+    public void down() {
 
 
-        if(tariff_included != null){
+        if (tariff_included != null) {
 
             tariff_included.extensions_included.get(order_position).order_position = tariff_included.order_position - 1;
             tariff_included.extensions_included.get(order_position).update();
 
-        }else{
+        } else {
 
             tariff_optional.extensions_optional.get(order_position).order_position = tariff_optional.order_position - 1;
             tariff_optional.extensions_optional.get(order_position).update();
@@ -211,7 +189,7 @@ public class Model_ProductExtension extends Model{
     public Long getActualPrice() {
         try {
 
-            terminal_logger.trace("getActualPrice: Getting price for extension of type '{}' with id: {}", this.type.name(), this.id);
+            logger.trace("getActualPrice: Getting price for extension of type '{}' with id: {}", this.type.name(), this.id);
 
             Extension extension = getExtensionType();
             if (extension == null) return null;
@@ -219,16 +197,16 @@ public class Model_ProductExtension extends Model{
             Object configuration = getConfiguration();
             if (configuration == null) return null;
 
-            terminal_logger.debug("getActualPrice: Got extension type and configuration.");
+            logger.debug("getActualPrice: Got extension type and configuration.");
 
             Long price = extension.getActualPrice(configuration);
 
-            terminal_logger.debug("getActualPrice: Returned value is {}", price);
+            logger.debug("getActualPrice: Returned value is {}", price);
 
             return price;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -241,7 +219,7 @@ public class Model_ProductExtension extends Model{
     public Long getDailyPrice() {
         try {
 
-            terminal_logger.trace("getDailyPrice: Getting price for extension of type {}", this.type.name());
+            logger.trace("getDailyPrice: Getting price for extension of type {}", this.type.name());
 
             Long price = cache_price.get(id);
             if (price == null) {
@@ -252,19 +230,19 @@ public class Model_ProductExtension extends Model{
                 Object configuration = getConfiguration();
                 if (configuration == null) return null;
 
-                terminal_logger.debug("getDailyPrice: Got extension type and configuration.");
+                logger.debug("getDailyPrice: Got extension type and configuration.");
 
                 price = extension.getDailyPrice(configuration);
 
                 cache_price.put(id, price);
             } else {
-                terminal_logger.debug("getDailyPrice: Returned from cache");
+                logger.debug("getDailyPrice: Returned from cache");
             }
 
             return price;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return 0l;
         }
     }
@@ -284,7 +262,7 @@ public class Model_ProductExtension extends Model{
             return (double) price;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return 0d;
         }
     }
@@ -298,7 +276,7 @@ public class Model_ProductExtension extends Model{
     public Double getDoubleConfigPrice() {
         try {
 
-            terminal_logger.trace("getDoubleConfigPrice: Getting price for extension of type {}", this.type.name());
+            logger.trace("getDoubleConfigPrice: Getting price for extension of type {}", this.type.name());
 
             Extension extension = getExtensionType();
             if (extension == null) return null;
@@ -306,12 +284,12 @@ public class Model_ProductExtension extends Model{
             Object configuration = getConfiguration();
             if (configuration == null) return null;
 
-            terminal_logger.debug("getDoubleConfigPrice: Got extension type and configuration.");
+            logger.debug("getDoubleConfigPrice: Got extension type and configuration.");
 
             return ((double) extension.getConfigPrice(configuration));
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -320,7 +298,7 @@ public class Model_ProductExtension extends Model{
     public Long getConfigPrice() {
         try {
 
-            terminal_logger.trace("getConfigPrice: Getting price for extension of type {}", this.type.name());
+            logger.trace("getConfigPrice: Getting price for extension of type {}", this.type.name());
 
             Extension extension = getExtensionType();
             if (extension == null) return null;
@@ -328,12 +306,12 @@ public class Model_ProductExtension extends Model{
             Object configuration = getConfiguration();
             if (configuration == null) return null;
 
-            terminal_logger.debug("getConfigPrice: Got extension type and configuration.");
+            logger.debug("getConfigPrice: Got extension type and configuration.");
 
             return extension.getConfigPrice(configuration);
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -344,7 +322,7 @@ public class Model_ProductExtension extends Model{
     }
 
     @JsonIgnore
-    public String getTypeName(){
+    public String getTypeName() {
 
         return type.name();
     }
@@ -363,14 +341,14 @@ public class Model_ProductExtension extends Model{
 
             return extension;
 
-        } catch (Exception e){
-            terminal_logger.internalServerError(e);
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
 
     @JsonIgnore
-    public String getExtensionTypeName(){
+    public String getExtensionTypeName() {
 
         Extension extension = getExtensionType();
         if (extension == null) return null;
@@ -379,7 +357,7 @@ public class Model_ProductExtension extends Model{
     }
 
     @JsonIgnore
-    public String getExtensionTypeDescription(){
+    public String getExtensionTypeDescription() {
 
         Extension extension = getExtensionType();
         if (extension == null) return null;
@@ -397,7 +375,7 @@ public class Model_ProductExtension extends Model{
         extension.color = this.color;
         extension.type = this.type;
         extension.active = true;
-        extension.removed = false;
+        extension.deleted = false;
         extension.configuration = this.configuration;
 
         return extension;
@@ -405,13 +383,13 @@ public class Model_ProductExtension extends Model{
 
 
     @JsonIgnore
-    public Object getConfiguration(){
+    public Object getConfiguration() {
         try {
 
           return  Configuration.getConfiguration(type, configuration);
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -425,54 +403,55 @@ public class Model_ProductExtension extends Model{
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public boolean create_permission(){
-        return (product != null && product.customer.isEmployee(Controller_Security.get_person()))
-                || Controller_Security.get_person().has_permission("ProductExtension_create");
+    public boolean create_permission() {
+        return (product != null && product.customer.isEmployee(BaseController.person()))
+                || BaseController.person().has_permission("ProductExtension_create");
     }
 
     @JsonIgnore
-    public boolean read_permission(){
+    public boolean read_permission() {
         return product == null
-                ||  product.customer.isEmployee(Controller_Security.get_person())
-                || Controller_Security.get_person().has_permission("ProductExtension_read");
+                ||  product.customer.isEmployee(BaseController.person())
+                || BaseController.person().has_permission("ProductExtension_read");
     }
 
     @JsonProperty @ApiModelProperty(required = true)
-    public boolean edit_permission(){
-        return (product != null && product.customer.isEmployee(Controller_Security.get_person()))
-                || Controller_Security.get_person().has_permission("ProductExtension_edit");
+    public boolean edit_permission() {
+        return (product != null && product.customer.isEmployee(BaseController.person()))
+                || BaseController.person().has_permission("ProductExtension_edit");
     }
 
     @JsonProperty @ApiModelProperty(required = true)
-    public boolean act_deactivate_permission(){
-        return (product != null && product.customer.isEmployee(Controller_Security.get_person()))
-                || Controller_Security.get_person().has_permission("ProductExtension_act_deactivate");
+    public boolean act_deactivate_permission() {
+        return (product != null && product.customer.isEmployee(BaseController.person()))
+                || BaseController.person().has_permission("ProductExtension_act_deactivate");
     }
 
     @JsonProperty @ApiModelProperty(required = true)
-    public boolean delete_permission(){
-        return Controller_Security.get_person().has_permission("ProductExtension_delete");
+    public boolean delete_permission() {
+        return BaseController.person().has_permission("ProductExtension_delete");
     }
 
-    public enum permissions{ProductExtension_create, ProductExtension_read, ProductExtension_edit, ProductExtension_act_deactivate, ProductExtension_delete}
+    public enum Permission { ProductExtension_create, ProductExtension_read, ProductExtension_edit, ProductExtension_act_deactivate, ProductExtension_delete }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Model.Finder<String,Model_ProductExtension> find = new Model.Finder<>(Model_ProductExtension.class);
+    public static Finder<UUID, Model_ProductExtension> find = new Finder<>(Model_ProductExtension.class);
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @TyrionCachedList public static final String CACHE_PRICE = Model_ProductExtension.class.getSimpleName() + "_PRICE";
+    @CacheField(value = Long.class, maxElements = 300, name = "Model_ProductExtension_Price")
+    public static Cache<UUID, Long> cache_price;
 
-    public static Cache<String, Long> cache_price;
-
-    @JsonIgnore
-    public static Model_ProductExtension get_byId(String id) {
-        return find.where().eq("id", id).eq("removed", false).findUnique();
+    public static Model_ProductExtension getById(String id) {
+        return getById(UUID.fromString(id));
     }
 
-    @JsonIgnore
-    public static List<Model_ProductExtension> get_byUser(String person_id) {
-        return find.where().eq("product.customer.employees.person.id", person_id).eq("removed", false).findList();
+    public static Model_ProductExtension getById(UUID id) {
+        return find.query().where().idEq(id).eq("deleted", false).findOne();
+    }
+
+    public static List<Model_ProductExtension> getByUser(UUID person_id) {
+        return find.query().where().eq("product.customer.employees.person.id", person_id).eq("deleted", false).findList();
     }
 }

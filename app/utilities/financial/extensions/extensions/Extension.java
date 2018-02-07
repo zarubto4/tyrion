@@ -1,6 +1,6 @@
 package utilities.financial.extensions.extensions;
 
-import utilities.enums.Enum_ExtensionType;
+import utilities.enums.ExtensionType;
 
 /**
  * Defines common behavior of every product Extension.
@@ -35,7 +35,7 @@ public interface Extension {
      * Gets the name of an extension loaded from application.conf.
      * @return The String name of the Extension.
      */
-    Enum_ExtensionType getType();
+    ExtensionType getType();
 
     /**
      * Gets the name of an extension loaded from application.conf.

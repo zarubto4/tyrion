@@ -1,28 +1,25 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.Controller_Security;
+import controllers.BaseController;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import play.data.Form;
-import play.i18n.Lang;
+import play.libs.Json;
 import play.mvc.Http;
 import utilities.Server;
-import utilities.enums.Enum_MProgram_SnapShot_settings;
-import utilities.enums.Enum_Tyrion_Server_mode;
+import utilities.authentication.Authentication;
+import utilities.enums.GridAccess;
+import utilities.enums.ServerMode;
 import utilities.errors.Exceptions.Tyrion_Exp_ForbidenPermission;
 import utilities.errors.Exceptions.Tyrion_Exp_ObjectNotValidAnymore;
 import utilities.errors.Exceptions.Tyrion_Exp_Unauthorized;
-import utilities.logger.Class_Logger;
-import utilities.login_entities.Secured_API;
-import utilities.swagger.documentationClass.Swagger_GridWidgetVersion_GridApp_source;
-import utilities.swagger.outboundClass.Swagger_Mobile_Connection_Summary;
-import web_socket.message_objects.homer_instance_with_tyrion.verification.WS_Message_Grid_token_verification;
+import utilities.logger.Logger;
+import utilities.model.BaseModel;
+import utilities.swagger.input.Swagger_GridWidgetVersion_GridApp_source;
+import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -31,21 +28,19 @@ import java.util.*;
 @Entity
 @ApiModel(value = "MProgramInstanceParameter", description = "")
 @Table(name="MProgramInstanceParameter")
-public class Model_MProgramInstanceParameter extends Model {
+public class Model_MProgramInstanceParameter extends BaseModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_MProgramInstanceParameter.class);
+    private static final Logger logger = new Logger(Model_MProgramInstanceParameter.class);
 
 /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
 
-    @Id @ApiModelProperty(required = true) public UUID id;
+    @JsonIgnore @ManyToOne public Model_MProjectProgramSnapShot m_project_program_snapshot;
+    @JsonIgnore @ManyToOne public Model_Version m_program_version;
 
-    @JsonIgnore @ManyToOne()  public Model_MProjectProgramSnapShot m_project_program_snapshot; //(Vazba Done)
-    @JsonIgnore @ManyToOne()  public Model_VersionObject m_program_version;                    //(Vazba Done)
-
-    @JsonIgnore public String                            connection_token;        // Token, pomocí kterého se vrátí konkrétní aplikace s podporou propojení na websocket
-    @JsonIgnore public Enum_MProgram_SnapShot_settings   snapshot_settings;       // Typ Aplikace
+    @JsonIgnore public String connection_token;      // Token, pomocí kterého se vrátí konkrétní aplikace s podporou propojení na websocket
+    @JsonIgnore public GridAccess snapshot_settings; // Typ Aplikace
 
     // TODO Zde lze dopsat práva pro jednotlivé uživatele
     // Podle emailů, podle Tokenů, podle domény atd. atd..
@@ -55,11 +50,11 @@ public class Model_MProgramInstanceParameter extends Model {
     private static final String parameter_prefix = "part_";
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public Enum_MProgram_SnapShot_settings snapshot_settings() {
+    public GridAccess snapshot_settings() {
 
-        if ( get_instance() == null) return Enum_MProgram_SnapShot_settings.not_in_instance;
+        if ( get_instance() == null) return GridAccess.TESTING;
         if (snapshot_settings == null) {
-            snapshot_settings = Enum_MProgram_SnapShot_settings.only_for_project_members; // Nastavení default hodnoty pokud bude chybět
+            snapshot_settings = GridAccess.PROJECT; // Nastavení default hodnoty pokud bude chybět
             update();
         }
 
@@ -69,7 +64,7 @@ public class Model_MProgramInstanceParameter extends Model {
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public String grid_app_url() {
 
-          if (snapshot_settings() == Enum_MProgram_SnapShot_settings.not_in_instance) {
+          if (snapshot_settings() == GridAccess.TESTING) {
                   return null;
           }
 
@@ -77,23 +72,23 @@ public class Model_MProgramInstanceParameter extends Model {
           return Server.grid_app_main_url + "/" + connection_token();
     }
 
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String m_program_id()  { return m_program_version.m_program.id;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public UUID m_program_id()  { return m_program_version.m_program.id;}
     @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String m_program_name()  { return m_program_version.m_program.name;}
     @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String m_program_description()  { return m_program_version.m_program.description;}
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_object_id()  { return m_program_version.id;}
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_object_name()  { return m_program_version.version_name;}
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_object_description()  { return m_program_version.version_description;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public UUID version_object_id()  { return m_program_version.id;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_object_name()  { return m_program_version.name;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_object_description()  { return m_program_version.description;}
 
 /* JSON IGNORE  ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient private Model_HomerInstance instance;  // Jelikož se několikrát odkazuji na instanci - dočasnou proměnou snižuji počet SQL vyhledávání
+    @JsonIgnore @Transient private Model_Instance instance;  // Jelikož se několikrát odkazuji na instanci - dočasnou proměnou snižuji počet SQL vyhledávání
     @JsonIgnore @Transient private boolean instance_exist_searched = false; // Abych se neptal znova
 
     @JsonIgnore
-    private Model_HomerInstance get_instance() {
+    private Model_Instance get_instance() {
         if (instance_exist_searched) return instance;
         instance_exist_searched = true;
-        instance = Model_HomerInstance.find.where().eq("actual_instance.version_object.b_program_version_snapshots.id", m_project_program_snapshot.id).findUnique();
+        instance = Model_Instance.find.query().where().eq("actual_instance.version.b_program_version_snapshots.id", m_project_program_snapshot.id).findOne();
         return instance;
     }
 
@@ -120,7 +115,7 @@ public class Model_MProgramInstanceParameter extends Model {
         Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
 
         // Nastavení SSL
-        if (Server.server_mode  == Enum_Tyrion_Server_mode.developer) {
+        if (Server.mode  == ServerMode.DEVELOPER) {
             summary.grid_app_url = "ws://";
         } else {
             summary.grid_app_url = "wss://";
@@ -128,13 +123,13 @@ public class Model_MProgramInstanceParameter extends Model {
 
         switch (snapshot_settings()) {
 
-            case not_in_instance: {
+            case TESTING: {
                 throw new Tyrion_Exp_ObjectNotValidAnymore("Token is required");
             }
 
-            case absolutely_public: {
+            case PUBLIC: {
 
-                summary.grid_app_url += Model_HomerServer.get_byId(instance.server_id()).get_Grid_APP_URL() + instance.id + "/" + m_project_program_snapshot.m_project_id() + "/"  + connection_token();
+                summary.grid_app_url += Model_HomerServer.getById(instance.server_id()).get_Grid_APP_URL() + instance.id + "/" + m_project_program_snapshot.m_project_id() + "/"  + connection_token();
                 summary.m_program = Model_MProgram.get_m_code(m_program_version).asText();
                 summary.m_project_id = m_program_version.m_program.m_project_id();
                 summary.m_program_id = m_program_id();
@@ -145,13 +140,13 @@ public class Model_MProgramInstanceParameter extends Model {
                 return summary;
             }
 
-            case only_for_project_members: {
+            case PROJECT: {
 
-                String token = new Secured_API().getUsername(context);
+                String token = new Authentication().getUsername(context);
 
-                if (token == null || token.length() < 20) throw new Tyrion_Exp_Unauthorized("Login is required");
+                if (token == null) throw new Tyrion_Exp_Unauthorized("Login is required");
 
-                Model_Person person = Controller_Security.get_person();
+                Model_Person person = BaseController.person();
                 if (person == null) throw new Tyrion_Exp_Unauthorized("Login is required");
 
                 if (!read_permission()) throw new Tyrion_Exp_ForbidenPermission("Login is required");
@@ -159,7 +154,6 @@ public class Model_MProgramInstanceParameter extends Model {
                 Model_GridTerminal terminal = new Model_GridTerminal();
                 terminal.device_name = "Unknown";
                 terminal.device_type = "Unknown";
-                terminal.date_of_create = new Date();
 
                 if ( Http.Context.current().request().headers().get("User-Agent")[0] != null) terminal.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
                 else  terminal.user_agent = "Unknown browser";
@@ -167,7 +161,7 @@ public class Model_MProgramInstanceParameter extends Model {
                 terminal.person = person;
                 terminal.save();
 
-                summary.grid_app_url += Model_HomerServer.get_byId(instance.server_id()).get_Grid_APP_URL() + instance.id + "/" + m_project_program_snapshot.m_project_id() + "/" + terminal.terminal_token;
+                summary.grid_app_url += Model_HomerServer.getById(instance.server_id()).get_Grid_APP_URL() + instance.id + "/" + m_project_program_snapshot.m_project_id() + "/" + terminal.terminal_token;
                 summary.m_project_id = m_program_version.m_program.m_project_id();
                 summary.m_program = Model_MProgram.get_m_code(m_program_version).asText();
                 summary.m_program_id = m_program_id();
@@ -201,7 +195,7 @@ public class Model_MProgramInstanceParameter extends Model {
     @JsonIgnore @Override
     public void save() {
 
-        terminal_logger.debug("save - save to database, id: {}",  this.id);
+        logger.debug("save - save to database, id: {}",  this.id);
 
         connection_token = parameter_prefix + UUID.randomUUID().toString() + UUID.randomUUID().toString();
 
@@ -222,26 +216,22 @@ public class Model_MProgramInstanceParameter extends Model {
             // List for returning
             List<Swagger_GridWidgetVersion_GridApp_source> list = new ArrayList<>();
 
-            // Parsing Json
-            Form<M_Program_Parser> form = Form.form(M_Program_Parser.class).bind( (ObjectNode) new ObjectMapper().readTree(m_program.asText()));
-            if (form.hasErrors()) throw new Exception("M_Program_Parser: Parsing from Blob Server: "  + form.errorsAsJson(Lang.forCode("en-US")).toString());
-
             // Create object
-            M_Program_Parser program_parser = form.get();
+            M_Program_Parser program_parser = Json.fromJson(m_program, M_Program_Parser.class);
 
             // Loking for objects
-            for(Widget_Parser widget_parser : program_parser.screens.main.get(0).widgets) {
+            for (Widget_Parser widget_parser : program_parser.screens.main.get(0).widgets) {
 
                 Swagger_GridWidgetVersion_GridApp_source detail = new Swagger_GridWidgetVersion_GridApp_source();
                 detail.id          = widget_parser.type.version_id;
-                detail.logic_json = Model_GridWidgetVersion.get_byId(widget_parser.type.version_id).logic_json;
+                detail.logic_json = Model_WidgetVersion.getById(widget_parser.type.version_id).logic_json;
 
                 list.add(detail);
             }
             return list;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
@@ -288,7 +278,7 @@ public class Model_MProgramInstanceParameter extends Model {
 
         // check permission if program is in instance
         if (get_instance() != null) {
-            return  get_instance().getB_program().read_permission();
+            return  get_instance().read_permission();
         }
 
         // if not (for programers of blocko versions)
@@ -298,21 +288,23 @@ public class Model_MProgramInstanceParameter extends Model {
     @JsonProperty @ApiModelProperty(required = true)
     public boolean edit_permission() {
         // check permission if program is in instance
-        return get_instance() != null && get_instance().getB_program().edit_permission();
+        return get_instance() != null && get_instance().edit_permission();
     }
 
-    public enum permissions{Library_create, Library_edit, Library_delete, Library_update}
+    public enum permissions { Library_create, Library_edit, Library_delete, Library_update }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public static Model_MProgramInstanceParameter get_byId(String id) {
+    public static Model_MProgramInstanceParameter getById(String id) {
+        return getById(UUID.fromString(id));
+    }
 
-        terminal_logger.warn("CACHE is not implemented - TODO");
+    public static Model_MProgramInstanceParameter getById(UUID id) {
+        logger.warn("CACHE is not implemented - TODO");
         return find.byId(id);
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Model.Finder<String,Model_MProgramInstanceParameter> find = new Model.Finder<>(Model_MProgramInstanceParameter.class);
+    public static Finder<UUID, Model_MProgramInstanceParameter> find = new Finder<>(Model_MProgramInstanceParameter.class);
 }

@@ -1,42 +1,34 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.Controller_Security;
+import controllers.BaseController;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import utilities.cache.helps_objects.TyrionCachedList;
-import utilities.logger.Class_Logger;
+import utilities.logger.Logger;
+import utilities.model.NamedModel;
 
 import javax.persistence.*;
-import java.util.Date;
 import java.util.UUID;
 
 @Entity
 @ApiModel( value = "Garfield", description = "Model of Garfield test set")
 @Table(name="Garfield")
-public class Model_Garfield  extends Model{
+public class Model_Garfield  extends NamedModel {
 
 /* DOCUMENTATION -------------------------------------------------------------------------------------------------------*/
 
      /*
-
         Garfield je softwarový nástroj, hardwarový tester i komponenta na tyrionovi k testování a vypalování fiwmaru do
         hardwaru a tisku štítků na hardware i na krabici. Každý garfield má svojí testovací desku i sadu tiskáren.
-
      */
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_Garfield.class);
+    private static final Logger logger = new Logger(Model_Garfield.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-
-                    @Id  public UUID id;
-                         public String name;
-                         public String description;
 
     @Column(unique=true) public String hardware_tester_id;
     
@@ -44,39 +36,35 @@ public class Model_Garfield  extends Model{
                          public Integer print_label_id_2;   // 24 mm
                          public Integer print_sticker_id;   // 65 mm
 
-    @JsonIgnore          public String type_of_board_id;    // Jaký typ hardwaru umí testovat garfield! ( Je to zatím předpokládáno na 1:1) Vazba není přes ORM!!!
-    @JsonIgnore          public String producer_id;         // Kdo desku vyrobil!
-
-    @JsonIgnore          public Date date_of_crate;
-
+    @JsonIgnore          public UUID type_of_board_id;    // Jaký typ hardwaru umí testovat garfield! ( Je to zatím předpokládáno na 1:1) Vazba není přes ORM!!!
+    @JsonIgnore          public UUID producer_id;         // Kdo desku vyrobil!
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty @TyrionCachedList @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Model_TypeOfBoard type_of_board(){
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Model_TypeOfBoard type_of_board() {
         try {
 
-            if(type_of_board_id != null) return Model_TypeOfBoard.get_byId(type_of_board_id);
+            if (type_of_board_id != null) return Model_TypeOfBoard.getById(type_of_board_id);
             return null;
 
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
 
-    @JsonProperty @TyrionCachedList @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Model_Producer producer(){
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Model_Producer producer() {
         try {
 
-            if(producer_id != null) return Model_Producer.get_byId(producer_id);
+            if (producer_id != null) return Model_Producer.getById(producer_id);
             return null;
 
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -89,14 +77,6 @@ public class Model_Garfield  extends Model{
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override public void save() {
-
-        terminal_logger.debug("save :: Creating new Object");
-        date_of_crate = new Date();
-
-        super.save();
-    }
-
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public static final String CHANNEL = "garfield";
@@ -105,21 +85,25 @@ public class Model_Garfield  extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
     
-    @JsonIgnore   @Transient public boolean create_permission() {  return  Controller_Security.get_person().has_permission(permissions.Garfield_Create.name());}
-    @JsonProperty @Transient public boolean edit_permission()   {  return  Controller_Security.get_person().has_permission(permissions.Garfield_edit.name());}
-    @JsonProperty @Transient public boolean read_permission()   {  return  Controller_Security.get_person().has_permission(permissions.Garfield_read.name());}
-    @JsonProperty @Transient public boolean delete_permission() {  return  Controller_Security.get_person().has_permission(permissions.Garfield_delete.name());}
-    @JsonProperty @Transient public boolean update_permission() {  return  Controller_Security.get_person().has_permission(permissions.Garfield_update.name());}
+    @JsonIgnore   @Transient public boolean create_permission() {  return  BaseController.person().has_permission(Permission.Garfield_create.name());}
+    @JsonProperty @Transient public boolean edit_permission()   {  return  BaseController.person().has_permission(Permission.Garfield_edit.name());}
+    @JsonProperty @Transient public boolean read_permission()   {  return  BaseController.person().has_permission(Permission.Garfield_read.name());}
+    @JsonProperty @Transient public boolean delete_permission() {  return  BaseController.person().has_permission(Permission.Garfield_delete.name());}
+    @JsonProperty @Transient public boolean update_permission() {  return  BaseController.person().has_permission(Permission.Garfield_update.name());}
 
-    public enum permissions {Garfield_read, Garfield_Create, Garfield_edit, Garfield_delete, Garfield_update}
+    public enum Permission { Garfield_create, Garfield_read, Garfield_edit, Garfield_update, Garfield_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Garfield get_byId(String id) {
+    public static Model_Garfield getById(String id) {
+        return getById(UUID.fromString(id));
+    }
+
+    public static Model_Garfield getById(UUID id) {
         return find.byId(id);
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Model.Finder<String, Model_Garfield> find = new Model.Finder<>(Model_Garfield.class);
+    public static Finder<UUID, Model_Garfield> find = new Finder<>(Model_Garfield.class);
 }

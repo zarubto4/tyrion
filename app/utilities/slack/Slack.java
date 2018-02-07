@@ -7,6 +7,8 @@ import play.libs.Json;
 import play.libs.ws.WSClient;
 import utilities.Server;
 
+import java.time.Duration;
+
 /**
  * Class is used to post messages to Byzance Slack Team Chat
  */
@@ -16,7 +18,7 @@ public class Slack {
      * Posts an error to Byzance Slack, chanel #servers
      * @param error Model error that is being posted.
      */
-    public static void post(Model_ServerError error){
+    public static void post(Model_ServerError error) {
         try {
 
             WSClient ws = Play.current().injector().instanceOf(WSClient.class);
@@ -42,14 +44,15 @@ public class Slack {
             ObjectNode json = Json.newObject();
             json.put("username", "Tyrion");
             json.put("icon_emoji", ":tyrion:");
-            json.put("text", "*" + error.summary + "* :face_with_rolling_eyes:" + error.description);
+            json.put("text", "*" + error.name + "* :face_with_rolling_eyes:" + error.description);
             json.put("mrkdwn", true);
             //json.set("attachments", Json.toJson(attachments));
 
             ws.url(Server.slack_webhook_url_channel_servers)
-                    .setRequestTimeout(10000)
+                    .setRequestTimeout(Duration.ofSeconds(10))
                     .post(json.toString())
-                    .get(10000);
+                    .toCompletableFuture()
+                    .get();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -60,7 +63,7 @@ public class Slack {
      * Posts an error to Byzance Slack, chanel #hardware
      * @param release
      */
-    public static void post_invalid_release(String release){
+    public static void post_invalid_release(String release) {
         try {
 
             WSClient ws = Play.current().injector().instanceOf(WSClient.class);
@@ -74,9 +77,10 @@ public class Slack {
                     " Například soubor (dist.zip)");
 
             ws.url(Server.slack_webhook_url_channel_hardware)
-                    .setRequestTimeout(10000)
+                    .setRequestTimeout(Duration.ofSeconds(10))
                     .post(json.toString())
-                    .get(10000);
+                    .toCompletableFuture()
+                    .get();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -87,7 +91,7 @@ public class Slack {
      * Posts an error to Byzance Slack, chanel #hardware
      * @param version
      */
-    public static void post_invalid_bootloader(String version){
+    public static void post_invalid_bootloader(String version) {
         try {
 
             WSClient ws = Play.current().injector().instanceOf(WSClient.class);
@@ -101,9 +105,10 @@ public class Slack {
                     " Například soubor (dist.zip)");
 
             ws.url(Server.slack_webhook_url_channel_hardware)
-                    .setRequestTimeout(10000)
+                    .setRequestTimeout(Duration.ofSeconds(10))
                     .post(json.toString())
-                    .get(10000);
+                    .toCompletableFuture()
+                    .get();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -114,7 +119,7 @@ public class Slack {
      * Posts a message to Byzance Slack, chanel #servers
      * @param message String message to post.
      */
-    public static void post(String message){
+    public static void post(String message) {
         try {
 
             WSClient ws = Play.current().injector().instanceOf(WSClient.class);
@@ -126,9 +131,10 @@ public class Slack {
             json.put("mrkdwn", true);
 
             ws.url(Server.slack_webhook_url_channel_servers)
-                    .setRequestTimeout(10000)
+                    .setRequestTimeout(Duration.ofSeconds(10))
                     .post(json.toString())
-                    .get(10000);
+                    .toCompletableFuture()
+                    .get();
 
         } catch (Exception e) {
             e.printStackTrace();

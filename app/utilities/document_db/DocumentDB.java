@@ -1,17 +1,17 @@
 package utilities.document_db;
 
-
 import com.microsoft.azure.documentdb.DocumentCollection;
 import com.microsoft.azure.documentdb.RequestOptions;
 import play.Configuration;
 import utilities.Server;
-import utilities.logger.Class_Logger;
+import utilities.logger.Logger;
 
 import java.util.List;
 
 public class DocumentDB {
-                                                            // Server.class is intentionally used! Don't change that
-    private static final Class_Logger terminal_logger = new Class_Logger(Server.class);
+
+    // LOGGER
+    private static final Logger logger = new Logger(DocumentDB.class);
 
     // Online status - variables
     private static final String ONLINE_STATUS_COLLECTION = "ONLINE_STATUS";
@@ -19,7 +19,7 @@ public class DocumentDB {
     private static final String BLOCKO_REQUEST_COLLECTION = "BLOCKO_REQUEST";
     public static DocumentCollection blocko_request_collection = null;
 
-    public static void set_no_SQL_collection(){
+    public static void init() {
         set_online_status_collection();
         //set_blocko_request_collection();
     }
@@ -35,7 +35,7 @@ public class DocumentDB {
      * REQUIRED:: id                        ::  String -> UUID.getUUID().toString() recommended by Mongo
      * REQUIRED:: server_version            ::  String -> Server.server_version
      */
-    private static void set_online_status_collection(){
+    private static void set_online_status_collection() {
         try {
 
             // RequestOptions definuje maximální počet requestů za vteřinu na Azure Database NO SQL kolekci.
@@ -46,15 +46,15 @@ public class DocumentDB {
             List<DocumentCollection> collections = Server.documentClient.queryCollections(Server.documentDB_Path, "SELECT * FROM root r WHERE r.id='" + ONLINE_STATUS_COLLECTION + "'", null).getQueryIterable().toList();
 
             // Zkusím najít a pak vrátit Collekci
-            if(!collections.isEmpty()) {
+            if (!collections.isEmpty()) {
 
                 Server.online_status_collection = collections.get(0);
-                terminal_logger.debug("DocumentDB:: set_collection:: Online Status Collection:: Collection has already been created");
+                logger.debug("set_online_status_collection - collection has already been created");
 
-            }else {
+            } else {
 
                 RequestOptions request_options_online_status = new RequestOptions();
-                request_options_online_status.setOfferThroughput(Configuration.root().getInt("Azure.documentDB." + Server.server_mode.name() + ".RUsReserved" + ONLINE_STATUS_COLLECTION));
+                request_options_online_status.setOfferThroughput(Configuration.root().getInt("documentDB." + Server.mode.name() + ".RUsReserved" + ONLINE_STATUS_COLLECTION));
 
                 DocumentCollection collection = new DocumentCollection();
                 collection.setId(ONLINE_STATUS_COLLECTION);
@@ -63,15 +63,15 @@ public class DocumentDB {
 
                 Server.online_status_collection = collection;
 
-                terminal_logger.debug("DocumentDB:: set_collection:: Online Status Collection:: Collection Successfully created");
+                logger.debug("set_online_status_collection - collection successfully created");
             }
 
-        } catch ( Exception e ){
-            terminal_logger.internalServerError(e);
+        } catch ( Exception e ) {
+            logger.internalServerError(e);
         }
     }
 
-    private static void set_blocko_request_collection(){
+    private static void set_blocko_request_collection() {
         try {
 
             // RequestOptions definuje maximální počet requestů za vteřinu na Azure Database NO SQL kolekci.
@@ -82,15 +82,15 @@ public class DocumentDB {
             List<DocumentCollection> collections = Server.documentClient.queryCollections(Server.documentDB_Path, "SELECT * FROM root r WHERE r.id='" + BLOCKO_REQUEST_COLLECTION + "'", null).getQueryIterable().toList();
 
             // Zkusím najít a pak vrátit Collekci
-            if(!collections.isEmpty()) {
+            if (!collections.isEmpty()) {
 
                 blocko_request_collection = collections.get(0);
-                terminal_logger.debug("DocumentDB:: set_blocko_request_collection: Collection has already been created");
+                logger.debug("set_blocko_request_collection - collection has already been created");
 
-            }else {
+            } else {
 
                 RequestOptions request_options_blocko_request = new RequestOptions();
-                request_options_blocko_request.setOfferThroughput(Configuration.root().getInt("Azure.documentDB." + Server.server_mode.name() + ".RUsReserved" + BLOCKO_REQUEST_COLLECTION));
+                request_options_blocko_request.setOfferThroughput(Configuration.root().getInt("documentDB." + Server.mode.name() + ".RUsReserved" + BLOCKO_REQUEST_COLLECTION));
 
                 DocumentCollection collection = new DocumentCollection();
                 collection.setId(BLOCKO_REQUEST_COLLECTION);
@@ -99,11 +99,11 @@ public class DocumentDB {
 
                 blocko_request_collection = collection;
 
-                terminal_logger.debug("DocumentDB:: set_blocko_request_collection: Collection Successfully created");
+                logger.debug("set_blocko_request_collection - collection successfully created");
             }
 
-        } catch ( Exception e ){
-            terminal_logger.internalServerError(e);
+        } catch ( Exception e ) {
+            logger.internalServerError(e);
         }
     }
 }

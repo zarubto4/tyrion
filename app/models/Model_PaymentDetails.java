@@ -1,28 +1,30 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.logger.Class_Logger;
+import utilities.logger.Logger;
+import utilities.model.BaseModel;
 
 import javax.persistence.*;
+import java.util.UUID;
 
 @Entity
 @ApiModel(description = "Model of Payment_Details",
         value = "Payment_Details")
 @Table(name="PaymentDetails")
-public class Model_PaymentDetails extends Model {
+public class Model_PaymentDetails extends BaseModel {
 
     // Logger
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_PaymentDetails.class);
+    private static final Logger logger = new Logger(Model_PaymentDetails.class);
 
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                           @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public Long id;
+                                           // @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public Long id; TODO
 
     @JsonIgnore @OneToOne                                                                           public Model_Customer customer;
     @JsonIgnore @OneToOne() @JoinColumn(name="productidpaymentdetails")                             public Model_Product product;
@@ -52,10 +54,10 @@ public class Model_PaymentDetails extends Model {
 /* JSON IGNORE ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public static boolean control_vat_number(String vat_number){
+    public static boolean control_vat_number(String vat_number) {
 
             // Jestli je přítomné VAT number - musí dojít ke kontrole validity Vat number!
-            switch (vat_number.substring(0,2)){
+            switch (vat_number.substring(0,2)) {
                 case "BE" : {return true;}
                 case "BG" : {return true;}
                 case "CZ" : {return true;}
@@ -87,7 +89,7 @@ public class Model_PaymentDetails extends Model {
     }
 
     @JsonIgnore
-    public Model_PaymentDetails copy(){
+    public Model_PaymentDetails copy() {
 
         Model_PaymentDetails details = new Model_PaymentDetails();
         details.full_name       = this.full_name;
@@ -113,7 +115,7 @@ public class Model_PaymentDetails extends Model {
     }
 
     @JsonIgnore
-    public boolean isComplete(){
+    public boolean isComplete() {
         return full_name != null  && !full_name.equals("")
                 && street != null  && !street.equals("")
                 && street_number != null  && !street_number.equals("")
@@ -124,7 +126,7 @@ public class Model_PaymentDetails extends Model {
     }
 
     @JsonIgnore
-    public boolean isCompleteCompany(){
+    public boolean isCompleteCompany() {
         return street != null
                 && street_number != null && !street_number.equals("")
                 && city != null && !city.equals("")
@@ -152,17 +154,18 @@ public class Model_PaymentDetails extends Model {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public static Model_PaymentDetails get_byId(Long id) {
+    public static Model_PaymentDetails getById(String id) {
+        return getById(UUID.fromString(id));
+    }
 
-        terminal_logger.warn("CACHE is not implemented - TODO");
+    public static Model_PaymentDetails getById(UUID id) {
+        logger.warn("CACHE is not implemented - TODO");
         return find.byId(id);
-
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Model.Finder<Long,Model_PaymentDetails> find = new Finder<>(Model_PaymentDetails.class);
+    public static Finder<UUID, Model_PaymentDetails> find = new Finder<>(Model_PaymentDetails.class);
 
 
 }

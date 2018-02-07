@@ -1,18 +1,17 @@
 package utilities.financial.extensions.configurations;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
-import utilities.enums.Enum_ExtensionType;
+import utilities.enums.ExtensionType;
 
 
 public interface Configuration {
 
 
 
-    static Object getConfiguration(Enum_ExtensionType type, String configuration){
+    static Object getConfiguration(ExtensionType type, String configuration) {
 
-        Form<?> form;
+        /*Form<?> form; TODO
 
         switch (type) {
 
@@ -59,11 +58,12 @@ public interface Configuration {
             default: throw new IllegalStateException("Extension type is unknown.");
         }
 
-        if(form.hasErrors()) {
+        if (form.hasErrors()) {
             throw new IllegalStateException("Error parsing product configuration. Errors: " + form.errorsAsJson(Lang.forCode("en-US")));
         }
 
-        return form.get();
+        return form.get();*/
 
+        return null;
     }
 }

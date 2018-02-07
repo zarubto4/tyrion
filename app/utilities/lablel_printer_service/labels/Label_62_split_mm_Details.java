@@ -3,51 +3,49 @@ package utilities.lablel_printer_service.labels;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
-import models.Model_Board;
-import utilities.logger.Class_Logger;
 import com.itextpdf.text.pdf.PdfWriter;
+import models.Model_Hardware;
+import utilities.logger.Logger;
+
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.util.Date;
 
 
 public class Label_62_split_mm_Details {
 
     // Logger
-    private static final Class_Logger terminal_logger = new Class_Logger(Label_62_split_mm_Details.class);
+    private static final Logger logger = new Logger(Label_62_split_mm_Details.class);
 
     // For image placing to cell
     private PdfContentByte contentByte;
     private Rectangle Label_12_mm = new RectangleReadOnly(Utilities.millimetersToPoints(62), Utilities.millimetersToPoints(15));
 
 
-    Model_Board board = null;
+    Model_Hardware hardware = null;
 
-    public Label_62_split_mm_Details(Model_Board board) {
+    public Label_62_split_mm_Details(Model_Hardware hardware) {
         try {
 
-            this.board = board;
+            this.hardware = hardware;
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public ByteArrayOutputStream get_label(){
+    public ByteArrayOutputStream get_label() {
 
         ByteArrayOutputStream out = make_label();
 
         // TODO smazat protože to nebude potřeba
         /*try(OutputStream outputStream = new FileOutputStream(System.getProperty("user.dir") + "/label_printers/" + "generate_12_mm_detail_" + new Date().getTime()  + ".pdf")) {
             out.writeTo(outputStream);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }*/
         return out;
     }
 
-    private ByteArrayOutputStream make_label(){
+    private ByteArrayOutputStream make_label() {
         try {
 
             // step 1: Create Document
@@ -74,8 +72,8 @@ public class Label_62_split_mm_Details {
 
             return out;
 
-        }catch (Exception e) {
-            terminal_logger.internalServerError(e);
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -84,7 +82,7 @@ public class Label_62_split_mm_Details {
     private PdfPCell device_hash_for_Add() throws DocumentException {
 
         // QR Code for ADD
-        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(this.board.hash_for_adding, 1000, 1000, null);
+        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(this.hardware.hash_for_adding, 1000, 1000, null);
         Image codeQrImage = barcodeQRCode.getImage();
         codeQrImage.scaleToFit(Label_12_mm.getWidth(), Label_12_mm.getWidth());
 
@@ -135,9 +133,9 @@ public class Label_62_split_mm_Details {
         // Mac Address ID
 
 
-        Phrase phrase_firstLine = new Phrase("MAC: " +board.mac_address + " \n", boldFont);
-        Phrase secondLine = new Phrase("ID: "+ board.id +  " \n" , normalFont );
-        Phrase thirthLine = new Phrase("Registration: " + board.hash_for_adding + "\n", registFont);
+        Phrase phrase_firstLine = new Phrase("MAC: " + hardware.mac_address + " \n", boldFont);
+        Phrase secondLine = new Phrase("ID: "+ hardware.id +  " \n" , normalFont );
+        Phrase thirthLine = new Phrase("Registration: " + hardware.hash_for_adding + "\n", registFont);
 
 
         Phrase mac_address = new Phrase();
@@ -154,7 +152,7 @@ public class Label_62_split_mm_Details {
 
 /*
         // Processor ID
-         Phrase processor_id = new Phrase("ID: "+ board.id, h3);
+         Phrase processor_id = new Phrase("ID: "+ hardware.id, h3);
         PdfPCell cell_processor_id = new PdfPCell(processor_id);
         cell_processor_id.setBorder(Rectangle.RIGHT);
         cell_processor_id.setVerticalAlignment(Element.ALIGN_CENTER);
@@ -163,7 +161,7 @@ public class Label_62_split_mm_Details {
 
 
         // Processor ID
-        Phrase registration_id = new Phrase("Registration: " + board.hash_for_adding.substring(0, 13) + "\n" + board.hash_for_adding.substring(14), h5);
+        Phrase registration_id = new Phrase("Registration: " + hardware.hash_for_adding.substring(0, 13) + "\n" + hardware.hash_for_adding.substring(14), h5);
 
         PdfPCell cell_registration_id = new PdfPCell(registration_id);
         cell_registration_id.setFixedHeight(3F);

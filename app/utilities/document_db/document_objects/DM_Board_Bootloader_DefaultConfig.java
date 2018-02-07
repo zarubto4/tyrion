@@ -8,7 +8,7 @@ import java.beans.Transient;
 
 public class DM_Board_Bootloader_DefaultConfig {
 
-    public DM_Board_Bootloader_DefaultConfig(){}
+    public DM_Board_Bootloader_DefaultConfig() {}
 
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean autobackup;   // Default 0          // user configurable ( 0 or 1)
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean blreport;     // Default 0          // user configurable

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Computer {
 
-    public Computer(){}
+    public Computer() {}
 
     @JsonIgnore public int id;
     public String name = null;

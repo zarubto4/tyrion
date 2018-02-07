@@ -1,40 +1,46 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.*;
-import play.api.Play;
 import play.data.Form;
-import play.libs.F;
+import play.data.FormFactory;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import play.mvc.BodyParser;
-import play.mvc.Controller;
 import play.mvc.Result;
-
 import play.mvc.Security;
+import responses.*;
 import utilities.Server;
+import utilities.authentication.Authentication;
 import utilities.emails.Email;
-import utilities.enums.Enum_Notification_action;
-import utilities.logger.Class_Logger;
-import utilities.logger.ServerLogger;
-import utilities.login_entities.Secured_API;
+import utilities.enums.NotificationAction;
+import utilities.logger.Logger;
 import utilities.notifications.NotificationActionHandler;
-import utilities.response.GlobalResult;
-import utilities.response.response_objects.*;
-import utilities.swagger.documentationClass.*;
-import utilities.swagger.outboundClass.Swagger_Entity_Validation_Out;
+import utilities.swagger.input.*;
+import utilities.swagger.output.Swagger_Entity_Validation_Out;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck") // Překrývá nezdokumentované API do jednotné serverové kategorie ve Swaggeru.
-public class Controller_Person extends Controller {
+public class Controller_Person extends BaseController {
     
 // LOGGER ##############################################################################################################
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Person.class);
+    private static final Logger logger = new Logger(Controller_Person.class);
+
+    private FormFactory formFactory;
+    private WSClient ws;
+
+    @Inject
+    public Controller_Person(FormFactory formFactory, WSClient ws) {
+        this.formFactory = formFactory;
+        this.ws = ws;
+    }
 
 //######################################################################################################################
 
@@ -49,7 +55,7 @@ public class Controller_Person extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Person_New",
+                            dataType = "utilities.swagger.input.Swagger_Person_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -66,35 +72,35 @@ public class Controller_Person extends Controller {
     public Result person_create() {
         try {
 
-            final Form<Swagger_Person_New> form = Form.form(Swagger_Person_New.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            final Form<Swagger_Person_New> form = formFactory.form(Swagger_Person_New.class).bindFromRequest();
+            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
             Swagger_Person_New help = form.get();
 
-            if (Model_Person.find.where().eq("nick_name", help.nick_name).findUnique() != null)
-                return GlobalResult.result_badRequest("nick name is used");
-            if (Model_Person.find.where().eq("mail", help.mail).findUnique() != null)
-                return GlobalResult.result_badRequest("Email is registered");
-
+            if (Model_Person.find.query().where().eq("nick_name", help.nick_name).findOne() != null)
+                return badRequest("nick name is used");
+            if (Model_Person.getByEmail(help.email) != null)
+                return badRequest("Email is registered");
 
             Model_Person person = new Model_Person();
 
             person.nick_name =  help.nick_name;
-            person.full_name = help.full_name;
-            person.mail = help.mail;
-            person.mailValidated = false;
+            person.first_name = help.first_name;
+            person.last_name = help.last_name;
+            person.email = help.email;
+            person.validated = false;
 
-            person.setSha(help.password);
+            person.setPassword(help.password);
             person.save();
 
-            Model_Invitation invitation = Model_Invitation.find.where().eq("mail", person.mail).findUnique();
+            Model_Invitation invitation = Model_Invitation.find.query().where().eq("mail", person.email).findOne();
 
-            if(invitation == null) {
+            if (invitation == null) {
 
-                Model_ValidationToken validationToken = Model_ValidationToken.find.where().eq("personEmail",help.mail).findUnique();
-                if(validationToken!=null) validationToken.delete();
-                validationToken = new Model_ValidationToken().setValidation(person.mail);
+                Model_ValidationToken validationToken = Model_ValidationToken.find.query().where().eq("email",help.email).findOne();
+                if (validationToken!=null) validationToken.delete();
+                validationToken = new Model_ValidationToken().setValidation(person.email);
 
-                String link = Server.tyrion_serverAddress + "/person/mail_authentication/" + validationToken.authToken;
+                String link = Server.httpAddress + "/person/mail_authentication/" + validationToken.token;
 
                 try {
 
@@ -102,28 +108,28 @@ public class Controller_Person extends Controller {
                             .text("Email verification is needed to complete your registration.")
                             .divider()
                             .link("Verify your email address",link)
-                            .send(validationToken.personEmail, "Email Verification");
+                            .send(validationToken.email, "Email Verification");
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError(e);
+                    logger.internalServerError(e);
                 }
 
-            }else{
-                person.mailValidated = true;
+            } else {
+                person.validated = true;
                 person.update();
 
                 try {
-                    NotificationActionHandler.perform(Enum_Notification_action.accept_project_invitation, invitation.id);
+                    NotificationActionHandler.perform(NotificationAction.ACCEPT_PROJECT_INVITATION, invitation.id.toString());
                 } catch (IllegalArgumentException e) {
                     person.notification_error(e.getMessage());
                 } catch (Exception e) {
-                    terminal_logger.internalServerError(e);
+                    logger.internalServerError(e);
                 }
             }
 
-            return GlobalResult.result_ok();
+            return okEmpty();
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -138,7 +144,7 @@ public class Controller_Person extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Person_Authentication",
+                            dataType = "utilities.swagger.input.Swagger_Person_Authentication",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -154,23 +160,23 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     public Result person_emailAuthentication(String authToken) {
-        try{
+        try {
 
-            Model_ValidationToken validationToken = Model_ValidationToken.find.where().eq("authToken", authToken).findUnique();
+            Model_ValidationToken validationToken = Model_ValidationToken.find.query().where().eq("token", UUID.fromString(authToken)).findOne();
 
-            if (validationToken == null) return GlobalResult.redirect(Server.becki_mainUrl + "/" + Server.becki_redirectOk  );
+            if (validationToken == null) return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectOk  );
 
-            Model_Person person = Model_Person.find.where().eq("mail", validationToken.personEmail).findUnique();
-            if(person == null) return GlobalResult.redirect( Server.becki_mainUrl + "/" + Server.becki_redirectFail  );
+            Model_Person person = Model_Person.find.query().where().eq("mail", validationToken.email).findOne();
+            if (person == null) return redirect( Server.becki_mainUrl + "/" + Server.becki_redirectFail  );
 
-            person.mailValidated = true;
+            person.validated = true;
             person.update();
 
            validationToken.delete();
 
-            return GlobalResult.redirect( Server.becki_mainUrl + "/" + Server.becki_accountAuthorizedSuccessful );
+            return redirect( Server.becki_mainUrl + "/" + Server.becki_accountAuthorizedSuccessful );
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -185,7 +191,7 @@ public class Controller_Person extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Person_Authentication",
+                            dataType = "utilities.swagger.input.Swagger_Person_Authentication",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -202,20 +208,20 @@ public class Controller_Person extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result person_authenticationSendEmail() {
-        try{
+        try {
 
-            final Form<Swagger_Person_Authentication> form = Form.form(Swagger_Person_Authentication.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            final Form<Swagger_Person_Authentication> form = formFactory.form(Swagger_Person_Authentication.class).bindFromRequest();
+            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
             Swagger_Person_Authentication help = form.get();
 
-            Model_Person person = Model_Person.find.where().eq("mail", help.mail).findUnique();
-            if (person == null) return GlobalResult.result_notFound("No such user is registered");
-            if (person.mailValidated) return GlobalResult.result_badRequest("This user is validated");
+            Model_Person person = Model_Person.find.query().where().eq("mail", help.mail).findOne();
+            if (person == null) return notFound("No such user is registered");
+            if (person.validated) return badRequest("This user is validated");
 
-            Model_ValidationToken validationToken = Model_ValidationToken.get_byId(help.mail);
-            if (validationToken == null) return GlobalResult.result_notFound("Validation token not found");
+            Model_ValidationToken validationToken = Model_ValidationToken.getById(help.mail);
+            if (validationToken == null) return notFound("Validation token not found");
 
-            String link = Server.tyrion_serverAddress + "/person/mail_authentication/" + validationToken.authToken;
+            String link = Server.httpAddress + "/person/mail_authentication/" + validationToken.token;
 
             try {
 
@@ -223,15 +229,15 @@ public class Controller_Person extends Controller {
                         .text("Email verification is needed to complete your registration.")
                         .divider()
                         .link("Verify your email address",link)
-                        .send(validationToken.personEmail, "Email Verification");
+                        .send(validationToken.email, "Email Verification");
 
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                logger.internalServerError(e);
             }
 
-            return GlobalResult.result_ok();
+            return okEmpty();
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -245,7 +251,7 @@ public class Controller_Person extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Person_Password_RecoveryEmail",
+                            dataType = "utilities.swagger.input.Swagger_Person_Password_RecoveryEmail",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -258,35 +264,34 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result person_passwordRecoverySendEmail(){
-        try{
+    public Result person_passwordRecoverySendEmail() {
+        try {
 
-            final Form<Swagger_Person_Password_RecoveryEmail> form = Form.form(Swagger_Person_Password_RecoveryEmail.class).bindFromRequest();
-            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            final Form<Swagger_Person_Password_RecoveryEmail> form = formFactory.form(Swagger_Person_Password_RecoveryEmail.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
             Swagger_Person_Password_RecoveryEmail help = form.get();
 
             String link;
 
-            Model_Person person = Model_Person.find.where().eq("mail", help.mail).findUnique();
-            if (person == null) return GlobalResult.result_ok();
+            Model_Person person = Model_Person.find.query().where().eq("mail", help.mail).findOne();
+            if (person == null) return okEmpty();
 
-            Model_PasswordRecoveryToken previousToken = Model_PasswordRecoveryToken.find.where().eq("person_id", person.id).findUnique();
+            Model_PasswordRecoveryToken previousToken = Model_PasswordRecoveryToken.find.query().where().eq("person_id", person.id).findOne();
 
-            if (previousToken != null && new Date().getTime() - previousToken.time_of_creation.getTime() > 900000) {
+            if (previousToken != null && new Date().getTime() - previousToken.created.getTime() > 900000) {
                 previousToken.delete();
                 previousToken = null;
             }
 
-            if (previousToken == null){
+            if (previousToken == null) {
 
                 Model_PasswordRecoveryToken passwordRecoveryToken = new Model_PasswordRecoveryToken();
                 passwordRecoveryToken.setPasswordRecoveryToken();
                 passwordRecoveryToken.person = person;
-                passwordRecoveryToken.time_of_creation = new Date();
                 passwordRecoveryToken.save();
 
                 link = Server.becki_mainUrl + "/" +  Server.becki_passwordReset + "/" + passwordRecoveryToken.password_recovery_token;
-            }else {
+            } else {
                 link = Server.becki_mainUrl + "/" +  Server.becki_passwordReset + "/" + previousToken.password_recovery_token;
             }
             try {
@@ -298,11 +303,11 @@ public class Controller_Person extends Controller {
                         .send(help.mail,"Password Reset");
 
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                logger.internalServerError(e);
             }
-            return GlobalResult.result_ok();
-        }catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return okEmpty();
+        } catch (Exception e) {
+            return internalServerError(e);
         }
     }
 
@@ -316,7 +321,7 @@ public class Controller_Person extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Person_Password_New",
+                            dataType = "utilities.swagger.input.Swagger_Person_Password_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -331,37 +336,34 @@ public class Controller_Person extends Controller {
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result person_passwordRecovery() {
-        try{
+        try {
 
-            final Form<Swagger_Person_Password_New> form = Form.form(Swagger_Person_Password_New.class).bindFromRequest();
-            if(form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
+            final Form<Swagger_Person_Password_New> form = formFactory.form(Swagger_Person_Password_New.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
             Swagger_Person_Password_New help = form.get();
 
-            Model_Person person = Model_Person.find.where().eq("mail", help.mail).findUnique();
+            Model_Person person = Model_Person.getByEmail(help.email);
 
-            Model_PasswordRecoveryToken passwordRecoveryToken = Model_PasswordRecoveryToken.find.where().eq("password_recovery_token", help.password_recovery_token).findUnique();
-            if(passwordRecoveryToken == null) return GlobalResult.result_badRequest("Password change was unsuccessful");
+            Model_PasswordRecoveryToken passwordRecoveryToken = Model_PasswordRecoveryToken.find.query().where().eq("password_recovery_token", help.password_recovery_token).findOne();
+            if (passwordRecoveryToken == null) return badRequest("Password change was unsuccessful");
 
-            if(person == null || !passwordRecoveryToken.person.id.equals(person.id)) {
+            if (person == null || !passwordRecoveryToken.person.id.equals(person.id)) {
                 passwordRecoveryToken.delete();
-                return GlobalResult.result_badRequest("Password change was unsuccessful");
+                return badRequest("Password change was unsuccessful");
             }
 
-            if (new Date().getTime() - passwordRecoveryToken.time_of_creation.getTime() > 86400000) {
+            if (new Date().getTime() - passwordRecoveryToken.created.getTime() > 86400000) {
                 passwordRecoveryToken.delete();
-                return GlobalResult.result_badRequest("You must recover your password in 24 hours.");
+                return badRequest("You must recover your password in 24 hours.");
             }
 
-            for (Model_FloatingPersonToken floatingPersonToken : Model_FloatingPersonToken.find.where().eq("person.id",  Controller_Security.get_person_id()).findList()) {
+            for (Model_AuthorizationToken floatingPersonToken : Model_AuthorizationToken.find.query().where().eq("person.id",  personId()).findList()) {
                 floatingPersonToken.delete();
             }
 
-            person.shaPassword = null;
-            person.update();
-
             person.refresh();
-            person.setSha(help.password);
-            person.mailValidated = true;
+            person.setPassword(help.password);
+            person.validated = true;
             person.update();
 
             passwordRecoveryToken.delete();
@@ -369,15 +371,15 @@ public class Controller_Person extends Controller {
             try {
                 new Email()
                         .text("Password was changed for your account.")
-                        .send(help.mail,"Password Reset");
+                        .send(help.email,"Password Reset");
 
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                logger.internalServerError(e);
             }
 
-            return GlobalResult.result_ok("Password was changed successfully");
+            return ok("Password was changed successfully");
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -395,16 +397,16 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_API.class)
-    public  Result person_get(@ApiParam(value = "person_id String query", required = true)  String person_id){
-        try{
+    @Security.Authenticated(Authentication.class)
+    public  Result person_get(@ApiParam(value = "person_id String query", required = true)  String person_id) {
+        try {
 
-            Model_Person person = Model_Person.get_byId(person_id);
-            if(person == null )  return GlobalResult.result_notFound("Person person_id not found");
-            return GlobalResult.result_ok(Json.toJson(person));
+            Model_Person person = Model_Person.getById(person_id);
+            if (person == null )  return notFound("Person person_id not found");
+            return ok(Json.toJson(person));
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -430,21 +432,21 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_API.class)
-    public  Result person_delete(@ApiParam(value = "person_id String query", required = true) String person_id){
-        try{
+    @Security.Authenticated(Authentication.class)
+    public  Result person_delete(@ApiParam(value = "person_id String query", required = true) String person_id) {
+        try {
 
-            Model_Person person = Model_Person.get_byId(person_id);
-            if(person == null ) return GlobalResult.result_notFound("Person person_id not found");
+            Model_Person person = Model_Person.getById(person_id);
+            if (person == null ) return notFound("Person person_id not found");
 
 
-            if (!person.delete_permission())  return GlobalResult.result_forbidden();
+            if (!person.delete_permission())  return forbiddenEmpty();
             person.delete();
 
-            return GlobalResult.result_ok();
+            return okEmpty();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -470,23 +472,23 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_API.class)
-    public Result person_removeAllConnections(@ApiParam(value = "person_id String query", required = true) String person_id){
-        try{
+    @Security.Authenticated(Authentication.class)
+    public Result person_removeAllConnections(@ApiParam(value = "person_id String query", required = true) String person_id) {
+        try {
 
-            Model_Person person = Model_Person.get_byId(person_id);
-            if(person == null ) return GlobalResult.result_notFound("Person person_id not found");
+            Model_Person person = Model_Person.getById(person_id);
+            if (person == null ) return notFound("Person person_id not found");
 
-            if (!person.edit_permission())  return GlobalResult.result_forbidden();
+            if (!person.edit_permission())  return forbiddenEmpty();
 
-            for(Model_FloatingPersonToken token : Model_FloatingPersonToken.find.where().eq("person.id",  Controller_Security.get_person().id).findList()){
+            for(Model_AuthorizationToken token : Model_AuthorizationToken.find.query().where().eq("person.id",  person().id).findList()) {
                 token.delete();
             }
 
-            return GlobalResult.result_ok();
+            return okEmpty();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -513,24 +515,24 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_API.class)
-    public Result person_activate(@ApiParam(value = "person_id String query", required = true) String person_id){
-        try{
+    @Security.Authenticated(Authentication.class)
+    public Result person_activate(@ApiParam(value = "person_id String query", required = true) String person_id) {
+        try {
 
-            Model_Person person = Model_Person.get_byId(person_id);
-            if(person == null ) return GlobalResult.result_notFound("Person person_id not found");
+            Model_Person person = Model_Person.getById(person_id);
+            if (person == null ) return notFound("Person person_id not found");
 
-            if (!person.activation_permission())  return GlobalResult.result_forbidden();
+            if (!person.activation_permission())  return forbiddenEmpty();
 
-            if(!person.freeze_account) return GlobalResult.result_badRequest("Person is already active.");
+            if (!person.frozen) return badRequest("Person is already active.");
 
-            person.freeze_account = false;
+            person.frozen = false;
             person.update();
 
-            return GlobalResult.result_ok();
+            return okEmpty();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -557,29 +559,29 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_API.class)
-    public Result person_deactivate(@ApiParam(value = "person_id String query", required = true) String person_id){
-        try{
+    @Security.Authenticated(Authentication.class)
+    public Result person_deactivate(@ApiParam(value = "person_id String query", required = true) String person_id) {
+        try {
 
-            Model_Person person = Model_Person.get_byId(person_id);
-            if(person == null ) return GlobalResult.result_notFound("Person person_id not found");
+            Model_Person person = Model_Person.getById(person_id);
+            if (person == null ) return notFound("Person person_id not found");
 
-            if (!person.activation_permission())  return GlobalResult.result_forbidden();
+            if (!person.activation_permission())  return forbiddenEmpty();
 
-            if(person.freeze_account) return GlobalResult.result_badRequest("Person is already deactivated.");
+            if (person.frozen) return badRequest("Person is already deactivated.");
 
-            person.freeze_account = true;
+            person.frozen = true;
 
-            for(Model_FloatingPersonToken token : Model_FloatingPersonToken.find.where().eq("person.id",  Controller_Security.get_person().id).findList()){
+            for(Model_AuthorizationToken token : Model_AuthorizationToken.find.query().where().eq("person.id",  personId()).findList()) {
                 token.delete();
             }
 
             person.update();
 
-            return GlobalResult.result_ok();
+            return okEmpty();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -605,22 +607,22 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_API.class)
-    public Result person_validEmail(@ApiParam(value = "person_id String query", required = true) String person_id){
-        try{
+    @Security.Authenticated(Authentication.class)
+    public Result person_validEmail(@ApiParam(value = "person_id String query", required = true) String person_id) {
+        try {
 
-            Model_Person person = Model_Person.get_byId(person_id);
-            if(person == null ) return GlobalResult.result_notFound("Person person_id not found");
+            Model_Person person = Model_Person.getById(person_id);
+            if (person == null ) return notFound("Person person_id not found");
 
-            if (!person.activation_permission())  return GlobalResult.result_forbidden();
+            if (!person.activation_permission())  return forbiddenEmpty();
 
-            person.mailValidated = true;
+            person.validated = true;
             person.update();
 
-            return GlobalResult.result_ok();
+            return okEmpty();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -640,7 +642,7 @@ public class Controller_Person extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Person_Update",
+                            dataType = "utilities.swagger.input.Swagger_Person_Update",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -656,20 +658,21 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Secured_API.class)
-    public  Result person_update(@ApiParam(value = "person_id String query", required = true) String person_id){
-        try{
+    @Security.Authenticated(Authentication.class)
+    public  Result person_update(@ApiParam(value = "person_id String query", required = true) String person_id) {
+        try {
 
-            final Form<Swagger_Person_Update> form = Form.form(Swagger_Person_Update.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            final Form<Swagger_Person_Update> form = formFactory.form(Swagger_Person_Update.class).bindFromRequest();
+            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
             Swagger_Person_Update help = form.get();
 
-            Model_Person person = Model_Person.get_byId(person_id);
-            if (person == null) return GlobalResult.result_notFound("Person not found");
-            if (!person.edit_permission())  return GlobalResult.result_forbidden();
+            Model_Person person = Model_Person.getById(person_id);
+            if (person == null) return notFound("Person not found");
+            if (!person.edit_permission())  return forbiddenEmpty();
 
-            person.nick_name    = help.nick_name;
-            person.full_name    = help.full_name != null ? help.full_name : null;
+            person.nick_name  = help.nick_name;
+            person.first_name = help.first_name;
+            person.last_name  = help.last_name;
 
             if (help.country != null && (!help.country.equals("")))
                 person.country = help.country;
@@ -679,10 +682,10 @@ public class Controller_Person extends Controller {
 
             person.update();
 
-            return GlobalResult.result_ok(Json.toJson(person));
+            return ok(Json.toJson(person));
 
          } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -700,21 +703,21 @@ public class Controller_Person extends Controller {
 
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK result",               response = Model_FloatingPersonToken.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "OK result",               response = Model_AuthorizationToken.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Not Found object",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_API.class)
-    public  Result person_getAllConnections(){
-        try{
+    @Security.Authenticated(Authentication.class)
+    public  Result person_getAllConnections() {
+        try {
 
 
-           return GlobalResult.result_ok(Json.toJson( Model_FloatingPersonToken.find.where().eq("person.id",  Controller_Security.get_person().id).findList() ));
+           return ok(Json.toJson( Model_AuthorizationToken.find.query().where().eq("person.id",  personId()).findList() ));
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -736,20 +739,20 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 404, message = "Not Found object",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_API.class)
-    public  Result remove_Person_Connection(@ApiParam(value = "connection_id String query", required = true) String connection_id){
-        try{
+    @Security.Authenticated(Authentication.class)
+    public  Result remove_Person_Connection(@ApiParam(value = "connection_id String query", required = true) String connection_id) {
+        try {
 
-            Model_FloatingPersonToken token = Model_FloatingPersonToken.get_byId(connection_id);
-            if(token == null ) return GlobalResult.result_notFound("FloatingPersonToken connection_id not found");
+            Model_AuthorizationToken token = Model_AuthorizationToken.getById(connection_id);
+            if (token == null ) return notFound("FloatingPersonToken connection_id not found");
 
-            if (!token.delete_permission())  return GlobalResult.result_forbidden();
+            if (!token.delete_permission())  return forbiddenEmpty();
 
             token.delete();
 
-            return GlobalResult.result_ok();
+            return okEmpty();
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -763,7 +766,7 @@ public class Controller_Person extends Controller {
     @ApiImplicitParams(
             @ApiImplicitParam(
                     name = "body",
-                    dataType = "utilities.swagger.documentationClass.Swagger_Entity_Validation_In",
+                    dataType = "utilities.swagger.input.Swagger_Entity_Validation_In",
                     required = true,
                     paramType = "body",
                     value = "Contains Json with values"
@@ -775,23 +778,23 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public  Result something_validateProperty(){
-        try{
+    public  Result something_validateProperty() {
+        try {
             
-            final Form<Swagger_Entity_Validation_In> form = Form.form(Swagger_Entity_Validation_In.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            final Form<Swagger_Entity_Validation_In> form = formFactory.form(Swagger_Entity_Validation_In.class).bindFromRequest();
+            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
             Swagger_Entity_Validation_In help = form.get();
 
             Swagger_Entity_Validation_Out validation = new Swagger_Entity_Validation_Out();
 
 
-            switch (help.key){
+            switch (help.key) {
 
                 case "mail":{
-                    if(Model_Person.find.where().ieq("mail", help.value).findUnique() == null ){
+                    if (Model_Person.find.query().where().ieq("mail", help.value).findOne() == null ) {
 
                         validation.valid = true;
-                        return GlobalResult.result_ok(Json.toJson(validation));
+                        return ok(Json.toJson(validation));
                     }
 
                     validation.valid = false;
@@ -801,10 +804,10 @@ public class Controller_Person extends Controller {
                 }
 
                 case "nick_name" : {
-                    if(Model_Person.find.where().ieq("nick_name", help.value).findUnique() == null ){
+                    if (Model_Person.find.query().where().ieq("nick_name", help.value).findOne() == null ) {
 
                         validation.valid = true;
-                        return GlobalResult.result_ok(Json.toJson(validation));
+                        return ok(Json.toJson(validation));
                     }
 
                     validation.valid = false;
@@ -817,22 +820,18 @@ public class Controller_Person extends Controller {
 
                     try {
 
-                        terminal_logger.debug("person_validateProperty:: Link:: " + "https://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2));
+                        logger.debug("person_validateProperty:: Link:: " + "https://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2));
 
-                        WSClient ws = Play.current().injector().instanceOf(WSClient.class);
-
-                        F.Promise<WSResponse> responsePromise = ws
-                                .url("https://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2))
-                                .setRequestTimeout(10000)
+                        WSResponse wsResponse = ws.url("https://www.isvat.eu/" + help.value.substring(0, 2) + "/" + help.value.substring(2))
+                                .setRequestTimeout(Duration.ofSeconds(10))
+                                .get()
+                                .toCompletableFuture()
                                 .get();
 
-                        WSResponse wsResponse = responsePromise.get(10000);
-
-                         System.out.println("Status z isvat.eu: " + wsResponse.getStatus());
                         JsonNode result = wsResponse.asJson();
 
-                        terminal_logger.debug("person_validateProperty: http request: {} ", wsResponse.getStatus());
-                        terminal_logger.debug("person_validateProperty: vat_number: {} ", result);
+                        logger.debug("person_validateProperty: http request: {} ", wsResponse.getStatus());
+                        logger.debug("person_validateProperty: vat_number: {} ", result);
 
                         if (result.get("valid").asBoolean()) {
 
@@ -842,33 +841,33 @@ public class Controller_Person extends Controller {
                             } catch (Exception e) {
                                 // do nothing
                             }
-                            return GlobalResult.result_ok(Json.toJson(validation));
+                            return ok(Json.toJson(validation));
                         }
 
                     } catch (RuntimeException e) {
 
                         validation.message = "vat_number is not valid or could not be found";
                         validation.valid = false;
-                        return  GlobalResult.result_ok(Json.toJson(validation));
+                        return  ok(Json.toJson(validation));
 
-                    } catch (Exception e){
-                        terminal_logger.internalServerError(e);
+                    } catch (Exception e) {
+                        logger.internalServerError(e);
                         validation.valid = false;
                         validation.message = "vat_number is not valid or could not be found";
 
-                        return  GlobalResult.result_ok(Json.toJson(validation));
+                        return  ok(Json.toJson(validation));
                     }
 
                     break;
                 }
 
-                default:return GlobalResult.result_badRequest("Key does not exist, use only {mail, nick_name or vat_number}");
+                default:return badRequest("Key does not exist, use only {mail, nick_name or vat_number}");
             }
 
-            return GlobalResult.result_ok(Json.toJson(validation));
+            return ok(Json.toJson(validation));
 
-        }catch (Exception e){
-            return ServerLogger.result_internalServerError(e, request());
+        } catch (Exception e) {
+            return internalServerError(e);
         }
     }
 
@@ -883,7 +882,7 @@ public class Controller_Person extends Controller {
     @ApiImplicitParams(
             @ApiImplicitParam(
                     name = "body",
-                    dataType = "utilities.swagger.documentationClass.Swagger_Person_ChangeProperty",
+                    dataType = "utilities.swagger.input.Swagger_Person_ChangeProperty",
                     required = true,
                     paramType = "body",
                     value = "Contains Json with values"
@@ -895,66 +894,64 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_API.class)
+    @Security.Authenticated(Authentication.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result person_changeLoginProperty(){
+    public Result person_changeLoginProperty() {
 
         try {
 
             // Získání JSON
-            final Form<Swagger_Person_ChangeProperty> form = Form.form(Swagger_Person_ChangeProperty.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            final Form<Swagger_Person_ChangeProperty> form = formFactory.form(Swagger_Person_ChangeProperty.class).bindFromRequest();
+            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
             Swagger_Person_ChangeProperty help = form.get();
 
-            if(Model_ChangePropertyToken.find.where().eq("person.id", Controller_Security.get_person_id()).findUnique() != null)
-                return GlobalResult.result_badRequest("You can request only one change at this time.");
+            if (Model_ChangePropertyToken.find.query().where().eq("person.id", BaseController.personId()).findOne() != null)
+                return badRequest("You can request only one change at this time.");
 
             // Proměnné mailu
             String subject;
             String text;
             String link;
 
-            switch (help.property){
+            switch (help.property) {
 
                 case "password":{
 
-                    if (help.password == null) return GlobalResult.result_badRequest("You must fill in the password");
+                    if (help.password == null) return badRequest("You must fill in the password");
 
                     // Vytvoření tokenu pro podržení hesla
                     Model_ChangePropertyToken changePropertyToken = new Model_ChangePropertyToken();
-                    changePropertyToken.person = Controller_Security.get_person();
+                    changePropertyToken.person = person();
                     changePropertyToken.property = help.property;
-                    changePropertyToken.time_of_creation = new Date();
                     changePropertyToken.value = help.password;
                     changePropertyToken.save();
 
                     // Úprava proměnných mailu
                     subject = "Password change - need authorization";
                     text = "Password change was requested for your account. Click on the link below to authorize the change.";
-                    link = Server.tyrion_serverAddress + "/person/authorize_change/" + changePropertyToken.change_property_token;
+                    link = Server.httpAddress + "/person/authorize_change/" + changePropertyToken.id;
 
                     break;}
 
                 case "email":{
 
-                    if (help.email == null) return GlobalResult.result_badRequest("You must fill in the email");
+                    if (help.email == null) return badRequest("You must fill in the email");
 
                     // Vytvoření tokenu pro podržení emailu
                     Model_ChangePropertyToken changePropertyToken = new Model_ChangePropertyToken();
-                    changePropertyToken.person = Controller_Security.get_person();
+                    changePropertyToken.person = person();
                     changePropertyToken.property = help.property;
-                    changePropertyToken.time_of_creation = new Date();
                     changePropertyToken.value = help.email;
                     changePropertyToken.save();
 
                     // Úprava proměnných mailu
                     subject = "Email change - need authorization";
                     text = "Email change was requested for your account. Click on the link below to authorize the change. Verification email will be sent to your new email";
-                    link = Server.tyrion_serverAddress + "/person/authorize_change/" + changePropertyToken.change_property_token;
+                    link = Server.httpAddress + "/person/authorize_change/" + changePropertyToken.id;
 
                     break;}
 
-                default: return GlobalResult.result_badRequest("No such property");
+                default: return badRequest("No such property");
             }
 
             // Odeslání emailu
@@ -966,16 +963,16 @@ public class Controller_Person extends Controller {
                         .text("If you do not recognize any of this activity, we strongly recommend you to go to your account and change your password there, because it was probably stolen.")
                         .divider()
                         .link("Authorize change",link)
-                        .send(Controller_Security.get_person().mail, subject);
+                        .send(person().email, subject);
 
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                logger.internalServerError(e);
             }
 
-            return GlobalResult.result_ok("Change was requested. You must authorize the change in next 4 hours via your email. Authorization email was sent.");
+            return ok("Change was requested. You must authorize the change in next 4 hours via your email. Authorization email was sent.");
 
-        }catch (Exception e){
-            return ServerLogger.result_internalServerError(e, request());
+        } catch (Exception e) {
+            return internalServerError(e);
         }
     }
 
@@ -989,7 +986,7 @@ public class Controller_Person extends Controller {
     @ApiImplicitParams(
             @ApiImplicitParam(
                     name = "body",
-                    dataType = "utilities.swagger.documentationClass.Swagger_Person_ChangeProperty",
+                    dataType = "utilities.swagger.input.Swagger_Person_ChangeProperty",
                     required = true,
                     paramType = "body",
                     value = "Contains Json with values"
@@ -1001,24 +998,24 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result person_authorizePropertyChange(String token){
-        try{
-            Model_ChangePropertyToken changePropertyToken = Model_ChangePropertyToken.get_byId(token);
-            if(changePropertyToken == null) return redirect(Server.becki_mainUrl + "/" + Server.becki_propertyChangeFailed);
+    public Result person_authorizePropertyChange(String token) {
+        try {
+            Model_ChangePropertyToken changePropertyToken = Model_ChangePropertyToken.getById(token);
+            if (changePropertyToken == null) return redirect(Server.becki_mainUrl + "/" + Server.becki_propertyChangeFailed);
 
-            if(((new Date()).getTime() - changePropertyToken.time_of_creation.getTime()) > 14400000 ){
+            if (((new Date()).getTime() - changePropertyToken.created.getTime()) > 14400000 ) {
                 changePropertyToken.delete();
                 return redirect(Server.becki_mainUrl + "/" + Server.becki_propertyChangeFailed);
             }
 
-            Model_Person person = Model_Person.get_byId(changePropertyToken.person.id);
-            if(person == null) return redirect(Server.becki_mainUrl + "/" +  Server.becki_propertyChangeFailed);
+            Model_Person person = Model_Person.getById(changePropertyToken.person.id);
+            if (person == null) return redirect(Server.becki_mainUrl + "/" +  Server.becki_propertyChangeFailed);
 
-            switch (changePropertyToken.property){
+            switch (changePropertyToken.property) {
 
                 case "password":{
                     // Úprava objektu
-                    person.setSha(changePropertyToken.value);
+                    person.setPassword(changePropertyToken.value);
                     person.update();
                     break;
                 }
@@ -1026,16 +1023,16 @@ public class Controller_Person extends Controller {
                 case "email":{
 
                     // Úprava objektu
-                    person.mail = changePropertyToken.value;
-                    person.mailValidated = false;
+                    person.email = changePropertyToken.value;
+                    person.validated = false;
                     person.update();
 
                     // Vytvoření validačního tokenu
-                    Model_ValidationToken validationToken = Model_ValidationToken.find.where().eq("personEmail",person.mail).findUnique();
-                    if(validationToken!=null) validationToken.delete();
-                    validationToken = new Model_ValidationToken().setValidation(person.mail);
+                    Model_ValidationToken validationToken = Model_ValidationToken.find.query().where().eq("email",person.email).findOne();
+                    if (validationToken!=null) validationToken.delete();
+                    validationToken = new Model_ValidationToken().setValidation(person.email);
 
-                    String link = Server.tyrion_serverAddress + "/person/mail_authentication/" + validationToken.authToken;
+                    String link = Server.httpAddress + "/person/mail_authentication/" + validationToken.token;
 
                     // Odeslání emailu
                     try {
@@ -1043,17 +1040,17 @@ public class Controller_Person extends Controller {
                                 .text("Email verification is needed to complete your registration.")
                                 .divider()
                                 .link("Verify your email address",link)
-                                .send(validationToken.personEmail, "Email Verification");
+                                .send(validationToken.email, "Email Verification");
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        logger.internalServerError(e);
                     }
                     break;
                 }
             }
 
             // Odhlášení uživatele všude
-            for ( Model_FloatingPersonToken floatingPersonToken : Model_FloatingPersonToken.find.where().eq("person.id",  Controller_Security.get_person_id()).findList()) {
+            for ( Model_AuthorizationToken floatingPersonToken : Model_AuthorizationToken.find.query().where().eq("person.id",  personId()).findList()) {
                 floatingPersonToken.delete();
             }
 
@@ -1062,7 +1059,7 @@ public class Controller_Person extends Controller {
             return redirect(Server.becki_mainUrl);
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
@@ -1077,7 +1074,7 @@ public class Controller_Person extends Controller {
     @ApiImplicitParams(
             @ApiImplicitParam(
                     name = "body",
-                    dataType = "utilities.swagger.documentationClass.Swagger_BASE64_FILE",
+                    dataType = "utilities.swagger.input.Swagger_BASE64_FILE",
                     required = true,
                     paramType = "body",
                     value = "Contains Json with values"
@@ -1090,37 +1087,37 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_API.class)
-    @BodyParser.Of(value = BodyParser.Json.class, maxLength = 1024 * 1024)
-    public Result person_uploadPicture(){
+    @Security.Authenticated(Authentication.class)
+    @BodyParser.Of(value = BodyParser.Json.class)
+    public Result person_uploadPicture() {
         try {
 
             // Získání JSON
-            final Form<Swagger_BASE64_FILE> form = Form.form(Swagger_BASE64_FILE.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            final Form<Swagger_BASE64_FILE> form = formFactory.form(Swagger_BASE64_FILE.class).bindFromRequest();
+            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
             Swagger_BASE64_FILE help = form.get();
 
-            Model_Person person = Controller_Security.get_person();
-            if(person ==  null) {
-                return GlobalResult.result_badRequest("User not found"); // Just for compiler Error
+            Model_Person person = person();
+            if (person ==  null) {
+                return badRequest("User not found"); // Just for compiler Error
             }
 
             // Kontzrola oprávnění
-            if(!person.edit_permission()) return GlobalResult.result_forbidden();
+            if (!person.edit_permission()) return forbiddenEmpty();
 
           // Odeberu cache - jen projistotu
             person.cache_picture_link = null;
 
             // Pokud tu byl nějaký soubor - smažu ho - prázdný soubor je příkaz ke smazání
-            if(help.file == null || help.file.equals("")){
-                Model_FileRecord fileRecord = person.picture;
+            if (help.file == null || help.file.equals("")) {
+                Model_Blob fileRecord = person.picture;
                 person.picture = null;
                 person.alternative_picture_link = "";
                 person.update();
                 fileRecord.refresh();
                 fileRecord.delete();
 
-                return GlobalResult.result_ok();
+                return okEmpty();
             }
 
             //  data:image/png;base64,
@@ -1130,14 +1127,14 @@ public class Controller_Person extends Controller {
             String[] content_type = type[1].split(";");
             String dataType = content_type[0].split("/")[1];
 
-            terminal_logger.debug("bootLoader_uploadFile:: Cont Type:" + content_type[0] + ":::");
-            terminal_logger.debug("bootLoader_uploadFile:: Data Type:" + dataType + ":::");
-            terminal_logger.debug("bootLoader_uploadFile:: Data: " + parts[1].substring(0, 10) + "......");
+            logger.debug("bootLoader_uploadFile:: Cont Type:" + content_type[0] + ":::");
+            logger.debug("bootLoader_uploadFile:: Data Type:" + dataType + ":::");
+            logger.debug("bootLoader_uploadFile:: Data: " + parts[1].substring(0, 10) + "......");
 
             // Odebrání předchozího obrázku
-            if(person.picture != null){
-                terminal_logger.debug("person_uploadPicture:: Removing previous picture");
-                Model_FileRecord fileRecord = person.picture;
+            if (person.picture != null) {
+                logger.debug("person_uploadPicture:: Removing previous picture");
+                Model_Blob fileRecord = person.picture;
                 person.picture = null;
                 person.alternative_picture_link = "";
                 person.update();
@@ -1145,7 +1142,7 @@ public class Controller_Person extends Controller {
             }
 
             // Pokud link není, vygeneruje se nový, unikátní
-            if(person.alternative_picture_link == null || person.alternative_picture_link.equals("")){
+            if (person.alternative_picture_link == null || person.alternative_picture_link.equals("")) {
                 person.alternative_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
                 person.update();
             }
@@ -1154,7 +1151,7 @@ public class Controller_Person extends Controller {
             // Z konrkétní sociální sítě - pak chybí soubor, ale existuje cesta k souboru, kterou zaslí tyrion do Becki
             // Například:: https://avatars1.githubusercontent.com/u/16296782?v=3
             // PRoto je nutné na to pamatovat - jinak se pak taková cesta strká do Azure k přepsání předchozího obrázku
-            if(person.alternative_picture_link.contains("http")){
+            if (person.alternative_picture_link.contains("http")) {
                 person.alternative_picture_link = null;
                 person.update();
             }
@@ -1163,16 +1160,16 @@ public class Controller_Person extends Controller {
             String file_name =  UUID.randomUUID().toString() + ".jpg";
             String file_path =  person.get_Container().getName() + "/" +file_name;
 
-            terminal_logger.debug("person_uploadPicture::  File Name " + file_name );
-            terminal_logger.debug("person_uploadPicture::  File Path " + file_path );
+            logger.debug("person_uploadPicture::  File Name " + file_name );
+            logger.debug("person_uploadPicture::  File Path " + file_path );
 
-            person.picture = Model_FileRecord.uploadAzure_File( parts[1], content_type[0], file_name, file_path);
+            person.picture = Model_Blob.uploadAzure_File( parts[1], content_type[0], file_name, file_path);
             person.update();
 
 
-            return GlobalResult.result_ok("Picture successfully uploaded");
-        }catch (Exception e){
-            return ServerLogger.result_internalServerError(e, request());
+            return ok("Picture successfully uploaded");
+        } catch (Exception e) {
+            return internalServerError(e);
         }
     }
 
@@ -1189,25 +1186,25 @@ public class Controller_Person extends Controller {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_API.class)
-    public Result person_removePicture(){
+    @Security.Authenticated(Authentication.class)
+    public Result person_removePicture() {
         try {
 
-            Model_Person person = Controller_Security.get_person();
+            Model_Person person = person();
 
-            if(!(person.picture == null)) {
-                Model_FileRecord fileRecord = person.picture;
+            if (!(person.picture == null)) {
+                Model_Blob fileRecord = person.picture;
                 person.picture = null;
                 person.alternative_picture_link = null;
                 person.update();
                 fileRecord.delete();
-            }else{
-                return GlobalResult.result_badRequest("There is no picture to remove.");
+            } else {
+                return badRequest("There is no picture to remove.");
             }
 
-            return GlobalResult.result_ok("Picture successfully removed");
-        }catch (Exception e){
-            return ServerLogger.result_internalServerError(e, request());
+            return ok("Picture successfully removed");
+        } catch (Exception e) {
+            return internalServerError(e);
         }
     }
 

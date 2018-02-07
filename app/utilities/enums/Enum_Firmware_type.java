@@ -1,6 +1,6 @@
 package utilities.enums;
 
-import com.avaje.ebean.annotation.EnumValue;
+import io.ebean.annotation.EnumValue;
 
 public enum Enum_Firmware_type {
 
@@ -15,11 +15,11 @@ public enum Enum_Firmware_type {
         this.firmwareType = firmwareType;
     }
 
-    public static Enum_Firmware_type getFirmwareType(String value){
+    public static Enum_Firmware_type getFirmwareType(String value) {
 
-             if(value.equalsIgnoreCase(FIRMWARE.toString()       ))   return Enum_Firmware_type.FIRMWARE;
-        else if(value.equalsIgnoreCase(BOOTLOADER.toString()     ))   return Enum_Firmware_type.BOOTLOADER;
-        else if(value.equalsIgnoreCase(BACKUP.toString()         ))   return Enum_Firmware_type.BACKUP;
+             if (value.equalsIgnoreCase(FIRMWARE.toString()       ))   return Enum_Firmware_type.FIRMWARE;
+        else if (value.equalsIgnoreCase(BOOTLOADER.toString()     ))   return Enum_Firmware_type.BOOTLOADER;
+        else if (value.equalsIgnoreCase(BACKUP.toString()         ))   return Enum_Firmware_type.BACKUP;
 
         return null;
     }

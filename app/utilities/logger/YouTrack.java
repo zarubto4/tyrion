@@ -3,104 +3,103 @@ package utilities.logger;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import models.Model_ServerError;
-import play.Configuration;
-import play.Play;
-import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
-import play.mvc.Result;
-import play.mvc.Results;
-import utilities.response.GlobalResult;
 
+import java.time.Duration;
 import java.util.Base64;
+import java.util.concurrent.CompletionStage;
 
+// TODO make it work
 public class YouTrack {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(YouTrack.class);
+    private static final Logger logger = new Logger(YouTrack.class);
+
+    private WSClient ws;
+    private Config config;
 
     @Inject
-    private static WSClient wsClient; // používat přes getWSClient()
+    public YouTrack(WSClient ws, Config config) {
+        this.ws = ws;
+        this.config = config;
+    }
 
-    private static String token = "";       // token na youtrack
-    private static long tokenExpire = 0;    // kdy expiruje token na youtrack
+    private String token = "";       // token na youtrack
+    private long tokenExpire = 0;    // kdy expiruje token na youtrack
 
-    public static String report(Model_ServerError error) {
+    public String report(Model_ServerError error) {
+        try {
+            logger.debug("report - new issue");
 
-        terminal_logger.debug("report - new issue");
-/*
-        if (System.currentTimeMillis() > tokenExpire - 10000) { // pokud nemám platný token, získám ho a metodu spustím znovu
-            terminal_logger.debug("report - need login");
-            if (login().get(5000).status() != 200) {
-                throw new RuntimeException("Login to YouTrack was unsuccessful.");
+            if (System.currentTimeMillis() > tokenExpire - 10000) { // pokud nemám platný token, získám ho a metodu spustím znovu
+                logger.debug("report - need login");
+                if (login()) {
+                    throw new RuntimeException("Login to YouTrack was unsuccessful.");
+                }
             }
+
+            logger.debug("report - reporting issue");
+
+            ObjectNode issue = Json.newObject()
+                    .put("project", config.getString("logger.youtrackProject"))
+                    .put("summary", error.name)
+                    .put("description", error.description + "\n\n" + error.prettyPrint());
+
+
+            logger.debug("report - request body: {}", Json.toJson(issue));
+
+            CompletionStage<WSResponse> promise = ws.url(config.getString("logger.youtrackUrl") + "/youtrack/rest/issue")
+                    .addHeader("Accept", "application/json")
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Authorization", "Bearer " + config.getString("logger.youtrackApiKey"))
+                    .setRequestTimeout(Duration.ofSeconds(10))
+                    .put(issue);
+
+            WSResponse response = promise.toCompletableFuture().get();
+
+            if (response.getStatus() == 201) {
+                logger.debug("report - successfully created");
+                return response.getSingleHeader("Location").get().replace("/rest", ""); // uložím url z odpovědi
+            }
+
+            logger.debug("report - unsuccessful, status: {}, body: {}", response.getStatus(), response.getBody());
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
         }
-*/
-        terminal_logger.debug("report - reporting issue");
-
-        ObjectNode issue = Json.newObject()
-                .put("project", Configuration.root().getString("Logger.youtrackProject"))
-                .put("summary", error.summary)
-                .put("description", error.description + "\n\n" + error.prettyPrint());
-
-
-        terminal_logger.debug("report - request body: {}", Json.toJson(issue));
-
-        WSResponse response = getWSClient().url(Configuration.root().getString("Logger.youtrackUrl") + "/youtrack/rest/issue")
-                .setHeader("Accept", "application/json")
-                .setHeader("Content-Type", "application/json")
-                //.setHeader("Authorization", "Bearer " + token)
-                .setHeader("Authorization", "Bearer " + Configuration.root().getString("Logger.youtrackApiKey"))
-                .put(issue)
-                .get(10000);
-
-        if (response.getStatus() == 201) {
-            terminal_logger.debug("report - successfully created");
-            return response.getHeader("Location").replace("/rest", ""); // uložím url z odpovědi
-        }
-
-        terminal_logger.debug("report - unsuccessful, status: {}, body: {}", response.getStatus(), response.getBody());
 
         return null;
     }
 
-    private static F.Promise<Result> login() {
+    private boolean login() throws Exception {
 
-        terminal_logger.debug("login - requesting token");
+        logger.debug("login - requesting token");
 
-        F.Promise<WSResponse> promise = getWSClient().url(Configuration.root().getString("Logger.youtrackUrl") + "/hub/api/rest/oauth2/token")
+        CompletionStage<WSResponse> promise = ws.url(config.getString("logger.youtrackUrl") + "/hub/api/rest/oauth2/token")
                 .setContentType("application/x-www-form-urlencoded")
-                .setHeader("Authorization", "Basic " + new String(Base64.getEncoder().encode((Configuration.root().getString("Logger.youtrackId") + ":" + Configuration.root().getString("Logger.youtrackSecret")).getBytes())))
+                .addHeader("Authorization", "Basic " + new String(Base64.getEncoder().encode((config.getString("logger.youtrackId") + ":" + config.getString("logger.youtrackSecret")).getBytes())))
                 .post("response_type=token&grant_type=password"
-                        +"&scope="+Configuration.root().getString("Logger.youtrackScopeId")
-                        +"&username="+Configuration.root().getString("Logger.youtrackUsername")
-                        +"&password="+Configuration.root().getString("Logger.youtrackPassword"));
+                        +"&scope=" + config.getString("logger.youtrackScopeId")
+                        +"&username=" + config.getString("logger.youtrackUsername")
+                        +"&password=" + config.getString("logger.youtrackPassword"));
 
-        return promise.map(YouTrack::checkLoginResponse); // zpracuje odpověď od youtracku
-    }
-
-    private static Result checkLoginResponse(WSResponse response) {
+        WSResponse response = promise.toCompletableFuture().get();
 
         if (response.getStatus() == 200) {  // pokud úspěšné, uložím token a jeho expiraci
 
-            terminal_logger.debug("checkLoginResponse - success");
+            logger.debug("checkLoginResponse - success");
 
             JsonNode content = response.asJson();
             token = content.get("access_token").asText();
             tokenExpire = System.currentTimeMillis() + content.get("expires_in").asLong()*1000;
-            return GlobalResult.result_ok("login successful");
+            return true;
         }
 
-        return Results.status(response.getStatus(), response.getBody());
-    }
-
-    private static WSClient getWSClient() {
-        if(wsClient == null) { // pokud je wsClient null, vytvorím ho
-            wsClient = Play.application().injector().instanceOf(WSClient.class);
-        }
-        return wsClient;
+        return false;
     }
 }

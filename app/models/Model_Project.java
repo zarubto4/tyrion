@@ -1,100 +1,91 @@
 package models;
 
-import com.avaje.ebean.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.Controller_Security;
+import controllers.BaseController;
+import io.ebean.Expr;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
-import play.libs.Json;
-import utilities.cache.helps_objects.IdsList;
-import utilities.cache.helps_objects.TyrionCachedList;
+import utilities.cache.CacheField;
+import utilities.cache.Cached;
+import utilities.cache.IdsList;
 import utilities.enums.*;
-import utilities.logger.Class_Logger;
+import utilities.logger.Logger;
+import utilities.model.NamedModel;
+import utilities.model.TaggedModel;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Text;
-import utilities.swagger.outboundClass.*;
 import javax.persistence.*;
 import javax.persistence.OrderBy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Entity
 @ApiModel(value = "Project", description = "Model of Project")
 @Table(name="Project")
-public class Model_Project extends Model {
+public class Model_Project extends TaggedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_Project.class);
+    private static final Logger logger = new Logger(Model_Project.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                                      @Id public String id;
-                                                                          public String name;
-                                                                          public String description;
-                                                           @JsonIgnore    public boolean removed_by_user;
-
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BProgram>                b_programs        = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_CProgram>                c_programs        = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Library>                 libraries         = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_MProject>                m_projects        = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_TypeOfBlock>             type_of_blocks    = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_TypeOfWidget>            type_of_widgets   = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Board>                   boards            = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BoardGroup>              board_groups      = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("date_of_creation desc")             public List<Model_Invitation>              invitations       = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("id asc")                            public List<Model_ProjectParticipant>      participants      = new ArrayList<>();
-
-    // reference na Fake Instanci - kam připojuji Yody q- pokud nejsou připojení do vlastní instnace vytvořené v blocko programu
-
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Product product;
+
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_BProgram>           b_programs   = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_CProgram>           c_programs   = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Library>            libraries    = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_MProject>           m_projects   = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Block>              blocks       = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Widget>             widgets      = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Hardware>           boards       = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareGroup>      board_groups = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("created desc") public List<Model_Invitation>         invitations  = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("id asc")       public List<Model_ProjectParticipant> participants = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     // TODO - CHCI CACHE INGOR - NA VŠECHNY DB HODNOTY KTERÉ JSOU VÝŠE
     // COŽ ZNAMENÁ ŽE SI CACHE PÚAMATUJE JEN ID REFERENCE
 
-    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_board_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_c_program_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_library_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_b_program_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_m_project_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_hardware_groups_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_type_of_widgets_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_type_of_blocks_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList public List<String> cache_list_instance_ids = new ArrayList<>();
-    @JsonIgnore @Transient @TyrionCachedList private String cache_value_product_id;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_hardware_ids;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_c_program_ids;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_library_ids;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_b_program_ids;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_m_project_ids;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_hardware_groups_ids;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_widget_ids;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_block_ids;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_instance_ids;
+    @JsonIgnore @Transient @Cached private UUID cache_product_id;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Board_Short_Detail>         boards()             { List<Swagger_Board_Short_Detail>       l = new ArrayList<>();    if (!active()) return l; for ( Model_Board m           : get_project_boards_not_deleted())         l.add(m.get_short_board());  return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_B_Program_Short_Detail>     b_programs()         { List<Swagger_B_Program_Short_Detail>   l = new ArrayList<>();    if (!active()) return l; for ( Model_BProgram m        : get_b_programs_not_deleted()) l.add(m.get_b_program_short_detail()); return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_C_program_Short_Detail>     c_programs()         { List<Swagger_C_program_Short_Detail>   l = new ArrayList<>();    if (!active()) return l; for ( Model_CProgram m        : get_c_programs_not_deleted()) l.add(m.get_c_program_short_detail()); return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Library_Short_Detail>       libraries()          { List<Swagger_Library_Short_Detail>     l = new ArrayList<>();    if (!active()) return l; for ( Model_Library m         : get_c_privates_project_libraries_not_deleted()) l.add(m.get_short_library()); return l;}
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_Hardware> boards()     { return active() ? get_project_boards_not_deleted() : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_BProgram> b_programs() { return active() ? get_b_programs_not_deleted() : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_CProgram> c_programs() { return active() ? get_c_programs_not_deleted() : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_Library>  libraries()  { return active() ? get_c_privates_project_libraries_not_deleted() : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_MProject> m_projects() { return active() ? get_m_projects_not_deleted() : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_Widget>   widgets()    { return active() ? getWidgets() : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_Block>    blocks()     { return active() ? getBlocks() : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_Instance> instancies() { return active() ? get_instances_not_deleted() : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public boolean active() { return get_product().active;}
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_M_Project_Short_Detail>     m_projects()         { List<Swagger_M_Project_Short_Detail>   l = new ArrayList<>();    if (!active()) return l; for ( Model_MProject m        : get_m_projects_not_deleted()) l.add(m.get_short_m_project()); return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfBlock_Short_Detail>   type_of_blocks()     { List<Swagger_TypeOfBlock_Short_Detail> l = new ArrayList<>();    if (!active()) return l; for ( Model_TypeOfBlock m     : get_type_of_blocks_not_deleted()) l.add(m.get_type_of_block_short_detail()); return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_TypeOfWidget_Short_Detail>  type_of_widgets()    { List<Swagger_TypeOfWidget_Short_Detail>l = new ArrayList<>();    if (!active()) return l; for ( Model_TypeOfWidget m    : get_type_of_widgets_not_deleted())l.add(m.get_typeOfWidget_short_detail());  return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public List<Swagger_Instance_Short_Detail>      instancies()         { List<Swagger_Instance_Short_Detail>    l = new ArrayList<>();    if (!active()) return l; for ( Model_HomerInstance m   : get_instances_not_deleted()) l.add(m.get_instance_short_detail());  return l;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean active() { return get_product().active;}
-
-    @JsonProperty @Transient @ApiModelProperty(required = true) public String product_name() { return get_product().name;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public String product_id()   { return get_product().id;}
+    @JsonProperty @ApiModelProperty(required = true) public String product_name() { return get_product().name;}
+    @JsonProperty @ApiModelProperty(required = true) public UUID product_id()   { return get_product().id;}
 
     @JsonProperty @Transient @ApiModelProperty(required = true) public List<Model_ProjectParticipant> participants() {
 
-        List<Model_ProjectParticipant> project_participants = new ArrayList<>();
-
-        project_participants.addAll(this.participants);
+        List<Model_ProjectParticipant> project_participants = new ArrayList<>(this.participants);
 
         for (Model_Invitation invitation : invitations) {
 
-            Model_Person person = Model_Person.find.where().eq("mail", invitation.mail).findUnique();
+            Model_Person person = Model_Person.find.query().where().eq("mail", invitation.email).findOne();
 
             Model_ProjectParticipant project_participant = new Model_ProjectParticipant();
 
@@ -102,10 +93,10 @@ public class Model_Project extends Model {
 
                 project_participant.person = person;
             } else {
-                project_participant.user_email = invitation.mail;
+                project_participant.user_email = invitation.email;
             }
 
-            project_participant.state = Enum_Participant_status.invited;
+            project_participant.state = ParticipantStatus.INVITED;
 
             if (!project_participants.contains(project_participant)) {
                 project_participants.add(project_participant);
@@ -117,25 +108,6 @@ public class Model_Project extends Model {
 
 /* JSON IGNORE METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public Swagger_Project_Short_Detail project_short_detail() {
-
-        Swagger_Project_Short_Detail short_detail = new Swagger_Project_Short_Detail();
-
-        short_detail.project_id = id;
-        short_detail.project_name = name;
-        short_detail.project_description = description;
-
-        short_detail.product_name = product_name();
-        short_detail.product_id = product_id();
-
-        short_detail.edit_permission = edit_permission();
-        short_detail.delete_permission = delete_permission();
-
-        short_detail.active_status = active();
-
-        return short_detail;
-    }
-
     @JsonIgnore
     public boolean isParticipant(Model_Person person) {
 
@@ -143,316 +115,316 @@ public class Model_Project extends Model {
     }
 
     @JsonIgnore @Override public void save() {
-
-        while(true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            this.blob_project_link = product.get_path() + "/projects/" + this.id;
-            if (Model_Project.find.byId(this.id) == null) break;
-        }
-
-        terminal_logger.debug("save - saving to database, id: {}", this.id);
-
+        this.blob_project_link = product.get_path() + "/projects/" + UUID.randomUUID();
         super.save();
     }
 
     @JsonIgnore @Override public void update() {
 
-        terminal_logger.debug("update - updating in database, id: {}",  this.id);
+        logger.debug("update - updating in database, id: {}",  this.id);
 
         try {
 
             if (cache.containsKey(this.id)) cache.replace(this.id, this);
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
 
         super.update();
     }
 
-    @JsonIgnore @Override public void delete() {
+    @JsonIgnore @Override public boolean delete() {
 
-        terminal_logger.debug("delete - deleting from database, id: {} ", this.id);
-        removed_by_user = true;
+        logger.debug("delete - deleting from database, id: {} ", this.id);
+        deleted = true;
+        cache.remove(this.id);
 
-        if (cache.containsKey(this.id)) {
-            cache.remove(this.id);
-        }
-
-        update();
+        this.update();
+        return false;
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* GET SQL PARAMETER - CACHE OBJECTS ------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @TyrionCachedList
-    public List<Model_Board> get_project_boards_not_deleted() {
+    @JsonIgnore
+    public List<Model_Hardware> get_project_boards_not_deleted() {
         try {
 
             // Cache
-            if (cache_list_board_ids.isEmpty()) {
+            if (cache_hardware_ids.isEmpty()) {
 
-                List<Model_Board> boards = Model_Board.find.where().eq("project.id", id).order().asc("date_of_user_registration").select("id").findList();
+                List<Model_Hardware> boards = Model_Hardware.find.query().where().eq("project.id", id).order().asc("date_of_user_registration").select("id").findList();
 
                 // Získání seznamu
-                for (Model_Board board : boards) {
-                    cache_list_board_ids.add(board.id);
+                for (Model_Hardware board : boards) {
+                    cache_hardware_ids.add(board.id);
                 }
             }
 
-            List<Model_Board> board_list = new ArrayList<>();
+            List<Model_Hardware> board_list = new ArrayList<>();
 
-            for (String board_id : cache_list_board_ids) {
-                board_list.add(Model_Board.get_byId(board_id));
+            for (UUID board_id : cache_hardware_ids) {
+                board_list.add(Model_Hardware.getById(board_id));
             }
 
             return board_list;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
 
-    @JsonIgnore @TyrionCachedList
+    @JsonIgnore
     public List<Model_CProgram> get_c_programs_not_deleted() {
         try {
 
             // Cache
-            if (cache_list_c_program_ids.isEmpty()) {
+            if (cache_c_program_ids.isEmpty()) {
 
-                List<Model_CProgram> c_programs = Model_CProgram.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+                List<Model_CProgram> c_programs = Model_CProgram.find.query().where().eq("project.id", id).eq("deleted", false).orderBy("UPPER(name) ASC").select("id").findList();
 
                 // Získání seznamu
                 for (Model_CProgram cProgram : c_programs) {
-                    cache_list_c_program_ids.add(cProgram.id);
+                    cache_c_program_ids.add(cProgram.id);
                 }
             }
 
             List<Model_CProgram> c_programs = new ArrayList<>();
 
-            for (String c_program_id : cache_list_c_program_ids) {
-                c_programs.add(Model_CProgram.get_byId(c_program_id));
+            for (UUID c_program_id : cache_c_program_ids) {
+                c_programs.add(Model_CProgram.getById(c_program_id));
             }
 
             return c_programs;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
 
-    @JsonIgnore @TyrionCachedList
+    @JsonIgnore
     public List<Model_Library> get_c_privates_project_libraries_not_deleted() {
         try {
 
-            if (cache_list_library_ids.isEmpty()) {
+            if (cache_library_ids.isEmpty()) {
 
-                List<Model_Library> libraries = Model_Library.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+                List<Model_Library> libraries = Model_Library.find.query().where().eq("project.id", id).eq("deleted", false).orderBy("UPPER(name) ASC").select("id").findList();
 
                 // Získání seznamu
                 for (Model_Library library : libraries) {
-                    cache_list_library_ids.add(library.id);
+                    cache_library_ids.add(library.id);
                 }
             }
 
             List<Model_Library> libraries = new ArrayList<>();
 
-            for (String library_id : cache_list_library_ids) {
-                libraries.add(Model_Library.get_byId(library_id));
+            for (UUID library_id : cache_library_ids) {
+                libraries.add(Model_Library.getById(library_id));
             }
 
             return libraries;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
 
-    @JsonIgnore @TyrionCachedList
+    @JsonIgnore
     public List<Model_BProgram> get_b_programs_not_deleted() {
         try {
 
-            if (cache_list_b_program_ids.isEmpty()) {
+            if (cache_b_program_ids.isEmpty()) {
 
-                List<Model_BProgram> b_programs = Model_BProgram.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+                List<Model_BProgram> b_programs = Model_BProgram.find.query().where().eq("project.id", id).eq("deleted", false).orderBy("UPPER(name) ASC").select("id").findList();
 
                 // Získání seznamu
                 for (Model_BProgram b_program : b_programs) {
-                    cache_list_b_program_ids.add(b_program.id);
+                    cache_b_program_ids.add(b_program.id);
                 }
             }
 
             List<Model_BProgram> b_programs  = new ArrayList<>();
 
-            for (String b_program_id : cache_list_b_program_ids) {
-                b_programs.add(Model_BProgram.get_byId(b_program_id));
+            for (UUID b_program_id : cache_b_program_ids) {
+                b_programs.add(Model_BProgram.getById(b_program_id));
             }
 
             return b_programs;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
 
-    @JsonIgnore @TyrionCachedList
+    @JsonIgnore
     public List<Model_MProject> get_m_projects_not_deleted() {
         try {
 
-            if (cache_list_m_project_ids.isEmpty()) {
+            if (cache_m_project_ids.isEmpty()) {
 
-                List<Model_MProject> m_projects = Model_MProject.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+                List<Model_MProject> m_projects = Model_MProject.find.query().where().eq("project.id", id).eq("deleted", false).orderBy("UPPER(name) ASC").select("id").findList();
 
                 // Získání seznamu
                 for (Model_MProject m_project : m_projects) {
-                    cache_list_m_project_ids.add(m_project.id);
+                    cache_m_project_ids.add(m_project.id);
                 }
             }
 
             List<Model_MProject> m_projects  = new ArrayList<>();
 
-            for (String m_project_id : cache_list_m_project_ids) {
-                m_projects.add(Model_MProject.get_byId(m_project_id));
+            for (UUID m_project_id : cache_m_project_ids) {
+                m_projects.add(Model_MProject.getById(m_project_id));
             }
 
             return m_projects;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
 
-    @JsonIgnore @TyrionCachedList
-    public List<Model_BoardGroup> get_hardware_groups_not_deleted() {
+    @JsonIgnore
+    public List<Model_HardwareGroup> get_hardware_groups_not_deleted() {
         try {
 
             if (cache_hardware_groups_ids.isEmpty()) {
 
-                List<Model_BoardGroup> board_groups = Model_BoardGroup.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+                List<Model_HardwareGroup> board_groups = Model_HardwareGroup.find.query().where().eq("project.id", id).eq("deleted", false).orderBy("UPPER(name) ASC").select("id").findList();
 
                 // Získání seznamu
-                for (Model_BoardGroup board_group : board_groups) {
-                    cache_hardware_groups_ids.add(board_group.id.toString());
+                for (Model_HardwareGroup board_group : board_groups) {
+                    cache_hardware_groups_ids.add(board_group.id);
                 }
             }
 
-            List<Model_BoardGroup> board_groups  = new ArrayList<>();
+            List<Model_HardwareGroup> board_groups  = new ArrayList<>();
 
-            for (String board_group_id : cache_hardware_groups_ids) {
-                board_groups.add(Model_BoardGroup.get_byId(board_group_id));
+            for (UUID board_group_id : cache_hardware_groups_ids) {
+                board_groups.add(Model_HardwareGroup.getById(board_group_id));
             }
 
             return board_groups;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
 
 
-    @JsonIgnore @TyrionCachedList
-    public List<Model_TypeOfWidget> get_type_of_widgets_not_deleted() {
+    @JsonIgnore
+    public List<Model_Widget> getWidgets() {
         try {
 
-            if (cache_list_type_of_widgets_ids.isEmpty()) {
+            List<Model_Widget> widgets;
 
-                List<Model_TypeOfWidget> typeOfWidgets = Model_TypeOfWidget.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+            if (cache_widget_ids == null) {
+
+                widgets = Model_Widget.find.query().where().eq("project.id", id).eq("deleted", false).orderBy("UPPER(name) ASC").findList();
 
                 // Získání seznamu
-                for (Model_TypeOfWidget typeOfWidget : typeOfWidgets) {
-                    cache_list_type_of_widgets_ids.add(typeOfWidget.id);
+                for (Model_Widget widget : widgets) {
+                    cache_widget_ids.add(widget.id);
+                    widget.cache();
+                }
+
+                return widgets;
+            } else {
+                widgets = new ArrayList<>();
+
+                for (UUID id : cache_widget_ids) {
+                    widgets.add(Model_Widget.getById(id));
                 }
             }
 
-            List<Model_TypeOfWidget> typeOfWidgets  = new ArrayList<>();
-
-            for (String typeOfWidget_id : cache_list_type_of_widgets_ids) {
-                typeOfWidgets.add(Model_TypeOfWidget.get_byId(typeOfWidget_id));
-            }
-
-            return typeOfWidgets;
+            return widgets;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
 
-    @JsonIgnore @TyrionCachedList
-    public List<Model_TypeOfBlock> get_type_of_blocks_not_deleted() {
+    @JsonIgnore
+    public List<Model_Block> getBlocks() {
         try {
 
-            if (cache_list_type_of_blocks_ids.isEmpty()) {
+            List<Model_Block> blocks;
 
-                List<Model_TypeOfBlock> typeOfBlocks = Model_TypeOfBlock.find.where().eq("project.id", id).eq("removed_by_user", false).orderBy("UPPER(name) ASC").select("id").findList();
+            if (cache_block_ids == null) {
+
+                blocks = Model_Block.find.query().where().eq("project.id", id).eq("deleted", false).orderBy("UPPER(name) ASC").findList();
 
                 // Získání seznamu
-                for (Model_TypeOfBlock typeOfBlock : typeOfBlocks) {
-                    cache_list_type_of_blocks_ids.add(typeOfBlock.id);
+                for (Model_Block block : blocks) {
+                    cache_block_ids.add(block.id);
+                    block.cache();
+                }
+
+                return blocks;
+            } else {
+                blocks = new ArrayList<>();
+
+                for (UUID id : cache_block_ids) {
+                    blocks.add(Model_Block.getById(id));
                 }
             }
 
-            List<Model_TypeOfBlock> typeOfBlocks  = new ArrayList<>();
-
-            for (String type_of_blocks_id : cache_list_type_of_blocks_ids) {
-                typeOfBlocks.add(Model_TypeOfBlock.get_byId(type_of_blocks_id));
-            }
-
-            return typeOfBlocks;
+            return blocks;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
 
-    @JsonIgnore @TyrionCachedList
-    public List<Model_HomerInstance> get_instances_not_deleted() {
+    @JsonIgnore
+    public List<Model_Instance> get_instances_not_deleted() {
         try {
 
 
-            if (cache_list_instance_ids.isEmpty()) {
+            if (cache_instance_ids.isEmpty()) {
 
-                List<Model_HomerInstance> instances = Model_HomerInstance.find.where().ne("removed_by_user", true).isNotNull("actual_instance").eq("b_program.project.id", id).select("id").findList();
+                List<Model_Instance> instances = Model_Instance.find.query().where().ne("deleted", true).isNotNull("actual_instance").eq("b_program.project.id", id).select("id").findList();
 
                 // Získání seznamu
-                for (Model_HomerInstance instance : instances) {
-                    cache_list_instance_ids.add(instance.id);
+                for (Model_Instance instance : instances) {
+                    cache_instance_ids.add(instance.id);
                 }
             }
 
-            List<Model_HomerInstance> instances  = new ArrayList<>();
+            List<Model_Instance> instances  = new ArrayList<>();
 
-            for (String instance_id : cache_list_instance_ids) {
-                instances.add(Model_HomerInstance.get_byId(instance_id));
+            for (UUID instance_id : cache_instance_ids) {
+                instances.add(Model_Instance.getById(instance_id));
             }
 
             return instances;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
 
-    @JsonIgnore @TyrionCachedList
+    @JsonIgnore
     public Model_Product get_product() {
 
-        if (cache_value_product_id == null) {
-            Model_Product product = Model_Product.find.where().eq("projects.id", id).select("id").findUnique();
+        if (cache_product_id == null) {
+            Model_Product product = Model_Product.find.query().where().eq("projects.id", id).select("id").findOne();
             if (product == null) return null;
 
-            cache_value_product_id = product.id;
+            cache_product_id = product.id;
         }
 
-        return Model_Product.get_byId(cache_value_product_id);
+        return Model_Product.getById(cache_product_id);
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -460,29 +432,29 @@ public class Model_Project extends Model {
     @JsonIgnore @Transient
     public void notification_project_invitation(Model_Person person, Model_Invitation invitation) {
 
-        Model_Person owner = Controller_Security.get_person();
+        Model_Person owner = BaseController.person();
 
         new Model_Notification()
-                .setImportance(Enum_Notification_importance.normal)
-                .setLevel(Enum_Notification_level.info)
+                .setImportance(NotificationImportance.NORMAL)
+                .setLevel(NotificationLevel.INFO)
                 .setText(new Notification_Text().setText("User "))
                 .setObject(owner)
                 .setText(new Notification_Text().setText(" invited you into the project "))
                 .setObject(this)
                 .setText(new Notification_Text().setText(". Do you accept the invitation?"))
-                .setButton( new Notification_Button().setAction(Enum_Notification_action.accept_project_invitation).setPayload(invitation.id).setColor(Becki_color.byzance_green).setText("Yes")  )
-                .setButton( new Notification_Button().setAction(Enum_Notification_action.reject_project_invitation).setPayload(invitation.id).setColor(Becki_color.byzance_red).setText("No")  )
+                .setButton( new Notification_Button().setAction(NotificationAction.ACCEPT_PROJECT_INVITATION).setPayload(invitation.id.toString()).setColor(Becki_color.byzance_green).setText("Yes")  )
+                .setButton( new Notification_Button().setAction(NotificationAction.REJECT_PROJECT_INVITATION).setPayload(invitation.id.toString()).setColor(Becki_color.byzance_red).setText("No")  )
                 .send(person);
     }
 
     @JsonIgnore @Transient
     public void notification_project_invitation_rejected(Model_Person owner) {
 
-        Model_Person person = Controller_Security.get_person();
+        Model_Person person = BaseController.person();
 
         new Model_Notification()
-                .setImportance(Enum_Notification_importance.normal)
-                .setLevel(Enum_Notification_level.info)
+                .setImportance(NotificationImportance.NORMAL)
+                .setLevel(NotificationLevel.INFO)
                 .setText(new Notification_Text().setText("User "))
                 .setObject(person)
                 .setText(new Notification_Text().setText(" did not accept your invitation to the project "))
@@ -495,8 +467,8 @@ public class Model_Project extends Model {
     public void notification_project_invitation_accepted(Model_Person invitee, Model_Person owner) {
 
         new Model_Notification()
-                .setImportance(Enum_Notification_importance.normal)
-                .setLevel(Enum_Notification_level.info)
+                .setImportance(NotificationImportance.NORMAL)
+                .setLevel(NotificationLevel.INFO)
                 .setText(new Notification_Text().setText("User "))
                 .setObject(invitee)
                 .setText(new Notification_Text().setText(" accepted your invitation to the project "))
@@ -508,11 +480,11 @@ public class Model_Project extends Model {
     @JsonIgnore @Transient
     public void notification_project_participant_change_status(Model_ProjectParticipant participant) {
 
-        Model_Person person = Controller_Security.get_person();
+        Model_Person person = BaseController.person();
 
         new Model_Notification()
-                .setImportance(Enum_Notification_importance.normal)
-                .setLevel(Enum_Notification_level.info)
+                .setImportance(NotificationImportance.NORMAL)
+                .setLevel(NotificationLevel.INFO)
                 .setText(new Notification_Text().setText("User "))
                 .setObject(person)
                 .setText(new Notification_Text().setText(" changed your status in project "))
@@ -540,150 +512,162 @@ public class Model_Project extends Model {
         return product.active && product.create_permission();
     }
 
-    @JsonProperty public boolean update_permission()    {
+    @JsonProperty
+    public boolean update_permission()    {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (Controller_Security.get_person().has_permission("project_update_" + id)) return Controller_Security.get_person().has_permission("project_update_"+ id);
-        if (Controller_Security.get_person().has_permission("Project_update")) return true;
+        if (BaseController.person().has_permission("project_update_" + id)) return BaseController.person().has_permission("project_update_"+ id);
+        if (BaseController.person().has_permission("Project_update")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).eq("id", id).findRowCount() > 0) {
-            Controller_Security.get_person().cache_permission("project_update_" + id, true);
+        if ( Model_Project.find.query().where().eq("participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
+            BaseController.person().cache_permission("project_update_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().cache_permission("project_update_" + id, false);
+        BaseController.person().cache_permission("project_update_" + id, false);
         return false;
     }
 
-    @JsonIgnore public boolean read_permission()      {
+    @JsonIgnore
+    public boolean read_permission()      {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (Controller_Security.get_person().has_permission("project_read_" + id)) return Controller_Security.get_person().has_permission("project_read_"+ id);
-        if (Controller_Security.get_person().has_permission("Project_read")) return true;
+        if (BaseController.person().has_permission("project_read_" + id)) return BaseController.person().has_permission("project_read_"+ id);
+        if (BaseController.person().has_permission("Project_read")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).eq("id", id).findRowCount() > 0) {
-            Controller_Security.get_person().cache_permission("project_read_" + id, true);
+        if ( Model_Project.find.query().where().eq("participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
+            BaseController.person().cache_permission("project_read_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().cache_permission("project_read_" + id, false);
+        BaseController.person().cache_permission("project_read_" + id, false);
         return false;
     }
 
-    @JsonProperty public boolean edit_permission()      {
+    @JsonProperty
+    public boolean edit_permission()      {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (Controller_Security.get_person().has_permission("project_edit_" + id)) return Controller_Security.get_person().has_permission("project_edit_"+ id);
-        if (Controller_Security.get_person().has_permission("Project_edit")) return true;
+        if (BaseController.person().has_permission("project_edit_" + id)) return BaseController.person().has_permission("project_edit_"+ id);
+        if (BaseController.person().has_permission("Project_edit")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_Project.find.where().eq("participants.person.id", Controller_Security.get_person_id()).eq("id", id).findRowCount() > 0) {
-            Controller_Security.get_person().cache_permission("project_edit_" + id, true);
+        if (Model_Project.find.query().where().eq("participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
+            BaseController.person().cache_permission("project_edit_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().cache_permission("projecte_edit_" + id, false);
+        BaseController.person().cache_permission("projecte_edit_" + id, false);
         return false;
     }
 
-    @JsonProperty public boolean delete_permission()    {
+    @JsonProperty
+    public boolean delete_permission()    {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (Controller_Security.get_person().has_permission("project_delete_" + id)) {
-            return Controller_Security.get_person().has_permission("project_delete_"+ id);
+        if (BaseController.person().has_permission("project_delete_" + id)) {
+            return BaseController.person().has_permission("project_delete_"+ id);
         }
-        if (Controller_Security.get_person().has_permission("Project_delete")) {
+        if (BaseController.person().has_permission("Project_delete")) {
             return true;
         }
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_ProjectParticipant.find.where().eq("project.id", id).eq("person.id", Controller_Security.get_person_id()).eq("state", Enum_Participant_status.owner).findRowCount() > 0) {
-            Controller_Security.get_person().cache_permission("project_delete_" + id, true);
+        if (Model_ProjectParticipant.find.query().where().eq("project.id", id).eq("person.id", BaseController.personId()).eq("state", ParticipantStatus.OWNER).findCount() > 0) {
+            BaseController.person().cache_permission("project_delete_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().cache_permission("project_delete_" + id, false);
+        BaseController.person().cache_permission("project_delete_" + id, false);
         return false;
     }
 
-    @JsonProperty public boolean unshare_permission()   {
+    @JsonProperty
+    public boolean unshare_permission()   {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (Controller_Security.get_person().has_permission("project_share_" + id)) return Controller_Security.get_person().has_permission("project_share_"+ id);
-        if (Controller_Security.get_person().has_permission("Project_unshare")) return true;
+        if (BaseController.person().has_permission("project_share_" + id)) return BaseController.person().has_permission("project_share_"+ id);
+        if (BaseController.person().has_permission("Project_unshare")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_ProjectParticipant.find.where().eq("project.id", id).eq("person.id", Controller_Security.get_person_id()).disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount()> 0) {
-            Controller_Security.get_person().cache_permission("project_share_" + id, true);
+        if (Model_ProjectParticipant.find.query().where().eq("project.id", id).eq("person.id", BaseController.personId()).disjunction().add(Expr.eq("state", ParticipantStatus.OWNER)).add(Expr.eq("state", ParticipantStatus.ADMIN)).findCount()> 0) {
+            BaseController.person().cache_permission("project_share_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().cache_permission("project_share_" + id, false);
+        BaseController.person().cache_permission("project_share_" + id, false);
         return false;
     }
 
-    @JsonProperty public boolean share_permission ()    {
+    @JsonProperty
+    public boolean share_permission ()    {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (Controller_Security.get_person().has_permission("project_unshare_" + id)) return Controller_Security.get_person().has_permission("project_unshare_"+ id);
-        if (Controller_Security.get_person().has_permission("Project_share")) return true;
+        if (BaseController.person().has_permission("project_unshare_" + id)) return BaseController.person().has_permission("project_unshare_"+ id);
+        if (BaseController.person().has_permission("Project_share")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_ProjectParticipant.find.where().eq("project.id", id).eq("person.id", Controller_Security.get_person_id()).disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount()> 0) {
-            Controller_Security.get_person().cache_permission("project_unshare_" + id, true);
+        if (Model_ProjectParticipant.find.query().where().eq("project.id", id).eq("person.id", BaseController.personId()).disjunction().add(Expr.eq("state", ParticipantStatus.OWNER)).add(Expr.eq("state", ParticipantStatus.ADMIN)).findCount()> 0) {
+            BaseController.person().cache_permission("project_unshare_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().cache_permission("project_unshare_" + id, false);
+        BaseController.person().cache_permission("project_unshare_" + id, false);
         return false;
     }
 
-    @JsonProperty public boolean admin_permission ()    {
+    @JsonProperty
+    public boolean admin_permission ()    {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (Controller_Security.get_person().has_permission("project_admin_permission_" + id)) return Controller_Security.get_person().has_permission("project_admin_permission_"+ id);
-        if (Controller_Security.get_person().has_permission("Project_admin")) return true;
+        if (BaseController.person().has_permission("project_admin_permission_" + id)) return BaseController.person().has_permission("project_admin_permission_"+ id);
+        if (BaseController.person().has_permission("Project_admin")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_ProjectParticipant.find.where().eq("project.id", id).where().eq("person.id", Controller_Security.get_person_id()).where().disjunction().add(Expr.eq("state", Enum_Participant_status.owner)).add(Expr.eq("state", Enum_Participant_status.admin)).findRowCount()> 0) {
-            Controller_Security.get_person().cache_permission("project_admin_permission_" + id, true);
+        if (Model_ProjectParticipant.find.query().where().eq("project.id", id).where().eq("person.id", BaseController.personId()).where().disjunction().add(Expr.eq("state", ParticipantStatus.OWNER)).add(Expr.eq("state", ParticipantStatus.ADMIN)).findCount()> 0) {
+            BaseController.person().cache_permission("project_admin_permission_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        Controller_Security.get_person().cache_permission("project_admin_permission_" + id, false);
+        BaseController.person().cache_permission("project_admin_permission_" + id, false);
         return false;
 
     }
 
-    @JsonIgnore public boolean financial_permission() {return this.product.financial_permission("project");}
+    @JsonIgnore
+    public boolean financial_permission() {return this.product.financial_permission("project");}
 
-    public enum permissions{Project_update, Project_read, Project_unshare , Project_share, Project_edit, Project_delete, Project_admin}
+    public enum Permission { Project_update, Project_read, Project_unshare , Project_share, Project_edit, Project_delete, Project_admin }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static final String CACHE                          = Model_Project.class.getSimpleName();
     public static final String CACHE_BECKI_CONNECTED_PERSONS  = Model_Project.class.getSimpleName() + "_BECKI_CONNECTED_PERSONS_ID";
 
-    public static Cache<String, Model_Project> cache = null;
-    public static Cache<String, IdsList> token_cache = null;  // < Project_Id, List<Person_id>> // Only connected on Websocket with Becki
+    @CacheField(value = Model_Project.class)
+    public static Cache<UUID, Model_Project> cache ;
 
-    public static Model_Project get_byId(String id) {
+    @CacheField(value = IdsList.class, name = "Model_Project_Person_Ids")
+    public static Cache<UUID, IdsList> token_cache;
+
+    public static Model_Project getById(String id) {
+        return getById(UUID.fromString(id));
+    }
+
+    public static Model_Project getById(UUID id) {
 
         Model_Project project = cache.get(id);
         if (project == null) {
 
-            terminal_logger.debug("Project {} is not in cache", id);
-
-            project = find.where().eq("id", id).eq("removed_by_user", false).findUnique();
+            project = find.query().where().idEq(id).eq("deleted", false).findOne();
             if (project == null) return null;
 
             cache.put(id, project);
@@ -692,12 +676,12 @@ public class Model_Project extends Model {
         return project;
     }
 
-    public static void becki_person_id_subscribe(String person_id) {
+    public static void becki_person_id_subscribe(UUID person_id) {
 
-        List<Model_Project> list_of_projects = Model_Project.find.where().eq("participants.person.id", person_id).disjunction()
-                    .eq("state", Enum_Participant_status.admin)
-                    .eq("state", Enum_Participant_status.member)
-                    .eq("state", Enum_Participant_status.owner)
+        List<Model_Project> list_of_projects = Model_Project.find.query().where().eq("participants.person.id", person_id).disjunction()
+                    .eq("state", ParticipantStatus.ADMIN)
+                    .eq("state", ParticipantStatus.MEMBER)
+                    .eq("state", ParticipantStatus.OWNER)
                 .endJunction()
                 .findList();
 
@@ -713,12 +697,12 @@ public class Model_Project extends Model {
         }
     }
 
-    public static void becki_person_id_unsubscribe(String person_id) {
+    public static void becki_person_id_unsubscribe(UUID person_id) {
 
-        List<Model_Project> list_of_projects = Model_Project.find.where().eq("participants.person.id", person_id).disjunction()
-                .eq("state", Enum_Participant_status.admin)
-                .eq("state", Enum_Participant_status.member)
-                .eq("state", Enum_Participant_status.owner)
+        List<Model_Project> list_of_projects = Model_Project.find.query().where().eq("participants.person.id", person_id).disjunction()
+                .eq("state", ParticipantStatus.ADMIN)
+                .eq("state", ParticipantStatus.MEMBER)
+                .eq("state", ParticipantStatus.OWNER)
                 .endJunction()
                 .findList();
 
@@ -734,15 +718,15 @@ public class Model_Project extends Model {
         }
     }
 
-    public static List<String> get_project_becki_person_ids_list(String project_id) {
+    public static List<UUID> get_project_becki_person_ids_list(UUID project_id) {
 
         if (token_cache == null) {
-            terminal_logger.error("get_project_becki_person_ids_list - token_cache is null");
+            logger.error("get_project_becki_person_ids_list - token_cache is null");
             return new ArrayList<>();
         }
 
         if (project_id == null) {
-            terminal_logger.error("get_project_becki_person_ids_list - project_id is null");
+            logger.error("get_project_becki_person_ids_list - project_id is null");
             return new ArrayList<>();
         }
 
@@ -752,12 +736,12 @@ public class Model_Project extends Model {
 
             idlist = new IdsList();
 
-            Model_Project project = get_byId(project_id);
+            Model_Project project = getById(project_id);
             if (project == null) return idlist.list;
 
             for (Model_ProjectParticipant participant : project.participants) {
 
-                if (participant.state == Enum_Participant_status.invited ) continue;
+                if (participant.state == ParticipantStatus.INVITED) continue;
 
                 if (!idlist.list.contains(participant.person.id))  idlist.list.add(participant.person.id);
             }
@@ -777,5 +761,5 @@ public class Model_Project extends Model {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Model.Finder<String,Model_Project> find = new Finder<>(Model_Project.class);
+    public static Finder<UUID, Model_Project> find = new Finder<>(Model_Project.class);
 }

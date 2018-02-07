@@ -1,23 +1,28 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.Controller_Security;
+import controllers.BaseController;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.libs.Json;
-import utilities.cache.helps_objects.TyrionCachedList;
+import utilities.cache.CacheField;
+import utilities.cache.Cached;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
-import utilities.logger.Class_Logger;
-import utilities.models_update_echo.Update_echo_handler;
+import utilities.logger.Logger;
+import utilities.model.BaseModel;
+import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
-import utilities.swagger.outboundClass.*;
-import web_socket.message_objects.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
-import web_socket.message_objects.tyrion_with_becki.WS_Message_Update_model_echo;
+import utilities.swagger.output.Swagger_Bootloader_Update_program;
+import utilities.swagger.output.Swagger_C_Program_Update_program;
+import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
+import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer_BinaryComponent;
+import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
+import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -32,15 +37,13 @@ import java.util.UUID;
 @ApiModel(description = "Model of CProgramUpdatePlan",
         value = "CProgramUpdatePlan")
 @Table(name="CProgramUpdatePlan")
-public class Model_CProgramUpdatePlan extends Model {
+public class Model_CProgramUpdatePlan extends BaseModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_CProgramUpdatePlan.class);
+    private static final Logger logger = new Logger(Model_CProgramUpdatePlan.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-
-                                         @Id @ApiModelProperty(required = true) public UUID id;
 
                                                        @JsonIgnore @ManyToOne() public Model_ActualizationProcedure actualization_procedure;    // TODO CACHE
 
@@ -48,13 +51,13 @@ public class Model_CProgramUpdatePlan extends Model {
                                                     value = "UNIX time in ms",
                                                     example = "1466163478925")  public Date date_of_finish;
 
-              @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Model_Board board;                           // Deska k aktualizaci
+              @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Model_Hardware board;                           // Deska k aktualizaci
               @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public Enum_Firmware_type firmware_type;                 // Typ Firmwaru
 
                                                                                 // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
-    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                 public Model_VersionObject c_program_version_for_update; // C_program k aktualizaci
+    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                 public Model_Version c_program_version_for_update; // C_program k aktualizaci
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_BootLoader bootloader;                      // Když nahrávám Firmware
-    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_FileRecord binary_file;                     // Soubor, když firmware nahrává uživatel sám mimo flow
+    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_Blob binary_file;                     // Soubor, když firmware nahrává uživatel sám mimo flow
 
     @ApiModelProperty(required = true, value = "Description on Model C_ProgramUpdater_State")
                                                 @Enumerated(EnumType.STRING)    public Enum_CProgram_updater_state state;
@@ -65,50 +68,50 @@ public class Model_CProgramUpdatePlan extends Model {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @TyrionCachedList public String cache_actualization_procedure_id;
-    @JsonIgnore @Transient @TyrionCachedList public String cache_board_id;
-    @JsonIgnore @Transient @TyrionCachedList public String cache_c_program_version_for_update_id;
-    @JsonIgnore @Transient @TyrionCachedList public String cache_bootloader_id;
+    @JsonIgnore @Transient @Cached public UUID cache_actualization_procedure_id;
+    @JsonIgnore @Transient @Cached public UUID cache_board_id;
+    @JsonIgnore @Transient @Cached public UUID cache_c_program_version_for_update_id;
+    @JsonIgnore @Transient @Cached public UUID cache_bootloader_id;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = false, readOnly = true)
-    public Enum_Update_type_of_update type_of_update (){
+    @JsonProperty @ApiModelProperty(required = false, readOnly = true)
+    public UpdateType type_of_update () {
        return actualization_procedure.type_of_update;
     }
 
-    @JsonProperty @Transient @ApiModelProperty(required = false, readOnly = true)
-    public String actualization_procedure_id(){
-        if(cache_actualization_procedure_id == null){
-            Model_ActualizationProcedure procedure_not_cached = Model_ActualizationProcedure.find.where().eq("updates.id", id).select("id").findUnique();
-            cache_actualization_procedure_id = procedure_not_cached.id.toString();
+    @JsonProperty @ApiModelProperty(required = false, readOnly = true)
+    public UUID actualization_procedure_id() {
+        if (cache_actualization_procedure_id == null) {
+            Model_ActualizationProcedure procedure_not_cached = Model_ActualizationProcedure.find.query().where().eq("updates.id", id).select("id").findOne();
+            cache_actualization_procedure_id = procedure_not_cached.id;
         }
         return cache_actualization_procedure_id;
     }
 
 
-    @JsonProperty @Transient
+    @JsonProperty
     public Date date_of_planing() {
         return actualization_procedure.date_of_planing;
     }
 
-    @JsonProperty @Transient
-    public Date date_of_create() {
-        return actualization_procedure.date_of_create;
+    @JsonProperty
+    public Date created() {
+        return actualization_procedure.created;
     }
 
-    @JsonProperty @Transient
-    public Swagger_Board_Short_Detail board() {
+    @JsonProperty
+    public Model_Hardware board() {
         try {
-            return get_board().get_short_board();
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
+            return get_board();
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
 
     @ApiModelProperty(required = false, value = "Is visible only if update is for Firmware or Backup")
-    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
     public Swagger_C_Program_Update_program c_program_detail() {
 
         try {
@@ -118,18 +121,18 @@ public class Model_CProgramUpdatePlan extends Model {
             c_program_detail.c_program_id = c_program_version_for_update.get_c_program().id;
             c_program_detail.c_program_program_name = c_program_version_for_update.get_c_program().name;
             c_program_detail.c_program_version_id = c_program_version_for_update.id;
-            c_program_detail.c_program_version_name = c_program_version_for_update.version_name;
+            c_program_detail.c_program_version_name = c_program_version_for_update.name;
 
             return c_program_detail;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
 
     @ApiModelProperty(required = false, value = "Is visible only if update is for Bootloader")
-    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
     public Swagger_Bootloader_Update_program bootloader_detail() {
         try {
 
@@ -138,73 +141,41 @@ public class Model_CProgramUpdatePlan extends Model {
             if (cached_bootLoader == null) return null;
 
             Swagger_Bootloader_Update_program bootloader_update_detail = new Swagger_Bootloader_Update_program();
-            bootloader_update_detail.bootloader_id = cached_bootLoader.id.toString();
+            bootloader_update_detail.bootloader_id = cached_bootLoader.id;
             bootloader_update_detail.bootloader_name = cached_bootLoader.name;
-            bootloader_update_detail.version_identificator = cached_bootLoader.version_identificator;
+            bootloader_update_detail.version_identificator = cached_bootLoader.version_identifier;
             bootloader_update_detail.type_of_board_name = cached_bootLoader.type_of_board.name;
             bootloader_update_detail.type_of_board_id = cached_bootLoader.type_of_board.id;
 
             return bootloader_update_detail;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
 
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) @Transient
-    public Swagger_Board_Update_Short_Detail board_detail() {
-
-        Swagger_Board_Update_Short_Detail board_detail = new Swagger_Board_Update_Short_Detail();
-        board_detail.board_id = get_board().id;
-        board_detail.online_state =  get_board().online_state();
-        board_detail.name =  get_board().name;
-        board_detail.description =  get_board().description;
-        board_detail.type_of_board_id =  get_board().get_type_of_board().id;
-        board_detail.type_of_board_name =  get_board().get_type_of_board().name;
-
-        return board_detail;
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
+    public Model_Hardware board_detail() {
+        return get_board();
     }
 
     @ApiModelProperty(required = false, value = "Is visible only if user send own binary file ( OR state for c_program_detail)")
-    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @Transient
-    public Model_FileRecord binary_file_detail() {
+    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
+    public Model_Blob binary_file_detail() {
         return binary_file == null ? null : binary_file;
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public Swagger_C_Program_Update_plan_Short_Detail get_short_version_for_board() {
-
-        Swagger_C_Program_Update_plan_Short_Detail detail = new Swagger_C_Program_Update_plan_Short_Detail();
-        detail.id = this.id.toString();
-        detail.actualization_procedure_id = this.actualization_procedure.id.toString();
-
-        detail.type_of_update = this.actualization_procedure.type_of_update;
-        detail.date_of_create = date_of_create();
-        detail.date_of_planed = date_of_planing();
-        detail.date_of_finish = date_of_finish;
-        detail.firmware_type = firmware_type;
-        detail.state = state;
-
-        if (detail.firmware_type == Enum_Firmware_type.FIRMWARE || detail.firmware_type == Enum_Firmware_type.BACKUP) {
-                detail.program = c_program_detail();
-        }
-
-        if (detail.firmware_type == Enum_Firmware_type.BOOTLOADER ) {
-            detail.bootloader = bootloader_detail();
-        }
-
-        return detail;
-    }
-
-    @JsonIgnore @Transient public Model_Board get_board() {
+    @JsonIgnore
+    public Model_Hardware get_board() {
 
         if (cache_board_id != null) {
-            return Model_Board.get_byId(cache_board_id);
+            return Model_Hardware.getById(cache_board_id);
         }
 
-        Model_Board board_not_cached = Model_Board.find.where().eq("c_program_update_plans.id", id).select("id").findUnique();
+        Model_Hardware board_not_cached = Model_Hardware.find.query().where().eq("c_program_update_plans.id", id).select("id").findOne();
         if (board_not_cached != null) {
             cache_board_id = board_not_cached.id;
             return get_board();
@@ -213,22 +184,24 @@ public class Model_CProgramUpdatePlan extends Model {
         return null;
     }
 
-    @JsonIgnore @Transient public Model_BootLoader get_bootloader() {
+    @JsonIgnore
+    public Model_BootLoader get_bootloader() {
 
         if (cache_bootloader_id != null) {
-            return Model_BootLoader.get_byId(cache_bootloader_id);
+            return Model_BootLoader.getById(cache_bootloader_id);
         }
 
-        Model_BootLoader bootloader_not_cached = Model_BootLoader.find.where().eq("c_program_update_plans.id", id).select("id").findUnique();
+        Model_BootLoader bootloader_not_cached = Model_BootLoader.find.query().where().eq("c_program_update_plans.id", id).select("id").findOne();
         if (bootloader_not_cached != null) {
-            cache_bootloader_id = bootloader_not_cached.id.toString();
+            cache_bootloader_id = bootloader_not_cached.id;
             return get_bootloader();
         }
 
         return null;
     }
 
-    @JsonIgnore @Transient public Swagger_UpdatePlan_brief_for_homer get_brief_for_update_homer_server() {
+    @JsonIgnore
+    public Swagger_UpdatePlan_brief_for_homer get_brief_for_update_homer_server() {
         try {
 
             Swagger_UpdatePlan_brief_for_homer brief_for_homer = new Swagger_UpdatePlan_brief_for_homer();
@@ -241,17 +214,17 @@ public class Model_CProgramUpdatePlan extends Model {
 
             brief_for_homer.binary = binary;
 
-            if (actualization_procedure.type_of_update == Enum_Update_type_of_update.MANUALLY_BY_USER_INDIVIDUAL) {
+            if (actualization_procedure.type_of_update == UpdateType.MANUALLY_BY_USER_INDIVIDUAL) {
                 brief_for_homer.progress_subscribe = true;
             }
 
             if (firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP) {
-                binary.download_id              = c_program_version_for_update.c_compilation.id.toString();
-                binary.build_id                 = c_program_version_for_update.c_compilation.firmware_build_id;
+                binary.download_id              = c_program_version_for_update.compilation.id.toString();
+                binary.build_id                 = c_program_version_for_update.compilation.firmware_build_id;
                 binary.program_name             = c_program_version_for_update.get_c_program().name.length() > 32 ? c_program_version_for_update.get_c_program().name.substring(0, 32) : c_program_version_for_update.get_c_program().name;
-                binary.program_version_name     = c_program_version_for_update.version_name.length() > 32 ? c_program_version_for_update.version_name.substring(0, 32) : c_program_version_for_update.version_name;
-                binary.compilation_lib_version  = c_program_version_for_update.c_compilation.firmware_version_lib;
-                binary.time_stamp               = c_program_version_for_update.c_compilation.firmware_build_datetime;
+                binary.program_version_name     = c_program_version_for_update.name.length() > 32 ? c_program_version_for_update.name.substring(0, 32) : c_program_version_for_update.name;
+                binary.compilation_lib_version  = c_program_version_for_update.compilation.firmware_version_lib;
+                binary.time_stamp               = c_program_version_for_update.compilation.firmware_build_datetime;
 
             } else if (firmware_type == Enum_Firmware_type.BOOTLOADER) {
 
@@ -259,12 +232,12 @@ public class Model_CProgramUpdatePlan extends Model {
                 if (cached_bootLoader == null) return null;
 
                 binary.download_id          = cached_bootLoader.id.toString();
-                binary.build_id             = cached_bootLoader.version_identificator;
+                binary.build_id             = cached_bootLoader.version_identifier;
                 binary.program_name         = cached_bootLoader.name.length() > 32 ? cached_bootLoader.name.substring(0, 32) : cached_bootLoader.name;
-                binary.program_version_name = cached_bootLoader.version_identificator.length() > 32 ? cached_bootLoader.version_identificator.substring(0, 32) : cached_bootLoader.version_identificator;
-                binary.time_stamp           = cached_bootLoader.date_of_create;
+                binary.program_version_name = cached_bootLoader.version_identifier.length() > 32 ? cached_bootLoader.version_identifier.substring(0, 32) : cached_bootLoader.version_identifier;
+                binary.time_stamp           = cached_bootLoader.created;
             } else {
-                terminal_logger.internalServerError(new IllegalAccessException("Unsupported type of Enum_Firmware_type or not set firmware_type in Model_CProgramUpdatePlan"));
+                logger.internalServerError(new IllegalAccessException("Unsupported type of Enum_Firmware_type or not set firmware_type in Model_CProgramUpdatePlan"));
                 binary.download_id = binary_file.file_path;
                 binary.build_id = "TODO"; // TODO ???
             }
@@ -272,17 +245,17 @@ public class Model_CProgramUpdatePlan extends Model {
             return brief_for_homer;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient  @Override
+    @JsonIgnore @Override
     public void save() {
 
-        terminal_logger.debug("save :: Creating new Object");
+        logger.debug("save :: Creating new Object");
         count_of_tries = 0;
 
         if (this.state == null) this.state = Enum_CProgram_updater_state.not_start_yet;
@@ -297,24 +270,22 @@ public class Model_CProgramUpdatePlan extends Model {
 
         // set Cache Parameter
         if (bootloader != null) {
-            cache_bootloader_id = bootloader.id.toString();
+            cache_bootloader_id = bootloader.id;
         }
 
 
         super.save();
 
-        cache.put(id.toString(), this);
+        cache.put(id, this);
     }
 
-    @JsonIgnore @Transient @Override
+    @JsonIgnore @Override
     public void update() {
-
-        terminal_logger.trace("update :: operation");
 
         super.update();
 
-        Model_ActualizationProcedure procedure = Model_ActualizationProcedure.get_byId(actualization_procedure_id());
-        if(procedure != null) {
+        Model_ActualizationProcedure procedure = Model_ActualizationProcedure.getById(actualization_procedure_id());
+        if (procedure != null) {
             if (procedure.state == Enum_Update_group_procedure_state.not_start_yet || procedure.state == Enum_Update_group_procedure_state.in_progress) {
 
                 if (this.state == Enum_CProgram_updater_state.overwritten
@@ -323,27 +294,20 @@ public class Model_CProgramUpdatePlan extends Model {
                         || this.state == Enum_CProgram_updater_state.critical_error
                         ) {
 
-                    terminal_logger.trace("update :: call in new thread actualization_procedure.update_state()");
+                    logger.trace("update :: call in new thread actualization_procedure.update_state()");
                     new Thread(() -> procedure.update_state()).start();
                 }
             }
 
             // Call notification about model update
-            if(procedure.get_project_id() != null) {
-                new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_CProgramUpdatePlan.class, procedure.get_project_id() , this.id.toString()))).start();
+            if (procedure.get_project_id() != null) {
+                new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_CProgramUpdatePlan.class, procedure.get_project_id() , this.id))).start();
             }
 
         }
 
 
-        cache.put(id.toString(), this);
-    }
-
-    @JsonIgnore @Transient  @Override
-    public void delete() {
-
-        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
-        super.delete();
+        cache.put(id, this);
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -358,11 +322,11 @@ public class Model_CProgramUpdatePlan extends Model {
 
             Enum_HardwareHomerUpdate_state phase = report.get_phase();
             if (phase == null) {
-                terminal_logger.error("update_procedure_progress " + report.phase + " is not recognize in Json!");
+                logger.error("update_procedure_progress " + report.phase + " is not recognize in Json!");
                 return;
             }
 
-            Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.get_byId(report.tracking_id);
+            Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.getById(report.tracking_id);
             if (plan == null) {
                 throw new NullPointerException("Plan id" + report.tracking_id + " not found!");
             }
@@ -370,21 +334,21 @@ public class Model_CProgramUpdatePlan extends Model {
 
             // Pokud se vrátí fáze špatně - ukončuji celý update
             if (report.error != null || report.error_code != null) {
-                terminal_logger.warn("update_procedure_progress  Update Fail! Device ID: {}, update procedure: {}", plan.get_board().id, plan.id);
+                logger.warn("update_procedure_progress  Update Fail! Device ID: {}, update procedure: {}", plan.get_board().id, plan.id);
 
                 plan.state = Enum_CProgram_updater_state.critical_error;
                 plan.error_code = report.error_code;
                 plan.error = report.error;
                 plan.update();
-                Model_ActualizationProcedure.get_byId(report.tracking_group_id).change_state(plan, plan.state);
+                Model_ActualizationProcedure.getById(report.tracking_group_id).change_state(plan, plan.state);
 
                 Model_Notification notification = new Model_Notification();
 
                 notification
-                        .setChainType(Enum_Notification_type.CHAIN_END)
-                        .setId(plan.actualization_procedure.id.toString())
-                        .setImportance(Enum_Notification_importance.low)
-                        .setLevel(Enum_Notification_level.error);
+                        .setChainType(NotificationType.CHAIN_END)
+                        .setNotificationId(plan.actualization_procedure.id)
+                        .setImportance(NotificationImportance.LOW)
+                        .setLevel(NotificationLevel.ERROR);
 
                 notification.setText(new Notification_Text().setText("Update of Procedure "))
                         .setObject(plan.actualization_procedure)
@@ -402,17 +366,17 @@ public class Model_CProgramUpdatePlan extends Model {
 
                 case PHASE_UPLOAD_START: {
                     try {
-                        terminal_logger.debug("update_procedure_progress - procedure {} is PHASE_UPLOAD_START", plan.id);
+                        logger.debug("update_procedure_progress - procedure {} is PHASE_UPLOAD_START", plan.id);
 
 
 
                         Model_Notification notification = new Model_Notification();
 
                         notification
-                                .setChainType(Enum_Notification_type.CHAIN_START)
-                                .setId(plan.actualization_procedure.id.toString())
-                                .setImportance(Enum_Notification_importance.low)
-                                .setLevel(Enum_Notification_level.info);
+                                .setChainType(NotificationType.CHAIN_START)
+                                .setNotificationId(plan.actualization_procedure.id)
+                                .setImportance(NotificationImportance.LOW)
+                                .setLevel(NotificationLevel.INFO);
 
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
                                 .setObject(plan.actualization_procedure)
@@ -423,21 +387,21 @@ public class Model_CProgramUpdatePlan extends Model {
 
                         return;
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        logger.internalServerError(e);
                     }
                 }
 
                 case PHASE_UPLOAD_DONE: {
                     try {
-                        terminal_logger.debug("update_procedure_progress - procedure {} is PHASE_UPLOAD_DONE", plan.id);
+                        logger.debug("update_procedure_progress - procedure {} is PHASE_UPLOAD_DONE", plan.id);
 
                         Model_Notification notification = new Model_Notification();
 
                         notification
-                                .setChainType(Enum_Notification_type.CHAIN_UPDATE)
-                                .setId(plan.actualization_procedure.id.toString())
-                                .setImportance(Enum_Notification_importance.low)
-                                .setLevel(Enum_Notification_level.info);
+                                .setChainType(NotificationType.CHAIN_UPDATE)
+                                .setNotificationId(plan.actualization_procedure.id)
+                                .setImportance(NotificationImportance.LOW)
+                                .setLevel(NotificationLevel.INFO);
 
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
                                 .setObject(plan.actualization_procedure)
@@ -448,7 +412,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
                         return;
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        logger.internalServerError(e);
                     }
                 }
 
@@ -456,15 +420,15 @@ public class Model_CProgramUpdatePlan extends Model {
                 case PHASE_UPLOADING: {
                     try {
 
-                        terminal_logger.debug("update_procedure_progress - procedure {} is PHASE_UPLOADING", plan.id);
+                        logger.debug("update_procedure_progress - procedure {} is PHASE_UPLOADING", plan.id);
 
                         Model_Notification notification = new Model_Notification();
 
                         notification
-                                .setChainType(Enum_Notification_type.CHAIN_UPDATE)
-                                .setId(plan.actualization_procedure.id.toString())
-                                .setImportance(Enum_Notification_importance.low)
-                                .setLevel(Enum_Notification_level.info);
+                                .setChainType(NotificationType.CHAIN_UPDATE)
+                                .setNotificationId(plan.actualization_procedure.id)
+                                .setImportance(NotificationImportance.LOW)
+                                .setLevel(NotificationLevel.INFO);
 
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
                                 .setObject(plan.actualization_procedure)
@@ -476,22 +440,22 @@ public class Model_CProgramUpdatePlan extends Model {
                         return;
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        logger.internalServerError(e);
                     }
                 }
 
                 case PHASE_FLASH_ERASING: {
                     try {
 
-                        terminal_logger.debug("update_procedure_progress - procedure {} is PHASE_FLASH_ERASING", plan.id);
+                        logger.debug("update_procedure_progress - procedure {} is PHASE_FLASH_ERASING", plan.id);
 
                         Model_Notification notification = new Model_Notification();
 
                         notification
-                                .setChainType(Enum_Notification_type.CHAIN_UPDATE)
-                                .setId(plan.actualization_procedure.id.toString())
-                                .setImportance(Enum_Notification_importance.low)
-                                .setLevel(Enum_Notification_level.info);
+                                .setChainType(NotificationType.CHAIN_UPDATE)
+                                .setNotificationId(plan.actualization_procedure.id)
+                                .setImportance(NotificationImportance.LOW)
+                                .setLevel(NotificationLevel.INFO);
 
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
                                 .setObject(plan.actualization_procedure)
@@ -504,22 +468,22 @@ public class Model_CProgramUpdatePlan extends Model {
                         return;
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        logger.internalServerError(e);
                     }
                 }
 
                 case PHASE_FLASH_ERASED: {
                     try {
 
-                        terminal_logger.debug("update_procedure_progress - procedure {} is PHASE_FLASH_ERASED", plan.id);
+                        logger.debug("update_procedure_progress - procedure {} is PHASE_FLASH_ERASED", plan.id);
 
                         Model_Notification notification = new Model_Notification();
 
                         notification
-                                .setChainType(Enum_Notification_type.CHAIN_UPDATE)
-                                .setId(plan.actualization_procedure.id.toString())
-                                .setImportance(Enum_Notification_importance.low)
-                                .setLevel(Enum_Notification_level.info);
+                                .setChainType(NotificationType.CHAIN_UPDATE)
+                                .setNotificationId(plan.actualization_procedure.id)
+                                .setImportance(NotificationImportance.LOW)
+                                .setLevel(NotificationLevel.INFO);
 
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
                                 .setObject(plan.actualization_procedure)
@@ -532,21 +496,21 @@ public class Model_CProgramUpdatePlan extends Model {
                         return;
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        logger.internalServerError(e);
                     }
                 }
 
                 case PHASE_RESTARTING: {
 
-                    terminal_logger.debug("update_procedure_progress - procedure {} is PHASE_RESTARTING", plan.id);
+                    logger.debug("update_procedure_progress - procedure {} is PHASE_RESTARTING", plan.id);
 
                     Model_Notification notification = new Model_Notification();
 
                     notification
-                            .setChainType(Enum_Notification_type.CHAIN_UPDATE)
-                            .setId(plan.actualization_procedure.id.toString())
-                            .setImportance(Enum_Notification_importance.low)
-                            .setLevel(Enum_Notification_level.info);
+                            .setChainType(NotificationType.CHAIN_UPDATE)
+                            .setNotificationId(plan.actualization_procedure.id)
+                            .setImportance(NotificationImportance.LOW)
+                            .setLevel(NotificationLevel.INFO);
 
                     notification.setText(new Notification_Text().setText("Update of Procedure "))
                             .setObject(plan.actualization_procedure)
@@ -561,15 +525,15 @@ public class Model_CProgramUpdatePlan extends Model {
 
                 case PHASE_CONNECTED_AFTER_RESTART: {
 
-                    terminal_logger.debug("update_procedure_progress - procedure {} is PHASE_CONNECTED_AFTER_RESTART", plan.id);
+                    logger.debug("update_procedure_progress - procedure {} is PHASE_CONNECTED_AFTER_RESTART", plan.id);
 
                     Model_Notification notification = new Model_Notification();
 
                     notification
-                            .setChainType(Enum_Notification_type.CHAIN_UPDATE)
-                            .setId(plan.actualization_procedure.id.toString())
-                            .setImportance(Enum_Notification_importance.low)
-                            .setLevel(Enum_Notification_level.info);
+                            .setChainType(NotificationType.CHAIN_UPDATE)
+                            .setNotificationId(plan.actualization_procedure.id)
+                            .setImportance(NotificationImportance.LOW)
+                            .setLevel(NotificationLevel.INFO);
 
                     notification.setText(new Notification_Text().setText("Update of Procedure "))
                             .setObject(plan.actualization_procedure)
@@ -589,10 +553,10 @@ public class Model_CProgramUpdatePlan extends Model {
                         Model_Notification notification = new Model_Notification();
 
                         notification
-                                .setChainType(Enum_Notification_type.CHAIN_END)
-                                .setId(plan.actualization_procedure.id.toString())
-                                .setImportance(Enum_Notification_importance.low)
-                                .setLevel(Enum_Notification_level.info);
+                                .setChainType(NotificationType.CHAIN_END)
+                                .setNotificationId(plan.actualization_procedure.id)
+                                .setImportance(NotificationImportance.LOW)
+                                .setLevel(NotificationLevel.INFO);
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
                                 .setObject(plan.actualization_procedure)
                                 .setText(new Notification_Text().setText(". Transfer firmware to "))
@@ -601,32 +565,32 @@ public class Model_CProgramUpdatePlan extends Model {
                                 .send_under_project(plan.actualization_procedure.get_project_id());
 
 
-                        terminal_logger.debug("update_procedure_progress - procedure {} is UPDATE_DONE", plan.id);
+                        logger.debug("update_procedure_progress - procedure {} is UPDATE_DONE", plan.id);
 
 
-                        Model_Board board = plan.get_board();
+                        Model_Hardware board = plan.get_board();
 
                         if (plan.firmware_type == Enum_Firmware_type.FIRMWARE) {
 
-                            terminal_logger.debug("update_procedure_progress: firmware:: on HW now:: {} ",  board.get_actual_c_program_version().c_compilation.firmware_build_id);
-                            terminal_logger.debug("update_procedure_progress: required by update: {} ",  plan.c_program_version_for_update.c_compilation.firmware_build_id);
+                            logger.debug("update_procedure_progress: firmware:: on HW now:: {} ",  board.get_actual_c_program_version().compilation.firmware_build_id);
+                            logger.debug("update_procedure_progress: required by update: {} ",  plan.c_program_version_for_update.compilation.firmware_build_id);
 
                             board.actual_c_program_version = plan.c_program_version_for_update;
-                            board.cache_value_actual_c_program_id = plan.c_program_version_for_update.get_c_program().id;
-                            board.cache_value_actual_c_program_version_id = plan.c_program_version_for_update.id;
+                            board.cache_actual_c_program_id = plan.c_program_version_for_update.get_c_program().id;
+                            board.cache_actual_c_program_version_id = plan.c_program_version_for_update.id;
                             board.update();
 
                         } else if (plan.firmware_type == Enum_Firmware_type.BOOTLOADER) {
 
                             board.actual_boot_loader = plan.get_bootloader();
-                            board.cache_value_actual_boot_loader_id = plan.get_bootloader().id.toString();
+                            board.cache_actual_boot_loader_id = plan.get_bootloader().id;
                             board.update();
 
                         } else if (plan.firmware_type == Enum_Firmware_type.BACKUP) {
 
                             board.actual_backup_c_program_version = plan.c_program_version_for_update;
-                            board.cache_value_actual_c_program_backup_id = plan.c_program_version_for_update.get_c_program().id;
-                            board.cache_value_actual_c_program_backup_version_id = plan.c_program_version_for_update.id;
+                            board.cache_actual_c_program_backup_id = plan.c_program_version_for_update.get_c_program().id;
+                            board.cache_actual_c_program_backup_version_id = plan.c_program_version_for_update.id;
                             board.update();
 
                             board.make_log_backup_arrise_change();
@@ -638,55 +602,55 @@ public class Model_CProgramUpdatePlan extends Model {
 
                         return;
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        logger.internalServerError(e);
                     }
                 }
 
                 case PHASE_WAITING: {
                     try {
 
-                        terminal_logger.debug("update_procedure_progress - procedure {} is PHASE_WAITING", plan.id);
+                        logger.debug("update_procedure_progress - procedure {} is PHASE_WAITING", plan.id);
 
                         plan.state = Enum_CProgram_updater_state.waiting_for_device;
                         plan.update();
-                        Model_ActualizationProcedure.get_byId(report.tracking_group_id).change_state(plan, plan.state);
+                        Model_ActualizationProcedure.getById(report.tracking_group_id).change_state(plan, plan.state);
 
                         return;
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        logger.internalServerError(e);
                     }
                 }
 
                 case NEW_VERSION_DOESNT_MATCH: {
                     try {
 
-                        terminal_logger.error("update_procedure_progress - procedure {} is NEW_VERSION_DOESNT_MATCH", plan.id);
+                        logger.error("update_procedure_progress - procedure {} is NEW_VERSION_DOESNT_MATCH", plan.id);
 
                         plan.state = Enum_CProgram_updater_state.not_updated;
                         plan.error_code = ErrorCode.NEW_VERSION_DOESNT_MATCH.error_code();
                         plan.error = ErrorCode.NEW_VERSION_DOESNT_MATCH.error_message();
                         plan.date_of_finish = new Date();
                         plan.update();
-                        Model_ActualizationProcedure.get_byId(report.tracking_group_id).change_state(plan, plan.state);
+                        Model_ActualizationProcedure.getById(report.tracking_group_id).change_state(plan, plan.state);
 
                         return;
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        logger.internalServerError(e);
                     }
                 }
 
                 case ALREADY_SAME: {
                     try {
 
-                        terminal_logger.error("update_procedure_progress - procedure {} is ALREADY_SAME", plan.id);
+                        logger.error("update_procedure_progress - procedure {} is ALREADY_SAME", plan.id);
 
                         Model_Notification notification = new Model_Notification();
 
                         notification
-                                .setChainType(Enum_Notification_type.INDIVIDUAL)
-                                .setId(plan.actualization_procedure.id.toString())
-                                .setImportance(Enum_Notification_importance.low)
-                                .setLevel(Enum_Notification_level.info);
+                                .setChainType(NotificationType.INDIVIDUAL)
+                                .setNotificationId(plan.actualization_procedure.id)
+                                .setImportance(NotificationImportance.LOW)
+                                .setLevel(NotificationLevel.INFO);
 
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
                                 .setObject(plan.actualization_procedure)
@@ -695,29 +659,29 @@ public class Model_CProgramUpdatePlan extends Model {
                                 .setText(new Notification_Text().setText(" is done. The required firmware on the device is already running."))
                                 .send_under_project(plan.actualization_procedure.get_project_id());
 
-                        terminal_logger.error("update_procedure_progress - procedure {} is ALREADY_SAME", plan.id);
+                        logger.error("update_procedure_progress - procedure {} is ALREADY_SAME", plan.id);
 
                         plan.state = Enum_CProgram_updater_state.complete;
                         plan.update();
 
-                        Model_Board board = plan.get_board();
+                        Model_Hardware board = plan.get_board();
 
                         if (plan.firmware_type == Enum_Firmware_type.FIRMWARE) {
 
                             board.actual_c_program_version = plan.c_program_version_for_update;
-                            board.cache_value_actual_c_program_id = plan.c_program_version_for_update.get_c_program().id;
-                            board.cache_value_actual_c_program_version_id = plan.c_program_version_for_update.id;
+                            board.cache_actual_c_program_id = plan.c_program_version_for_update.get_c_program().id;
+                            board.cache_actual_c_program_version_id = plan.c_program_version_for_update.id;
                             board.update();
 
                         } else if (plan.firmware_type == Enum_Firmware_type.BOOTLOADER) {
 
                             board.actual_boot_loader = plan.get_bootloader();
-                            board.cache_value_actual_boot_loader_id = plan.get_bootloader().id.toString();
+                            board.cache_actual_boot_loader_id = plan.get_bootloader().id;
                             board.update();
 
                         } else if (plan.firmware_type == Enum_Firmware_type.BACKUP) {
-                            board.cache_value_actual_c_program_backup_id =plan.c_program_version_for_update.get_c_program().id;
-                            board.cache_value_actual_c_program_backup_version_id = plan.c_program_version_for_update.id;
+                            board.cache_actual_c_program_backup_id =plan.c_program_version_for_update.get_c_program().id;
+                            board.cache_actual_c_program_backup_version_id = plan.c_program_version_for_update.id;
                             board.update();
 
                             board.make_log_backup_arrise_change();
@@ -725,7 +689,7 @@ public class Model_CProgramUpdatePlan extends Model {
 
                         return;
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        logger.internalServerError(e);
                     }
                 }
 
@@ -735,7 +699,7 @@ public class Model_CProgramUpdatePlan extends Model {
                 }
             }
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 
@@ -745,20 +709,24 @@ public class Model_CProgramUpdatePlan extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient  public boolean read_permission()      {
-        return Model_ActualizationProcedure.get_byId(actualization_procedure_id()).read_permission() || Controller_Security.get_person().has_permission("Actualization_procedure_read");
+    @JsonIgnore public boolean read_permission() {
+        return Model_ActualizationProcedure.getById(actualization_procedure_id()).read_permission() || BaseController.person().has_permission("Actualization_procedure_read");
     }
 
-    @JsonProperty @Transient  public boolean edit_permission()      {
-        return Model_ActualizationProcedure.get_byId(actualization_procedure_id()).edit_permission() || Controller_Security.get_person().has_permission("Actualization_procedure_edit");
+    @JsonProperty public boolean edit_permission() {
+        return Model_ActualizationProcedure.getById(actualization_procedure_id()).edit_permission() || BaseController.person().has_permission("Actualization_procedure_edit");
     }
-    /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static final String CACHE = Model_CProgramUpdatePlan.class.getName() + "_MODEL";
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Cache<String, Model_CProgramUpdatePlan> cache = null; // Server_cache Override during server initialization
+    @CacheField(Model_CProgramUpdatePlan.class)
+    public static Cache<UUID, Model_CProgramUpdatePlan> cache;
 
-    public static Model_CProgramUpdatePlan get_byId(String id) {
+    public static Model_CProgramUpdatePlan getById(String id) {
+        return getById(UUID.fromString(id));
+    }
+
+    public static Model_CProgramUpdatePlan getById(UUID id) {
 
         Model_CProgramUpdatePlan plan = cache.get(id);
         if (plan == null) {
@@ -775,5 +743,5 @@ public class Model_CProgramUpdatePlan extends Model {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Model.Finder<String,Model_CProgramUpdatePlan> find = new Model.Finder<>(Model_CProgramUpdatePlan.class);
+    public static Finder<UUID, Model_CProgramUpdatePlan> find = new Finder<>(Model_CProgramUpdatePlan.class);
 }

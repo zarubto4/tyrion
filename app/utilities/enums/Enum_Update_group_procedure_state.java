@@ -1,6 +1,6 @@
 package utilities.enums;
 
-import com.avaje.ebean.annotation.EnumValue;
+import io.ebean.annotation.EnumValue;
 import io.swagger.annotations.ApiModelProperty;
 
 /**

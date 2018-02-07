@@ -12,7 +12,7 @@ public class DM_Batch_Registration_Central_Authority {
 
     public static final String COLLECTION_NAME = "batch-registration-authority";
 
-    public DM_Batch_Registration_Central_Authority(){}
+    public DM_Batch_Registration_Central_Authority() {}
 
 
     @ApiModelProperty(required = true) @Constraints.Required public UUID id;

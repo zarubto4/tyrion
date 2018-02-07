@@ -4,30 +4,23 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
-import play.mvc.Controller;
 import play.mvc.Result;
-import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
-import utilities.logger.Class_Logger;
-import utilities.logger.ServerLogger;
-import utilities.response.GlobalResult;
-import utilities.slack.Slack;
-import web_socket.message_objects.tyrion_with_becki.WS_Message_Online_Change_status;
+import utilities.logger.Logger;
+import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 
-import java.util.Date;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.mongodb.client.model.Sorts.descending;
-
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class Controller_ZZZ_Tester extends Controller {
+public class Controller_ZZZ_Tester extends BaseController {
 
 // LOGGER ##############################################################################################################
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Controller_ZZZ_Tester.class);
+    private static final Logger logger = new Logger(Controller_ZZZ_Tester.class);
 
     @ApiOperation(value = "Hidden test Method", hidden = true)
-     public Result test1(){
+     public Result test1() {
          try {
 
              JsonNode json = request().body().asJson();
@@ -39,7 +32,7 @@ public class Controller_ZZZ_Tester extends Controller {
                      Pattern pattern = Pattern.compile("^(v)(\\d+\\.)(\\d+\\.)(\\d+)(-(.)*)?$");
                      Matcher matcher = pattern.matcher(tag);
                      if (!matcher.find()) {
-                         return GlobalResult.result_badRequest("Invalid version");
+                         return badRequest("Invalid version");
                      }
                      break;
                  }
@@ -47,7 +40,7 @@ public class Controller_ZZZ_Tester extends Controller {
                      Pattern pattern = Pattern.compile("^(v)(\\d+\\.)(\\d+\\.)(\\d+)(-beta(.)*)?$");
                      Matcher matcher = pattern.matcher(tag);
                      if (!matcher.find()) {
-                         return GlobalResult.result_badRequest("Invalid version");
+                         return badRequest("Invalid version");
                      }
                      break;
                  }
@@ -55,7 +48,7 @@ public class Controller_ZZZ_Tester extends Controller {
                      Pattern pattern = Pattern.compile("^(v)(\\d+\\.)(\\d+\\.)(\\d+)$");
                      Matcher matcher = pattern.matcher(tag);
                      if (!matcher.find()) {
-                         return GlobalResult.result_badRequest("Invalid version");
+                         return badRequest("Invalid version");
                      }
                      break;
                  }
@@ -65,46 +58,46 @@ public class Controller_ZZZ_Tester extends Controller {
              return ok("Valid version for mode");
 
          } catch (Exception e) {
-             terminal_logger.internalServerError(e);
+             logger.internalServerError(e);
              return badRequest();
          }
      }
 
     @ApiOperation(value = "Hidden test Method", hidden = true)
-    public Result test2(){
+    public Result test2() {
         try {
 
-            // terminal_logger.error(BCrypt.hashpw("password", BCrypt.gensalt(12)));
+            // logger.error(BCrypt.hashpw("password", BCrypt.gensalt(12)));
             // Test online change stavů
             JsonNode json = request().body().asJson();
 
             String type = json.get("type").asText();
-            String id = json.get("id").asText();
-            String project_id = json.get("project_id").asText();
+            UUID id = UUID.fromString(json.get("id").asText());
+            UUID project_id = UUID.fromString(json.get("project_id").asText());
             boolean online_state = json.get("online_state").asBoolean();
 
-            if(type.equals("board")) {
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Board.class, id, online_state, project_id);
+            if (type.equals("board")) {
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, id, online_state, project_id);
             }
 
-            if(type.equals("instance")) {
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerInstance.class, id, online_state, project_id);
+            if (type.equals("instance")) {
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, id, online_state, project_id);
             }
 
-            if(type.equals("server")) {
+            if (type.equals("server")) {
                 WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerServer.class, id, online_state, project_id);
             }
 
-            return GlobalResult.result_ok(json);
+            return ok(json);
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return badRequest();
         }
     }
 
     @ApiOperation(value = "Hidden test Method", hidden = true)
-    public Result test3(){
+    public Result test3() {
         try {
 
             /*
@@ -131,27 +124,27 @@ public class Controller_ZZZ_Tester extends Controller {
 
             */
 
-            return GlobalResult.result_ok();
-        }catch (Exception e){
+            return okEmpty();
+        } catch (Exception e) {
             e.printStackTrace();
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
     @ApiOperation(value = "Hidden test Method", hidden = true)
-    public Result test4(){
+    public Result test4() {
         try {
 
 
-            Model_TypeOfBoard_Batch batch = Model_TypeOfBoard_Batch.find.where().eq("revision", "Test Private Collection").findUnique();
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("name","IODA G3" ).findUnique();
+            Model_TypeOfBoard_Batch batch = Model_TypeOfBoard_Batch.find.query().where().eq("revision", "Test Private Collection").findOne();
+            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.query().where().eq("name","IODA G3" ).findOne();
 
             /*
             Model_Board board1 = new Model_Board();
             board1.id = "004B00313435510E30353932";
             board1.name = "[G31]";
             board1.is_active = false;
-            board1.date_of_create = new Date();
+            board1.created = new Date();
             board1.type_of_board = typeOfBoard;
             board1.batch_id = batch.id.toString();
             board1.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901120L);
@@ -164,7 +157,7 @@ public class Controller_ZZZ_Tester extends Controller {
             board2.id = "002F00323435510E30353932";
             board2.name = "[G32]";
             board2.is_active = false;
-            board2.date_of_create = new Date();
+            board2.created = new Date();
             board2.type_of_board = typeOfBoard;
             board2.batch_id = batch.id.toString();
             board2.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901121L);
@@ -176,7 +169,7 @@ public class Controller_ZZZ_Tester extends Controller {
             board3.id = "001E00323435510E30353932";
             board3.name = "[G33]";
             board3.is_active = false;
-            board3.date_of_create = new Date();
+            board3.created = new Date();
             board3.type_of_board = typeOfBoard;
             board3.batch_id = batch.id.toString();
             board3.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901122L);
@@ -189,7 +182,7 @@ public class Controller_ZZZ_Tester extends Controller {
             board4.id = "004100323435510E30353932";
             board4.name = "[G34]";
             board4.is_active = false;
-            board4.date_of_create = new Date();
+            board4.created = new Date();
             board4.type_of_board = typeOfBoard;
             board4.batch_id = batch.id.toString();
             board4.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901123L);
@@ -200,7 +193,7 @@ public class Controller_ZZZ_Tester extends Controller {
             board5.id = "002400323435510E30353932";
             board5.name = "[G35]";
             board5.is_active = false;
-            board5.date_of_create = new Date();
+            board5.created = new Date();
             board5.type_of_board = typeOfBoard;
             board5.batch_id = batch.id.toString();
             board5.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901124L);
@@ -209,14 +202,14 @@ public class Controller_ZZZ_Tester extends Controller {
 
             */
             //--------------------------------------------------------------------------------------------------------------
-            Model_TypeOfBoard_Batch batch_1 = Model_TypeOfBoard_Batch.find.where().eq("production_batch", "1000001 - Test Collection").findUnique();
+            Model_TypeOfBoard_Batch batch_1 = Model_TypeOfBoard_Batch.find.query().where().eq("production_batch", "1000001 - Test Collection").findOne();
 
              /*
             Model_Board board7 = new Model_Board();
             board7.id = "002E00273136510236363332";
             board7.name = "[G41]";
             board7.is_active = false;
-            board7.date_of_create = new Date();
+            board7.created = new Date();
             board7.type_of_board = typeOfBoard;
             board7.batch_id = batch.id.toString();
             board7.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901136L);
@@ -227,7 +220,7 @@ public class Controller_ZZZ_Tester extends Controller {
             board8.id = "002E00273136510236363332";
             board8.name = "[G42]";
             board8.is_active = false;
-            board8.date_of_create = new Date();
+            board8.created = new Date();
             board8.type_of_board = typeOfBoard;
             board8.batch_id = batch.id.toString();
             board8.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901137L);
@@ -238,7 +231,7 @@ public class Controller_ZZZ_Tester extends Controller {
             board9.id = "003600453136510236363332";
             board9.name = "[G43]";
             board9.is_active = false;
-            board9.date_of_create = new Date();
+            board9.created = new Date();
             board9.type_of_board = typeOfBoard;
             board9.batch_id = batch.id.toString();
             board9.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901141L);
@@ -249,7 +242,7 @@ public class Controller_ZZZ_Tester extends Controller {
             board9_2.id = "004200363136510236363332";
             board9_2.name = "[G44]";
             board9_2.is_active = false;
-            board9_2.date_of_create = new Date();
+            board9_2.created = new Date();
             board9_2.type_of_board = typeOfBoard;
             board9_2.batch_id = batch.id.toString();
             board9_2.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901138L);
@@ -260,7 +253,7 @@ public class Controller_ZZZ_Tester extends Controller {
             board10.id = "005000263136510236363332";
             board10.name = "[G45]";
             board10.is_active = false;
-            board10.date_of_create = new Date();
+            board10.created = new Date();
             board10.type_of_board = typeOfBoard;
             board10.batch_id = batch.id.toString();
             board10.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901139L);
@@ -272,7 +265,7 @@ public class Controller_ZZZ_Tester extends Controller {
             board11.id = "002800363136510236363332";
             board11.name = "[G46]";
             board11.is_active = false;
-            board11.date_of_create = new Date();
+            board11.created = new Date();
             board11.type_of_board = typeOfBoard;
             board11.batch_id = batch.id.toString();
             board11.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901141L);
@@ -284,7 +277,7 @@ public class Controller_ZZZ_Tester extends Controller {
             board12.id = "004000273136510236363332";
             board12.name = "[G47]";
             board12.is_active = false;
-            board12.date_of_create = new Date();
+            board12.created = new Date();
             board12.type_of_board = typeOfBoard;
             board12.batch_id = batch.id.toString();
             board12.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901142L);
@@ -297,7 +290,7 @@ public class Controller_ZZZ_Tester extends Controller {
             board_g49.id = "003A00463136510236363332";
             board_g49.name = "[G49]";
             board_g49.is_active = false;
-            board_g49.date_of_create = new Date();
+            board_g49.created = new Date();
             board_g49.type_of_board = typeOfBoard;
             board_g49.batch_id = batch.id.toString();
             board_g49.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901143L);
@@ -308,7 +301,7 @@ public class Controller_ZZZ_Tester extends Controller {
             board_g50.id = "003D00443136510236363332";
             board_g50.name = "[G50]";
             board_g50.is_active = false;
-            board_g50.date_of_create = new Date();
+            board_g50.created = new Date();
             board_g50.type_of_board = typeOfBoard;
             board_g50.batch_id = batch.id.toString();
             board_g50.mac_address = Model_TypeOfBoard_Batch.convert_to_MAC_ISO(210006720901144L);
@@ -317,11 +310,11 @@ public class Controller_ZZZ_Tester extends Controller {
 
             */
 
-            return GlobalResult.result_ok();
+            return okEmpty();
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 

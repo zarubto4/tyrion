@@ -3,27 +3,24 @@ package utilities.lablel_printer_service.labels;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
-import models.Model_Board;
-import utilities.logger.Class_Logger;
+import models.Model_Hardware;
+import utilities.logger.Logger;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.util.Date;
 
 public class Label_12_mm_QR_code {
 
     // Logger
-    private static final Class_Logger terminal_logger = new Class_Logger(Label_12_mm_QR_code.class);
+    private static final Logger terminal_logger = new Logger(Label_12_mm_QR_code.class);
 
     // For image placing to cell
     private PdfContentByte contentByte;
     private Rectangle Label_12_mm = new RectangleReadOnly(Utilities.millimetersToPoints(12), Utilities.millimetersToPoints(12));
 
 
-    Model_Board board = null;
+    Model_Hardware board = null;
 
-    public Label_12_mm_QR_code(Model_Board board) {
+    public Label_12_mm_QR_code(Model_Hardware board) {
         try {
             this.board = board;
 
@@ -32,7 +29,7 @@ public class Label_12_mm_QR_code {
         }
     }
 
-    public ByteArrayOutputStream get_label(){
+    public ByteArrayOutputStream get_label() {
 
         ByteArrayOutputStream out = make_label();
 
@@ -40,14 +37,14 @@ public class Label_12_mm_QR_code {
         /* TODO smazat protože to nebude potřeba
         try(OutputStream outputStream = new FileOutputStream(System.getProperty("user.dir") + "/label_printers/" + "generate_12_mm_qr_code_" + new Date().getTime()  + ".pdf")) {
             out.writeTo(outputStream);
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }*/
 
         return out;
     }
 
-    private ByteArrayOutputStream make_label(){
+    private ByteArrayOutputStream make_label() {
         try {
 
             // step 2: Create Document
@@ -74,7 +71,7 @@ public class Label_12_mm_QR_code {
 
             return out;
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
             return null;
         }

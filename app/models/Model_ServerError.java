@@ -1,31 +1,30 @@
 package models;
 
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.Controller_Security;
+import controllers.BaseController;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.mvc.Http;
-import utilities.Server;
+import utilities.authentication.Attributes;
+import utilities.model.NamedModel;
 
-import javax.persistence.*;
-import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import java.util.Optional;
 import java.util.UUID;
 
 @Entity
 @ApiModel(value = "ServerError", description = "Model of ServerError")
-@Table(name="ServerError")
-public class Model_ServerError extends Model {
+@Table(name = "ServerError")
+public class Model_ServerError extends NamedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-
-    @Id                                 public UUID id;
-    @Column(columnDefinition = "TEXT")  public String summary;
-    @Column(columnDefinition = "TEXT")  public String description;
                                         public String type;
     @Column(columnDefinition = "TEXT")  public String message;
     @Column(columnDefinition = "TEXT")  public String stack_trace;
@@ -34,7 +33,6 @@ public class Model_ServerError extends Model {
                                         public String person;
                                         public String tyrion;
                                         public Long repetition;
-                                        public Date created;
 
                                         public String cause_type;
     @Column(columnDefinition = "TEXT")  public String cause_message;
@@ -46,8 +44,8 @@ public class Model_ServerError extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
     public Model_ServerError(Throwable exception, String origin, Http.RequestHeader request) {
+        super();
         this.type = exception.getClass().getName();
         this.message = exception.getMessage();
         this.stack_trace = formatStackTrace(exception.getStackTrace());
@@ -59,26 +57,23 @@ public class Model_ServerError extends Model {
             this.cause_stack_trace = formatStackTrace(cause.getStackTrace());
         }
 
-        this.summary = origin;
+        this.name = origin;
         this.repetition = 1L;
-        this.created = new Date();
-        this.tyrion = Server.server_version + " (" + Server.server_mode.name() + ")";
+        // this.tyrion = Server.server_version + " (" + Server.server_mode.name() + ")";
 
         if (request != null) {
             this.request = request.method() + " " + request.path();
-            Model_Person person = Controller_Security.get_person();
-            if (person != null) {
-                this.person = person.mail;
-            }
+            Optional<Model_Person> person = request.attrs().getOptional(Attributes.PERSON);
+            person.ifPresent(p -> this.person = p.email);
         }
     }
 
-    @JsonIgnore
+    @JsonIgnore @Override
     public String prettyPrint() {
         StringBuilder pretty = new StringBuilder();
 
         pretty.append("Error at: ");
-        pretty.append(this.summary);
+        pretty.append(this.name);
         pretty.append("\n");
 
         pretty.append("Exception type: ");
@@ -102,7 +97,7 @@ public class Model_ServerError extends Model {
         }
 
         pretty.append("Time: ");
-        pretty.append(this.created.toString());
+        pretty.append(this.created);
         pretty.append("\n");
 
         pretty.append("Tyrion: ");
@@ -152,13 +147,29 @@ public class Model_ServerError extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore                                      public boolean read_permission()  {  return Controller_Security.get_person().has_permission("LoggerError_read");}
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("LoggerError_edit");}
-    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().has_permission("LoggerError_delete");}
+    @JsonIgnore
+    public boolean read_permission() { return BaseController.person().has_permission("ServerError_read");}
+    
+    @JsonProperty @ApiModelProperty(required = true)
+    public boolean edit_permission()  {  return BaseController.person().has_permission("ServerError_edit");}
+    
+    @JsonProperty @ApiModelProperty(required = true)
+    public boolean delete_permission() {  return BaseController.person().has_permission("ServerError_delete");}
 
-    public enum permissions{LoggerError_read, LoggerError_edit, LoggerError_delete,}
+    public enum Permission { ServerError_read, ServerError_edit, ServerError_delete }
+
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    public static Model_ServerError getById(String id) {
+        return getById(UUID.fromString(id));
+    }
+    
+    public static Model_ServerError getById(UUID id) {
+        return find.byId(id);
+    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<String, Model_ServerError> find = new Finder<>(Model_ServerError.class);
+    public static Finder<UUID, Model_ServerError> find = new Finder<>(Model_ServerError.class);
 }

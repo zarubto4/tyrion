@@ -2,15 +2,11 @@
 logs
 target
 /.idea
-.idea
-files
-activator-launch-1.2.10.jar
-project.target
-project.project
 project/project
 conf/label_printers
 label_printers
-exportToHTML
+
+sbt-dist
 
 /DocumentDB.Spatial.Sql.dll
 /Microsoft.Azure.Documents.ServiceInterop.dll

@@ -1,11 +1,10 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import play.data.validation.Constraints;
-import utilities.logger.Class_Logger;
+import utilities.logger.Logger;
+import utilities.model.NamedModel;
 
 import javax.persistence.*;
 import java.util.*;
@@ -13,15 +12,13 @@ import java.util.*;
 @Entity
 @ApiModel(value = "BoardFeature", description = "Model of TypeOfBoard Features ")
 @Table(name="BoardFeature")
-public class Model_TypeOfBoardFeatures extends Model {
+public class Model_TypeOfBoardFeatures extends NamedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_TypeOfWidget.class);
+    private static final Logger logger = new Logger(Model_TypeOfBoardFeatures.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-    @Id @ApiModelProperty(required = true)   public String id;
-                    @Constraints.Required    public String name;
 
     @ManyToMany(fetch = FetchType.LAZY) @JsonIgnore public List<Model_TypeOfBoard> type_of_boards = new ArrayList<>();
 
@@ -32,10 +29,9 @@ public class Model_TypeOfBoardFeatures extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     // FOR LIST
-    @JsonIgnore @Transient
-    public static Map<String, String> selectOptions() {
+    public static Map<UUID, String> selectOptions() {
 
-        Map<String, String> options = new LinkedHashMap<>();
+        Map<UUID, String> options = new LinkedHashMap<>();
 
         for (Model_TypeOfBoardFeatures features : find.all()) {
             options.put(features.id, features.name);
@@ -46,31 +42,6 @@ public class Model_TypeOfBoardFeatures extends Model {
 
 
 /* CRUD CLASSES --------------------------------------------------------------------------------------------------------*/
-
-
-    @JsonIgnore @Override
-    public void save() {
-
-        terminal_logger.debug("save :: Creating new Object");
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (Model_TypeOfBoard.find.byId(this.id) == null) break;
-        }
-        super.save();
-    }
-
-    @JsonIgnore @Override public void update() {
-
-        terminal_logger.debug("update :: Update object value: {}",  this.id);
-        super.update();
-
-    }
-
-    @JsonIgnore @Override public void delete() {
-
-        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
-        super.update();
-    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -83,8 +54,6 @@ public class Model_TypeOfBoardFeatures extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static  Model.Finder<String, Model_TypeOfBoardFeatures> find = new Finder<>(Model_TypeOfBoardFeatures.class);
 
-
-
+    public static Finder<UUID, Model_TypeOfBoardFeatures> find = new Finder<>(Model_TypeOfBoardFeatures.class);
 }

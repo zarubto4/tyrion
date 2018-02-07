@@ -9,30 +9,24 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import io.swagger.annotations.Api;
-import models.Model_Board;
 import models.Model_TypeOfBoard;
 import models.Model_TypeOfBoard_Batch;
 import org.bson.Document;
-import play.data.Form;
-import play.i18n.Lang;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Security;
-import utilities.Server;
+import utilities.authentication.Authentication;
 import utilities.hardware_registration_auhtority.document_objects.DM_Batch_Registration_Central_Authority;
 import utilities.hardware_registration_auhtority.document_objects.DM_Board_Registration_Central_Authority;
-import utilities.logger.Class_Logger;
-import utilities.login_entities.Secured_API;
+import utilities.logger.Logger;
 
 import java.util.List;
 
-
 @Api(value = "Not Documented API - InProgress or Stuck")
-@Security.Authenticated(Secured_API.class)
+@Security.Authenticated(Authentication.class)
 public class Batch_Registration_Authority extends Controller {
 
-    private static final Class_Logger terminal_logger_start = new Class_Logger(Batch_Registration_Authority.class);
-    private static final Class_Logger terminal_logger_registration = new Class_Logger(Batch_Registration_Authority.class);
+    private static final Logger logger = new Logger(Batch_Registration_Authority.class);
 
     /**
      * Tohle rozhodně nemazat!!!!!! A ani neměnit - naprosto klíčová konfigurace záměrně zahrabaná v kodu!
@@ -41,7 +35,7 @@ public class Batch_Registration_Authority extends Controller {
     private static MongoDatabase database = mongoClient.getDatabase("hardware-registration-authority-database");
     private static MongoCollection<Document> collection = database.getCollection(DM_Batch_Registration_Central_Authority.COLLECTION_NAME);
 
-    public static boolean check_if_value_is_registered(String value, String type){
+    public static boolean check_if_value_is_registered(String value, String type) {
 
         // type == "board_id" or "mac_address"
         // Kontroluji Device ID
@@ -49,7 +43,7 @@ public class Batch_Registration_Authority extends Controller {
         whereQuery_board_id.put( type ,value);
         Document device_id_already_registered = collection.find(whereQuery_board_id).first();
 
-        if(device_id_already_registered != null) {
+        if (device_id_already_registered != null) {
             return true;
         }
 
@@ -57,15 +51,15 @@ public class Batch_Registration_Authority extends Controller {
     }
 
     // Před uložením desky - je nejprve proveden dotaz zda může být uložena!
-    public static boolean register_batch(Model_TypeOfBoard typeOfBoard, Model_TypeOfBoard_Batch batch){
+    public static boolean register_batch(Model_TypeOfBoard typeOfBoard, Model_TypeOfBoard_Batch batch) {
 
-        terminal_logger_registration.info("Batch_Registration_Authority:: New Registration of batch {} for Type of Board {}  ", batch.production_batch, typeOfBoard.compiler_target_name);
+        logger.info("Batch_Registration_Authority:: New Registration of batch {} for Type of Board {}  ", batch.production_batch, typeOfBoard.compiler_target_name);
 
         // Kontroluji Device ID
-        if( check_if_value_is_registered(batch.id.toString(),"id")) {
-            terminal_logger_registration.error("Batch_Registration_Authority:: check_if_value_is_registered:: Collection name:: " + DM_Board_Registration_Central_Authority.COLLECTION_NAME);
-            terminal_logger_registration.error("Batch_Registration_Authority:: check_if_value_is_registered:: In Database is registered batch with Same production_batch name!");
-            synchronize_batch_with_authority();
+        if ( check_if_value_is_registered(batch.id.toString(),"id")) {
+            logger.error("Batch_Registration_Authority:: check_if_value_is_registered:: Collection name:: " + DM_Board_Registration_Central_Authority.COLLECTION_NAME);
+            logger.error("Batch_Registration_Authority:: check_if_value_is_registered:: In Database is registered batch with Same production_batch name!");
+            synchronize();
             return false;
         }
 
@@ -95,15 +89,10 @@ public class Batch_Registration_Authority extends Controller {
             String string_json = Json.toJson(batch_registration_central_authority).toString();
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
 
-            final Form<DM_Batch_Registration_Central_Authority> form = Form.form(DM_Batch_Registration_Central_Authority.class).bind(json);
-            if (form.hasErrors()) {
-                terminal_logger_start.error("Batch_Registration_Authority:: Document Registration and Validation test " + string_json);
-                terminal_logger_start.error("Batch_Registration_Authority:: Probably some value is missing in by Required object " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-                return false;
-            }
+            Json.fromJson(json, DM_Batch_Registration_Central_Authority.class);
 
-        }catch (Exception e){
-            terminal_logger_registration.internalServerError(e);
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return false;
         }
 
@@ -115,13 +104,13 @@ public class Batch_Registration_Authority extends Controller {
     }
 
 
-    public static void synchronize_batch_with_authority() {
+    public static void synchronize() {
 
-        terminal_logger_start.info("Batch_Registration_Authority:: synchronize_mac_address_with_authority");
+        logger.info("Batch_Registration_Authority:: synchronize_mac");
 
-        List<Model_TypeOfBoard_Batch> batches = Model_TypeOfBoard_Batch.find.where().eq("removed_by_user", false).findList();
+        List<Model_TypeOfBoard_Batch> batches = Model_TypeOfBoard_Batch.find.query().where().eq("deleted", false).findList();
 
-        terminal_logger_start.info("Batch_Registration_Authority:: Batches for Check: " + batches.size());
+        logger.info("Batch_Registration_Authority:: Batches for Check: " + batches.size());
 
         MongoCursor<Document> cursor = collection.find().iterator();
         try {
@@ -131,27 +120,20 @@ public class Batch_Registration_Authority extends Controller {
                     String string_json = cursor.next().toJson();
                     ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
 
-                    final Form<DM_Batch_Registration_Central_Authority> form = Form.form(DM_Batch_Registration_Central_Authority.class).bind(json);
-                    if (form.hasErrors()) {
-                        terminal_logger_start.error("Batch_Registration_Authority:: Document Read " + string_json);
-                        terminal_logger_start.error("Batch_Registration_Authority:: synchronize_device_with_authority:: Json from Mongo DB has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-                        break;
-                    }
+                    DM_Batch_Registration_Central_Authority help = Json.fromJson(json, DM_Batch_Registration_Central_Authority.class);
 
-                    DM_Batch_Registration_Central_Authority help = form.get();
-
-                    Model_TypeOfBoard_Batch batch_database = Model_TypeOfBoard_Batch.find.where().eq("revision", help.revision).eq("production_batch", help.production_batch).findUnique();
+                    Model_TypeOfBoard_Batch batch_database = Model_TypeOfBoard_Batch.find.query().where().eq("revision", help.revision).eq("production_batch", help.production_batch).findOne();
                     if (batch_database != null) {
-                        terminal_logger_start.info("Batch_Registration_Authority:: Batch id {} revision is already registered in database", help.id, help.revision );
+                        logger.info("Batch_Registration_Authority:: Batch id {} revision is already registered in database", help.id, help.revision );
                         // Already Registred
                         continue;
                     } else {
-                        terminal_logger_start.info("Batch_Registration_Authority:: Batch id {} revision is not registered in database ", help.id, help.revision );
+                        logger.info("Batch_Registration_Authority:: Batch id {} revision is not registered in database ", help.id, help.revision );
                     }
 
-                    Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("compiler_target_name", help.type_of_board_compiler_target_name).findUnique();
+                    Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.query().where().eq("compiler_target_name", help.type_of_board_compiler_target_name).findOne();
                     if (typeOfBoard == null) {
-                        terminal_logger_start.error("Batch_Registration_Authority:: Required Type Of Board Read {} is missing!", help.type_of_board_compiler_target_name);
+                        logger.error("Batch_Registration_Authority:: Required Type Of Board Read {} is missing!", help.type_of_board_compiler_target_name);
                         continue;
                     }
 
@@ -181,7 +163,7 @@ public class Batch_Registration_Authority extends Controller {
                     batch.latest_used_mac_address = Long.parseLong(help.latest_used_mac_address, 10);
 
                     if (batch.mac_address_start == null || batch.mac_address_end == null || batch.latest_used_mac_address == null ) {
-                        terminal_logger_start.error("Batch_Registration_Authority:: incompatible Mac address ");
+                        logger.error("Batch_Registration_Authority:: incompatible Mac address ");
                         return;
                     }
 
@@ -189,18 +171,14 @@ public class Batch_Registration_Authority extends Controller {
                     batch.description = help.description;
 
                     // Uložení objektu do DB
-                    batch.save_from_central_atuhority();
+                    batch.save_from_central_authority();
 
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    terminal_logger_registration.internalServerError(e);
+                    logger.internalServerError(e);
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            terminal_logger_registration.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
-
-
 }

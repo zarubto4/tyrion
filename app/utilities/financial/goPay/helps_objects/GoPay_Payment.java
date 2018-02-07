@@ -1,10 +1,9 @@
 package utilities.financial.goPay.helps_objects;
 
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import models.Model_InvoiceItem;
 import utilities.Server;
-import utilities.enums.Enum_Currency;
+import utilities.enums.Currency;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +14,7 @@ public class GoPay_Payment {
     public GoPay_Target target = new GoPay_Target();
 
     public long amount = 0;
-    public Enum_Currency currency;
+    public Currency currency;
     public String order_number;
 
     public String order_description;
@@ -29,9 +28,9 @@ public class GoPay_Payment {
 
  // Pomocné metody -----------------------------------------------------------------------------------------------------
 
-    public void setItems(List<Model_InvoiceItem> invoice_items){
+    public void setItems(List<Model_InvoiceItem> invoice_items) {
 
-        for(Model_InvoiceItem item :invoice_items){
+        for (Model_InvoiceItem item :invoice_items) {
             amount += item.unit_price / 10;
 
             GoPay_Items go_item = new GoPay_Items();

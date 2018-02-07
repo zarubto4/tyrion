@@ -1,14 +1,13 @@
 package utilities.notifications;
 
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
 import models.Model_Notification;
 import models.Model_Person;
 import play.libs.Json;
-import utilities.enums.Enum_Notification_importance;
-import utilities.logger.Class_Logger;
-import web_socket.services.WS_Becki_Website;
+import utilities.enums.NotificationImportance;
+import utilities.logger.Logger;
+import websocket.interfaces.WS_Portal;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,7 +21,7 @@ public class NotificationHandler {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(NotificationHandler.class);
+    private static final Logger logger = new Logger(NotificationHandler.class);
 
 /* METHOD  -------------------------------------------------------------------------------------------------------------*/
 
@@ -37,23 +36,23 @@ public class NotificationHandler {
     /**
      * Method starts the concurrent thread.
      */
-    public static void startThread(){
-        terminal_logger.trace("startThread: starting");
-        if(!send_notification_thread.isAlive()) send_notification_thread.start();
+    public static void startThread() {
+        logger.trace("startThread: starting");
+        if (!send_notification_thread.isAlive()) send_notification_thread.start();
     }
 
     /**
      * Method adds a notification to the queue and interrupts the thread if it is needed
      * @param notification Model notification that is being sent.
      */
-    public static void addToQueue(Model_Notification notification){
+    public static void addToQueue(Model_Notification notification) {
 
-        terminal_logger.debug("addToQueue: adding notification to queue");
+        logger.debug("addToQueue: adding notification to queue");
 
         notifications.add(notification);
 
-        if(send_notification_thread.getState() == Thread.State.TIMED_WAITING) {
-            terminal_logger.trace("addToQueue: thread is sleeping, waiting for interruption!");
+        if (send_notification_thread.getState() == Thread.State.TIMED_WAITING) {
+            logger.trace("addToQueue: thread is sleeping, waiting for interruption!");
             send_notification_thread.interrupt();
         }
     }
@@ -66,14 +65,14 @@ public class NotificationHandler {
         @Override
         public void run() {
 
-            terminal_logger.trace("send_notification_thread: concurrent thread started on {}", new Date()) ;
+            logger.trace("send_notification_thread: concurrent thread started on {}", new Date()) ;
 
-            while(true){
-                try{
+            while(true) {
+                try {
 
-                    if(!notifications.isEmpty()) {
+                    if (!notifications.isEmpty()) {
 
-                        terminal_logger.debug("send_notification_thread: {} notifications to send", notifications.size());
+                        logger.debug("send_notification_thread: {} notifications to send", notifications.size());
 
                         Model_Notification notification = notifications.get(0);
 
@@ -83,14 +82,14 @@ public class NotificationHandler {
 
                     } else {
 
-                        terminal_logger.trace("send_notification_thread: no notifications, thread is going to sleep");
+                        logger.trace("send_notification_thread: no notifications, thread is going to sleep");
 
                         sleep(500000000);
                     }
-                }catch (InterruptedException i){
+                } catch (InterruptedException i) {
                     // Do nothing
-                }catch (Exception e){
-                    terminal_logger.internalServerError(e);
+                } catch (Exception e) {
+                    logger.internalServerError(e);
                 }
             }
         }
@@ -101,14 +100,14 @@ public class NotificationHandler {
      * Sends it to every user's websocket connection.
      * @param notification Model notification that is being sent.
      */
-    private static void sendNotification(Model_Notification notification){
+    private static void sendNotification(Model_Notification notification) {
         try {
 
-            terminal_logger.trace("sendNotification: sending notification");
+            logger.trace("sendNotification: sending notification");
 
             ObjectNode message = Json.newObject();
             message.put("message_type", Model_Notification.messageType);
-            message.put("message_channel", WS_Becki_Website.CHANNEL);
+            message.put("message_channel", WS_Portal.message_channel);
             message.put("notification_type", notification.notification_type.name());
             message.put("notification_level", notification.notification_level.name());
             message.put("notification_importance", notification.notification_importance.name());
@@ -120,48 +119,46 @@ public class NotificationHandler {
             message.put("created", notification.created.getTime());
             message.set("buttons", Json.toJson(notification.buttons()) );
 
-            terminal_logger.trace("sendNotification: without id: {}", Json.toJson(message).toString());
+            logger.trace("sendNotification: without id: {}", Json.toJson(message).toString());
 
-            terminal_logger.trace("sendNotification: The number of recipients is {}", notification.list_of_ids_receivers.size());
+            logger.trace("sendNotification: The number of recipients is {}", notification.list_of_ids_receivers.size());
 
-            for (String person_id : notification.list_of_ids_receivers) {
+            for (UUID person_id : notification.list_of_ids_receivers) {
                 try {
 
-                    terminal_logger.debug("sendNotification: Recipient id: {}", person_id);
+                    logger.debug("sendNotification: Recipient id: {}", person_id);
 
                     // Pokud je notification_importance vyšší než "low" notifikaci uložím
-                    if (notification.notification_importance != Enum_Notification_importance.low && notification.id == null) {
+                    if (notification.notification_importance != NotificationImportance.LOW && notification.id == null) {
 
-                        notification.person = Model_Person.get_byId(person_id); // Get Person Model from Cache
+                        notification.person = Model_Person.getById(person_id); // Get Person Model from Cache
                         notification.save_object();
 
-                        message.put("id", notification.id);
-                        message.put("notification_id", notification.id);
-                        terminal_logger.debug("sendNotification: Notification has its own ID: {}" , notification.id);
-
+                        message.put("id", notification.id.toString());
+                        message.put("notification_id", notification.id.toString());
+                        logger.debug("sendNotification: Notification has its own ID: {}" , notification.id);
                     }
 
-
-                    if(notification.id == null) {
+                    if (notification.id == null) {
                         message.put("id", UUID.randomUUID().toString());
                         message.put("notification_id", UUID.randomUUID().toString());
-                    }else {
-                        message.put("id", notification.id);
-                        message.put("notification_id", notification.id);
+                    } else {
+                        message.put("id", notification.id.toString());
+                        message.put("notification_id", notification.id.toString());
                     }
 
                     // Send notification to all user's websocket connections
-                    if (Controller_WebSocket.becki_website.containsKey(person_id)) {
-                        WS_Becki_Website becki = (WS_Becki_Website) Controller_WebSocket.becki_website.get(person_id);
-                        becki.write_without_confirmation( message );
+                    if (Controller_WebSocket.portals.containsKey(person_id)) {
+                        WS_Portal portal = Controller_WebSocket.portals.get(person_id);
+                        portal.send(message);
                     }
 
                 } catch (NullPointerException e) {
-                    terminal_logger.internalServerError(e);
+                    logger.internalServerError(e);
                 }
             }
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
+        } catch (Exception e) {
+            logger.internalServerError(e);
         }
     }
 }

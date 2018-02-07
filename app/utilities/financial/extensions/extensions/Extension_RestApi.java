@@ -2,12 +2,12 @@ package utilities.financial.extensions.extensions;
 
 import play.Configuration;
 import utilities.Server;
-import utilities.enums.Enum_ExtensionType;
+import utilities.enums.ExtensionType;
 import utilities.financial.extensions.configurations.Configuration_RestApi;
 
 public class Extension_RestApi implements Extension {
 
-    public static final Enum_ExtensionType enum_type = Enum_ExtensionType.rest_api;
+    public static final ExtensionType enum_type = ExtensionType.rest_api;
     public static final String name = Configuration.root().getString("Financial.extensions." + enum_type.name() + ".name");
     public static final String description = Configuration.root().getString("Financial.extensions." + enum_type.name() + ".description");
 
@@ -33,7 +33,7 @@ public class Extension_RestApi implements Extension {
 
         return restApi.price;
     }
-    public Enum_ExtensionType getType() {
+    public ExtensionType getType() {
         return enum_type;
     }
 

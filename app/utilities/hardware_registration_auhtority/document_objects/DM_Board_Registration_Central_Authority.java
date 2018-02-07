@@ -9,7 +9,7 @@ public class DM_Board_Registration_Central_Authority {
 
     public static final String COLLECTION_NAME = "hardware-registration-authority";
 
-    public DM_Board_Registration_Central_Authority(){}
+    public DM_Board_Registration_Central_Authority() {}
 
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String board_id;
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String mac_address;
@@ -18,7 +18,7 @@ public class DM_Board_Registration_Central_Authority {
 
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String type_of_board_compiler_target_name;
 
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String date_of_create;
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String created;
 
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String revision;                               // Kod HW revize
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String production_batch;                       // Kod HW revizedate_of_assembly

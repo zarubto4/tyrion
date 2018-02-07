@@ -1,7 +1,7 @@
 package utilities.errors;
 
-import com.avaje.ebean.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import io.ebean.annotation.EnumValue;
 
 public enum ErrorCode {
 
@@ -83,8 +83,8 @@ public enum ErrorCode {
 
     @JsonCreator
     public static ErrorCode fromString(String key) {
-        for(ErrorCode action : ErrorCode.values()) {
-            if(action.name().equalsIgnoreCase(key)) {
+        for (ErrorCode action : ErrorCode.values()) {
+            if (action.name().equalsIgnoreCase(key)) {
                 return action;
             }
         }

@@ -1,31 +1,26 @@
 package utilities.scheduler.jobs;
 
+
+import com.typesafe.config.Config;
 import models.Model_HomerServer;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import play.Configuration;
-import play.api.Play;
-import play.libs.F;
-import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
-import utilities.logger.Class_Logger;
-import utilities.update_server.GitHub_Asset;
-import utilities.update_server.GitHub_Release;
+import utilities.logger.Logger;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.URI;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.Date;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -37,21 +32,27 @@ public class Job_UpdateServer implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Job_UpdateServer.class);
+    private static final Logger logger = new Logger(Job_UpdateServer.class);
 
 //**********************************************************************************************************************
 
-    public Job_UpdateServer(){}
+    private WSClient ws;
+    private Config config;
+
+    public Job_UpdateServer(WSClient ws, Config config) {
+        this.ws = ws;
+        this.config = config;
+    }
 
     private JobDataMap jobData;
     
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        terminal_logger.info("execute: Executing Job_UpdateServer");
+        logger.info("execute: Executing Job_UpdateServer");
 
         jobData = context.getMergedJobDataMap();
 
-        if(!update_server_thread.isAlive()) update_server_thread.start();
+        if (!update_server_thread.isAlive()) update_server_thread.start();
     }
 
     private Thread update_server_thread = new Thread() {
@@ -60,7 +61,7 @@ public class Job_UpdateServer implements Job {
         public void run() {
             try {
 
-                terminal_logger.trace("update_server_thread: concurrent thread started on {}", new Date());
+                logger.trace("update_server_thread: concurrent thread started on {}", new Date());
 
                 if (jobData == null) {
                     throw new NullPointerException("Job was instantiated without jobData in the JobExecutionContext.");
@@ -80,40 +81,45 @@ public class Job_UpdateServer implements Job {
                     throw new NullPointerException("Job was instantiated without version in the JobExecutionContext or the version is null for some reason.");
                 }
 
-                WSClient ws = Play.current().injector().instanceOf(WSClient.class);
-
                 switch (server) {
                     case "tyrion": {
 
-                        terminal_logger.trace("update_server_thread: Updating Tyrion");
+                        logger.trace("update_server_thread: Updating Tyrion");
 
                         WSResponse wsResponse = ws.url(jobData.getString("url"))
-                                .setHeader("Authorization", "token " + Configuration.root().getString("GitHub.apiKey"))
-                                .setHeader("Accept", "application/octet-stream")
+                                .addHeader("Authorization", "token " + config.getString("GitHub.apiKey"))
+                                .addHeader("Accept", "application/octet-stream")
                                 .setFollowRedirects(false)
                                 .get()
-                                .get(10000);
+                                .toCompletableFuture()
+                                .get();
 
-                        terminal_logger.trace("update_server_thread: Got file download url");
-                        terminal_logger.trace(wsResponse.getHeader("location"));
+                        logger.trace("update_server_thread: Got file download url");
 
                         // Redirect URL from response
-                        String url = wsResponse.getHeader("location");
+                        String url;
+
+                        Optional<String> optional = wsResponse.getSingleHeader("location");
+                        if (optional.isPresent()) {
+                            url = optional.get();
+                        } else {
+                            throw new Exception("Location header is missing");
+                        }
 
                         // Request for URL without query params
                         WSRequest request = ws.url(url.substring(0, url.indexOf("?")))
-                                .setRequestTimeout(-1);
+                                .setRequestTimeout(Duration.ofMinutes(30));
 
                         // Query params must be decoded and added one by one, because of bug in Play! (query was getting double encoded)
                         String[] pairs = url.substring(url.indexOf("?") + 1).split("&");
                         for (String pair : pairs) {
                             int idx = pair.indexOf("=");
-                            request.setQueryParameter(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+                            request.addQueryParameter(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
                         }
 
-                        WSResponse response = request.get().get(30, TimeUnit.MINUTES);
+                        WSResponse response = request.get().toCompletableFuture().get(30, TimeUnit.MINUTES);
 
-                        terminal_logger.debug("update_server_thread: Status for file download is {}", response.getStatus());
+                        logger.debug("update_server_thread: Status for file download is {}", response.getStatus());
 
                         Path path = Paths.get("../dist.zip");
                         InputStream inputStream = response.getBodyAsStream();
@@ -128,37 +134,37 @@ public class Job_UpdateServer implements Job {
                         if (inputStream != null) {inputStream.close();}
                         if (outputStream != null) {outputStream.close();}
 
-                        terminal_logger.trace("update_server_thread: File downloaded, run update script");
+                        logger.trace("update_server_thread: File downloaded, run update script");
 
                         Process proc = Runtime.getRuntime().exec("./update_server.sh " + jobData.getString("version") + " 2>&1 > ./update.log");
 
                         BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
                         String line;
                         while ((line = in.readLine()) != null) {
-                            terminal_logger.info("update_server_thread: Process output: {}", line);
+                            logger.info("update_server_thread: Process output: {}", line);
                         }
 
                         BufferedReader err = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
                         StringBuilder err_log = new StringBuilder();
                         String err_line;
                         while ((err_line = err.readLine()) != null) {
-                            terminal_logger.info("update_server_thread: Process output: {}", err_line);
+                            logger.info("update_server_thread: Process output: {}", err_line);
                             err_log.append(err_line);
                             err_log.append("\n");
                         }
 
                         int exitCode = proc.waitFor();
 
-                        terminal_logger.debug("update_server_thread: Process exit code: {}", exitCode);
+                        logger.debug("update_server_thread: Process exit code: {}", exitCode);
 
                         if (exitCode != 0) {
-                            terminal_logger.internalServerError(new Exception("Process exited with non-zero code " + exitCode + ". Errors:\n" + err_log.toString()));
+                            logger.internalServerError(new Exception("Process exited with non-zero code " + exitCode + ". Errors:\n" + err_log.toString()));
                         }
 
                         break;
                     }
                     case "homer": {
-                        Model_HomerServer homerServer = Model_HomerServer.get_byId(""); // TODO
+                        Model_HomerServer homerServer = Model_HomerServer.getById(""); // TODO
                         if (homerServer == null) throw new NullPointerException("Cannot find the Homer Server in the DB.");
 
                         // TODO do request
@@ -172,10 +178,10 @@ public class Job_UpdateServer implements Job {
                 }
 
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                logger.internalServerError(e);
             }
 
-            terminal_logger.trace("update_server_thread: thread stopped on {}", new Date());
+            logger.trace("update_server_thread: thread stopped on {}", new Date());
         }
     };
 }

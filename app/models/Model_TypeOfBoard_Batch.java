@@ -1,34 +1,29 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.Controller_Security;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import play.data.validation.Constraints;
 import utilities.hardware_registration_auhtority.Batch_Registration_Authority;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
-import utilities.logger.Class_Logger;
+import utilities.logger.Logger;
+import utilities.model.BaseModel;
 
 import javax.persistence.*;
 import java.nio.charset.IllegalCharsetNameException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
 @ApiModel(description = "Model of Production Batch  ", value = "TypeOfBoardBatch")
 @Table(name="TypeOfBoardBatch")
-public class Model_TypeOfBoard_Batch extends Model {
+public class Model_TypeOfBoard_Batch extends BaseModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_TypeOfBoard_Batch.class);
+    private static final Logger logger = new Logger(Model_TypeOfBoard_Batch.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-
-    @Id @ApiModelProperty(required = true)  public UUID id;
 
     public String revision;                     // Kod HW revize
     public String production_batch;             // Kod HW revizedate_of_assembly
@@ -49,16 +44,15 @@ public class Model_TypeOfBoard_Batch extends Model {
     public Long ean_number;
 
     @JsonIgnore @ManyToOne() public Model_TypeOfBoard type_of_board;
-    @JsonIgnore public boolean removed_by_user;
 
     @Column(columnDefinition = "TEXT")  public String description;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty  @Transient public Long latest_used_mac_address(){
+    @JsonProperty  @Transient public Long latest_used_mac_address() {
 
-        if(latest_used_mac_address == null) {
-            Hardware_Registration_Authority.synchronize_mac_address_with_authority();
+        if (latest_used_mac_address == null) {
+            Hardware_Registration_Authority.synchronize_mac();
             this.refresh();
         }
 
@@ -71,18 +65,18 @@ public class Model_TypeOfBoard_Batch extends Model {
     @JsonIgnore @Transient
     public String get_nextMacAddress_just_for_check() throws IllegalCharsetNameException{
 
-        if(latest_used_mac_address == null) {
-            Hardware_Registration_Authority.synchronize_mac_address_with_authority();
+        if (latest_used_mac_address == null) {
+            Hardware_Registration_Authority.synchronize_mac();
             this.refresh();
         }
 
 
         // Its used only for check - if some other server dont use this mac address and if its not registred in central hardware registration authority
-        if(latest_used_mac_address == null) {
+        if (latest_used_mac_address == null) {
             return convert_to_MAC_ISO(mac_address_start);
         }
 
-        if(latest_used_mac_address >= mac_address_end){
+        if (latest_used_mac_address >= mac_address_end) {
             throw new IllegalCharsetNameException("All Mac Address used");
         }
 
@@ -92,18 +86,18 @@ public class Model_TypeOfBoard_Batch extends Model {
     @JsonIgnore @Transient
     public String get_new_MacAddress() throws IllegalCharsetNameException{
 
-        if(latest_used_mac_address == null) {
-            Hardware_Registration_Authority.synchronize_mac_address_with_authority();
+        if (latest_used_mac_address == null) {
+            Hardware_Registration_Authority.synchronize_mac();
             this.refresh();
         }
 
-        if(latest_used_mac_address == null){
+        if (latest_used_mac_address == null) {
             latest_used_mac_address = mac_address_start;
             this.update();
             return get_new_MacAddress();
         }
 
-        if(latest_used_mac_address >= mac_address_end){
+        if (latest_used_mac_address >= mac_address_end) {
             throw new IllegalCharsetNameException("All Mac Address used");
         }
 
@@ -115,8 +109,8 @@ public class Model_TypeOfBoard_Batch extends Model {
     }
 
     //Konvertor Long na ISO normu Mac addressy
-    @JsonIgnore @Transient
-    public static String convert_to_MAC_ISO(Long mac){
+    @JsonIgnore
+    public static String convert_to_MAC_ISO(Long mac) {
 
         if (mac > 0xFFFFFFFFFFFFL || mac < 0) {
             throw new IllegalArgumentException("mac out of range");
@@ -138,26 +132,20 @@ public class Model_TypeOfBoard_Batch extends Model {
     public void save() {
         this.id = UUID.randomUUID();
 
-        if(latest_used_mac_address == null) latest_used_mac_address = mac_address_start;
+        if (latest_used_mac_address == null) latest_used_mac_address = mac_address_start;
         Batch_Registration_Authority.register_batch(type_of_board, this);
         super.save();
     }
 
     @JsonIgnore
-    public void save_from_central_atuhority() {
+    public void save_from_central_authority() {
         super.save();
     }
 
-    @JsonIgnore @Override public void update() {
-        terminal_logger.debug("update: ID = {}",  this.id);
+    @JsonIgnore @Override public boolean delete() {
+        this.deleted = true;
         super.update();
-
-    }
-
-    @JsonIgnore @Override public void delete() {
-        terminal_logger.debug("delete: ID = {}",  this.id);
-        this.removed_by_user = true;
-        super.update();
+        return false;
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -170,21 +158,24 @@ public class Model_TypeOfBoard_Batch extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public boolean create_permission(){  return type_of_board.update_permission(); }
-    @JsonIgnore   @Transient                                    public boolean read_permission()  {  return type_of_board.read_permission(); }
+    @JsonIgnore                                      public boolean create_permission() {  return type_of_board.update_permission(); }
+    @JsonIgnore                                      public boolean read_permission()  {  return type_of_board.read_permission(); }
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return type_of_board.edit_permission();   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return type_of_board.delete_permission(); }
+    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()  {  return type_of_board.edit_permission();   }
+    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission() {  return type_of_board.delete_permission(); }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public static Model_TypeOfBoard_Batch get_byId(String id) {
+    public static Model_TypeOfBoard_Batch getById(String id) {
+        return getById(UUID.fromString(id));
+    }
+
+    public static Model_TypeOfBoard_Batch getById(UUID id) {
         return find.byId(id);
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String, Model_TypeOfBoard_Batch> find = new Finder<>(Model_TypeOfBoard_Batch.class);
+    public static Finder<UUID, Model_TypeOfBoard_Batch> find = new Finder<>(Model_TypeOfBoard_Batch.class);
 
 
 }

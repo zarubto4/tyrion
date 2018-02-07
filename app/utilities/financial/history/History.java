@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class History {
 
-    public History(){
+    public History() {
         HistoryEvent event = new HistoryEvent();
         event.event = "New History";
         event.description = "History is created, probably new product.";

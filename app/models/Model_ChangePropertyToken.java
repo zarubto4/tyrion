@@ -1,62 +1,31 @@
 package models;
 
-
-import com.avaje.ebean.Model;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import utilities.logger.Class_Logger;
+import io.ebean.Finder;
+import utilities.logger.Logger;
+import utilities.model.BaseModel;
 
 import javax.persistence.*;
-import java.util.Date;
 import java.util.UUID;
 
 @Entity
 @Table(name="ChangePropertyToken")
-public class Model_ChangePropertyToken extends Model {
+public class Model_ChangePropertyToken extends BaseModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_ChangePropertyToken.class);
+    private static final Logger logger = new Logger(Model_ChangePropertyToken.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-            @Id public String change_property_token;
-    @OneToOne(fetch = FetchType.LAZY)   public Model_Person person;
-                public Date   time_of_creation;
-                public String property;
-                public String value;
+    public String property;
+    public String value;
 
+    @OneToOne(fetch = FetchType.LAZY) public Model_Person person;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override
-    public void save() {
-
-        terminal_logger.debug("save :: Creating new Object");
-
-        while (true) { // I need Unique Value
-            this.change_property_token = UUID.randomUUID().toString();
-            if (find.byId(this.change_property_token) == null) break;
-        }
-        super.save();
-    }
-
-    @JsonIgnore @Override public void update() {
-
-
-        super.update();
-    }
-
-
-    @JsonIgnore @Override public void delete() {
-
-        terminal_logger.trace("delete :: operation");
-
-        super.delete();
-    }
-
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -65,14 +34,15 @@ public class Model_ChangePropertyToken extends Model {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public static Model_ChangePropertyToken get_byId(String id) {
+    public static Model_ChangePropertyToken getById(String id) {
+        return getById(UUID.fromString(id));
+    }
 
-        terminal_logger.warn("CACHE is not implemented - TODO");
+    public static Model_ChangePropertyToken getById(UUID id) {
         return find.byId(id);
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String,Model_ChangePropertyToken> find = new Finder<>(Model_ChangePropertyToken.class);
 
+    public static Finder<UUID, Model_ChangePropertyToken> find = new Finder<>(Model_ChangePropertyToken.class);
 }

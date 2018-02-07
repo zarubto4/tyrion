@@ -1,114 +1,129 @@
 package utilities.financial.goPay;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.inject.Inject;
 import models.Model_Invoice;
 import play.api.Play;
 import play.data.Form;
+import play.data.FormFactory;
 import play.libs.F;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
-import utilities.enums.Enum_Payment_status;
+import utilities.enums.PaymentStatus;
 import utilities.financial.fakturoid.Fakturoid;
 import utilities.financial.goPay.helps_objects.GoPay_Result;
-import utilities.logger.Class_Logger;
+import utilities.logger.Logger;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletionStage;
 
 /**
  * Class is used to check GoPay payments when notification is received.
  */
 public class GoPay_PaymentCheck {
-
+/*
     // Logger
-    private static final Class_Logger terminal_logger = new Class_Logger(GoPay_PaymentCheck.class);
+    private static final Logger logger = new Logger(GoPay_PaymentCheck.class);
+
+    private GoPay goPay;
+    private WSClient ws;
+    private FormFactory formFactory;
+    private Fakturoid fakturoid;
+
+    @Inject
+    public GoPay_PaymentCheck(GoPay goPay, WSClient ws, FormFactory formFactory, Fakturoid fakturoid) {
+        this.goPay = goPay;
+        this.ws = ws;
+        this.formFactory = formFactory;
+        this.fakturoid = fakturoid;
+    }
 
     /**
      * List of ids of payments that needs to be checked.
      * This is the queue.
-     */
-    private static List<Long> payments = new ArrayList<>();
+     *//*
+    private static List<Long> payments = new ArrayList<>();*/
 
     /**
      * Method starts the concurrent thread.
-     */
-    public static void startThread(){
-        terminal_logger.info("startThread: starting");
-        if(!check_payment_thread.isAlive()) check_payment_thread.start();
-    }
+     *//*
+    public static void startThread() {
+        logger.info("startThread: starting");
+        if (!check_payment_thread.isAlive()) check_payment_thread.start();
+    }*/
 
     /**
      * Method adds payment to the queue and interrupts the thread if it is needed
      * @param payment Long id of payment (invoice.gopay_id)
-     */
-    public static void addToQueue(Long payment){
+     *//*
+    public static void addToQueue(Long payment) {
 
-        terminal_logger.info("addToQueue: adding payment to queue");
+        logger.info("addToQueue: adding payment to queue");
 
         payments.add(payment);
 
-        if(check_payment_thread.getState() == Thread.State.TIMED_WAITING) {
-            terminal_logger.debug("addToQueue: thread is sleeping, waiting for interruption!");
+        if (check_payment_thread.getState() == Thread.State.TIMED_WAITING) {
+            logger.debug("addToQueue: thread is sleeping, waiting for interruption!");
             check_payment_thread.interrupt();
         }
-    }
+    }*/
 
     /**
      * Thread with an infinite loop inside. The thread goes to sleep when there is no payment to check.
-     */
-    private static Thread check_payment_thread = new Thread(){
+     *//*
+    private static Thread check_payment_thread = new Thread() {
 
         @Override
-        public void run(){
+        public void run() {
 
-            while(true){
-                try{
+            while(true) {
+                try {
 
-                    if(!payments.isEmpty()) {
+                    if (!payments.isEmpty()) {
 
-                        terminal_logger.debug("check_payment_thread: checking {} payments ", payments.size());
+                        logger.debug("check_payment_thread: checking {} payments ", payments.size());
 
                         Long payment = payments.get(0);
 
-                        checkPayment(payment);
+                        //checkPayment(payment);
 
                         payments.remove(payment);
 
                     } else {
 
-                        terminal_logger.debug("check_payment_thread: no payments, thread is going to sleep");
+                        logger.debug("check_payment_thread: no payments, thread is going to sleep");
                         sleep(2100000000);
                     }
-                }catch (InterruptedException i){
+                } catch (InterruptedException i) {
                     // Do nothing
-                }catch (Exception e){
-                    terminal_logger.internalServerError(e);
+                } catch (Exception e) {
+                    logger.internalServerError(e);
                 }
             }
         }
-    };
+    };*/
 
     /**
      * Method gets the payment from GoPay and checks its status.
      * Adds credit to a product if it is paid and fire Fakturoid event "pay_proforma".
      * @param id Id of the given payment.
-     */
-    private static void checkPayment(Long id) {
+     *//*
+    public void checkPayment(Long id) {
         try {
 
-            String local_token = GoPay.getToken();
+            String local_token = goPay.getToken();
 
-            terminal_logger.debug("checkPayment: Asking for payment state: gopay_id - {}", id);
+            logger.debug("checkPayment: Asking for payment state: gopay_id - {}", id);
 
-            terminal_logger.debug("checkPayment: Getting invoice");
-            Model_Invoice invoice = Model_Invoice.find.where().eq("gopay_id", id).findUnique();
+            logger.debug("checkPayment: Getting invoice");
+            Model_Invoice invoice = Model_Invoice.find.query().where().eq("gopay_id", id).findOne();
             if (invoice == null) throw new NullPointerException("Invoice is null. Cannot find it in database. Gopay ID was: " + id);
 
             try {
-
-                WSClient ws = Play.current().injector().instanceOf(WSClient.class);
 
                 // Some operations require more tries
                 for (int trial = 5; trial > 0; trial--) {
@@ -119,27 +134,27 @@ public class GoPay_PaymentCheck {
 
                     try {
 
-                        F.Promise<WSResponse> responsePromise = ws.url(Server.GoPay_api_url + "/payments/payment/" + id)
+                        CompletionStage<WSResponse> responsePromise = ws.url(Server.GoPay_api_url + "/payments/payment/" + id)
                                 .setContentType("application/x-www-form-urlencoded")
-                                .setHeader("Accept", "application/json")
-                                .setHeader("Authorization", "Bearer " + local_token)
-                                .setRequestTimeout(5000)
+                                .addHeader("Accept", "application/json")
+                                .addHeader("Authorization", "Bearer " + local_token)
+                                .setRequestTimeout(Duration.ofSeconds(5))
                                 .get();
 
-                        response = responsePromise.get(5000);
+                        response = responsePromise.toCompletableFuture().get();
 
                         result = response.asJson();
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        logger.internalServerError(e);
                         Thread.sleep(2500);
                         continue;
                     }
 
-                    terminal_logger.debug("checkPayment: Status: " + response.getStatus() + " Response " + result);
+                    logger.debug("checkPayment: Status: " + response.getStatus() + " Response " + result);
 
                     if (response.getStatus() == 200) {
-                        final Form<GoPay_Result> form = Form.form(GoPay_Result.class).bind(result);
+                        final Form<GoPay_Result> form = formFactory.form(GoPay_Result.class).bind(result);
                         if (form.hasErrors()) throw new Exception("Error while binding Json: " + form.errorsAsJson().toString());
                         GoPay_Result help = form.get();
 
@@ -147,15 +162,15 @@ public class GoPay_PaymentCheck {
 
                             case "PAID": {
 
-                                terminal_logger.debug("checkPayment: state - PAID");
+                                logger.debug("checkPayment: state - PAID");
 
-                                if (invoice.status != Enum_Payment_status.paid) {
+                                if (invoice.status != PaymentStatus.PAID) {
 
-                                    if (!Fakturoid.fakturoid_post("/invoices/" + invoice.proforma_id + "/fire.json?event=pay_proforma"))
-                                        terminal_logger.internalServerError(new Exception("Error changing status to paid on Fakturoid. Inconsistent state."));
+                                    if (!fakturoid.fakturoid_post("/invoices/" + invoice.proforma_id + "/fire.json?event=pay_proforma"))
+                                        logger.internalServerError(new Exception("Error changing status to paid on Fakturoid. Inconsistent state."));
 
                                     invoice.getProduct().credit_upload(help.amount * 10);
-                                    invoice.status = Enum_Payment_status.paid;
+                                    invoice.status = PaymentStatus.PAID;
                                     invoice.paid = new Date();
                                     invoice.update();
 
@@ -168,7 +183,7 @@ public class GoPay_PaymentCheck {
 
                             case "PAYMENT_METHOD_CHOSEN": {
 
-                                terminal_logger.debug("checkPayment: state - PAYMENT_METHOD_CHOSEN");
+                                logger.debug("checkPayment: state - PAYMENT_METHOD_CHOSEN");
 
                                 invoice.notificationPaymentIncomplete();
 
@@ -177,10 +192,10 @@ public class GoPay_PaymentCheck {
 
                             case "REFUNDED": {
 
-                                terminal_logger.debug("checkPayment: state - REFUNDED");
+                                logger.debug("checkPayment: state - REFUNDED");
 
                                 invoice.getProduct().credit_remove(help.amount * 10);
-                                invoice.status = Enum_Payment_status.canceled;
+                                invoice.status = PaymentStatus.CANCELED;
                                 invoice.update();
 
                                 invoice.getProduct().archiveEvent("Refund Payment", "GoPay payment number: " + invoice.gopay_id + " was successfully refunded", invoice.id);
@@ -193,7 +208,7 @@ public class GoPay_PaymentCheck {
 
                             case "PARTIALLY_REFUNDED": {
 
-                                terminal_logger.debug("checkPayment: state - PARTIALLY_REFUNDED");
+                                logger.debug("checkPayment: state - PARTIALLY_REFUNDED");
 
                                 // TODO úprava ve fakturoidu
 
@@ -207,21 +222,21 @@ public class GoPay_PaymentCheck {
 
                             case "CANCELED": {
 
-                                terminal_logger.debug("checkPayment: state - CANCELED");
+                                logger.debug("checkPayment: state - CANCELED");
 
-                                invoice.status = Enum_Payment_status.canceled;
+                                invoice.status = PaymentStatus.CANCELED;
                                 invoice.gw_url = null;
                                 invoice.update();
 
-                                if (!Fakturoid.fakturoid_post("/invoices/" + (invoice.proforma ? invoice.proforma_id : invoice.fakturoid_id) + "/fire.json?event=cancel"))
-                                    terminal_logger.internalServerError(new Exception("Error changing status to canceled on Fakturoid. Inconsistent state."));
+                                if (!fakturoid.fakturoid_post("/invoices/" + (invoice.proforma ? invoice.proforma_id : invoice.fakturoid_id) + "/fire.json?event=cancel"))
+                                    logger.internalServerError(new Exception("Error changing status to canceled on Fakturoid. Inconsistent state."));
 
                                 break;
                             }
 
                             case "TIMEOUTED": {
 
-                                terminal_logger.debug("checkPayment: state - TIMEOUTED");
+                                logger.debug("checkPayment: state - TIMEOUTED");
 
                                 // TODO notifikace
 
@@ -230,7 +245,7 @@ public class GoPay_PaymentCheck {
 
                             case "CREATED": {
 
-                                terminal_logger.debug("checkPayment: state - CREATED");
+                                logger.debug("checkPayment: state - CREATED");
 
                                 // TODO notifikace
 
@@ -253,13 +268,13 @@ public class GoPay_PaymentCheck {
 
                 invoice.notificationPaymentFail();
 
-                Fakturoid.sendInvoiceReminderEmail(invoice, "We were unable to take money from your credit card. " +
+                fakturoid.sendInvoiceReminderEmail(invoice, "We were unable to take money from your credit card. " +
                         "Please check your payment credentials or contact our support if anything is unclear. " +
                         "You can also pay this invoice manually through your Byzance account.");
             }
-        } catch (Exception e){
+        } catch (Exception e) {
 
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
-    }
+    }*/
 }

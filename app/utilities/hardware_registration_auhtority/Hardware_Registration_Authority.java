@@ -8,26 +8,23 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import controllers.BaseController;
 import io.swagger.annotations.*;
-import models.Model_Board;
+import models.Model_Hardware;
 import models.Model_TypeOfBoard;
 import models.Model_TypeOfBoard_Batch;
 import org.bson.Document;
-import play.data.Form;
-import play.i18n.Lang;
 import play.libs.Json;
-import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.Server;
+import responses.Result_Forbidden;
+import responses.Result_InternalServerError;
+import responses.Result_Ok;
+import responses.Result_Unauthorized;
+import utilities.authentication.Authentication;
 import utilities.enums.Enum_Terminal_Color;
 import utilities.hardware_registration_auhtority.document_objects.DM_Board_Registration_Central_Authority;
-import utilities.logger.Class_Logger;
-import utilities.logger.ServerLogger;
-import utilities.login_entities.Secured_API;
-import utilities.response.GlobalResult;
-import utilities.response.response_objects.*;
-
+import utilities.logger.Logger;
 
 import java.util.Date;
 import java.util.List;
@@ -35,12 +32,10 @@ import java.util.List;
 import static com.mongodb.client.model.Sorts.descending;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-@Security.Authenticated(Secured_API.class)
-public class Hardware_Registration_Authority extends Controller {
+@Security.Authenticated(Authentication.class)
+public class Hardware_Registration_Authority extends BaseController {
 
-    private static final Class_Logger terminal_logger_start = new Class_Logger(Server.class);
-    private static final Class_Logger terminal_logger_registration = new Class_Logger(Hardware_Registration_Authority.class);
-
+    private static final Logger logger = new Logger(Hardware_Registration_Authority.class);
 
     /**
      * Tohle rozhodně nemazat!!!!!! A ani neměnit - naprosto klíčová konfigurace záměrně zahrabaná v kodu!
@@ -63,22 +58,22 @@ public class Hardware_Registration_Authority extends Controller {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result synchronize_script(){
-        try{
+    public Result synchronize_script() {
+        try {
 
-            Batch_Registration_Authority.synchronize_batch_with_authority();
+            Batch_Registration_Authority.synchronize();
 
-            synchronize_mac_address_with_authority();
-            synchronize_device_with_authority();
+            synchronize_mac();
+            synchronize_hardware();
 
-            return GlobalResult.result_ok();
+            return okEmpty();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return internalServerError(e);
         }
     }
 
-    public static boolean check_if_value_is_registered(String value, String type){
+    public static boolean check_if_value_is_registered(String value, String type) {
 
         // type == "board_id" or "mac_address"
 
@@ -87,7 +82,7 @@ public class Hardware_Registration_Authority extends Controller {
         whereQuery_board_id.put( type ,value);
         Document device_id_already_registered = collection.find(whereQuery_board_id).first();
 
-        if(device_id_already_registered != null) {
+        if (device_id_already_registered != null) {
             return true;
         }
 
@@ -95,39 +90,39 @@ public class Hardware_Registration_Authority extends Controller {
     }
 
     // Před uložením desky - je nejprve proveden dotaz zda může být uložena!
-    public static boolean register_device(Model_Board board, Model_TypeOfBoard typeOfBoard, Model_TypeOfBoard_Batch batch){
+    public static boolean register_device(Model_Hardware hardware, Model_TypeOfBoard typeOfBoard, Model_TypeOfBoard_Batch batch) {
 
-        terminal_logger_registration.info("Registration new Device " + board.id);
+        logger.info("Registration new Device " + hardware.id);
 
         // Kontroluji Device ID
-        if (check_if_value_is_registered(board.id,"board_id")) {
-            terminal_logger_registration.error("Hardware_Registration_Authority:: check_if_value_is_registered:: Collection name:: " + DM_Board_Registration_Central_Authority.COLLECTION_NAME);
-            terminal_logger_registration.error("Hardware_Registration_Authority:: check_if_value_is_registered:: In Database is registered device with Same device ID!");
-            synchronize_mac_address_with_authority();
-            synchronize_device_with_authority();
+        if (check_if_value_is_registered(hardware.full_id,"board_id")) {
+            logger.error("Hardware_Registration_Authority:: check_if_value_is_registered:: Collection name:: " + DM_Board_Registration_Central_Authority.COLLECTION_NAME);
+            logger.error("Hardware_Registration_Authority:: check_if_value_is_registered:: In Database is registered device with Same device ID!");
+            synchronize_mac();
+            synchronize_hardware();
             return false;
         }
 
         // Kontroluji Mac Addresu
         BasicDBObject whereQuery_mac = new BasicDBObject();
-        whereQuery_mac.put("mac_address", board.id);
+        whereQuery_mac.put("mac_address", hardware.id);
         Document mac_address_already_registered = collection.find(whereQuery_mac).first();
 
-        if(mac_address_already_registered != null) {
-            terminal_logger_registration.error("Collection name:: " + DM_Board_Registration_Central_Authority.COLLECTION_NAME);
-            terminal_logger_registration.error("Hardware_Registration_Authority:: register_device:: ");
-            synchronize_mac_address_with_authority();
-            synchronize_device_with_authority();
+        if (mac_address_already_registered != null) {
+            logger.error("Collection name:: " + DM_Board_Registration_Central_Authority.COLLECTION_NAME);
+            logger.error("Hardware_Registration_Authority:: register_device:: ");
+            synchronize_mac();
+            synchronize_hardware();
             return false;
         }
 
         DM_Board_Registration_Central_Authority board_registration_central_authority = new DM_Board_Registration_Central_Authority();
-        board_registration_central_authority.board_id = board.id;
-        board_registration_central_authority.mac_address = board.mac_address;
-        board_registration_central_authority.hash_for_adding = board.hash_for_adding;
-        board_registration_central_authority.personal_name = board.name;
+        board_registration_central_authority.board_id = hardware.full_id;
+        board_registration_central_authority.mac_address = hardware.mac_address;
+        board_registration_central_authority.hash_for_adding = hardware.hash_for_adding;
+        board_registration_central_authority.personal_name = hardware.name;
         board_registration_central_authority.type_of_board_compiler_target_name =  typeOfBoard.compiler_target_name;
-        board_registration_central_authority.date_of_create = ((Long)board.date_of_create.getTime()).toString();
+        board_registration_central_authority.created = ((Long)hardware.created.getTime()).toString();
         board_registration_central_authority.revision = batch.revision;
         board_registration_central_authority.production_batch = batch.production_batch;
         board_registration_central_authority.date_of_assembly = batch.date_of_assembly;
@@ -135,8 +130,8 @@ public class Hardware_Registration_Authority extends Controller {
         board_registration_central_authority.pcb_manufacture_id = batch.pcb_manufacture_id;
         board_registration_central_authority.assembly_manufacture_name = batch.assembly_manufacture_name;
         board_registration_central_authority.assembly_manufacture_id = batch.assembly_manufacture_id;
-        board_registration_central_authority.mqtt_username = board.mqtt_username;
-        board_registration_central_authority.mqtt_password = board.mqtt_password;
+        board_registration_central_authority.mqtt_username = hardware.mqtt_username;
+        board_registration_central_authority.mqtt_password = hardware.mqtt_password;
 
         // Validation test - simulation of save and get from
 
@@ -144,15 +139,10 @@ public class Hardware_Registration_Authority extends Controller {
             String string_json = Json.toJson(board_registration_central_authority).toString();
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
 
-            final Form<DM_Board_Registration_Central_Authority> form = Form.form(DM_Board_Registration_Central_Authority.class).bind(json);
-            if (form.hasErrors()) {
-                terminal_logger_start.error("Hardware_Registration_Authority:: Document Registration and Validation test " + string_json);
-                terminal_logger_start.error("Hardware_Registration_Authority:: Probably some value is missing in by Required object " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-                return false;
-            }
+            Json.fromJson(json, DM_Board_Registration_Central_Authority.class);
 
         } catch (Exception e) {
-            terminal_logger_registration.internalServerError(e);
+            logger.internalServerError(e);
             return false;
         }
 
@@ -164,15 +154,15 @@ public class Hardware_Registration_Authority extends Controller {
 
 
 
-    public static void synchronize_mac_address_with_authority(){
+    public static void synchronize_mac() {
 
-        terminal_logger_start.info("Hardware_Registration_Authority:: synchronize_mac_address_with_authority");
+        logger.info("Hardware_Registration_Authority:: synchronize_mac");
 
-        List<Model_TypeOfBoard_Batch> batches = Model_TypeOfBoard_Batch.find.where().eq("removed_by_user", false).findList();
+        List<Model_TypeOfBoard_Batch> batches = Model_TypeOfBoard_Batch.find.query().where().eq("deleted", false).findList();
 
-        terminal_logger_start.info("Hardware_Registration_Authority:: Batches for Check: " + batches.size());
+        logger.info("Hardware_Registration_Authority:: Batches for Check: " + batches.size());
 
-        for(Model_TypeOfBoard_Batch batch : batches){
+        for (Model_TypeOfBoard_Batch batch : batches) {
             try {
 
                 BasicDBObject whereQuery_mac = new BasicDBObject();
@@ -180,37 +170,37 @@ public class Hardware_Registration_Authority extends Controller {
                 whereQuery_mac.put("production_batch", batch.production_batch);
 
 
-                if(batch.latest_used_mac_address == null){
+                if (batch.latest_used_mac_address == null) {
                     batch.latest_used_mac_address = batch.mac_address_start;
                     batch.update();
                 }
 
                 Document mac_address_already_registered = collection.find(whereQuery_mac).sort(descending("mac_address")).first();
 
-                if(mac_address_already_registered != null){
+                if (mac_address_already_registered != null) {
 
                     String latest_used_mac_address = (String) mac_address_already_registered.get("mac_address");
                     Long latest_from_mongo = Long.parseLong(latest_used_mac_address.replace(":",""),16);
 
-                    terminal_logger_start.info("Hardware_Registration_Authority::  Latest Used Mac Address Mongo: " + mac_address_already_registered.get("mac_address"));
-                    terminal_logger_start.info("Hardware_Registration_Authority::  Latest Used Mac Address Mongo: in Long:  " + latest_from_mongo);
+                    logger.info("Hardware_Registration_Authority::  Latest Used Mac Address Mongo: " + mac_address_already_registered.get("mac_address"));
+                    logger.info("Hardware_Registration_Authority::  Latest Used Mac Address Mongo: in Long:  " + latest_from_mongo);
 
-                    terminal_logger_start.info("Hardware_Registration_Authority::  Latest Used Mac Address Local: " + Model_TypeOfBoard_Batch.convert_to_MAC_ISO(batch.latest_used_mac_address));
-                    terminal_logger_start.info("Hardware_Registration_Authority::  Latest Used Mac Address Local Database in Long:  " + batch.latest_used_mac_address);
+                    logger.info("Hardware_Registration_Authority::  Latest Used Mac Address Local: " + Model_TypeOfBoard_Batch.convert_to_MAC_ISO(batch.latest_used_mac_address));
+                    logger.info("Hardware_Registration_Authority::  Latest Used Mac Address Local Database in Long:  " + batch.latest_used_mac_address);
 
 
-                     if(!batch.latest_used_mac_address.equals( latest_from_mongo)) {
-                         terminal_logger_start.warn("Hardware_Registration_Authority::  Its Required shift Mac Address UP ");
+                     if (!batch.latest_used_mac_address.equals( latest_from_mongo)) {
+                         logger.warn("Hardware_Registration_Authority::  Its Required shift Mac Address UP ");
                          batch.latest_used_mac_address = latest_from_mongo;
                          batch.update();
                      }
 
-                }else {
-                    terminal_logger_start.error("Hardware_Registration_Authority:: mac_address_already_registered not find by Filter parameters from local database!");
+                } else {
+                    logger.error("Hardware_Registration_Authority:: mac_address_already_registered not find by Filter parameters from local database!");
                 }
 
-            }catch (Exception e){
-                terminal_logger_start.internalServerError(e);
+            } catch (Exception e) {
+                logger.internalServerError(e);
             }
         }
     }
@@ -220,9 +210,9 @@ public class Hardware_Registration_Authority extends Controller {
         pomocí URL GET z routru. V rámci časových úspor byla zvolena strategie kdy v každé databázi je nutné vytvořit typ desky a výrobní kolekci, které mají shodné názvy,
         (Tím je zamezeno synchronizaci, když o ní člověk nestojí) - Demodata mohou být snadnou alternativou, jak vytvořit výchozí pozici a synchronizaci.
      */
-    public static void synchronize_device_with_authority(){
+    public static void synchronize_hardware() {
 
-        terminal_logger_start.warn(Enum_Terminal_Color.ANSI_YELLOW + "Hardware_Registration_Authority: Synchronize!" + Enum_Terminal_Color.ANSI_RESET);
+        logger.warn(Enum_Terminal_Color.ANSI_YELLOW + "Hardware_Registration_Authority: Synchronize!" + Enum_Terminal_Color.ANSI_RESET);
 
         MongoCursor<Document> cursor = collection.find().iterator();
         try {
@@ -232,68 +222,61 @@ public class Hardware_Registration_Authority extends Controller {
                     String string_json = cursor.next().toJson();
                     ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
 
-                    final Form<DM_Board_Registration_Central_Authority> form = Form.form(DM_Board_Registration_Central_Authority.class).bind(json);
-                    if (form.hasErrors()) {
-                        terminal_logger_start.error("Hardware_Registration_Authority:: Document Read " + string_json);
-                        terminal_logger_start.error("Hardware_Registration_Authority:: synchronize_device_with_authority:: Json from Mongo DB has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-                        break;
-                    }
+                    DM_Board_Registration_Central_Authority help = Json.fromJson(json, DM_Board_Registration_Central_Authority.class);
 
-                    DM_Board_Registration_Central_Authority help = form.get();
-
-                    Model_Board board = Model_Board.find.byId(help.board_id);
-                    if(board != null) {
+                    Model_Hardware board = Model_Hardware.getByFullId(help.board_id);
+                    if (board != null) {
                         continue;
                     }
 
-                    terminal_logger_start.info("Hardware_Registration_Authority:: There is Hardware, witch is not registered in local Database!" + string_json);
+                    logger.info("Hardware_Registration_Authority:: There is Hardware, witch is not registered in local Database!" + string_json);
 
                     // Nejdříve Najdeme jestli existuje typ desky - Ten se porovnává podle Target Name
                     // a revision name. Ty musí!!! být naprosto shodné!!!
-                    Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.where().eq("compiler_target_name", help.type_of_board_compiler_target_name).findUnique();
+                    Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.query().where().eq("compiler_target_name", help.type_of_board_compiler_target_name).findOne();
 
-                    if(typeOfBoard == null) {
-                        terminal_logger_start.error("Hardware_Registration_Authority: synchronize_device_with_authority:: Something is wrong! System try to register Byzance-hardware to local database, but " +
+                    if (typeOfBoard == null) {
+                        logger.error("Hardware_Registration_Authority: synchronize_hardware:: Something is wrong! System try to register Byzance-hardware to local database, but " +
                                 ". \"compiler_target_name:\" " + help.type_of_board_compiler_target_name +
                                 " not find in Database - Please Create it!"
                         );
 
-                        terminal_logger_start.error("Hardware_Registration_Authority:: synchronize_device_with_authority:: Synchronize process not continue!");
+                        logger.error("Hardware_Registration_Authority:: synchronize_hardware:: Synchronize process not continue!");
                         break;
                     }
 
-                    Model_TypeOfBoard_Batch typeOfBoard_batch = Model_TypeOfBoard_Batch.find.where().eq("type_of_board.id", typeOfBoard.id).eq("revision", help.revision).eq("production_batch", help.production_batch).findUnique();
-                    if(typeOfBoard_batch == null) {
-                        terminal_logger_start.error("Hardware_Registration_Authority: Something is wrong! System try to register Byzance-hardware to local database, but " +
+                    Model_TypeOfBoard_Batch typeOfBoard_batch = Model_TypeOfBoard_Batch.find.query().where().eq("type_of_board.id", typeOfBoard.id).eq("revision", help.revision).eq("production_batch", help.production_batch).findOne();
+                    if (typeOfBoard_batch == null) {
+                        logger.error("Hardware_Registration_Authority: Something is wrong! System try to register Byzance-hardware to local database, but " +
                                 " typeOfBoard_batch with required parameters \"revision:\" " + help.revision +
                                 " \"production_batch:\"" + help.production_batch +
                                 " for type of Board " + typeOfBoard.name +
                                 " not find in Database - Please Create it! Before. Mac Address will be synchronize after."
                         );
-                        terminal_logger_start.error("Hardware_Registration_Authority:: synchronize_device_with_authority:: Synchronize process not continue!");
+                        logger.error("Hardware_Registration_Authority:: synchronize_hardware:: Synchronize process not continue!");
                         break;
                     }
 
-                    board = new Model_Board();
-                    board.id = help.board_id;
+                    board = new Model_Hardware();
+                    board.full_id = help.board_id;
                     board.mac_address = help.mac_address;
                     board.hash_for_adding = help.hash_for_adding;
                     board.name = help.personal_name;
                     board.mqtt_username = help.mqtt_username;
                     board.mqtt_password = help.mqtt_password;
                     board.is_active = false;
-                    board.date_of_create = new Date(new Long(help.date_of_create));
+                    board.created = new Date(new Long(help.created));
                     board.type_of_board = typeOfBoard;
                     board.batch_id = typeOfBoard_batch.id.toString();
                     board.save();
 
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
 
-            terminal_logger_start.warn(Enum_Terminal_Color.ANSI_YELLOW + "Hardware_Registration_Authority: Synchronize Done!" + Enum_Terminal_Color.ANSI_RESET);
-        }catch (Exception e){
+            logger.warn(Enum_Terminal_Color.ANSI_YELLOW + "Hardware_Registration_Authority: Synchronize Done!" + Enum_Terminal_Color.ANSI_RESET);
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             cursor.close();

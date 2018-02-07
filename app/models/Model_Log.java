@@ -1,51 +1,38 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
+import utilities.model.NamedModel;
 
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import java.util.Date;
 import java.util.UUID;
 
 @Entity
 @ApiModel(description = "Model of Log",
         value = "Log")
 @Table(name="Log")
-public class Model_Log extends Model{
+public class Model_Log extends NamedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                        @Id public String id;
-                            public String name;
-                            public Date created;
                             public String type; // "tyrion", "homer"
 
-      @JsonIgnore @OneToOne public Model_FileRecord file;
+      @JsonIgnore @OneToOne public Model_Blob file;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
-    public void save() {
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (Model_Log.find.byId(this.id) == null) break;
-        }
-        super.save();
-    }
 
     @JsonIgnore @Override
-    public void delete() {
+    public boolean delete() { // TODO better
 
-        Model_FileRecord file = this.file;
+        Model_Blob file = this.file;
 
         this.file = null;
         this.update();
@@ -53,7 +40,7 @@ public class Model_Log extends Model{
         file.refresh();
         file.delete();
 
-        super.delete();
+        return super.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -67,6 +54,6 @@ public class Model_Log extends Model{
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String,Model_Log> find = new Model.Finder<>(Model_Log.class);
+    public static Finder<UUID, Model_Log> find = new Finder<>(Model_Log.class);
 
 }
