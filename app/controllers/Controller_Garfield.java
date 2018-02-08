@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.Model_Garfield;
 import models.Model_Hardware;
-import models.Model_TypeOfBoard_Batch;
+import models.Model_HardwareBatch;
 import play.data.Form;
 import play.data.FormFactory;
 import play.libs.Json;
@@ -67,7 +67,7 @@ public class Controller_Garfield extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result edit_Garfield(@ApiParam(required = true) String garfield_id) {
         try {
@@ -124,7 +124,7 @@ public class Controller_Garfield extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result create_Garfield() {
         try {
@@ -144,7 +144,7 @@ public class Controller_Garfield extends BaseController {
             garfield.print_label_id_2 =  help.print_label_id_2;  // 24 mm
             garfield.print_sticker_id =  help.print_sticker_id; // 65 mm
 
-            garfield.type_of_board_id = help.type_of_board_id;
+            garfield.hardware_type_id = help.hardware_type_id;
             garfield.producer_id = help.producer_id;
 
             // Kontrola oprávnění
@@ -171,7 +171,7 @@ public class Controller_Garfield extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result remove_Garfield(@ApiParam(required = true) String garfield_id) {
         try {
@@ -206,7 +206,7 @@ public class Controller_Garfield extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result get_Garfield(@ApiParam(required = true) String garfield_id) {
         try {
@@ -238,7 +238,7 @@ public class Controller_Garfield extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result print_label(@ApiParam(required = true) String board_id) {
         try {
@@ -248,7 +248,7 @@ public class Controller_Garfield extends BaseController {
             Model_Hardware hardware = Model_Hardware.getById(board_id);
             if (hardware == null ) {
                 logger.error("print_label:: Device ID not found");
-                return notFound("Board board_id not found");
+                return notFound("Hardware not found");
             }
 
             // Kontrola oprávnění
@@ -257,16 +257,16 @@ public class Controller_Garfield extends BaseController {
                 return forbiddenEmpty();
             }
 
-            Model_TypeOfBoard_Batch batch = Model_TypeOfBoard_Batch.getById(hardware.batch_id);
+            Model_HardwareBatch batch = Model_HardwareBatch.getById(hardware.batch_id);
             if (batch == null) {
-                logger.error("print_label:: Device missing Model_TypeOfBoard_Batch");
-                return notFound("Model_TypeOfBoard_Batch " + hardware.batch_id + " not found");
+                logger.error("print_label:: Device missing Batch");
+                return notFound("Batch " + hardware.batch_id + " not found");
             }
 
             // TODO tady je potřeba pohlídat online tiskárny - tiskne se na prvním garfieldovy - to není uplně super cool věc
             // Zrovna mě ale nenapadá jak v rozumném čase doprogramovat řešení lépe - snad jen pomocí selektoru tiskáren???
             // Tím pádem bude potřeba mít tiskárny trochu lépe pošéfované
-            List<Model_Garfield> garfields = Model_Garfield.find.query().where().eq("type_of_board_id", hardware.type_of_board_id()).select("id").findList();
+            List<Model_Garfield> garfields = Model_Garfield.find.query().where().eq("hardware_type_id", hardware.hardware_type_id()).select("id").findList();
             if (garfields.isEmpty()) {
                 logger.error("print_label:: garfields for this type of hardware not found");
                 return notFound("Garfield for this type of hardware not found");
@@ -325,7 +325,7 @@ public class Controller_Garfield extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result get_Garfield_list() {
         try {
@@ -357,7 +357,7 @@ public class Controller_Garfield extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result online_state_Printer(@ApiParam(required = true) String garfield_id, @ApiParam(required = true) Integer printer_id) {
         try {
@@ -399,7 +399,7 @@ public class Controller_Garfield extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result print_test_Printer(@ApiParam(required = true) String garfield_id, @ApiParam(required = true) Integer printer_id) {
         try {
@@ -426,9 +426,9 @@ public class Controller_Garfield extends BaseController {
                 Model_Hardware board = new Model_Hardware();
                 board.id = UUID.randomUUID();
                 board.full_id = "123456789123456789123456";
-                board.hash_for_adding = Model_Hardware.generate_hash();
+                board.registration_hash = Model_Hardware.generate_hash();
 
-                Model_TypeOfBoard_Batch info = new Model_TypeOfBoard_Batch();
+                Model_HardwareBatch info = new Model_HardwareBatch();
                 info.revision = "1.9.9";
                 info.production_batch = "1.9.9";
                 info.date_of_assembly = "1.9.9";

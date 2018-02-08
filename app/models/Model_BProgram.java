@@ -9,7 +9,7 @@ import org.ehcache.Cache;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.logger.Logger;
-import utilities.model.NamedModel;
+import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.swagger.output.Swagger_B_Program_Version;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel(value = "BProgram", description = "Model of BProgram")
 @Table(name="BProgram")
-public class Model_BProgram extends NamedModel {
+public class Model_BProgram extends TaggedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -33,8 +33,6 @@ public class Model_BProgram extends NamedModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Project project;
     @JsonIgnore @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Version> versions = new ArrayList<>();
-
-    @ManyToMany public List<Model_Tag> tags = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -80,17 +78,17 @@ public class Model_BProgram extends NamedModel {
 
             state.online_state = Model_HomerInstance.getById(instance_id()).online_state();
 
-            if (Server.server_mode == Enum_Tyrion_Server_mode.developer && instance().get_current_snapshot() != null) {
+            if (Server.server_mode == Enum_Tyrion_Server_mode.developer && instance().getCurrentSnapshot() != null) {
                 // /#token - frontend pouze nahradí substring - můžeme tedy do budoucna za adresu přidávat další parametry
                 state.instance_remote_url = "ws://" + Model_HomerServer.getById(instance().server_id()).get_WebView_APP_URL() + instance_id() + "/#token";
             } else {
                 state.instance_remote_url = "wss://" + Model_HomerServer.getById(instance().server_id()).get_WebView_APP_URL()  + instance_id() + "/#token";
             }
 
-            if (instance().get_current_snapshot() != null) {
+            if (instance().getCurrentSnapshot() != null) {
                 // Jaká verze Blocko Programu je aktuální?
-                state.version_id = instance().get_current_snapshot().get_b_program_version().id;
-                state.name = instance().get_current_snapshot().get_b_program_version().name;
+                state.version_id = instance().getCurrentSnapshot().get_b_program_version().id;
+                state.name = instance().getCurrentSnapshot().get_b_program_version().name;
 
                 // Vracím naposledy použitou - Becki si to vyřeší sama
             } else if (!instance().instance_history.isEmpty()) {
@@ -129,7 +127,7 @@ public class Model_BProgram extends NamedModel {
 
         b_program_version.m_project_program_snapshots = version.b_program_version_snapshots;
 
-        Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version.id).eq("file_name", "blocko.json").findOne();
+        Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version.id).eq("name", "blocko.json").findOne();
         if (fileRecord != null) b_program_version.program             = fileRecord.get_fileRecord_from_Azure_inString();
 
         return b_program_version;
@@ -173,7 +171,7 @@ public class Model_BProgram extends NamedModel {
     @JsonIgnore @Override
     public void save() {
         
-        this.azure_b_program_link = project.get_path() + "/b-programs/"  + UUID.randomUUID().toString();
+        this.azure_b_program_link = project.getPath() + "/b-programs/"  + UUID.randomUUID().toString();
 
         project.cache_b_program_ids.add(this.id);
 

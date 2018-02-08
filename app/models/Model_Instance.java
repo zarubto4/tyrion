@@ -17,7 +17,7 @@ import utilities.cache.Cached;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.logger.Logger;
-import utilities.model.NamedModel;
+import utilities.model.TaggedModel;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_instance_with_tyrion.verification.WS_Message_Grid_token_verification;
@@ -31,7 +31,7 @@ import java.util.*;
 @Entity
 @ApiModel(description = "Model of Instance", value = "Instance")
 @Table(name="Instance")
-public class Model_Instance extends NamedModel {
+public class Model_Instance extends TaggedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -47,8 +47,6 @@ public class Model_Instance extends NamedModel {
 
     @OneToMany(mappedBy = "instance", cascade = CascadeType.ALL)
     public List<Model_InstanceSnapshot> snapshots = new ArrayList<>();
-
-    @ManyToMany public List<Model_Tag> tags = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -123,7 +121,7 @@ public class Model_Instance extends NamedModel {
 
         // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
         // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
-        if (get_current_snapshot() == null) {
+        if (getCurrentSnapshot() == null) {
 
             if (snapshots.isEmpty()) {
                 return NetworkStatus.NOT_YET_FIRST_CONNECTED;
@@ -182,7 +180,7 @@ public class Model_Instance extends NamedModel {
     public String instance_remote_url() {
         try {
 
-            if (get_current_snapshot() != null) {
+            if (getCurrentSnapshot() != null) {
 
                 if (Server.mode  == ServerMode.DEVELOPER) {
                     return "ws://" + Model_HomerServer.getById(server_id()).server_url + ":" + Model_HomerServer.getById(server_id()).web_view_port + "/" + id + "/#token";
@@ -204,13 +202,13 @@ public class Model_Instance extends NamedModel {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public Model_Project get_project() {
+    public Model_Project getProject() {
 
         return Model_Project.getById(project_id());
     }
 
     @JsonIgnore
-    public Model_InstanceSnapshot get_current_snapshot() {
+    public Model_InstanceSnapshot getCurrentSnapshot() {
 
         if (this.current_snapshot_id != null) {
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(this.current_snapshot_id);
@@ -223,7 +221,7 @@ public class Model_Instance extends NamedModel {
 
     @JsonIgnore
     public List<UUID> getHardwareIds() {
-        return get_current_snapshot().getHardwareIds();
+        return getCurrentSnapshot().getHardwareIds();
     }
 
 /* JSON Override  Method -----------------------------------------------------------------------------------------*/
@@ -482,17 +480,17 @@ public class Model_Instance extends NamedModel {
     //-- Helper Commands --//
     @JsonIgnore
     public void deploy() {
-        get_current_snapshot().deploy();
+        getCurrentSnapshot().deploy();
     }
 
     @JsonIgnore
     public void stop() {
 
         cache_status.put(this.id, false);
-        WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, true, get_project().id);
+        WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, true, getProject().id);
 
-        if (get_current_snapshot() != null) {
-            get_current_snapshot().stop();
+        if (getCurrentSnapshot() != null) {
+            getCurrentSnapshot().stop();
             this.current_snapshot_id = null;
             this.update();
         }
@@ -635,11 +633,11 @@ public class Model_Instance extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   public boolean create_permission() { return get_project().read_permission()   || BaseController.person().has_permission("Instance_create"); }
-    @JsonProperty public boolean update_permission() { return get_project().update_permission() || BaseController.person().has_permission("Instance_update"); }
-    @JsonIgnore   public boolean read_permission()   { return get_project().read_permission()   || BaseController.person().has_permission("Instance_read"); }
-    @JsonProperty public boolean edit_permission()   { return get_project().edit_permission()   || BaseController.person().has_permission("Instance_edit"); }
-    @JsonProperty public boolean delete_permission() { return get_project().delete_permission() || BaseController.person().has_permission("Instance_delete"); }
+    @JsonIgnore   public boolean create_permission() { return getProject().read_permission()   || BaseController.person().has_permission("Instance_create"); }
+    @JsonProperty public boolean update_permission() { return getProject().update_permission() || BaseController.person().has_permission("Instance_update"); }
+    @JsonIgnore   public boolean read_permission()   { return getProject().read_permission()   || BaseController.person().has_permission("Instance_read"); }
+    @JsonProperty public boolean edit_permission()   { return getProject().edit_permission()   || BaseController.person().has_permission("Instance_edit"); }
+    @JsonProperty public boolean delete_permission() { return getProject().delete_permission() || BaseController.person().has_permission("Instance_delete"); }
 
     public enum Permission { Instance_create, Instance_read, Instance_edit, Instance_update, Instance_delete }
 

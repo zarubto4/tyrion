@@ -13,12 +13,12 @@ import utilities.authentication.Authentication;
 import utilities.enums.TokenType;
 import utilities.enums.PlatformAccess;
 import utilities.financial.FinancialPermission;
+import utilities.swagger.input.Swagger_EmailAndPassword;
 import utilities.swagger.output.Swagger_Blocko_Token_validation_result;
 import utilities.swagger.output.Swagger_Login_Token;
 import utilities.swagger.output.Swagger_Person_All_Details;
 import utilities.threads.Check_Online_Status_after_user_login;
 import utilities.logger.Logger;
-import utilities.swagger.input.Swagger_Login;
 import utilities.swagger.input.Swagger_Blocko_Token_validation_request;
 import websocket.interfaces.WS_Portal;
 
@@ -124,7 +124,7 @@ public class Controller_Security extends BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Login",
+                            dataType = "utilities.swagger.input.Swagger_EmailAndPassword",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -143,14 +143,14 @@ public class Controller_Security extends BaseController {
         try {
 
             // Kontrola JSON
-            final Form<Swagger_Login> form = formFactory.form(Swagger_Login.class).bindFromRequest();
+            final Form<Swagger_EmailAndPassword> form = formFactory.form(Swagger_EmailAndPassword.class).bindFromRequest();
             if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Login help = form.get();
+            Swagger_EmailAndPassword help = form.get();
 
             // Ověření Person - Heslo a email
-            Model_Person person = Model_Person.getByEmail(help.mail);
+            Model_Person person = Model_Person.getByEmail(help.email);
             if (person == null || !person.checkPassword(help.password)) {
-                logger.trace("Email {} or password are wrong", help.mail);
+                logger.trace("Email {} or password are wrong", help.email);
                 return forbidden("Email or password is wrong");
             }
 

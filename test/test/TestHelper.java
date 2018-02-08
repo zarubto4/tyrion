@@ -434,10 +434,10 @@ public class TestHelper extends Controller{
 
     // TYPE_OF_BOARD ###################################################################################################
 
-    public static Model_TypeOfBoard type_of_board_create(Model_Producer producer, Model_Processor processor) {
+    public static Model_HardwareType type_of_board_create(Model_Producer producer, Model_Processor processor) {
         try {
 
-            Model_TypeOfBoard typeOfBoard = new Model_TypeOfBoard();
+            Model_HardwareType typeOfBoard = new Model_HardwareType();
             typeOfBoard.name = UUID.randomUUID().toString();
             typeOfBoard.description = UUID.randomUUID().toString();
             typeOfBoard.compiler_target_name = UUID.randomUUID().toString();
@@ -451,7 +451,7 @@ public class TestHelper extends Controller{
             Model_CProgram default_program = new Model_CProgram();
             default_program.name = UUID.randomUUID().toString();
             default_program.description = UUID.randomUUID().toString();
-            default_program.type_of_board_default = typeOfBoard;
+            default_program.hardware_type_default = typeOfBoard;
 
             default_program.save();
             default_program.refresh();
@@ -473,7 +473,7 @@ public class TestHelper extends Controller{
         }
     }
 
-    public static void type_of_board_delete(Model_TypeOfBoard typeOfBoard) {
+    public static void type_of_board_delete(Model_HardwareType typeOfBoard) {
         try {
 
             typeOfBoard.delete();
@@ -487,14 +487,14 @@ public class TestHelper extends Controller{
 
     // C_PROGRAM #######################################################################################################
 
-    public static Model_CProgram private_c_program_create(Model_TypeOfBoard typeOfBoard, Model_Project project) {
+    public static Model_CProgram private_c_program_create(Model_HardwareType typeOfBoard, Model_Project project) {
         try {
 
             Model_CProgram c_program        = new Model_CProgram();
             c_program.name                  = UUID.randomUUID().toString();
             c_program.description           = UUID.randomUUID().toString();
             c_program.date_of_create        = new Date();
-            c_program.type_of_board         = typeOfBoard;
+            c_program.hardware_type = typeOfBoard;
             c_program.project               = project;
 
             c_program.save();

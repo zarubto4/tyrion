@@ -12,8 +12,8 @@ public enum GarfieldBurningState {
 
     public static GarfieldBurningState get_state(String value) {
 
-        if (value.equalsIgnoreCase("complete")) return COMPLETE;
-        else if (value.equalsIgnoreCase("in_progress")) return IN_PROGRESS;
+        if (value.equalsIgnoreCase("COMPLETE")) return COMPLETE;
+        else if (value.equalsIgnoreCase("IN_PROGRESS")) return IN_PROGRESS;
         else if (value.equalsIgnoreCase("broken_device")) return BROKEN_DEVICE;
         else if (value.equalsIgnoreCase("unknown_error")) return UNKNOWN_ERROR;
         else return null;

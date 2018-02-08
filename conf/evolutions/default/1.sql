@@ -3,23 +3,6 @@
 
 # --- !Ups
 
-create table actualizationprocedure (
-  id                            uuid not null,
-  created                       timestamptz,
-  updated                       timestamptz,
-  removed                       timestamptz,
-  state                         varchar(19),
-  instance_id                   uuid,
-  date_of_planing               timestamptz,
-  date_of_finish                timestamptz,
-  type_of_update                varchar(41),
-  project_id                    uuid,
-  deleted                       boolean default false not null,
-  constraint ck_actualizationprocedure_state check ( state in ('complete_with_error','canceled','in_progress','successful_complete','complete','not_start_yet')),
-  constraint ck_actualizationprocedure_type_of_update check ( type_of_update in ('AUTOMATICALLY_BY_USER_ALWAYS_UP_TO_DATE','AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE','MANUALLY_RELEASE_MANAGER','MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME','MANUALLY_BY_USER','MANUALLY_BY_USER_BLOCKO_GROUP')),
-  constraint pk_actualizationprocedure primary key (id)
-);
-
 create table authorizationtoken (
   id                            uuid not null,
   created                       timestamptz,
@@ -64,8 +47,9 @@ create table blob (
   created                       timestamptz,
   updated                       timestamptz,
   removed                       timestamptz,
-  file_name                     varchar(255),
-  file_path                     varchar(255),
+  name                          varchar(255),
+  path                          varchar(255),
+  container                     varchar(255),
   boot_loader_id                uuid,
   version_id                    uuid,
   deleted                       boolean default false not null,
@@ -125,11 +109,11 @@ create table bootloader (
   description                   TEXT,
   version_identifier            varchar(255),
   changing_note                 TEXT,
-  type_of_board_id              uuid,
-  main_type_of_board_id         uuid,
+  hardware_type_id              uuid,
+  main_hardware_type_id         uuid,
   azure_product_link            varchar(255),
   deleted                       boolean default false not null,
-  constraint uq_bootloader_main_type_of_board_id unique (main_type_of_board_id),
+  constraint uq_bootloader_main_hardware_type_id unique (main_hardware_type_id),
   constraint pk_bootloader primary key (id)
 );
 
@@ -141,16 +125,16 @@ create table cprogram (
   name                          varchar(255),
   description                   TEXT,
   project_id                    uuid,
-  type_of_board_id              uuid,
+  hardware_type_id              uuid,
   publish_type                  varchar(15),
-  type_of_board_default_id      uuid,
-  type_of_board_test_id         uuid,
+  hardware_type_default_id      uuid,
+  hardware_type_test_id         uuid,
   example_library_id            uuid,
   azure_c_program_link          varchar(255),
   deleted                       boolean default false not null,
   constraint ck_cprogram_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
-  constraint uq_cprogram_type_of_board_default_id unique (type_of_board_default_id),
-  constraint uq_cprogram_type_of_board_test_id unique (type_of_board_test_id),
+  constraint uq_cprogram_hardware_type_default_id unique (hardware_type_default_id),
+  constraint uq_cprogram_hardware_type_test_id unique (hardware_type_test_id),
   constraint pk_cprogram primary key (id)
 );
 
@@ -158,28 +142,6 @@ create table cprogram_tag (
   cprogram_id                   uuid not null,
   tag_id                        uuid not null,
   constraint pk_cprogram_tag primary key (cprogram_id,tag_id)
-);
-
-create table cprogramupdateplan (
-  id                            uuid not null,
-  created                       timestamptz,
-  updated                       timestamptz,
-  removed                       timestamptz,
-  actualization_procedure_id    uuid,
-  date_of_finish                timestamptz,
-  board_id                      uuid,
-  firmware_type                 varchar(10),
-  c_program_version_for_update_id uuid,
-  bootloader_id                 uuid,
-  binary_file_id                uuid,
-  state                         varchar(28),
-  count_of_tries                integer,
-  error                         varchar(255),
-  error_code                    integer,
-  deleted                       boolean default false not null,
-  constraint ck_cprogramupdateplan_firmware_type check ( firmware_type in ('BACKUP','FIRMWARE','BOOTLOADER','WIFI')),
-  constraint ck_cprogramupdateplan_state check ( state in ('canceled','in_progress','waiting_for_device','homer_server_never_connected','overwritten','bin_file_not_found','not_updated','homer_server_is_offline','complete','instance_inaccessible','critical_error','not_start_yet')),
-  constraint pk_cprogramupdateplan primary key (id)
 );
 
 create table changepropertytoken (
@@ -266,8 +228,9 @@ create table garfield (
   print_label_id_1              integer,
   print_label_id_2              integer,
   print_sticker_id              integer,
-  type_of_board_id              uuid,
+  hardware_type_id              uuid,
   producer_id                   uuid,
+  configurations                TEXT,
   deleted                       boolean default false not null,
   constraint uq_garfield_hardware_tester_id unique (hardware_tester_id),
   constraint pk_garfield primary key (id)
@@ -298,12 +261,10 @@ create table hardware (
   name                          varchar(255),
   description                   TEXT,
   full_id                       varchar(255),
-  hash_for_adding               varchar(255),
   wifi_mac_address              varchar(255),
   mac_address                   varchar(255),
+  registration_hash             varchar(255),
   json_bootloader_core_configuration TEXT,
-  picture_id                    uuid,
-  date_of_user_registration     timestamptz,
   batch_id                      varchar(255),
   is_active                     boolean default false not null,
   mqtt_password                 varchar(255),
@@ -311,16 +272,56 @@ create table hardware (
   developer_kit                 boolean default false not null,
   backup_mode                   boolean default false not null,
   database_synchronize          boolean default false not null,
-  type_of_board_id              uuid,
-  project_id                    uuid,
+  hardware_type_id              uuid,
   actual_c_program_version_id   uuid,
   actual_backup_c_program_version_id uuid,
   actual_boot_loader_id         uuid,
   connected_server_id           uuid,
   connected_instance_id         uuid,
   deleted                       boolean default false not null,
-  constraint uq_hardware_picture_id unique (picture_id),
   constraint pk_hardware primary key (id)
+);
+
+create table hardwarebatch (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  revision                      varchar(255),
+  production_batch              varchar(255),
+  date_of_assembly              varchar(255),
+  pcb_manufacture_name          varchar(255),
+  pcb_manufacture_id            varchar(255),
+  assembly_manufacture_name     varchar(255),
+  assembly_manufacture_id       varchar(255),
+  customer_product_name         varchar(255),
+  customer_company_name         varchar(255),
+  customer_company_made_description varchar(255),
+  mac_address_start             bigint,
+  mac_address_end               bigint,
+  latest_used_mac_address       bigint,
+  ean_number                    bigint,
+  hardware_type_id              uuid,
+  description                   TEXT,
+  deleted                       boolean default false not null,
+  constraint pk_hardwarebatch primary key (id)
+);
+
+create table hardwarefeature (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  deleted                       boolean default false not null,
+  constraint pk_hardwarefeature primary key (id)
+);
+
+create table hardwarefeature_hardwaretype (
+  hardware_feature_id           uuid not null,
+  hardware_type_id              uuid not null,
+  constraint pk_hardwarefeature_hardwaretype primary key (hardware_feature_id,hardware_type_id)
 );
 
 create table hardwaregroup (
@@ -335,12 +336,6 @@ create table hardwaregroup (
   constraint pk_hardwaregroup primary key (id)
 );
 
-create table hardwaregroup_hardware (
-  hardware_group_id             uuid not null,
-  hardware_id                   uuid not null,
-  constraint pk_hardwaregroup_hardware primary key (hardware_group_id,hardware_id)
-);
-
 create table hardwareregistration (
   id                            uuid not null,
   created                       timestamptz,
@@ -349,9 +344,12 @@ create table hardwareregistration (
   name                          varchar(255),
   description                   TEXT,
   hardware_id                   uuid,
+  picture_id                    uuid,
   project_id                    uuid,
+  group_id                      uuid,
   deleted                       boolean default false not null,
   constraint uq_hardwareregistration_hardware_id unique (hardware_id),
+  constraint uq_hardwareregistration_picture_id unique (picture_id),
   constraint pk_hardwareregistration primary key (id)
 );
 
@@ -359,6 +357,46 @@ create table hardwareregistration_tag (
   hardware_registration_id      uuid not null,
   tag_id                        uuid not null,
   constraint pk_hardwareregistration_tag primary key (hardware_registration_id,tag_id)
+);
+
+create table hardwaretype (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  compiler_target_name          varchar(255),
+  producer_id                   uuid,
+  processor_id                  uuid,
+  connectible_to_internet       boolean,
+  picture_id                    uuid,
+  deleted                       boolean default false not null,
+  constraint uq_hardwaretype_compiler_target_name unique (compiler_target_name),
+  constraint uq_hardwaretype_picture_id unique (picture_id),
+  constraint pk_hardwaretype primary key (id)
+);
+
+create table hardwareupdate (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  actualization_procedure_id    uuid,
+  finished                      timestamptz,
+  hardware_id                   uuid,
+  firmware_type                 varchar(10),
+  c_program_version_for_update_id uuid,
+  bootloader_id                 uuid,
+  binary_file_id                uuid,
+  state                         varchar(28),
+  count_of_tries                integer,
+  error                         varchar(255),
+  error_code                    integer,
+  deleted                       boolean default false not null,
+  constraint ck_hardwareupdate_firmware_type check ( firmware_type in ('BACKUP','FIRMWARE','BOOTLOADER','WIFI')),
+  constraint ck_hardwareupdate_state check ( state in ('NOT_YET_STARTED','IN_PROGRESS','NOT_UPDATED','COMPLETE','INSTANCE_INACCESSIBLE','WAITING_FOR_DEVICE','CANCELED','BIN_FILE_MISSING','OBSOLETE','HOMER_SERVER_IS_OFFLINE','CRITICAL_ERROR','HOMER_SERVER_NEVER_CONNECTED')),
+  constraint pk_hardwareupdate primary key (id)
 );
 
 create table homerserver (
@@ -502,16 +540,16 @@ create table library (
   constraint pk_library primary key (id)
 );
 
-create table library_typeofboard (
-  library_id                    uuid not null,
-  type_of_board_id              uuid not null,
-  constraint pk_library_typeofboard primary key (library_id,type_of_board_id)
-);
-
 create table library_tag (
   library_id                    uuid not null,
   tag_id                        uuid not null,
   constraint pk_library_tag primary key (library_id,tag_id)
+);
+
+create table library_hardwaretype (
+  library_id                    uuid not null,
+  hardware_type_id              uuid not null,
+  constraint pk_library_hardwaretype primary key (library_id,hardware_type_id)
 );
 
 create table log (
@@ -884,64 +922,21 @@ create table tariff (
   constraint pk_tariff primary key (id)
 );
 
-create table typeofboard (
+create table updateprocedure (
   id                            uuid not null,
   created                       timestamptz,
   updated                       timestamptz,
   removed                       timestamptz,
-  name                          varchar(255),
-  description                   TEXT,
-  compiler_target_name          varchar(255),
-  producer_id                   uuid,
-  processor_id                  uuid,
-  connectible_to_internet       boolean,
-  picture_id                    uuid,
+  state                         varchar(19),
+  instance_id                   uuid,
+  date_of_planing               timestamptz,
+  date_of_finish                timestamptz,
+  type_of_update                varchar(41),
+  project_id                    uuid,
   deleted                       boolean default false not null,
-  constraint uq_typeofboard_compiler_target_name unique (compiler_target_name),
-  constraint uq_typeofboard_picture_id unique (picture_id),
-  constraint pk_typeofboard primary key (id)
-);
-
-create table boardfeature (
-  id                            uuid not null,
-  created                       timestamptz,
-  updated                       timestamptz,
-  removed                       timestamptz,
-  name                          varchar(255),
-  description                   TEXT,
-  deleted                       boolean default false not null,
-  constraint pk_boardfeature primary key (id)
-);
-
-create table boardfeature_typeofboard (
-  board_feature_id              uuid not null,
-  type_of_board_id              uuid not null,
-  constraint pk_boardfeature_typeofboard primary key (board_feature_id,type_of_board_id)
-);
-
-create table typeofboardbatch (
-  id                            uuid not null,
-  created                       timestamptz,
-  updated                       timestamptz,
-  removed                       timestamptz,
-  revision                      varchar(255),
-  production_batch              varchar(255),
-  date_of_assembly              varchar(255),
-  pcb_manufacture_name          varchar(255),
-  pcb_manufacture_id            varchar(255),
-  assembly_manufacture_name     varchar(255),
-  assembly_manufacture_id       varchar(255),
-  customer_product_name         varchar(255),
-  customer_company_name         varchar(255),
-  customer_company_made_description varchar(255),
-  mac_address_start             bigint,
-  mac_address_end               bigint,
-  latest_used_mac_address       bigint,
-  ean_number                    bigint,
-  type_of_board_id              uuid,
-  description                   TEXT,
-  deleted                       boolean default false not null,
-  constraint pk_typeofboardbatch primary key (id)
+  constraint ck_updateprocedure_state check ( state in ('complete_with_error','canceled','in_progress','successful_complete','complete','not_start_yet')),
+  constraint ck_updateprocedure_type_of_update check ( type_of_update in ('AUTOMATICALLY_BY_USER_ALWAYS_UP_TO_DATE','AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE','MANUALLY_RELEASE_MANAGER','MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME','MANUALLY_BY_USER','MANUALLY_BY_USER_BLOCKO_GROUP')),
+  constraint pk_updateprocedure primary key (id)
 );
 
 create table validationtoken (
@@ -1022,9 +1017,6 @@ create table gridwidgetversion (
   constraint pk_gridwidgetversion primary key (id)
 );
 
-alter table actualizationprocedure add constraint fk_actualizationprocedure_instance_id foreign key (instance_id) references instancesnapshot (id) on delete restrict on update restrict;
-create index ix_actualizationprocedure_instance_id on actualizationprocedure (instance_id);
-
 alter table authorizationtoken add constraint fk_authorizationtoken_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
 create index ix_authorizationtoken_person_id on authorizationtoken (person_id);
 
@@ -1063,20 +1055,20 @@ create index ix_blockversion_author_id on blockversion (author_id);
 alter table blockversion add constraint fk_blockversion_block_id foreign key (block_id) references block (id) on delete restrict on update restrict;
 create index ix_blockversion_block_id on blockversion (block_id);
 
-alter table bootloader add constraint fk_bootloader_type_of_board_id foreign key (type_of_board_id) references typeofboard (id) on delete restrict on update restrict;
-create index ix_bootloader_type_of_board_id on bootloader (type_of_board_id);
+alter table bootloader add constraint fk_bootloader_hardware_type_id foreign key (hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
+create index ix_bootloader_hardware_type_id on bootloader (hardware_type_id);
 
-alter table bootloader add constraint fk_bootloader_main_type_of_board_id foreign key (main_type_of_board_id) references typeofboard (id) on delete restrict on update restrict;
+alter table bootloader add constraint fk_bootloader_main_hardware_type_id foreign key (main_hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
 
 alter table cprogram add constraint fk_cprogram_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
 create index ix_cprogram_project_id on cprogram (project_id);
 
-alter table cprogram add constraint fk_cprogram_type_of_board_id foreign key (type_of_board_id) references typeofboard (id) on delete restrict on update restrict;
-create index ix_cprogram_type_of_board_id on cprogram (type_of_board_id);
+alter table cprogram add constraint fk_cprogram_hardware_type_id foreign key (hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
+create index ix_cprogram_hardware_type_id on cprogram (hardware_type_id);
 
-alter table cprogram add constraint fk_cprogram_type_of_board_default_id foreign key (type_of_board_default_id) references typeofboard (id) on delete restrict on update restrict;
+alter table cprogram add constraint fk_cprogram_hardware_type_default_id foreign key (hardware_type_default_id) references hardwaretype (id) on delete restrict on update restrict;
 
-alter table cprogram add constraint fk_cprogram_type_of_board_test_id foreign key (type_of_board_test_id) references typeofboard (id) on delete restrict on update restrict;
+alter table cprogram add constraint fk_cprogram_hardware_type_test_id foreign key (hardware_type_test_id) references hardwaretype (id) on delete restrict on update restrict;
 
 alter table cprogram add constraint fk_cprogram_example_library_id foreign key (example_library_id) references version (id) on delete restrict on update restrict;
 create index ix_cprogram_example_library_id on cprogram (example_library_id);
@@ -1086,21 +1078,6 @@ create index ix_cprogram_tag_cprogram on cprogram_tag (cprogram_id);
 
 alter table cprogram_tag add constraint fk_cprogram_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
 create index ix_cprogram_tag_tag on cprogram_tag (tag_id);
-
-alter table cprogramupdateplan add constraint fk_cprogramupdateplan_actualization_procedure_id foreign key (actualization_procedure_id) references actualizationprocedure (id) on delete restrict on update restrict;
-create index ix_cprogramupdateplan_actualization_procedure_id on cprogramupdateplan (actualization_procedure_id);
-
-alter table cprogramupdateplan add constraint fk_cprogramupdateplan_board_id foreign key (board_id) references hardware (id) on delete restrict on update restrict;
-create index ix_cprogramupdateplan_board_id on cprogramupdateplan (board_id);
-
-alter table cprogramupdateplan add constraint fk_cprogramupdateplan_c_program_version_for_update_id foreign key (c_program_version_for_update_id) references version (id) on delete restrict on update restrict;
-create index ix_cprogramupdateplan_c_program_version_for_update_id on cprogramupdateplan (c_program_version_for_update_id);
-
-alter table cprogramupdateplan add constraint fk_cprogramupdateplan_bootloader_id foreign key (bootloader_id) references bootloader (id) on delete restrict on update restrict;
-create index ix_cprogramupdateplan_bootloader_id on cprogramupdateplan (bootloader_id);
-
-alter table cprogramupdateplan add constraint fk_cprogramupdateplan_binary_file_id foreign key (binary_file_id) references blob (id) on delete restrict on update restrict;
-create index ix_cprogramupdateplan_binary_file_id on cprogramupdateplan (binary_file_id);
 
 alter table changepropertytoken add constraint fk_changepropertytoken_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
 
@@ -1117,13 +1094,8 @@ create index ix_employee_customer_id on employee (customer_id);
 alter table gridterminal add constraint fk_gridterminal_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
 create index ix_gridterminal_person_id on gridterminal (person_id);
 
-alter table hardware add constraint fk_hardware_picture_id foreign key (picture_id) references blob (id) on delete restrict on update restrict;
-
-alter table hardware add constraint fk_hardware_type_of_board_id foreign key (type_of_board_id) references typeofboard (id) on delete restrict on update restrict;
-create index ix_hardware_type_of_board_id on hardware (type_of_board_id);
-
-alter table hardware add constraint fk_hardware_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
-create index ix_hardware_project_id on hardware (project_id);
+alter table hardware add constraint fk_hardware_hardware_type_id foreign key (hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
+create index ix_hardware_hardware_type_id on hardware (hardware_type_id);
 
 alter table hardware add constraint fk_hardware_actual_c_program_version_id foreign key (actual_c_program_version_id) references version (id) on delete restrict on update restrict;
 create index ix_hardware_actual_c_program_version_id on hardware (actual_c_program_version_id);
@@ -1134,25 +1106,56 @@ create index ix_hardware_actual_backup_c_program_version_id on hardware (actual_
 alter table hardware add constraint fk_hardware_actual_boot_loader_id foreign key (actual_boot_loader_id) references bootloader (id) on delete restrict on update restrict;
 create index ix_hardware_actual_boot_loader_id on hardware (actual_boot_loader_id);
 
+alter table hardwarebatch add constraint fk_hardwarebatch_hardware_type_id foreign key (hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
+create index ix_hardwarebatch_hardware_type_id on hardwarebatch (hardware_type_id);
+
+alter table hardwarefeature_hardwaretype add constraint fk_hardwarefeature_hardwaretype_hardwarefeature foreign key (hardware_feature_id) references hardwarefeature (id) on delete restrict on update restrict;
+create index ix_hardwarefeature_hardwaretype_hardwarefeature on hardwarefeature_hardwaretype (hardware_feature_id);
+
+alter table hardwarefeature_hardwaretype add constraint fk_hardwarefeature_hardwaretype_hardwaretype foreign key (hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
+create index ix_hardwarefeature_hardwaretype_hardwaretype on hardwarefeature_hardwaretype (hardware_type_id);
+
 alter table hardwaregroup add constraint fk_hardwaregroup_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
 create index ix_hardwaregroup_project_id on hardwaregroup (project_id);
 
-alter table hardwaregroup_hardware add constraint fk_hardwaregroup_hardware_hardwaregroup foreign key (hardware_group_id) references hardwaregroup (id) on delete restrict on update restrict;
-create index ix_hardwaregroup_hardware_hardwaregroup on hardwaregroup_hardware (hardware_group_id);
-
-alter table hardwaregroup_hardware add constraint fk_hardwaregroup_hardware_hardware foreign key (hardware_id) references hardware (id) on delete restrict on update restrict;
-create index ix_hardwaregroup_hardware_hardware on hardwaregroup_hardware (hardware_id);
-
 alter table hardwareregistration add constraint fk_hardwareregistration_hardware_id foreign key (hardware_id) references hardware (id) on delete restrict on update restrict;
+
+alter table hardwareregistration add constraint fk_hardwareregistration_picture_id foreign key (picture_id) references blob (id) on delete restrict on update restrict;
 
 alter table hardwareregistration add constraint fk_hardwareregistration_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
 create index ix_hardwareregistration_project_id on hardwareregistration (project_id);
+
+alter table hardwareregistration add constraint fk_hardwareregistration_group_id foreign key (group_id) references hardwaregroup (id) on delete restrict on update restrict;
+create index ix_hardwareregistration_group_id on hardwareregistration (group_id);
 
 alter table hardwareregistration_tag add constraint fk_hardwareregistration_tag_hardwareregistration foreign key (hardware_registration_id) references hardwareregistration (id) on delete restrict on update restrict;
 create index ix_hardwareregistration_tag_hardwareregistration on hardwareregistration_tag (hardware_registration_id);
 
 alter table hardwareregistration_tag add constraint fk_hardwareregistration_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
 create index ix_hardwareregistration_tag_tag on hardwareregistration_tag (tag_id);
+
+alter table hardwaretype add constraint fk_hardwaretype_producer_id foreign key (producer_id) references producer (id) on delete restrict on update restrict;
+create index ix_hardwaretype_producer_id on hardwaretype (producer_id);
+
+alter table hardwaretype add constraint fk_hardwaretype_processor_id foreign key (processor_id) references processor (id) on delete restrict on update restrict;
+create index ix_hardwaretype_processor_id on hardwaretype (processor_id);
+
+alter table hardwaretype add constraint fk_hardwaretype_picture_id foreign key (picture_id) references blob (id) on delete restrict on update restrict;
+
+alter table hardwareupdate add constraint fk_hardwareupdate_actualization_procedure_id foreign key (actualization_procedure_id) references updateprocedure (id) on delete restrict on update restrict;
+create index ix_hardwareupdate_actualization_procedure_id on hardwareupdate (actualization_procedure_id);
+
+alter table hardwareupdate add constraint fk_hardwareupdate_hardware_id foreign key (hardware_id) references hardwareregistration (id) on delete restrict on update restrict;
+create index ix_hardwareupdate_hardware_id on hardwareupdate (hardware_id);
+
+alter table hardwareupdate add constraint fk_hardwareupdate_c_program_version_for_update_id foreign key (c_program_version_for_update_id) references version (id) on delete restrict on update restrict;
+create index ix_hardwareupdate_c_program_version_for_update_id on hardwareupdate (c_program_version_for_update_id);
+
+alter table hardwareupdate add constraint fk_hardwareupdate_bootloader_id foreign key (bootloader_id) references bootloader (id) on delete restrict on update restrict;
+create index ix_hardwareupdate_bootloader_id on hardwareupdate (bootloader_id);
+
+alter table hardwareupdate add constraint fk_hardwareupdate_binary_file_id foreign key (binary_file_id) references blob (id) on delete restrict on update restrict;
+create index ix_hardwareupdate_binary_file_id on hardwareupdate (binary_file_id);
 
 alter table instance add constraint fk_instance_server_main_id foreign key (server_main_id) references homerserver (id) on delete restrict on update restrict;
 create index ix_instance_server_main_id on instance (server_main_id);
@@ -1198,17 +1201,17 @@ create index ix_invoiceitem_invoice_id on invoiceitem (invoice_id);
 alter table library add constraint fk_library_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
 create index ix_library_project_id on library (project_id);
 
-alter table library_typeofboard add constraint fk_library_typeofboard_library foreign key (library_id) references library (id) on delete restrict on update restrict;
-create index ix_library_typeofboard_library on library_typeofboard (library_id);
-
-alter table library_typeofboard add constraint fk_library_typeofboard_typeofboard foreign key (type_of_board_id) references typeofboard (id) on delete restrict on update restrict;
-create index ix_library_typeofboard_typeofboard on library_typeofboard (type_of_board_id);
-
 alter table library_tag add constraint fk_library_tag_library foreign key (library_id) references library (id) on delete restrict on update restrict;
 create index ix_library_tag_library on library_tag (library_id);
 
 alter table library_tag add constraint fk_library_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
 create index ix_library_tag_tag on library_tag (tag_id);
+
+alter table library_hardwaretype add constraint fk_library_hardwaretype_library foreign key (library_id) references library (id) on delete restrict on update restrict;
+create index ix_library_hardwaretype_library on library_hardwaretype (library_id);
+
+alter table library_hardwaretype add constraint fk_library_hardwaretype_hardwaretype foreign key (hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
+create index ix_library_hardwaretype_hardwaretype on library_hardwaretype (hardware_type_id);
 
 alter table log add constraint fk_log_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
 
@@ -1304,22 +1307,8 @@ create index ix_role_permission_permission on role_permission (permission_id);
 alter table tag add constraint fk_tag_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
 create index ix_tag_person_id on tag (person_id);
 
-alter table typeofboard add constraint fk_typeofboard_producer_id foreign key (producer_id) references producer (id) on delete restrict on update restrict;
-create index ix_typeofboard_producer_id on typeofboard (producer_id);
-
-alter table typeofboard add constraint fk_typeofboard_processor_id foreign key (processor_id) references processor (id) on delete restrict on update restrict;
-create index ix_typeofboard_processor_id on typeofboard (processor_id);
-
-alter table typeofboard add constraint fk_typeofboard_picture_id foreign key (picture_id) references blob (id) on delete restrict on update restrict;
-
-alter table boardfeature_typeofboard add constraint fk_boardfeature_typeofboard_boardfeature foreign key (board_feature_id) references boardfeature (id) on delete restrict on update restrict;
-create index ix_boardfeature_typeofboard_boardfeature on boardfeature_typeofboard (board_feature_id);
-
-alter table boardfeature_typeofboard add constraint fk_boardfeature_typeofboard_typeofboard foreign key (type_of_board_id) references typeofboard (id) on delete restrict on update restrict;
-create index ix_boardfeature_typeofboard_typeofboard on boardfeature_typeofboard (type_of_board_id);
-
-alter table typeofboardbatch add constraint fk_typeofboardbatch_type_of_board_id foreign key (type_of_board_id) references typeofboard (id) on delete restrict on update restrict;
-create index ix_typeofboardbatch_type_of_board_id on typeofboardbatch (type_of_board_id);
+alter table updateprocedure add constraint fk_updateprocedure_instance_id foreign key (instance_id) references instancesnapshot (id) on delete restrict on update restrict;
+create index ix_updateprocedure_instance_id on updateprocedure (instance_id);
 
 alter table version add constraint fk_version_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
 create index ix_version_author_id on version (author_id);
@@ -1362,9 +1351,6 @@ create index ix_gridwidgetversion_widget_id on gridwidgetversion (widget_id);
 
 # --- !Downs
 
-alter table if exists actualizationprocedure drop constraint if exists fk_actualizationprocedure_instance_id;
-drop index if exists ix_actualizationprocedure_instance_id;
-
 alter table if exists authorizationtoken drop constraint if exists fk_authorizationtoken_person_id;
 drop index if exists ix_authorizationtoken_person_id;
 
@@ -1403,20 +1389,20 @@ drop index if exists ix_blockversion_author_id;
 alter table if exists blockversion drop constraint if exists fk_blockversion_block_id;
 drop index if exists ix_blockversion_block_id;
 
-alter table if exists bootloader drop constraint if exists fk_bootloader_type_of_board_id;
-drop index if exists ix_bootloader_type_of_board_id;
+alter table if exists bootloader drop constraint if exists fk_bootloader_hardware_type_id;
+drop index if exists ix_bootloader_hardware_type_id;
 
-alter table if exists bootloader drop constraint if exists fk_bootloader_main_type_of_board_id;
+alter table if exists bootloader drop constraint if exists fk_bootloader_main_hardware_type_id;
 
 alter table if exists cprogram drop constraint if exists fk_cprogram_project_id;
 drop index if exists ix_cprogram_project_id;
 
-alter table if exists cprogram drop constraint if exists fk_cprogram_type_of_board_id;
-drop index if exists ix_cprogram_type_of_board_id;
+alter table if exists cprogram drop constraint if exists fk_cprogram_hardware_type_id;
+drop index if exists ix_cprogram_hardware_type_id;
 
-alter table if exists cprogram drop constraint if exists fk_cprogram_type_of_board_default_id;
+alter table if exists cprogram drop constraint if exists fk_cprogram_hardware_type_default_id;
 
-alter table if exists cprogram drop constraint if exists fk_cprogram_type_of_board_test_id;
+alter table if exists cprogram drop constraint if exists fk_cprogram_hardware_type_test_id;
 
 alter table if exists cprogram drop constraint if exists fk_cprogram_example_library_id;
 drop index if exists ix_cprogram_example_library_id;
@@ -1426,21 +1412,6 @@ drop index if exists ix_cprogram_tag_cprogram;
 
 alter table if exists cprogram_tag drop constraint if exists fk_cprogram_tag_tag;
 drop index if exists ix_cprogram_tag_tag;
-
-alter table if exists cprogramupdateplan drop constraint if exists fk_cprogramupdateplan_actualization_procedure_id;
-drop index if exists ix_cprogramupdateplan_actualization_procedure_id;
-
-alter table if exists cprogramupdateplan drop constraint if exists fk_cprogramupdateplan_board_id;
-drop index if exists ix_cprogramupdateplan_board_id;
-
-alter table if exists cprogramupdateplan drop constraint if exists fk_cprogramupdateplan_c_program_version_for_update_id;
-drop index if exists ix_cprogramupdateplan_c_program_version_for_update_id;
-
-alter table if exists cprogramupdateplan drop constraint if exists fk_cprogramupdateplan_bootloader_id;
-drop index if exists ix_cprogramupdateplan_bootloader_id;
-
-alter table if exists cprogramupdateplan drop constraint if exists fk_cprogramupdateplan_binary_file_id;
-drop index if exists ix_cprogramupdateplan_binary_file_id;
 
 alter table if exists changepropertytoken drop constraint if exists fk_changepropertytoken_person_id;
 
@@ -1457,13 +1428,8 @@ drop index if exists ix_employee_customer_id;
 alter table if exists gridterminal drop constraint if exists fk_gridterminal_person_id;
 drop index if exists ix_gridterminal_person_id;
 
-alter table if exists hardware drop constraint if exists fk_hardware_picture_id;
-
-alter table if exists hardware drop constraint if exists fk_hardware_type_of_board_id;
-drop index if exists ix_hardware_type_of_board_id;
-
-alter table if exists hardware drop constraint if exists fk_hardware_project_id;
-drop index if exists ix_hardware_project_id;
+alter table if exists hardware drop constraint if exists fk_hardware_hardware_type_id;
+drop index if exists ix_hardware_hardware_type_id;
 
 alter table if exists hardware drop constraint if exists fk_hardware_actual_c_program_version_id;
 drop index if exists ix_hardware_actual_c_program_version_id;
@@ -1474,25 +1440,56 @@ drop index if exists ix_hardware_actual_backup_c_program_version_id;
 alter table if exists hardware drop constraint if exists fk_hardware_actual_boot_loader_id;
 drop index if exists ix_hardware_actual_boot_loader_id;
 
+alter table if exists hardwarebatch drop constraint if exists fk_hardwarebatch_hardware_type_id;
+drop index if exists ix_hardwarebatch_hardware_type_id;
+
+alter table if exists hardwarefeature_hardwaretype drop constraint if exists fk_hardwarefeature_hardwaretype_hardwarefeature;
+drop index if exists ix_hardwarefeature_hardwaretype_hardwarefeature;
+
+alter table if exists hardwarefeature_hardwaretype drop constraint if exists fk_hardwarefeature_hardwaretype_hardwaretype;
+drop index if exists ix_hardwarefeature_hardwaretype_hardwaretype;
+
 alter table if exists hardwaregroup drop constraint if exists fk_hardwaregroup_project_id;
 drop index if exists ix_hardwaregroup_project_id;
 
-alter table if exists hardwaregroup_hardware drop constraint if exists fk_hardwaregroup_hardware_hardwaregroup;
-drop index if exists ix_hardwaregroup_hardware_hardwaregroup;
-
-alter table if exists hardwaregroup_hardware drop constraint if exists fk_hardwaregroup_hardware_hardware;
-drop index if exists ix_hardwaregroup_hardware_hardware;
-
 alter table if exists hardwareregistration drop constraint if exists fk_hardwareregistration_hardware_id;
+
+alter table if exists hardwareregistration drop constraint if exists fk_hardwareregistration_picture_id;
 
 alter table if exists hardwareregistration drop constraint if exists fk_hardwareregistration_project_id;
 drop index if exists ix_hardwareregistration_project_id;
+
+alter table if exists hardwareregistration drop constraint if exists fk_hardwareregistration_group_id;
+drop index if exists ix_hardwareregistration_group_id;
 
 alter table if exists hardwareregistration_tag drop constraint if exists fk_hardwareregistration_tag_hardwareregistration;
 drop index if exists ix_hardwareregistration_tag_hardwareregistration;
 
 alter table if exists hardwareregistration_tag drop constraint if exists fk_hardwareregistration_tag_tag;
 drop index if exists ix_hardwareregistration_tag_tag;
+
+alter table if exists hardwaretype drop constraint if exists fk_hardwaretype_producer_id;
+drop index if exists ix_hardwaretype_producer_id;
+
+alter table if exists hardwaretype drop constraint if exists fk_hardwaretype_processor_id;
+drop index if exists ix_hardwaretype_processor_id;
+
+alter table if exists hardwaretype drop constraint if exists fk_hardwaretype_picture_id;
+
+alter table if exists hardwareupdate drop constraint if exists fk_hardwareupdate_actualization_procedure_id;
+drop index if exists ix_hardwareupdate_actualization_procedure_id;
+
+alter table if exists hardwareupdate drop constraint if exists fk_hardwareupdate_hardware_id;
+drop index if exists ix_hardwareupdate_hardware_id;
+
+alter table if exists hardwareupdate drop constraint if exists fk_hardwareupdate_c_program_version_for_update_id;
+drop index if exists ix_hardwareupdate_c_program_version_for_update_id;
+
+alter table if exists hardwareupdate drop constraint if exists fk_hardwareupdate_bootloader_id;
+drop index if exists ix_hardwareupdate_bootloader_id;
+
+alter table if exists hardwareupdate drop constraint if exists fk_hardwareupdate_binary_file_id;
+drop index if exists ix_hardwareupdate_binary_file_id;
 
 alter table if exists instance drop constraint if exists fk_instance_server_main_id;
 drop index if exists ix_instance_server_main_id;
@@ -1538,17 +1535,17 @@ drop index if exists ix_invoiceitem_invoice_id;
 alter table if exists library drop constraint if exists fk_library_project_id;
 drop index if exists ix_library_project_id;
 
-alter table if exists library_typeofboard drop constraint if exists fk_library_typeofboard_library;
-drop index if exists ix_library_typeofboard_library;
-
-alter table if exists library_typeofboard drop constraint if exists fk_library_typeofboard_typeofboard;
-drop index if exists ix_library_typeofboard_typeofboard;
-
 alter table if exists library_tag drop constraint if exists fk_library_tag_library;
 drop index if exists ix_library_tag_library;
 
 alter table if exists library_tag drop constraint if exists fk_library_tag_tag;
 drop index if exists ix_library_tag_tag;
+
+alter table if exists library_hardwaretype drop constraint if exists fk_library_hardwaretype_library;
+drop index if exists ix_library_hardwaretype_library;
+
+alter table if exists library_hardwaretype drop constraint if exists fk_library_hardwaretype_hardwaretype;
+drop index if exists ix_library_hardwaretype_hardwaretype;
 
 alter table if exists log drop constraint if exists fk_log_file_id;
 
@@ -1644,22 +1641,8 @@ drop index if exists ix_role_permission_permission;
 alter table if exists tag drop constraint if exists fk_tag_person_id;
 drop index if exists ix_tag_person_id;
 
-alter table if exists typeofboard drop constraint if exists fk_typeofboard_producer_id;
-drop index if exists ix_typeofboard_producer_id;
-
-alter table if exists typeofboard drop constraint if exists fk_typeofboard_processor_id;
-drop index if exists ix_typeofboard_processor_id;
-
-alter table if exists typeofboard drop constraint if exists fk_typeofboard_picture_id;
-
-alter table if exists boardfeature_typeofboard drop constraint if exists fk_boardfeature_typeofboard_boardfeature;
-drop index if exists ix_boardfeature_typeofboard_boardfeature;
-
-alter table if exists boardfeature_typeofboard drop constraint if exists fk_boardfeature_typeofboard_typeofboard;
-drop index if exists ix_boardfeature_typeofboard_typeofboard;
-
-alter table if exists typeofboardbatch drop constraint if exists fk_typeofboardbatch_type_of_board_id;
-drop index if exists ix_typeofboardbatch_type_of_board_id;
+alter table if exists updateprocedure drop constraint if exists fk_updateprocedure_instance_id;
+drop index if exists ix_updateprocedure_instance_id;
 
 alter table if exists version drop constraint if exists fk_version_author_id;
 drop index if exists ix_version_author_id;
@@ -1699,8 +1682,6 @@ drop index if exists ix_gridwidgetversion_author_id;
 alter table if exists gridwidgetversion drop constraint if exists fk_gridwidgetversion_widget_id;
 drop index if exists ix_gridwidgetversion_widget_id;
 
-drop table if exists actualizationprocedure cascade;
-
 drop table if exists authorizationtoken cascade;
 
 drop table if exists bprogram cascade;
@@ -1721,8 +1702,6 @@ drop table if exists cprogram cascade;
 
 drop table if exists cprogram_tag cascade;
 
-drop table if exists cprogramupdateplan cascade;
-
 drop table if exists changepropertytoken cascade;
 
 drop table if exists compilation cascade;
@@ -1739,13 +1718,21 @@ drop table if exists gridterminal cascade;
 
 drop table if exists hardware cascade;
 
-drop table if exists hardwaregroup cascade;
+drop table if exists hardwarebatch cascade;
 
-drop table if exists hardwaregroup_hardware cascade;
+drop table if exists hardwarefeature cascade;
+
+drop table if exists hardwarefeature_hardwaretype cascade;
+
+drop table if exists hardwaregroup cascade;
 
 drop table if exists hardwareregistration cascade;
 
 drop table if exists hardwareregistration_tag cascade;
+
+drop table if exists hardwaretype cascade;
+
+drop table if exists hardwareupdate cascade;
 
 drop table if exists homerserver cascade;
 
@@ -1765,9 +1752,9 @@ drop table if exists invoiceitem cascade;
 
 drop table if exists library cascade;
 
-drop table if exists library_typeofboard cascade;
-
 drop table if exists library_tag cascade;
+
+drop table if exists library_hardwaretype cascade;
 
 drop table if exists log cascade;
 
@@ -1823,13 +1810,7 @@ drop table if exists tag cascade;
 
 drop table if exists tariff cascade;
 
-drop table if exists typeofboard cascade;
-
-drop table if exists boardfeature cascade;
-
-drop table if exists boardfeature_typeofboard cascade;
-
-drop table if exists typeofboardbatch cascade;
+drop table if exists updateprocedure cascade;
 
 drop table if exists validationtoken cascade;
 

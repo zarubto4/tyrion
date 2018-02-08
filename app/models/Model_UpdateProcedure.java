@@ -21,13 +21,13 @@ import javax.persistence.*;
 import java.util.*;
 
 @Entity
-@ApiModel(value = "ActualizationProcedure", description = "Model of ActualizationProcedure")
-@Table(name="ActualizationProcedure")
-public class Model_ActualizationProcedure extends BaseModel {
+@ApiModel(value = "UpdateProcedure", description = "Model of UpdateProcedure")
+@Table(name="UpdateProcedure")
+public class Model_UpdateProcedure extends BaseModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(Model_ActualizationProcedure.class);
+    private static final Logger logger = new Logger(Model_UpdateProcedure.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -35,7 +35,7 @@ public class Model_ActualizationProcedure extends BaseModel {
 
                                                     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_InstanceSnapshot instance; // For updates under instance snapshot records
 
-    @JsonIgnore @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("date_of_finish DESC") public List<Model_CProgramUpdatePlan> updates = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("finished DESC") public List<Model_HardwareUpdate> updates = new ArrayList<>();
     
     @ApiModelProperty(required = true, value = "UNIX time in ms")  public Date date_of_planing;
     @ApiModelProperty(required = true, value = "UNIX time in ms")  public Date date_of_finish;
@@ -52,15 +52,16 @@ public class Model_ActualizationProcedure extends BaseModel {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true ) public Enum_Update_group_procedure_state state () {
+    @JsonProperty @ApiModelProperty(required = true )
+    public Enum_Update_group_procedure_state state () {
         return state;
     }
 
-    @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true)
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public Integer procedure_size_all() {
 
         if (cache_procedure_size_all == null) {
-            cache_procedure_size_all = Model_CProgramUpdatePlan.find.query().where()
+            cache_procedure_size_all = Model_HardwareUpdate.find.query().where()
                     .eq("actualization_procedure.id", id)
                     .findCount();
         }
@@ -70,9 +71,9 @@ public class Model_ActualizationProcedure extends BaseModel {
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public Integer procedure_size_complete () {
-        return  Model_CProgramUpdatePlan.find.query().where()
+        return  Model_HardwareUpdate.find.query().where()
                 .eq("actualization_procedure.id", id).where()
-                .eq("state", Enum_CProgram_updater_state.complete)
+                .eq("state", HardwareUpdateState.COMPLETE)
                 .findCount();
     }
 
@@ -110,13 +111,13 @@ public class Model_ActualizationProcedure extends BaseModel {
             // Metoda je vyvolána, pokud chceme synchronizovat Aktualizační proceduru a nějakým způsobem jí označit
             // Třeba kolik procent už je vykonáno
 
-            int all = Model_CProgramUpdatePlan.find.query().where()
+            int all = Model_HardwareUpdate.find.query().where()
                     .eq("actualization_procedure.id", id)
                     .findCount();
 
-            int complete = Model_CProgramUpdatePlan.find.query().where()
+            int complete = Model_HardwareUpdate.find.query().where()
                     .eq("actualization_procedure.id", id).where()
-                    .eq("state", Enum_CProgram_updater_state.complete)
+                    .eq("state", HardwareUpdateState.COMPLETE)
                     .findCount();
 
             if (complete == all) {
@@ -132,15 +133,15 @@ public class Model_ActualizationProcedure extends BaseModel {
                 return;
             }
 
-            int canceled = Model_CProgramUpdatePlan.find.query().where()
+            int canceled = Model_HardwareUpdate.find.query().where()
                     .eq("actualization_procedure.id", id).where()
-                    .eq("state", Enum_CProgram_updater_state.canceled)
+                    .eq("state", HardwareUpdateState.CANCELED)
                     .findCount();
 
 
-            int override = Model_CProgramUpdatePlan.find.query().where()
+            int override = Model_HardwareUpdate.find.query().where()
                     .eq("actualization_procedure.id", id).where()
-                    .eq("state", Enum_CProgram_updater_state.overwritten)
+                    .eq("state", HardwareUpdateState.OBSOLETE)
                     .findCount();
 
 
@@ -157,9 +158,9 @@ public class Model_ActualizationProcedure extends BaseModel {
                 return;
             }
 
-            int in_progress = Model_CProgramUpdatePlan.find.query().where()
+            int in_progress = Model_HardwareUpdate.find.query().where()
                     .eq("actualization_procedure.id", id).where()
-                    .eq("state", Enum_CProgram_updater_state.in_progress)
+                    .eq("state", HardwareUpdateState.IN_PROGRESS)
                     .findCount();
 
             if (in_progress != 0) {
@@ -173,14 +174,14 @@ public class Model_ActualizationProcedure extends BaseModel {
                 this.update();
             }
 
-            int critical_error = Model_CProgramUpdatePlan.find.query().where()
+            int critical_error = Model_HardwareUpdate.find.query().where()
                     .eq("actualization_procedure.id", id).where()
-                    .eq("state", Enum_CProgram_updater_state.critical_error)
+                    .eq("state", HardwareUpdateState.CRITICAL_ERROR)
                     .findCount();
 
-            int not_updated = Model_CProgramUpdatePlan.find.query().where()
+            int not_updated = Model_HardwareUpdate.find.query().where()
                     .eq("actualization_procedure.id", id).where()
-                    .eq("state", Enum_CProgram_updater_state.not_updated)
+                    .eq("state", HardwareUpdateState.NOT_UPDATED)
                     .findCount();
 
             if (((critical_error + override + canceled + complete + not_updated) * 1.0 / all) == 1.0) {
@@ -198,36 +199,36 @@ public class Model_ActualizationProcedure extends BaseModel {
         }
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public void cancel_procedure() {
 
-       logger.trace("cancel_procedure :: operation");
+        logger.trace("cancel_procedure :: operation");
 
-       List<Model_CProgramUpdatePlan> list = Model_CProgramUpdatePlan.find.query().where()
-                                            .eq("actualization_procedure.id",id).where()
-                                                .disjunction()
-                                                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
-                                                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
-                                                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
-                                                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
-                                                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
-                                                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
-                                                    .add(Expr.isNull("state"))
-                                            .select("id")
-                                            .findList();
+        List<Model_HardwareUpdate> list = Model_HardwareUpdate.find.query().where()
+            .eq("actualization_procedure.id",id).where()
+                .disjunction()
+                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
+                    .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
+                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
+                    .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
+                    .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
+                    .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
+                    .add(Expr.isNull("state"))
+            .select("id")
+            .findList();
 
-       for (Model_CProgramUpdatePlan plan_not_cached : list) {
-           Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.getById(plan_not_cached.id.toString());
-           if (plan != null) {
-               plan.state = Enum_CProgram_updater_state.canceled;
-               plan.update();
-           }
-       }
+        for (Model_HardwareUpdate plan_not_cached : list) {
+            Model_HardwareUpdate plan = Model_HardwareUpdate.getById(plan_not_cached.id.toString());
+            if (plan != null) {
+                plan.state = HardwareUpdateState.CANCELED;
+                plan.update();
+            }
+        }
 
-       state = Enum_Update_group_procedure_state.canceled;
-       date_of_finish = new Date();
+        state = Enum_Update_group_procedure_state.canceled;
+        date_of_finish = new Date();
 
-       this.update();
+        this.update();
     }
 
     @JsonIgnore
@@ -264,7 +265,7 @@ public class Model_ActualizationProcedure extends BaseModel {
 
         // Call notification about model update
         if (get_project_id() != null) {
-            new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_ActualizationProcedure.class, get_project_id(), this.id))).start();
+            new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_UpdateProcedure.class, get_project_id(), this.id))).start();
         }
 
         // If immidietly
@@ -292,7 +293,7 @@ public class Model_ActualizationProcedure extends BaseModel {
 
         // Call notification about model update
         if (get_project_id() != null)
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_ActualizationProcedure.class, get_project_id(), this.id))).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_UpdateProcedure.class, get_project_id(), this.id))).start();
     }
 
     @JsonIgnore @Override
@@ -305,7 +306,7 @@ public class Model_ActualizationProcedure extends BaseModel {
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public void notification_update_procedure_start() {
         try {
 
@@ -322,19 +323,19 @@ public class Model_ActualizationProcedure extends BaseModel {
 
                 if (updates.size() == 1) {
 
-                    if (updates.get(0).firmware_type == Enum_Firmware_type.FIRMWARE)
-                        notification.setText(new Notification_Text().setText(" for Board "))
-                                    .setObject(updates.get(0).get_board())
+                    if (updates.get(0).firmware_type == FirmwareType.FIRMWARE)
+                        notification.setText(new Notification_Text().setText(" for Hardware "))
+                                    .setObject(updates.get(0).getHardware())
                                     .setText( new Notification_Text().setText(" from Code Editor with Program "))
                                     .setObject(updates.get(0).c_program_version_for_update.get_c_program())
                                     .setText( new Notification_Text().setText(" version "))
                                     .setObject(updates.get(0).c_program_version_for_update)
                                     .setText( new Notification_Text().setText("."));
 
-                    else  if (updates.get(0).firmware_type == Enum_Firmware_type.BOOTLOADER)
-                        notification.setText(new Notification_Text().setText(" for Board "))
-                                .setObject(updates.get(0).get_board())
-                                .setText( new Notification_Text().setText(" Bootloader version " + updates.get(0).get_bootloader().version_identifier))
+                    else  if (updates.get(0).firmware_type == FirmwareType.BOOTLOADER)
+                        notification.setText(new Notification_Text().setText(" for Hardware "))
+                                .setObject(updates.get(0).getHardware())
+                                .setText( new Notification_Text().setText(" Bootloader version " + updates.get(0).getBootloader().version_identifier))
                                 .setText( new Notification_Text().setText("."));
 
                 } else {
@@ -352,7 +353,7 @@ public class Model_ActualizationProcedure extends BaseModel {
                 if (updates.size() == 1) {
 
                     notification.setText(new Notification_Text().setText(" with one device "));
-                    notification.setObject(updates.get(0).get_board());
+                    notification.setObject(updates.get(0).getHardware());
 
                 } else {
                     notification.setText(new Notification_Text().setText(" with " + updates.size()  + " devices from Blocko Snapshot "));
@@ -372,7 +373,7 @@ public class Model_ActualizationProcedure extends BaseModel {
         }
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public void notification_update_procedure_progress() {
         try {
 
@@ -402,7 +403,7 @@ public class Model_ActualizationProcedure extends BaseModel {
         }
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public void notification_update_procedure_final_report() {
         try {
 
@@ -418,7 +419,7 @@ public class Model_ActualizationProcedure extends BaseModel {
                         logger.debug("notification_update_procedure_final_report :: Notification is for single update");
 
                         // Bootloader
-                        if (this.updates.get(0).firmware_type == Enum_Firmware_type.BOOTLOADER) {
+                        if (this.updates.get(0).firmware_type == FirmwareType.BOOTLOADER) {
 
                             logger.debug("notification_update_procedure_final_report :: Single Update bootloader");
 
@@ -427,39 +428,37 @@ public class Model_ActualizationProcedure extends BaseModel {
                         }
 
                         // Backup
-                        if (this.updates.get(0).firmware_type == Enum_Firmware_type.BACKUP) {
+                        if (this.updates.get(0).firmware_type == FirmwareType.BACKUP) {
 
                             logger.debug("notification_update_procedure_final_report :: Single Update backup");
                             logger.debug("TODOTOTO TODO TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  ");
 
                         }
-
-
                     }
 
                     notification.setImportance(NotificationImportance.LOW)
                             .setLevel(NotificationLevel.SUCCESS);
 
 
-                    int successfully_updated = Model_CProgramUpdatePlan.find.query().where()
+                    int successfully_updated = Model_HardwareUpdate.find.query().where()
                             .eq("actualization_procedure.id", id).where()
-                            .eq("state", Enum_CProgram_updater_state.complete)
+                            .eq("state", HardwareUpdateState.COMPLETE)
                             .findCount();
 
-                    int waiting_for_device = Model_CProgramUpdatePlan.find.query().where()
+                    int waiting_for_device = Model_HardwareUpdate.find.query().where()
                             .eq("actualization_procedure.id", id).where()
                             .disjunction()
-                            .eq("state", Enum_CProgram_updater_state.waiting_for_device)
-                            .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
-                            .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
+                            .eq("state", HardwareUpdateState.WAITING_FOR_DEVICE)
+                            .eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE)
+                            .eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE)
                             .endJunction()
                             .findCount();
 
-                    int error_device = Model_CProgramUpdatePlan.find.query().where()
+                    int error_device = Model_HardwareUpdate.find.query().where()
                             .eq("actualization_procedure.id", id).where()
                             .disjunction()
-                            .eq("state", Enum_CProgram_updater_state.critical_error)
-                            .eq("state", Enum_CProgram_updater_state.not_updated)
+                            .eq("state", HardwareUpdateState.CRITICAL_ERROR)
+                            .eq("state", HardwareUpdateState.NOT_UPDATED)
                             .endJunction()
                             .findCount();
 
@@ -488,7 +487,7 @@ public class Model_ActualizationProcedure extends BaseModel {
         }
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public void notification_update_procedure_complete() {
         try {
 
@@ -546,8 +545,6 @@ public class Model_ActualizationProcedure extends BaseModel {
                                 .setText(new Notification_Text().setText(" is done but something is not right. For more information, please visit the update procedure details."));
 
                     notification.send_under_project(get_project_id());
-                    return;
-
                 }
 
             }).start();
@@ -564,17 +561,19 @@ public class Model_ActualizationProcedure extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient   public static final String read_permission_docs   = "User can read Actualization_procedure if they have ID of Actualization_procedure";
+    @JsonIgnore @Transient public static final String read_permission_docs   = "User can read Actualization_procedure if they have ID of Actualization_procedure";
 
-    @JsonIgnore @Transient  public boolean read_permission()      {
-        return Model_Project.getById(project_id).read_permission() || BaseController.person().has_permission("Actualization_procedure_read");
+    @JsonIgnore
+    public boolean read_permission()      {
+        return Model_Project.getById(project_id).read_permission() || BaseController.person().has_permission("UpdateProcedure_read");
     }
 
-    @JsonProperty @Transient  public boolean edit_permission()      {
-        return Model_Project.getById(project_id).update_permission() || BaseController.person().has_permission("Actualization_procedure_edit");
+    @JsonProperty
+    public boolean edit_permission()      {
+        return Model_Project.getById(project_id).update_permission() || BaseController.person().has_permission("UpdateProcedure_edit");
     }
 
-    public enum permissions{Actualization_procedure_read, Actualization_procedure_edit}
+    public enum Permission { UpdateProcedure_read, UpdateProcedure_edit }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
@@ -582,26 +581,26 @@ public class Model_ActualizationProcedure extends BaseModel {
      *  Cachování slouží primárně pouze pro sumarizaci updatů. Pomocí getById() lze načíst ActualizationProcedure
      *  která obsahuje HashMapu ID C
      */
-    @JsonIgnore private HashMap<String, Enum_CProgram_updater_state> cProgram_updater_state = new HashMap<>();
+    @JsonIgnore private HashMap<String, HardwareUpdateState> cProgram_updater_state = new HashMap<>();
     
-    @CacheField(value = Model_ActualizationProcedure.class, timeToIdle = 600)
-    @JsonIgnore public static Cache<UUID, Model_ActualizationProcedure> cache;
+    @CacheField(Model_UpdateProcedure.class)
+    @JsonIgnore public static Cache<UUID, Model_UpdateProcedure> cache;
 
-    @JsonIgnore public void change_state(Model_CProgramUpdatePlan plan, Enum_CProgram_updater_state state) {
+    @JsonIgnore public void change_state(Model_HardwareUpdate plan, HardwareUpdateState state) {
         cProgram_updater_state.put(plan.id.toString(), state);
     }
 
-    public static Model_ActualizationProcedure getById(String id) {
+    public static Model_UpdateProcedure getById(String id) {
         return getById(UUID.fromString(id));
     }
     
-    public static Model_ActualizationProcedure getById(UUID id) {
+    public static Model_UpdateProcedure getById(UUID id) {
 
-        Model_ActualizationProcedure procedure = cache.get(id);
+        Model_UpdateProcedure procedure = cache.get(id);
 
         if (procedure == null) {
 
-            procedure = Model_ActualizationProcedure.find.byId(id);
+            procedure = Model_UpdateProcedure.find.byId(id);
             if (procedure == null) return null;
 
             cache.put(id, procedure);
@@ -612,5 +611,5 @@ public class Model_ActualizationProcedure extends BaseModel {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_ActualizationProcedure> find = new Finder<>(Model_ActualizationProcedure.class);
+    public static Finder<UUID, Model_UpdateProcedure> find = new Finder<>(Model_UpdateProcedure.class);
 }

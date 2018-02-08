@@ -18,6 +18,6 @@ public class Swagger_Garfield_New extends Swagger_NameAndDescription {
     public Integer print_label_id_2;   // 24 mm
     public Integer print_sticker_id;   // 65 mm
 
-    public UUID type_of_board_id;    // Jaký typ hardwaru umí testovat garfield!
+    public UUID hardware_type_id;    // Jaký typ hardwaru umí testovat garfield!
     public UUID producer_id;
 }

@@ -34,43 +34,42 @@ import java.util.UUID;
  */
 
 @Entity
-@ApiModel(description = "Model of CProgramUpdatePlan",
-        value = "CProgramUpdatePlan")
-@Table(name="CProgramUpdatePlan")
-public class Model_CProgramUpdatePlan extends BaseModel {
+@ApiModel(description = "Model of HardwareUpdate",
+        value = "HardwareUpdate")
+@Table(name="HardwareUpdate")
+public class Model_HardwareUpdate extends BaseModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(Model_CProgramUpdatePlan.class);
+    private static final Logger logger = new Logger(Model_HardwareUpdate.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                       @JsonIgnore @ManyToOne() public Model_ActualizationProcedure actualization_procedure;    // TODO CACHE
+                                                       @JsonIgnore @ManyToOne() public Model_UpdateProcedure actualization_procedure;    // TODO CACHE
 
                                             @ApiModelProperty(required = true, 
                                                     value = "UNIX time in ms",
-                                                    example = "1466163478925")  public Date date_of_finish;
+                                                    example = "1466163478925")  public Date finished;
 
-              @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Model_Hardware board;                           // Deska k aktualizaci
-              @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public Enum_Firmware_type firmware_type;                 // Typ Firmwaru
+              @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Model_HardwareRegistration hardware; // Deska k aktualizaci
+              @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public FirmwareType firmware_type;          // Typ Firmwaru
 
                                                                                 // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                 public Model_Version c_program_version_for_update; // C_program k aktualizaci
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_BootLoader bootloader;                      // Když nahrávám Firmware
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_Blob binary_file;                     // Soubor, když firmware nahrává uživatel sám mimo flow
 
-    @ApiModelProperty(required = true, value = "Description on Model C_ProgramUpdater_State")
-                                                @Enumerated(EnumType.STRING)    public Enum_CProgram_updater_state state;
+                                                @Enumerated(EnumType.STRING)    public HardwareUpdateState state;
                                                                     @JsonIgnore public Integer count_of_tries;                         // Počet celkovbých pokusu doručit update (změny z wait to progres atd..
 
-    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public String error;
-    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty( value = "Only if state is critical_error or Homer record some error", required = false)  public Integer error_code;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public String error;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public Integer error_code;
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Cached public UUID cache_actualization_procedure_id;
-    @JsonIgnore @Transient @Cached public UUID cache_board_id;
-    @JsonIgnore @Transient @Cached public UUID cache_c_program_version_for_update_id;
+    @JsonIgnore @Transient @Cached public UUID cache_hardware_id;
+    @JsonIgnore @Transient @Cached public UUID cache_c_program_version_id;
     @JsonIgnore @Transient @Cached public UUID cache_bootloader_id;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -83,7 +82,7 @@ public class Model_CProgramUpdatePlan extends BaseModel {
     @JsonProperty @ApiModelProperty(required = false, readOnly = true)
     public UUID actualization_procedure_id() {
         if (cache_actualization_procedure_id == null) {
-            Model_ActualizationProcedure procedure_not_cached = Model_ActualizationProcedure.find.query().where().eq("updates.id", id).select("id").findOne();
+            Model_UpdateProcedure procedure_not_cached = Model_UpdateProcedure.find.query().where().eq("updates.id", id).select("id").findOne();
             cache_actualization_procedure_id = procedure_not_cached.id;
         }
         return cache_actualization_procedure_id;
@@ -98,16 +97,6 @@ public class Model_CProgramUpdatePlan extends BaseModel {
     @JsonProperty
     public Date created() {
         return actualization_procedure.created;
-    }
-
-    @JsonProperty
-    public Model_Hardware board() {
-        try {
-            return get_board();
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
     }
 
     @ApiModelProperty(required = false, value = "Is visible only if update is for Firmware or Backup")
@@ -136,7 +125,7 @@ public class Model_CProgramUpdatePlan extends BaseModel {
     public Swagger_Bootloader_Update_program bootloader_detail() {
         try {
 
-            Model_BootLoader cached_bootLoader = get_bootloader();
+            Model_BootLoader cached_bootLoader = getBootloader();
 
             if (cached_bootLoader == null) return null;
 
@@ -144,8 +133,8 @@ public class Model_CProgramUpdatePlan extends BaseModel {
             bootloader_update_detail.bootloader_id = cached_bootLoader.id;
             bootloader_update_detail.bootloader_name = cached_bootLoader.name;
             bootloader_update_detail.version_identificator = cached_bootLoader.version_identifier;
-            bootloader_update_detail.type_of_board_name = cached_bootLoader.type_of_board.name;
-            bootloader_update_detail.type_of_board_id = cached_bootLoader.type_of_board.id;
+            bootloader_update_detail.hardware_type_name = cached_bootLoader.hardware_type.name;
+            bootloader_update_detail.hardware_type_id = cached_bootLoader.hardware_type.id;
 
             return bootloader_update_detail;
 
@@ -156,45 +145,45 @@ public class Model_CProgramUpdatePlan extends BaseModel {
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public Model_Hardware board_detail() {
-        return get_board();
+    public Model_Hardware hardware() {
+        return getHardware();
     }
 
     @ApiModelProperty(required = false, value = "Is visible only if user send own binary file ( OR state for c_program_detail)")
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
     public Model_Blob binary_file_detail() {
-        return binary_file == null ? null : binary_file;
+        return binary_file;
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public Model_Hardware get_board() {
+    public Model_Hardware getHardware() {
 
-        if (cache_board_id != null) {
-            return Model_Hardware.getById(cache_board_id);
+        if (cache_hardware_id != null) {
+            return Model_Hardware.getById(cache_hardware_id);
         }
 
-        Model_Hardware board_not_cached = Model_Hardware.find.query().where().eq("c_program_update_plans.id", id).select("id").findOne();
-        if (board_not_cached != null) {
-            cache_board_id = board_not_cached.id;
-            return get_board();
+        Model_Hardware hardware_not_cached = Model_Hardware.find.query().where().eq("registration.updates.id", id).select("id").findOne();
+        if (hardware_not_cached != null) {
+            cache_hardware_id = hardware_not_cached.id;
+            return getHardware();
         }
 
         return null;
     }
 
     @JsonIgnore
-    public Model_BootLoader get_bootloader() {
+    public Model_BootLoader getBootloader() {
 
         if (cache_bootloader_id != null) {
             return Model_BootLoader.getById(cache_bootloader_id);
         }
 
-        Model_BootLoader bootloader_not_cached = Model_BootLoader.find.query().where().eq("c_program_update_plans.id", id).select("id").findOne();
+        Model_BootLoader bootloader_not_cached = Model_BootLoader.find.query().where().eq("updates.id", id).select("id").findOne();
         if (bootloader_not_cached != null) {
             cache_bootloader_id = bootloader_not_cached.id;
-            return get_bootloader();
+            return getBootloader();
         }
 
         return null;
@@ -207,7 +196,7 @@ public class Model_CProgramUpdatePlan extends BaseModel {
             Swagger_UpdatePlan_brief_for_homer brief_for_homer = new Swagger_UpdatePlan_brief_for_homer();
             brief_for_homer.actualization_procedure_id = actualization_procedure.id.toString();
             brief_for_homer.c_program_update_plan_id = id.toString();
-            brief_for_homer.hardware_ids.add(get_board().id);
+            brief_for_homer.hardware_ids.add(getHardware().id);
 
             Swagger_UpdatePlan_brief_for_homer_BinaryComponent binary = new Swagger_UpdatePlan_brief_for_homer_BinaryComponent();
             binary.firmware_type = firmware_type;
@@ -218,7 +207,7 @@ public class Model_CProgramUpdatePlan extends BaseModel {
                 brief_for_homer.progress_subscribe = true;
             }
 
-            if (firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP) {
+            if (firmware_type == FirmwareType.FIRMWARE || firmware_type == FirmwareType.BACKUP) {
                 binary.download_id              = c_program_version_for_update.compilation.id.toString();
                 binary.build_id                 = c_program_version_for_update.compilation.firmware_build_id;
                 binary.program_name             = c_program_version_for_update.get_c_program().name.length() > 32 ? c_program_version_for_update.get_c_program().name.substring(0, 32) : c_program_version_for_update.get_c_program().name;
@@ -226,9 +215,9 @@ public class Model_CProgramUpdatePlan extends BaseModel {
                 binary.compilation_lib_version  = c_program_version_for_update.compilation.firmware_version_lib;
                 binary.time_stamp               = c_program_version_for_update.compilation.firmware_build_datetime;
 
-            } else if (firmware_type == Enum_Firmware_type.BOOTLOADER) {
+            } else if (firmware_type == FirmwareType.BOOTLOADER) {
 
-                Model_BootLoader cached_bootLoader = get_bootloader();
+                Model_BootLoader cached_bootLoader = getBootloader();
                 if (cached_bootLoader == null) return null;
 
                 binary.download_id          = cached_bootLoader.id.toString();
@@ -238,7 +227,7 @@ public class Model_CProgramUpdatePlan extends BaseModel {
                 binary.time_stamp           = cached_bootLoader.created;
             } else {
                 logger.internalServerError(new IllegalAccessException("Unsupported type of Enum_Firmware_type or not set firmware_type in Model_CProgramUpdatePlan"));
-                binary.download_id = binary_file.file_path;
+                binary.download_id = binary_file.path;
                 binary.build_id = "TODO"; // TODO ???
             }
 
@@ -258,14 +247,14 @@ public class Model_CProgramUpdatePlan extends BaseModel {
         logger.debug("save :: Creating new Object");
         count_of_tries = 0;
 
-        if (this.state == null) this.state = Enum_CProgram_updater_state.not_start_yet;
+        if (this.state == null) this.state = HardwareUpdateState.NOT_YET_STARTED;
 
         // Set Cache parameter
-        cache_board_id = board.id;
+        cache_hardware_id = hardware.id;
 
         // set Cache Parameter
         if (c_program_version_for_update != null) {
-            cache_c_program_version_for_update_id = c_program_version_for_update.id;
+            cache_c_program_version_id = c_program_version_for_update.id;
         }
 
         // set Cache Parameter
@@ -284,14 +273,14 @@ public class Model_CProgramUpdatePlan extends BaseModel {
 
         super.update();
 
-        Model_ActualizationProcedure procedure = Model_ActualizationProcedure.getById(actualization_procedure_id());
+        Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(actualization_procedure_id());
         if (procedure != null) {
             if (procedure.state == Enum_Update_group_procedure_state.not_start_yet || procedure.state == Enum_Update_group_procedure_state.in_progress) {
 
-                if (this.state == Enum_CProgram_updater_state.overwritten
-                        || this.state == Enum_CProgram_updater_state.complete
-                        || this.state == Enum_CProgram_updater_state.not_updated
-                        || this.state == Enum_CProgram_updater_state.critical_error
+                if (this.state == HardwareUpdateState.OBSOLETE
+                        || this.state == HardwareUpdateState.COMPLETE
+                        || this.state == HardwareUpdateState.NOT_UPDATED
+                        || this.state == HardwareUpdateState.CRITICAL_ERROR
                         ) {
 
                     logger.trace("update :: call in new thread actualization_procedure.update_state()");
@@ -301,7 +290,7 @@ public class Model_CProgramUpdatePlan extends BaseModel {
 
             // Call notification about model update
             if (procedure.get_project_id() != null) {
-                new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_CProgramUpdatePlan.class, procedure.get_project_id() , this.id))).start();
+                new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_HardwareUpdate.class, procedure.get_project_id() , this.id))).start();
             }
 
         }
@@ -326,7 +315,7 @@ public class Model_CProgramUpdatePlan extends BaseModel {
                 return;
             }
 
-            Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.getById(report.tracking_id);
+            Model_HardwareUpdate plan = Model_HardwareUpdate.getById(report.tracking_id);
             if (plan == null) {
                 throw new NullPointerException("Plan id" + report.tracking_id + " not found!");
             }
@@ -334,13 +323,13 @@ public class Model_CProgramUpdatePlan extends BaseModel {
 
             // Pokud se vrátí fáze špatně - ukončuji celý update
             if (report.error != null || report.error_code != null) {
-                logger.warn("update_procedure_progress  Update Fail! Device ID: {}, update procedure: {}", plan.get_board().id, plan.id);
+                logger.warn("update_procedure_progress  Update Fail! Device ID: {}, update procedure: {}", plan.getHardware().id, plan.id);
 
-                plan.state = Enum_CProgram_updater_state.critical_error;
+                plan.state = HardwareUpdateState.CRITICAL_ERROR;
                 plan.error_code = report.error_code;
                 plan.error = report.error;
                 plan.update();
-                Model_ActualizationProcedure.getById(report.tracking_group_id).change_state(plan, plan.state);
+                Model_UpdateProcedure.getById(report.tracking_group_id).change_state(plan, plan.state);
 
                 Model_Notification notification = new Model_Notification();
 
@@ -353,7 +342,7 @@ public class Model_CProgramUpdatePlan extends BaseModel {
                 notification.setText(new Notification_Text().setText("Update of Procedure "))
                         .setObject(plan.actualization_procedure)
                         .setText(new Notification_Text().setText(". Transfer firmware to device "))
-                        .setObject(plan.get_board())
+                        .setObject(plan.getHardware())
                         .setText(new Notification_Text().setText(" failed. Error Code " + report.error_code + "."))
                         .send_under_project(plan.actualization_procedure.get_project_id());
 
@@ -381,7 +370,7 @@ public class Model_CProgramUpdatePlan extends BaseModel {
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
                                 .setObject(plan.actualization_procedure)
                                 .setText(new Notification_Text().setText(". Transfer firmware to device "))
-                                .setObject(plan.get_board())
+                                .setObject(plan.getHardware())
                                 .setText(new Notification_Text().setText(" start."))
                                 .send_under_project(plan.actualization_procedure.get_project_id());
 
@@ -406,7 +395,7 @@ public class Model_CProgramUpdatePlan extends BaseModel {
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
                                 .setObject(plan.actualization_procedure)
                                 .setText(new Notification_Text().setText(". Transfer firmware to "))
-                                .setObject(plan.get_board())
+                                .setObject(plan.getHardware())
                                 .setText(new Notification_Text().setText(" firmware file  was transferred and stored in memory."))
                                 .send_under_project(plan.actualization_procedure.get_project_id());
 
@@ -433,7 +422,7 @@ public class Model_CProgramUpdatePlan extends BaseModel {
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
                                 .setObject(plan.actualization_procedure)
                                 .setText(new Notification_Text().setText(". Transfer firmware to "))
-                                .setObject(plan.get_board())
+                                .setObject(plan.getHardware())
                                 .setText(new Notification_Text().setText(" progress:: " + report.percentage_progress + "%"))
                                 .send_under_project(plan.actualization_procedure.get_project_id());
 
@@ -459,8 +448,8 @@ public class Model_CProgramUpdatePlan extends BaseModel {
 
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
                                 .setObject(plan.actualization_procedure)
-                                .setText(new Notification_Text().setText(". We are making backup on board "))
-                                .setObject(plan.get_board())
+                                .setText(new Notification_Text().setText(". We are making backup on hardware "))
+                                .setObject(plan.getHardware())
                                 .setText(new Notification_Text().setText("finished:: " + report.percentage_progress + "%"))
                                 .setText(new Notification_Text().setText("Flash Memory Erasing..."))
                                 .send_under_project(plan.actualization_procedure.get_project_id());
@@ -487,8 +476,8 @@ public class Model_CProgramUpdatePlan extends BaseModel {
 
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
                                 .setObject(plan.actualization_procedure)
-                                .setText(new Notification_Text().setText(". We are making backup on board "))
-                                .setObject(plan.get_board())
+                                .setText(new Notification_Text().setText(". We are making backup on hardware "))
+                                .setObject(plan.getHardware())
                                 .setText(new Notification_Text().setText("finished:: " + report.percentage_progress + "%"))
                                 .setText(new Notification_Text().setText("Flash Memory Erased"))
                                 .send_under_project(plan.actualization_procedure.get_project_id());
@@ -515,7 +504,7 @@ public class Model_CProgramUpdatePlan extends BaseModel {
                     notification.setText(new Notification_Text().setText("Update of Procedure "))
                             .setObject(plan.actualization_procedure)
                             .setText(new Notification_Text().setText(". Transfer firmware to "))
-                            .setObject(plan.get_board())
+                            .setObject(plan.getHardware())
                             .setText(new Notification_Text().setText(" finished:: " + report.percentage_progress + "%"))
                             .setText(new Notification_Text().setText("The device is just rebooting."))
                             .send_under_project(plan.actualization_procedure.get_project_id());
@@ -538,7 +527,7 @@ public class Model_CProgramUpdatePlan extends BaseModel {
                     notification.setText(new Notification_Text().setText("Update of Procedure "))
                             .setObject(plan.actualization_procedure)
                             .setText(new Notification_Text().setText(". Transfer firmware to "))
-                            .setObject(plan.get_board())
+                            .setObject(plan.getHardware())
                             .setText(new Notification_Text().setText(" finished:: " + report.percentage_progress + "%"))
                             .setText(new Notification_Text().setText("Device Restarted successfully - system check all registers"))
                             .send_under_project(plan.actualization_procedure.get_project_id());
@@ -560,7 +549,7 @@ public class Model_CProgramUpdatePlan extends BaseModel {
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
                                 .setObject(plan.actualization_procedure)
                                 .setText(new Notification_Text().setText(". Transfer firmware to "))
-                                .setObject(plan.get_board())
+                                .setObject(plan.getHardware())
                                 .setText(new Notification_Text().setText(" successfully done."))
                                 .send_under_project(plan.actualization_procedure.get_project_id());
 
@@ -568,36 +557,36 @@ public class Model_CProgramUpdatePlan extends BaseModel {
                         logger.debug("update_procedure_progress - procedure {} is UPDATE_DONE", plan.id);
 
 
-                        Model_Hardware board = plan.get_board();
+                        Model_Hardware hardware = plan.getHardware();
 
-                        if (plan.firmware_type == Enum_Firmware_type.FIRMWARE) {
+                        if (plan.firmware_type == FirmwareType.FIRMWARE) {
 
-                            logger.debug("update_procedure_progress: firmware:: on HW now:: {} ",  board.get_actual_c_program_version().compilation.firmware_build_id);
+                            logger.debug("update_procedure_progress: firmware:: on HW now:: {} ",  hardware.get_actual_c_program_version().compilation.firmware_build_id);
                             logger.debug("update_procedure_progress: required by update: {} ",  plan.c_program_version_for_update.compilation.firmware_build_id);
 
-                            board.actual_c_program_version = plan.c_program_version_for_update;
-                            board.cache_actual_c_program_id = plan.c_program_version_for_update.get_c_program().id;
-                            board.cache_actual_c_program_version_id = plan.c_program_version_for_update.id;
-                            board.update();
+                            hardware.actual_c_program_version = plan.c_program_version_for_update;
+                            hardware.cache_actual_c_program_id = plan.c_program_version_for_update.get_c_program().id;
+                            hardware.cache_actual_c_program_version_id = plan.c_program_version_for_update.id;
+                            hardware.update();
 
-                        } else if (plan.firmware_type == Enum_Firmware_type.BOOTLOADER) {
+                        } else if (plan.firmware_type == FirmwareType.BOOTLOADER) {
 
-                            board.actual_boot_loader = plan.get_bootloader();
-                            board.cache_actual_boot_loader_id = plan.get_bootloader().id;
-                            board.update();
+                            hardware.actual_boot_loader = plan.getBootloader();
+                            hardware.cache_actual_boot_loader_id = plan.getBootloader().id;
+                            hardware.update();
 
-                        } else if (plan.firmware_type == Enum_Firmware_type.BACKUP) {
+                        } else if (plan.firmware_type == FirmwareType.BACKUP) {
 
-                            board.actual_backup_c_program_version = plan.c_program_version_for_update;
-                            board.cache_actual_c_program_backup_id = plan.c_program_version_for_update.get_c_program().id;
-                            board.cache_actual_c_program_backup_version_id = plan.c_program_version_for_update.id;
-                            board.update();
+                            hardware.actual_backup_c_program_version = plan.c_program_version_for_update;
+                            hardware.cache_actual_c_program_backup_id = plan.c_program_version_for_update.get_c_program().id;
+                            hardware.cache_actual_c_program_backup_version_id = plan.c_program_version_for_update.id;
+                            hardware.update();
 
-                            board.make_log_backup_arrise_change();
+                            hardware.make_log_backup_arrise_change();
                         }
 
-                        plan.state = Enum_CProgram_updater_state.complete;
-                        plan.date_of_finish = new Date();
+                        plan.state = HardwareUpdateState.COMPLETE;
+                        plan.finished = new Date();
                         plan.update();
 
                         return;
@@ -611,9 +600,9 @@ public class Model_CProgramUpdatePlan extends BaseModel {
 
                         logger.debug("update_procedure_progress - procedure {} is PHASE_WAITING", plan.id);
 
-                        plan.state = Enum_CProgram_updater_state.waiting_for_device;
+                        plan.state = HardwareUpdateState.WAITING_FOR_DEVICE;
                         plan.update();
-                        Model_ActualizationProcedure.getById(report.tracking_group_id).change_state(plan, plan.state);
+                        Model_UpdateProcedure.getById(report.tracking_group_id).change_state(plan, plan.state);
 
                         return;
                     } catch (Exception e) {
@@ -626,12 +615,12 @@ public class Model_CProgramUpdatePlan extends BaseModel {
 
                         logger.error("update_procedure_progress - procedure {} is NEW_VERSION_DOESNT_MATCH", plan.id);
 
-                        plan.state = Enum_CProgram_updater_state.not_updated;
+                        plan.state = HardwareUpdateState.NOT_UPDATED;
                         plan.error_code = ErrorCode.NEW_VERSION_DOESNT_MATCH.error_code();
                         plan.error = ErrorCode.NEW_VERSION_DOESNT_MATCH.error_message();
-                        plan.date_of_finish = new Date();
+                        plan.finished = new Date();
                         plan.update();
-                        Model_ActualizationProcedure.getById(report.tracking_group_id).change_state(plan, plan.state);
+                        Model_UpdateProcedure.getById(report.tracking_group_id).change_state(plan, plan.state);
 
                         return;
                     } catch (Exception e) {
@@ -655,36 +644,36 @@ public class Model_CProgramUpdatePlan extends BaseModel {
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
                                 .setObject(plan.actualization_procedure)
                                 .setText(new Notification_Text().setText(" to Hardware "))
-                                .setObject(plan.get_board())
+                                .setObject(plan.getHardware())
                                 .setText(new Notification_Text().setText(" is done. The required firmware on the device is already running."))
                                 .send_under_project(plan.actualization_procedure.get_project_id());
 
                         logger.error("update_procedure_progress - procedure {} is ALREADY_SAME", plan.id);
 
-                        plan.state = Enum_CProgram_updater_state.complete;
+                        plan.state = HardwareUpdateState.COMPLETE;
                         plan.update();
 
-                        Model_Hardware board = plan.get_board();
+                        Model_Hardware hardware = plan.getHardware();
 
-                        if (plan.firmware_type == Enum_Firmware_type.FIRMWARE) {
+                        if (plan.firmware_type == FirmwareType.FIRMWARE) {
 
-                            board.actual_c_program_version = plan.c_program_version_for_update;
-                            board.cache_actual_c_program_id = plan.c_program_version_for_update.get_c_program().id;
-                            board.cache_actual_c_program_version_id = plan.c_program_version_for_update.id;
-                            board.update();
+                            hardware.actual_c_program_version = plan.c_program_version_for_update;
+                            hardware.cache_actual_c_program_id = plan.c_program_version_for_update.get_c_program().id;
+                            hardware.cache_actual_c_program_version_id = plan.c_program_version_for_update.id;
+                            hardware.update();
 
-                        } else if (plan.firmware_type == Enum_Firmware_type.BOOTLOADER) {
+                        } else if (plan.firmware_type == FirmwareType.BOOTLOADER) {
 
-                            board.actual_boot_loader = plan.get_bootloader();
-                            board.cache_actual_boot_loader_id = plan.get_bootloader().id;
-                            board.update();
+                            hardware.actual_boot_loader = plan.getBootloader();
+                            hardware.cache_actual_boot_loader_id = plan.getBootloader().id;
+                            hardware.update();
 
-                        } else if (plan.firmware_type == Enum_Firmware_type.BACKUP) {
-                            board.cache_actual_c_program_backup_id =plan.c_program_version_for_update.get_c_program().id;
-                            board.cache_actual_c_program_backup_version_id = plan.c_program_version_for_update.id;
-                            board.update();
+                        } else if (plan.firmware_type == FirmwareType.BACKUP) {
+                            hardware.cache_actual_c_program_backup_id =plan.c_program_version_for_update.get_c_program().id;
+                            hardware.cache_actual_c_program_backup_version_id = plan.c_program_version_for_update.id;
+                            hardware.update();
 
-                            board.make_log_backup_arrise_change();
+                            hardware.make_log_backup_arrise_change();
                         }
 
                         return;
@@ -692,7 +681,6 @@ public class Model_CProgramUpdatePlan extends BaseModel {
                         logger.internalServerError(e);
                     }
                 }
-
 
                 default: {
                     throw new UnsupportedOperationException("Unknown update phase. Report: " + Json.toJson(report));
@@ -709,26 +697,28 @@ public class Model_CProgramUpdatePlan extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore public boolean read_permission() {
-        return Model_ActualizationProcedure.getById(actualization_procedure_id()).read_permission() || BaseController.person().has_permission("Actualization_procedure_read");
+    @JsonIgnore
+    public boolean read_permission() {
+        return Model_UpdateProcedure.getById(actualization_procedure_id()).read_permission() || BaseController.person().has_permission("UpdateProcedure_read");
     }
 
-    @JsonProperty public boolean edit_permission() {
-        return Model_ActualizationProcedure.getById(actualization_procedure_id()).edit_permission() || BaseController.person().has_permission("Actualization_procedure_edit");
+    @JsonProperty
+    public boolean edit_permission() {
+        return Model_UpdateProcedure.getById(actualization_procedure_id()).edit_permission() || BaseController.person().has_permission("UpdateProcedure_edit");
     }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(Model_CProgramUpdatePlan.class)
-    public static Cache<UUID, Model_CProgramUpdatePlan> cache;
+    @CacheField(Model_HardwareUpdate.class)
+    public static Cache<UUID, Model_HardwareUpdate> cache;
 
-    public static Model_CProgramUpdatePlan getById(String id) {
+    public static Model_HardwareUpdate getById(String id) {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_CProgramUpdatePlan getById(UUID id) {
+    public static Model_HardwareUpdate getById(UUID id) {
 
-        Model_CProgramUpdatePlan plan = cache.get(id);
+        Model_HardwareUpdate plan = cache.get(id);
         if (plan == null) {
 
             plan = find.byId(id);
@@ -743,5 +733,5 @@ public class Model_CProgramUpdatePlan extends BaseModel {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_CProgramUpdatePlan> find = new Finder<>(Model_CProgramUpdatePlan.class);
+    public static Finder<UUID, Model_HardwareUpdate> find = new Finder<>(Model_HardwareUpdate.class);
 }

@@ -98,25 +98,25 @@ public class Model_Notification extends BaseModel {
         this.created = new Date();
     }
 
-    @JsonIgnore  @Transient
+    @JsonIgnore
     public Model_Notification setNotificationId(UUID id) {
         this.id = id;
         return this;
     }
 
-    @JsonIgnore  @Transient
+    @JsonIgnore
     public Model_Notification setImportance(NotificationImportance importance) {
         this.notification_importance = importance;
         return this;
     }
 
-    @JsonIgnore  @Transient
+    @JsonIgnore
     public Model_Notification setLevel(NotificationLevel level) {
         this.notification_level = level;
         return this;
     }
 
-    @JsonIgnore  @Transient
+    @JsonIgnore
     public Model_Notification setState(NotificationState state) {
         this.state = state;
         return this;
@@ -124,25 +124,25 @@ public class Model_Notification extends BaseModel {
 
     //---------------------------------------------------------------------------------------------------------------------
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public Model_Notification setText(Notification_Text text) {
         array.add(text.element);
         return this;
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public Model_Notification setNewLine() {
         array.add( new Notification_NewLine().element );
         return this;
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public Model_Notification setChainType(NotificationType notification_type) {
         this.notification_type = notification_type;
         return this;
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public Model_Notification setDate(Date date) {
 
         Notification_Date element_date = new Notification_Date();
@@ -152,7 +152,7 @@ public class Model_Notification extends BaseModel {
         return this;
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public Model_Notification setObject(Object object) {
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
@@ -186,12 +186,12 @@ public class Model_Notification extends BaseModel {
                 element.id = ((Model_Project)object).id;
                 break;
             }
-            case "Board" : {
-                Model_Hardware board = (Model_Hardware)object;
+            case "Hardware" : {
+                Model_Hardware hardware = (Model_Hardware)object;
                 element.name = class_name;
-                element.id = board.id;
-                element.text = board.name;
-                element.project_id = board.project_id();
+                element.id = hardware.id;
+                element.text = hardware.name;
+                element.project_id = hardware.project_id();
                 break;
             }
             case "CProgram" : {
@@ -210,7 +210,7 @@ public class Model_Notification extends BaseModel {
                 element.project_id = bProgram.project != null ? bProgram.project.id : null;
                 break;
             }
-            case "VersionObject" : {
+            case "Version" : {
 
                 Model_Version version = (Model_Version)object;
 
@@ -234,7 +234,7 @@ public class Model_Notification extends BaseModel {
                 break;
             }
 
-            case "HomerInstance" : {
+            case "Instance" : {
                 Model_Instance homerInstance = (Model_Instance) object;
                 element.name = class_name;
                 element.id = homerInstance.id;
@@ -244,7 +244,7 @@ public class Model_Notification extends BaseModel {
             }
 
             case "ActualizationProcedure" : {
-                Model_ActualizationProcedure actualizationProcedure = (Model_ActualizationProcedure) object;
+                Model_UpdateProcedure actualizationProcedure = (Model_UpdateProcedure) object;
                 element.name = class_name;
                 element.text = actualizationProcedure.id.toString().substring(0,12);
                 element.id = actualizationProcedure.id;
@@ -261,13 +261,13 @@ public class Model_Notification extends BaseModel {
         return this;
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public Model_Notification setLink(Notification_Link link) {
         array.add(link.element);
         return this;
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public Model_Notification setButton(Notification_Button button) {
         this.confirmation_required = true;
         buttons.add(button.element);
@@ -299,7 +299,7 @@ public class Model_Notification extends BaseModel {
         return super.delete();
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public Model_Notification save_object() {
 
         while (true) { // I need Unique Value
@@ -328,13 +328,13 @@ public class Model_Notification extends BaseModel {
         return this;
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public void set_read() {
         this.was_read = true;
         this.update();
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public void confirm() {
         this.confirmed = true;
         this.was_read = true;

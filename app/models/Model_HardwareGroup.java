@@ -30,93 +30,79 @@ public class Model_HardwareGroup extends NamedModel {
 
     @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY) public Model_Project project;  // Projekt, pod který Hardware Group spadá
 
-    @JsonIgnore @ManyToMany(fetch = FetchType.LAZY) public List<Model_Hardware> boards  = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "group", fetch = FetchType.LAZY) public List<Model_HardwareRegistration> hardware = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Cached public Integer cache_group_size;
     @JsonIgnore @Transient @Cached public UUID cache_project_id;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_type_of_board_ids;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_hardware_type_ids;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public int group_size() {
+    @JsonProperty @ApiModelProperty(required = true)
+    public int size() {
 
         if (cache_group_size == null) {
-            cache_group_size = Model_Hardware.find.query().where().eq("board_groups.id", id).findCount();
+            cache_group_size = Model_HardwareRegistration.find.query().where().eq("group.id", this.id).findCount();
         }
 
         return cache_group_size;
     }
 
     @JsonProperty @ApiModelProperty(required = true)
-    public List<Model_TypeOfBoard> type_of_boards_short_detail() {
-
-        return get_type_of_boards_include_group();
+    public List<Model_HardwareType> hardware_types() {
+        return getHardwareTypes();
     }
-
-
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-    @JsonIgnore public String get_id() {
-        return id.toString();
-    }
-
     @JsonIgnore
-    public List<Model_TypeOfBoard> get_type_of_boards_include_group() {
+    public List<Model_HardwareType> getHardwareTypes() {
         try {
 
             // Cache
-            if (cache_type_of_board_ids.isEmpty()) {
+            if (cache_hardware_type_ids.isEmpty()) {
 
-                List<Model_TypeOfBoard> typeOfBoards = Model_TypeOfBoard.find.query().where().eq("boards.board_groups.id", id).eq("deleted", false).orderBy("UPPER(name) ASC").select("id").findList();
+                List<Model_HardwareType> hardwareTypes = Model_HardwareType.find.query().where().eq("hardware.registration.group.id", id).orderBy("UPPER(name) ASC").select("id").findList();
 
                 // Získání seznamu
-                for (Model_TypeOfBoard typeOfBoard : typeOfBoards) {
-                    cache_type_of_board_ids.add(typeOfBoard.id);
+                for (Model_HardwareType hardwareType : hardwareTypes) {
+                    cache_hardware_type_ids.add(hardwareType.id);
                 }
             }
 
-            List<Model_TypeOfBoard> typeOfBoards = new ArrayList<>();
+            List<Model_HardwareType> hardwareTypes = new ArrayList<>();
 
-            for (UUID type_of_board_id : cache_type_of_board_ids) {
-                typeOfBoards.add(Model_TypeOfBoard.getById(type_of_board_id));
+            for (UUID hardware_type_id : cache_hardware_type_ids) {
+                hardwareTypes.add(Model_HardwareType.getById(hardware_type_id));
             }
 
-            return typeOfBoards;
+            return hardwareTypes;
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return new ArrayList<Model_TypeOfBoard>();
+            return new ArrayList<>();
         }
     }
 
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) public UUID project_id()           {
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    public UUID project_id()           {
 
         if (cache_project_id == null) {
-            Model_Project project = Model_Project.find.query().where().eq("board_groups.id", id).select("id").findOne();
+            Model_Project project = Model_Project.find.query().where().eq("hardware_groups.id", id).select("id").findOne();
             if (project == null) return null;
             cache_project_id = project.id;
         }
 
         return cache_project_id;
-
-
     }
 
     // TODO teoreticky cachovat?
-    @JsonIgnore public List<UUID> get_hardware_id_list() {
-
-        List<Model_Hardware> boards = Model_Hardware.find.query().where().eq("board_groups.id", id).select("id").findList();
-        List<UUID> ids = new ArrayList<>();
-        for (Model_Hardware board : boards) {
-            ids.add(board.id);
-        }
-
-        return ids;
+    @JsonIgnore
+    public List<UUID> getHardwareIds() {
+        return Model_HardwareRegistration.find.query().where().eq("groups.id", id).findIds();
     }
-
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -125,7 +111,7 @@ public class Model_HardwareGroup extends NamedModel {
 
         super.save();
 
-        project.cache_hardware_groups_ids.add(id);
+        project.cache_hardware_group_ids.add(id);
 
         //  if create something under project
         //  if (project != null ) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo(Model_Project.class, project_id(), project_id()))).start();
@@ -142,14 +128,14 @@ public class Model_HardwareGroup extends NamedModel {
         // new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( _Model_ExampleModelName.class, "project.id", "model.id"))).start();
 
         // Case 2.1 :: We delete the object with change of ORM parameter  @JsonIgnore  public boolean deleted;
-        this.boards.clear();
+        this.hardware.clear();
 
         this.deleted = true;
         this.update();
 
         if (project_id() != null) {
             Model_Project project = Model_Project.getById(project_id());
-            if (project != null) project.cache_hardware_groups_ids.remove(id);
+            if (project != null) project.cache_hardware_group_ids.remove(id);
         }
 
         // Case 1.2 :: After Delete - we send notification to frontend (Only if it is desirable)

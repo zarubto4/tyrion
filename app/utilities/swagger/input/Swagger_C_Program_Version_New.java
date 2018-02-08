@@ -14,7 +14,7 @@ import java.util.List;
           value = "C_Program_Version_New")
 public class Swagger_C_Program_Version_New extends Swagger_NameAndDescription {
 
-    @ApiModelProperty(required = false, value = "The Library Version tag_name from TypeOfBoard.supported_libraries")
+    @ApiModelProperty(required = false, value = "The Library Version tag_name from HardwareType.supported_libraries")
     @Constraints.MaxLength(value = 60)
     public String library_compilation_version;
 

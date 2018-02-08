@@ -4,12 +4,14 @@ package utilities.swagger.input;
 import io.swagger.annotations.ApiModel;
 import play.data.validation.Constraints;
 
+import java.util.UUID;
+
 @ApiModel(description = "",
         value = "BlockoObject_Approve_withChanges")
 public class Swagger_BlockoObject_Approve_withChanges extends Swagger_NameAndDescription {
 
     @Constraints.Required
-    public String object_id;
+    public UUID object_id;
 
     @Constraints.Required
     public String state;

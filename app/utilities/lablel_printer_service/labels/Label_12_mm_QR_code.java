@@ -18,11 +18,11 @@ public class Label_12_mm_QR_code {
     private Rectangle Label_12_mm = new RectangleReadOnly(Utilities.millimetersToPoints(12), Utilities.millimetersToPoints(12));
 
 
-    Model_Hardware board = null;
+    Model_Hardware hardware = null;
 
-    public Label_12_mm_QR_code(Model_Hardware board) {
+    public Label_12_mm_QR_code(Model_Hardware hardware) {
         try {
-            this.board = board;
+            this.hardware = hardware;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -90,7 +90,7 @@ public class Label_12_mm_QR_code {
 
         // QR Code for ADD
         // QR Code for ADD
-        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(this.board.hash_for_adding, 1000, 1000, null);
+        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(this.hardware.registration_hash, 1000, 1000, null);
         Image codeQrImage = barcodeQRCode.getImage();
         codeQrImage.scaleToFit(Label_12_mm.getWidth(), Label_12_mm.getWidth());
 

@@ -10,7 +10,7 @@ import org.ehcache.Cache;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.logger.Logger;
-import utilities.model.NamedModel;
+import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
@@ -22,7 +22,7 @@ import java.util.UUID;
 @Entity
 @ApiModel( value = "M_Project", description = "Model of M_Project")
 @Table(name="MProject")
-public class Model_MProject extends NamedModel {
+public class Model_MProject extends TaggedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -38,8 +38,6 @@ public class Model_MProject extends NamedModel {
 
     @JsonIgnore @OneToMany(mappedBy = "m_project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     public List<Model_MProgram> m_programs = new ArrayList<>();
-
-    @ManyToMany public List<Model_Tag> tags = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -92,7 +90,7 @@ public class Model_MProject extends NamedModel {
     @JsonIgnore @Override
     public void save() {
 
-        this.azure_m_project_link = project.get_path()  + "/m-projects/"  + UUID.randomUUID().toString();
+        this.azure_m_project_link = project.getPath()  + "/m-projects/"  + UUID.randomUUID().toString();
 
         super.save();
 

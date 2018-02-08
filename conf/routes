@@ -201,6 +201,8 @@ PUT       /project/invite/:project_id                                   controll
 PUT       /project/remove_participant/:project_id                       controllers.Controller_Project.project_removeParticipant(project_id)
 PUT       /project/change_participant_state/:project_id                 controllers.Controller_Project.project_changeParticipantStatus(project_id)
 PUT       /project/tags/add                                             controllers.Controller_Project.project_addTags()
+PUT       /project/hardware/add                                         controllers.Controller_Project.project_addHardware
+PUT       /project/hardware/remove/:registration_id                     controllers.Controller_Project.project_removeHardware(registration_id)
 
 #Program
 POST      /b_program/version/:b_program_id                              controllers.Controller_Blocko.bProgramVersion_create(b_program_id)
@@ -258,7 +260,7 @@ PUT       /blocko/disapprove                                            controll
 PUT       /blocko/approval                                              controllers.Controller_Blocko.blockoApproval()
 
 #Board on Project
-GET       /blocko/all_details/:project_id                               controllers.Controller_Board.board_allDetailsForBlocko(project_id)
+GET       /blocko/all_details/:project_id                               controllers.Controller_Hardware.board_allDetailsForBlocko(project_id)
 
 ### EXTERNAL SERVER ############ EXTERNAL SERVER ############### EXTERNAL SERVER ################ EXTERNAL SERVER ##########################################################################
 ################################################################################################################################################################################
@@ -346,76 +348,74 @@ PUT       /library/version/make_public/:version_id                      controll
 
 
 #Actualization
-GET       /board/ide_upload_hardware/:project_id                        controllers.Controller_Board.board_getForFastUpload(project_id)
-PUT       /c_program/version/upload                                     controllers.Controller_Board.uploadCompilationToBoard()
-#POST     /admin_binary/:instance_id/:board_id/:build_id/:command       controllers.Controller_CompilationLibraries.uploadBinaryFileToBoard_fake_board(instance_id: String, board_id: String, build_id: String, command: String)
-
-#Processor
-POST      /processor                                                    controllers.Controller_Board.processor_create()
-GET       /processor/:processor_id                                      controllers.Controller_Board.processor_get(processor_id)
-GET       /processor                                                    controllers.Controller_Board.processor_getAll()
-PUT       /processor/:processor_id                                      controllers.Controller_Board.processor_edit(processor_id)
-DELETE    /processor/:processor_id                                      controllers.Controller_Board.processor_delete(processor_id)
-
-#Board
-POST      /board/manual_registration                                    controllers.Controller_Board.board_create_manual()
-POST      /board/automatic_registration                                 controllers.Controller_Board.board_create_garfield()
-PUT       /board/userDescription/:board_id                              controllers.Controller_Board.board_update_description(board_id)
-PUT       /board/parameters/:board_id                                   controllers.Controller_Board.board_update_parameters(board_id)
-PUT       /board/backup                                                 controllers.Controller_Board.board_updateBackup()
-
-PUT       /board/registration                                           controllers.Controller_Board.board_connectProject()
-PUT       /board/filter/:page_number                                    controllers.Controller_Board.board_getByFilter(page_number: Int)
-GET       /board/check/:hash_for_adding                                 controllers.Controller_Board.board_check(hash_for_adding)
-GET       /board/:board_id                                              controllers.Controller_Board.board_get(board_id)
-DELETE    /board/deactivateBoard/:board_id                              controllers.Controller_Board.board_deactivate(board_id)
-
-DELETE    /board/:board_id                                              controllers.Controller_Board.board_disconnectProject(board_id)
-PUT       /board/picture/upload/:board_id                               controllers.Controller_Board.board_uploadPicture(board_id)
-PUT       /board/picture/remove/:board_id                               controllers.Controller_Board.board_removePicture(board_id)
-PUT       /board/command                                                controllers.Controller_Board.board_command_execution()
-PUT       /board/mqtt_password_reset/:board_id                          controllers.Controller_Board.board_generate_new_password(board_id)
-PUT       /board/change_server/:board_id                                controllers.Controller_Board.board_redirect_to_server(board_id)
-
-
-#Board_Group
-POST      /board_group                                                  controllers.Controller_Board.board_group_create()
-PUT       /board_group/group/:board_group_id                            controllers.Controller_Board.board_group_update(board_group_id)
-PUT       /board_group/devices                                          controllers.Controller_Board.board_group_update_device_list()
-GET       /board_group/project/:project_id                              controllers.Controller_Board.board_group_get_list_project(project_id)
-GET       /board_group/individual/:board_group_id                       controllers.Controller_Board.board_group_get(board_group_id)
-DELETE    /board_group/:board_group_id                                  controllers.Controller_Board.board_group_delete(board_group_id)
+GET       /board/ide_upload_hardware/:project_id                        controllers.Controller_Hardware.board_getForFastUpload(project_id)
+PUT       /c_program/version/upload                                     controllers.Controller_Hardware.hardware_updateFirmware()
+#POST     /admin_binary/:instance_id/:hardware_id/:build_id/:command       controllers.Controller_CompilationLibraries.uploadBinaryFileToBoard_fake_board(instance_id: String, hardware_id: String, build_id: String, command: String)
 
 #Producer
-POST      /producer                                                     controllers.Controller_Board.producer_create()
-PUT       /producer/:producer_id                                        controllers.Controller_Board.producer_update(producer_id)
-GET       /producer/all                                                 controllers.Controller_Board.producer_getAll()
-GET       /producer/:producer_id                                        controllers.Controller_Board.producer_get(producer_id)
-DELETE    /producer/:producer_id                                        controllers.Controller_Board.producer_delete(producer_id)
+POST      /producer                                                     controllers.Controller_Hardware.producer_create()
+PUT       /producer/:producer_id                                        controllers.Controller_Hardware.producer_update(producer_id)
+GET       /producer/all                                                 controllers.Controller_Hardware.producer_getAll()
+GET       /producer/:producer_id                                        controllers.Controller_Hardware.producer_get(producer_id)
+DELETE    /producer/:producer_id                                        controllers.Controller_Hardware.producer_delete(producer_id)
 
-#TypeOfBoard
-POST      /typeOfBoard                                                  controllers.Controller_Board.typeOfBoard_create()
-PUT       /typeOfBoard/picture_up/:type_of_board_id                     controllers.Controller_Board.typeOfBoard_uploadPicture(type_of_board_id)
-PUT       /typeOfBoard/:type_of_board_id                                controllers.Controller_Board.typeOfBoard_update(type_of_board_id)
-DELETE    /typeOfBoard/:type_of_board_id                                controllers.Controller_Board.typeOfBoard_delete(type_of_board_id)
-GET       /typeOfBoard/all                                              controllers.Controller_Board.typeOfBoard_getAll()
-GET       /typeOfBoard/:type_of_board_id                                controllers.Controller_Board.typeOfBoard_get(type_of_board_id)
+#Processor
+POST      /processor                                                    controllers.Controller_Hardware.processor_create()
+GET       /processor/:processor_id                                      controllers.Controller_Hardware.processor_get(processor_id)
+GET       /processor                                                    controllers.Controller_Hardware.processor_getAll()
+PUT       /processor/:processor_id                                      controllers.Controller_Hardware.processor_edit(processor_id)
+DELETE    /processor/:processor_id                                      controllers.Controller_Hardware.processor_delete(processor_id)
 
-POST      /typeOfBoardBatch/:type_of_board_id                           controllers.Controller_Board.typeOfBoardBatch_create(type_of_board_id)
-PUT       /typeOfBoardBatch/:type_of_board_batch_id                     controllers.Controller_Board.typeOfBoardBatch_edit(type_of_board_batch_id)
-DELETE    /typeOfBoardBatch/:type_of_board_batch_id                     controllers.Controller_Board.typeOfBoardBatch_delete(type_of_board_batch_id)
+#Hardware
+POST      /hardware/manual_registration                                 controllers.Controller_Hardware.board_create_manual()
+POST      /hardware/automatic_registration                              controllers.Controller_Hardware.board_create_garfield()
+PUT       /hardware/userDescription/:hardware_id                        controllers.Controller_Hardware.board_update_description(hardware_id)
+PUT       /hardware/parameters/:hardware_id                             controllers.Controller_Hardware.board_update_parameters(hardware_id)
+PUT       /hardware/backup                                              controllers.Controller_Hardware.board_updateBackup()
+
+PUT       /hardware/filter/:page_number                                 controllers.Controller_Hardware.board_getByFilter(page_number: Int)
+GET       /hardware/check/:hash_for_adding                              controllers.Controller_Hardware.board_check(hash_for_adding)
+GET       /hardware/:hardware_id                                        controllers.Controller_Hardware.board_get(hardware_id)
+DELETE    /hardware/deactivate/:hardware_id                             controllers.Controller_Hardware.board_deactivate(hardware_id)
+
+PUT       /hardware/picture/upload/:hardware_id                         controllers.Controller_Hardware.board_uploadPicture(hardware_id)
+PUT       /hardware/picture/remove/:hardware_id                         controllers.Controller_Hardware.board_removePicture(hardware_id)
+PUT       /hardware/command                                             controllers.Controller_Hardware.board_command_execution()
+PUT       /hardware/mqtt_password_reset/:hardware_id                    controllers.Controller_Hardware.board_generate_new_password(hardware_id)
+PUT       /hardware/change_server/:hardware_id                          controllers.Controller_Hardware.board_redirect_to_server(hardware_id)
+
+#Hardware Group
+POST      /hardware_group                                               controllers.Controller_Hardware.hardwareGroup_create()
+PUT       /hardware_group/add_hw                                        controllers.Controller_Hardware.hardwareGroup_addHardware()
+PUT       /hardware_group/remove_hw                                     controllers.Controller_Hardware.hardwareGroup_removeHardware()
+PUT       /hardware_group/:group_id                                     controllers.Controller_Hardware.hardwareGroup_update(group_id)
+GET       /hardware_group/project/:project_id                           controllers.Controller_Hardware.hardwareGroup_getByProject(project_id)
+GET       /hardware_group/individual/:group_id                          controllers.Controller_Hardware.hardwareGroup_get(group_id)
+DELETE    /hardware_group/:group_id                                     controllers.Controller_Hardware.hardwareGroup_delete(group_id)
+
+#Hardware Type
+POST      /hardware_type                                                controllers.Controller_Hardware.hardwareType_create()
+PUT       /hardware_type/picture/:hardware_type_id                      controllers.Controller_Hardware.hardwareType_uploadPicture(hardware_type_id)
+PUT       /hardware_type/:hardware_type_id                              controllers.Controller_Hardware.hardwareType_update(hardware_type_id)
+DELETE    /hardware_type/:hardware_type_id                              controllers.Controller_Hardware.hardwareType_delete(hardware_type_id)
+GET       /hardware_type/all                                            controllers.Controller_Hardware.hardwareType_getAll()
+GET       /hardware_type/:hardware_type_id                              controllers.Controller_Hardware.hardwareType_get(hardware_type_id)
+
+POST      /typeOfBoardBatch/:hardware_type_id                           controllers.Controller_Hardware.hardwareBatch_create(hardware_type_id)
+PUT       /typeOfBoardBatch/:type_of_board_batch_id                     controllers.Controller_Hardware.hardwareBatch_edit(type_of_board_batch_id)
+DELETE    /typeOfBoardBatch/:type_of_board_batch_id                     controllers.Controller_Hardware.hardwareBatch_delete(type_of_board_batch_id)
 
 #Bootloader
-POST      /bootloader/:type_of_board_id                                 controllers.Controller_Board.bootLoader_create(type_of_board_id)
-PUT       /bootloader/file/:boot_loader_id                              controllers.Controller_Board.bootLoader_uploadFile(boot_loader_id)
-PUT       /bootloader/mark/bootloader/:boot_loader_id                   controllers.Controller_Board.bootLoader_markAsMain(boot_loader_id)
-PUT       /bootloader/update_device_list                                controllers.Controller_Board.bootLoader_manualUpdate()
-PUT       /bootloader/:boot_loader_id                                   controllers.Controller_Board.bootLoader_update(boot_loader_id)
-DELETE    /bootloader/:boot_loader_id                                   controllers.Controller_Board.bootLoader_delete(boot_loader_id)
+POST      /bootloader/:hardware_type_id                                 controllers.Controller_Hardware.bootLoader_create(hardware_type_id)
+PUT       /bootloader/file/:boot_loader_id                              controllers.Controller_Hardware.bootLoader_uploadFile(boot_loader_id)
+PUT       /bootloader/mark/bootloader/:boot_loader_id                   controllers.Controller_Hardware.bootLoader_markAsMain(boot_loader_id)
+PUT       /bootloader/update_device_list                                controllers.Controller_Hardware.bootLoader_manualUpdate()
+PUT       /bootloader/:boot_loader_id                                   controllers.Controller_Hardware.bootLoader_update(boot_loader_id)
+DELETE    /bootloader/:boot_loader_id                                   controllers.Controller_Hardware.bootLoader_delete(boot_loader_id)
 
 #File / Skryto ve swaggeru
-GET       /file/bootloader/:bootloader_id                               controllers.Controller_Board.fileRecord_get_bootLoader(bootloader_id)
-GET       /file/cprogram_version/:version_id                            controllers.Controller_Board.fileRecord_get_firmware(version_id)
+GET       /file/bootloader/:bootloader_id                               controllers.Controller_Hardware.fileRecord_get_bootLoader(bootloader_id)
+GET       /file/cprogram_version/:version_id                            controllers.Controller_Hardware.fileRecord_get_firmware(version_id)
 
 ### GRIDS ############ GRIDS ############### GRIDS ################ GRIDS ######################################################################################################
 ################################################################################################################################################################################
@@ -438,7 +438,6 @@ POST      /m_program/:m_project_id                                      controll
 GET       /m_program/:m_progrm_id                                       controllers.Controller_Grid.get_M_Program(m_progrm_id)
 PUT       /m_program/:m_progrm_id                                       controllers.Controller_Grid.edit_M_Program(m_progrm_id)
 DELETE    /m_program/:m_progrm_id                                       controllers.Controller_Grid.remove_M_Program(m_progrm_id)
-
 
 # Terminals Aps
 GET       /m_program/app/token/*qr_token                                controllers.Controller_Grid.get_M_Program_byQR_Token_forMobile(qr_token)
@@ -471,16 +470,16 @@ PUT       /admin/widget/version/set_main/:grid_widget_id                controll
 ### GARFIELD ############ GARFIELD ############### GARFIELD ################ GARFIELD ##########################################################################################
 ################################################################################################################################################################################
 
-POST      /garfiled                                                      controllers.Controller_Garfield.create_Garfield()
-GET       /garfield                                                      controllers.Controller_Garfield.get_Garfield_list()
-PUT       /garfiled/:garfield_id                                         controllers.Controller_Garfield.edit_Garfield(garfield_id)
-DELETE    /garfiled/:garfield_id                                         controllers.Controller_Garfield.remove_Garfield(garfield_id)
-GET       /garfiled/:garfield_id                                         controllers.Controller_Garfield.get_Garfield(garfield_id)
-GET       /admin/garfiled-synchronize                                    utilities.hardware_registration_auhtority.Hardware_Registration_Authority.synchronize_script()
-GET       /admin/garfiled-print-labes/:board_id                          controllers.Controller_Garfield.print_label(board_id)
+POST      /garfiled                                                     controllers.Controller_Garfield.create_Garfield()
+GET       /garfield                                                     controllers.Controller_Garfield.get_Garfield_list()
+PUT       /garfiled/:garfield_id                                        controllers.Controller_Garfield.edit_Garfield(garfield_id)
+DELETE    /garfiled/:garfield_id                                        controllers.Controller_Garfield.remove_Garfield(garfield_id)
+GET       /garfiled/:garfield_id                                        controllers.Controller_Garfield.get_Garfield(garfield_id)
+GET       /admin/garfiled-synchronize                                   utilities.hardware_registration_auhtority.Hardware_Registration_Authority.synchronize_script()
+GET       /admin/garfiled-print-labes/:hardware_id                      controllers.Controller_Garfield.print_label(hardware_id)
 
-GET       /printer/printer/:garfield_id/:printer_id                      controllers.Controller_Garfield.online_state_Printer(garfield_id, printer_id: Integer)
-POST      /printer/test/:garfield_id/:printer_id                         controllers.Controller_Garfield.print_test_Printer(garfield_id, printer_id: Integer)
+GET       /printer/printer/:garfield_id/:printer_id                     controllers.Controller_Garfield.online_state_Printer(garfield_id, printer_id: Integer)
+POST      /printer/test/:garfield_id/:printer_id                        controllers.Controller_Garfield.print_test_Printer(garfield_id, printer_id: Integer)
 
 
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################

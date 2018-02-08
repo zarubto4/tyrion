@@ -16,7 +16,7 @@ public class WS_Message_Hardware_overview_Board {
     @Constraints.Required public UUID hardware_id;
     @Constraints.Required public boolean online_state;
     @Constraints.Required public String mac;
-                          public List<UUID> hardware_group_ids = new ArrayList<>();
+                          public UUID hardware_group_id;
 
 
 

@@ -7,6 +7,7 @@ import play.data.validation.Constraints;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @ApiModel(description = "Json Model for new Version of B_Program",
              value = "B_Program_Version_New")
@@ -28,9 +29,9 @@ public class Swagger_B_Program_Version_New extends Swagger_NameAndDescription {
         public M_Project_SnapShot() {}
 
         @Constraints.Required @ApiModelProperty(required = true)
-        public String m_project_id;
+        public UUID m_project_id;
 
-        @Valid @ApiModelProperty(value = "Connected boards", required = true)
+        @Valid @ApiModelProperty(value = "Connected hardware", required = true)
         public List<M_Program_SnapShot> m_program_snapshots = new ArrayList<>();
 
     }
@@ -40,10 +41,10 @@ public class Swagger_B_Program_Version_New extends Swagger_NameAndDescription {
         public M_Program_SnapShot() {}
 
         @Constraints.Required @ApiModelProperty(required = true)
-        public String m_program_id;
+        public UUID m_program_id;
 
         @Constraints.Required @ApiModelProperty(required = true)
-        public String version_object_id;
+        public UUID version_object_id;
 
     }
 }

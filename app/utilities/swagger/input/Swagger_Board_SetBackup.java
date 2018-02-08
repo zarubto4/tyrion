@@ -11,7 +11,7 @@ import java.util.List;
         value = "Board_SetBackup")
 public class Swagger_Board_SetBackup {
 
-    @Valid @ApiModelProperty(value = "List of Pairs for settings of Backup C_Program Version on boards", required = true)
+    @Valid @ApiModelProperty(value = "List of Pairs for settings of Backup C_Program Version on hardware", required = true)
     public List<Swagger_Board_CProgram_Pair> board_backup_pair_list  = new ArrayList<>();
 
 

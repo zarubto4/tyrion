@@ -9,8 +9,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+@Constraints.Validate
 @ApiModel(value = "ServerUpdate", description = "Json Model for scheduling server update.")
-public class Swagger_ServerUpdate {
+public class Swagger_ServerUpdate implements Constraints.Validatable<List<ValidationError>> {
 
     @Constraints.Required
     public String version;
@@ -19,6 +20,7 @@ public class Swagger_ServerUpdate {
     @ApiModelProperty(required = true, value = "UNIX time in millis", example = "1466163478925", dataType = "integer")
     public Long update_time;
 
+    @Override
     public List<ValidationError> validate() {
 
         List<ValidationError> errors = new ArrayList<>();

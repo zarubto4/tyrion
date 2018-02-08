@@ -10,6 +10,6 @@ public class Swagger_Resend_Email {
 
     @Constraints.Email
     @ApiModelProperty(required = false, value = "Email is optional value! If it is empty, default invoice email will be used.")
-    public String mail;
+    public String email;
 
 }

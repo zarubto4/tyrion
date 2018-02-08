@@ -2,30 +2,24 @@ package utilities.scheduler;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import models.Model_ActualizationProcedure;
+import models.Model_UpdateProcedure;
 import models.Model_InstanceSnapshot;
-import org.ehcache.config.builders.CacheConfigurationBuilder;
-import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.quartz.*;
 import org.reflections.Reflections;
-import org.reflections.scanners.FieldAnnotationsScanner;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import utilities.Server;
-import utilities.enums.ServerMode;
 import utilities.logger.Logger;
 import utilities.scheduler.jobs.*;
 import utilities.update_server.ServerUpdate;
 
-import java.lang.reflect.Field;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Set;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
-import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.repeatHourlyForever;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -163,7 +157,7 @@ public class SchedulerController {
      * Schedules a new job to be executed on the given date. Job will be executed only once and start update procedure on all hardware.
      * @param procedure
      */
-    public void scheduleUpdateProcedure(Model_ActualizationProcedure procedure) {
+    public void scheduleUpdateProcedure(Model_UpdateProcedure procedure) {
         try {
 
             String name = "actualization-procedure-update-" + procedure.id.toString();

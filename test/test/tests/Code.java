@@ -28,7 +28,7 @@ public class Code extends TestHelper {
     public static Model_Project project;
     public static Model_Producer producer;
     public static Model_Processor processor;
-    public static Model_TypeOfBoard typeOfBoard;
+    public static Model_HardwareType typeOfBoard;
     public static Model_Board board;
     public static Model_CProgram private_c_program;
     public static Model_VersionObject private_c_program_version;
@@ -101,7 +101,7 @@ public class Code extends TestHelper {
         body.put("project_id", project.id);
         body.put("name", UUID.randomUUID().toString());
         body.put("description", UUID.randomUUID().toString());
-        body.put("type_of_board_id", typeOfBoard.id);
+        body.put("hardware_type_id", typeOfBoard.id);
 
         WSResponse response = Play.current().injector().instanceOf(WSClient.class)
                 .url(Server.tyrion_serverAddress + routes.Controller_Code.c_program_create().toString())
@@ -114,8 +114,8 @@ public class Code extends TestHelper {
         expected.put("name", body.get("name").asText());
         expected.put("description", body.get("description").asText());
         expected.put("project_id", project.id);
-        expected.put("type_of_board_id", typeOfBoard.id);
-        expected.put("type_of_board_name", typeOfBoard.name);
+        expected.put("hardware_type_id", typeOfBoard.id);
+        expected.put("hardware_type_name", typeOfBoard.name);
         expected.putNull("program_versions");
         expected.put("edit_permission", true);
         expected.put("update_permission", true);
@@ -138,8 +138,8 @@ public class Code extends TestHelper {
         expected.put("name", private_c_program.name);
         expected.put("description", private_c_program.description);
         expected.put("project_id", project.id);
-        expected.put("type_of_board_id", typeOfBoard.id);
-        expected.put("type_of_board_name", typeOfBoard.name);
+        expected.put("hardware_type_id", typeOfBoard.id);
+        expected.put("hardware_type_name", typeOfBoard.name);
         expected.putNull("program_versions");
         expected.put("edit_permission", true);
         expected.put("update_permission", true);
@@ -173,7 +173,7 @@ public class Code extends TestHelper {
 
         body.put("name", UUID.randomUUID().toString());
         body.put("description", UUID.randomUUID().toString());
-        body.put("type_of_board_id", typeOfBoard.id);
+        body.put("hardware_type_id", typeOfBoard.id);
 
         WSResponse response = Play.current().injector().instanceOf(WSClient.class)
                 .url(Server.tyrion_serverAddress + routes.Controller_Code.c_program_edit(c.id).toString())
@@ -186,8 +186,8 @@ public class Code extends TestHelper {
         expected.put("name", body.get("name").asText());
         expected.put("description", body.get("description").asText());
         expected.put("project_id", project.id);
-        expected.put("type_of_board_id", typeOfBoard.id);
-        expected.put("type_of_board_name", typeOfBoard.name);
+        expected.put("hardware_type_id", typeOfBoard.id);
+        expected.put("hardware_type_name", typeOfBoard.name);
         expected.putNull("program_versions");
         expected.put("edit_permission", true);
         expected.put("update_permission", true);

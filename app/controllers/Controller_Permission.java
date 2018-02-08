@@ -56,7 +56,7 @@ public class Controller_Permission extends BaseController {
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result permission_person_add(@ApiParam(required = true) String person_id, @ApiParam(required = true) String permission_id) {
         try {
@@ -101,7 +101,7 @@ public class Controller_Permission extends BaseController {
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result permission_person_remove(@ApiParam(required = true) String person_id, @ApiParam(required = true) String permission_id) {
         try {
@@ -143,7 +143,7 @@ public class Controller_Permission extends BaseController {
             @ApiResponse(code = 200, message = "Ok Result", response = Model_Permission.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result permission_get_all() {
         try {
@@ -186,7 +186,7 @@ public class Controller_Permission extends BaseController {
             @ApiResponse(code = 200, message = "Ok Result", response = Model_Permission.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result permission_edit(String permission_id) {
@@ -247,7 +247,7 @@ public class Controller_Permission extends BaseController {
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result permission_add_to_role(@ApiParam(required = true) String role_id) {
@@ -300,7 +300,7 @@ public class Controller_Permission extends BaseController {
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result permission_remove_from_role(@ApiParam(required = true) String permission_id, @ApiParam(required = true) String role_id) {
         try {
@@ -351,7 +351,7 @@ public class Controller_Permission extends BaseController {
             @ApiResponse(code = 201, message = "Successfully created", response = Model_Role.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result role_create() {
@@ -396,7 +396,7 @@ public class Controller_Permission extends BaseController {
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result role_delete(@ApiParam(required = true) String role_id) {
         try {
@@ -444,7 +444,7 @@ public class Controller_Permission extends BaseController {
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result role_edit(@ApiParam(required = true) String role_id) {
         try {
@@ -487,7 +487,7 @@ public class Controller_Permission extends BaseController {
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result role_get(@ApiParam(required = true) String role_id) {
         try {
@@ -533,7 +533,7 @@ public class Controller_Permission extends BaseController {
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result role_add_person(@ApiParam(required = true) String role_id) {
         try {
@@ -588,7 +588,7 @@ public class Controller_Permission extends BaseController {
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result role_remove_person(@ApiParam(required = true) String role_id, @ApiParam(required = true) String person_id) {
         try {
@@ -622,7 +622,7 @@ public class Controller_Permission extends BaseController {
             @ApiResponse(code = 200, message = "Ok Result", response = Model_Role.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result role_get_all() {
         try {
@@ -652,7 +652,7 @@ public class Controller_Permission extends BaseController {
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result system_access_get_everything(@ApiParam(required = true) String person_id) {
         try {

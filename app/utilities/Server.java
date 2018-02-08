@@ -5,6 +5,7 @@ import com.microsoft.azure.documentdb.*;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.typesafe.config.Config;
+import controllers.Controller_WebSocket;
 import models.*;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
@@ -111,7 +112,6 @@ public class Server {
 
         setConstants();
 
-
         ServerCache.init();
 
         try {
@@ -121,8 +121,6 @@ public class Server {
         } catch (PersistenceException e) {
             logger.error("start - DB is inconsistent, probably evolution will occur", e);
         }
-
-
 
         DocumentDB.init();
 
@@ -136,6 +134,8 @@ public class Server {
      */
     public static void stop() {
         ServerCache.close();
+
+        Controller_WebSocket.close();
     }
 
     /**

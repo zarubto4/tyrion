@@ -12,7 +12,7 @@ import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
-import utilities.model.NamedModel;
+import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
@@ -24,7 +24,7 @@ import java.util.UUID;
 @Entity
 @ApiModel( value = "Block", description = "Model of Block")
 @Table(name="Block")
-public class Model_Block extends NamedModel {
+public class Model_Block extends TaggedModel {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
@@ -43,8 +43,6 @@ public class Model_Block extends NamedModel {
 
     @JsonIgnore @OneToMany(mappedBy="block", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     public List<Model_BlockVersion> versions = new ArrayList<>();
-
-    @ManyToMany public List<Model_Tag> tags = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 

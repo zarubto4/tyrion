@@ -21,6 +21,8 @@ import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Library_Version;
 import utilities.swagger.output.filter_results.Swagger_Library_List;
 
+import java.util.UUID;
+
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
@@ -58,11 +60,12 @@ public class Controller_Library extends BaseController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",    response = Model_Library.class),
-            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_Library.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result library_create() {
@@ -82,16 +85,16 @@ public class Controller_Library extends BaseController {
             if (help.project_id != null) {
 
                 Model_Project project = Model_Project.getById(help.project_id);
-                if (project == null || !project.update_permission()) return notFound("Project project_id not found");
+                if (project == null || !project.update_permission()) return notFound("Project not found");
                 library.project = project;
             }
 
-            for (String type_of_board_id : help.type_of_board_ids) {
+            for (UUID hardware_type_id : help.hardware_type_ids) {
 
-                Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.getById(type_of_board_id);
-                if (typeOfBoard != null) {
+                Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
+                if (hardwareType != null) {
 
-                    library.type_of_boards.add(typeOfBoard);
+                    library.hardware_types.add(hardwareType);
                 }
             }
 
@@ -134,6 +137,7 @@ public class Controller_Library extends BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result library_clone() {
@@ -146,14 +150,14 @@ public class Controller_Library extends BaseController {
 
             // Vyhledám Objekt
             Model_Library library_old = Model_Library.getById(help.library_id);
-            if (library_old == null) return notFound("Model_Library library not found");
+            if (library_old == null) return notFound("Library not found");
 
             // Zkontroluji oprávnění
             if (!library_old.read_permission())  return forbiddenEmpty();
 
             // Vyhledám Objekt
             Model_Project project = Model_Project.getById(help.project_id);
-            if (project == null) return notFound("Project project_id not found");
+            if (project == null) return notFound("Project not found");
 
             // Zkontroluji oprávnění
             if (!project.update_permission())  return forbiddenEmpty();
@@ -162,7 +166,7 @@ public class Controller_Library extends BaseController {
             Model_Library library_new =  new Model_Library();
             library_new.name = help.name;
             library_new.description = help.description;
-            library_new.type_of_boards = library_old.type_of_boards;
+            library_new.hardware_types = library_old.hardware_types;
             library_new.project = project;
             library_new.save();
 
@@ -204,22 +208,16 @@ public class Controller_Library extends BaseController {
             notes = "if you want to get Library.",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
-                    }),
-            }
+            protocols = "https"
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_Library.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Library.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result library_get(@ApiParam(value = "library_id String query", required = true)  String library_id) {
+    public Result library_get(@ApiParam(value = "library_id String query", required = true) String library_id) {
         try {
 
             // Kontrola objektu
@@ -239,13 +237,7 @@ public class Controller_Library extends BaseController {
             notes = "if you want to get Libraries filtered by specific parameters. For private Libraries under project set project_id, for all public use empty JSON",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!" ),
-                    }),
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -259,11 +251,11 @@ public class Controller_Library extends BaseController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Library_List.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Library_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result library_getByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false)  int page_number) {
         try {
@@ -279,11 +271,11 @@ public class Controller_Library extends BaseController {
             query.orderBy("UPPER(name) ASC");
 
 
-            if (!help.type_of_board_ids.isEmpty()) {
-                query.where().in("type_of_boards.id", help.type_of_board_ids);
+            if (!help.hardware_type_ids.isEmpty()) {
+                query.where().in("hardware_types.id", help.hardware_type_ids);
             }
 
-            if (help.project_id != null && !help.project_id.equals("")) {
+            if (help.project_id != null) {
 
                 Model_Project project = Model_Project.getById(help.project_id);
                 if (project == null )return notFound("Project not found");
@@ -339,12 +331,12 @@ public class Controller_Library extends BaseController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully updated",    response = Model_Library.class),
-            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Successfully updated",      response = Model_Library.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result library_edit(@ApiParam(value = "library_id String query", required = true)  String library_id) {
@@ -391,11 +383,11 @@ public class Controller_Library extends BaseController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result library_delete(@ApiParam(value = "library_id String query", required = true)  String library_id) {
         try {
@@ -447,11 +439,10 @@ public class Controller_Library extends BaseController {
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created",      response = Swagger_Library_Version.class),
             @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_InvalidBody.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result library_version_create(@ApiParam(value = "library_id String query", required = true)  String library_id) {
@@ -464,7 +455,7 @@ public class Controller_Library extends BaseController {
 
             // Ověření objektu
             Model_Library library = Model_Library.getById(library_id);
-            if (library == null) return notFound("Library library_id not found");
+            if (library == null) return notFound("Library not found");
 
             // Zkontroluji oprávnění
             if (!library.update_permission()) return forbiddenEmpty();
@@ -513,22 +504,22 @@ public class Controller_Library extends BaseController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Library_Version.class),
-            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Library_Version.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result library_version_get(@ApiParam(value = "version_id String query", required = true)  String version_id) {
         try {
 
             // Vyhledám Objekt
             Model_Version version_object = Model_Version.getById(version_id);
-            if (version_object == null) return notFound("Version_Object version not found");
+            if (version_object == null) return notFound("Version not found");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
-            if (version_object.library == null) return badRequest("Version_Object is not version of Library");
+            if (version_object.library == null) return badRequest("Version is not version of Library");
 
             // Zkontroluji oprávnění
             if (! version_object.library.read_permission())  return forbiddenEmpty();
@@ -546,13 +537,7 @@ public class Controller_Library extends BaseController {
             notes = "For update basic (name and description) information in Version of Library. If you want update code. You have to create new version. " +
                     "And after that you can delete previous version",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "Library_edit"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -570,7 +555,7 @@ public class Controller_Library extends BaseController {
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result library_version_edit(@ApiParam(value = "version_id String query",   required = true)  String version_id) {
@@ -583,10 +568,10 @@ public class Controller_Library extends BaseController {
 
             // Ověření objektu
             Model_Version version = Model_Version.getById(version_id);
-            if (version == null) return notFound("Version version_id not found");
+            if (version == null) return notFound("Version not found");
 
             // Zkontroluji validitu Verze zda sedí k Library
-            if (version.library == null) return badRequest("Version_Object is not version of Library");
+            if (version.library == null) return badRequest("Version is not version of Library");
 
             // Kontrola oprávnění
             if (!version.library.edit_permission()) return forbiddenEmpty();
@@ -611,30 +596,24 @@ public class Controller_Library extends BaseController {
             notes = "delete Library by query = version_id",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value = "Library_delete"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response =  Result_Ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Objects not found",       response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Ok Result",                 response =  Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result library_version_delete(@ApiParam(value = "version_id String query",   required = true)    String version_id) {
         try {
 
             // Ověření objektu
             Model_Version version_object = Model_Version.getById(version_id);
-            if (version_object == null) return notFound("Version version_id not found");
+            if (version_object == null) return notFound("Version not found");
 
             // Zkontroluji validitu Verze zda sedí k Library
-            if (version_object.library == null) return badRequest("Version_Object is not version of Library");
+            if (version_object.library == null) return badRequest("Version is not version of Library");
 
             // Kontrola oprávnění
             if (!version_object.library.delete_permission()) return forbiddenEmpty();
@@ -663,7 +642,7 @@ public class Controller_Library extends BaseController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Bad Request", response = Result_BadRequest.class),
+            @ApiResponse(code = 400, message = "Bad Request",               response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
@@ -812,7 +791,7 @@ public class Controller_Library extends BaseController {
                                 .divider()
                                 .text("We will publish it as soon as possible.")
                                 .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                                .send(version_old.get_c_program().get_project().get_product().customer, "Publishing your program" );
+                                .send(version_old.get_c_program().get_project().getProduct().customer, "Publishing your program" );
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -834,7 +813,7 @@ public class Controller_Library extends BaseController {
                                 .text("We will publish it as soon as possible. We also had to make some changes to your program or rename something.")
                                 .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                                 .text(Email.bold("Thanks!") + Email.newLine() + BaseController.person().full_name())
-                                .send(version_old.get_c_program().get_project().get_product().customer, "Publishing your program" );
+                                .send(version_old.get_c_program().get_project().getProduct().customer, "Publishing your program" );
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -859,7 +838,7 @@ public class Controller_Library extends BaseController {
                                     "We are glad that you want to contribute to our public libraries. Here are some tips what to improve, so you can try it again.")
                             .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                             .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                            .send(version_old.get_c_program().get_project().get_product().customer, "Publishing your program");
+                            .send(version_old.get_c_program().get_project().getProduct().customer, "Publishing your program");
 
                 } catch (Exception e) {
                     logger.internalServerError(e);

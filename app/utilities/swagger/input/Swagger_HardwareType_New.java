@@ -4,9 +4,11 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
-@ApiModel(description = "Json Model for new TypeOfBoard",
-          value = "TypeOfBoard_New")
-public class Swagger_TypeOfBoard_New extends Swagger_NameAndDescription {
+import java.util.UUID;
+
+@ApiModel(description = "Json Model for new HardwareType",
+          value = "HardwareType_New")
+public class Swagger_HardwareType_New extends Swagger_NameAndDescription {
 
     @Constraints.Required
     @Constraints.MinLength(value = 4)
@@ -16,11 +18,11 @@ public class Swagger_TypeOfBoard_New extends Swagger_NameAndDescription {
 
     @Constraints.Required
     @ApiModelProperty(required = true, value = "Required valid producer_id")
-    public String producer_id;
+    public UUID producer_id;
 
     @Constraints.Required
     @ApiModelProperty(required = true, value = "Required valid processor_id")
-    public String processor_id;
+    public UUID processor_id;
 
     @Constraints.Required
     @ApiModelProperty(value = "If device can connect to internet", required = true)

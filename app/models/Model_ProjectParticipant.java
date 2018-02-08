@@ -29,9 +29,9 @@ public class Model_ProjectParticipant extends BaseModel {
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public UUID id()          { if (person == null) return null; return person.id;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public String mail()  { if (person == null) return this.user_email; return person.email;}
-    @JsonProperty @Transient @ApiModelProperty(required = true) public String full_name()   { if (person == null) return "Unregistered user"; return person.full_name();}
+    @JsonProperty @ApiModelProperty(required = true) public UUID id()          { if (person == null) return null; return person.id;}
+    @JsonProperty @ApiModelProperty(required = true) public String mail()  { if (person == null) return this.user_email; return person.email;}
+    @JsonProperty @ApiModelProperty(required = true) public String full_name()   { if (person == null) return "Unregistered user"; return person.full_name();}
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
@@ -52,6 +52,6 @@ public class Model_ProjectParticipant extends BaseModel {
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<UUID, Model_ProjectParticipant> find = new Finder<>(Model_ProjectParticipant.class);
 
+    public static Finder<UUID, Model_ProjectParticipant> find = new Finder<>(Model_ProjectParticipant.class);
 }

@@ -10,6 +10,8 @@ import utilities.logger.Logger;
 import utilities.model.NamedModel;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -36,18 +38,21 @@ public class Model_Garfield  extends NamedModel {
                          public Integer print_label_id_2;   // 24 mm
                          public Integer print_sticker_id;   // 65 mm
 
-    @JsonIgnore          public UUID type_of_board_id;    // Jaký typ hardwaru umí testovat garfield! ( Je to zatím předpokládáno na 1:1) Vazba není přes ORM!!!
+    @JsonIgnore          public UUID hardware_type_id;    // Jaký typ hardwaru umí testovat garfield! ( Je to zatím předpokládáno na 1:1) Vazba není přes ORM!!!
     @JsonIgnore          public UUID producer_id;         // Kdo desku vyrobil!
+
+    @JsonIgnore @Column(columnDefinition = "TEXT")
+    public String configurations;
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Model_TypeOfBoard type_of_board() {
+    public Model_HardwareType hardware_type() {
         try {
 
-            if (type_of_board_id != null) return Model_TypeOfBoard.getById(type_of_board_id);
+            if (hardware_type_id != null) return Model_HardwareType.getById(hardware_type_id);
             return null;
 
         } catch (Exception e) {
@@ -69,9 +74,61 @@ public class Model_Garfield  extends NamedModel {
         }
     }
     
-/* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
+/* JSON IGNORE VALUES --------------------------------------------------------------------------------------------------*/
      
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+    public static class Configurations {
+        public Configurations() {}
+
+        List<TestConfiguration> test = new ArrayList<>();
+    }
+
+    public static class TestConfiguration {
+        public TestConfiguration() {}
+
+        public Pins pins;
+        public Power power;
+    }
+
+    public static class Pins {
+        public Pins() {}
+
+        public PinValues up;
+        public PinValues down;
+    }
+
+    public static class PinValues {
+        public PinValues() {}
+
+        public List<String> x = new ArrayList<>();
+        public List<String> y = new ArrayList<>();
+        public List<String> z = new ArrayList<>();
+    }
+
+    public static class Power {
+        public Power() {}
+
+        public PowerSource poe_act;
+        public PowerSource poe_pas;
+        public PowerSource ext_pwr;
+        public PowerSource usb_pwr;
+    }
+
+    public static class PowerSource {
+        public PowerSource() {}
+
+        public PowerParams vbus;
+        public PowerParams v3;
+        public PowerParams curr;
+    }
+
+    public static class PowerParams {
+        public PowerParams() {}
+
+        public Double min;
+        public Double max;
+    }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -85,11 +142,11 @@ public class Model_Garfield  extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
     
-    @JsonIgnore   @Transient public boolean create_permission() {  return  BaseController.person().has_permission(Permission.Garfield_create.name());}
-    @JsonProperty @Transient public boolean edit_permission()   {  return  BaseController.person().has_permission(Permission.Garfield_edit.name());}
-    @JsonProperty @Transient public boolean read_permission()   {  return  BaseController.person().has_permission(Permission.Garfield_read.name());}
-    @JsonProperty @Transient public boolean delete_permission() {  return  BaseController.person().has_permission(Permission.Garfield_delete.name());}
-    @JsonProperty @Transient public boolean update_permission() {  return  BaseController.person().has_permission(Permission.Garfield_update.name());}
+    @JsonIgnore   public boolean create_permission() {  return  BaseController.person().has_permission(Permission.Garfield_create.name());}
+    @JsonProperty public boolean edit_permission()   {  return  BaseController.person().has_permission(Permission.Garfield_edit.name());}
+    @JsonProperty public boolean read_permission()   {  return  BaseController.person().has_permission(Permission.Garfield_read.name());}
+    @JsonProperty public boolean delete_permission() {  return  BaseController.person().has_permission(Permission.Garfield_delete.name());}
+    @JsonProperty public boolean update_permission() {  return  BaseController.person().has_permission(Permission.Garfield_update.name());}
 
     public enum Permission { Garfield_create, Garfield_read, Garfield_edit, Garfield_update, Garfield_delete }
 

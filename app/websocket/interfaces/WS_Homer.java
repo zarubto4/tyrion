@@ -7,8 +7,6 @@ import controllers.Controller_WebSocket;
 import models.Model_Hardware;
 import models.Model_HomerServer;
 import models.Model_Instance;
-import play.data.Form;
-import play.i18n.Lang;
 import play.libs.Json;
 import utilities.logger.Logger;
 import utilities.threads.homer_server.Synchronize_Homer_Hardware_after_connection;
@@ -60,7 +58,7 @@ public class WS_Homer extends WS_Interface {
 
             logger.trace("onMessage - homer is not authorized yet");
 
-            validation_check(json);
+            verify(json);
             return;
         }
 
@@ -84,12 +82,9 @@ public class WS_Homer extends WS_Interface {
                 }
 
                 default: {
-                    logger.internalServerError(new Exception("onMessage: message not recognize incoming messageChanel!!! ->" + json.get("message_channel").asText()));
-
+                    logger.internalServerError(new Exception("Unknown message_channel ->" + json.get("message_channel").asText()));
                 }
-
             }
-
         } else {
             logger.internalServerError(new Exception(this.id + " Incoming message has not message_channel!!!!"));
         }
@@ -102,10 +97,13 @@ public class WS_Homer extends WS_Interface {
 
     @Override
     public void onClose() {
+        Controller_WebSocket.homers_not_sync.remove(this.id);
         Controller_WebSocket.homers.remove(this.id);
+
+        Model_HomerServer.getById(this.id).is_disconnect();
     }
 
-    public void approve_server_verification(String message_id) {
+    public void verificationSuccess(String message_id) {
 
         this.authorized = true;
         this.token =  UUID.randomUUID().toString() + UUID.randomUUID().toString();
@@ -119,11 +117,11 @@ public class WS_Homer extends WS_Interface {
         synchronize_configuration();
     }
 
-    public void reject_server_verification(String message_id) {
+    public void verificationFail(String message_id) {
         super.send(new WS_Message_Homer_Verification_result().make_request(false, null).put("message_id", message_id));
     }
 
-    private void validation_check(ObjectNode json) {
+    private void verify(ObjectNode json) {
         try {
 
             if (json.get("message_channel").asText().equals(Model_HomerServer.CHANNEL) && json.get("message_type").asText().equals(WS_Message_Check_homer_server_permission.message_type)) {
@@ -131,8 +129,8 @@ public class WS_Homer extends WS_Interface {
                 /*final Form<WS_Message_Check_homer_server_permission> form = Form.form(WS_Message_Check_homer_server_permission.class).bind(json);
                 if (form.hasErrors()) {
 
-                    logger.trace("validation_check:: invalid incoming message {}", json);
-                    logger.trace("validation_check:: response", form.errorsAsJson(Lang.forCode("en-US")).toString());
+                    logger.trace("verify:: invalid incoming message {}", json);
+                    logger.trace("verify:: response", form.errorsAsJson(Lang.forCode("en-US")).toString());
 
                     this.send(WS_Message_Invalid_Message.make_request(WS_Message_Check_homer_server_permission.message_type, null).put("message_id", json.get("message_id").asText()));
 
@@ -157,9 +155,9 @@ public class WS_Homer extends WS_Interface {
             logger.internalServerError(new Exception("Invalid data came from Homer and also it is not verified connection", e));
 
             if (json.has("message_id")) {
-                reject_server_verification(json.get("message_id").asText());
+                verificationFail(json.get("message_id").asText());
             } else {
-                reject_server_verification(UUID.randomUUID().toString());
+                verificationFail(UUID.randomUUID().toString());
             }
         }
     }

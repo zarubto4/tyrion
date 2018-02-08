@@ -8,7 +8,7 @@ import models.Model_Instance;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel(description = "List of instancies by Filter Query",
+@ApiModel(description = "List of instances by Filter Query",
         value = "Instance_List")
 public class Swagger_Instance_List extends Filter_Common {
 

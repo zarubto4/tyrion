@@ -56,7 +56,7 @@ public class Model_Compilation extends BaseModel {
 
     @JsonIgnore
     public Model_Blob blob() {
-        return Model_Blob.find.query().where().eq("version.id", version.id).eq("file_name", "firmware.bin").findOne();
+        return Model_Blob.find.query().where().eq("version.id", version.id).eq("name", "firmware.bin").findOne();
     }
 
     @JsonProperty
@@ -75,9 +75,9 @@ public class Model_Compilation extends BaseModel {
             this.cache_blob_id = blob.id;
 
             // Separace na Container a Blob
-            int slash = blob.file_path.indexOf("/");
-            String container_name = blob.file_path.substring(0, slash);
-            String real_file_path = blob.file_path.substring(slash + 1);
+            int slash = blob.path.indexOf("/");
+            String container_name = blob.path.substring(0, slash);
+            String real_file_path = blob.path.substring(slash + 1);
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 
@@ -94,7 +94,7 @@ public class Model_Compilation extends BaseModel {
 
             String total_link = blob.getUri().toString() + "?" + sas;
 
-            logger.debug("file_path:: Total Link:: " + total_link);
+            logger.debug("path:: Total Link:: " + total_link);
 
             Model_Blob.cache_public_link.put(cache_blob_id, total_link);
 

@@ -291,7 +291,7 @@ public class Model_MProgramInstanceParameter extends BaseModel {
         return get_instance() != null && get_instance().edit_permission();
     }
 
-    public enum permissions { Library_create, Library_edit, Library_delete, Library_update }
+    public enum Permission { Library_create, Library_edit, Library_delete, Library_update }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

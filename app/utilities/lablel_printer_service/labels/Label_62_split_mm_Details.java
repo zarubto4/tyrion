@@ -82,7 +82,7 @@ public class Label_62_split_mm_Details {
     private PdfPCell device_hash_for_Add() throws DocumentException {
 
         // QR Code for ADD
-        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(this.hardware.hash_for_adding, 1000, 1000, null);
+        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(this.hardware.registration_hash, 1000, 1000, null);
         Image codeQrImage = barcodeQRCode.getImage();
         codeQrImage.scaleToFit(Label_12_mm.getWidth(), Label_12_mm.getWidth());
 
@@ -135,7 +135,7 @@ public class Label_62_split_mm_Details {
 
         Phrase phrase_firstLine = new Phrase("MAC: " + hardware.mac_address + " \n", boldFont);
         Phrase secondLine = new Phrase("ID: "+ hardware.id +  " \n" , normalFont );
-        Phrase thirthLine = new Phrase("Registration: " + hardware.hash_for_adding + "\n", registFont);
+        Phrase thirthLine = new Phrase("Registration: " + hardware.registration_hash + "\n", registFont);
 
 
         Phrase mac_address = new Phrase();
@@ -161,7 +161,7 @@ public class Label_62_split_mm_Details {
 
 
         // Processor ID
-        Phrase registration_id = new Phrase("Registration: " + hardware.hash_for_adding.substring(0, 13) + "\n" + hardware.hash_for_adding.substring(14), h5);
+        Phrase registration_id = new Phrase("Registration: " + hardware.registration_hash.substring(0, 13) + "\n" + hardware.registration_hash.substring(14), h5);
 
         PdfPCell cell_registration_id = new PdfPCell(registration_id);
         cell_registration_id.setFixedHeight(3F);

@@ -2,7 +2,7 @@ package utilities.swagger.output;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import utilities.enums.Enum_Firmware_type;
+import utilities.enums.FirmwareType;
 
 import java.util.Date;
 
@@ -13,7 +13,7 @@ public class Swagger_UpdatePlan_brief_for_homer_BinaryComponent {
 
 
     @JsonProperty
-    public Enum_Firmware_type firmware_type;
+    public FirmwareType firmware_type;
     @JsonProperty
     public String build_id;                           // Model_CCompilation.firmware_build_id or Model_BootLoader.version_identifier
     @JsonProperty
@@ -29,5 +29,5 @@ public class Swagger_UpdatePlan_brief_for_homer_BinaryComponent {
 
     // Only for Enum_Firmware_type .FIRMWARE or .BACKUP
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
-    public String compilation_lib_version;            // Model_TypeOfBoard.supported_libraries.tag_name    (try to find Swagger_CompilationLibrary)
+    public String compilation_lib_version;            // Model_HardwareType.supported_libraries.tag_name    (try to find Swagger_CompilationLibrary)
 }

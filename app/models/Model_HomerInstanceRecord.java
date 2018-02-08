@@ -101,10 +101,10 @@ public class Model_HomerInstanceRecord {
                         .eq("firmware_type", Enum_Firmware_type.FIRMWARE.name())
                         .eq("board.id", model_bPair.board.id).where()
                         .disjunction()
-                        .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
-                        .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
-                        .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
-                        .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
+                        .add(Expr.eq("state", Enum_CProgram_updater_state.NOT_YET_STARTED))
+                        .add(Expr.eq("state", Enum_CProgram_updater_state.WAITING_FOR_DEVICE))
+                        .add(Expr.eq("state", Enum_CProgram_updater_state.INSTANCE_INACCESSIBLE))
+                        .add(Expr.eq("state", Enum_CProgram_updater_state.HOMER_SERVER_IS_OFFLINE))
                         .add(Expr.isNull("state"))
                         .endJunction()
                         .findList();
@@ -113,8 +113,8 @@ public class Model_HomerInstanceRecord {
 
                 for (Model_CProgramUpdatePlan old_plan : old_plans_main_board) {
                     logger.debug("create_actualization_request: Old plan for override under B_Program in Cloud: {} ", old_plan.id);
-                    old_plan.state = Enum_CProgram_updater_state.overwritten;
-                    old_plan.date_of_finish = new Date();
+                    old_plan.state = Enum_CProgram_updater_state.OBSOLETE;
+                    old_plan.finished = new Date();
                     old_plan.update();
                 }
 
@@ -134,14 +134,14 @@ public class Model_HomerInstanceRecord {
             actualization_procedure.save();
 
             for (Model_CProgramUpdatePlan plan_update : actualization_procedure.updates) {
-                if (plan_update.state != Enum_CProgram_updater_state.complete) {
+                if (plan_update.state != Enum_CProgram_updater_state.COMPLETE) {
                     actualization_procedure.execute_update_procedure();
                     return;
                 }
             }
 
             actualization_procedure.state = Enum_Update_group_procedure_state.successful_complete;
-            actualization_procedure.date_of_finish = actualization_procedure.created;
+            actualization_procedure.finished = actualization_procedure.created;
             actualization_procedure.update();
 
         } catch (Exception e) {

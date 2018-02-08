@@ -4,9 +4,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
-@ApiModel(description = "Json Model for new TypeOfBoard Batch",
-          value = "TypeOfBoardBatch_New")
-public class Swagger_TypeOfBoardBatch_New {
+@ApiModel(description = "Json Model for new Hardware Batch",
+          value = "HardwareBatch_New")
+public class Swagger_HardwareBatch_New {
 
     @Constraints.Required @ApiModelProperty(required = true) public String revision;
     @Constraints.Required @ApiModelProperty(required = true) public String production_batch;

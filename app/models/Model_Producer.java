@@ -24,7 +24,7 @@ public class Model_Producer extends NamedModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<Model_TypeOfBoard> type_of_boards = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<Model_HardwareType> hardware_types = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<Model_Block> blocks = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<Model_Widget> widgets = new ArrayList<>();
 

@@ -1,6 +1,5 @@
 package utilities.swagger.input;
 
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
 import play.data.validation.Constraints;
 

@@ -16,8 +16,8 @@ import responses.Result_InternalServerError;
 import responses.Result_NotFound;
 import responses.Result_Unauthorized;
 import utilities.authentication.Authentication;
-import utilities.enums.Enum_CProgram_updater_state;
-import utilities.enums.Enum_Firmware_type;
+import utilities.enums.HardwareUpdateState;
+import utilities.enums.FirmwareType;
 import utilities.enums.UpdateType;
 import utilities.logger.Logger;
 import utilities.swagger.input.*;
@@ -26,6 +26,7 @@ import utilities.swagger.output.filter_results.Swagger_ActualizationProcedure_Li
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
@@ -52,7 +53,7 @@ public class Controller_Actualization extends BaseController {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_ActualizationProcedure.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_UpdateProcedure.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -62,8 +63,8 @@ public class Controller_Actualization extends BaseController {
         try {
 
             // Kontrola objektu
-            Model_ActualizationProcedure procedure = Model_ActualizationProcedure.getById(actualization_procedure_id);
-            if (procedure == null) return notFound("Actualization_Procedure actualization_procedure_id not found");
+            Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(actualization_procedure_id);
+            if (procedure == null) return notFound("ActualizationProcedure not found");
 
             // Kontrola oprávnění
             if (!procedure.read_permission()) return forbiddenEmpty();
@@ -111,14 +112,14 @@ public class Controller_Actualization extends BaseController {
             Swagger_ActualizationProcedure_Filter help = form.get();
 
             // Získání všech objektů a následné filtrování podle vlastníka
-            Query<Model_ActualizationProcedure> query = Ebean.find(Model_ActualizationProcedure.class);
+            Query<Model_UpdateProcedure> query = Ebean.find(Model_UpdateProcedure.class);
             query.order().desc("created");
 
             if (!help.project_ids.isEmpty()) {
 
-                for (String project_id : help.project_ids) {
+                for (UUID project_id : help.project_ids) {
                     Model_Project project = Model_Project.getById(project_id);
-                    if (project == null) return notFound("Model_Project project_id not found");
+                    if (project == null) return notFound("Project not found");
                     if (!project.read_permission()) return forbiddenEmpty();
                 }
 
@@ -147,7 +148,7 @@ public class Controller_Actualization extends BaseController {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_ActualizationProcedure.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_UpdateProcedure.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -157,7 +158,7 @@ public class Controller_Actualization extends BaseController {
         try {
 
             // Kontrola objektu
-            Model_ActualizationProcedure procedure = Model_ActualizationProcedure.getById(actualization_procedure_id);
+            Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(actualization_procedure_id);
             if (procedure == null) return notFound("Actualization_Procedure actualization_procedure_id not found");
 
             // Kontrola oprávnění
@@ -190,7 +191,7 @@ public class Controller_Actualization extends BaseController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Ok Created",              response = Model_ActualizationProcedure.class),
+            @ApiResponse(code = 201, message = "Ok Created",              response = Model_UpdateProcedure.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -205,12 +206,10 @@ public class Controller_Actualization extends BaseController {
             if (form.hasErrors()) return invalidBody(form.errorsAsJson());
             Swagger_ActualizationProcedure_Make help = form.get();
 
-            System.out.println("Co přišlo:: " +  Json.toJson(help));
-
             if (help != null) return created(Json.toJson(help));
 
             // Kontrola Firmware Type
-            Enum_Firmware_type firmware_type = Enum_Firmware_type.getFirmwareType(help.firmware_type);
+            FirmwareType firmware_type = FirmwareType.getFirmwareType(help.firmware_type);
             if (firmware_type == null)  return notFound("firmware_type not found");
 
             // Kontrola Projektu
@@ -233,10 +232,10 @@ public class Controller_Actualization extends BaseController {
             }
 
             Model_HardwareGroup group = Model_HardwareGroup.getById(help.hardware_group_id);
-            if (group == null)  return notFound("Model_BoardGroup group_id recognized");
+            if (group == null)  return notFound("HardwareGroup not found");
             if (!group.read_permission()) return forbiddenEmpty();
 
-            Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
+            Model_UpdateProcedure procedure = new Model_UpdateProcedure();
             procedure.type_of_update = UpdateType.MANUALLY_RELEASE_MANAGER;
             procedure.project_id = project.id;
 
@@ -248,49 +247,49 @@ public class Controller_Actualization extends BaseController {
                 procedure.date_of_planing = new Date();
             }
 
-            for (Swagger_ActualizationProcedure_Make_TypeOfBoard type_of_boards_settings : help.type_of_boards_settings) {
+            for (Swagger_ActualizationProcedure_Make_HardwareType hardware_type_settings : help.hardware_type_settings) {
 
-                Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.getById(type_of_boards_settings.type_of_board_id);
-                if (typeOfBoard == null) return notFound("firmware_type not found");
+                Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_settings.hardware_type_id);
+                if (hardwareType == null) return notFound("firmware_type not found");
 
                 Model_Version c_program_version = null;
 
-                if (firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP) {
-                    c_program_version = Model_Version.getById(type_of_boards_settings.c_program_version_id);
+                if (firmware_type == FirmwareType.FIRMWARE || firmware_type == FirmwareType.BACKUP) {
+                    c_program_version = Model_Version.getById(hardware_type_settings.c_program_version_id);
                     if (c_program_version == null) return notFound("firmware_type not found");
                     if (c_program_version.get_c_program() == null) return notFound("Version is not c Program");
                     if (!c_program_version.get_c_program().read_permission()) return forbiddenEmpty();
-                    if (!c_program_version.get_c_program().get_type_of_board().id.equals(typeOfBoard.id)) badRequest("Invalid type of CProgram for TypeOfBoard");
+                    if (!c_program_version.get_c_program().getHardwareType().id.equals(hardwareType.id)) badRequest("Invalid type of CProgram for HardwareType");
                 }
 
                 Model_BootLoader bootLoader = null;
 
-                if (firmware_type == Enum_Firmware_type.BOOTLOADER) {
-                    bootLoader = Model_BootLoader.getById(type_of_boards_settings.bootloader_id);
+                if (firmware_type == FirmwareType.BOOTLOADER) {
+                    bootLoader = Model_BootLoader.getById(hardware_type_settings.bootloader_id);
                     if (bootLoader == null) return notFound("firmware_type  found");
                     if (!bootLoader.read_permission()) return forbiddenEmpty();
-                    if (!bootLoader.type_of_board.id.equals(typeOfBoard.id)) badRequest("Invalid type of Bootloader for TypeOfBoard");
+                    if (!bootLoader.hardware_type.id.equals(hardwareType.id)) badRequest("Invalid type of Bootloader for HardwareType");
                 }
 
-                List<Model_Hardware> boards = Model_Hardware.find.query().where().eq("board_groups.id", group.id).eq("type_of_board.id", typeOfBoard.id).select("id").findList();
+                List<Model_HardwareRegistration> hw = Model_HardwareRegistration.find.query().where().eq("group.id", group.id).eq("hardware.hardware_type.id", hardwareType.id).select("id").findList();
 
-                for (Model_Hardware hardware_not_cached : boards) {
-                    Model_Hardware board = Model_Hardware.getById(hardware_not_cached.id);
-                    if (board == null) return notFound("hardware_id not found");
-                    if (!board.update_permission()) return forbiddenEmpty();
-                    if (!board.project_id().equals(project.id))
+                for (Model_HardwareRegistration hardware_not_cached : hw) {
+                    Model_HardwareRegistration hardware = Model_HardwareRegistration.getById(hardware_not_cached.id);
+                    if (hardware == null) return notFound("hardware_id not found");
+                    if (!hardware.update_permission()) return forbiddenEmpty();
+                    if (!hardware.getProject().id.equals(project.id))
                         return notFound("hardware_id is not from same project");
 
-                    Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
-                    plan.board = board;
+                    Model_HardwareUpdate plan = new Model_HardwareUpdate();
+                    plan.hardware = hardware;
                     plan.firmware_type = firmware_type;
-                    plan.state = Enum_CProgram_updater_state.not_start_yet;
+                    plan.state = HardwareUpdateState.NOT_YET_STARTED;
 
-                    if (firmware_type == Enum_Firmware_type.FIRMWARE || firmware_type == Enum_Firmware_type.BACKUP) {
+                    if (firmware_type == FirmwareType.FIRMWARE || firmware_type == FirmwareType.BACKUP) {
                         plan.c_program_version_for_update = c_program_version;
                     }
 
-                    if (firmware_type == Enum_Firmware_type.BOOTLOADER) {
+                    if (firmware_type == FirmwareType.BOOTLOADER) {
                         plan.bootloader = bootLoader;
                     }
 
@@ -300,7 +299,7 @@ public class Controller_Actualization extends BaseController {
 
             procedure.save();
 
-            return created(Json.toJson(procedure));
+            return created(procedure.json());
         } catch (Exception e) {
             return internalServerError(e);
         }
@@ -317,7 +316,7 @@ public class Controller_Actualization extends BaseController {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_CProgramUpdatePlan.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_HardwareUpdate.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -327,8 +326,8 @@ public class Controller_Actualization extends BaseController {
         try {
 
             // Kontrola objektu
-            Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.getById(plan_id);
-            if (plan == null) return notFound("Model_CProgramUpdatePlan plan_id not found");
+            Model_HardwareUpdate plan = Model_HardwareUpdate.getById(plan_id);
+            if (plan == null) return notFound("CProgramUpdatePlan not found");
 
             // Kontrola oprávnění
             if (!plan.read_permission()) return forbiddenEmpty();
@@ -376,7 +375,7 @@ public class Controller_Actualization extends BaseController {
             Swagger_ActualizationProcedureTask_Filter help = form.get();
 
             // Získání všech objektů a následné filtrování podle vlastníka
-            Query<Model_CProgramUpdatePlan> query = Ebean.find(Model_CProgramUpdatePlan.class);
+            Query<Model_HardwareUpdate> query = Ebean.find(Model_HardwareUpdate.class);
             query.order().desc("actualization_procedure.created");
 
 
@@ -389,33 +388,33 @@ public class Controller_Actualization extends BaseController {
             }
 
 
-            if (!help.board_ids.isEmpty()) {
+            if (!help.hardware_ids.isEmpty()) {
 
-                for (String board_id : help.board_ids) {
-                    Model_Hardware hardware = Model_Hardware.getById(board_id);
+                for (UUID hardware_id : help.hardware_ids) {
+                    Model_Hardware hardware = Model_Hardware.getById(hardware_id);
                     if (hardware == null) return notFound("Hardware not found");
                     if (!hardware.read_permission()) return forbiddenEmpty();
                 }
 
-                query.where().in("board.id", help.board_ids);
+                query.where().in("hardware.id", help.hardware_ids);
             }
 
             if (!help.instance_ids.isEmpty()) {
 
-                for (String instance_id : help.instance_ids) {
+                for (UUID instance_id : help.instance_ids) {
                     Model_Instance instance = Model_Instance.getById(instance_id);
-                    if (instance == null) return notFound("Model_HomerInstance board_id not found");
+                    if (instance == null) return notFound("Instance not found");
                     if (!instance.read_permission()) return forbiddenEmpty();
                 }
 
-                query.where().in("actualization_procedure.homer_instance_record.main_instance_history.id", help.instance_ids);
+                query.where().in("actualization_procedure.homer_instance_record.main_instance_history.id", help.instance_ids); // TODO
             }
 
             if (!help.actualization_procedure_ids.isEmpty()) {
 
-                for (String procedure_id : help.actualization_procedure_ids) {
-                    Model_ActualizationProcedure procedure = Model_ActualizationProcedure.getById(procedure_id);
-                    if (procedure == null) return notFound("Model_ActualizationProcedure procedure_id not found");
+                for (UUID procedure_id : help.actualization_procedure_ids) {
+                    Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(procedure_id);
+                    if (procedure == null) return notFound("ActualizationProcedure not found");
                     if (!procedure.read_permission()) return forbiddenEmpty();
                 }
 
@@ -423,7 +422,7 @@ public class Controller_Actualization extends BaseController {
             }
 
             // Vyvoření odchozího JSON
-            Swagger_ActualizationProcedureTask_List result = new Swagger_ActualizationProcedureTask_List(query,page_number);
+            Swagger_ActualizationProcedureTask_List result = new Swagger_ActualizationProcedureTask_List(query, page_number);
 
             // Vrácení objektu
             return ok(Json.toJson(result));

@@ -69,7 +69,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
@@ -120,7 +120,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result get_M_Project(@ApiParam(value = "m_project_id String query", required = true) String m_project_id) {
@@ -160,7 +160,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
@@ -205,7 +205,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result remove_M_Project(@ApiParam(value = "m_project_id String query", required = true)  String m_project_id) {
@@ -245,7 +245,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_M_Project_Interface.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Empty.class)
     @Security.Authenticated(Authentication.class)
@@ -308,7 +308,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
@@ -369,7 +369,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
@@ -432,7 +432,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result get_M_Program(@ApiParam(value = "m_program_id String query", required = true)  String m_program_id) {
@@ -472,7 +472,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result get_M_Program_version(@ApiParam(value = "m_program_version_id String query", required = true)  String m_program_version_id) {
@@ -521,7 +521,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
@@ -573,7 +573,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result edit_M_Program_version(@ApiParam(value = "m_program_version_id String query", required = true) String m_program_version_id) {
@@ -623,7 +623,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result remove_M_Program(@ApiParam(value = "m_program_id String query", required = true) String m_program_id) {
@@ -654,7 +654,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Empty.class)
     public Result remove_M_Program_version( @ApiParam(value = "m_program_version_id", required = true) String m_program_version_id) {
@@ -706,7 +706,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 477, message = "External Server is offline", response = Result_ServerOffline.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result get_M_Program_byQR_Token_forMobile(String qr_token) {
         try {
@@ -766,7 +766,7 @@ public class Controller_Grid extends BaseController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Valid Identification",      response = Model_GridTerminal.class),
             @ApiResponse(code = 400, message = "Invalid Identification",    response = Result_BadRequest.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result check_identifiactor(String terminal_id) {
@@ -823,7 +823,7 @@ public class Controller_Grid extends BaseController {
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successfully created",    response = Model_GridTerminal.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_InvalidBody.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     //@Security.Authenticated(Authentication.class) - Není záměrně!!!! - Ověřuje se v read_permision program může být public!
@@ -892,7 +892,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
@@ -987,7 +987,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
@@ -1043,7 +1043,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result widget_get(@ApiParam(value = "widget_id String path",   required = true) String grid_widget_id) {
@@ -1091,7 +1091,7 @@ public class Controller_Grid extends BaseController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_GridWidget_List.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result widget_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number) {
@@ -1149,7 +1149,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result widget_delete(@ApiParam(value = "widget_id String path",   required = true)  String grid_widget_id) {
@@ -1342,7 +1342,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result widget_order_up(@ApiParam(value = "widget_id String path",   required = true) String grid_widget_id) {
@@ -1375,7 +1375,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result widget_order_down(@ApiParam(value = "widget_id String path",   required = true) String grid_widget_id) {
@@ -1416,7 +1416,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result widgetVersion_delete(@ApiParam(value = "grid_widget_version_id String path",   required = true) String grid_widget_version_id) {
@@ -1458,7 +1458,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result widgetVersion_set_main(String grid_widget_version_id) {
@@ -1585,7 +1585,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
@@ -1649,7 +1649,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result widgetVersion_get(@ApiParam(value = "grid_widget_version_id String path",   required = true) String grid_widget_version_id) {
@@ -1700,7 +1700,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
@@ -1763,7 +1763,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result widgetVersion_getAll(@ApiParam(value = "widget_id String path",   required = true) String grid_widget_id) {
@@ -1798,7 +1798,7 @@ public class Controller_Grid extends BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Widget_Publish_Response",
+                            dataType = "utilities.swagger.input.Swagger_Community_Version_Publish_Response",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -1818,9 +1818,9 @@ public class Controller_Grid extends BaseController {
         try {
 
             // Získání JSON
-            final Form<Swagger_Widget_Publish_Response> form = formFactory.form(Swagger_Widget_Publish_Response.class).bindFromRequest();
+            final Form<Swagger_Community_Version_Publish_Response> form = formFactory.form(Swagger_Community_Version_Publish_Response.class).bindFromRequest();
             if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Widget_Publish_Response help = form.get();
+            Swagger_Community_Version_Publish_Response help = form.get();
 
             // Kontrola názvu
             if (help.version_name.equals("version_scheme")) return badRequest("This name is reserved for the system");

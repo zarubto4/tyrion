@@ -91,7 +91,7 @@ public class Controller_Notification extends BaseController {
       Model_Notification notification = Model_Notification.getById(notification_id);
       if (notification == null) return notFound("Notification does not exist");
 
-      if ( !notification.delete_permission()) return forbiddenEmpty();
+      if (!notification.delete_permission()) return forbiddenEmpty();
 
       notification.delete();
       return okEmpty();

@@ -24,7 +24,7 @@ public class Swagger_Boards_For_Blocko {
     public List<Swagger_C_Program_Short_Detail_For_Blocko> c_programs = new ArrayList<>();
 
     @ApiModelProperty(required = true, readOnly = true)
-    public List<Model_TypeOfBoard> type_of_boards = new ArrayList<>();
+    public List<Model_HardwareType> hardware_types = new ArrayList<>();
 
     @ApiModelProperty(required = true, readOnly = true)
     public List<Model_Hardware> boards = new ArrayList<>();
@@ -45,7 +45,7 @@ public class Swagger_Boards_For_Blocko {
                 c_program_short_detail_for_blocko.id = c_program.id;
                 c_program_short_detail_for_blocko.name = c_program.name;
                 c_program_short_detail_for_blocko.description = c_program.description;
-                c_program_short_detail_for_blocko.type_of_board_id = c_program.type_of_board_id();
+                c_program_short_detail_for_blocko.hardware_type_id = c_program.hardware_type_id();
 
                 for (Model_Version version_object : c_program.getVersions()) {
 
@@ -83,7 +83,7 @@ public class Swagger_Boards_For_Blocko {
         public String description;
 
         @ApiModelProperty(required = true, readOnly = true)
-        public UUID type_of_board_id;
+        public UUID hardware_type_id;
 
         @ApiModelProperty(required = true, readOnly = true)
         public List<Swagger_C_Program_Versions_Short_Detail_For_Blocko> versions = new ArrayList<>();

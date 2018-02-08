@@ -13,6 +13,7 @@ import play.libs.streams.ActorFlow;
 import play.mvc.Result;
 import play.mvc.Security;
 import play.mvc.WebSocket;
+import responses.Result_InternalServerError;
 import responses.Result_Unauthorized;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
@@ -58,6 +59,21 @@ public class Controller_WebSocket extends BaseController {
 
     public static Cache<String, UUID> tokenCache;
 
+    /**
+     * Closes all WebSocket connections
+     */
+    public static void close() {
+
+        logger.warn("close - closing all WebSockets");
+
+        homers.forEach((id, homer) -> homer.close());
+        homers_not_sync.forEach((id, homer) -> homer.close());
+        compilers.forEach((id, compiler) -> compiler.close());
+        portals.forEach((id, portal) -> portal.close());
+
+        logger.info("close - all WebSockets closed");
+    }
+
     private final ActorSystem actorSystem;
     private final Materializer materializer;
 
@@ -80,9 +96,9 @@ public class Controller_WebSocket extends BaseController {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Token successfully generated", response = Swagger_Websocket_Token.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",         response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Token successfully generated",  response = Swagger_Websocket_Token.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",          response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",             response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result get_Websocket_token() {
@@ -103,7 +119,7 @@ public class Controller_WebSocket extends BaseController {
 
     public WebSocket homer(String token) {
         return WebSocket.Json.acceptOrResult(request -> {
-            if (token != null) {
+            if (token != null) { // TODO
                 return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(WS_Homer::props, actorSystem, materializer)));
             } else {
                 return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
@@ -113,7 +129,7 @@ public class Controller_WebSocket extends BaseController {
 
     public WebSocket compiler(String token) {
         return WebSocket.Json.acceptOrResult(request -> {
-            if (token != null) {
+            if (token != null) { // TODO
                 return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(WS_Compiler::props, actorSystem, materializer)));
             } else {
                 return CompletableFuture.completedFuture(F.Either.Left(forbidden()));

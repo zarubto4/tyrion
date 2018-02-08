@@ -10,8 +10,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+@Constraints.Validate
 @ApiModel(value = "Customer_New", description = "Json Model for creating new company.")
-public class Swagger_Customer_New {
+public class Swagger_Customer_New implements Constraints.Validatable<List<ValidationError>> {
 
     @Constraints.Required
     @Constraints.MinLength(value = 4, message = "The street must have at least 4 characters")
@@ -67,6 +68,7 @@ public class Swagger_Customer_New {
     @ApiModelProperty(required = true, value = "Email must be valid")
     public String invoice_email;
 
+    @Override
     public List<ValidationError> validate() {
 
         List<ValidationError> errors = new ArrayList<>();

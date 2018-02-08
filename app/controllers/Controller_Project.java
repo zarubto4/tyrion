@@ -19,6 +19,7 @@ import utilities.swagger.input.*;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
@@ -214,7 +215,7 @@ public class Controller_Project extends BaseController {
             if (!project.delete_permission())   return forbiddenEmpty();
 
             // Kvuli bezpečnosti abych nesmazal něco co nechceme
-            for (Model_CProgram c : project.get_c_programs_not_deleted()) {
+            for (Model_CProgram c : project.getCPrograms()) {
                 c.delete();
             }
 
@@ -576,18 +577,17 @@ public class Controller_Project extends BaseController {
         }
     }
 
-    @ApiOperation(value = "create Project",
+    @ApiOperation(value = "tag Project",
             tags = {"Project"},
-            notes = "create new Project",
+            notes = "",
             produces = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Project_New",
+                            dataType = "utilities.swagger.input.Swagger_Tags",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -595,10 +595,11 @@ public class Controller_Project extends BaseController {
             }
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",      response = Model_Project.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -620,6 +621,115 @@ public class Controller_Project extends BaseController {
 
             // Vrácení objektu
             return ok(project.json());
+
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "addHW Project",
+            tags = {"Project"},
+            notes = "add new HW to Project, creates HardwareRegistration",
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_Project_AddHardware",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Ok Result",                 response = Model_HardwareRegistration.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result project_addHardware() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Project_AddHardware> form = formFactory.form(Swagger_Project_AddHardware.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
+            Swagger_Project_AddHardware help = form.get();
+
+            logger.debug("registering new device with hash: {}", help.registration_hash);
+
+            // Kotrola objektu - NAjdu v Databázi
+            Model_Hardware hardware = Model_Hardware.find.query().where().eq("registration_hash", help.registration_hash).findOne();
+            if (hardware == null) return notFound("Hardware not found");
+            if (hardware.registration != null) return badRequest("Board is already registered");
+
+            // Kotrola objektu
+            Model_Project project = Model_Project.getById(help.project_id);
+            if (project == null) return notFound("Project not found");
+            if (!project.update_permission()) return forbiddenEmpty();
+
+            Model_HardwareRegistration registration = new Model_HardwareRegistration();
+            registration.hardware = hardware;
+            registration.project = project;
+
+            if (help.group_id != null) {
+                Model_HardwareGroup group = Model_HardwareGroup.getById(help.group_id);
+                if (group == null) return notFound("HardwareGroup not found");
+                if (!group.update_permission()) return forbiddenEmpty();
+
+                registration.group = group;
+                registration.cache_group_id = group.id;
+            }
+
+            registration.save();
+
+            project.cache_hardware_ids.add(registration.id);
+
+            return created(registration.json());
+
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "removeHW Project",
+            tags = {"Project"},
+            notes = "removes HW from Project",
+            produces = "application/json",
+            protocols = "https"
+    )
+
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result project_removeHardware(String registration_id) {
+        try {
+
+            Model_HardwareRegistration registration = Model_HardwareRegistration.getById(registration_id);
+            if (registration == null) return notFound("HardwareRegistration not found");
+
+            Model_Project project = registration.getProject();
+            if (project == null) return notFound("Project not found");
+            if (!project.update_permission()) return forbiddenEmpty();
+
+            if (registration.hardware == null) return badRequest("Already removed");
+
+            registration.hardware = null;
+            registration.save();
+
+            return okEmpty();
 
         } catch (Exception e) {
             return internalServerError(e);

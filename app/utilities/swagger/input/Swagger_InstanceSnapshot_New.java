@@ -5,18 +5,19 @@ import play.data.validation.Constraints;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @ApiModel(value = "InstanceSnapshot_New")
 public class Swagger_InstanceSnapshot_New {
 
     @Constraints.Required
-    public String instance_id;
+    public UUID instance_id;
 
     @Constraints.Required
-    public String version_id;
+    public UUID version_id;
 
     @Constraints.Required
     public String snapshot;
 
-    public List<String> hardware_ids = new ArrayList<>();
+    public List<UUID> hardware_ids = new ArrayList<>();
 }

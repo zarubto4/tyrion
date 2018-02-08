@@ -2,9 +2,9 @@ package utilities.threads.homer_server;
 
 import io.ebean.Expr;
 import io.ebean.PagedList;
-import models.Model_CProgramUpdatePlan;
+import models.Model_HardwareUpdate;
 import models.Model_HomerServer;
-import utilities.enums.Enum_CProgram_updater_state;
+import utilities.enums.HardwareUpdateState;
 import utilities.logger.Logger;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
 import websocket.interfaces.WS_Homer;
@@ -43,15 +43,15 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
 
             while (true) {
 
-                PagedList<Model_CProgramUpdatePlan> paging_list = Model_CProgramUpdatePlan.find.query().where()
-                        .eq("board.connected_server_id", homer.id)
+                PagedList<Model_HardwareUpdate> paging_list = Model_HardwareUpdate.find.query().where()
+                        .eq("hardware.connected_server_id", homer.id)
                         .disjunction()
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.not_updated))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
-                            .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
+                            .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
+                            .add(Expr.eq("state", HardwareUpdateState.NOT_UPDATED))
+                            .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
+                            .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
+                            .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
+                            .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
                             .add(Expr.isNull("state"))
                         .endJunction()
                         .setFirstRow(page)
@@ -61,7 +61,7 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
 
                 List<Swagger_UpdatePlan_brief_for_homer> tasks = new ArrayList<>();
 
-                for (Model_CProgramUpdatePlan plan : paging_list.getList()) {
+                for (Model_HardwareUpdate plan : paging_list.getList()) {
                     tasks.add(plan.get_brief_for_update_homer_server());
                 }
 

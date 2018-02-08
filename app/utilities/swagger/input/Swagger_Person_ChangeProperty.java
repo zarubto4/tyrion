@@ -15,7 +15,7 @@ public class Swagger_Person_ChangeProperty {
     public String property;
 
     @Constraints.Email
-    @ApiModelProperty(required = false, value = "Valid mail ")
+    @ApiModelProperty(required = false, value = "Valid email")
     public String email;
 
     @ApiModelProperty(value = "The password length must be between 8 and 60 characters", required = false)

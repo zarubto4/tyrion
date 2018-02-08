@@ -2,12 +2,9 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.storage.blob.*;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.Server;
 import utilities.cache.CacheField;
@@ -29,26 +26,32 @@ public class Model_Blob extends BaseModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = true)                          public String file_name;
-                                                 @JsonIgnore    public String file_path;
+    public String name;
 
-                @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_Person person;
-                @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "program")     public Model_InstanceSnapshot snapshot;// personal_picture
-                @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_TypeOfBoard type_of_board;   // type_of_board_picture
-                @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_Hardware board;                 // board_picture
-                @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "file")        public Model_Log log;
-                @JsonIgnore @OneToOne(fetch = FetchType.LAZY)                           public Model_BootLoader boot_loader;
-                @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                          public Model_Version version;
-                @JsonIgnore @OneToMany(mappedBy="binary_file",fetch = FetchType.LAZY)   public List<Model_CProgramUpdatePlan> c_program_update_plan  = new ArrayList<>();
-                @JsonIgnore @OneToOne(mappedBy="blob")                  public Model_Compilation c_compilations_binary_file;
+    @JsonIgnore
+    public String path; // TODO rozdělit path na container a real file path
+
+    @JsonIgnore
+    public String container; // TODO
+
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_Person person;
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "program")     public Model_InstanceSnapshot snapshot;// personal_picture
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_HardwareType hardware_type; // picture
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_HardwareRegistration hardware;                 // board_picture
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "file")        public Model_Log log;
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)                           public Model_BootLoader boot_loader;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                          public Model_Version version;
+    @JsonIgnore @OneToMany(mappedBy="binary_file",fetch = FetchType.LAZY)   public List<Model_HardwareUpdate> c_program_update_plan  = new ArrayList<>();
+    @JsonIgnore @OneToOne(mappedBy="blob")                  public Model_Compilation c_compilations_binary_file;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
 
-    @JsonIgnore @Transient public String  get_file_path_for_direct_download() {
+    @JsonIgnore
+    public String  get_file_path_for_direct_download() {
 
-        return Server.azure_blob_Link + file_path;
+        return Server.azure_blob_Link + path;
     }
 
 
@@ -59,13 +62,14 @@ public class Model_Blob extends BaseModel {
     * // 30 sekund nic mocMM
     * */
 
-    @JsonIgnore @Transient public String  get_file_path_for_direct_download_public_link(int second) {
+    @JsonIgnore
+    public String getPublicDownloadLink(int second) {
         try {
 
             // Separace na Container a Blob
-            int slash = file_path.indexOf("/");
-            String container_name = file_path.substring(0, slash);
-            String real_file_path = file_path.substring(slash + 1);
+            int slash = path.indexOf("/");
+            String container_name = path.substring(0, slash);
+            String real_file_path = path.substring(slash + 1);
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 
@@ -99,12 +103,13 @@ public class Model_Blob extends BaseModel {
 
 
 
-    @JsonIgnore @Transient public String get_fileRecord_from_Azure_inString() {
+    @JsonIgnore
+    public String get_fileRecord_from_Azure_inString() {
         try {
 
-            int slash = file_path.indexOf("/");
-            String container_name = file_path.substring(0,slash);
-            String real_file_path = file_path.substring(slash+1);
+            int slash = path.indexOf("/");
+            String container_name = path.substring(0,slash);
+            String real_file_path = path.substring(slash+1);
 
             CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
 
@@ -123,18 +128,7 @@ public class Model_Blob extends BaseModel {
         }
     }
 
-    @JsonIgnore @Transient public JsonNode get_file_As_Json() {
-        try {
-
-            return new ObjectMapper().readTree(this.get_fileRecord_from_Azure_inString());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonIgnore @Transient
+    @JsonIgnore
     public static Model_Blob upload(String content, String name, String path) throws Exception {
 
         logger.debug("upload - path: {}", path);
@@ -148,14 +142,14 @@ public class Model_Blob extends BaseModel {
         blob.upload(is, -1);
 
         Model_Blob fileRecord = new Model_Blob();
-        fileRecord.file_name = name;
-        fileRecord.file_path = path;
+        fileRecord.name = name;
+        fileRecord.path = path;
         fileRecord.save();
 
         return fileRecord;
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public static Model_Blob uploadAzure_Version(String file_content, String file_name, String file_path, Model_Version version_object) throws Exception{
         try {
 
@@ -172,9 +166,9 @@ public class Model_Blob extends BaseModel {
             blob.upload(is, -1);
 
             Model_Blob fileRecord = new Model_Blob();
-            fileRecord.file_name = file_name;
+            fileRecord.name = file_name;
             fileRecord.version = version_object;
-            fileRecord.file_path =  file_path   + version_object.get_path() + "/" + file_name;
+            fileRecord.path =  file_path   + version_object.get_path() + "/" + file_name;
             fileRecord.save();
 
             version_object.files.add(fileRecord);
@@ -188,7 +182,7 @@ public class Model_Blob extends BaseModel {
         }
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public static Model_Blob uploadAzure_Version(File file, String file_name, String file_path, Model_Version version_object) throws Exception{
 
         try {
@@ -207,9 +201,9 @@ public class Model_Blob extends BaseModel {
             blob.upload(is, -1);
 
             Model_Blob fileRecord = new Model_Blob();
-            fileRecord.file_name = file_name;
+            fileRecord.name = file_name;
             fileRecord.version = version_object;
-            fileRecord.file_path =   file_path + version_object.get_path()+ "/" + file_name;
+            fileRecord.path =   file_path + version_object.get_path()+ "/" + file_name;
             fileRecord.save();
 
             version_object.files.add(fileRecord);
@@ -226,7 +220,7 @@ public class Model_Blob extends BaseModel {
         }
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public static Model_Blob uploadAzure_File(File file, String file_name, String file_path) throws Exception{
 
         logger.debug("uploadAzure_File:: Azure upload: "+ file_path);
@@ -240,14 +234,14 @@ public class Model_Blob extends BaseModel {
         blob.upload(is, -1);
 
         Model_Blob fileRecord = new Model_Blob();
-        fileRecord.file_name = file_name;
-        fileRecord.file_path = file_path;
+        fileRecord.name = file_name;
+        fileRecord.path = file_path;
         fileRecord.save();
 
         return fileRecord;
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public static Model_Blob uploadAzure_File(String file, String contentType, String file_name, String file_path) throws Exception{
 
         byte[] bytes = Model_Blob.get_decoded_binary_string_from_Base64(file);
@@ -277,20 +271,20 @@ public class Model_Blob extends BaseModel {
         blob.upload(is, -1);
 
         Model_Blob fileRecord = new Model_Blob();
-        fileRecord.file_name = file_name;
-        fileRecord.file_path = file_path;
+        fileRecord.name = file_name;
+        fileRecord.path = file_path;
         fileRecord.save();
 
         return fileRecord;
     }
 
-    @JsonIgnore @Transient
-    public void remove_file_from_Azure() {
+    @JsonIgnore
+    public void removeBlob() {
         try {
 
-            int slash =  file_path.indexOf("/");
-            String container_name =  file_path.substring(0, slash);
-            String file_path_slash =  file_path.substring(slash+1);
+            int slash =  path.indexOf("/");
+            String container_name =  path.substring(0, slash);
+            String file_path_slash =  path.substring(slash+1);
 
             CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
             CloudBlob blob = container.getBlockBlobReference(file_path_slash);
@@ -301,7 +295,7 @@ public class Model_Blob extends BaseModel {
         }
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public static Model_Blob create_Binary_file(String file_path, byte[] file_content, String file_name) throws Exception{
 
         logger.debug("create_Binary_file:: Azure create_Binary_file: " + file_path +"/"+ file_name );
@@ -321,8 +315,8 @@ public class Model_Blob extends BaseModel {
         blob.upload(is, -1);
 
         Model_Blob fileRecord = new Model_Blob();
-        fileRecord.file_name = file_name;
-        fileRecord.file_path = file_path + "/" + file_name;
+        fileRecord.name = file_name;
+        fileRecord.path = file_path + "/" + file_name;
         fileRecord.save();
 
         return fileRecord;
@@ -336,7 +330,7 @@ public class Model_Blob extends BaseModel {
      *  podívá na obsah a vše promazává.
      *
      */
-    @JsonIgnore @Transient
+    @JsonIgnore
     public static void azureDelete(CloudBlobContainer container, String pocatekMazani) throws Exception {
 
         for (ListBlobItem blobItem : container.listBlobs( pocatekMazani + "/" )) {
@@ -350,25 +344,13 @@ public class Model_Blob extends BaseModel {
         }
     }
 
-    @JsonIgnore @Transient
-    public static String get_encoded_binary_string_from_File(File binary_file) throws Exception {
-
-        FileInputStream fileInputStreamReader = new FileInputStream(binary_file);
-        byte[] bytes = new byte[(int)binary_file.length()];
-        fileInputStreamReader.read(bytes);
-
-        return new String(Base64.getEncoder().encode(bytes));
-
-    }
-
-    @JsonIgnore @Transient
+    @JsonIgnore
     public static byte[] get_decoded_binary_string_from_Base64(String binary_file) throws Exception {
 
         return Base64.getDecoder().decode(binary_file.getBytes());
-
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public static String get_encoded_binary_string_from_body(byte[] bytes) throws Exception {
         return new String(Base64.getEncoder().encode( bytes ));
     }
@@ -379,14 +361,13 @@ public class Model_Blob extends BaseModel {
     public boolean delete() {
         try {
             logger.debug("delete - removing file from blob server, id: {}", this.id);
-            this.remove_file_from_Azure();
+            this.removeBlob();
         } catch (Exception e) {
             logger.internalServerError(e);
         }
 
         return super.delete();
     }
-
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -405,8 +386,6 @@ public class Model_Blob extends BaseModel {
     @JsonProperty public boolean delete_permission() { return false; }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    // public static Cache<String, Model_FileRecord> cache;         // Server_cache Override during server initialization
 
     @CacheField(value = String.class, timeToIdle = 1800, maxElements = 500)
     public static Cache<UUID, String> cache_public_link;

@@ -8,6 +8,7 @@ import utilities.enums.PaymentMethod;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @ApiModel(description = "Json Model if user wants to create new Product for projects",
         value = "Product_New")
@@ -15,10 +16,10 @@ public class Swagger_Product_New extends Swagger_NameAndDescription {
 
     @Constraints.Required
     @ApiModelProperty(required = true, value =  "Id of a selected tariff.")
-    public String tariff_id;
+    public UUID tariff_id;
 
     @ApiModelProperty(required = false, value =  "If null new customer is created. Customer can be company or single person.")
-    public String customer_id;
+    public UUID customer_id;
 
     @ApiModelProperty(required = false, value =  "If product is for someone else and you are an integrator.")
     public boolean integrator_registration = false;
@@ -82,6 +83,6 @@ public class Swagger_Product_New extends Swagger_NameAndDescription {
     public String invoice_email;
 
     @ApiModelProperty(required = false, value = "List of Ids of Extensions")
-    public List<String> extension_ids = new ArrayList<>();
+    public List<UUID> extension_ids = new ArrayList<>();
 
 }

@@ -97,8 +97,6 @@ public abstract class WS_Interface extends AbstractActor {
 
             ObjectNode json = (ObjectNode) message;
 
-
-
             if (json.has("message_id")) {
                 UUID id = UUID.fromString(json.get("message_id").asText());
                 if (messageBuffer.containsKey(id)) {

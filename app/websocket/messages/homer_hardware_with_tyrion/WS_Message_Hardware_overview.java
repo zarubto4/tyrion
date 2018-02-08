@@ -34,10 +34,10 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
     HashMap<UUID, WS_Message_Hardware_overview_Board> map = new HashMap<>();
     public WS_Message_Hardware_overview_Board get_device_from_list(UUID device_id) {
 
-        // System.out.println("WS_Message_Hardware_overview get_device_from_list " +  device_id);
+        // System.out.println("WS_Message_Hardware_overview get_device_from_list " +  hardware_id);
 
         if (map.isEmpty() && hardware_list.isEmpty()) {
-            // System.out.println("WS_Message_Hardware_overview: Seznam je prázdný :( " +  device_id);
+            // System.out.println("WS_Message_Hardware_overview: Seznam je prázdný :( " +  hardware_id);
             return null;
         } else if (map.isEmpty()) {
 
@@ -56,7 +56,7 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
         if (map.containsKey(device_id)) {
             return map.get(device_id);
         } else {
-            // System.out.println("WS_Message_Hardware_overview: Seznam neobsahuje dané ID :( " +  device_id);
+            // System.out.println("WS_Message_Hardware_overview: Seznam neobsahuje dané ID :( " +  hardware_id);
             WS_Message_Hardware_overview_Board overview_board = new WS_Message_Hardware_overview_Board();
             overview_board.status = "error";
             overview_board.error_message = "Hardware is not in List";

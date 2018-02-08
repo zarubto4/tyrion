@@ -31,11 +31,11 @@ public class WS_Compiler extends WS_Interface {
 
     @Override
     public void onMessage(ObjectNode json) {
-
+        logger.warn("onMessage - no message should drop down here, all messages from compiler should be caught as response, message: {}", json.toString());
     }
 
     @Override
     public void onClose() {
-
+        Controller_WebSocket.compilers.remove(this.id);
     }
 }

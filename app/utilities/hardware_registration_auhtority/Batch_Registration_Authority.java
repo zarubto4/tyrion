@@ -9,8 +9,8 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import io.swagger.annotations.Api;
-import models.Model_TypeOfBoard;
-import models.Model_TypeOfBoard_Batch;
+import models.Model_HardwareType;
+import models.Model_HardwareBatch;
 import org.bson.Document;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -37,7 +37,7 @@ public class Batch_Registration_Authority extends Controller {
 
     public static boolean check_if_value_is_registered(String value, String type) {
 
-        // type == "board_id" or "mac_address"
+        // type == "full_id" or "mac_address"
         // Kontroluji Device ID
         BasicDBObject whereQuery_board_id = new BasicDBObject();
         whereQuery_board_id.put( type ,value);
@@ -51,9 +51,9 @@ public class Batch_Registration_Authority extends Controller {
     }
 
     // Před uložením desky - je nejprve proveden dotaz zda může být uložena!
-    public static boolean register_batch(Model_TypeOfBoard typeOfBoard, Model_TypeOfBoard_Batch batch) {
+    public static boolean register_batch(Model_HardwareType hardwareType, Model_HardwareBatch batch) {
 
-        logger.info("Batch_Registration_Authority:: New Registration of batch {} for Type of Board {}  ", batch.production_batch, typeOfBoard.compiler_target_name);
+        logger.info("Batch_Registration_Authority:: New Registration of batch {} for Type of Board {}  ", batch.production_batch, hardwareType.compiler_target_name);
 
         // Kontroluji Device ID
         if ( check_if_value_is_registered(batch.id.toString(),"id")) {
@@ -82,7 +82,7 @@ public class Batch_Registration_Authority extends Controller {
         batch_registration_central_authority.latest_used_mac_address = batch.latest_used_mac_address.toString();
         batch_registration_central_authority.ean_number = batch.ean_number.toString();
         batch_registration_central_authority.description = batch.description;
-        batch_registration_central_authority.type_of_board_compiler_target_name = typeOfBoard.compiler_target_name;
+        batch_registration_central_authority.hardware_type_compiler_target_name = hardwareType.compiler_target_name;
 
 
         try {
@@ -108,7 +108,7 @@ public class Batch_Registration_Authority extends Controller {
 
         logger.info("Batch_Registration_Authority:: synchronize_mac");
 
-        List<Model_TypeOfBoard_Batch> batches = Model_TypeOfBoard_Batch.find.query().where().eq("deleted", false).findList();
+        List<Model_HardwareBatch> batches = Model_HardwareBatch.find.query().where().eq("deleted", false).findList();
 
         logger.info("Batch_Registration_Authority:: Batches for Check: " + batches.size());
 
@@ -122,7 +122,7 @@ public class Batch_Registration_Authority extends Controller {
 
                     DM_Batch_Registration_Central_Authority help = Json.fromJson(json, DM_Batch_Registration_Central_Authority.class);
 
-                    Model_TypeOfBoard_Batch batch_database = Model_TypeOfBoard_Batch.find.query().where().eq("revision", help.revision).eq("production_batch", help.production_batch).findOne();
+                    Model_HardwareBatch batch_database = Model_HardwareBatch.find.query().where().eq("revision", help.revision).eq("production_batch", help.production_batch).findOne();
                     if (batch_database != null) {
                         logger.info("Batch_Registration_Authority:: Batch id {} revision is already registered in database", help.id, help.revision );
                         // Already Registred
@@ -131,14 +131,14 @@ public class Batch_Registration_Authority extends Controller {
                         logger.info("Batch_Registration_Authority:: Batch id {} revision is not registered in database ", help.id, help.revision );
                     }
 
-                    Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.query().where().eq("compiler_target_name", help.type_of_board_compiler_target_name).findOne();
-                    if (typeOfBoard == null) {
-                        logger.error("Batch_Registration_Authority:: Required Type Of Board Read {} is missing!", help.type_of_board_compiler_target_name);
+                    Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("compiler_target_name", help.hardware_type_compiler_target_name).findOne();
+                    if (hardwareType == null) {
+                        logger.error("Batch_Registration_Authority:: Required Type Of Board Read {} is missing!", help.hardware_type_compiler_target_name);
                         continue;
                     }
 
-                    Model_TypeOfBoard_Batch batch = new Model_TypeOfBoard_Batch();
-                    batch.type_of_board = typeOfBoard;
+                    Model_HardwareBatch batch = new Model_HardwareBatch();
+                    batch.hardware_type = hardwareType;
 
                     batch.id = help.id;
 

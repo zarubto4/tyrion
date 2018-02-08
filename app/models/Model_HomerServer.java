@@ -360,7 +360,7 @@ public class Model_HomerServer extends BaseModel {
                 Model_HomerServer homer_server = Model_HomerServer.getById(ws_homer.id);
                 homer_server.make_log_connect();
 
-                ws_homer.approve_server_verification(message.message_id);
+                ws_homer.verificationSuccess(message.message_id);
 
                 // Send echo to all connected users (its public servers)
                 if (homer_server.server_type.equals(HomerType.PUBLIC) || homer_server.server_type.equals(HomerType.MAIN) || homer_server.server_type.equals(HomerType.BACKUP)) {
@@ -382,12 +382,12 @@ public class Model_HomerServer extends BaseModel {
                 ws_homer.authorized = false;
                 ws_homer.token = null;
 
-                ws_homer.reject_server_verification(message.message_id);
+                ws_homer.verificationFail(message.message_id);
                 return;
             }
 
         } catch (Exception e) {
-            ws_homer.reject_server_verification(UUID.randomUUID().toString());
+            ws_homer.verificationFail(UUID.randomUUID().toString());
             logger.internalServerError(e);
         }
     }

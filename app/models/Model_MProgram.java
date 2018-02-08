@@ -12,7 +12,7 @@ import play.libs.Json;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.logger.Logger;
-import utilities.model.NamedModel;
+import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.swagger.output.Swagger_M_Program_Version;
 import utilities.swagger.output.Swagger_M_Program_Version_Interface;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel(value = "MProgram", description = "Model of M_Program")
 @Table(name = "MProgram")
-public class Model_MProgram extends NamedModel {
+public class Model_MProgram extends TaggedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -37,8 +37,6 @@ public class Model_MProgram extends NamedModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                                  public Model_MProject m_project;
     @JsonIgnore @OneToMany(mappedBy="m_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Version> versions = new ArrayList<>();
-
-    @ManyToMany public List<Model_Tag> tags = new ArrayList<>();
 
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 
@@ -103,7 +101,7 @@ public class Model_MProgram extends NamedModel {
 
             m_program_versions.virtual_input_output = version.m_program_virtual_input_output;
 
-            Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version.id).eq("file_name", "m_program.json").findOne();
+            Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version.id).eq("name", "m_program.json").findOne();
 
             if (fileRecord != null) {
 
@@ -124,7 +122,7 @@ public class Model_MProgram extends NamedModel {
     public static JsonNode get_m_code(Model_Version version_object) {
         try {
 
-            Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version_object.id).eq("file_name", "m_program.json").findOne();
+            Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version_object.id).eq("name", "m_program.json").findOne();
 
             if (fileRecord != null) {
                 JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());

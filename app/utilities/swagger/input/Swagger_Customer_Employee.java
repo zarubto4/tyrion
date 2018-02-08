@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import play.data.validation.Constraints;
 
 import java.util.List;
+import java.util.UUID;
 
 @ApiModel(value = "Customer_Employee", description = "For adding employees to a company.")
 public class Swagger_Customer_Employee {
@@ -12,5 +13,5 @@ public class Swagger_Customer_Employee {
     public List<String> mails;
 
     @Constraints.Required
-    public String customer_id;
+    public UUID customer_id;
 }

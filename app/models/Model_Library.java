@@ -14,7 +14,7 @@ import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
-import utilities.model.NamedModel;
+import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.swagger.input.Swagger_Library_File_Load;
 import utilities.swagger.output.Swagger_Library_Version;
@@ -28,7 +28,7 @@ import java.util.UUID;
 @Entity
 @ApiModel(value = "Library", description = "Model of Library")
 @Table(name="Library")
-public class Model_Library extends NamedModel {
+public class Model_Library extends TaggedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -40,16 +40,14 @@ public class Model_Library extends NamedModel {
 
     public ProgramType publish_type;
 
-    @ManyToMany(fetch = FetchType.LAZY) public List<Model_TypeOfBoard>  type_of_boards  = new ArrayList<>();
+    @ManyToMany(fetch = FetchType.LAZY) public List<Model_HardwareType> hardware_types = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy = "library", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("created DESC") public List<Model_Version> versions = new ArrayList<>();
-
-    @ManyToMany public List<Model_Tag> tags = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Cached public List<UUID> cache_version_ids;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_type_of_board_ids;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_hardware_type_ids;
     @JsonIgnore @Transient @Cached private UUID cache_project_id;
     @JsonIgnore @Transient @Cached private String cache_project_name;
 
@@ -83,7 +81,8 @@ public class Model_Library extends NamedModel {
             return null;
         }
     }
-    @JsonProperty  @Transient public List<Swagger_Library_Version> versions() {
+    @JsonProperty
+    public List<Swagger_Library_Version> versions() {
 
         List<Swagger_Library_Version> versions = new ArrayList<>();
         for (Model_Version version : this.getVersions()) {
@@ -119,39 +118,39 @@ public class Model_Library extends NamedModel {
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return new ArrayList<Model_Version>();
+            return new ArrayList<>();
         }
     }
 
     @JsonIgnore
-    public List<Model_TypeOfBoard> getType_of_Boards() {
+    public List<Model_HardwareType> getHardwareTypes() {
 
         try {
 
-            if (cache_type_of_board_ids == null) {
+            if (cache_hardware_type_ids == null) {
 
-                cache_type_of_board_ids = new ArrayList<>();
+                cache_hardware_type_ids = new ArrayList<>();
 
-                List<Model_TypeOfBoard> boards =  Model_TypeOfBoard.find.query().where().eq("libraries.id", id).eq("deleted", false).orderBy("UPPER(name) ASC").select("id").findList();
+                List<Model_HardwareType> hardwareTypes =  Model_HardwareType.find.query().where().eq("libraries.id", id).orderBy("UPPER(name) ASC").select("id").findList();
 
                 // Získání seznamu
-                for (Model_TypeOfBoard board : boards) {
-                    cache_type_of_board_ids.add(board.id);
+                for (Model_HardwareType hardwareType : hardwareTypes) {
+                    cache_hardware_type_ids.add(hardwareType.id);
                 }
 
             }
 
-            List<Model_TypeOfBoard> boards  = new ArrayList<>();
+            List<Model_HardwareType> hardwareTypes  = new ArrayList<>();
 
-            for (UUID board_id : cache_type_of_board_ids) {
-                boards.add(Model_TypeOfBoard.getById(board_id));
+            for (UUID hardware_type_id : cache_hardware_type_ids) {
+                hardwareTypes.add(Model_HardwareType.getById(hardware_type_id));
             }
 
-            return boards;
+            return hardwareTypes;
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return new ArrayList<Model_TypeOfBoard>();
+            return new ArrayList<>();
         }
     }
 
@@ -167,10 +166,8 @@ public class Model_Library extends NamedModel {
             help.delete_permission = delete_permission();
             help.update_permission = update_permission();
             help.author = version.author();
+            help.examples.addAll(version.examples);
 
-            for (Model_CProgram cProgram : version.examples) {
-                help.examples.add(cProgram);
-            }
 
             for (Model_Blob file : version.files) {
 

@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
 import java.util.List;
+import java.util.UUID;
 
 @ApiModel(description = "Json Model for new Blocko Server",
           value = "Cloud_Homer_Server_New")
@@ -27,8 +28,8 @@ public class Swagger_Cloud_Homer_Server_New {
     public String server_url;
 
     @ApiModelProperty(value = "Optiona value - only for private server")
-    public String tarriff_id;
+    public UUID tarriff_id;
 
     @ApiModelProperty(value = "Optiona value - only for private server")
-    public List<String> projects_id;
+    public List<UUID> projects_id;
 }

@@ -23,13 +23,13 @@ import java.util.UUID;
 
 
 @Entity
-@ApiModel(value = "TypeOfBoard", description = "Model of TypeOfBoard")
-@Table(name="TypeOfBoard")
-public class Model_TypeOfBoard extends NamedModel {
+@ApiModel(value = "HardwareType", description = "Model of HardwareType")
+@Table(name="HardwareType")
+public class Model_HardwareType extends NamedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(Model_TypeOfBoard.class);
+    private static final Logger logger = new Logger(Model_HardwareType.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -41,22 +41,22 @@ public class Model_TypeOfBoard extends NamedModel {
 
     @JsonIgnore @OneToOne  public Model_Blob picture;
 
-    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL,  fetch = FetchType.LAZY) public List<Model_TypeOfBoard_Batch> batchs = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="hardware_type", cascade = CascadeType.ALL,  fetch = FetchType.LAZY) public List<Model_HardwareBatch> batches = new ArrayList<>();
 
-    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL,        fetch = FetchType.LAZY)  public List<Model_Hardware> boards = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="type_of_board",                                   fetch = FetchType.LAZY)  public List<Model_CProgram> c_programs = new ArrayList<>();
-
-
-    @JsonIgnore @OneToMany(mappedBy="type_of_board", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BootLoader> boot_loaders = new ArrayList<>();
-
-    @JsonIgnore @OneToOne (mappedBy="main_type_of_board", fetch = FetchType.LAZY) public Model_BootLoader main_boot_loader;
-
-    @JsonIgnore @OneToOne(mappedBy="type_of_board_default", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Model_CProgram main_c_program;
-    @JsonIgnore @OneToOne(mappedBy="type_of_board_test",    cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Model_CProgram test_program;
+    @JsonIgnore @OneToMany(mappedBy="hardware_type", cascade = CascadeType.ALL,        fetch = FetchType.LAZY)  public List<Model_Hardware> hardware = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="hardware_type",                                   fetch = FetchType.LAZY)  public List<Model_CProgram> c_programs = new ArrayList<>();
 
 
-    @JsonIgnore @ManyToMany(mappedBy = "type_of_boards", fetch = FetchType.LAZY)  public List<Model_TypeOfBoardFeatures> features = new ArrayList<>();
-    @JsonIgnore @ManyToMany(mappedBy = "type_of_boards", fetch = FetchType.LAZY)  public List<Model_Library> libraries = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="hardware_type", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BootLoader> boot_loaders = new ArrayList<>();
+
+    @JsonIgnore @OneToOne (mappedBy="main_hardware_type", fetch = FetchType.LAZY) public Model_BootLoader main_boot_loader;
+
+    @JsonIgnore @OneToOne(mappedBy="hardware_type_default", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Model_CProgram main_c_program;
+    @JsonIgnore @OneToOne(mappedBy="hardware_type_test",    cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Model_CProgram test_program;
+
+
+    @JsonIgnore @ManyToMany(mappedBy = "hardware_types", fetch = FetchType.LAZY)  public List<Model_HardwareFeature> features = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "hardware_types", fetch = FetchType.LAZY)  public List<Model_Library> libraries = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -84,7 +84,7 @@ public class Model_TypeOfBoard extends NamedModel {
         try {
 
             if ( cache_picture_link == null) {
-                Model_Blob file = Model_Blob.find.query().where().eq("type_of_board.id", id).select("id").findOne();
+                Model_Blob file = Model_Blob.find.query().where().eq("hardware_type.id", id).select("id").findOne();
                 if (file != null) cache_picture_link = file.get_file_path_for_direct_download();
             }
 
@@ -107,7 +107,7 @@ public class Model_TypeOfBoard extends NamedModel {
         try {
 
             if (cache_main_bootloader_id == null) {
-                Model_BootLoader main = Model_BootLoader.find.query().where().eq("main_type_of_board.id", id).select("id").findOne();
+                Model_BootLoader main = Model_BootLoader.find.query().where().eq("main_hardware_type.id", id).select("id").findOne();
                 if (main == null) return null;
                 cache_main_bootloader_id = main.id;
             }
@@ -126,7 +126,7 @@ public class Model_TypeOfBoard extends NamedModel {
 
             if (cache_bootloaders_id == null) {
 
-                List<Model_BootLoader> bootLoaders = Model_BootLoader.find.query().where().eq("type_of_board.id", id).order().desc("name").select("id").findList();
+                List<Model_BootLoader> bootLoaders = Model_BootLoader.find.query().where().eq("hardware_type.id", id).order().desc("name").select("id").findList();
                 cache_bootloaders_id = new ArrayList<>();
 
                 // Získání seznamu
@@ -158,7 +158,7 @@ public class Model_TypeOfBoard extends NamedModel {
         try {
 
             if (cache_main_c_program_id == null) {
-                Model_CProgram c_program = Model_CProgram.find.query().where().eq("type_of_board_default.id", id).select("id").findOne();
+                Model_CProgram c_program = Model_CProgram.find.query().where().eq("hardware_type_default.id", id).select("id").findOne();
                 if (c_program == null) return null;
                 cache_main_c_program_id = c_program.id;
             }
@@ -179,7 +179,7 @@ public class Model_TypeOfBoard extends NamedModel {
             if (!test_c_program_edit_permission()) return null;
 
             if (cache_test_c_program_id == null) {
-                Model_CProgram c_program = Model_CProgram.find.query().where().eq("type_of_board_test.id", id).select("id").findOne();
+                Model_CProgram c_program = Model_CProgram.find.query().where().eq("hardware_type_test.id", id).select("id").findOne();
                 if (c_program == null) return null;
                 cache_test_c_program_id = c_program.id;
             }
@@ -194,11 +194,11 @@ public class Model_TypeOfBoard extends NamedModel {
 
     // Záměrně - kvuli dokumentaci a přehledu v Becki - nemá žádný podstatný vliv než jen umožnit vypsat přehled
     @Transient @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
-    public List<Model_TypeOfBoard_Batch> batchs () {
+    public List<Model_HardwareBatch> batchs () {
         try {
 
             if (!test_c_program_edit_permission()) return null;
-            return Model_TypeOfBoard_Batch.find.query().where().eq("type_of_board.id", this.id).eq("deleted", false).findList();
+            return Model_HardwareBatch.find.query().where().eq("hardware_type.id", this.id).eq("deleted", false).findList();
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -211,7 +211,7 @@ public class Model_TypeOfBoard extends NamedModel {
 
     @JsonIgnore // Pouze Pro synchronizaci s GitHubem - musí obsahovat i smazané
     public List<Model_BootLoader> boot_loaders_get_for_github_include_removed() {
-        return Model_BootLoader.find.query().where().eq("type_of_board.id",id).findList();
+        return Model_BootLoader.find.query().where().eq("hardware_type.id",id).findList();
     }
 
     @JsonIgnore
@@ -219,7 +219,7 @@ public class Model_TypeOfBoard extends NamedModel {
         try {
 
             if (cache_producer_id == null) {
-                Model_Producer producer = Model_Producer.find.query().where().eq("type_of_boards.id", id).select("id").findOne();
+                Model_Producer producer = Model_Producer.find.query().where().eq("hardware_types.id", id).select("id").findOne();
                 cache_producer_id = producer.id;
             }
 
@@ -237,7 +237,7 @@ public class Model_TypeOfBoard extends NamedModel {
         try {
 
             if (cache_processor_id == null) {
-                Model_Processor processor = Model_Processor.find.query().where().eq("type_of_boards.id", id).select("id").findOne();
+                Model_Processor processor = Model_Processor.find.query().where().eq("hardware_types.id", id).select("id").findOne();
                 cache_processor_id = processor.id;
             }
 
@@ -255,7 +255,7 @@ public class Model_TypeOfBoard extends NamedModel {
         try {
 
             if (cache_main_c_program_id == null) {
-                Model_CProgram c_program = Model_CProgram.find.query().where().eq("type_of_board_default.id", id).select("id").findOne();
+                Model_CProgram c_program = Model_CProgram.find.query().where().eq("hardware_type_default.id", id).select("id").findOne();
                 cache_main_c_program_id = c_program.id;
             }
 
@@ -316,42 +316,42 @@ public class Model_TypeOfBoard extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   public boolean create_permission() {  return BaseController.person().has_permission("TypeOfBoard_create"); }
+    @JsonIgnore   public boolean create_permission() {  return BaseController.person().has_permission("HardwareType_create"); }
     @JsonIgnore   public boolean read_permission()  {  return true; }
-    @JsonProperty public boolean edit_permission()  {  return BaseController.person().has_permission("TypeOfBoard_edit");   }
-    @JsonProperty public boolean update_permission()  {  return BaseController.person().has_permission("TypeOfBoard_update");   }
-    @JsonProperty public boolean delete_permission() {  return BaseController.person().has_permission("TypeOfBoard_delete"); }
-    @JsonProperty public boolean register_new_device_permission() { return BaseController.person().has_permission("TypeOfBoard_register_new_device"); }
-    @JsonProperty public boolean bootloader_edit_permission() { return BaseController.person().has_permission("TypeOfBoard_bootloader"); }
-    @JsonProperty public boolean default_c_program_edit_permission() { return BaseController.person().has_permission("TypeOfBoard_c_program_edit_permission"); }
-    @JsonProperty public boolean test_c_program_edit_permission() { return BaseController.person().has_permission("TypeOfBoard_test_c_program_edit_permission"); }
+    @JsonProperty public boolean edit_permission()  {  return BaseController.person().has_permission("HardwareType_edit");   }
+    @JsonProperty public boolean update_permission()  {  return BaseController.person().has_permission("HardwareType_update");   }
+    @JsonProperty public boolean delete_permission() {  return BaseController.person().has_permission("HardwareType_delete"); }
+    @JsonProperty public boolean register_new_device_permission() { return BaseController.person().has_permission("HardwareType_register_new_device"); }
+    @JsonProperty public boolean bootloader_edit_permission() { return BaseController.person().has_permission("HardwareType_bootloader"); }
+    @JsonProperty public boolean default_c_program_edit_permission() { return BaseController.person().has_permission("HardwareType_c_program_edit_permission"); }
+    @JsonProperty public boolean test_c_program_edit_permission() { return BaseController.person().has_permission("HardwareType_test_c_program_edit_permission"); }
 
-    public enum Permission { TypeOfBoard_create, TypeOfBoard_edit, TypeOfBoard_update, TypeOfBoard_delete, TypeOfBoard_register_new_device, TypeOfBoard_bootloader,  TypeOfBoard_c_program_edit_permission, TypeOfBoard_test_c_program_edit_permission }
+    public enum Permission { HardwareType_create, HardwareType_edit, HardwareType_update, HardwareType_delete, HardwareType_register_new_device, HardwareType_bootloader,  HardwareType_c_program_edit_permission, HardwareType_test_c_program_edit_permission }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_TypeOfBoard.class, timeToIdle = 600)
-    public static Cache<UUID, Model_TypeOfBoard> cache;
+    @CacheField(Model_HardwareType.class)
+    public static Cache<UUID, Model_HardwareType> cache;
 
-    public static Model_TypeOfBoard getById(String id) {
+    public static Model_HardwareType getById(String id) {
         return getById(UUID.fromString(id));
     }
     
-    public static Model_TypeOfBoard getById(UUID id) {
+    public static Model_HardwareType getById(UUID id) {
 
-        Model_TypeOfBoard typeOfBoard = cache.get(id);
-        if (typeOfBoard == null) {
+        Model_HardwareType hardwareType = cache.get(id);
+        if (hardwareType == null) {
 
-            typeOfBoard = Model_TypeOfBoard.find.byId(id);
-            if (typeOfBoard == null) return null;
+            hardwareType = Model_HardwareType.find.byId(id);
+            if (hardwareType == null) return null;
 
-            cache.put(id, typeOfBoard);
+            cache.put(id, hardwareType);
         }
 
-        return typeOfBoard;
+        return hardwareType;
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_TypeOfBoard> find = new Finder<>(Model_TypeOfBoard.class);
+    public static Finder<UUID, Model_HardwareType> find = new Finder<>(Model_HardwareType.class);
 }

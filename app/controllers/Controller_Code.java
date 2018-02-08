@@ -33,7 +33,7 @@ import java.util.*;
 public class Controller_Code extends BaseController {
 
 // LOGGER ##############################################################################################################
-    private static final Logger logger = new Logger(Controller_Board.class);
+    private static final Logger logger = new Logger(Controller_Hardware.class);
 
     private FormFactory formFactory;
 
@@ -223,11 +223,11 @@ public class Controller_Code extends BaseController {
             Swagger_C_Program_Version_Update help = form.get();
 
             // Ověření objektu
-            if (help.type_of_board_id.isEmpty()) return badRequest("type_of_board_id is missing!");
+            if (help.hardware_type_id == null) return badRequest("hardware_type_id is missing!");
 
             // Ověření objektu
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.getById(help.type_of_board_id);
-            if (typeOfBoard == null) return notFound("TypeOfBoard type_of_board_id not found");
+            Model_HardwareType hardwareType = Model_HardwareType.getById(help.hardware_type_id);
+            if (hardwareType == null) return notFound("HardwareType not found");
 
             if (!Model_CompilationServer.is_online()) return externalServerOffline("Compilation server is offline");
 
@@ -292,7 +292,7 @@ public class Controller_Code extends BaseController {
                 return externalServerOffline("Compilation cloud_compilation_server is offline!");
             }
 
-            WS_Message_Make_compilation compilation_result = Model_CompilationServer.make_Compilation(new WS_Message_Make_compilation().make_request( typeOfBoard , help.library_compilation_version, UUID.randomUUID(), help.main, includes ));
+            WS_Message_Make_compilation compilation_result = Model_CompilationServer.make_Compilation(new WS_Message_Make_compilation().make_request( hardwareType , help.library_compilation_version, UUID.randomUUID(), help.main, includes ));
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode build_url
             if (compilation_result.build_url != null && compilation_result.status.equals("success")) {
@@ -445,14 +445,14 @@ public class Controller_Code extends BaseController {
             Swagger_C_Program_New help = form.get();
 
             // Ověření Typu Desky
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.getById(help.type_of_board_id);
-            if (typeOfBoard == null) return notFound("TypeOfBoard type_of_board_id not found");
+            Model_HardwareType hardwareType = Model_HardwareType.getById(help.hardware_type_id);
+            if (hardwareType == null) return notFound("HardwareType hardware_type_id not found");
 
             // Tvorba programu
             Model_CProgram c_program        = new Model_CProgram();
             c_program.name                  = help.name;
             c_program.description           = help.description;
-            c_program.type_of_board         = typeOfBoard;
+            c_program.hardware_type = hardwareType;
             c_program.publish_type          = ProgramType.PRIVATE;
 
             if (help.project_id != null) {
@@ -470,11 +470,11 @@ public class Controller_Code extends BaseController {
             c_program.refresh();
 
             // Přiřadím první verzi!
-            if (typeOfBoard.get_main_c_program() != null && typeOfBoard.get_main_c_program().default_main_version != null) {
+            if (hardwareType.get_main_c_program() != null && hardwareType.get_main_c_program().default_main_version != null) {
 
                 Model_Version version = new Model_Version();
                 version.name = "1.0.1";
-                version.description = typeOfBoard.get_main_c_program().description;
+                version.description = hardwareType.get_main_c_program().description;
                 version.author = person();
                 version.c_program = c_program;
                 version.public_version = help.c_program_public_admin_create;
@@ -484,7 +484,7 @@ public class Controller_Code extends BaseController {
 
                 version.save();
 
-                for (Model_Blob file : typeOfBoard.get_main_c_program().default_main_version.files) {
+                for (Model_Blob file : hardwareType.get_main_c_program().default_main_version.files) {
 
                     JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
 
@@ -506,7 +506,7 @@ public class Controller_Code extends BaseController {
                     version.update();
                 }
 
-                version.compile_program_thread(typeOfBoard.get_main_c_program().default_main_version.compilation.firmware_version_lib);
+                version.compile_program_thread(hardwareType.get_main_c_program().default_main_version.compilation.firmware_version_lib);
             }
 
             c_program.refresh();
@@ -569,7 +569,7 @@ public class Controller_Code extends BaseController {
             Model_CProgram c_program_new =  new Model_CProgram();
             c_program_new.name = help.name;
             c_program_new.description = help.description;
-            c_program_new.type_of_board = c_program_old.get_type_of_board();
+            c_program_new.hardware_type = c_program_old.getHardwareType();
             c_program_new.project = project;
             c_program_new.save();
 
@@ -691,7 +691,7 @@ public class Controller_Code extends BaseController {
             query.orderBy("UPPER(name) ASC");
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
-            if ((help.project_id != null) && !(help.project_id.equals(""))) {
+            if (help.project_id != null) {
 
                 Model_Project project = Model_Project.getById(help.project_id);
                 if (project == null) return notFound("Project not found");
@@ -700,8 +700,8 @@ public class Controller_Code extends BaseController {
                 query.where().eq("project.id", help.project_id).eq("deleted", false);
             }
 
-            if (!help.type_of_board_ids.isEmpty()) {
-               query.where().in("type_of_board.id", help.type_of_board_ids);
+            if (!help.hardware_type_ids.isEmpty()) {
+               query.where().in("hardware_type.id", help.hardware_type_ids);
             }
 
             if (help.public_programs) {
@@ -1185,7 +1185,7 @@ public class Controller_Code extends BaseController {
                     // c_program.id = c_program_old.id + "_public_copy"; TODO
                     c_program.name = help.program_name;
                     c_program.description = help.program_description;
-                    c_program.type_of_board = c_program_old.type_of_board;
+                    c_program.hardware_type = c_program_old.hardware_type;
                     c_program.publish_type  = ProgramType.PUBLIC;
                     c_program.save();
                 }
@@ -1223,7 +1223,7 @@ public class Controller_Code extends BaseController {
                                 .divider()
                                 .text("We will publish it as soon as possible.")
                                 .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                                .send(version_old.get_c_program().get_project().get_product().customer, "Publishing your program" );
+                                .send(version_old.get_c_program().get_project().getProduct().customer, "Publishing your program" );
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -1243,7 +1243,7 @@ public class Controller_Code extends BaseController {
                                 .text("We will publish it as soon as possible. We also had to make some changes to your program or rename something.")
                                 .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                                 .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                                .send(version_old.get_c_program().get_project().get_product().customer, "Publishing your program" );
+                                .send(version_old.get_c_program().get_project().getProduct().customer, "Publishing your program" );
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -1268,7 +1268,7 @@ public class Controller_Code extends BaseController {
                                     "We are glad that you want to contribute to our public libraries. Here are some tips what to improve, so you can try it again.")
                             .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                             .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                            .send(version_old.c_program.get_project().get_product().customer, "Publishing your program");
+                            .send(version_old.c_program.get_project().getProduct().customer, "Publishing your program");
 
                 } catch (Exception e) {
                     logger.internalServerError(e);
@@ -1283,8 +1283,8 @@ public class Controller_Code extends BaseController {
         }
     }
 
-    @ApiOperation(value = "set_c_program_version_as_main Type_of_board",
-            tags = {"Admin-C_Program, Type-Of-Board"},
+    @ApiOperation(value = "set_c_program_version_as_main HardwareType",
+            tags = {"Admin-C_Program, HardwareType"},
             notes = "set C_Program version as Main for This Type of Device. Version must be from Main or Test C Program of this version",
             produces = "application/json",
             protocols = "https",
@@ -1302,9 +1302,9 @@ public class Controller_Code extends BaseController {
         try {
 
             Model_Version version = Model_Version.getById(version_id);
-            if (version == null) return notFound("Version_Object version_object_id not found");
+            if (version == null) return notFound("Version not found");
 
-            if (version.get_c_program() == null || (version.get_c_program().type_of_board_default == null && version.get_c_program().type_of_board_test == null)) return badRequest("Version_object is not version of c_program or is not default firmware");
+            if (version.get_c_program() == null || (version.get_c_program().hardware_type_default == null && version.get_c_program().hardware_type_test == null)) return badRequest("Version_object is not version of c_program or is not default firmware");
 
             // Kontrola oprávnění
             if (!version.get_c_program().edit_permission()) return forbiddenEmpty();

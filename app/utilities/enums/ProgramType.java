@@ -4,7 +4,7 @@ import io.ebean.annotation.EnumValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(value = "States of update plan for each board are: ")
+@ApiModel(value = "States of update plan for each hardware are: ")
 public enum ProgramType {
 
     @EnumValue("PRIVATE")           PRIVATE,

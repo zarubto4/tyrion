@@ -9,7 +9,7 @@ import com.itextpdf.text.Image;
 import controllers.BaseController;
 import models.Model_Garfield;
 import models.Model_Hardware;
-import models.Model_TypeOfBoard_Batch;
+import models.Model_HardwareBatch;
 import models.Model_Version;
 import utilities.logger.Logger;
 
@@ -27,18 +27,18 @@ public class Label_62_mm_package {
     private Rectangle Label_65_mm_Antistatic_Package = new RectangleReadOnly(Utilities.millimetersToPoints(62), Utilities.millimetersToPoints(75));
 
     Model_Hardware board = null;
-    Model_TypeOfBoard_Batch print_info = null;
+    Model_HardwareBatch print_info = null;
     Model_Garfield garfield = null;
 
-    public Label_62_mm_package(Model_Hardware board, Model_TypeOfBoard_Batch batch, Model_Garfield garfield) throws IllegalArgumentException{
+    public Label_62_mm_package(Model_Hardware board, Model_HardwareBatch batch, Model_Garfield garfield) throws IllegalArgumentException{
 
         this.board = board;
         this.print_info = batch;
         this.garfield = garfield;
 
 
-        Model_Version test_version = Model_Version.find.query().where().eq("default_program.type_of_board.boards.id", board.id).isNotNull("default_program.type_of_board_test").findOne();
-        Model_Version production_version = Model_Version.find.query().where().eq("default_program.type_of_board.boards.id", board.id).isNotNull("default_program.type_of_board_default").findOne();
+        Model_Version test_version = Model_Version.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_test").findOne();
+        Model_Version production_version = Model_Version.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_default").findOne();
 
 
         if (test_version == null) {
@@ -154,7 +154,7 @@ public class Label_62_mm_package {
         PdfPCell cell_Right = new PdfPCell();
 
             Paragraph p_code = new Paragraph("Code: ", bold);
-                      p_code.add(new Chunk(board.get_type_of_board().name, regular));
+                      p_code.add(new Chunk(board.getHardwareType().name, regular));
 
             Paragraph p_product = new Paragraph("Product Revision: ", bold);
                       p_product.add(new Chunk(print_info.revision , regular));
@@ -181,11 +181,11 @@ public class Label_62_mm_package {
                       p_tested.add(new Chunk(date, regular));
 
 
-            board.get_type_of_board().main_test_c_program();
+            board.getHardwareType().main_test_c_program();
 
 
-            Model_Version test_version = Model_Version.find.query().where().eq("default_program.type_of_board.boards.id", board.id).isNotNull("default_program.type_of_board_test").findOne();
-            Model_Version production_version = Model_Version.find.query().where().eq("default_program.type_of_board.boards.id", board.id).isNotNull("default_program.type_of_board_default").findOne();
+            Model_Version test_version = Model_Version.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_test").findOne();
+            Model_Version production_version = Model_Version.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_default").findOne();
 
 
             Paragraph p_test_version = new Paragraph("FW Test Version: ", bold);
@@ -240,7 +240,7 @@ public class Label_62_mm_package {
         add_description.setAlignment(Element.ALIGN_MIDDLE);
 
         // QR Code for ADD
-        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(board.hash_for_adding, 1000, 1000, null);
+        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(board.registration_hash, 1000, 1000, null);
         Image codeQrImage = barcodeQRCode.getImage();
         codeQrImage.scaleAbsolute(50 , 50);
 

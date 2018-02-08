@@ -7,19 +7,13 @@ import play.data.validation.Constraints;
 
 @ApiModel(description = "Json Model for creating new Person",
           value = "Person_New")
-public class Swagger_Person_New {
+public class Swagger_Person_New extends Swagger_EmailAndPassword {
 
     @Constraints.Required
     @Constraints.MinLength(value = 4, message = "The nick_name must have at least 4 characters")
     @Constraints.MaxLength(value = 60, message = "The nick_name must not have more than 60 characters")
     @ApiModelProperty(required = true, value = "Length must be between 8 and 60 characters.")
     public String nick_name;
-
-    @Constraints.Email
-    @Constraints.Required
-    @ApiModelProperty(required = true, value = "Required valid email ")
-    public String email;
-
 
     @Constraints.MaxLength(value = 60, message = "The full_name must not have more than 60 characters")
     @ApiModelProperty(required = true, value = "The full_name is not required. Max lenght is 60 characters.")
@@ -28,10 +22,4 @@ public class Swagger_Person_New {
     @Constraints.MaxLength(value = 60, message = "The full_name must not have more than 60 characters")
     @ApiModelProperty(required = true, value = "The full_name is not required. Max lenght is 60 characters.")
     public String last_name;
-
-    @ApiModelProperty(value = "The password length must be between 8 and 60 characters", required = true)
-    @Constraints.MinLength(value = 8, message = "The password must have at least 8 characters")
-    @Constraints.MaxLength(value = 60, message = "The password must not have more than 60 characters")
-    @Constraints.Required
-    public String password;
 }

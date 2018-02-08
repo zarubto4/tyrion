@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.Model_Hardware;
 import play.libs.Json;
 import utilities.Server;
-import utilities.enums.Enum_Firmware_type;
+import utilities.enums.FirmwareType;
 
 import java.util.Date;
 import java.util.UUID;
@@ -16,7 +16,7 @@ public class DM_Board_VersionChange {
     @JsonIgnore private static final String document_type_sub_type = "VERSION_CHANGE";
 
     @JsonIgnore
-    public ObjectNode make_request(String board_id, Enum_Firmware_type firmware_type, String version_id) {
+    public ObjectNode make_request(String board_id, FirmwareType firmware_type, String version_id) {
 
         ObjectNode request = Json.newObject();
 

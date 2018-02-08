@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
+import java.util.UUID;
+
 @ApiModel(description = "Json Model for new Scree Size Type ",
           value = "ScreeSizeType_New")
 public class Swagger_ScreeSizeType_New {
@@ -28,8 +30,7 @@ public class Swagger_ScreeSizeType_New {
     public boolean touch_screen;
 
     @ApiModelProperty(value = "When you want create private screen", required = false)
-    public String project_id;
-
+    public UUID project_id;
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

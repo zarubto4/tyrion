@@ -36,7 +36,7 @@ public class DM_Batch_Registration_Central_Authority {
     @ApiModelProperty(required = true) @Constraints.Required  public String ean_number;
     @ApiModelProperty(required = true)                         public String description;
 
-    // Typoe of board conections
-    @ApiModelProperty(required = true) @Constraints.Required  public String type_of_board_compiler_target_name;
+    // Typoe of hardware conections
+    @ApiModelProperty(required = true) @Constraints.Required  public String hardware_type_compiler_target_name;
 }
 

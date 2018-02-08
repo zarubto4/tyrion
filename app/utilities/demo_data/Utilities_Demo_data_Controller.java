@@ -3,16 +3,13 @@ package utilities.demo_data;
 import controllers.BaseController;
 import io.swagger.annotations.Api;
 import models.*;
-import play.Application;
 import play.mvc.Result;
 import utilities.enums.BusinessModel;
 import utilities.enums.ExtensionType;
 import utilities.enums.HomerType;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
-import utilities.logger.ServerLogger;
 
-import javax.inject.Inject;
 import java.util.UUID;
 
 
@@ -46,7 +43,7 @@ public class Utilities_Demo_data_Controller extends BaseController {
     public Result all_for_becki() {
 
         Result result = this.producers();
-        result = this.type_of_board();
+        result = this.hardwareType();
         result = this.external_servers();
         result = this.basic_tariffs();
         result = this.person_test_user();
@@ -73,11 +70,11 @@ public class Utilities_Demo_data_Controller extends BaseController {
             garfield.print_sticker_id =  279211;  // 65 mm
 
 
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.query().where().eq("name", "IODA G3").findOne();
+            Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("name", "IODA G3").findOne();
             Model_Producer producer = Model_Producer.find.query().where().eq("name", "Byzance ltd").findOne();
 
 
-            garfield.type_of_board_id = typeOfBoard.id;
+            garfield.hardware_type_id = hardwareType.id;
             garfield.producer_id = producer.id;
 
             garfield.save();
@@ -110,27 +107,27 @@ public class Utilities_Demo_data_Controller extends BaseController {
         }
     }
 
-    public Result type_of_board() {
+    public Result hardwareType() {
         try {
 
 
-            Model_TypeOfBoardFeatures features_i2c = new Model_TypeOfBoardFeatures();
+            Model_HardwareFeature features_i2c = new Model_HardwareFeature();
             features_i2c.name = "i2c";
             features_i2c.save();
 
-            Model_TypeOfBoardFeatures wifi = new Model_TypeOfBoardFeatures();
+            Model_HardwareFeature wifi = new Model_HardwareFeature();
             wifi.name = "wifi";
             wifi.save();
 
-            Model_TypeOfBoardFeatures ethernet = new Model_TypeOfBoardFeatures();
+            Model_HardwareFeature ethernet = new Model_HardwareFeature();
             ethernet.name = "ethernet";
             ethernet.save();
 
-            Model_TypeOfBoardFeatures bus = new Model_TypeOfBoardFeatures();
+            Model_HardwareFeature bus = new Model_HardwareFeature();
             bus.name = "bus";
             bus.save();
 
-            Model_TypeOfBoardFeatures wireless = new Model_TypeOfBoardFeatures();
+            Model_HardwareFeature wireless = new Model_HardwareFeature();
             wireless.name = "wireless";
             wireless.save();
 
@@ -148,45 +145,45 @@ public class Utilities_Demo_data_Controller extends BaseController {
             processor_1.speed = 3000;
             processor_1.save();
 
-            // Nastavím Type of Boards - YODA
-            Model_TypeOfBoard typeOfBoard_2 = new Model_TypeOfBoard();
-            typeOfBoard_2.name = "IODA G3";
-            typeOfBoard_2.description = " Ioda - Master Board with Ethernet and Wifi - third generation";
-            typeOfBoard_2.compiler_target_name = "BYZANCE_IODAG3E";
-            typeOfBoard_2.processor = processor_1;
-            typeOfBoard_2.producer = producer;
-            typeOfBoard_2.connectible_to_internet = true;
-            typeOfBoard_2.features.add(ethernet);
-            typeOfBoard_2.features.add(wifi);
-            typeOfBoard_2.save();
+            // Nastavím Type of Hardware - YODA
+            Model_HardwareType hardwareType = new Model_HardwareType();
+            hardwareType.name = "IODA G3";
+            hardwareType.description = " Ioda - Master Board with Ethernet and Wifi - third generation";
+            hardwareType.compiler_target_name = "BYZANCE_IODAG3E";
+            hardwareType.processor = processor_1;
+            hardwareType.producer = producer;
+            hardwareType.connectible_to_internet = true;
+            hardwareType.features.add(ethernet);
+            hardwareType.features.add(wifi);
+            hardwareType.save();
 
 
             // Vytvoříme defaultní C_Program pro snížení počtu kroků pro nastavení desky
-            Model_CProgram c_program_2 = new Model_CProgram();
-            c_program_2.name =  typeOfBoard_2.name + " default program";
-            c_program_2.description = "Default program for this device type";
-            c_program_2.type_of_board_default = typeOfBoard_2;
-            c_program_2.type_of_board =  typeOfBoard_2;
-            c_program_2.publish_type  = ProgramType.DEFAULT_MAIN;
-            c_program_2.save();
+            Model_CProgram cProgram = new Model_CProgram();
+            cProgram.name =  hardwareType.name + " default program";
+            cProgram.description = "Default program for this device type";
+            cProgram.hardware_type_default = hardwareType;
+            cProgram.hardware_type = hardwareType;
+            cProgram.publish_type = ProgramType.DEFAULT_MAIN;
+            cProgram.save();
 
-            typeOfBoard_2.refresh();
+            hardwareType.refresh();
 
             // Vytvoříme testovací C_Program pro snížení počtu kroků pro nastavení desky
             Model_CProgram c_program_test_2 = new Model_CProgram();
-            c_program_test_2.name =  typeOfBoard_2.name + " test program";
+            c_program_test_2.name =  hardwareType.name + " test program";
             c_program_test_2.description = "Test program for this device type";
-            c_program_test_2.type_of_board_test = typeOfBoard_2;
-            c_program_test_2.type_of_board =  typeOfBoard_2;
-            c_program_test_2.publish_type  = ProgramType.DEFAULT_TEST;
+            c_program_test_2.hardware_type_test = hardwareType;
+            c_program_test_2.hardware_type = hardwareType;
+            c_program_test_2.publish_type = ProgramType.DEFAULT_TEST;
             c_program_test_2.save();
 
-            typeOfBoard_2.refresh();
+            hardwareType.refresh();
 
 
             // Prototype Collection from Pragoboard
-            Model_TypeOfBoard_Batch batch_proto = new Model_TypeOfBoard_Batch();
-            batch_proto.type_of_board = typeOfBoard_2;
+            Model_HardwareBatch batch_proto = new Model_HardwareBatch();
+            batch_proto.hardware_type = hardwareType;
             batch_proto.revision = "Test Private Collection";
             batch_proto.production_batch = "First Try";
             batch_proto.date_of_assembly = "12.6.2017";
@@ -203,8 +200,8 @@ public class Utilities_Demo_data_Controller extends BaseController {
             batch_proto.save();
 
             // Prototype Collection from PCB Benešov
-            Model_TypeOfBoard_Batch batch_test = new Model_TypeOfBoard_Batch();
-            batch_test.type_of_board = typeOfBoard_2;
+            Model_HardwareBatch batch_test = new Model_HardwareBatch();
+            batch_test.hardware_type = hardwareType;
             batch_test.revision = "VF250717";
             batch_test.production_batch = "1000001 - Test Collection";
             batch_test.date_of_assembly = "27.9.2017";
@@ -222,8 +219,8 @@ public class Utilities_Demo_data_Controller extends BaseController {
 
             // Prototype Collection from PCB Benešov
             // Prototype Collection from PCB Benešov
-            Model_TypeOfBoard_Batch batch_final_first = new Model_TypeOfBoard_Batch();
-            batch_final_first.type_of_board = typeOfBoard_2;
+            Model_HardwareBatch batch_final_first = new Model_HardwareBatch();
+            batch_final_first.hardware_type = hardwareType;
             batch_final_first.revision = "VF250717";
             batch_final_first.production_batch = "1000001 - Test Collection";
             batch_final_first.date_of_assembly = "27.9.2017";

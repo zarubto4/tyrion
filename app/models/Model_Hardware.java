@@ -44,7 +44,6 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.*;
 
-
 @Entity
 @ApiModel(value = "Hardware", description = "Model of Hardware")
 @Table(name="Hardware")
@@ -53,7 +52,6 @@ public class Model_Hardware extends NamedModel {
 /* DOCUMENTATION -------------------------------------------------------------------------------------------------------*/
 
     /*
-
         Hardware je zastupující entita, která by měla být natolik univerzální, že dokáže pokrýt veškerý supportovaný hardware
         který je Byzance schopna obsluhovat. Rozdílem je Typ desky - který může měnit chování některých metod nebo executiv
         procedur.
@@ -67,98 +65,78 @@ public class Model_Hardware extends NamedModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                       public String full_id;                  // Full_Id procesoru přiřazené garfieldem Garfieldem
-    @JsonIgnore public String hash_for_adding;                                      // Vygenerovaný Hash pro přidávání a párování s Platformou. // Je na QR kodu na hardwaru
+    public String full_id;
+    public String wifi_mac_address;
+    public String mac_address;
 
-                                       public String wifi_mac_address;              // Mac addressa wifi čipu
-                                       public String mac_address;                   // Přiřazená MacAdresa z rozsahu Adres
+    @JsonIgnore
+    public String registration_hash;   // Vygenerovaný Hash pro přidávání a párování s Platformou. // Je na QR kodu na hardwaru
 
-    @Column(columnDefinition = "TEXT") @JsonIgnore public String json_bootloader_core_configuration; // DM_Board_Configuration.java Počáteční konfigurace - kde je uložený JSON mapovaný pomocí Objektů konkrétního typu hardwaru  //
-
-    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)  public Model_Blob picture;
-                                       public Date date_of_user_registration;      // Datum, kdy si uživatel desku zaregistroval
+    @JsonIgnore @Column(columnDefinition = "TEXT")
+    public String json_bootloader_core_configuration; // DM_Board_Configuration.java Počáteční konfigurace - kde je uložený JSON mapovaný pomocí Objektů konkrétního typu hardwaru  //
 
     // Parametry při výrobě a osazení a registraci
-    @JsonIgnore public String batch_id;                     // Výrobní šarže
-    @JsonIgnore public boolean is_active;                   // Příznak, že deska byla oživena a je použitelná v platformě
-    @JsonIgnore public String mqtt_password;                // V BCryptu uložený UUID
-    @JsonIgnore public String mqtt_username;                // V BCryptu uložený UUID
+    @JsonIgnore public String batch_id;         // Výrobní šarže
+    @JsonIgnore public boolean is_active;       // Příznak, že deska byla oživena a je použitelná v platformě
+    @JsonIgnore public String mqtt_password;    // V BCryptu uložený UUID
+    @JsonIgnore public String mqtt_username;    // V BCryptu uložený UUID
 
     // Parametry konfigurovate uživatelem z frontendu
     // Pozor v Controller_Board jsou parametry v metodě board_update_parameters používány
                  public boolean developer_kit;
-    @JsonIgnore  public boolean backup_mode;                 // True znamená automatické zálohování po 5* minutách po nahrátí - verze se označuje mezi hardwarářema jako stabilní  - Opakej je statický backup - vázaný na objekty
-                                                             // Pozor tato hodna se také propisuje do json_bootloader_core_configuration!!!!
-                 public boolean database_synchronize;        // Defautlní hodnota je True. Je možnost vypnout synchronizaci a to pro případy, že uživatel vypaluje firmwaru lokálně pomocí svého programaátoru a IIDE
-                 // public boolean web_view;                    // Podpora webového rozhraní informací o hardwaru ze strany byzance - neuživatelský webserver
-                 // public Integer web_port;
+    @JsonIgnore  public boolean backup_mode;            // True znamená automatické zálohování po 5* minutách po nahrátí - verze se označuje mezi hardwarářema jako stabilní  - Opakej je statický backup - vázaný na objekty
+                                                        // Pozor tato hodna se také propisuje do json_bootloader_core_configuration!!!!
+                 public boolean database_synchronize;   // Defautlní hodnota je True. Je možnost vypnout synchronizaci a to pro případy, že uživatel vypaluje firmwaru lokálně pomocí svého programaátoru a IIDE
 
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_TypeOfBoard type_of_board;     // Typ desky - (Cachováno)
-    @JsonIgnore @OneToOne(mappedBy = "hardware", fetch = FetchType.LAZY) public Model_HardwareRegistration registration;
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_Project project;         // Projekt, pod který Hardware spadá
+    @JsonIgnore @OneToOne(mappedBy = "hardware")  public Model_HardwareRegistration registration;
 
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_Version actual_c_program_version;               // OVěřená verze firmwaru, která na hardwaru běží (Cachováno)
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_Version actual_backup_c_program_version;        // Ověřený statický backup - nebo aktuálně zazálohovaný firmware (Cachováno)
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_BootLoader    actual_boot_loader;                     // Aktuální bootloader (Cachováno)
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_HardwareType hardware_type; // Typ desky - (Cachováno)
 
-    // TODO odstranit @JsonIgnore @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_BPair> b_pair = new ArrayList<>();    // Vazba firmwaru a Hardwaru - používáno pro snapshoty v Blocku
-    @JsonIgnore @OneToMany(mappedBy="board", cascade=CascadeType.ALL, fetch=FetchType.LAZY) public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();   // Seznam update procedur s tímto hardware.
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Version actual_c_program_version;           // OVěřená verze firmwaru, která na hardwaru běží (Cachováno)
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Version actual_backup_c_program_version;    // Ověřený statický backup - nebo aktuálně zazálohovaný firmware (Cachováno)
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BootLoader actual_boot_loader;              // Aktuální bootloader (Cachováno)
 
     @JsonIgnore public UUID connected_server_id;      // Latest know Server ID
     @JsonIgnore public UUID connected_instance_id;    // Latest know Instance ID
 
-    // Hardware Groups
-    @JsonIgnore @ManyToMany(mappedBy = "boards", fetch = FetchType.LAZY)  public List<Model_HardwareGroup> board_groups = new ArrayList<>();
-
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     // For Faster reload
-    @Transient @JsonIgnore @Cached public Long cache_latest_online;
-
-    @Transient @JsonIgnore @Cached public UUID cache_type_of_board_id;                        // Type of Board Id
-    @Transient @JsonIgnore @Cached public String cache_type_of_board_name;
-
-    @Transient @JsonIgnore @Cached public UUID cache_picture_id;
-
-    @Transient @JsonIgnore @Cached public UUID cache_producer_id;                             // Producer ID
-
-    @Transient @JsonIgnore @Cached public UUID cache_project_id;                              // Project
-
-    @Transient @JsonIgnore @Cached public UUID cache_actual_boot_loader_id;                   // Bootloader
-
-    @Transient @JsonIgnore @Cached public UUID cache_actual_c_program_id;                     // C Program
-    @Transient @JsonIgnore @Cached public UUID cache_actual_c_program_version_id;             // C Program - version
-
-    @Transient @JsonIgnore @Cached public UUID cache_actual_c_program_backup_id;              // Backup
-    @Transient @JsonIgnore @Cached public UUID cache_actual_c_program_backup_version_id;      // Backup - version
-
-    @Transient @JsonIgnore @Cached public String cache_latest_know_ip_address;
-    @Transient @JsonIgnore @Cached public List<UUID> cache_hardware_group_ids;
+    @JsonIgnore @Transient @Cached public Long cache_latest_online;
+    @JsonIgnore @Transient @Cached public UUID cache_hardware_type_id;                        // Type of Board Id
+    @JsonIgnore @Transient @Cached public String cache_hardware_type_name;
+    @JsonIgnore @Transient @Cached public UUID cache_producer_id;                             // Producer ID
+    @JsonIgnore @Transient @Cached public UUID cache_project_id;                              // Project
+    @JsonIgnore @Transient @Cached public UUID cache_actual_boot_loader_id;                   // Bootloader
+    @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_id;                     // C Program
+    @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_version_id;             // C Program - version
+    @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_backup_id;              // Backup
+    @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_backup_version_id;      // Backup - version
+    @JsonIgnore @Transient @Cached public String cache_latest_know_ip_address;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty  @Transient  public BackupMode backup_mode() { return backup_mode ? BackupMode.AUTO_BACKUP : BackupMode.STATIC_BACKUP;}
-
-    @JsonProperty public UUID type_of_board_id()                     { try { return cache_type_of_board_id != null ? cache_type_of_board_id : get_type_of_board().id;} catch (NullPointerException e) {return  null;}}
-    @JsonProperty public String type_of_board_name()                   { try { return cache_type_of_board_name != null ? cache_type_of_board_name : get_type_of_board().name;} catch (NullPointerException e) {return  null;}}
+    @JsonProperty public BackupMode backup_mode() { return backup_mode ? BackupMode.AUTO_BACKUP : BackupMode.STATIC_BACKUP;}
+    @JsonProperty public UUID hardware_type_id()                     { try { return cache_hardware_type_id != null ? cache_hardware_type_id : getHardwareType().id;} catch (NullPointerException e) {return  null;}}
+    @JsonProperty public String hardware_type_name()                   { try { return cache_hardware_type_name != null ? cache_hardware_type_name : getHardwareType().name;} catch (NullPointerException e) {return  null;}}
     @JsonProperty public UUID producer_id()                          { try { return cache_producer_id != null ? cache_producer_id : get_producer().id;} catch (NullPointerException e) {return  null;}}
     @JsonProperty public String producer_name()                        { try { return get_producer().name; } catch (NullPointerException e) {return  null;}}
-    @JsonProperty public UUID project_id()                           { try { return cache_project_id != null ? cache_project_id : get_project().id; } catch (NullPointerException e) {return  null;}}
+    @JsonProperty public UUID project_id()                           { try { return cache_project_id != null ? cache_project_id : getProject().id; } catch (NullPointerException e) {return  null;}}
     @JsonProperty public String actual_bootloader_version_name()       { try { return get_actual_bootloader().name; } catch (NullPointerException e) {return  null;}}
     @JsonProperty public UUID actual_bootloader_id()                 { try { return cache_actual_boot_loader_id != null ? cache_actual_boot_loader_id : get_actual_bootloader().id; } catch (NullPointerException e) {return  null;}}
     @JsonProperty public UUID bootloader_update_in_progress_bootloader_id()       {
         try {
             // TODO Tohle by šlo ukládat do kešky [TZ]
-           Model_CProgramUpdatePlan plan_not_cached = Model_CProgramUpdatePlan.find.query().where().eq("board.id", this.id).eq("firmware_type", Enum_Firmware_type.BOOTLOADER.name())
+           Model_HardwareUpdate plan_not_cached = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id).eq("firmware_type", FirmwareType.BOOTLOADER.name())
                      .disjunction()
-                         .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
-                         .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
-                         .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
-                         .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
-                         .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
-                         .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
+                         .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
+                         .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
+                         .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
+                         .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
+                         .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
+                         .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
                      .endJunction()
-                     .eq("firmware_type", Enum_Firmware_type.BOOTLOADER)
+                     .eq("firmware_type", FirmwareType.BOOTLOADER)
                      .le("actualization_procedure.date_of_planing", new Date())
                      .order().desc("actualization_procedure.date_of_planing")
                      .select("id")
@@ -166,10 +144,10 @@ public class Model_Hardware extends NamedModel {
                      .findOne();
 
            if (plan_not_cached != null) {
-               Model_CProgramUpdatePlan plan = Model_CProgramUpdatePlan.getById(plan_not_cached.id.toString());
+               Model_HardwareUpdate plan = Model_HardwareUpdate.getById(plan_not_cached.id.toString());
 
                if (plan != null) {
-                   return plan.get_bootloader().id;
+                   return plan.getBootloader().id;
                }
            }
 
@@ -181,32 +159,9 @@ public class Model_Hardware extends NamedModel {
         }
     }
 
-    @JsonProperty  @Transient  public String picture_link() {
-        try {
 
-            if ( cache_picture_id == null) {
-
-                Model_Blob fileRecord = Model_Blob.find.query().where().eq("board.id",id).select("id").findOne();
-                if (fileRecord != null) {
-                    cache_picture_id =  fileRecord.id;
-                }
-            }
-
-            if (cache_picture_id != null) {
-                Model_Blob record = Model_Blob.getById(cache_picture_id);
-                if (record != null) {
-                    return record.get_file_path_for_direct_download_public_link(300);
-                }
-            }
-
-            return null;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-    @JsonProperty public String available_bootloader_version_name()  { return get_type_of_board().main_boot_loader()  == null ? null :  get_type_of_board().main_boot_loader().name;}
-    @JsonProperty public UUID available_bootloader_id()              { return get_type_of_board().main_boot_loader()  == null ? null :  get_type_of_board().main_boot_loader().id;}
+    @JsonProperty public String available_bootloader_version_name()  { return getHardwareType().main_boot_loader()  == null ? null :  getHardwareType().main_boot_loader().name;}
+    @JsonProperty public UUID available_bootloader_id()              { return getHardwareType().main_boot_loader()  == null ? null :  getHardwareType().main_boot_loader().id;}
     @JsonProperty public String ip_address() {
         try {
 
@@ -222,7 +177,8 @@ public class Model_Hardware extends NamedModel {
             return null;
         }
     }
-    @JsonProperty  @Transient  public List<BoardAlert> alert_list() {
+    @JsonProperty
+    public List<BoardAlert> alert_list() {
         try {
 
             List<BoardAlert> list = new ArrayList<>();
@@ -236,7 +192,8 @@ public class Model_Hardware extends NamedModel {
         }
     }
 
-    @JsonProperty  @Transient public DM_Board_Bootloader_DefaultConfig bootloader_core_configuration() {
+    @JsonProperty
+    public DM_Board_Bootloader_DefaultConfig bootloader_core_configuration() {
         try {
 
             if (json_bootloader_core_configuration == null || json_bootloader_core_configuration.equals("{}") || json_bootloader_core_configuration.equals("null") || json_bootloader_core_configuration.length() == 0) {
@@ -258,18 +215,19 @@ public class Model_Hardware extends NamedModel {
         }
     }
 
-    @JsonProperty  @Transient  public List<Model_CProgramUpdatePlan> required_updates() {
+    @JsonProperty
+    public List<Model_HardwareUpdate> required_updates() {
 
         try {
 
-            List<Model_CProgramUpdatePlan> c_program_plans = Model_CProgramUpdatePlan.find.query().where()
+            List<Model_HardwareUpdate> c_program_plans = Model_HardwareUpdate.find.query().where()
                     .disjunction()
-                    .eq("state", Enum_CProgram_updater_state.in_progress)
-                    .eq("state", Enum_CProgram_updater_state.waiting_for_device)
-                    .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
-                    .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
+                    .eq("state", HardwareUpdateState.IN_PROGRESS)
+                    .eq("state", HardwareUpdateState.WAITING_FOR_DEVICE)
+                    .eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE)
+                    .eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE)
                     .endJunction()
-                    .eq("board.id", id).order().asc("actualization_procedure.created").findList();
+                    .eq("hardware.id", id).order().asc("actualization_procedure.created").findList();
 
             return c_program_plans;
 
@@ -331,7 +289,7 @@ public class Model_Hardware extends NamedModel {
                     record = documents.get(0).toObject(DM_Board_Disconnected.class);
                 }
 
-                logger.debug("last_online: hardware_id: {}", record.device_id);
+                logger.debug("last_online: hardware_id: {}", record.hardware_id);
 
                 cache_latest_online = new Date(record.time).getTime();
                 return cache_latest_online;
@@ -345,7 +303,8 @@ public class Model_Hardware extends NamedModel {
         }
     }
 
-    @JsonProperty  @Transient  public NetworkStatus online_state() {
+    @JsonProperty
+    public NetworkStatus online_state() {
 
         try {
             // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
@@ -386,11 +345,6 @@ public class Model_Hardware extends NamedModel {
         }
     }
 
-    @JsonProperty @ApiModelProperty(required = true)
-    public List<Model_HardwareGroup> hardware_groups() {
-        return get_hardware_groups();
-    }
-
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
     @JsonIgnore
@@ -408,8 +362,8 @@ public class Model_Hardware extends NamedModel {
                  board_for_fast_upload_detail.collision = BoardUpdateCollision.ALREADY_IN_INSTANCE;
             }
 
-            board_for_fast_upload_detail.type_of_board_id = type_of_board_id();
-            board_for_fast_upload_detail.type_of_board_name = type_of_board_name();
+            board_for_fast_upload_detail.hardware_type_id = hardware_type_id();
+            board_for_fast_upload_detail.hardware_type_name = hardware_type_name();
 
             return board_for_fast_upload_detail;
 
@@ -427,7 +381,7 @@ public class Model_Hardware extends NamedModel {
 
         if (cache_producer_id == null) {
 
-            Model_Producer producer = Model_Producer.find.query().where().eq("type_of_boards.boards.id", id).select("id").findOne();
+            Model_Producer producer = Model_Producer.find.query().where().eq("hardware_types.hardware.id", id).select("id").findOne();
             if (producer == null) return null;
             cache_producer_id = producer.id;
         }
@@ -469,7 +423,7 @@ public class Model_Hardware extends NamedModel {
     public Model_BootLoader get_actual_bootloader() {
 
         if (cache_actual_boot_loader_id == null) {
-            Model_BootLoader bootLoader = Model_BootLoader.find.query().where().eq("boards.id", id).select("id").findOne();
+            Model_BootLoader bootLoader = Model_BootLoader.find.query().where().eq("hardware.id", id).select("id").findOne();
             if (bootLoader == null) return null;
             cache_actual_boot_loader_id = bootLoader.id;
         }
@@ -502,22 +456,23 @@ public class Model_Hardware extends NamedModel {
     }
 
     @JsonIgnore
-    public Model_TypeOfBoard get_type_of_board() {
+    public Model_HardwareType getHardwareType() {
 
-        if (cache_type_of_board_id == null) {
-            Model_TypeOfBoard type_of_board = Model_TypeOfBoard.find.query().where().eq("boards.id", id).select("id").select("name").findOne();
-            cache_type_of_board_id = type_of_board.id;
-            cache_type_of_board_name = type_of_board.name;
+        if (cache_hardware_type_id == null) {
+            Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("hardware.id", id).select("id").select("name").findOne();
+            if (hardwareType == null) return null;
+            cache_hardware_type_id = hardwareType.id;
+            cache_hardware_type_name = hardwareType.name;
         }
 
-        return Model_TypeOfBoard.getById(cache_type_of_board_id);
+        return Model_HardwareType.getById(cache_hardware_type_id);
     }
 
     @JsonIgnore
-    public Model_Project get_project() {
+    public Model_Project getProject() {
 
         if (cache_project_id == null) {
-            Model_Project project = Model_Project.find.query().where().eq("boards.id", id).select("id").findOne();
+            Model_Project project = Model_Project.find.query().where().eq("hardware.id", registration.id).select("id").findOne();
             if (project == null) return null;
             cache_project_id = project.id;
         }
@@ -526,45 +481,9 @@ public class Model_Hardware extends NamedModel {
     }
 
     @JsonIgnore
-    public List<Model_HardwareGroup> get_hardware_groups() {
-
-        if (cache_hardware_group_ids == null) {
-            List<Model_HardwareGroup> groups = Model_HardwareGroup.find.query().where().eq("boards.id", id).select("id").findList();
-
-            if (groups == null) {
-                cache_hardware_group_ids = new ArrayList<>();
-                return new ArrayList<>();
-            } else {
-                cache_hardware_group_ids = new ArrayList<>();
-                for (Model_HardwareGroup group : groups) {
-                    cache_hardware_group_ids.add(group.id);
-                }
-            }
-        }
-
-        List<Model_HardwareGroup> groups = new ArrayList<>();
-
-        for (UUID group_id : cache_hardware_group_ids) {
-            groups.add(Model_HardwareGroup.getById(group_id));
-        }
-
-        return groups;
-    }
-
-    @JsonIgnore
-    public List<UUID> get_hardware_groups_ids() {
-        if (cache_hardware_group_ids == null) {
-            get_hardware_groups();
-            return cache_hardware_group_ids;
-        } else {
-           return cache_hardware_group_ids;
-        }
-    }
-
-    @JsonIgnore
     public boolean update_boot_loader_required() {
-        if (get_type_of_board().main_boot_loader == null || get_actual_bootloader() == null) return true;
-        return (!this.get_type_of_board().main_boot_loader.id.equals(get_actual_bootloader().id));
+        if (getHardwareType().main_boot_loader == null || get_actual_bootloader() == null) return true;
+        return (!this.getHardwareType().main_boot_loader.id.equals(get_actual_bootloader().id));
     }
 
 /* JSON IGNORE  --------------------------------------------------------------------------------------------------------*/
@@ -618,7 +537,7 @@ public class Model_Hardware extends NamedModel {
 
                     case WS_Message_Hardware_UpdateProcedure_Progress.message_type: {
 
-                        Model_CProgramUpdatePlan.update_procedure_progress(Json.fromJson(json, WS_Message_Hardware_UpdateProcedure_Progress.class));
+                        Model_HardwareUpdate.update_procedure_progress(Json.fromJson(json, WS_Message_Hardware_UpdateProcedure_Progress.class));
                         return;
                     }
 
@@ -664,10 +583,12 @@ public class Model_Hardware extends NamedModel {
         }).start();
     }
 
-    @JsonIgnore public UUID get_id() {return id;}
+    @JsonIgnore
+    public UUID get_id() {return id;}
 
     // Kontrola připojení - Echo o připojení
-    @JsonIgnore public static void device_Connected(WS_Message_Hardware_connected help) {
+    @JsonIgnore
+    public static void device_Connected(WS_Message_Hardware_connected help) {
         try {
 
             logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.hardware_id);
@@ -719,7 +640,8 @@ public class Model_Hardware extends NamedModel {
     }
 
     // Echo o odpojení
-    @JsonIgnore @Transient public static void device_Disconnected(WS_Message_Hardware_disconnected help) {
+    @JsonIgnore
+    public static void device_Disconnected(WS_Message_Hardware_disconnected help) {
         try {
 
 
@@ -761,7 +683,8 @@ public class Model_Hardware extends NamedModel {
     }
 
     // Device dělá autobackup
-    @JsonIgnore @Transient public static void device_auto_backup_start_echo(WS_Message_Hardware_autobackup_making help) {
+    @JsonIgnore
+    public static void device_auto_backup_start_echo(WS_Message_Hardware_autobackup_making help) {
         try {
 
             logger.debug("device_auto_backup_echo:: Device send Echo about making backup on device ID:: {} ", help.hardware_id);
@@ -782,7 +705,8 @@ public class Model_Hardware extends NamedModel {
     }
 
     // Device udělal autobackup
-    @JsonIgnore @Transient public static void device_auto_backup_done_echo(WS_Message_Hardware_autobackup_made help) {
+    @JsonIgnore
+    public static void device_auto_backup_done_echo(WS_Message_Hardware_autobackup_made help) {
         try {
 
             logger.debug("device_auto_backup_done_echo:: Device send Echo about backup done on device ID:: {} ", help.hardware_id);
@@ -808,7 +732,8 @@ public class Model_Hardware extends NamedModel {
     }
 
     // žádost void o synchronizaci online stavu
-    @JsonIgnore @Transient public static void device_online_synchronization(WS_Message_Hardware_online_status report) {
+    @JsonIgnore
+    public static void device_online_synchronization(WS_Message_Hardware_online_status report) {
         try {
 
             for (WS_Message_Hardware_online_status.DeviceStatus status : report.hardware_list) {
@@ -827,7 +752,8 @@ public class Model_Hardware extends NamedModel {
     }
 
 
-    @JsonIgnore @Transient public static void check_mqtt_hardware_connection_validation(WS_Homer homer, WS_Message_Hardware_validation_request request) {
+    @JsonIgnore
+    public static void check_mqtt_hardware_connection_validation(WS_Homer homer, WS_Message_Hardware_validation_request request) {
         try {
 
             Model_Hardware board = request.get_hardware();
@@ -843,7 +769,8 @@ public class Model_Hardware extends NamedModel {
         }
     }
 
-    @JsonIgnore @Transient public static void check_hardware_logger_access_terminal_validation(WS_Homer homer, WS_Message_Hardware_terminal_logger_validation_request request) {
+    @JsonIgnore
+    public static void check_hardware_logger_access_terminal_validation(WS_Homer homer, WS_Message_Hardware_terminal_logger_validation_request request) {
         try {
 
             UUID project_id = null;
@@ -852,7 +779,6 @@ public class Model_Hardware extends NamedModel {
 
                 Model_Hardware board =  Model_Hardware.getById(hardware_id);
                 if (board == null) {
-                    System.out.println("Board je null");
                     homer.send(request.get_result(false));
                     return;
                 }
@@ -862,10 +788,8 @@ public class Model_Hardware extends NamedModel {
 
                 // P5edpokládá se že project_id bude u všech desek stejné - tak se podle toho bude taky kontrolovat
                 if (project_id == null) {
-                    System.out.println("project_id je null");
                     Model_Person person = Model_Person.getByAuthToken(request.token);
                     if (person == null) {
-                        System.out.println("person je null");
                         homer.send(request.get_result(false));
                         return;
                     }
@@ -873,12 +797,10 @@ public class Model_Hardware extends NamedModel {
                     Model_Project project = Model_Project.find.query().where().eq("participants.person.id", person.id).eq("id", board.project_id()).findOne();
 
                     if (project == null) {
-                        System.out.println("project je null");
                         homer.send(request.get_result(false));
                         return;
                     }
 
-                    System.out.println("project id je" +  project.id);
                     project_id = project.id;
                 }
             }
@@ -1161,10 +1083,11 @@ public class Model_Hardware extends NamedModel {
     }
 
     // Set Hardware groups in Hardware Instance on Homer --//
-    @JsonIgnore @Transient public WS_Message_Hardware_set_hardware_groups set_hardware_groups_on_hardware(List<UUID> get_hardware_groups_ids, Enum_type_of_command command) {
+    @JsonIgnore
+    public WS_Message_Hardware_set_hardware_groups set_hardware_groups_on_hardware(UUID hardware_groups_id, Enum_type_of_command command) {
         try {
 
-            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_hardware_groups().make_request(Collections.singletonList(this), get_hardware_groups_ids, command), 1000 * 5, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_hardware_groups().make_request(Collections.singletonList(this), hardware_groups_id, command), 1000 * 5, 0, 2);
 
             return Json.fromJson(node, WS_Message_Hardware_set_hardware_groups.class);
 
@@ -1175,7 +1098,8 @@ public class Model_Hardware extends NamedModel {
     }
 
     // Change Hardware web view port --//
-    @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_hardware_configuration_parameter(Swagger_Board_Developer_parameters help) throws IllegalArgumentException, Exception{
+    @JsonIgnore
+    public WS_Message_Hardware_set_settings set_hardware_configuration_parameter(Swagger_Board_Developer_parameters help) throws IllegalArgumentException, Exception{
 
             DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
 
@@ -1228,13 +1152,15 @@ public class Model_Hardware extends NamedModel {
     }
 
     //-- ADD or Remove // Change Server --//
-    @JsonIgnore @Transient public void device_relocate_server(Model_HomerServer future_server) {
+    @JsonIgnore
+    public void device_relocate_server(Model_HomerServer future_server) {
         List<Model_Hardware> devices = new ArrayList<>();
         devices.add(this);
         device_relocate_server(devices, future_server);
     }
 
-    @JsonIgnore @Transient public WS_Message_Hardware_change_server device_relocate_server(String mqtt_host, String mqtt_port) {
+    @JsonIgnore
+    public WS_Message_Hardware_change_server device_relocate_server(String mqtt_host, String mqtt_port) {
         try {
             JsonNode node = write_with_confirmation( new WS_Message_Hardware_change_server().make_request(mqtt_host, mqtt_port, Collections.singletonList(this.id)), 1000 * 5, 0, 2);
             return Json.fromJson(node, WS_Message_Hardware_change_server.class);
@@ -1245,7 +1171,8 @@ public class Model_Hardware extends NamedModel {
         }
     }
 
-    @JsonIgnore @Transient public void device_relocate_server(List<Model_Hardware> devices, Model_HomerServer future_server) {
+    @JsonIgnore
+    public void device_relocate_server(List<Model_Hardware> devices, Model_HomerServer future_server) {
         try {
 
             // Sepparate Device by servers
@@ -1266,7 +1193,8 @@ public class Model_Hardware extends NamedModel {
     }
 
     //-- Set AutoBackup  --//
-    @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_auto_backup() {
+    @JsonIgnore
+    public WS_Message_Hardware_set_settings set_auto_backup() {
         try {
 
             // 1) změna registru v configur
@@ -1278,16 +1206,16 @@ public class Model_Hardware extends NamedModel {
             this.update();
 
             //Zabít všechny procedury kde je nastaven backup a ještě nebyly provedeny - ty co jsou teprve v plánu budou provedeny standartně
-            List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.query().where().eq("board.id", this.id)
+            List<Model_HardwareUpdate> firmware_plans = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
                     .disjunction()
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
+                    .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
+                    .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
+                    .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
+                    .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
+                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
+                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
                     .endJunction()
-                    .eq("firmware_type", Enum_Firmware_type.BACKUP.name())
+                    .eq("firmware_type", FirmwareType.BACKUP.name())
                     .lt("actualization_procedure.date_of_planing", new Date())
                     .order().desc("actualization_procedure.date_of_planing")
                     .select("id")
@@ -1295,7 +1223,7 @@ public class Model_Hardware extends NamedModel {
 
             // Zaloha kdyby byly stále platné aktualizace na backup
             for (int i = 0; i < firmware_plans.size(); i++) {
-                firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
+                firmware_plans.get(i).state = HardwareUpdateState.OBSOLETE;
                 firmware_plans.get(i).update();
             }
 
@@ -1310,7 +1238,8 @@ public class Model_Hardware extends NamedModel {
     }
 
     ///-- Send Update Procedure to All Hardware's  --//
-    @JsonIgnore @Transient public static void execute_update_plan(Model_CProgramUpdatePlan plan) {
+    @JsonIgnore
+    public static void execute_update_plan(Model_HardwareUpdate plan) {
         logger.debug("execute_update_plan - start execution of plan: {}", plan.id );
         logger.debug("execute_update_plan - actual state: {} ", plan.state.name());
 
@@ -1332,7 +1261,7 @@ public class Model_Hardware extends NamedModel {
         try {
 
             if ( plan.count_of_tries > 5 ) {
-                plan.state = Enum_CProgram_updater_state.critical_error;
+                plan.state = HardwareUpdateState.CRITICAL_ERROR;
                 plan.error = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message();
                 plan.error_code = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code();
                 plan.update();
@@ -1340,34 +1269,35 @@ public class Model_Hardware extends NamedModel {
                 return;
             }
 
-            if (plan.get_board().connected_server_id == null) {
-                plan.state = Enum_CProgram_updater_state.homer_server_never_connected;
+            if (plan.getHardware().connected_server_id == null) {
+                plan.state = HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED;
                 plan.update();
                 return;
             }
 
-            if (Model_HomerServer.getById(plan.get_board().connected_server_id).online_state() != NetworkStatus.ONLINE) {
-                logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", plan.actualization_procedure.id , plan.id, Model_HomerServer.getById(plan.get_board().connected_server_id).personal_server_name);
-                plan.state = Enum_CProgram_updater_state.homer_server_is_offline;
+            if (Model_HomerServer.getById(plan.getHardware().connected_server_id).online_state() != NetworkStatus.ONLINE) {
+                logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", plan.actualization_procedure.id , plan.id, Model_HomerServer.getById(plan.getHardware().connected_server_id).personal_server_name);
+                plan.state = HardwareUpdateState.HOMER_SERVER_IS_OFFLINE;
                 plan.update();
                 return;
             }
 
-            plan.state = Enum_CProgram_updater_state.in_progress;
+            plan.state = HardwareUpdateState.IN_PROGRESS;
             plan.update();
 
-            Model_HomerServer.getById(plan.get_board().connected_server_id).update_devices_firmware(Collections.singletonList(plan.get_brief_for_update_homer_server()));
+            Model_HomerServer.getById(plan.getHardware().connected_server_id).update_devices_firmware(Collections.singletonList(plan.get_brief_for_update_homer_server()));
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            plan.state = Enum_CProgram_updater_state.critical_error;
+            plan.state = HardwareUpdateState.CRITICAL_ERROR;
             plan.error_code = ErrorCode.CRITICAL_TYRION_SERVER_SIDE_ERROR.error_code();
             plan.error = ErrorCode.CRITICAL_TYRION_SERVER_SIDE_ERROR.error_message();
             plan.update();
         }
     }
 
-    @JsonIgnore @Transient public static void execute_update_procedure(Model_ActualizationProcedure procedure) {
+    @JsonIgnore
+    public static void execute_update_procedure(Model_UpdateProcedure procedure) {
 
         logger.debug("execute_update_procedure - start execution of procedure: {}", procedure.id );
         logger.debug("execute_update_procedure - actual state: {} ", procedure.state.name());
@@ -1387,14 +1317,14 @@ public class Model_Hardware extends NamedModel {
         procedure.state = Enum_Update_group_procedure_state.in_progress;
         procedure.update();
 
-        List<Model_CProgramUpdatePlan> plans = Model_CProgramUpdatePlan.find.query().where().eq("actualization_procedure.id", procedure.id)
+        List<Model_HardwareUpdate> plans = Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", procedure.id)
                 .disjunction()
-                .eq("state", Enum_CProgram_updater_state.not_start_yet)
-                .eq("state", Enum_CProgram_updater_state.waiting_for_device)
-                .eq("state", Enum_CProgram_updater_state.instance_inaccessible)
-                .eq("state", Enum_CProgram_updater_state.homer_server_is_offline)
-                .eq("state", Enum_CProgram_updater_state.homer_server_never_connected)
-                .eq("state", Enum_CProgram_updater_state.bin_file_not_found)
+                .eq("state", HardwareUpdateState.NOT_YET_STARTED)
+                .eq("state", HardwareUpdateState.WAITING_FOR_DEVICE)
+                .eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE)
+                .eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE)
+                .eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED)
+                .eq("state", HardwareUpdateState.BIN_FILE_MISSING)
                 .endJunction()
                 .findList();
 
@@ -1405,13 +1335,13 @@ public class Model_Hardware extends NamedModel {
 
         logger.debug("execute_update_procedure - Procedure id:: {} . Number of C_Procedures By database for execution:: {}" , procedure.id , plans.size());
 
-        HashMap<UUID, List<Model_CProgramUpdatePlan> > server_device_sort = new HashMap<>();
+        HashMap<UUID, List<Model_HardwareUpdate> > server_device_sort = new HashMap<>();
 
-        for (Model_CProgramUpdatePlan plan : plans) {
+        for (Model_HardwareUpdate plan : plans) {
             try {
 
                 logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: ID:: {} - New Cycle" , procedure.id , plan.id, plan.id);
-                logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Board ID:: {}" , procedure.id , plan.id,  plan.get_board().id);
+                logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Board ID:: {}" , procedure.id , plan.id,  plan.getHardware().id);
                 logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Status:: {} ", procedure.id , plan.id,  plan.state);
 
                 logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Number of tries {} ", procedure.id , plan.id,  plan.count_of_tries);
@@ -1421,23 +1351,23 @@ public class Model_Hardware extends NamedModel {
                 }
 
                 // Pokud HW nemá nastavený Backup Mode - nastaví se
-                if (plan.firmware_type == Enum_Firmware_type.BACKUP) {
-                    if (!plan.get_board().backup_mode) {
+                if (plan.firmware_type == FirmwareType.BACKUP) {
+                    if (!plan.getHardware().backup_mode) {
                         // Na Homera Nemusím posílat příkaz o změně registru, protože Homer při updatu Backupu vždy sám přepne register hardwaru pokud tak nahardwaru není
                         // JE to trochu vybočení ze standardu, ale byl problém s tím, že se registr nastavil a pak se mohlo posrat ještě milion věcí.
                         // Takto Homer register mění až ve chvíli, kdy přenese bynárku do bufru hardwaru a řekne udělej z toho backup (což je jen zpoždění jedné mqtt nstrukce)
                         // V Configu
-                        DM_Board_Bootloader_DefaultConfig configuration = plan.get_board().bootloader_core_configuration();
+                        DM_Board_Bootloader_DefaultConfig configuration = plan.getHardware().bootloader_core_configuration();
                         configuration.autobackup = false;
-                        plan.get_board().update_bootloader_configuration(configuration);
+                        plan.getHardware().update_bootloader_configuration(configuration);
                         // V databázi
-                        plan.get_board().backup_mode = false;
-                        plan.get_board().update();
+                        plan.getHardware().backup_mode = false;
+                        plan.getHardware().update();
                     }
                 }
 
                 if (plan.count_of_tries > 5) {
-                    plan.state = Enum_CProgram_updater_state.critical_error;
+                    plan.state = HardwareUpdateState.CRITICAL_ERROR;
                     plan.error = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message();
                     plan.error_code = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code();
                     plan.update();
@@ -1445,33 +1375,33 @@ public class Model_Hardware extends NamedModel {
                     continue;
                 }
 
-                if (plan.get_board().connected_server_id == null) {
-                    plan.state = Enum_CProgram_updater_state.homer_server_never_connected;
+                if (plan.getHardware().connected_server_id == null) {
+                    plan.state = HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED;
                     plan.update();
                     continue;
                 }
 
-                if (!server_device_sort.containsKey(plan.get_board().connected_server_id)) {
-                    server_device_sort.put(plan.get_board().connected_server_id, new ArrayList<Model_CProgramUpdatePlan>());
+                if (!server_device_sort.containsKey(plan.getHardware().connected_server_id)) {
+                    server_device_sort.put(plan.getHardware().connected_server_id, new ArrayList<Model_HardwareUpdate>());
                 }
 
-                if (Model_HomerServer.getById(plan.get_board().connected_server_id).online_state() != NetworkStatus.ONLINE) {
-                    logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id, Model_HomerServer.getById(plan.board.connected_server_id).personal_server_name);
-                    plan.state = Enum_CProgram_updater_state.homer_server_is_offline;
+                if (Model_HomerServer.getById(plan.getHardware().connected_server_id).online_state() != NetworkStatus.ONLINE) {
+                    logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id, Model_HomerServer.getById(plan.hardware.hardware.connected_server_id).personal_server_name);
+                    plan.state = HardwareUpdateState.HOMER_SERVER_IS_OFFLINE;
                     plan.update();
                     continue;
                 }
 
-                server_device_sort.get(plan.get_board().connected_server_id).add(plan);
+                server_device_sort.get(plan.getHardware().connected_server_id).add(plan);
 
                 logger.debug("execute_update_procedure - Procedure id:: {}  plan {} of blocko program is online and connected with Tyrion", procedure.id, plan.id);
 
-                plan.state = Enum_CProgram_updater_state.in_progress;
+                plan.state = HardwareUpdateState.IN_PROGRESS;
                 plan.update();
 
             } catch (Exception e) {
                 logger.internalServerError(e);
-                plan.state = Enum_CProgram_updater_state.critical_error;
+                plan.state = HardwareUpdateState.CRITICAL_ERROR;
                 plan.error_code = ErrorCode.CRITICAL_TYRION_SERVER_SIDE_ERROR.error_code();
                 plan.error = ErrorCode.CRITICAL_TYRION_SERVER_SIDE_ERROR.error_message();
                 plan.update();
@@ -1487,7 +1417,7 @@ public class Model_Hardware extends NamedModel {
 
             List<Swagger_UpdatePlan_brief_for_homer> tasks = new ArrayList<>();
 
-            for (Model_CProgramUpdatePlan plan : server_device_sort.get(server_id)) {
+            for (Model_HardwareUpdate plan : server_device_sort.get(server_id)) {
                 tasks.add(plan.get_brief_for_update_homer_server());
             }
 
@@ -1522,7 +1452,8 @@ public class Model_Hardware extends NamedModel {
 /* CHECK BOARD RIGHT FIRMWARE || BACKUP || BOOTLOADER STATUS -----------------------------------------------------------*/
 
     // Kontrola up_to_date harwaru
-    @JsonIgnore @Transient  public void hardware_firmware_state_check() {
+    @JsonIgnore
+    public void hardware_firmware_state_check() {
         try {
 
             WS_Message_Hardware_overview_Board report = get_devices_overview();
@@ -1551,7 +1482,7 @@ public class Model_Hardware extends NamedModel {
                 return;
             }
 
-            logger.debug("hardware_firmware_state_check - Summary information of connected master board: ID = {}", this.id);
+            logger.debug("hardware_firmware_state_check - Summary information of connected master hardware: ID = {}", this.id);
 
             logger.debug("hardware_firmware_state_check - Settings check ",this.id);
             if (!check_settings(report)) return;
@@ -1578,7 +1509,8 @@ public class Model_Hardware extends NamedModel {
      *
      * @param overview
      */
-    @JsonIgnore @Transient private boolean check_settings(WS_Message_Hardware_overview_Board overview) {
+    @JsonIgnore
+    private boolean check_settings(WS_Message_Hardware_overview_Board overview) {
 
         // Pokud uživatel nechce DB synchronizaci ingoruji
         if (!this.database_synchronize) {
@@ -1610,12 +1542,10 @@ public class Model_Hardware extends NamedModel {
             this.update();
         }
 
-        // Kontrola Skupin Hardware Groups - To není synchronizace s HW ale s Instancí HW na Homerovi
-        for (UUID hardware_group_id : get_hardware_groups_ids()) {
-            // Pokud neobsahuje přidám - ale abych si ušetřil čas - nastavím rovnou celý seznam - Homer si s tím poradí
-            if (!overview.hardware_group_ids.contains(hardware_group_id)) {
-                set_hardware_groups_on_hardware(get_hardware_groups_ids(), Enum_type_of_command.SET);
-                break;
+        if (this.registration != null) {
+            Model_HardwareGroup group = this.registration.getGroup();
+            if (group != null && (overview.hardware_group_id == null || !overview.hardware_group_id.equals(group.id))) {
+                set_hardware_groups_on_hardware(group.id, Enum_type_of_command.SET);
             }
         }
 
@@ -1630,22 +1560,20 @@ public class Model_Hardware extends NamedModel {
         DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
         boolean change_register = false; // Pokud došlo ke změně
 
-        outCycle:
         for (Field config_field : configuration.getClass().getFields()) {
 
             try {
                 Field incoming_report_right_filed = null;
 
-                inCycle:
                 for (Field incoming_filed : overview.getClass().getFields()) {
                     if (config_field.getName().equals(incoming_filed.getName())) {
                         incoming_report_right_filed = incoming_filed;
-                        break inCycle;
+                        break;
                     }
                 }
 
                 if (incoming_report_right_filed == null) {
-                    continue outCycle;
+                    continue;
                 }
 
                 if (config_field.getType().getCanonicalName().equals(Boolean.class.getSimpleName().toLowerCase())) {
@@ -1655,7 +1583,7 @@ public class Model_Hardware extends NamedModel {
                         change_register = true;
                     }
 
-                    continue outCycle;
+                    continue;
                 }
 
                 if (config_field.getType().getCanonicalName().toLowerCase().equals(String.class.getSimpleName().toLowerCase())) {
@@ -1665,7 +1593,7 @@ public class Model_Hardware extends NamedModel {
                         change_register = true;
                     }
 
-                    continue outCycle;
+                    continue;
                 }
 
                 if (config_field.getType().getCanonicalName().toLowerCase().equals(Integer.class.getSimpleName().toLowerCase())) {
@@ -1675,7 +1603,7 @@ public class Model_Hardware extends NamedModel {
                         change_register = true;
                     }
 
-                    continue outCycle;
+                    continue;
                 }
             } catch (Exception e) {
                 logger.internalServerError(e);
@@ -1697,7 +1625,8 @@ public class Model_Hardware extends NamedModel {
      * Pokud máme odchylku od databáze na hardwaru, to jest nesedí firmware_build_id na hW s tím co říká databáze
      * @param overview
      */
-    @JsonIgnore @Transient private void check_firmware(WS_Message_Hardware_overview_Board overview) {
+    @JsonIgnore
+    private void check_firmware(WS_Message_Hardware_overview_Board overview) {
 
         try {
             // Pokud uživatel nechce DB synchronizaci ingoruji
@@ -1721,16 +1650,16 @@ public class Model_Hardware extends NamedModel {
             }
 
             // Vylistuji seznam úkolů k updatu
-            List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.query().where().eq("board.id", this.id)
+            List<Model_HardwareUpdate> firmware_plans = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
                     .disjunction()
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
+                    .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
+                    .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
+                    .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
+                    .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
+                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
+                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
                     .endJunction()
-                    .eq("firmware_type", Enum_Firmware_type.FIRMWARE.name())
+                    .eq("firmware_type", FirmwareType.FIRMWARE.name())
                     .lt("actualization_procedure.date_of_planing", new Date())
                     .order().desc("actualization_procedure.date_of_planing")
                     .findList();
@@ -1742,7 +1671,7 @@ public class Model_Hardware extends NamedModel {
             // Poměrně krkolomné řešení a HNUS kod - ale chyba je výjmečná a stává se jen sporadicky těsně před nebo po restartu serveru
             if (firmware_plans.size() > 1) {
                 for (int i = 1; i < firmware_plans.size(); i++) {
-                    firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
+                    firmware_plans.get(i).state = HardwareUpdateState.OBSOLETE;
                     firmware_plans.get(i).update();
                 }
             }
@@ -1751,7 +1680,7 @@ public class Model_Hardware extends NamedModel {
 
                 logger.debug("existují nedokončené procedury");
 
-                Model_CProgramUpdatePlan plan = firmware_plans.get(0);
+                Model_HardwareUpdate plan = firmware_plans.get(0);
 
                 logger.debug("Plan:: {} status: {} ", plan.id, plan.state);
 
@@ -1772,15 +1701,15 @@ public class Model_Hardware extends NamedModel {
                         this.update();
 
                         logger.debug("check_firmware - up to date, procedure is done");
-                        plan.state = Enum_CProgram_updater_state.complete;
-                        plan.date_of_finish = new Date();
+                        plan.state = HardwareUpdateState.COMPLETE;
+                        plan.finished = new Date();
                         plan.update();
                         return;
 
                     } else {
                         logger.debug("check_firmware verze se neshodují");
                         logger.debug("check_firmware - need update, system starts a update again, number of tries {}", plan.count_of_tries);
-                        plan.state = Enum_CProgram_updater_state.not_start_yet;
+                        plan.state = HardwareUpdateState.NOT_YET_STARTED;
                         plan.count_of_tries++;
                         plan.update();
                         execute_update_plan(plan);
@@ -1789,7 +1718,7 @@ public class Model_Hardware extends NamedModel {
                 } else {
 
                     logger.debug("check_firmware - no firmware, system starts a new update");
-                    plan.state = Enum_CProgram_updater_state.not_start_yet;
+                    plan.state = HardwareUpdateState.NOT_YET_STARTED;
                     plan.count_of_tries++;
                     plan.update();
 
@@ -1850,7 +1779,7 @@ public class Model_Hardware extends NamedModel {
 
                         b_pairs.add(b_pair);
 
-                        Model_ActualizationProcedure procedure = create_update_procedure(Enum_Firmware_type.FIRMWARE, UpdateType.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
+                        Model_UpdateProcedure procedure = create_update_procedure(FirmwareType.FIRMWARE, UpdateType.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
                         procedure.execute_update_procedure();
 
                         return;
@@ -1872,57 +1801,56 @@ public class Model_Hardware extends NamedModel {
                 // Ověřím - jestli nemám nově nahraný firmware na Hardwaru (to je ten co je teď výcohí firmware pro aktuální typ hardwaru)
                 if (overview.binaries != null && overview.binaries.firmware != null
                         && overview.binaries.firmware.build_id != null
-                        && get_type_of_board().get_main_c_program().default_main_version != null
-                        && get_type_of_board().get_main_c_program().default_main_version.compilation.firmware_build_id != null
-                        && overview.binaries.firmware.build_id.equals(get_type_of_board().get_main_c_program().default_main_version.compilation.firmware_build_id)
+                        && getHardwareType().get_main_c_program().default_main_version != null
+                        && getHardwareType().get_main_c_program().default_main_version.compilation.firmware_build_id != null
+                        && overview.binaries.firmware.build_id.equals(getHardwareType().get_main_c_program().default_main_version.compilation.firmware_build_id)
                         ) {
 
-                    logger.debug("check_firmware - board is brand new, but already has required firmware");
+                    logger.debug("check_firmware - hardware is brand new, but already has required firmware");
 
-                    this.actual_c_program_version = get_type_of_board().get_main_c_program().default_main_version;
-                    this.cache_actual_c_program_id = get_type_of_board().get_main_c_program().id;
-                    this.cache_actual_c_program_version_id = get_type_of_board().get_main_c_program().default_main_version.id;
+                    this.actual_c_program_version = getHardwareType().get_main_c_program().default_main_version;
+                    this.cache_actual_c_program_id = getHardwareType().get_main_c_program().id;
+                    this.cache_actual_c_program_version_id = getHardwareType().get_main_c_program().default_main_version.id;
 
 
-                    this.actual_backup_c_program_version = get_type_of_board().get_main_c_program().default_main_version; // Udělám rovnou zálohu, protože taková by tam měla být
-                    this.cache_actual_c_program_backup_id = get_type_of_board().get_main_c_program().id;
-                    this.cache_actual_c_program_backup_version_id = get_type_of_board().get_main_c_program().default_main_version.id;
+                    this.actual_backup_c_program_version = getHardwareType().get_main_c_program().default_main_version; // Udělám rovnou zálohu, protože taková by tam měla být
+                    this.cache_actual_c_program_backup_id = getHardwareType().get_main_c_program().id;
+                    this.cache_actual_c_program_backup_version_id = getHardwareType().get_main_c_program().default_main_version.id;
                     this.update();
                     return;
                 }
 
                 // Nastavím default firmware podle schématu Tyriona!
                 // Defaultní firmware je v v backandu určený výchozí program k typu desky.
-                if (get_type_of_board().get_main_c_program() != null && get_type_of_board().get_main_c_program().default_main_version != null) {
+                if (getHardwareType().get_main_c_program() != null && getHardwareType().get_main_c_program().default_main_version != null) {
 
-                    logger.debug("check_firmware - Yes, Default Version for Type Of Device {} is set", get_type_of_board().name);
+                    logger.debug("check_firmware - Yes, Default Version for Type Of Device {} is set", getHardwareType().name);
 
                     List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
 
                     WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
                     b_pair.hardware = this;
-                    b_pair.c_program_version = get_type_of_board().get_main_c_program().default_main_version;
+                    b_pair.c_program_version = getHardwareType().get_main_c_program().default_main_version;
 
                     b_pairs.add(b_pair);
 
                     this.notification_board_not_databased_version();
 
-                    Model_ActualizationProcedure procedure = create_update_procedure(Enum_Firmware_type.FIRMWARE, UpdateType.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
+                    Model_UpdateProcedure procedure = create_update_procedure(FirmwareType.FIRMWARE, UpdateType.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
                     procedure.execute_update_procedure();
 
                 } else {
                     logger.error("Attention please! This is not a critical bug - Tyrion server is not just set for this type of device! Set main C_Program and version!");
-                    logger.error("Default main code version is not set for Type Of Board " + get_type_of_board().name + " please set that!");
+                    logger.error("Default main code version is not set for Type Of Board " + getHardwareType().name + " please set that!");
                 }
-
-                return;
             }
         } catch (Exception e) {
             logger.internalServerError(e);
         }
     }
 
-    @JsonIgnore @Transient private void check_backup(WS_Message_Hardware_overview_Board overview) {
+    @JsonIgnore
+    private void check_backup(WS_Message_Hardware_overview_Board overview) {
         try {
             // Pokud uživatel nechce DB synchronizaci ingoruji
             if (!this.database_synchronize) {
@@ -1983,23 +1911,23 @@ public class Model_Hardware extends NamedModel {
                 }
             }
 
-            List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.query().where().eq("board.id", this.id)
+            List<Model_HardwareUpdate> firmware_plans = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
                     .disjunction()
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
+                    .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
+                    .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
+                    .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
+                    .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
+                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
+                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
                     .endJunction()
-                    .eq("firmware_type", Enum_Firmware_type.BACKUP.name())
+                    .eq("firmware_type", FirmwareType.BACKUP.name())
                     .lt("actualization_procedure.date_of_planing", new Date())
                     .order().desc("actualization_procedure.date_of_planing")
                     .findList();
 
             // Zaloha kdyby byly stále platné aktualizace na backup
             for (int i = 1; i < firmware_plans.size(); i++) {
-                firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
+                firmware_plans.get(i).state = HardwareUpdateState.OBSOLETE;
                 firmware_plans.get(i).update();
             }
 
@@ -2010,7 +1938,7 @@ public class Model_Hardware extends NamedModel {
             // Poměrně krkolomné řešení a HNUS kod - ale chyba je výjmečná a stává se jen sporadicky těsně před nebo po restartu serveru
             if (firmware_plans.size() > 1) {
                 for (int i = 1; i < firmware_plans.size(); i++) {
-                    firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
+                    firmware_plans.get(i).state = HardwareUpdateState.OBSOLETE;
                     firmware_plans.get(i).update();
                 }
             }
@@ -2018,26 +1946,26 @@ public class Model_Hardware extends NamedModel {
             // Mám updaty a tak kontroluji
             if (!firmware_plans.isEmpty()) {
 
-                Model_CProgramUpdatePlan plan = firmware_plans.get(0);
+                Model_HardwareUpdate plan = firmware_plans.get(0);
 
                 logger.debug("check_backup - Actual backup according to Tyrion: {}", get_backup_c_program_version().compilation.firmware_build_id);
                 logger.debug("check_backup - Actual backup according to Homer: {}", overview.binaries.backup.build_id);
                 logger.debug("check_backup - incomplete procedure expects: {}", plan.c_program_version_for_update.compilation.firmware_build_id);
 
-                if (plan.get_board().get_backup_c_program_version() != null) {
+                if (plan.getHardware().get_backup_c_program_version() != null) {
 
                     // Verze se rovnají
                     if (get_backup_c_program_version().compilation.firmware_build_id.equals(plan.c_program_version_for_update.compilation.firmware_build_id)) {
 
                         logger.debug("check_backup - up to date, procedure is done");
-                        plan.state = Enum_CProgram_updater_state.complete;
-                        plan.date_of_finish = new Date();
+                        plan.state = HardwareUpdateState.COMPLETE;
+                        plan.finished = new Date();
                         plan.update();
 
                     } else {
 
                         logger.debug("check_backup - need update, system starts a new update, number of tries {}", plan.count_of_tries);
-                        plan.state = Enum_CProgram_updater_state.not_start_yet;
+                        plan.state = HardwareUpdateState.NOT_YET_STARTED;
                         plan.count_of_tries++;
                         plan.update();
                         execute_update_procedure(plan.actualization_procedure);
@@ -2046,7 +1974,7 @@ public class Model_Hardware extends NamedModel {
                 } else {
 
                     logger.debug("check_backup - no backup, system starts a new update");
-                    plan.state = Enum_CProgram_updater_state.not_start_yet;
+                    plan.state = HardwareUpdateState.NOT_YET_STARTED;
                     plan.count_of_tries++;
                     plan.update();
 
@@ -2064,7 +1992,8 @@ public class Model_Hardware extends NamedModel {
         }
     }
 
-    @JsonIgnore @Transient private void check_bootloader(WS_Message_Hardware_overview_Board overview) {
+    @JsonIgnore
+    private void check_bootloader(WS_Message_Hardware_overview_Board overview) {
 
         // Pokud uživatel nechce DB synchronizaci ingoruji
         if (!this.database_synchronize) {
@@ -2077,16 +2006,16 @@ public class Model_Hardware extends NamedModel {
         }
 
         // Vylistuji seznam úkolů k updatu
-        List<Model_CProgramUpdatePlan> firmware_plans = Model_CProgramUpdatePlan.find.query().where().eq("board.id", this.id)
+        List<Model_HardwareUpdate> firmware_plans = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
                 .disjunction()
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
+                    .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
+                    .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
+                    .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
+                    .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
+                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
+                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
                 .endJunction()
-                .eq("firmware_type", Enum_Firmware_type.BOOTLOADER)
+                .eq("firmware_type", FirmwareType.BOOTLOADER)
                 .le("actualization_procedure.date_of_planing", new Date())
                 .order().desc("actualization_procedure.date_of_planing")
                 .findList();
@@ -2099,34 +2028,34 @@ public class Model_Hardware extends NamedModel {
         if (firmware_plans.size() > 1) {
             logger.trace("check_bootloader:: firmware_plans.size() > 1 ");
             for (int i = 1; i < firmware_plans.size(); i++) {
-                logger.trace("check_bootloader:: overwritten procedure ID {}", firmware_plans.get(i).id);
-                firmware_plans.get(i).state = Enum_CProgram_updater_state.overwritten;
+                logger.trace("check_bootloader:: OBSOLETE procedure ID {}", firmware_plans.get(i).id);
+                firmware_plans.get(i).state = HardwareUpdateState.OBSOLETE;
                 firmware_plans.get(i).update();
             }
         }
 
         if (!firmware_plans.isEmpty()) {
 
-            Model_CProgramUpdatePlan plan = firmware_plans.get(0);
+            Model_HardwareUpdate plan = firmware_plans.get(0);
 
-            if (plan.get_board().get_actual_bootloader() != null) {
+            if (plan.getHardware().get_actual_bootloader() != null) {
 
                 // Verze se rovnají
-                if (plan.get_board().get_actual_bootloader().version_identifier.equals(plan.get_bootloader().version_identifier)) {
+                if (plan.getHardware().get_actual_bootloader().version_identifier.equals(plan.getBootloader().version_identifier)) {
 
                     logger.debug("check_bootloader - up to date, procedure is done");
-                    plan.state = Enum_CProgram_updater_state.complete;
-                    plan.date_of_finish = new Date();
+                    plan.state = HardwareUpdateState.COMPLETE;
+                    plan.finished = new Date();
                     plan.update();
 
-                    this.actual_boot_loader = plan.get_bootloader();
-                    this.cache_actual_boot_loader_id = plan.get_bootloader().id;
+                    this.actual_boot_loader = plan.getBootloader();
+                    this.cache_actual_boot_loader_id = plan.getBootloader().id;
                     update();
 
                 } else {
 
                     logger.debug("check_bootloader - need update, system starts a new update, number of tries {}", plan.count_of_tries);
-                    plan.state = Enum_CProgram_updater_state.not_start_yet;
+                    plan.state = HardwareUpdateState.NOT_YET_STARTED;
                     plan.count_of_tries++;
                     plan.update();
                     execute_update_procedure(plan.actualization_procedure);
@@ -2135,7 +2064,7 @@ public class Model_Hardware extends NamedModel {
             } else {
 
                 logger.debug("check_bootloader:: no bootloader, system starts a update again");
-                plan.state = Enum_CProgram_updater_state.not_start_yet;
+                plan.state = HardwareUpdateState.NOT_YET_STARTED;
                 plan.count_of_tries++;
                 plan.update();
 
@@ -2160,8 +2089,8 @@ public class Model_Hardware extends NamedModel {
                 return;
             }
 
-            if (get_type_of_board().main_boot_loader() == null) {
-                logger.error("check_bootloader::Main Bootloader for Type Of Board {} is not set for update device {}", this.type_of_board_name(), this.id);
+            if (getHardwareType().main_boot_loader() == null) {
+                logger.error("check_bootloader::Main Bootloader for Type Of Board {} is not set for update device {}", this.hardware_type_name(), this.id);
                 return;
             }
 
@@ -2170,26 +2099,26 @@ public class Model_Hardware extends NamedModel {
             WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
             b_pair.hardware = this;
 
-            if (this.get_actual_bootloader() == null) b_pair.bootLoader =  get_type_of_board().main_boot_loader();
+            if (this.get_actual_bootloader() == null) b_pair.bootLoader =  getHardwareType().main_boot_loader();
             else b_pair.bootLoader = this.get_actual_bootloader();
 
             b_pairs.add(b_pair);
 
             logger.debug("check_bootloader:: - creating update procedure for bootloader");
-            Model_ActualizationProcedure procedure = create_update_procedure(Enum_Firmware_type.BOOTLOADER, UpdateType.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
+            Model_UpdateProcedure procedure = create_update_procedure(FirmwareType.BOOTLOADER, UpdateType.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
             procedure.execute_update_procedure();
         }
     }
 
 /* UPDATE --------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_ActualizationProcedure create_update_procedure(Enum_Firmware_type firmware_type, UpdateType type_of_update, List<WS_Help_Hardware_Pair> board_for_update) {
+    public static Model_UpdateProcedure create_update_procedure(FirmwareType firmware_type, UpdateType type_of_update, List<WS_Help_Hardware_Pair> board_for_update) {
 
         if (board_for_update == null || board_for_update.isEmpty()) {
             throw new NullPointerException("List<WS_Help_Hardware_Pair> board_for_update) is empty");
         }
 
-        Model_ActualizationProcedure procedure = new Model_ActualizationProcedure();
+        Model_UpdateProcedure procedure = new Model_UpdateProcedure();
         procedure.project_id = board_for_update.get(0).hardware.project_id();
         procedure.state = Enum_Update_group_procedure_state.not_start_yet;
         procedure.type_of_update = type_of_update;
@@ -2198,46 +2127,46 @@ public class Model_Hardware extends NamedModel {
 
         for (WS_Help_Hardware_Pair b_pair : board_for_update) {
 
-            List<Model_CProgramUpdatePlan> procedures_for_overriding = Model_CProgramUpdatePlan.find.query()
+            List<Model_HardwareUpdate> obsolete = Model_HardwareUpdate.find.query()
                     .where()
                     .eq("firmware_type", firmware_type)
                     .disjunction()
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.not_start_yet))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.in_progress))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.waiting_for_device))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.instance_inaccessible))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_is_offline))
-                    .add(Expr.eq("state", Enum_CProgram_updater_state.homer_server_never_connected))
+                    .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
+                    .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
+                    .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
+                    .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
+                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
+                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
                     .endJunction()
-                    .eq("board.id", b_pair.hardware.id).findList();
+                    .eq("hardware.id", b_pair.hardware.id).findList();
 
-            for (Model_CProgramUpdatePlan cProgramUpdatePlan : procedures_for_overriding) {
-                cProgramUpdatePlan.state = Enum_CProgram_updater_state.overwritten;
-                cProgramUpdatePlan.date_of_finish = new Date();
-                cProgramUpdatePlan.update();
+            for (Model_HardwareUpdate update : obsolete) {
+                update.state = HardwareUpdateState.OBSOLETE;
+                update.finished = new Date();
+                update.update();
             }
 
-            Model_CProgramUpdatePlan plan = new Model_CProgramUpdatePlan();
-            plan.board = b_pair.hardware;
+            Model_HardwareUpdate plan = new Model_HardwareUpdate();
+            plan.hardware = b_pair.hardware.registration;
             plan.firmware_type = firmware_type;
             plan.actualization_procedure = procedure;
 
             // Firmware
-            if (firmware_type == Enum_Firmware_type.FIRMWARE) {
+            if (firmware_type == FirmwareType.FIRMWARE) {
                 plan.c_program_version_for_update = b_pair.c_program_version;
-                plan.state = Enum_CProgram_updater_state.not_start_yet;
+                plan.state = HardwareUpdateState.NOT_YET_STARTED;
             }
 
             // Backup
-            else if (firmware_type == Enum_Firmware_type.BACKUP) {
+            else if (firmware_type == FirmwareType.BACKUP) {
                 plan.c_program_version_for_update = b_pair.c_program_version;
-                plan.state = Enum_CProgram_updater_state.not_start_yet;
+                plan.state = HardwareUpdateState.NOT_YET_STARTED;
             }
 
             // Bootloader
-            else if (firmware_type == Enum_Firmware_type.BOOTLOADER) {
+            else if (firmware_type == FirmwareType.BOOTLOADER) {
                 plan.bootloader = b_pair.bootLoader;
-                plan.state = Enum_CProgram_updater_state.not_start_yet;
+                plan.state = HardwareUpdateState.NOT_YET_STARTED;
             }
 
             plan.save();
@@ -2253,7 +2182,7 @@ public class Model_Hardware extends NamedModel {
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
     // Online Offline Notification
-    @JsonIgnore @Transient
+    @JsonIgnore
     public void notification_board_connect() {
         new Thread( () -> {
             if (project_id() == null) return;
@@ -2273,7 +2202,7 @@ public class Model_Hardware extends NamedModel {
         }).start();
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public void notification_board_disconnect() {
         new Thread( () -> {
             if (project_id() == null) return;
@@ -2293,7 +2222,7 @@ public class Model_Hardware extends NamedModel {
         }).start();
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public void notification_board_unstable_actual_firmware_version(Model_Version firmware_version) {
         new Thread( () -> {
 
@@ -2322,7 +2251,7 @@ public class Model_Hardware extends NamedModel {
         }).start();
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public void notification_board_not_databased_version() {
         new Thread( () -> {
 
@@ -2367,13 +2296,13 @@ public class Model_Hardware extends NamedModel {
                         .setText(new Notification_Text().setText(", in Version "))
                         .setObject(board_for_update.c_program_version)
                         .setText(new Notification_Text().setText(" for device "))
-                        .setObject(board_for_update.board)
+                        .setObject(board_for_update.hardware)
                         .setText(new Notification_Text().setText(". "))
                         .setText(new Notification_Text().setText("We show you in hardware overview only what's currently on the device. " +
                                 "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
                                 "In the details of the instance or hardware overview, you can see the status of each procedure. " +
                                 "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
-                        .send_under_project(board_for_update.board.project_id());
+                        .send_under_project(board_for_update.hardware.project_id());
 
             }).start();
 
@@ -2402,7 +2331,7 @@ public class Model_Hardware extends NamedModel {
                                 "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
                                 "In the details of the instance or hardware overview, you can see the status of each procedure. " +
                                 "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
-                        .send_under_project(board_for_update.get(0).board.project_id());
+                        .send_under_project(board_for_update.get(0).hardware.project_id());
 
             }).start();
 
@@ -2449,23 +2378,23 @@ public class Model_Hardware extends NamedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     // Floating shared documentation for Swagger
-    @JsonIgnore @Transient public static final String connection_permission_docs    = "read: If user want connect Project with board, he needs two Permission! Project.update_permission == true and also Board.first_connect_permission == true. " +
+    @JsonIgnore @Transient public static final String connection_permission_docs    = "read: If user want connect Project with hardware, he needs two Permission! Project.update_permission == true and also Board.first_connect_permission == true. " +
                                                                                       " - Or user need combination of static/dynamic permission key and Board.first_connect_permission == true";
     @JsonIgnore @Transient public static final String disconnection_permission_docs = "read: If user want remove Board from Project, he needs one single permission Project.update_permission, where hardware is registered. - Or user need static/dynamic permission key";
 
     // TODO Cachování oprávnění - Dá se to tu zlepšít obdobně jako třeba v C_Program
     @JsonIgnore   public boolean create_permission() {  return  BaseController.isAuthenticated() && BaseController.person().has_permission("Hardware_create"); }
-    @JsonProperty public boolean edit_permission()   {  return  BaseController.isAuthenticated() && ((project_id() != null && get_project().update_permission()) || BaseController.person().has_permission("Hardware_edit")) ;}
-    @JsonProperty public boolean read_permission()   {  return  BaseController.isAuthenticated() && ((project_id() != null && get_project().read_permission())   || BaseController.isAuthenticated() && BaseController.person().has_permission("Hardware_read"));}
-    @JsonProperty public boolean delete_permission() {  return  BaseController.isAuthenticated() && ((project_id() != null && get_project().update_permission()) || BaseController.isAuthenticated() && BaseController.person().has_permission("Hardware_delete"));}
-    @JsonProperty public boolean update_permission() {  return  BaseController.isAuthenticated() && ((project_id() != null && get_project().update_permission()) || BaseController.isAuthenticated() && BaseController.person().has_permission("Hardware_update"));}
+    @JsonProperty public boolean edit_permission()   {  return  BaseController.isAuthenticated() && ((project_id() != null && getProject().update_permission()) || BaseController.person().has_permission("Hardware_edit")) ;}
+    @JsonProperty public boolean read_permission()   {  return  BaseController.isAuthenticated() && ((project_id() != null && getProject().read_permission())   || BaseController.isAuthenticated() && BaseController.person().has_permission("Hardware_read"));}
+    @JsonProperty public boolean delete_permission() {  return  BaseController.isAuthenticated() && ((project_id() != null && getProject().update_permission()) || BaseController.isAuthenticated() && BaseController.person().has_permission("Hardware_delete"));}
+    @JsonProperty public boolean update_permission() {  return  BaseController.isAuthenticated() && ((project_id() != null && getProject().update_permission()) || BaseController.isAuthenticated() && BaseController.person().has_permission("Hardware_update"));}
     @JsonIgnore   public boolean first_connect_permission() { return project_id() == null;}
 
     public enum Permission {Hardware_create, Hardware_read, Hardware_update, Hardware_edit, Hardware_delete}
 
     public static String generate_hash() {
         String hash = "HW" + UUID.randomUUID().toString().replaceAll("[-]","").substring(0, 24);
-        if (Model_Hardware.find.query().where().eq("hash_for_adding", hash).findOne() != null) {
+        if (Model_Hardware.find.query().where().eq("registration_hash", hash).findOne() != null) {
             return generate_hash();
         } else {
             return hash;
@@ -2523,11 +2452,6 @@ public class Model_Hardware extends NamedModel {
     }
 
 /* BlOB DATA  ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore
-    public String get_path() {
-        return get_project().get_path() + "/hardware";
-    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

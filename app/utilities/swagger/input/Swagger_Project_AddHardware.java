@@ -1,0 +1,21 @@
+package utilities.swagger.input;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import play.data.validation.Constraints;
+
+import java.util.UUID;
+
+@ApiModel(description = "",
+        value = "Project_AddHardware")
+public class Swagger_Project_AddHardware {
+
+    @ApiModelProperty(required = false)
+    public UUID group_id;
+
+    @Constraints.Required
+    public UUID project_id;
+
+    @Constraints.Required
+    public String registration_hash;
+}

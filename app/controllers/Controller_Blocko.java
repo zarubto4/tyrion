@@ -964,7 +964,7 @@ public class Controller_Blocko extends BaseController {
 
             // Pokud má aktuální instance "Actual Instance record - znaemná to, že má běžet v cloudu"
             // Proto tento záznam odstraním
-            /*if (homer_instance.get_current_snapshot() != null) {
+            /*if (homer_instance.getCurrentSnapshot() != null) {
 
                 homer_instance.remove_from_cloud();
                 r
@@ -978,7 +978,7 @@ public class Controller_Blocko extends BaseController {
                 homer_instance.actual_instance = homer_instance.instance_history.get(0);
                 homer_instance.update();
 
-                homer_instance.get_current_snapshot().put_record_into_cloud();
+                homer_instance.getCurrentSnapshot().put_record_into_cloud();
             }    TODO
                 */
 
@@ -1059,7 +1059,6 @@ public class Controller_Blocko extends BaseController {
             // Tvorba parametru dotazu
             Query<Model_Instance> query = Ebean.find(Model_Instance.class);
 
-            // If Json contains TypeOfBoards list of id's
             if (!help.instance_types.isEmpty() ) {
                 query.where().in("instance_type", help.instance_types);
             }
@@ -1682,7 +1681,7 @@ public class Controller_Blocko extends BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_BlockoBlock_Publish_Response",
+                            dataType = "utilities.swagger.input.Swagger_Community_Version_Publish_Response",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -1701,9 +1700,9 @@ public class Controller_Blocko extends BaseController {
         try {
 
             // Získání JSON
-            final Form<Swagger_BlockoBlock_Publish_Response> form = formFactory.form(Swagger_BlockoBlock_Publish_Response.class).bindFromRequest();
+            final Form<Swagger_Community_Version_Publish_Response> form = formFactory.form(Swagger_Community_Version_Publish_Response.class).bindFromRequest();
             if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_BlockoBlock_Publish_Response help = form.get();
+            Swagger_Community_Version_Publish_Response help = form.get();
 
             // Kontrola názvu
             if (help.version_name.equals("version_scheme")) return badRequest("This name is reserved for the system");
@@ -2052,7 +2051,7 @@ public class Controller_Blocko extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result blockVersion_setMain(String version_id) {
         try {

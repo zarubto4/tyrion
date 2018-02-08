@@ -5,7 +5,7 @@ import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import models.Model_Blob;
 import models.Model_BootLoader;
-import models.Model_TypeOfBoard;
+import models.Model_HardwareType;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -109,21 +109,20 @@ public class Job_CheckCompilationLibraries implements Job {
                 // Seznam Release z GitHubu v upravené podobě
                 List<Swagger_GitHubReleases> releases = form.get().list;
 
-                List<Model_TypeOfBoard> typeOfBoards_from_DB_not_cached = Model_TypeOfBoard.find.query().where().eq("deleted", false).select("id").findList();
+                List<Model_HardwareType> hardwareTypes = Model_HardwareType.find.query().where().select("id").findList();
                 // Do každého typu desky - který má Tyrion v DB doplní podporované knihovny
 
-                //System.out.println("Počet procházených typeOfBoard dohromady je:: " + typeOfBoards.size());
-                for (Model_TypeOfBoard typeOfBoard_from_DB_not_cached : typeOfBoards_from_DB_not_cached) {
+                for (Model_HardwareType hwType : hardwareTypes) {
 
-                    Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.getById(typeOfBoard_from_DB_not_cached.id);
+                    Model_HardwareType hardwareType = Model_HardwareType.getById(hwType.id);
 
                     // Pokud není pole, vytvořím ho
-                    if (typeOfBoard.cache_library_list == null) {
-                        typeOfBoard.cache_library_list = new ArrayList<>();
+                    if (hardwareType.cache_library_list == null) {
+                        hardwareType.cache_library_list = new ArrayList<>();
                     }
 
                     // Aktuální podporované knihovny
-                    List<Swagger_CompilationLibrary> library_list = typeOfBoard.supported_libraries();
+                    List<Swagger_CompilationLibrary> library_list = hardwareType.supported_libraries();
 
                     // List který budu doplnovat
                     List<Swagger_CompilationLibrary> library_list_for_add = new ArrayList<>();
@@ -197,18 +196,18 @@ public class Job_CheckCompilationLibraries implements Job {
                         library_list_for_add.add(new_library);
                     }
 
-                    typeOfBoard.cache_library_list.addAll(library_list_for_add);
-                    typeOfBoard.update();
+                    hardwareType.cache_library_list.addAll(library_list_for_add);
+                    hardwareType.update();
                 }
 
                 logger.trace("check_version_thread:: all Library type of Board synchronized");
 
-                for (Model_TypeOfBoard typeOfBoard_from_DB_not_cached : typeOfBoards_from_DB_not_cached) {
+                for (Model_HardwareType hwType : hardwareTypes) {
 
-                    Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.getById(typeOfBoard_from_DB_not_cached.id);
+                    Model_HardwareType hardwareType = Model_HardwareType.getById(hwType.id);
 
                     //System.out.println("Získávám z databáze všechny bootloadery");
-                    List<Model_BootLoader> bootLoaders = typeOfBoard.boot_loaders_get_for_github_include_removed();
+                    List<Model_BootLoader> bootLoaders = hardwareType.boot_loaders_get_for_github_include_removed();
 
                     // List který budu doplnovat
                     List<Model_BootLoader> bootLoaders_for_add = new ArrayList<>();
@@ -243,7 +242,7 @@ public class Job_CheckCompilationLibraries implements Job {
                         }
 
                         // Nejedná se o správný typ desky
-                        if (!release.tag_name.contains(typeOfBoard.compiler_target_name)) {
+                        if (!release.tag_name.contains(hardwareType.compiler_target_name)) {
                             continue;
                         }
 
@@ -258,7 +257,7 @@ public class Job_CheckCompilationLibraries implements Job {
                         new_bootLoader.changing_note = release.body;
                         new_bootLoader.description = "Bootloader - automatic synchronize with GitHub Repository";
                         new_bootLoader.version_identifier = subStrings_main_parts[1];
-                        new_bootLoader.type_of_board = typeOfBoard;
+                        new_bootLoader.hardware_type = hardwareType;
 
                         // Find in Assest required file
                         String asset_url = null;
@@ -305,8 +304,8 @@ public class Job_CheckCompilationLibraries implements Job {
 
                         bootLoaders_for_add.add(new_bootLoader);
 
-                        typeOfBoard.boot_loaders().addAll(bootLoaders_for_add);
-                        typeOfBoard.update();
+                        hardwareType.boot_loaders().addAll(bootLoaders_for_add);
+                        hardwareType.update();
                     }
                 }
 

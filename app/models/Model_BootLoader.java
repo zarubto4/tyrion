@@ -39,23 +39,23 @@ public class Model_BootLoader extends NamedModel {
                                           public String version_identifier; // HW identifikator od kluků ve formátu b255.255.255 -> ex. b0.1.6 || b0.1.77
     @Column(columnDefinition = "TEXT")    public String changing_note;
 
-    @JsonIgnore @OneToMany(mappedBy="bootloader",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="bootloader",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareUpdate> updates = new ArrayList<>();
 
-    @JsonIgnore  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)                 public Model_TypeOfBoard type_of_board;       // TODO Cachovat - a opravit kde je nevhodná návaznost
-    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)                                                  public Model_TypeOfBoard main_type_of_board;
+    @JsonIgnore  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)                 public Model_HardwareType hardware_type;       // TODO Cachovat - a opravit kde je nevhodná návaznost
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)                                                  public Model_HardwareType main_hardware_type;
 
-    @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader", fetch = FetchType.LAZY)                 public List<Model_Hardware> boards  = new ArrayList<>();
+    @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader", fetch = FetchType.LAZY)                 public List<Model_Hardware> hardware = new ArrayList<>();
                  @OneToOne(mappedBy = "boot_loader", cascade = CascadeType.ALL)                    public Model_Blob file;                // TODO Cachovat - a opravit kde je nevhodná návaznost
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Cached public UUID cache_type_of_board_id;
-    @JsonIgnore @Transient @Cached public UUID cache_main_type_of_board_id;
+    @JsonIgnore @Transient @Cached public UUID cache_hardware_type_id;
+    @JsonIgnore @Transient @Cached public UUID cache_main_hardware_type_id;
     @JsonIgnore @Transient @Cached public UUID cache_file_id;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public boolean main_bootloader() { return get_main_type_of_board() != null;}
+    @JsonProperty public boolean main_bootloader() { return getMainHardwareType() != null;}
     @JsonProperty public String  file_path() {
         try {
 
@@ -71,9 +71,9 @@ public class Model_BootLoader extends NamedModel {
             this.cache_file_id = file.id;
 
             // Separace na Container a Blob
-            int slash = file.file_path.indexOf("/");
-            String container_name = file.file_path.substring(0, slash);
-            String real_file_path = file.file_path.substring(slash + 1);
+            int slash = file.path.indexOf("/");
+            String container_name = file.path.substring(0, slash);
+            String real_file_path = file.path.substring(slash + 1);
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 
@@ -90,7 +90,7 @@ public class Model_BootLoader extends NamedModel {
 
             String total_link = blob.getUri().toString() + "?" + sas;
 
-            logger.debug("file_path - total link: {}", total_link);
+            logger.debug("path - total link: {}", total_link);
 
             Model_Blob.cache_public_link.put(cache_file_id, total_link);
 
@@ -106,37 +106,37 @@ public class Model_BootLoader extends NamedModel {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public Model_TypeOfBoard get_type_of_board() {
+    public Model_HardwareType getHardwareType() {
 
-        if (cache_type_of_board_id == null) {
+        if (cache_hardware_type_id == null) {
 
-            Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.query().where().eq("boot_loaders.id", id).select("id").findOne();
-            if (typeOfBoard == null) {
+            Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("boot_loaders.id", id).select("id").findOne();
+            if (hardwareType == null) {
                 return null;
             }
 
-            cache_type_of_board_id = typeOfBoard.id;
+            cache_hardware_type_id = hardwareType.id;
         }
 
-        return Model_TypeOfBoard.getById(cache_type_of_board_id);
+        return Model_HardwareType.getById(cache_hardware_type_id);
     }
 
     @JsonIgnore
-    public Model_TypeOfBoard get_main_type_of_board() {
+    public Model_HardwareType getMainHardwareType() {
         try {
 
-            if (cache_main_type_of_board_id == null) {
+            if (cache_main_hardware_type_id == null) {
 
-                Model_TypeOfBoard main = Model_TypeOfBoard.find.query().where().eq("main_boot_loader.id", id).select("id").findOne();
+                Model_HardwareType main = Model_HardwareType.find.query().where().eq("main_boot_loader.id", id).select("id").findOne();
                 if (main == null) {
-                    cache_main_type_of_board_id = null;
+                    cache_main_hardware_type_id = null;
                     return null;
                 }
 
-                cache_main_type_of_board_id = main.id;
+                cache_main_hardware_type_id = main.id;
             }
 
-            return Model_TypeOfBoard.getById(cache_main_type_of_board_id);
+            return Model_HardwareType.getById(cache_main_hardware_type_id);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -149,7 +149,7 @@ public class Model_BootLoader extends NamedModel {
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
     // Bootloader
-    public static void notification_bootloader_procedure_first_information_single(Model_CProgramUpdatePlan plan) {
+    public static void notification_bootloader_procedure_first_information_single(Model_HardwareUpdate plan) {
         try {
 
             new Model_Notification()
@@ -158,9 +158,9 @@ public class Model_BootLoader extends NamedModel {
                     .setChainType(NotificationType.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
                     .setNotificationId(plan.id)
                     .setText(new Notification_Text().setText("Attention. You have entered the bootloader update command for Bootloader version "))
-                    .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.get_bootloader().version_identifier + " "))
+                    .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.getBootloader().version_identifier + " "))
                     .setText(new Notification_Text().setText(" for device "))
-                    .setObject(plan.get_board())
+                    .setObject(plan.getHardware())
                     .setText(new Notification_Text().setText(". "))
                     .setText(new Notification_Text().setText("Bootloader update is a critical action. " +
                             "Do not disconnect the device from the power supply during the update. " +
@@ -170,7 +170,7 @@ public class Model_BootLoader extends NamedModel {
                             "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
                             "In the details of the instance or hardware overview, you can see the status of each procedures. " +
                             "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
-                    .send_under_project(plan. get_board().project_id());
+                    .send_under_project(plan.getHardware().project_id());
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -178,7 +178,7 @@ public class Model_BootLoader extends NamedModel {
     }
 
     // Bootloader
-    public static void notification_bootloader_procedure_success_information_single(Model_CProgramUpdatePlan plan) {
+    public static void notification_bootloader_procedure_success_information_single(Model_HardwareUpdate plan) {
         try {
 
             new Model_Notification()
@@ -187,19 +187,19 @@ public class Model_BootLoader extends NamedModel {
                     .setChainType(NotificationType.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
                     .setNotificationId(plan.id)
                     .setText(new Notification_Text().setText("Success! Bootloader version "))
-                    .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.get_bootloader().version_identifier + " "))
+                    .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.getBootloader().version_identifier + " "))
                     .setText(new Notification_Text().setText("  is done for device "))
-                    .setObject(plan.get_board())
+                    .setObject(plan.getHardware())
                     .setText(new Notification_Text().setText(". "))
                     .setText(new Notification_Text().setText("Have a nice Day!"))
-                    .send_under_project(plan.get_board().project_id());
+                    .send_under_project(plan.getHardware().project_id());
 
         } catch (Exception e) {
             logger.internalServerError(e);
         }
     }
 
-    public static void notification_bootloader_procedure_first_information_list(List<Model_CProgramUpdatePlan> plans) {
+    public static void notification_bootloader_procedure_first_information_list(List<Model_HardwareUpdate> plans) {
         try {
 
             new Thread( () -> {
@@ -216,7 +216,7 @@ public class Model_BootLoader extends NamedModel {
                         .setChainType(NotificationType.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
                         .setNotificationId(plans.get(0).actualization_procedure.id)
                         .setText(new Notification_Text().setText("Attention. I have entered the bootloader update command for Bootloader version "))
-                        .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plans.get(0).get_bootloader().version_identifier + " "))
+                        .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plans.get(0).getBootloader().version_identifier + " "))
                         .setText(new Notification_Text().setText("for " + plans.size() + " devices. "))
                         .setText(new Notification_Text().setText("Bootloader update is a critical action. " +
                                 "Do not disconnect the device from the power supply during the update. " +
@@ -225,7 +225,7 @@ public class Model_BootLoader extends NamedModel {
                                 "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
                                 "In the details of the instance or hardware overview, you can see the status of each procedure. " +
                                 "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
-                        .send_under_project(plans.get(0).get_board().project_id());
+                        .send_under_project(plans.get(0).getHardware().project_id());
 
             }).start();
 
@@ -241,9 +241,9 @@ public class Model_BootLoader extends NamedModel {
 
         super.save();
 
-        if (get_type_of_board() != null) {
-            get_type_of_board().boot_loaders();
-            get_type_of_board().cache_bootloaders_id.add(id);
+        if (getHardwareType() != null) {
+            getHardwareType().boot_loaders();
+            getHardwareType().cache_bootloaders_id.add(id);
         }
         cache.put(id, this);
     }
@@ -259,8 +259,8 @@ public class Model_BootLoader extends NamedModel {
 
         logger.debug("delete :: Delete object Id: {} ", this.id);
 
-        if (get_type_of_board() != null) {
-            get_type_of_board().cache_bootloaders_id.remove(id);
+        if (getHardwareType() != null) {
+            getHardwareType().cache_bootloaders_id.remove(id);
         }
 
         cache.remove(id);

@@ -11,14 +11,14 @@ import java.util.UUID;
 
 public class DM_Board_Disconnected {
 
-    public String device_id;
+    public String hardware_id;
     public Long time;
 
     @JsonIgnore public static final String document_type = "DEVICE_STATUS";
     @JsonIgnore private static final String document_type_sub_type = "DEVICE_DISCONNECT";
 
     @JsonIgnore
-    public static ObjectNode make_request(UUID board_id) {
+    public static ObjectNode make_request(UUID hardware_id) {
 
         ObjectNode request = Json.newObject();
 
@@ -30,7 +30,7 @@ public class DM_Board_Disconnected {
         request.put("server_version", Server.version);
 
         //Optional Variables
-        request.put("hardware_id", board_id.toString());
+        request.put("hardware_id", hardware_id.toString());
         request.put("time", new Date().getTime() );
         return request;
     }

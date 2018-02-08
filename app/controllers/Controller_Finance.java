@@ -1549,7 +1549,7 @@ public class Controller_Finance extends BaseController {
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result product_delete(String product_id) {
         try {
@@ -1920,7 +1920,7 @@ public class Controller_Finance extends BaseController {
             if (invoice == null) return notFound("Invoice invoice_id not found");
             if (!invoice.read_permission()) return forbiddenEmpty();
 
-            fakturoid.sendInvoiceEmail(invoice, help.mail);
+            fakturoid.sendInvoiceEmail(invoice, help.email);
 
             return okEmpty();
 
@@ -1976,7 +1976,7 @@ public class Controller_Finance extends BaseController {
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result invoice_getPdf(String kind, String invoice_id) {
         try {
@@ -2011,7 +2011,7 @@ public class Controller_Finance extends BaseController {
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result invoice_reminder(String invoice_id) {
         try {
@@ -2042,7 +2042,7 @@ public class Controller_Finance extends BaseController {
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result invoice_delete(String invoice_id) {
         try {
@@ -2080,7 +2080,7 @@ public class Controller_Finance extends BaseController {
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result invoice_synchronizeFakturoid(String invoice_id) {
         return TODO;
@@ -2098,7 +2098,7 @@ public class Controller_Finance extends BaseController {
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result invoice_set_as_paid(String invoice_id) {

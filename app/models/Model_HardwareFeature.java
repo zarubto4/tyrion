@@ -10,17 +10,17 @@ import javax.persistence.*;
 import java.util.*;
 
 @Entity
-@ApiModel(value = "BoardFeature", description = "Model of TypeOfBoard Features ")
-@Table(name="BoardFeature")
-public class Model_TypeOfBoardFeatures extends NamedModel {
+@ApiModel(value = "HardwareFeature", description = "Model of HardwareFeature")
+@Table(name="HardwareFeature")
+public class Model_HardwareFeature extends NamedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(Model_TypeOfBoardFeatures.class);
+    private static final Logger logger = new Logger(Model_HardwareFeature.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @ManyToMany(fetch = FetchType.LAZY) @JsonIgnore public List<Model_TypeOfBoard> type_of_boards = new ArrayList<>();
+    @ManyToMany(fetch = FetchType.LAZY) @JsonIgnore public List<Model_HardwareType> hardware_types = new ArrayList<>();
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -33,7 +33,7 @@ public class Model_TypeOfBoardFeatures extends NamedModel {
 
         Map<UUID, String> options = new LinkedHashMap<>();
 
-        for (Model_TypeOfBoardFeatures features : find.all()) {
+        for (Model_HardwareFeature features : find.all()) {
             options.put(features.id, features.name);
         }
 
@@ -55,5 +55,5 @@ public class Model_TypeOfBoardFeatures extends NamedModel {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_TypeOfBoardFeatures> find = new Finder<>(Model_TypeOfBoardFeatures.class);
+    public static Finder<UUID, Model_HardwareFeature> find = new Finder<>(Model_HardwareFeature.class);
 }

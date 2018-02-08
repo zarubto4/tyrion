@@ -60,9 +60,9 @@ public class Model_Employee extends BaseModel {
     @JsonIgnore   public boolean create_permission()    {return true;}
     @JsonProperty public boolean update_permission()    {return true;}
     @JsonProperty public boolean edit_permission()      {return true;}
-    @JsonProperty public boolean delete_permission()    {return person.id.equals(BaseController.person().id) || customer.isEmployee(BaseController.person()) || BaseController.person().has_permission("Employee_delete");}
+    @JsonProperty public boolean delete_permission()    {return person.id.equals(BaseController.personId()) || customer.isEmployee(BaseController.person()) || BaseController.person().has_permission("Employee_delete");}
 
-    public enum permissions { Employee_edit, Employee_read, Employee_update, Employee_delete }
+    public enum Permission { Employee_edit, Employee_read, Employee_update, Employee_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

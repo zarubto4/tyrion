@@ -12,7 +12,7 @@ import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
-import utilities.model.NamedModel;
+import utilities.model.TaggedModel;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import java.util.UUID;
 @Entity
 @ApiModel( value = "Widget", description = "Model of Widget")
 @Table(name="Widget")
-public class Model_Widget extends NamedModel {
+public class Model_Widget extends TaggedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -40,8 +40,6 @@ public class Model_Widget extends NamedModel {
 
     @JsonIgnore @OneToMany(mappedBy="widget", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("created desc")
     public List<Model_WidgetVersion> versions = new ArrayList<>();
-
-    @ManyToMany public List<Model_Tag> tags = new ArrayList<>();
 
     @JsonIgnore public boolean active; // U veřejných Skupin administrátor zveřejňuje skupinu - může připravit něco do budoucna
 

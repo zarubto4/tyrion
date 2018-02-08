@@ -28,7 +28,7 @@ public class Model_Processor extends NamedModel {
     public String processor_code;
     public int speed;
 
-    @JsonIgnore @OneToMany(mappedBy="processor", cascade = CascadeType.ALL) public List<Model_TypeOfBoard> type_of_boards = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="processor", cascade = CascadeType.ALL) public List<Model_HardwareType> hardware_types = new ArrayList<>();
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 

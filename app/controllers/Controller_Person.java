@@ -140,17 +140,6 @@ public class Controller_Person extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Person_Authentication",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
@@ -191,7 +180,7 @@ public class Controller_Person extends BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Person_Authentication",
+                            dataType = "utilities.swagger.input.Swagger_EmailRequired",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -210,15 +199,15 @@ public class Controller_Person extends BaseController {
     public Result person_authenticationSendEmail() {
         try {
 
-            final Form<Swagger_Person_Authentication> form = formFactory.form(Swagger_Person_Authentication.class).bindFromRequest();
+            final Form<Swagger_EmailRequired> form = formFactory.form(Swagger_EmailRequired.class).bindFromRequest();
             if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Person_Authentication help = form.get();
+            Swagger_EmailRequired help = form.get();
 
-            Model_Person person = Model_Person.find.query().where().eq("mail", help.mail).findOne();
+            Model_Person person = Model_Person.getByEmail(help.email);
             if (person == null) return notFound("No such user is registered");
             if (person.validated) return badRequest("This user is validated");
 
-            Model_ValidationToken validationToken = Model_ValidationToken.getById(help.mail);
+            Model_ValidationToken validationToken = Model_ValidationToken.find.query().where().eq("email", help.email).findOne();
             if (validationToken == null) return notFound("Validation token not found");
 
             String link = Server.httpAddress + "/person/mail_authentication/" + validationToken.token;
@@ -251,7 +240,7 @@ public class Controller_Person extends BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Person_Password_RecoveryEmail",
+                            dataType = "utilities.swagger.input.Swagger_EmailRequired",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -267,13 +256,13 @@ public class Controller_Person extends BaseController {
     public Result person_passwordRecoverySendEmail() {
         try {
 
-            final Form<Swagger_Person_Password_RecoveryEmail> form = formFactory.form(Swagger_Person_Password_RecoveryEmail.class).bindFromRequest();
+            final Form<Swagger_EmailRequired> form = formFactory.form(Swagger_EmailRequired.class).bindFromRequest();
             if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Person_Password_RecoveryEmail help = form.get();
+            Swagger_EmailRequired help = form.get();
 
             String link;
 
-            Model_Person person = Model_Person.find.query().where().eq("mail", help.mail).findOne();
+            Model_Person person = Model_Person.getByEmail(help.email);
             if (person == null) return okEmpty();
 
             Model_PasswordRecoveryToken previousToken = Model_PasswordRecoveryToken.find.query().where().eq("person_id", person.id).findOne();
@@ -300,7 +289,7 @@ public class Controller_Person extends BaseController {
                         .text("Password reset was requested for this email.")
                         .divider()
                         .link("Reset your password", link)
-                        .send(help.mail,"Password Reset");
+                        .send(help.email,"Password Reset");
 
             } catch (Exception e) {
                 logger.internalServerError(e);

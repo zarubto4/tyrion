@@ -15,7 +15,7 @@ import utilities.cache.Cached;
 import utilities.enums.ProgramType;
 import utilities.enums.CompilationStatus;
 import utilities.logger.Logger;
-import utilities.model.NamedModel;
+import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.swagger.input.Swagger_C_Program_Version_New;
 import utilities.swagger.input.Swagger_Library_Library_Version_pair;
@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel(value="C_Program", description="Object represented C_Program in database")
 @Table(name="CProgram")
-public class Model_CProgram extends NamedModel {
+public class Model_CProgram extends TaggedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -40,26 +40,24 @@ public class Model_CProgram extends NamedModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)                       public Model_Project project;
+    @JsonIgnore @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY) public Model_Project project;
 
-    @JsonIgnore  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)                      public Model_TypeOfBoard type_of_board;
-                                                                                                        public ProgramType publish_type;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST) public Model_HardwareType hardware_type;
+                                                                                  public ProgramType publish_type;
 
     @JsonIgnore @OneToMany(mappedBy="c_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  private List<Model_Version> versions = new ArrayList<>();
 
-    @JsonIgnore @OneToOne(fetch = FetchType.LAZY) public Model_TypeOfBoard type_of_board_default;  // Vazba pokud tento C_Program je výchozí program desky
-    @JsonIgnore @OneToOne(fetch = FetchType.LAZY) public Model_TypeOfBoard type_of_board_test; // Vaza pokud je tento C Program výchozím testovacím programem desky
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY) public Model_HardwareType hardware_type_default;  // Vazba pokud tento C_Program je výchozí program desky
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY) public Model_HardwareType hardware_type_test;     // Vaza pokud je tento C Program výchozím testovacím programem desky
 
     @JsonIgnore @OneToOne(mappedBy = "default_program", cascade = CascadeType.ALL) public Model_Version default_main_version;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                 public Model_Version example_library;          // Program je příklad pro použití knihovny
 
-    @ManyToMany public List<Model_Tag> tags = new ArrayList<>();
-
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Cached public List<UUID> cache_version_ids = new ArrayList<>();
-    @JsonIgnore @Transient @Cached private UUID cache_type_of_board_id;
-    @JsonIgnore @Transient @Cached private String cache_type_of_board_name;
+    @JsonIgnore @Transient @Cached private UUID cache_hardware_type_id;
+    @JsonIgnore @Transient @Cached private String cache_hardware_type_name;
     @JsonIgnore @Transient @Cached private UUID cache_project_id;
     @JsonIgnore @Transient @Cached private String cache_project_name;
 
@@ -92,29 +90,29 @@ public class Model_CProgram extends NamedModel {
             return null;
         }
     }
-    @JsonProperty public UUID type_of_board_id()     {
+    @JsonProperty public UUID hardware_type_id()     {
         try {
 
-            if (cache_type_of_board_id == null) {
-                Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.query().where().eq("c_programs.id", id).select("id").findOne();
-                cache_type_of_board_id = typeOfBoard.id;
+            if (cache_hardware_type_id == null) {
+                Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("c_programs.id", id).select("id").findOne();
+                cache_hardware_type_id = hardwareType.id;
             }
 
-            return cache_type_of_board_id;
+            return cache_hardware_type_id;
 
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
     }
-    @JsonProperty public String type_of_board_name()   {
+    @JsonProperty public String hardware_type_name()   {
         try {
 
-            if (cache_type_of_board_name == null) {
-                cache_type_of_board_name = Model_TypeOfBoard.getById(type_of_board_id()).name;
+            if (cache_hardware_type_name == null) {
+                cache_hardware_type_name = Model_HardwareType.getById(hardware_type_id()).name;
             }
 
-            return cache_type_of_board_name;
+            return cache_hardware_type_name;
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -184,7 +182,7 @@ public class Model_CProgram extends NamedModel {
             c_program_versions.remove_permission = delete_permission();
             c_program_versions.edit_permission   = edit_permission();
 
-            Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version.id).eq("file_name", "code.json").findOne();
+            Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version.id).eq("name", "code.json").findOne();
 
             if (fileRecord != null) {
 
@@ -227,9 +225,9 @@ public class Model_CProgram extends NamedModel {
             return Model_Project.getById(project_id());
     }
 
-    @JsonIgnore public Model_TypeOfBoard get_type_of_board() {
-        if (type_of_board_id() == null) return null;
-        return Model_TypeOfBoard.getById(type_of_board_id());
+    @JsonIgnore public Model_HardwareType getHardwareType() {
+        if (hardware_type_id() == null) return null;
+        return Model_HardwareType.getById(hardware_type_id());
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -244,7 +242,7 @@ public class Model_CProgram extends NamedModel {
         // C_Program is Private registred under Project
         if (project != null) {
             logger.debug("save :: is a private Program");
-            this.azure_c_program_link = project.get_path() + "/c-programs/" + this.id;
+            this.azure_c_program_link = project.getPath() + "/c-programs/" + this.id;
 
         } else {    // C_Program is public C_Program for every users
             logger.debug("save :: is a public Program");

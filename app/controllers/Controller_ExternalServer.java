@@ -63,7 +63,7 @@ public class Controller_ExternalServer extends BaseController {
             @ApiResponse(code = 201, message = "Successfully created",    response = Swagger_Cloud_Homer_Server_New.class),
             @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
@@ -113,7 +113,7 @@ public class Controller_ExternalServer extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
@@ -146,11 +146,11 @@ public class Controller_ExternalServer extends BaseController {
             code = 200
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Updated successfully",    response = Model_HomerServer.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 200, message = "Updated successfully",      response = Model_HomerServer.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
@@ -205,7 +205,7 @@ public class Controller_ExternalServer extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
@@ -265,7 +265,7 @@ public class Controller_ExternalServer extends BaseController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",      response = Model_HomerServer.class, responseContainer = "List"),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result homer_server_get_all() {
@@ -294,7 +294,7 @@ public class Controller_ExternalServer extends BaseController {
             @ApiResponse(code = 200, message = "Ok Result",  response = Model_HomerServer.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result homer_server_get(String server_id) {
@@ -331,7 +331,7 @@ public class Controller_ExternalServer extends BaseController {
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result homer_server_delete(String server_id) {
@@ -385,7 +385,7 @@ public class Controller_ExternalServer extends BaseController {
             @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     @BodyParser.Of(BodyParser.Json.class)
@@ -441,10 +441,10 @@ public class Controller_ExternalServer extends BaseController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Update successfuly",        response = Model_CompilationServer.class),
-            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Object not found",         response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Invalid body",   response = Result_InvalidBody.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     @BodyParser.Of(BodyParser.Json.class)
@@ -487,7 +487,7 @@ public class Controller_ExternalServer extends BaseController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",      response = Model_CompilationServer.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result compilation_server_get_all() {
@@ -516,10 +516,10 @@ public class Controller_ExternalServer extends BaseController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_CompilationServer.class),
-            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Object not found",         response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result compilation_server_get(String server_id ) {
@@ -555,10 +555,10 @@ public class Controller_ExternalServer extends BaseController {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Objects not found",         response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Object not found",         response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result compilation_server_delete(String server_id ) {
@@ -596,7 +596,7 @@ public class Controller_ExternalServer extends BaseController {
             @ApiResponse(code = 303, message = "Ok Result"),
             @ApiResponse(code = 404, message = "File by ID not found",response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(AuthenticationHomer.class)
     public Result cloud_file_get_b_program_version(String b_program_version_id) {
@@ -614,9 +614,9 @@ public class Controller_ExternalServer extends BaseController {
             }
 
             // Separace na Container a Blob
-            int slash = version_object.files.get(0).file_path.indexOf("/");
-            String container_name = version_object.files.get(0).file_path.substring(0,slash);
-            String real_file_path = version_object.files.get(0).file_path.substring(slash+1);
+            int slash = version_object.files.get(0).path.indexOf("/");
+            String container_name = version_object.files.get(0).path.substring(0,slash);
+            String real_file_path = version_object.files.get(0).path.substring(slash+1);
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 
@@ -655,7 +655,7 @@ public class Controller_ExternalServer extends BaseController {
             @ApiResponse(code = 303, message = "Ok Result"),
             @ApiResponse(code = 404, message = "File by ID not found", response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result cloud_file_bin_get_c_program_version(String version_id) {
         try {
@@ -702,7 +702,7 @@ public class Controller_ExternalServer extends BaseController {
             @ApiResponse(code = 303, message = "Ok Result"),
             @ApiResponse(code = 404, message = "File by ID not found",response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(AuthenticationHomer.class)
     public Result cloud_file_get_c_program_compilation(String compilation_id) {
@@ -720,9 +720,9 @@ public class Controller_ExternalServer extends BaseController {
             }
 
             // Separace na Container a Blob
-            int slash = compilation.blob.file_path.indexOf("/");
-            String container_name = compilation.blob.file_path.substring(0,slash);
-            String real_file_path = compilation.blob.file_path.substring(slash+1);
+            int slash = compilation.blob.path.indexOf("/");
+            String container_name = compilation.blob.path.substring(0,slash);
+            String real_file_path = compilation.blob.path.substring(slash+1);
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 
@@ -761,7 +761,7 @@ public class Controller_ExternalServer extends BaseController {
             @ApiResponse(code = 303, message = "Ok Result"),
             @ApiResponse(code = 404, message = "File by ID not found",response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(AuthenticationHomer.class)
     public Result cloud_file_get_bootloader(String bootloader_id) {
@@ -775,9 +775,9 @@ public class Controller_ExternalServer extends BaseController {
             }
 
             // Separace na Container a Blob
-            int slash = bootLoader.file.file_path.indexOf("/");
-            String container_name = bootLoader.file.file_path.substring(0,slash);
-            String real_file_path = bootLoader.file.file_path.substring(slash+1);
+            int slash = bootLoader.file.path.indexOf("/");
+            String container_name = bootLoader.file.path.substring(0,slash);
+            String real_file_path = bootLoader.file.path.substring(slash+1);
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 

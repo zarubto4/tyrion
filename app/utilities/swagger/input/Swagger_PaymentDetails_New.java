@@ -9,9 +9,10 @@ import utilities.enums.PaymentMethod;
 import java.util.ArrayList;
 import java.util.List;
 
+@Constraints.Validate
 @ApiModel(description = "Json Model with List of Board ID",
           value = "PaymentDetails_New")
-public class Swagger_PaymentDetails_New {
+public class Swagger_PaymentDetails_New implements Constraints.Validatable<List<ValidationError>> {
 
     @Constraints.Required
     @Constraints.MinLength(value = 4, message = "The street must have at least 4 characters")
@@ -74,7 +75,7 @@ public class Swagger_PaymentDetails_New {
     @ApiModelProperty(required = true, value = "Payment method.")
     public PaymentMethod method;
 
-
+    @Override
     public List<ValidationError> validate() {
 
         List<ValidationError> errors = new ArrayList<>();

@@ -15,13 +15,13 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.util.UUID;
 
 @Entity
-@ApiModel(description = "Model of Production Batch  ", value = "TypeOfBoardBatch")
-@Table(name="TypeOfBoardBatch")
-public class Model_TypeOfBoard_Batch extends BaseModel {
+@ApiModel(description = "Model of Production Batch  ", value = "HardwareBatch")
+@Table(name="HardwareBatch")
+public class Model_HardwareBatch extends BaseModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(Model_TypeOfBoard_Batch.class);
+    private static final Logger logger = new Logger(Model_HardwareBatch.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -43,13 +43,14 @@ public class Model_TypeOfBoard_Batch extends BaseModel {
 
     public Long ean_number;
 
-    @JsonIgnore @ManyToOne() public Model_TypeOfBoard type_of_board;
+    @JsonIgnore @ManyToOne public Model_HardwareType hardware_type;
 
     @Column(columnDefinition = "TEXT")  public String description;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty  @Transient public Long latest_used_mac_address() {
+    @JsonProperty
+    public Long latest_used_mac_address() {
 
         if (latest_used_mac_address == null) {
             Hardware_Registration_Authority.synchronize_mac();
@@ -62,7 +63,7 @@ public class Model_TypeOfBoard_Batch extends BaseModel {
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public String get_nextMacAddress_just_for_check() throws IllegalCharsetNameException{
 
         if (latest_used_mac_address == null) {
@@ -83,7 +84,7 @@ public class Model_TypeOfBoard_Batch extends BaseModel {
         return convert_to_MAC_ISO(this.latest_used_mac_address + 1);
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public String get_new_MacAddress() throws IllegalCharsetNameException{
 
         if (latest_used_mac_address == null) {
@@ -133,7 +134,7 @@ public class Model_TypeOfBoard_Batch extends BaseModel {
         this.id = UUID.randomUUID();
 
         if (latest_used_mac_address == null) latest_used_mac_address = mac_address_start;
-        Batch_Registration_Authority.register_batch(type_of_board, this);
+        Batch_Registration_Authority.register_batch(hardware_type, this);
         super.save();
     }
 
@@ -158,24 +159,24 @@ public class Model_TypeOfBoard_Batch extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore                                      public boolean create_permission() {  return type_of_board.update_permission(); }
-    @JsonIgnore                                      public boolean read_permission()  {  return type_of_board.read_permission(); }
+    @JsonIgnore                                      public boolean create_permission() {  return hardware_type.update_permission(); }
+    @JsonIgnore                                      public boolean read_permission()  {  return hardware_type.read_permission(); }
 
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()  {  return type_of_board.edit_permission();   }
-    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission() {  return type_of_board.delete_permission(); }
+    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()  {  return hardware_type.edit_permission();   }
+    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission() {  return hardware_type.delete_permission(); }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_TypeOfBoard_Batch getById(String id) {
+    public static Model_HardwareBatch getById(String id) {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_TypeOfBoard_Batch getById(UUID id) {
+    public static Model_HardwareBatch getById(UUID id) {
         return find.byId(id);
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<UUID, Model_TypeOfBoard_Batch> find = new Finder<>(Model_TypeOfBoard_Batch.class);
+    public static Finder<UUID, Model_HardwareBatch> find = new Finder<>(Model_HardwareBatch.class);
 
 
 }

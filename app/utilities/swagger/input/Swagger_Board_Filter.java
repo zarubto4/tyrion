@@ -5,13 +5,14 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @ApiModel(description = "Json Model for Filtering Boards",
           value = "Board_filter")
 public class Swagger_Board_Filter {
 
-    @ApiModelProperty(value = "List of typeOfBoard.id", required = false)
-    public List<String> type_of_board_ids;
+    @ApiModelProperty(value = "List of hardware_type.id", required = false)
+    public List<UUID> hardware_type_ids;
 
     @ApiModelProperty(value = "Boolean - required in String! \"true\" or \"false \"", required = false)
     public String active;

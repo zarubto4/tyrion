@@ -72,7 +72,7 @@ public class Model_Version extends NamedModel {
 
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version", fetch = FetchType.LAZY)                              public List<Model_Hardware>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
     @JsonIgnore @OneToMany(mappedBy="actual_backup_c_program_version", fetch = FetchType.LAZY)                       public List<Model_Hardware>  c_program_version_backup_boards  = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_CProgramUpdatePlan> c_program_update_plans = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareUpdate> c_program_update_plans = new ArrayList<>();
                                                                                                    @JsonIgnore  public Approval approval_state; // Zda je program schválený veřejný program
                                                                                          @OneToOne @JsonIgnore  public Model_CProgram default_program;
 
@@ -172,10 +172,10 @@ public class Model_Version extends NamedModel {
     @JsonIgnore
     public Response_Interface compile_program_procedure() {
 
-        Model_TypeOfBoard typeOfBoard = Model_TypeOfBoard.find.query().where().eq("c_programs.id", this.get_c_program().id).findOne();
-        if (typeOfBoard == null) {
+        Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("c_programs.id", this.get_c_program().id).findOne();
+        if (hardwareType == null) {
 
-            logger.internalServerError(new Exception("compile_program_procedure:: Type_of_Board not found! Not found way how to compile version."));
+            logger.internalServerError(new Exception("compile_program_procedure:: HardwareType not found! Not found way how to compile version."));
 
             Result_BadRequest result = new Result_BadRequest();
             result.message = "Version is not version of C_Program";
@@ -190,8 +190,8 @@ public class Model_Version extends NamedModel {
             Model_Compilation cCompilation = new Model_Compilation();
             cCompilation.version = this;
 
-            if (!typeOfBoard.cache_library_list.isEmpty()) {
-                cCompilation.firmware_version_lib = typeOfBoard.cache_library_list.get(typeOfBoard.cache_library_list.size()).tag_name;
+            if (!hardwareType.cache_library_list.isEmpty()) {
+                cCompilation.firmware_version_lib = hardwareType.cache_library_list.get(hardwareType.cache_library_list.size()).tag_name;
             }
 
             cCompilation.save();
@@ -203,7 +203,7 @@ public class Model_Version extends NamedModel {
         compilation.status = CompilationStatus.IN_PROGRESS;
         compilation.update();
 
-        Model_Blob file_record = Model_Blob.find.query().where().eq("file_name", "code.json").eq("version.id", id).findOne();
+        Model_Blob file_record = Model_Blob.find.query().where().eq("name", "code.json").eq("version.id", id).findOne();
         if (file_record == null) {
 
             logger.internalServerError(new Exception("File not found! Version is not compilable!"));
@@ -307,7 +307,7 @@ public class Model_Version extends NamedModel {
             return result;
         }
 
-        WS_Message_Make_compilation compilation = Model_CompilationServer.make_Compilation( new WS_Message_Make_compilation().make_request(typeOfBoard, this.compilation.firmware_version_lib, this.id, code_file.main, includes   ));
+        WS_Message_Make_compilation compilation = Model_CompilationServer.make_Compilation( new WS_Message_Make_compilation().make_request(hardwareType, this.compilation.firmware_version_lib, this.id, code_file.main, includes   ));
 
         // Když obsahuje chyby - vrátím rovnou Becki - Toto je regulérní správná odpověd - chyby způsobil v c++ kodu uživatel
         if (!compilation.build_errors.isEmpty()) {

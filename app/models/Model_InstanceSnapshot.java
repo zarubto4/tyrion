@@ -50,7 +50,7 @@ public class Model_InstanceSnapshot extends BaseModel {
     @ManyToOne public Model_Instance instance;
     @ManyToOne public Model_Version b_version;
     @OneToOne  public Model_Blob program;
-    @JsonIgnore @OneToMany(fetch = FetchType.LAZY)  public List<Model_ActualizationProcedure> procedures = new ArrayList<>();
+    @JsonIgnore @OneToMany(fetch = FetchType.LAZY)  public List<Model_UpdateProcedure> procedures = new ArrayList<>();
     @JsonIgnore @ManyToMany(fetch = FetchType.LAZY) public List<Model_HardwareRegistration> hardware = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
@@ -212,7 +212,7 @@ public class Model_InstanceSnapshot extends BaseModel {
 
     @JsonIgnore
     public Model_Product getProduct() {
-        return this.instance.get_project().get_product();
+        return this.instance.getProject().getProduct();
 
     }
 
