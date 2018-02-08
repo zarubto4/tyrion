@@ -399,7 +399,7 @@ public class Model_Hardware extends NamedModel {
     public Model_CProgram get_actual_c_program() {
 
         if (cache_actual_c_program_id == null) {
-            Model_CProgram program = Model_CProgram.find.query().where().eq("version_objects.c_program_version_boards.id", id).select("id").findOne();
+            Model_CProgram program = Model_CProgram.find.query().where().eq("versions.c_program_version_boards.id", id).select("id").findOne();
             if (program == null) return null;
             cache_actual_c_program_id = program.id;
         }
@@ -435,7 +435,7 @@ public class Model_Hardware extends NamedModel {
     public Model_CProgram get_backup_c_program() {
 
         if (cache_actual_c_program_backup_id == null) {
-            Model_CProgram program = Model_CProgram.find.query().where().eq("version_objects.c_program_version_backup_boards.id", id).select("id").findOne();
+            Model_CProgram program = Model_CProgram.find.query().where().eq("versions.c_program_version_backup_boards.id", id).select("id").findOne();
             if (program == null) return null;
             cache_actual_c_program_backup_id = program.id;
         }

@@ -320,18 +320,18 @@ public class Controller_Hardware extends BaseController {
         try {
 
             // Kontrola validity objektu
-            Model_Version versionObject = Model_Version.getById(version_id);
-            if (versionObject == null) return notFound("FileRecord file_record_id not found");
+            Model_Version version = Model_Version.getById(version_id);
+            if (version == null) return notFound("Version not found");
 
             // Swagger_File_Content - Zástupný dokumentační objekt
-            if (versionObject.get_c_program() == null) return badRequestEmpty();
+            if (version.get_c_program() == null) return badRequestEmpty();
 
             // Kontrola oprávnění
-            if (!versionObject.get_c_program().read_permission()) return badRequestEmpty();
+            if (!version.get_c_program().read_permission()) return badRequestEmpty();
 
             // Swagger_File_Content - Zástupný dokumentační objekt
             Swagger_File_Content content = new Swagger_File_Content();
-            content.file_in_base64 = versionObject.compilation.blob.get_fileRecord_from_Azure_inString();
+            content.file_in_base64 = version.compilation.blob.get_fileRecord_from_Azure_inString();
 
             // Vracím content
             return ok(Json.toJson(content));
@@ -1925,16 +1925,16 @@ public class Controller_Hardware extends BaseController {
 
                 // Ověření objektu
                 Model_Version c_program_version = Model_Version.getById(board_update_pair.c_program_version_id);
-                if (c_program_version == null) return notFound("Version_Object version_id not found");
+                if (c_program_version == null) return notFound("Version not found");
 
                 //Zkontroluji validitu Verze zda sedí k C_Programu
-                if (c_program_version.get_c_program() == null) return badRequest("Version_Object its not version of C_Program");
+                if (c_program_version.get_c_program() == null) return badRequest("Version is not version of C_Program");
 
                 // Zkontroluji oprávnění
                 if (!c_program_version.get_c_program().read_permission()) return forbiddenEmpty();
 
                 //Zkontroluji validitu Verze zda sedí k C_Programu
-                if (c_program_version.compilation == null) return badRequest("Version_Object its not version of C_Program - Missing compilation File");
+                if (c_program_version.compilation == null) return badRequest("Version is not version of C_Program - Missing compilation File");
 
                 // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
                 if (c_program_version.compilation.status != CompilationStatus.SUCCESS) return badRequest("You cannot upload code in state:: " + c_program_version.compilation.status.name());
@@ -1943,15 +1943,15 @@ public class Controller_Hardware extends BaseController {
                 if (!c_program_version.compilation.status.name().equals(CompilationStatus.SUCCESS.name())) return badRequest("The program is not yet compiled & Restored");
 
                 // Kotrola objektu
-                Model_Hardware board = Model_Hardware.getById(board_update_pair.hardware_id);
-                if (board == null) return notFound("Board hardware_id not found");
+                Model_Hardware hardware = Model_Hardware.getById(board_update_pair.hardware_id);
+                if (hardware == null) return notFound("Hardware not found");
 
                 // Kontrola oprávnění
-                if (!board.edit_permission()) return forbiddenEmpty();
+                if (!hardware.edit_permission()) return forbiddenEmpty();
 
 
                 WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
-                b_pair.hardware = board;
+                b_pair.hardware = hardware;
                 b_pair.c_program_version = c_program_version;
 
                 b_pairs.add(b_pair);
@@ -2074,16 +2074,16 @@ public class Controller_Hardware extends BaseController {
 
                     // Uprava desky na statický backup
                     Model_Version c_program_version = Model_Version.getById(board_backup_pair.c_program_version_id);
-                    if (c_program_version == null) return notFound("Version_Object c_program_version_id not found");
+                    if (c_program_version == null) return notFound("Version not found");
 
                     //Zkontroluji validitu Verze zda sedí k C_Programu
-                    if (c_program_version.get_c_program() == null) return badRequest("Version_Object its not version of C_Program");
+                    if (c_program_version.get_c_program() == null) return badRequest("Version is not version of C_Program");
 
                     // Zkontroluji oprávnění
                     if (!c_program_version.get_c_program().read_permission()) return forbiddenEmpty();
 
                     //Zkontroluji validitu Verze zda sedí k C_Programu
-                    if (c_program_version.compilation == null) return badRequest("Version_Object its not version of C_Program - Missing compilation File");
+                    if (c_program_version.compilation == null) return badRequest("Version is not version of C_Program - Missing compilation File");
 
                     // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
                     if (c_program_version.compilation.status != CompilationStatus.SUCCESS) return badRequest("You cannot upload code in state:: " + c_program_version.compilation.status.name());

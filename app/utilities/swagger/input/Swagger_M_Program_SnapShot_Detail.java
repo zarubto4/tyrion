@@ -16,9 +16,9 @@ public class Swagger_M_Program_SnapShot_Detail {
     @Constraints.Required @ApiModelProperty(required = true, readOnly = true) public UUID m_program_id;
     @Constraints.Required @ApiModelProperty(required = true, readOnly = true) public String m_program_name;
     @Constraints.Required @ApiModelProperty(required = true, readOnly = true) public String m_program_description;
-    @Constraints.Required @ApiModelProperty(required = true, readOnly = true) public UUID version_object_id;
-    @Constraints.Required @ApiModelProperty(required = true, readOnly = true) public String version_object_name;
-    @Constraints.Required @ApiModelProperty(required = true, readOnly = true) public String version_object_description;
+    @Constraints.Required @ApiModelProperty(required = true, readOnly = true) public UUID version_id;
+    @Constraints.Required @ApiModelProperty(required = true, readOnly = true) public String version_name;
+    @Constraints.Required @ApiModelProperty(required = true, readOnly = true) public String version_description;
 
 
     @Constraints.Required @ApiModelProperty(required = true, readOnly = true, value = "Path To program connection:: https:/grid_app_url.com/{instance_id}/{m_program_id}") public String grid_app_url;

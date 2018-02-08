@@ -75,9 +75,9 @@ public class Model_MProgramInstanceParameter extends BaseModel {
     @JsonProperty @ApiModelProperty(required = true, readOnly = true) public UUID m_program_id()  { return m_program_version.m_program.id;}
     @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String m_program_name()  { return m_program_version.m_program.name;}
     @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String m_program_description()  { return m_program_version.m_program.description;}
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public UUID version_object_id()  { return m_program_version.id;}
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_object_name()  { return m_program_version.name;}
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_object_description()  { return m_program_version.description;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public UUID version_id()  { return m_program_version.id;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_name()  { return m_program_version.name;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_description()  { return m_program_version.description;}
 
 /* JSON IGNORE  ---------------------------------------------------------------------------------------------------------*/
 
@@ -88,7 +88,7 @@ public class Model_MProgramInstanceParameter extends BaseModel {
     private Model_Instance get_instance() {
         if (instance_exist_searched) return instance;
         instance_exist_searched = true;
-        instance = Model_Instance.find.query().where().eq("actual_instance.version.b_program_version_snapshots.id", m_project_program_snapshot.id).findOne();
+        instance = Model_Instance.find.query().where().eq("actual_instance.version.b_program_version_snapshots.id", m_project_program_snapshot.id).findOne(); // TODO fix query
         return instance;
     }
 

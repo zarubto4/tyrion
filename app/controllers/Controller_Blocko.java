@@ -381,7 +381,7 @@ public class Controller_Blocko extends BaseController {
                     snap.m_project = m_project;
 
                     for (Swagger_B_Program_Version_New.M_Program_SnapShot help_m_program_snap : help_m_project_snap.m_program_snapshots) {
-                        Model_Version m_program_version = Model_Version.find.query().where().eq("id", help_m_program_snap.version_object_id).eq("m_program.id", help_m_program_snap.m_program_id).eq("m_program.m_project.id", m_project.id).findOne();
+                        Model_Version m_program_version = Model_Version.find.query().where().eq("id", help_m_program_snap.version_id).eq("m_program.id", help_m_program_snap.m_program_id).eq("m_program.m_project.id", m_project.id).findOne();
 
                         if (m_program_version == null) return notFound("M_Program Version id not found");
 
@@ -434,17 +434,17 @@ public class Controller_Blocko extends BaseController {
         try {
 
             // Kontrola objektu
-            Model_Version version_object = Model_Version.getById(version_id);
-            if (version_object == null) return notFound("Version_Object version_id not found");
+            Model_Version version = Model_Version.getById(version_id);
+            if (version == null) return notFound("Version not found");
 
             // Kontrola oprávnění
-            if (version_object.get_b_program() == null) return notFound("Version_Object is not version of B_Program");
+            if (version.get_b_program() == null) return notFound("Version is not version of B_Program");
 
             // Kontrola oprávnění
-            if (!version_object.get_b_program().read_permission()) return forbiddenEmpty();
+            if (!version.get_b_program().read_permission()) return forbiddenEmpty();
 
             // Vrácení objektu
-            return ok(Json.toJson(version_object.get_b_program().program_version(version_object)));
+            return ok(Json.toJson(version.get_b_program().program_version(version)));
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -493,17 +493,17 @@ public class Controller_Blocko extends BaseController {
             Swagger_NameAndDescription help = form.get();
 
             // Získání objektu
-            Model_Version version_object = Model_Version.getById(version_id);
-            if (version_object == null) return notFound("Version not found");
+            Model_Version version = Model_Version.getById(version_id);
+            if (version == null) return notFound("Version not found");
 
-            version_object.name = help.name;
-            version_object.description = help.description;
+            version.name = help.name;
+            version.description = help.description;
 
             // Kontrola oprávnění
-            if (!version_object.get_b_program().edit_permission()) return forbiddenEmpty();
+            if (!version.get_b_program().edit_permission()) return forbiddenEmpty();
 
             // Smazání objektu
-            version_object.update();
+            version.update();
 
             // Vrácení potvrzení
             return okEmpty();
@@ -538,17 +538,17 @@ public class Controller_Blocko extends BaseController {
         try {
 
             // Získání objektu
-            Model_Version version_object  = Model_Version.getById(version_id);
+            Model_Version version  = Model_Version.getById(version_id);
 
             // Kontrola objektu
-            if (version_object == null) return notFound("Version not found");
-            if (version_object.get_b_program() == null) return badRequest("BProgram not found");
+            if (version == null) return notFound("Version not found");
+            if (version.get_b_program() == null) return badRequest("BProgram not found");
 
             // Kontrola oprávnění
-            if (!version_object.get_b_program().delete_permission()) return forbiddenEmpty();
+            if (!version.get_b_program().delete_permission()) return forbiddenEmpty();
 
             // Smazání objektu
-            version_object.delete();
+            version.delete();
 
             // Vrácení potvrzení
             return okEmpty();

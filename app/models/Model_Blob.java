@@ -41,7 +41,7 @@ public class Model_Blob extends BaseModel {
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "file")        public Model_Log log;
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY)                           public Model_BootLoader boot_loader;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                          public Model_Version version;
-    @JsonIgnore @OneToMany(mappedBy="binary_file",fetch = FetchType.LAZY)   public List<Model_HardwareUpdate> c_program_update_plan  = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="binary_file",fetch = FetchType.LAZY)   public List<Model_HardwareUpdate> updates = new ArrayList<>();
     @JsonIgnore @OneToOne(mappedBy="blob")                  public Model_Compilation c_compilations_binary_file;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -150,29 +150,29 @@ public class Model_Blob extends BaseModel {
     }
 
     @JsonIgnore
-    public static Model_Blob uploadAzure_Version(String file_content, String file_name, String file_path, Model_Version version_object) throws Exception{
+    public static Model_Blob uploadAzure_Version(String file_content, String file_name, String file_path, Model_Version version) throws Exception{
         try {
 
-            logger.debug("uploadAzure_Version:: Azure upload: "+ file_path + version_object.get_path() + "/" + file_name );
+            logger.debug("uploadAzure_Version:: Azure upload: "+ file_path + version.get_path() + "/" + file_name );
 
             int slash = file_path.indexOf("/");
             String container_name = file_path.substring(0,slash);
             String real_file_path = file_path.substring(slash+1);
             CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
 
-            CloudBlockBlob blob = container.getBlockBlobReference( real_file_path + version_object.get_path() + "/" + file_name);
+            CloudBlockBlob blob = container.getBlockBlobReference( real_file_path + version.get_path() + "/" + file_name);
 
             InputStream is = new ByteArrayInputStream(file_content.getBytes());
             blob.upload(is, -1);
 
             Model_Blob fileRecord = new Model_Blob();
             fileRecord.name = file_name;
-            fileRecord.version = version_object;
-            fileRecord.path =  file_path   + version_object.get_path() + "/" + file_name;
+            fileRecord.version = version;
+            fileRecord.path =  file_path   + version.get_path() + "/" + file_name;
             fileRecord.save();
 
-            version_object.files.add(fileRecord);
-            version_object.update();
+            version.files.add(fileRecord);
+            version.update();
 
             return fileRecord;
 
@@ -183,11 +183,11 @@ public class Model_Blob extends BaseModel {
     }
 
     @JsonIgnore
-    public static Model_Blob uploadAzure_Version(File file, String file_name, String file_path, Model_Version version_object) throws Exception{
+    public static Model_Blob uploadAzure_Version(File file, String file_name, String file_path, Model_Version version) throws Exception{
 
         try {
 
-            logger.debug("uploadAzure_Version:: Azure upload: "+ file_path + version_object.get_path() + "/" + file_name);
+            logger.debug("uploadAzure_Version:: Azure upload: "+ file_path + version.get_path() + "/" + file_name);
 
 
             int slash = file_path.indexOf("/");
@@ -195,19 +195,19 @@ public class Model_Blob extends BaseModel {
             String real_file_path = file_path.substring(slash+1);
             CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
 
-            CloudBlockBlob blob = container.getBlockBlobReference( real_file_path + version_object.get_path() + "/" + file_name);
+            CloudBlockBlob blob = container.getBlockBlobReference( real_file_path + version.get_path() + "/" + file_name);
 
             InputStream is = new FileInputStream(file);
             blob.upload(is, -1);
 
             Model_Blob fileRecord = new Model_Blob();
             fileRecord.name = file_name;
-            fileRecord.version = version_object;
-            fileRecord.path =   file_path + version_object.get_path()+ "/" + file_name;
+            fileRecord.version = version;
+            fileRecord.path =   file_path + version.get_path()+ "/" + file_name;
             fileRecord.save();
 
-            version_object.files.add(fileRecord);
-            version_object.update();
+            version.files.add(fileRecord);
+            version.update();
 
             // Sobor smažu z adresáře
             file.delete();

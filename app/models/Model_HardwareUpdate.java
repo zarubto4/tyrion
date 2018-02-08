@@ -194,8 +194,8 @@ public class Model_HardwareUpdate extends BaseModel {
         try {
 
             Swagger_UpdatePlan_brief_for_homer brief_for_homer = new Swagger_UpdatePlan_brief_for_homer();
-            brief_for_homer.actualization_procedure_id = actualization_procedure.id.toString();
-            brief_for_homer.c_program_update_plan_id = id.toString();
+            brief_for_homer.update_procedure_id = actualization_procedure.id.toString();
+            brief_for_homer.hardware_update_id = id.toString();
             brief_for_homer.hardware_ids.add(getHardware().id);
 
             Swagger_UpdatePlan_brief_for_homer_BinaryComponent binary = new Swagger_UpdatePlan_brief_for_homer_BinaryComponent();

@@ -515,17 +515,17 @@ public class Controller_Library extends BaseController {
         try {
 
             // Vyhledám Objekt
-            Model_Version version_object = Model_Version.getById(version_id);
-            if (version_object == null) return notFound("Version not found");
+            Model_Version version = Model_Version.getById(version_id);
+            if (version == null) return notFound("Version not found");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
-            if (version_object.library == null) return badRequest("Version is not version of Library");
+            if (version.library == null) return badRequest("Version is not version of Library");
 
             // Zkontroluji oprávnění
-            if (! version_object.library.read_permission())  return forbiddenEmpty();
+            if (!version.library.read_permission()) return forbiddenEmpty();
 
             // Vracím Objekt
-            return ok(Json.toJson(version_object.library.library_version(version_object)));
+            return ok(Json.toJson(version.library.library_version(version)));
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -609,17 +609,17 @@ public class Controller_Library extends BaseController {
         try {
 
             // Ověření objektu
-            Model_Version version_object = Model_Version.getById(version_id);
-            if (version_object == null) return notFound("Version not found");
+            Model_Version version = Model_Version.getById(version_id);
+            if (version == null) return notFound("Version not found");
 
             // Zkontroluji validitu Verze zda sedí k Library
-            if (version_object.library == null) return badRequest("Version is not version of Library");
+            if (version.library == null) return badRequest("Version is not version of Library");
 
             // Kontrola oprávnění
-            if (!version_object.library.delete_permission()) return forbiddenEmpty();
+            if (!version.library.delete_permission()) return forbiddenEmpty();
 
             // Smažu zástupný objekt
-            version_object.delete();
+            version.delete();
 
             // Vracím potvrzení o smazání
             return okEmpty();
@@ -757,15 +757,15 @@ public class Controller_Library extends BaseController {
                 }
 
 
-                Model_Version version_object = new Model_Version();
-                version_object.name             = help.version_name;
-                version_object.description      = help.version_description;
-                version_object.library          = library;
-                version_object.public_version   = true;
-                version_object.author           = version_old.author;
+                Model_Version version = new Model_Version();
+                version.name             = help.version_name;
+                version.description      = help.version_description;
+                version.library          = library;
+                version.public_version   = true;
+                version.author           = version_old.author;
 
                 // Zkontroluji oprávnění
-                version_object.save();
+                version.save();
 
                 library.refresh();
 
@@ -773,10 +773,10 @@ public class Controller_Library extends BaseController {
                 Model_Blob fileRecord = version_old.files.get(0);
 
 
-                Model_Blob.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , library.get_path() ,  version_object);
-                version_object.update();
+                Model_Blob.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , library.get_path() ,  version);
+                version.update();
 
-                version_object.compile_program_thread(version_old.compilation.firmware_version_lib);
+                version.compile_program_thread(version_old.compilation.firmware_version_lib);
 
                 // Admin to schválil bez dalších keců
                 if ((help.reason == null || help.reason.length() < 4)) {

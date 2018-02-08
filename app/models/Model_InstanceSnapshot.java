@@ -55,7 +55,7 @@ public class Model_InstanceSnapshot extends BaseModel {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Cached private UUID cache_version_object_id;
+    @JsonIgnore @Transient @Cached private UUID cache_version_id;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -64,12 +64,12 @@ public class Model_InstanceSnapshot extends BaseModel {
     @JsonIgnore
     public Model_Version get_b_program_version() {
 
-        if (cache_version_object_id == null) {
+        if (cache_version_id == null) {
             Model_Version version = Model_Version.find.query().where().eq("instances.id", id).select("id").findOne();
-            cache_version_object_id = version.id;
+            cache_version_id = version.id;
         }
 
-        return Model_Version.getById(cache_version_object_id);
+        return Model_Version.getById(cache_version_id);
     }
 
     public void deploy() {

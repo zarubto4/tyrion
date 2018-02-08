@@ -47,15 +47,15 @@ public class Swagger_Boards_For_Blocko {
                 c_program_short_detail_for_blocko.description = c_program.description;
                 c_program_short_detail_for_blocko.hardware_type_id = c_program.hardware_type_id();
 
-                for (Model_Version version_object : c_program.getVersions()) {
+                for (Model_Version version : c_program.getVersions()) {
 
                     Swagger_C_Program_Versions_Short_Detail_For_Blocko versions_short_detail_for_blocko = new Swagger_C_Program_Versions_Short_Detail_For_Blocko();
-                    versions_short_detail_for_blocko.id = version_object.id;
-                    versions_short_detail_for_blocko.version_name = version_object.name;
-                    versions_short_detail_for_blocko.version_description = version_object.description;
+                    versions_short_detail_for_blocko.id = version.id;
+                    versions_short_detail_for_blocko.version_name = version.name;
+                    versions_short_detail_for_blocko.version_description = version.description;
 
-                    if (version_object.compilation != null) {
-                        versions_short_detail_for_blocko.virtual_input_output = version_object.compilation.virtual_input_output;
+                    if (version.compilation != null) {
+                        versions_short_detail_for_blocko.virtual_input_output = version.compilation.virtual_input_output;
                     }
 
                     c_program_short_detail_for_blocko.versions.add(versions_short_detail_for_blocko);
@@ -123,13 +123,13 @@ public class Swagger_Boards_For_Blocko {
                 m_program_short_detail_for_blocko.name =program.name;
                 m_program_short_detail_for_blocko.description = program.description;
 
-                for (Model_Version version_object : program.getVersions_not_removed_by_person()) {
+                for (Model_Version version : program.getVersions_not_removed_by_person()) {
 
                     Swagger_M_Program_Versions_Short_Detail_For_Blocko versions_short_detail_for_blocko = new Swagger_M_Program_Versions_Short_Detail_For_Blocko();
-                    versions_short_detail_for_blocko.id = version_object.id;
-                    versions_short_detail_for_blocko.version_name = version_object.name;
-                    versions_short_detail_for_blocko.version_description= version_object.description;
-                    versions_short_detail_for_blocko.virtual_input_output = version_object.m_program_virtual_input_output;
+                    versions_short_detail_for_blocko.id = version.id;
+                    versions_short_detail_for_blocko.version_name = version.name;
+                    versions_short_detail_for_blocko.version_description= version.description;
+                    versions_short_detail_for_blocko.virtual_input_output = version.m_program_virtual_input_output;
 
                     m_program_short_detail_for_blocko.versions.add(versions_short_detail_for_blocko);
                 }

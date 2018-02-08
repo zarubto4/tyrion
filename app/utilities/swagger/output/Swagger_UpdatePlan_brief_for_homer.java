@@ -8,8 +8,8 @@ import java.util.UUID;
 
 public class Swagger_UpdatePlan_brief_for_homer {
 
-    @JsonProperty(value = "tracking_group_id") public String actualization_procedure_id;  // Procedure ID
-    @JsonProperty(value = "tracking_id")       public String c_program_update_plan_id;    // Task ID
+    @JsonProperty(value = "tracking_group_id") public String update_procedure_id;  // Procedure ID
+    @JsonProperty(value = "tracking_id")       public String hardware_update_id;    // Task ID
 
 
     // @JsonProperty public Enum_Update_type_of_update type_of_update;

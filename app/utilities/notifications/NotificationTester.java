@@ -235,25 +235,25 @@ public class NotificationTester extends BaseController {
 
                     notification.setObject(cProgram);
 
-                    Model_Version version_object;
+                    Model_Version version;
                     if (cProgram.getVersions().isEmpty()) {
 
-                        version_object = new Model_Version();
-                        version_object.name        = "Test notification c version";
-                        version_object.description = "random text sd asds dasda";
-                        version_object.author              = person;
-                        version_object.c_program           = cProgram;
-                        version_object.public_version      = false;
-                        version_object.save();
-                        version_object.refresh();
+                        version = new Model_Version();
+                        version.name        = "Test notification c version";
+                        version.description = "random text sd asds dasda";
+                        version.author              = person;
+                        version.c_program           = cProgram;
+                        version.public_version      = false;
+                        version.save();
+                        version.refresh();
 
                         terminal_logger.info("Setting new C Program Version");
 
                     } else {
-                        version_object = cProgram.getVersions().get(0);
+                        version = cProgram.getVersions().get(0);
                     }
 
-                    notification.setObject(version_object);
+                    notification.setObject(version);
 
                     Model_BProgram bProgram;
                     if (!project.b_programs.isEmpty()) {
@@ -272,24 +272,24 @@ public class NotificationTester extends BaseController {
 
                     notification.setObject(bProgram);
 
-                    Model_Version b_version_object;
+                    Model_Version b_version;
                     if (bProgram.getVersions().isEmpty()) {
 
-                        b_version_object = new Model_Version();
-                        b_version_object.name        = "Test notification b version";
-                        b_version_object.description = "random text sd asds dasda";
-                        b_version_object.author              = person;
-                        b_version_object.b_program           = bProgram;
-                        b_version_object.save();
-                        b_version_object.refresh();
+                        b_version = new Model_Version();
+                        b_version.name        = "Test notification b version";
+                        b_version.description = "random text sd asds dasda";
+                        b_version.author              = person;
+                        b_version.b_program           = bProgram;
+                        b_version.save();
+                        b_version.refresh();
 
                         terminal_logger.info("Setting new B Program Version");
 
                     } else {
-                        b_version_object = bProgram.getVersions().get(0);
+                        b_version = bProgram.getVersions().get(0);
                     }
 
-                    notification.setObject(b_version_object);
+                    notification.setObject(b_version);
                 }
 
 

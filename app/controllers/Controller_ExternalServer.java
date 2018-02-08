@@ -603,20 +603,20 @@ public class Controller_ExternalServer extends BaseController {
         try {
 
             // Získám soubor
-            Model_Version version_object = Model_Version.getById(b_program_version_id);
+            Model_Version version = Model_Version.getById(b_program_version_id);
 
-            if (version_object== null) {
+            if (version== null) {
                return notFound("File not found");
             }
 
-            if (version_object.get_b_program() == null) {
+            if (version.get_b_program() == null) {
                 return forbiddenEmpty();
             }
 
             // Separace na Container a Blob
-            int slash = version_object.files.get(0).path.indexOf("/");
-            String container_name = version_object.files.get(0).path.substring(0,slash);
-            String real_file_path = version_object.files.get(0).path.substring(slash+1);
+            int slash = version.files.get(0).path.indexOf("/");
+            String container_name = version.files.get(0).path.substring(0,slash);
+            String real_file_path = version.files.get(0).path.substring(slash+1);
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 
@@ -661,16 +661,16 @@ public class Controller_ExternalServer extends BaseController {
         try {
 
             // Ověření objektu
-            Model_Version version_object = Model_Version.getById(version_id);
-            if (version_object == null) return notFound("Version version_id not found");
+            Model_Version version = Model_Version.getById(version_id);
+            if (version == null) return notFound("Version not found");
 
             // Zkontroluji validitu Verze zda sedí k C_Programu
-            if (version_object.get_c_program() == null) return badRequest("Version_Object its not version of C_Program");
+            if (version.get_c_program() == null) return badRequest("Version is not version of C_Program");
 
-            if (!version_object.get_c_program().read_permission()) return forbiddenEmpty();
+            if (!version.get_c_program().read_permission()) return forbiddenEmpty();
 
             // Získám soubor
-            Model_Compilation compilation = version_object.compilation;
+            Model_Compilation compilation = version.compilation;
 
             if (compilation == null) {
                 return notFound("File not found");

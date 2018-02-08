@@ -140,20 +140,19 @@ public class Controller_Code extends BaseController {
             logger.debug("Starting compilation on version_id = " + version_id);
 
             // Ověření objektu
-            Model_Version version_object = Model_Version.getById(version_id);
-            if (version_object == null) return notFound("Version_Object version_id not found");
+            Model_Version version = Model_Version.getById(version_id);
+            if (version == null) return notFound("Version not found");
 
             // Smažu předchozí kompilaci
-            if (version_object.get_c_program() == null) return badRequest("Version is not version of C_Program");
+            if (version.get_c_program() == null) return badRequest("Version is not version of C_Program");
 
             // Kontrola oprávnění
-            if (!version_object.get_c_program().read_permission()) return forbiddenEmpty();
+            if (!version.get_c_program().read_permission()) return forbiddenEmpty();
 
             // Odpovím předchozí kompilací
-            if (version_object.compilation != null) return ok(Json.toJson(new Swagger_Compilation_Ok()));
+            if (version.compilation != null) return ok(Json.toJson(new Swagger_Compilation_Ok()));
 
-
-            Response_Interface result = version_object.compile_program_procedure();
+            Response_Interface result = version.compile_program_procedure();
 
             if (result instanceof Result_Ok) {
                 return  ok(Json.toJson(new Swagger_Compilation_Ok()));
@@ -710,7 +709,7 @@ public class Controller_Code extends BaseController {
 
             if (help.pending_programs) {
                 if (!person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return forbiddenEmpty();
-                query.where().eq("version_objects.approval_state", Approval.PENDING.name());
+                query.where().eq("versions.approval_state", Approval.PENDING.name());
             }
 
             // Vyvoření odchozího JSON
@@ -937,17 +936,17 @@ public class Controller_Code extends BaseController {
         try {
 
             // Vyhledám Objekt
-            Model_Version version_object = Model_Version.getById(version_id);
-            if (version_object == null) return notFound("Version_Object version not found");
+            Model_Version version = Model_Version.getById(version_id);
+            if (version == null) return notFound("Version not found");
 
             //Zkontroluji validitu Verze zda sedí k C_Programu
-            if (version_object.get_c_program() == null) return badRequest("Version_Object its not version of C_Program");
+            if (version.get_c_program() == null) return badRequest("Version is not version of C_Program");
 
             // Zkontroluji oprávnění
-            if (!version_object.get_c_program().read_permission())  return forbiddenEmpty();
+            if (!version.get_c_program().read_permission())  return forbiddenEmpty();
 
             // Vracím Objekt
-            return ok(Json.toJson(version_object.get_c_program().program_version(version_object)));
+            return ok(Json.toJson(version.get_c_program().program_version(version)));
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1042,17 +1041,17 @@ public class Controller_Code extends BaseController {
         try {
 
             // Ověření objektu
-            Model_Version version_object = Model_Version.getById(version_id);
-            if (version_object == null) return notFound("Version version_id not found");
+            Model_Version version = Model_Version.getById(version_id);
+            if (version == null) return notFound("Version not found");
 
             // Zkontroluji validitu Verze zda sedí k C_Programu
-            if (version_object.get_c_program() == null) return badRequest("Version_Object its not version of C_Program");
+            if (version.get_c_program() == null) return badRequest("Version is not version of C_Program");
 
             // Kontrola oprávnění
-            if (!version_object.get_c_program().delete_permission()) return forbiddenEmpty();
+            if (!version.get_c_program().delete_permission()) return forbiddenEmpty();
 
             // Smažu zástupný objekt
-            version_object.delete();
+            version.delete();
 
             // Vracím potvrzení o smazání
             return okEmpty();
@@ -1190,25 +1189,25 @@ public class Controller_Code extends BaseController {
                     c_program.save();
                 }
 
-                Model_Version version_object = new Model_Version();
-                version_object.name             = help.version_name;
-                version_object.description      = help.version_description;
-                version_object.c_program        = c_program;
-                version_object.public_version   = true;
-                version_object.author           = version_old.author;
+                Model_Version version = new Model_Version();
+                version.name             = help.version_name;
+                version.description      = help.version_description;
+                version.c_program        = c_program;
+                version.public_version   = true;
+                version.author           = version_old.author;
 
                 // Zkontroluji oprávnění
-                version_object.save();
+                version.save();
 
                 c_program.refresh();
 
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version_old.files.get(0);
 
-                Model_Blob.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program.get_path() ,  version_object);
-                version_object.update();
+                Model_Blob.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program.get_path() ,  version);
+                version.update();
 
-                version_object.compile_program_thread(version_old.compilation.firmware_version_lib);
+                version.compile_program_thread(version_old.compilation.firmware_version_lib);
 
                 // Admin to schválil bez dalších keců
                 if ((help.reason == null || help.reason.length() < 4) ) {

@@ -27,7 +27,6 @@ import utilities.swagger.output.filter_results.Swagger_GridWidget_List;
 
 import java.util.*;
 
-
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Grid extends BaseController {
 
@@ -479,18 +478,18 @@ public class Controller_Grid extends BaseController {
 
         try {
             // Kontrola objektu
-            Model_Version version_object = Model_Version.getById(m_program_version_id);
-            if (version_object == null) return notFound("Version_Object version_id not found");
+            Model_Version version = Model_Version.getById(m_program_version_id);
+            if (version == null) return notFound("Version not found");
 
             // Kontrola oprávnění
-            if (version_object.m_program == null)
-                return notFound("Version_Object is not version of B_Program");
+            if (version.m_program == null)
+                return notFound("Version is not version of B_Program");
 
             // Kontrola oprávnění
-            if (!version_object.m_program.read_permission()) return forbiddenEmpty();
+            if (!version.m_program.read_permission()) return forbiddenEmpty();
 
             // Vrácení objektu
-            return ok(Json.toJson(Model_MProgram.program_version(version_object)));
+            return ok(Json.toJson(Model_MProgram.program_version(version)));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -587,8 +586,8 @@ public class Controller_Grid extends BaseController {
             Model_Version version  = Model_Version.getById(m_program_version_id);
 
             // Kontrola objektu
-            if (version == null) return notFound("Version_Object id not found");
-            if (version.m_program == null) return badRequest("M_Project m_project_id not found");
+            if (version == null) return notFound("Version not found");
+            if (version.m_program == null) return badRequest("M_Project not found");
 
             // Kontrola oprávnění
             if (!version.m_program.edit_permission()) return forbiddenEmpty();
@@ -661,17 +660,17 @@ public class Controller_Grid extends BaseController {
         try {
 
             // Získání objektu
-            Model_Version version_object  = Model_Version.getById(m_program_version_id);
+            Model_Version version  = Model_Version.getById(m_program_version_id);
 
             // Kontrola objektu
-            if (version_object == null) return notFound("Version_Object id not found");
-            if (version_object.m_program == null) return badRequest("M_Project m_project_id not found");
+            if (version == null) return notFound("Version not found");
+            if (version.m_program == null) return badRequest("M_Project not found");
 
             // Kontrola oprávnění
-            if (! version_object.m_program.delete_permission() ) return forbiddenEmpty();
+            if (! version.m_program.delete_permission() ) return forbiddenEmpty();
 
             // Smazání objektu
-            version_object.delete();
+            version.delete();
 
             // Vrácení potvrzení
             return okEmpty();

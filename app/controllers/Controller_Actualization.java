@@ -154,12 +154,12 @@ public class Controller_Actualization extends BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result canceled_procedure(@ApiParam(required = true) String actualization_procedure_id) {
+    public Result canceled_procedure(@ApiParam(required = true) String procedure_id) {
         try {
 
             // Kontrola objektu
-            Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(actualization_procedure_id);
-            if (procedure == null) return notFound("Actualization_Procedure actualization_procedure_id not found");
+            Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(procedure_id);
+            if (procedure == null) return notFound("UpdateProcedure not found");
 
             // Kontrola oprávnění
             if (!procedure.read_permission()) return forbiddenEmpty();

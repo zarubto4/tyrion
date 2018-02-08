@@ -44,7 +44,7 @@ public class Swagger_B_Program_Version_New extends Swagger_NameAndDescription {
         public UUID m_program_id;
 
         @Constraints.Required @ApiModelProperty(required = true)
-        public UUID version_object_id;
+        public UUID version_id;
 
     }
 }

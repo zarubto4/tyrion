@@ -47,16 +47,15 @@ public class Job_StuckCompilationCheck implements Job {
 
                     while (true) {
                         // Vyhledání všech, které je nutné projit
-                        List<Model_Version> version_objects = Model_Version.find.query()
+                        List<Model_Version> versions = Model_Version.find.query()
                                 .where()
-                                .eq("deleted", false)
                                 .disjunction()
                                 .eq("compilation.status", CompilationStatus.SERVER_OFFLINE.name())
                                 .eq("compilation.status", CompilationStatus.SERVER_ERROR.name())
                                 .endJunction()
                                 .lt("created", created).order().desc("created").setMaxRows(100).findList();
 
-                        if (version_objects.isEmpty()) {
+                        if (versions.isEmpty()) {
 
                             logger.debug("compilation_check_thread:: no versions to compile");
                             break;
@@ -65,7 +64,7 @@ public class Job_StuckCompilationCheck implements Job {
                         logger.debug("compilation_check_thread:: compiling versions (100 per cycle)");
 
                         // Postupná procházení a kompilování
-                        for (Model_Version version : version_objects) {
+                        for (Model_Version version : versions) {
 
                             // Pokud neobsahuje verzi - je to špatně, ale zde neřešitelné - proto se to přeskočí.
                             if (version == null) {

@@ -21,7 +21,7 @@ public class Swagger_UpdatePlan_brief_for_homer_BinaryComponent {
     @JsonProperty
     public String program_version_name;               // C_Program.versions[1].name  for Model_BootLoader.version_identifier
     @JsonProperty
-    public String download_id;                        // For firmware or Backup is Model_VersionObject.id for bootloader is Model_BootLoader.version_identifier
+    public String download_id;                        // For firmware or Backup is Model_Version.id for bootloader is Model_BootLoader.version_identifier
 
 
     @JsonProperty

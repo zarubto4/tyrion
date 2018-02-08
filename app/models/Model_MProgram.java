@@ -119,10 +119,10 @@ public class Model_MProgram extends TaggedModel {
     }
 
     @JsonIgnore
-    public static JsonNode get_m_code(Model_Version version_object) {
+    public static JsonNode get_m_code(Model_Version version) {
         try {
 
-            Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version_object.id).eq("name", "m_program.json").findOne();
+            Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version.id).eq("name", "m_program.json").findOne();
 
             if (fileRecord != null) {
                 JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
@@ -145,7 +145,7 @@ public class Model_MProgram extends TaggedModel {
 
             for (Model_Version v : getVersions_not_removed_by_person()) {
                 Swagger_M_Program_Version_Interface help = new Swagger_M_Program_Version_Interface();
-                help.version_object = v;
+                help.version = v;
                 help.virtual_input_output = v.m_program_virtual_input_output;
                 versions.add(help);
             }

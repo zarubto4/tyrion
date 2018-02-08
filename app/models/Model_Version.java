@@ -72,7 +72,7 @@ public class Model_Version extends NamedModel {
 
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version", fetch = FetchType.LAZY)                              public List<Model_Hardware>  c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
     @JsonIgnore @OneToMany(mappedBy="actual_backup_c_program_version", fetch = FetchType.LAZY)                       public List<Model_Hardware>  c_program_version_backup_boards  = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareUpdate> c_program_update_plans = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareUpdate> updates = new ArrayList<>();
                                                                                                    @JsonIgnore  public Approval approval_state; // Zda je program schválený veřejný program
                                                                                          @OneToOne @JsonIgnore  public Model_CProgram default_program;
 
@@ -100,7 +100,7 @@ public class Model_Version extends NamedModel {
     public Model_Person author() {
         if (this.author == null) {
 
-            this.author = Model_Person.find.query().where().eq("version_objects.id", this.id).findOne();
+            this.author = Model_Person.find.query().where().eq("versions.id", this.id).findOne();
             if (this.author == null) return null;
         }
         return this.author;
@@ -112,7 +112,7 @@ public class Model_Version extends NamedModel {
     public Model_BProgram get_b_program() {
 
         if (cache_b_program_id == null) {
-            Model_BProgram bProgram = Model_BProgram.find.query().where().eq("version_objects.id", id).select("id").findOne();
+            Model_BProgram bProgram = Model_BProgram.find.query().where().eq("versions.id", id).select("id").findOne();
             if (bProgram == null) return null;
             cache_b_program_id = bProgram.id;
         }
@@ -124,7 +124,7 @@ public class Model_Version extends NamedModel {
     public Model_CProgram get_c_program() {
 
         if (cache_c_program_id == null) {
-            Model_CProgram cProgram = Model_CProgram.find.query().where().eq("version_objects.id", id).select("id").findOne();
+            Model_CProgram cProgram = Model_CProgram.find.query().where().eq("versions.id", id).select("id").findOne();
             cache_c_program_id = cProgram.id;
         }
 
