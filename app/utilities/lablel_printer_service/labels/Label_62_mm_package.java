@@ -163,7 +163,7 @@ public class Label_62_mm_package {
                       p_batch.add(new Chunk(print_info.production_batch, regular));
 
             Paragraph p_made = new Paragraph("Made: ", bold);
-                      p_made.add(new Chunk( print_info.date_of_assembly, regular));
+                      p_made.add(new Chunk( print_info.assembled, regular));
 
         cell_Right.addElement(p_code);
         cell_Right.addElement(p_product);

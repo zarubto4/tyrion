@@ -44,10 +44,11 @@ public class Controller_Grid extends BaseController {
 ///###################################################################################################################*/
 
     @ApiOperation(value = "Create M_Project",
-            tags = {"M_Program"},
-            notes = "M_Project is package for M_Programs -> presupposition is that you need more control terminal for your IoT project. " +
-                    "Different screens for family members, for employee etc.. But of course - you can used that for only one M_program",
+            tags = {"Grid"},
+            notes = "GridProject is package for GridPrograms -> presupposition is that you need more control terminal for your IoT project. " +
+                    "Different screens for family members, for employee etc.. But of course - you can used that for only one GridProgram",
             produces = "application/json",
+            consumes = "application/json",
             protocols = "https",
             code = 201
     )
@@ -62,17 +63,17 @@ public class Controller_Grid extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",     response = Model_MProject.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_InvalidBody.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_GridProject.class),
+            @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result new_M_Project(String project_id) {
+    public Result gridProject_create(String project_id) {
         try {
 
             final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
@@ -80,56 +81,45 @@ public class Controller_Grid extends BaseController {
             Swagger_NameAndDescription help = form.get();
 
             Model_Project project = Model_Project.getById( project_id );
-            if (project == null) return notFound("Project project_id not found");
+            if (project == null) return notFound("Project not found");
 
-            Model_MProject m_project = new Model_MProject();
-            m_project.description = help.description;
-            m_project.name = help.name;
-            m_project.project = project;
+            Model_GridProject gridProject = new Model_GridProject();
+            gridProject.description = help.description;
+            gridProject.name = help.name;
+            gridProject.project = project;
 
-            if (!m_project.create_permission())  return forbiddenEmpty();
-            m_project.save();
+            if (!gridProject.create_permission())  return forbiddenEmpty();
+            gridProject.save();
 
-            return created( Json.toJson(m_project));
+            return created(gridProject.json());
 
         } catch (Exception e) {
             return internalServerError(e);
         }
     }
 
-    @ApiOperation(value = "get M_Project",
-            tags = {"M_Program"},
-            notes = "get M_Project by query = m_project_id",
+    @ApiOperation(value = "get GridProject",
+            tags = {"Grid"},
+            notes = "get GridProject by query = grid_project_id",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "M_Project.read_permission", value = Model_MProject.read_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "M_Project.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key"    , value = "MProject_read" ),
-                            @ExtensionProperty(name = "Dynamic Permission key"   , value = "MProject_read.{project_id}"),
-                    })
-            }
+            protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_MProject.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_GridProject.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result get_M_Project(@ApiParam(value = "m_project_id String query", required = true) String m_project_id) {
+    public Result gridProject_get(@ApiParam(value = "grid_project_id String query", required = true) String grid_project_id) {
         try {
 
-            Model_MProject m_project = Model_MProject.getById(m_project_id);
-            if (m_project == null) return notFound("M_Project m_project_id not found");
+            Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
+            if (gridProject == null) return notFound("GridProject not found");
 
-            if (!m_project.read_permission())  return forbiddenEmpty();
-            return ok(Json.toJson(m_project));
+            if (!gridProject.read_permission())  return forbiddenEmpty();
+            return ok(gridProject.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -137,8 +127,8 @@ public class Controller_Grid extends BaseController {
     }
 
     @ApiOperation(value = "edit M_Project",
-            tags = {"M_Program"},
-            notes = "edit basic information in M_Project by query = m_project_id",
+            tags = {"Grid"},
+            notes = "edit basic information in M_Project by query = grid_project_id",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -154,8 +144,8 @@ public class Controller_Grid extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_MProject.class),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_GridProject.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -163,33 +153,130 @@ public class Controller_Grid extends BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result edit_M_Project(@ApiParam(value = "m_project_id String query", required = true) String m_project_id) {
+    public Result gridProject_update(@ApiParam(value = "grid_project_id String query", required = true) String grid_project_id) {
         try {
 
             final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
             if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
             Swagger_NameAndDescription help = form.get();
 
+            Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
+            if (gridProject == null) return notFound("GridProject not found");
 
-            Model_MProject m_project = Model_MProject.getById(m_project_id);
-            if (m_project == null) return notFound("M_Project m_project_id not found");
+            if (!gridProject.edit_permission()) return forbiddenEmpty();
 
-            if (!m_project.edit_permission())  return forbiddenEmpty();
+            gridProject.name = help.name;
+            gridProject.description = help.description;
 
-            m_project.description = help.description;
-            m_project.name = help.name;
-
-            m_project.update();
-            return ok( Json.toJson(m_project));
+            gridProject.update();
+            return ok(gridProject.json());
 
         } catch (Exception e) {
             return internalServerError(e);
         }
     }
 
+    @ApiOperation(value = "tag GridProject",
+            tags = {"Grid"},
+            notes = "",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Tags",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_GridProject.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result gridProject_addTags() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
+            Swagger_Tags help = form.get();
+
+            Model_GridProject gridProject = Model_GridProject.getById(help.object_id);
+            if (gridProject == null) return notFound("GridProject not found");
+
+            // Kontrola oprávnění těsně před uložením
+            if (!gridProject.edit_permission())  return forbiddenEmpty();
+
+            gridProject.addTags(help.tags);
+
+            // Vrácení objektu
+            return ok(gridProject.json());
+
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "untag GridProject",
+            tags = {"Grid"},
+            notes = "",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Tags",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_GridProject.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result gridProject_removeTags() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
+            Swagger_Tags help = form.get();
+
+            Model_GridProject gridProject = Model_GridProject.getById(help.object_id);
+            if (gridProject == null) return notFound("GridProject not found");
+
+            // Kontrola oprávnění těsně před uložením
+            if (!gridProject.edit_permission())  return forbiddenEmpty();
+
+            gridProject.removeTags(help.tags);
+
+            // Vrácení objektu
+            return ok(gridProject.json());
+
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
+    }
+    
     @ApiOperation(value = "delete M_Project",
-            tags = {"M_Program"},
-            notes = "remove M_Project by query = m_project_id",
+            tags = {"Grid"},
+            notes = "remove M_Project by query = grid_project_id",
             produces = "application/json",
             protocols = "https",
             code = 200,
@@ -199,7 +286,7 @@ public class Controller_Grid extends BaseController {
                     })
             }
     )
-     @ApiResponses(value = {
+     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -207,14 +294,14 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result remove_M_Project(@ApiParam(value = "m_project_id String query", required = true)  String m_project_id) {
+    public Result gridProject_delete(@ApiParam(value = "grid_project_id String query", required = true) String grid_project_id) {
         try {
 
-            Model_MProject m_project = Model_MProject.getById(m_project_id);
-            if (m_project == null) return notFound("M_project m_project_id not found");
+            Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
+            if (gridProject == null) return notFound("M_project grid_project_id not found");
 
-            if (!m_project.delete_permission())  return forbiddenEmpty();
-            m_project.delete();
+            if (!gridProject.delete_permission())  return forbiddenEmpty();
+            gridProject.delete();
 
             return okEmpty();
 
@@ -223,24 +310,13 @@ public class Controller_Grid extends BaseController {
         }
     }
 
-    @ApiOperation(value = "get M_Project Accessible interface",
-            tags = {"M_Program"},
+    @ApiOperation(value = "getInterface GridProject",
+            tags = {"Grid"},
             notes = "get accessible interface from M_Project",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "M_Project.read_permission", value = Model_MProject.read_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "M_Project.remove_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key"      , value = "MProject_read" ),
-                            @ExtensionProperty(name = "Dynamic Permission key"     , value = "MProject_read.{project_id}"),
-                    })
-            }
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_M_Project_Interface.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -248,21 +324,20 @@ public class Controller_Grid extends BaseController {
     })
     @BodyParser.Of(BodyParser.Empty.class)
     @Security.Authenticated(Authentication.class)
-    public Result get_M_Project_Interface_collection(@ApiParam(value = "m_project_id String query", required = true)  String m_project_id) {
+    public Result gridProject_getInterface(@ApiParam(value = "grid_project_id String query", required = true)  String grid_project_id) {
         try {
 
-            Model_MProject m_project = Model_MProject.getById(m_project_id);
-            if (m_project == null) return notFound("M_project m_project_id not found");
+            Model_GridProject m_project = Model_GridProject.getById(grid_project_id);
+            if (m_project == null) return notFound("M_project grid_project_id not found");
 
             if (!m_project.read_permission())  return forbiddenEmpty();
-
 
             Swagger_M_Project_Interface m_project_interface = new Swagger_M_Project_Interface();
             m_project_interface.name = m_project.name;
             m_project_interface.description = m_project.description;
             m_project_interface.id = m_project.id;
 
-            for (Model_MProgram m_program : m_project.get_m_programs_not_deleted()) {
+            for (Model_GridProgram m_program : m_project.getGridPrograms()) {
 
                 Swagger_M_Program_Interface m_program_interface = new Swagger_M_Program_Interface();
                 m_program_interface.description = m_program.description;
@@ -281,293 +356,240 @@ public class Controller_Grid extends BaseController {
     }
 
 
-//######################################################################################################################
+// GRID PROGRAM ########################################################################################################
 
-    @ApiOperation(value = "Create M_Program",
-            tags = {"M_Program"},
-            notes = "creating new M_Program",
+    @ApiOperation(value = "create GridProgram",
+            tags = {"Grid"},
+            notes = "creating new GridProgram",
             produces = "application/json",
+            consumes = "application/json",
             protocols = "https",
             code = 201
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.input.Swagger_NameAndDescription",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",    response = Model_MProgram.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_InvalidBody.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_NameAndDescription",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_GridProgram.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result new_M_Program( @ApiParam(value = "m_project_id", required = true) String m_project_id) {
+    public Result gridProgram_create(@ApiParam(value = "grid_project_id", required = true) String grid_project_id) {
         try {
 
             final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
             if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
             Swagger_NameAndDescription help = form.get();
 
-            Model_MProject m_project = Model_MProject.getById( m_project_id );
-            if (m_project == null) return notFound("M_Project m_project_id not found");
+            Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
+            if (gridProject == null) return notFound("GridProject not found");
 
-            Model_MProgram m_program = new Model_MProgram();
-            m_program.description         = help.description;
-            m_program.name                = help.name;
-            m_program.m_project           = m_project;
+            Model_GridProgram gridProgram = new Model_GridProgram();
+            gridProgram.description         = help.description;
+            gridProgram.name                = help.name;
+            gridProgram.grid_project = gridProject;
 
-            if (!m_program.create_permission()) return forbiddenEmpty();
-            m_program.save();
+            if (!gridProgram.create_permission()) return forbiddenEmpty();
+            gridProgram.save();
 
-            return created(Json.toJson(m_program));
+            return created(gridProgram.json());
         } catch (Exception e) {
             return internalServerError(e);
         }
     }
 
-    @ApiOperation(value = "Create M_Program_Version",
-            tags = {"M_Program"},
-            notes = "creating new Version M_Program",
+    @ApiOperation(value = "get GridProgram",
+            tags = {"Grid"},
+            notes = "get GridProgram by query grid_program_id",
             produces = "application/json",
-            protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "M_Program.create_permission", value = Model_MProgram.create_permission_docs),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "M_Project.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "MProgram_create" )
-                    })
-            }
+            protocols = "https"
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.input.Swagger_M_Program_Version_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_GridProgram.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result gridProgram_get(@ApiParam(value = "grid_program_id String query", required = true)  String grid_program_id) {
+        try {
+            Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
+            if (gridProgram == null) return notFound("GridProgram not found");
+
+            if (!gridProgram.read_permission())  return forbiddenEmpty();
+
+            return ok(gridProgram.json());
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "update GridProgram",
+            tags = {"Grid"},
+            notes = "update GridProgram - in this case we are not support versions of grid_project",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",    response = Swagger_M_Program_Version.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_InvalidBody.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_NameAndDescription",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_GridProgram.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result new_M_Program_version( @ApiParam(value = "m_program_id", required = true) String m_program_id) {
+    public Result gridProgram_update(@ApiParam(value = "grid_program_id String query", required = true) String grid_program_id) {
         try {
 
-            final Form<Swagger_M_Program_Version_New> form = formFactory.form(Swagger_M_Program_Version_New.class).bindFromRequest();
+            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
             if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_M_Program_Version_New help = form.get();
+            Swagger_NameAndDescription help = form.get();
 
-            Model_MProgram main_m_program = Model_MProgram.getById( m_program_id );
-            if (main_m_program == null) return notFound("M_Project m_project_id not found");
+            Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
+            if (!gridProgram.edit_permission())  return forbiddenEmpty();
 
-            if (!main_m_program.create_permission()) return forbiddenEmpty();
+            if (gridProgram.grid_project == null) return badRequest("You cannot change program on version");
 
-            Model_Version version       = new Model_Version();
-            version.name                = help.name;
-            version.description         = help.description;
-            version.m_program           = main_m_program;
-            version.author              = BaseController.person();
-            version.public_version      = help.public_mode;
-            version.m_program_virtual_input_output =  help.virtual_input_output;
+            gridProgram.description = help.description;
+            gridProgram.name        = help.name;
 
-            version.save();
+            gridProgram.update();
 
-            main_m_program.getVersions_not_removed_by_person().add(version);
-
-            ObjectNode content = Json.newObject();
-            content.put("m_code", help.m_code);
-
-            Model_Blob.uploadAzure_Version(content.toString(), "m_program.json" , main_m_program.get_path() ,  version);
-
-            return created(Json.toJson(Model_MProgram.program_version(version)));
-
+            return ok(gridProgram.json());
         } catch (Exception e) {
             return internalServerError(e);
         }
     }
 
-    @ApiOperation(value = "get M_Program",
-            tags = {"M_Program"},
-            notes = "get M_Program by quarry m_program_id",
+    @ApiOperation(value = "tag GridProgram",
+            tags = {"Grid"},
+            notes = "",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "M_Program.read_permission", value = Model_MProgram.read_permission_docs),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "M_Program.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key"    , value = "MProgram_read" ),
-                            @ExtensionProperty(name = "Dynamic Permission key"   , value = "MProgram_read.{project_id}"),
-                    })
-            }
-
+            consumes = "application/json",
+            protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_MProgram.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Tags",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_GridProgram.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Authentication.class)
-    public Result get_M_Program(@ApiParam(value = "m_program_id String query", required = true)  String m_program_id) {
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result gridProgram_addTags() {
         try {
-            Model_MProgram m_program = Model_MProgram.getById(m_program_id);
-            if (m_program == null) return notFound("M_Project m_project_id not found");
 
-            if (!m_program.read_permission())  return forbiddenEmpty();
+            // Zpracování Json
+            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
+            Swagger_Tags help = form.get();
 
-            return ok(Json.toJson(m_program));
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return internalServerError(e);
-        }
-    }
+            Model_GridProgram gridProgram = Model_GridProgram.getById(help.object_id);
+            if (gridProgram == null) return notFound("GridProgram not found");
 
-    @ApiOperation(value = "get M_Program_Version",
-            tags = {"M_Program"},
-            notes = "get M_Program_Version by quarry m_program_version_id",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "M_Program.read_permission", value = Model_MProgram.read_permission_docs),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "M_Program.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key"    , value = "MProgram_read" ),
-                            @ExtensionProperty(name = "Dynamic Permission key"   , value = "MProgram_read.{project_id}"),
-                    })
-            }
+            // Kontrola oprávnění těsně před uložením
+            if (!gridProgram.edit_permission())  return forbiddenEmpty();
 
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_M_Program_Version.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    @Security.Authenticated(Authentication.class)
-    public Result get_M_Program_version(@ApiParam(value = "m_program_version_id String query", required = true)  String m_program_version_id) {
-
-        try {
-            // Kontrola objektu
-            Model_Version version = Model_Version.getById(m_program_version_id);
-            if (version == null) return notFound("Version not found");
-
-            // Kontrola oprávnění
-            if (version.m_program == null)
-                return notFound("Version is not version of B_Program");
-
-            // Kontrola oprávnění
-            if (!version.m_program.read_permission()) return forbiddenEmpty();
+            gridProgram.addTags(help.tags);
 
             // Vrácení objektu
-            return ok(Json.toJson(Model_MProgram.program_version(version)));
+            return ok(gridProgram.json());
 
         } catch (Exception e) {
-            e.printStackTrace();
             return internalServerError(e);
         }
     }
 
-    @ApiOperation(value = "edit M_Program",
-            tags = {"M_Program"},
-            notes = "update m_project - in this case we are not support versions of m_project",
+    @ApiOperation(value = "untag GridProgram",
+            tags = {"Grid"},
+            notes = "",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            consumes = "application/json",
+            protocols = "https"
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.input.Swagger_NameAndDescription",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_MProject.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Tags",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_GridProgram.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    @Security.Authenticated(Authentication.class)
-    public Result edit_M_Program(@ApiParam(value = "m_program_id String query", required = true)  String m_program_id) {
+    public Result gridProgram_removeTags() {
         try {
 
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_NameAndDescription help = form.get();
+            // Zpracování Json
+            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
+            Swagger_Tags help = form.get();
 
+            Model_GridProgram gridProgram = Model_GridProgram.getById(help.object_id);
+            if (gridProgram == null) return notFound("GridProgram not found");
 
-            Model_MProgram m_program = Model_MProgram.getById(m_program_id);
-            if (!m_program.edit_permission())  return forbiddenEmpty();
+            // Kontrola oprávnění těsně před uložením
+            if (!gridProgram.edit_permission())  return forbiddenEmpty();
 
-            if (m_program.m_project == null)  return badRequest("You cannot change program on version");
+            gridProgram.removeTags(help.tags);
 
+            // Vrácení objektu
+            return ok(gridProgram.json());
 
-            m_program.description = help.description;
-            m_program.name        = help.name;
-
-            m_program.update();
-
-            return ok(Json.toJson(m_program));
         } catch (Exception e) {
             return internalServerError(e);
         }
     }
 
-    @ApiOperation(value = "edit M_Program_Version",
-            tags = {"M_Program"},
-            notes = "edit M_Program_Version by quarry = m_program_version_id",
+    @ApiOperation(value = "delete GridProgram",
+            tags = {"Grid"},
+            notes = "remove GridProgram by query = grid_program_id",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.input.Swagger_NameAndDescription",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -575,7 +597,147 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result edit_M_Program_version(@ApiParam(value = "m_program_version_id String query", required = true) String m_program_version_id) {
+    public Result gridProgram_delete(@ApiParam(value = "grid_program_id String query", required = true) String grid_program_id) {
+        try {
+
+            Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
+            if (gridProgram == null) return notFound("GridProgram not found");
+
+            if (!gridProgram.delete_permission())  return forbiddenEmpty();
+            gridProgram.delete();
+
+            return okEmpty();
+
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
+    }
+
+// GRID PROGRAM VERSION ################################################################################################
+
+    @ApiOperation(value = "Create GridProgramVersion",
+            tags = {"Grid"},
+            notes = "creating new GridProgramVersion",
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_M_Program_Version_New",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Successfully created",      response = Swagger_GridProgramVersion.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Authentication.class)
+    public Result gridProgramVersion_create(@ApiParam(value = "grid_program_id", required = true) String grid_program_id) {
+        try {
+
+            final Form<Swagger_M_Program_Version_New> form = formFactory.form(Swagger_M_Program_Version_New.class).bindFromRequest();
+            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
+            Swagger_M_Program_Version_New help = form.get();
+
+            Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
+            if (gridProgram == null) return notFound("GridProgram not found");
+
+            if (!gridProgram.create_permission()) return forbiddenEmpty();
+
+            Model_Version version       = new Model_Version();
+            version.name                = help.name;
+            version.description         = help.description;
+            version.grid_program        = gridProgram;
+            version.author              = BaseController.person();
+            version.public_version      = help.public_mode;
+            version.m_program_virtual_input_output =  help.virtual_input_output;
+            version.save();
+
+            gridProgram.getVersions().add(version);
+
+            ObjectNode content = Json.newObject();
+            content.put("m_code", help.m_code);
+
+            Model_Blob.uploadAzure_Version(content.toString(), "grid_program.json" , gridProgram.get_path() ,  version);
+
+            return created(Json.toJson(Model_GridProgram.program_version(version)));
+
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "get GridProgramVersion",
+            tags = {"Grid"},
+            notes = "get GridProgramVersion by query version_id",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_GridProgramVersion.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result gridProgramVersion_get(@ApiParam(value = "version_id String query", required = true) String version_id) {
+
+        try {
+            // Kontrola objektu
+            Model_Version version = Model_Version.getById(version_id);
+            if (version == null) return notFound("Version not found");
+
+            // Kontrola oprávnění
+            if (version.grid_program == null)
+                return notFound("Version is not version of B_Program");
+
+            // Kontrola oprávnění
+            if (!version.grid_program.read_permission()) return forbiddenEmpty();
+
+            // Vrácení objektu
+            return ok(Json.toJson(Model_GridProgram.program_version(version)));
+
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "edit GridProgramVersion",
+            tags = {"Grid"},
+            notes = "edit GridProgramVersion by query = version_id",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_NameAndDescription",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_GridProgramVersion.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result gridProgramVersion_update(@ApiParam(value = "version_id String query", required = true) String version_id) {
         try {
 
             final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
@@ -583,14 +745,14 @@ public class Controller_Grid extends BaseController {
             Swagger_NameAndDescription help = form.get();
 
             // Získání objektu
-            Model_Version version  = Model_Version.getById(m_program_version_id);
+            Model_Version version = Model_Version.getById(version_id);
 
             // Kontrola objektu
             if (version == null) return notFound("Version not found");
-            if (version.m_program == null) return badRequest("M_Project not found");
+            if (version.grid_program == null) return badRequest("GridProgram not found");
 
             // Kontrola oprávnění
-            if (!version.m_program.edit_permission()) return forbiddenEmpty();
+            if (!version.grid_program.edit_permission()) return forbiddenEmpty();
 
             // Úprava objektu
             version.description = help.description;
@@ -598,83 +760,46 @@ public class Controller_Grid extends BaseController {
 
             version.update();
 
-            return okEmpty();
+            return ok(Json.toJson(Model_GridProgram.program_version(version)));
 
         } catch (Exception e) {
             return internalServerError(e);
         }
     }
 
-    @ApiOperation(value = "delete M_Program",
-            tags = {"M_Program"},
-            notes = "remove M_Program by quarry = m_program_id",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "M_Program.delete_permission", value = "true"),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    @Security.Authenticated(Authentication.class)
-    public Result remove_M_Program(@ApiParam(value = "m_program_id String query", required = true) String m_program_id) {
-        try {
-
-            Model_MProgram m_program = Model_MProgram.getById(m_program_id);
-            if (m_program == null) return notFound("M_Project m_project_id not found");
-
-            if (!m_program.delete_permission())  return forbiddenEmpty();
-            m_program.delete();
-
-            return okEmpty();
-
-        } catch (Exception e) {
-            return internalServerError(e);
-        }
-    }
-
-    @ApiOperation(value = "delete M_Program_Version",
-            tags = {"M_Program"},
-            notes = "remove version of M_Program",
+    @ApiOperation(value = "delete GridProgramVersion",
+            tags = {"Grid"},
+            notes = "remove GridProgramVersion",
             produces = "application/json",
             protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully created",    response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_InvalidBody.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Successfully created",      response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Empty.class)
-    public Result remove_M_Program_version( @ApiParam(value = "m_program_version_id", required = true) String m_program_version_id) {
+    public Result gridProgramVersion_delete( @ApiParam(value = "version_id", required = true) String version_id) {
         try {
 
             // Získání objektu
-            Model_Version version  = Model_Version.getById(m_program_version_id);
+            Model_Version version  = Model_Version.getById(version_id);
 
             // Kontrola objektu
             if (version == null) return notFound("Version not found");
-            if (version.m_program == null) return badRequest("M_Project not found");
+            if (version.grid_program == null) return badRequest("GridProgram not found");
 
             // Kontrola oprávnění
-            if (! version.m_program.delete_permission() ) return forbiddenEmpty();
+            if (!version.grid_program.delete_permission()) return forbiddenEmpty();
 
             // Smazání objektu
             version.delete();
 
             // Vrácení potvrzení
             return okEmpty();
-
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -684,21 +809,13 @@ public class Controller_Grid extends BaseController {
 
     // Příkazy pro Terminál
 
-    @ApiOperation(value = "get M_Program by generated token",
+    @ApiOperation(value = "getByToken GridProgram",
             tags = {"APP-Api"},
             notes = "get M_Program by token",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "M_Program.read_qr_token_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key"    , value = "MProgram_read" ),
-                            @ExtensionProperty(name = "Dynamic Permission key"   , value = "MProgram_read.{project_id}"),
-                    })
-            }
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",  response = Swagger_Mobile_Connection_Summary.class),
             @ApiResponse(code = 400, message = "Bad Request - Probably token is not valid anymore", response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
@@ -707,7 +824,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 477, message = "External Server is offline", response = Result_ServerOffline.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result get_M_Program_byQR_Token_forMobile(String qr_token) {
+    public Result gridProgram_getByQRToken(String qr_token) {
         try {
 
 
@@ -716,7 +833,7 @@ public class Controller_Grid extends BaseController {
             Model_MProgramInstanceParameter parameter = Model_MProgramInstanceParameter.find.query()
                     .where()
                     .eq("connection_token" , qr_token)
-                    .isNotNull("m_project_program_snapshot.instance_versions.instance_record.actual_running_instance")
+                    .isNotNull("grid_project_program_snapshot.instance_versions.instance_record.actual_running_instance")
                     .findOne();
 
             if (parameter == null) return notFound("MProgramInstanceParameter by token not found in database");
@@ -743,7 +860,6 @@ public class Controller_Grid extends BaseController {
         }
     }
 
-
     @ApiOperation(value = "check Terminal",
             tags = {"APP-Api"},
             notes = "For every app (terminal) opening you have to valid your terminal_id.",
@@ -762,7 +878,7 @@ public class Controller_Grid extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Valid Identification",      response = Model_GridTerminal.class),
             @ApiResponse(code = 400, message = "Invalid Identification",    response = Result_BadRequest.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
@@ -819,7 +935,7 @@ public class Controller_Grid extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Successfully created",    response = Model_GridTerminal.class),
             @ApiResponse(code = 400, message = "Some Json value Missing", response = Result_InvalidBody.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
@@ -867,30 +983,28 @@ public class Controller_Grid extends BaseController {
 
 // WIDGET ##############################################################################################################
 
-    @ApiOperation(value = "create Grid_Widget",
-            tags = {"Grid-Widget"},
+    @ApiOperation(value = "create Widget",
+            tags = {"Widget"},
             notes = "creating new independent Widget object for Grid tools",
             produces = "application/json",
             protocols = "https",
             code = 201
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.input.Swagger_NameAndDesc_ProjectIdOptional",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",    response = Model_Widget.class),
-            @ApiResponse(code = 400, message = "Something went wrong",    response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_NameAndDesc_ProjectIdOptional",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_Widget.class),
+            @ApiResponse(code = 400, message = "Something went wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -905,7 +1019,7 @@ public class Controller_Grid extends BaseController {
 
             Model_Project project = null;
 
-            if (help.project_id == null ) {
+            if (help.project_id == null) {
                 if (Model_Widget.getPublicByName(help.name) != null) {
                     return badRequest("Widget with this name already exists, type a new one.");
                 }
@@ -928,7 +1042,7 @@ public class Controller_Grid extends BaseController {
             }
 
             // Kontrola oprávnění těsně před uložením
-            if (!widget.create_permission() ) return forbiddenEmpty();
+            if (!widget.create_permission()) return forbiddenEmpty();
 
             // Uložení objektu
             widget.save();
@@ -957,35 +1071,127 @@ public class Controller_Grid extends BaseController {
         }
     }
 
-    @ApiOperation(value = "edit Grid_Widget",
+    @ApiOperation(value = "get Widget",
+            tags = {"Widget"},
+            notes = "get independent Widget object",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Widget.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result widget_get(@ApiParam(value = "widget_id String path",   required = true) String grid_widget_id) {
+        try {
+            // Kontrola objektu
+            Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
+            if (gridWidget == null) return notFound("GridWidget widget_id not found");
+
+            // Kontrola oprávnění
+
+            if (!gridWidget.read_permission()) return forbiddenEmpty();
+
+            // Vrácení objektu
+            return ok(Json.toJson(gridWidget));
+
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
+
+    }
+
+    @ApiOperation(value = "get Grid_Widget by Filter",
             tags = {"Grid-Widget"},
-            notes = "update basic information (name, and description) of the independent GridWidget",
+            notes = "get GridWidget List",
             produces = "application/json",
             protocols = "https",
             code = 200,
             extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "GridWidget.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "GridWidget_edit_permission" )
-                    })
+                    @Extension( name = "permission_description", properties = {
+                            @ExtensionProperty(name = "GridWidget_read_permission", value = "No need to check permission, because Tyrion returns only those results which user owns"),
+                    }),
             }
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_NameAndDesc_ProjectIdOptional",
+                            dataType = "utilities.swagger.input.Swagger_GridWidget_Filter",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_Widget.class),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_GridWidget_List.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result widget_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number) {
+        try {
+
+            // Získání JSON
+            final Form<Swagger_GridWidget_Filter> form = formFactory.form(Swagger_GridWidget_Filter.class).bindFromRequest();
+            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
+            Swagger_GridWidget_Filter help = form.get();
+
+            // Získání všech objektů a následné filtrování podle vlastníka
+            Query<Model_Widget> query = Ebean.find(Model_Widget.class);
+
+            // Pokud JSON obsahuje project_id filtruji podle projektu
+            if (help.project_id != null) {
+
+                Model_Project project = Model_Project.getById(help.project_id);
+                if (project == null) return notFound("Project not found");
+                if (!project.read_permission())return forbiddenEmpty();
+
+                query.where().eq("type_of_widget.project.id", help.project_id);
+            }
+
+            if (help.pending_widget) {
+                query.where().eq("versions.approval_state", Approval.PENDING.name()).eq("versions.deleted", false);
+            }
+
+            // Vytvoření odchozího JSON
+            Swagger_GridWidget_List result = new Swagger_GridWidget_List(query, page_number);
+
+            // Vrácení výsledku
+            return ok(Json.toJson(result));
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return internalServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "edit Widget",
+            tags = {"Widget"},
+            notes = "update basic information (name, and description) of the independent GridWidget",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_NameAndDesc_ProjectIdOptional",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Widget.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
@@ -1021,133 +1227,115 @@ public class Controller_Grid extends BaseController {
 
     }
 
-    @ApiOperation(value = "get Grid_Widget",
-            tags = {"Grid-Widget"},
-            notes = "get independent Grid_Widget object",
+    @ApiOperation(value = "tag Widget",
+            tags = {"Widget"},
+            notes = "",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "GridWidget_read_permission", value = Model_Widget.read_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "GridWidget.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "GridWidget_read_permission")
-                    })
-            }
+            consumes = "application/json",
+            protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_Widget.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Tags",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Widget.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Authentication.class)
-    public Result widget_get(@ApiParam(value = "widget_id String path",   required = true) String grid_widget_id) {
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result widget_addTags() {
         try {
-            // Kontrola objektu
-            Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
-            if (gridWidget == null) return notFound("GridWidget widget_id not found");
 
-            // Kontrola oprávnění
+            // Zpracování Json
+            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
+            Swagger_Tags help = form.get();
 
-            if (! gridWidget.read_permission() ) return forbiddenEmpty();
+            Model_Widget widget = Model_Widget.getById(help.object_id);
+            if (widget == null) return notFound("Widget not found");
+
+            // Kontrola oprávnění těsně před uložením
+            if (!widget.edit_permission()) return forbiddenEmpty();
+
+            widget.addTags(help.tags);
 
             // Vrácení objektu
-            return ok(Json.toJson(gridWidget));
+            return ok(widget.json());
 
         } catch (Exception e) {
             return internalServerError(e);
         }
-
     }
 
-    @ApiOperation(value = "get Grid_Widget by Filter",
-            tags = {"Grid-Widget"},
-            notes = "get GridWidget List",
+    @ApiOperation(value = "untag Widget",
+            tags = {"Widget"},
+            notes = "",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "GridWidget_read_permission", value = "No need to check permission, because Tyrion returns only those results which user owns"),
-                    }),
-            }
+            consumes = "application/json",
+            protocols = "https"
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.input.Swagger_GridWidget_Filter",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_GridWidget_List.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Tags",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Widget.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Authentication.class)
-    public Result widget_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number) {
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result widget_removeTags() {
         try {
 
-            // Získání JSON
-            final Form<Swagger_GridWidget_Filter> form = formFactory.form(Swagger_GridWidget_Filter.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_GridWidget_Filter help = form.get();
+            // Zpracování Json
+            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
+            Swagger_Tags help = form.get();
 
-            // Získání všech objektů a následné filtrování podle vlastníka
-            Query<Model_Widget> query = Ebean.find(Model_Widget.class);
+            Model_Widget widget = Model_Widget.getById(help.object_id);
+            if (widget == null) return notFound("Widget not found");
 
-            // Pokud JSON obsahuje project_id filtruji podle projektu
-            if (help.project_id != null) {
+            // Kontrola oprávnění těsně před uložením
+            if (!widget.edit_permission()) return forbiddenEmpty();
 
-                Model_Project project = Model_Project.getById(help.project_id);
-                if (project == null )return notFound("Project not found");
-                if (!project.read_permission())return forbiddenEmpty();
+            widget.removeTags(help.tags);
 
-                query.where().eq("type_of_widget.project.id", help.project_id);
-            }
-
-            if (help.pending_widget) {
-                query.where().eq("versions.approval_state", Approval.PENDING.name()).eq("versions.deleted", false);
-            }
-
-            // Vytvoření odchozího JSON
-            Swagger_GridWidget_List result = new Swagger_GridWidget_List(query, page_number);
-
-            // Vrácení výsledku
-            return ok(Json.toJson(result));
+            // Vrácení objektu
+            return ok(widget.json());
 
         } catch (Exception e) {
-            logger.internalServerError(e);
             return internalServerError(e);
         }
     }
 
-    @ApiOperation(value = "delete Grid_Widget",
-            tags = {"Grid-Widget"},
-            notes = "delete GridWidget",
+    @ApiOperation(value = "delete Widget",
+            tags = {"Widget"},
+            notes = "delete Widget",
             produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "GridWidget.delete_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "GridWidget_delete_permission")
-                    })
-            }
+            protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
@@ -1159,7 +1347,7 @@ public class Controller_Grid extends BaseController {
             if (gridWidget == null) return notFound("GridWidget widget_id not found");
 
             // Kontrola oprávnění
-            if (! gridWidget.delete_permission()) return forbiddenEmpty();
+            if (!gridWidget.delete_permission()) return forbiddenEmpty();
 
             // Smazání objektu
             gridWidget.delete();
@@ -1191,7 +1379,7 @@ public class Controller_Grid extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Widget.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -1260,7 +1448,7 @@ public class Controller_Grid extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -1276,7 +1464,7 @@ public class Controller_Grid extends BaseController {
             if (gridWidget == null) return notFound("GridWidget not found");
 
             // Kontrola oprávnění
-            if (! gridWidget.update_permission() ) return forbiddenEmpty();
+            if (!gridWidget.update_permission()) return forbiddenEmpty();
 
             if (!gridWidget.active) return badRequest("Tariff is already deactivated");
 
@@ -1299,7 +1487,7 @@ public class Controller_Grid extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -1337,7 +1525,7 @@ public class Controller_Grid extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -1351,7 +1539,7 @@ public class Controller_Grid extends BaseController {
             if (gridWidget == null) return notFound("GridWidget not found");
 
             // Kontrola oprávnění
-            if (! gridWidget.edit_permission()) return forbiddenEmpty();
+            if (!gridWidget.edit_permission()) return forbiddenEmpty();
 
             gridWidget.up();
 
@@ -1370,7 +1558,7 @@ public class Controller_Grid extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -1410,7 +1598,7 @@ public class Controller_Grid extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -1426,7 +1614,7 @@ public class Controller_Grid extends BaseController {
             if (version == null) return notFound("GridWidgetVersion grid_widget_version_id not found");
 
             // Kontrola oprávnění
-            if (! version.delete_permission()) return forbiddenEmpty();
+            if (!version.delete_permission()) return forbiddenEmpty();
 
             // Smazání objektu
             version.delete();
@@ -1452,7 +1640,7 @@ public class Controller_Grid extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -1506,7 +1694,7 @@ public class Controller_Grid extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Bad Request",               response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -1579,7 +1767,7 @@ public class Controller_Grid extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Successfully created",    response = Model_WidgetVersion.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -1613,7 +1801,7 @@ public class Controller_Grid extends BaseController {
             version.author = BaseController.person();
 
             // Kontrola oprávnění
-            if (! version.create_permission()) return forbiddenEmpty();
+            if (!version.create_permission()) return forbiddenEmpty();
 
             // Uložení objektu
             version.save();
@@ -1643,7 +1831,7 @@ public class Controller_Grid extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_WidgetVersion.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -1658,7 +1846,7 @@ public class Controller_Grid extends BaseController {
             if (version == null) return notFound("GridWidget widget_id not found");
 
             // Kontrola oprávnění
-            if (!version.read_permission() ) return forbidden("You have no permission to get that");
+            if (!version.read_permission()) return forbidden("You have no permission to get that");
 
             // Vrácení objektu
             return ok(Json.toJson(version));
@@ -1694,7 +1882,7 @@ public class Controller_Grid extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_WidgetVersion.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -1757,7 +1945,7 @@ public class Controller_Grid extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_WidgetVersion.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -1773,7 +1961,7 @@ public class Controller_Grid extends BaseController {
             if (gridWidget == null) return notFound("GridWidget widget_id not found");
 
             // Kontrola oprávnění
-            if (! gridWidget.read_permission()) return forbiddenEmpty();
+            if (!gridWidget.read_permission()) return forbiddenEmpty();
 
             // Vrácení objektu
             return ok(Json.toJson(gridWidget.versions));
@@ -1804,7 +1992,7 @@ public class Controller_Grid extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),

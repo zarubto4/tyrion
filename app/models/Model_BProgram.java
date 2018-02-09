@@ -127,8 +127,8 @@ public class Model_BProgram extends TaggedModel {
 
         b_program_version.m_project_program_snapshots = version.b_program_version_snapshots;
 
-        Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version.id).eq("name", "blocko.json").findOne();
-        if (fileRecord != null) b_program_version.program             = fileRecord.get_fileRecord_from_Azure_inString();
+        Model_Blob blob = Model_Blob.find.query().where().eq("version.id", version.id).eq("name", "blocko.json").findOne();
+        if (blob != null) b_program_version.program = blob.get_fileRecord_from_Azure_inString();
 
         return b_program_version;
     }
@@ -141,7 +141,7 @@ public class Model_BProgram extends TaggedModel {
 
             if (cache_version_ids.isEmpty()) {
 
-                List<Model_Version> versions =  Model_Version.find.query().where().eq("b_program.id", id).eq("deleted", false).order().desc("created").select("id").findList();
+                List<Model_Version> versions =  Model_Version.find.query().where().eq("b_program.id", id).order().desc("created").select("id").findList();
 
                 // Získání seznamu
                 for (Model_Version version : versions) {
@@ -187,7 +187,7 @@ public class Model_BProgram extends TaggedModel {
     @JsonIgnore @Override
     public void update() {
 
-        logger.debug("update :: Update object Id: {}",  this.id);
+        logger.debug("update - Update object Id: {}",  this.id);
 
         super.update();
 
@@ -236,7 +236,7 @@ public class Model_BProgram extends TaggedModel {
         Model_BProgram b_program = cache.get(id);
         if (b_program == null) {
 
-            b_program = Model_BProgram.find.query().where().idEq(id).eq("deleted", false).findOne();
+            b_program = find.byId(id);
             if (b_program == null) return null;
 
             cache.put(id, b_program);
@@ -259,10 +259,10 @@ public class Model_BProgram extends TaggedModel {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if (BaseController.person().has_permission("b_program_update_" + id)) return BaseController.person().has_permission("b_program_update_"+ id);
-        if (BaseController.person().has_permission("BProgram_update")) return true;
+        if (BaseController.isPermitted("BProgram_update")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_BProgram.find.query().where().where().eq("project.participants.person.id", BaseController.person().id ).where().eq("id", id).findCount() > 0) {
+        if (Model_BProgram.find.query().where().eq("project.participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
             BaseController.person().cache_permission("b_program_update_" + id, true);
             return true;
         }
@@ -280,7 +280,7 @@ public class Model_BProgram extends TaggedModel {
         if (BaseController.person().has_permission("BProgram_read")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_BProgram.find.query().where().where().eq("project.participants.person.id", BaseController.person().id ).where().eq("id", id).findCount() > 0) {
+        if (Model_BProgram.find.query().where().eq("project.participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
             BaseController.person().cache_permission("b_program_read_" + id, true);
             return true;
         }
@@ -298,7 +298,7 @@ public class Model_BProgram extends TaggedModel {
         if (BaseController.person().has_permission("BProgram_edit")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_BProgram.find.query().where().where().eq("project.participants.person.id", BaseController.person().id ).where().eq("id", id).findCount() > 0) {
+        if (Model_BProgram.find.query().where().eq("project.participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
             BaseController.person().cache_permission("b_program_edit_" + id, true);
             return true;
         }
@@ -315,7 +315,7 @@ public class Model_BProgram extends TaggedModel {
         if (BaseController.person().has_permission("BProgram_delete")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_BProgram.find.query().where().where().eq("project.participants.person.id", BaseController.person().id ).where().eq("id", id).findCount() > 0) {
+        if (Model_BProgram.find.query().where().eq("project.participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
             BaseController.person().cache_permission("b_program_delete_" + id, true);
             return true;
         }

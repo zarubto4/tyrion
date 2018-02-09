@@ -59,7 +59,7 @@ public class Controller_ExternalServer extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Successfully created",    response = Swagger_Cloud_Homer_Server_New.class),
             @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -108,7 +108,7 @@ public class Controller_ExternalServer extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Updated successfully",    response = Model_HomerServer.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
@@ -145,7 +145,7 @@ public class Controller_ExternalServer extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Updated successfully",      response = Model_HomerServer.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -200,7 +200,7 @@ public class Controller_ExternalServer extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Updated successfully",    response = Model_HomerServer.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
@@ -262,7 +262,7 @@ public class Controller_ExternalServer extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",      response = Model_HomerServer.class, responseContainer = "List"),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
@@ -290,7 +290,7 @@ public class Controller_ExternalServer extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",  response = Model_HomerServer.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -327,7 +327,7 @@ public class Controller_ExternalServer extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -380,7 +380,7 @@ public class Controller_ExternalServer extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Successfully created",      response = Model_CompilationServer.class),
             @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -439,7 +439,7 @@ public class Controller_ExternalServer extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Update successfuly",        response = Model_CompilationServer.class),
             @ApiResponse(code = 400, message = "Object not found",         response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Invalid body",   response = Result_InvalidBody.class),
@@ -485,7 +485,7 @@ public class Controller_ExternalServer extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",      response = Model_CompilationServer.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
@@ -514,7 +514,7 @@ public class Controller_ExternalServer extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_CompilationServer.class),
             @ApiResponse(code = 400, message = "Object not found",         response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -530,7 +530,7 @@ public class Controller_ExternalServer extends BaseController {
             if (server == null) return notFound("Cloud_Compilation_Server server_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (! server.read_permission())  return forbiddenEmpty();
+            if (!server.read_permission())  return forbiddenEmpty();
 
             // Vracím odpověď
             return ok(Json.toJson(server));
@@ -553,7 +553,7 @@ public class Controller_ExternalServer extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",         response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -569,7 +569,7 @@ public class Controller_ExternalServer extends BaseController {
             if (server == null) return notFound("Cloud_Compilation_Server server_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (! server.delete_permission())  return forbiddenEmpty();
+            if (!server.delete_permission())  return forbiddenEmpty();
 
             // Smažu objekt
             server.delete();
@@ -592,7 +592,7 @@ public class Controller_ExternalServer extends BaseController {
             protocols = "https",
             code = 303
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 303, message = "Ok Result"),
             @ApiResponse(code = 404, message = "File by ID not found",response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
@@ -651,7 +651,7 @@ public class Controller_ExternalServer extends BaseController {
             protocols = "https",
             code = 303
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 303, message = "Ok Result"),
             @ApiResponse(code = 404, message = "File by ID not found", response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
@@ -698,7 +698,7 @@ public class Controller_ExternalServer extends BaseController {
             protocols = "https",
             code = 303
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 303, message = "Ok Result"),
             @ApiResponse(code = 404, message = "File by ID not found",response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
@@ -757,7 +757,7 @@ public class Controller_ExternalServer extends BaseController {
             protocols = "https",
             code = 303
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 303, message = "Ok Result"),
             @ApiResponse(code = 404, message = "File by ID not found",response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),

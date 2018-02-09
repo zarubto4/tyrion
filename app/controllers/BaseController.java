@@ -6,7 +6,6 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import responses.*;
-import utilities.authentication.Attributes;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 
@@ -50,11 +49,26 @@ public abstract class BaseController extends Controller {
 
     /**
      * Returns true if there is a authenticated person in the context.
-     * @return current person id {@link UUID}
+     * @return boolean true if there is a person
      */
     public static boolean isAuthenticated() {
         try {
             return ctx().args.containsKey("person");
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return false;
+        }
+    }
+
+    /**
+     * Returns true if there is a authenticated person in the context
+     * and if he has specified permission.
+     * @return boolean true if person is permitted
+     */
+    public static boolean isPermitted(String permission) {
+        try {
+            Model_Person person = person();
+            return person != null && person.has_permission(permission);
         } catch (Exception e) {
             logger.internalServerError(e);
             return false;

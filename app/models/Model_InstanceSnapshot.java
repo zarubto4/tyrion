@@ -172,7 +172,7 @@ public class Model_InstanceSnapshot extends BaseModel {
             List<UUID> terminalIds = new ArrayList<>();
 
             for (Model_MProjectProgramSnapShot snapShot : this.get_b_program_version().b_program_version_snapshots) {
-                terminalIds.add(snapShot.m_project_id());
+                terminalIds.add(snapShot.grid_project_id());
             }
 
             if (!terminalIds.isEmpty()) {

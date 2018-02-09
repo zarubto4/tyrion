@@ -161,7 +161,7 @@ public class Model_CompilationServer extends BaseModel {
 /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
 
     public void make_log_connect() {
-        new Thread( () -> {
+        new Thread(() -> {
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_CompilationServer_Connect.make_request( this.id.toString()), null, true);
             } catch (DocumentClientException e) {
@@ -171,7 +171,7 @@ public class Model_CompilationServer extends BaseModel {
     }
 
     public void make_log_disconnect() {
-        new Thread( () -> {
+        new Thread(() -> {
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_CompilationServer_Disconnect.make_request( this.id.toString()), null, true);
             } catch (DocumentClientException e) {

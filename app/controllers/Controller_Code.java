@@ -124,7 +124,7 @@ public class Controller_Code extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Compilation successful",    response = Swagger_Compilation_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -202,7 +202,7 @@ public class Controller_Code extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Compilation successful",    response = Swagger_Cloud_Compilation_Server_CompilationResult.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -341,7 +341,7 @@ public class Controller_Code extends BaseController {
      })
      }
      )
-     @ApiResponses(value = {
+     @ApiResponses({
      @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
      @ApiResponse(code = 477, message = "External Cloud_Homer_server where is hardware is offline", response = Result_ServerOffline.class),
      @ApiResponse(code = 404, message = "Object not found", response = Result_NotFound.class),
@@ -426,7 +426,7 @@ public class Controller_Code extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Successfully created",      response = Model_CProgram.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
@@ -536,7 +536,7 @@ public class Controller_Code extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_CProgram.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -622,7 +622,7 @@ public class Controller_Code extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_CProgram.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -637,7 +637,7 @@ public class Controller_Code extends BaseController {
             if (c_program == null) return notFound("C_Program c_program not found");
 
             // Zkontroluji oprávnění
-            if (! c_program.read_permission())  return forbiddenEmpty();
+            if (!c_program.read_permission())  return forbiddenEmpty();
 
             // Vracím Objekt
             return ok(Json.toJson(c_program));
@@ -670,7 +670,7 @@ public class Controller_Code extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_C_Program_List.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
@@ -747,7 +747,7 @@ public class Controller_Code extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_CProgram.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
@@ -766,7 +766,7 @@ public class Controller_Code extends BaseController {
 
             // Ověření objektu
             Model_CProgram c_program = Model_CProgram.getById(c_program_id);
-            if (c_program == null ) return notFound("C_Program not found");
+            if (c_program == null) return notFound("C_Program not found");
 
             // Úprava objektu
             c_program.name = help.name;
@@ -780,6 +780,104 @@ public class Controller_Code extends BaseController {
 
             // Vrácení objektu
             return ok(Json.toJson(c_program));
+
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "tag CProgram",
+            tags = {"C_Program"},
+            notes = "",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Tags",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_CProgram.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result c_program_addTags() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
+            Swagger_Tags help = form.get();
+
+            Model_CProgram cProgram = Model_CProgram.getById(help.object_id);
+            if (cProgram == null) return notFound("CProgram not found");
+
+            // Kontrola oprávnění těsně před uložením
+            if (!cProgram.edit_permission())  return forbiddenEmpty();
+
+            cProgram.addTags(help.tags);
+
+            // Vrácení objektu
+            return ok(cProgram.json());
+
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "untag CProgram",
+            tags = {"C_Program"},
+            notes = "",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Tags",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_CProgram.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result c_program_removeTags() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
+            Swagger_Tags help = form.get();
+
+            Model_CProgram cProgram = Model_CProgram.getById(help.object_id);
+            if (cProgram == null) return notFound("CProgram not found");
+
+            // Kontrola oprávnění těsně před uložením
+            if (!cProgram.edit_permission())  return forbiddenEmpty();
+
+            cProgram.removeTags(help.tags);
+
+            // Vrácení objektu
+            return ok(cProgram.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -800,7 +898,7 @@ public class Controller_Code extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -812,7 +910,7 @@ public class Controller_Code extends BaseController {
 
             // Ověření objektu
             Model_CProgram c_program = Model_CProgram.getById(c_program_id);
-            if (c_program == null ) return notFound("C_Program c_program_id not found");
+            if (c_program == null) return notFound("C_Program c_program_id not found");
 
             // Kontrola oprávnění
             if (!c_program.delete_permission()) return forbiddenEmpty();
@@ -855,7 +953,7 @@ public class Controller_Code extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Successfully created",      response = Swagger_C_Program_Version.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
@@ -924,7 +1022,7 @@ public class Controller_Code extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_C_Program_Version.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -978,7 +1076,7 @@ public class Controller_Code extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Version.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -1030,7 +1128,7 @@ public class Controller_Code extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response =  Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -1076,7 +1174,7 @@ public class Controller_Code extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Bad Request",               response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -1091,7 +1189,7 @@ public class Controller_Code extends BaseController {
             Model_Version version = Model_Version.getById(version_id);
             if (version == null) return notFound("Version not found");
 
-            if (version.get_c_program()  == null )return notFound("Version not found");
+            if (version.get_c_program() == null) return notFound("Version not found");
 
 
             if (Model_Version.find.query().where().eq("approval_state", Approval.PENDING.name())
@@ -1138,7 +1236,7 @@ public class Controller_Code extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -1289,7 +1387,7 @@ public class Controller_Code extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),

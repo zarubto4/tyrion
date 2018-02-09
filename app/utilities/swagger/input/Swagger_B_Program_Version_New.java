@@ -19,7 +19,7 @@ public class Swagger_B_Program_Version_New extends Swagger_NameAndDescription {
     public String program;
 
     @Valid
-    @ApiModelProperty(value = "Connected groups of m_programs.versions under imported m_programs", required = false)
+    @ApiModelProperty(value = "Connected groups of grid_programs.versions under imported grid_programs", required = false)
     public List<M_Project_SnapShot> m_project_snapshots  = new ArrayList<>();
 
 // ---------------------------------------------------------------------------------------------------------------------

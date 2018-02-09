@@ -202,7 +202,7 @@ public class Model_BootLoader extends NamedModel {
     public static void notification_bootloader_procedure_first_information_list(List<Model_HardwareUpdate> plans) {
         try {
 
-            new Thread( () -> {
+            new Thread(() -> {
 
                 if ( plans.size() == 0 )  throw new IllegalArgumentException("notification_set_static_backup_procedure_first_information_list:: List is empty! ");
                 if ( plans.size() == 1 ) {

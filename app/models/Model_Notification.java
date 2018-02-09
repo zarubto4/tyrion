@@ -53,7 +53,7 @@ public class Model_Notification extends BaseModel {
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, example = "notification")            @JsonProperty public static final String messageType = "notification";              //TODO DB na message_type
-    @ApiModelProperty(required = true, example = WS_Portal.message_channel) @JsonProperty public static final String messageChannel = WS_Portal.message_channel; //TODO DB na message_channel
+    @ApiModelProperty(required = true, example = WS_Portal.CHANNEL) @JsonProperty public static final String messageChannel = WS_Portal.CHANNEL; //TODO DB na message_channel
 
     @JsonProperty @ApiModelProperty(required = true) public String message_type() { return messageType;}
     @JsonProperty @ApiModelProperty(required = true) public String message_channel() { return messageChannel;}

@@ -51,7 +51,7 @@ public class Controller_Permission extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result", response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
@@ -96,7 +96,7 @@ public class Controller_Permission extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result", response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
@@ -139,7 +139,7 @@ public class Controller_Permission extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result", response = Model_Permission.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
@@ -182,7 +182,7 @@ public class Controller_Permission extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result", response = Model_Permission.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
@@ -242,7 +242,7 @@ public class Controller_Permission extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result", response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
@@ -295,7 +295,7 @@ public class Controller_Permission extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result", response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
@@ -347,7 +347,7 @@ public class Controller_Permission extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Successfully created", response = Model_Role.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
@@ -391,7 +391,7 @@ public class Controller_Permission extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Successfully created", response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
@@ -439,7 +439,7 @@ public class Controller_Permission extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result", response = Model_Role.class),
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
@@ -482,7 +482,7 @@ public class Controller_Permission extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Successfully created", response = Model_Role.class),
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
@@ -528,7 +528,7 @@ public class Controller_Permission extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result", response = Model_Role.class),
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
@@ -583,7 +583,7 @@ public class Controller_Permission extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result", response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
@@ -618,7 +618,7 @@ public class Controller_Permission extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result", response = Model_Role.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
@@ -647,7 +647,7 @@ public class Controller_Permission extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result", response = Swagger_System_Access.class),
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),

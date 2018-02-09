@@ -378,7 +378,7 @@ public class Model_UpdateProcedure extends BaseModel {
         try {
 
             if (get_project_id() != null)
-                new Thread( () -> {
+                new Thread(() -> {
                     logger.debug("notification_update_procedure_progress :: operation ");
 
                     if (state == Enum_Update_group_procedure_state.complete || state == Enum_Update_group_procedure_state.successful_complete || state == Enum_Update_group_procedure_state.complete_with_error) {
@@ -410,7 +410,7 @@ public class Model_UpdateProcedure extends BaseModel {
             logger.debug("notification_update_procedure_final_report :: operation ");
 
             if (get_project_id() != null)
-                new Thread( () -> {
+                new Thread(() -> {
                     Model_Notification notification = new Model_Notification();
 
                     // Single Update
@@ -492,7 +492,7 @@ public class Model_UpdateProcedure extends BaseModel {
         try {
 
             if (get_project_id() != null)
-            new Thread( () -> {
+            new Thread(() -> {
 
                 logger.warn("notification_update_procedure_complete :: operation ");
 

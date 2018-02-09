@@ -200,7 +200,7 @@ public class Model_Widget extends TaggedModel {
     public void up() {
 /*
         Model_Widget up = Model_Widget.find.query().where().eq("order_position", (order_position-1) ).eq("type_of_widget.id", type_of_widget_id()).findOne();
-        if (up == null)return;
+        if (up == null) return;
 
         up.order_position += 1;
         up.update();
@@ -213,7 +213,7 @@ public class Model_Widget extends TaggedModel {
     public void down() {
 /*
         Model_Widget down = Model_Widget.find.query().where().eq("order_position", (order_position+1) ).eq("type_of_widget.id", type_of_widget_id()).findOne();
-        if (down == null)return;
+        if (down == null) return;
 
         down.order_position -= 1;
         down.update();

@@ -32,8 +32,8 @@ public class WS_Homer extends WS_Interface {
 
 /* STATIC  -------------------------------------------------------------------------------------------------------------*/
 
-    public static Props props(ActorRef out) {
-        return Props.create(WS_Homer.class, out);
+    public static Props props(ActorRef out, UUID id) {
+        return Props.create(WS_Homer.class, out, id);
     }
 
 /* VALUES  -------------------------------------------------------------------------------------------------------------*/
@@ -44,8 +44,9 @@ public class WS_Homer extends WS_Interface {
     public String token;
     private ExecutorService service;
 
-    public WS_Homer(ActorRef out) {
+    public WS_Homer(ActorRef out, UUID id) {
         super(out);
+        this.id = id;
         Controller_WebSocket.homers_not_sync.put(this.id, this);
     }
 
@@ -164,7 +165,7 @@ public class WS_Homer extends WS_Interface {
 
     // Je voláno, až se server ověří
     public void synchronize_configuration() {
-        new Thread( () -> {
+        new Thread(() -> {
             try {
                 logger.trace("1. Spouštím Sycnhronizační proceduru (synchronize_configuration)- Několik vláken - dej tomu čas");
 

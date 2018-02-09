@@ -5,6 +5,8 @@ import akka.stream.Materializer;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import models.Model_CompilationServer;
+import models.Model_HomerServer;
 import models.Model_Person;
 import org.ehcache.Cache;
 import play.libs.F;
@@ -22,6 +24,8 @@ import websocket.interfaces.WS_Portal;
 import websocket.interfaces.WS_Compiler;
 import websocket.interfaces.WS_Homer;
 import websocket.interfaces.WS_PortalSingle;
+import websocket.messages.compilator_with_tyrion.WS_Message_Ping_compilation_server;
+import websocket.messages.homer_with_tyrion.WS_Message_Homer_ping;
 
 import javax.inject.Inject;
 import java.util.HashMap;
@@ -57,6 +61,9 @@ public class Controller_WebSocket extends BaseController {
      */
     public static Map<UUID, WS_Portal> portals = new HashMap<>();
 
+    /**
+     * Holds person connection tokens and ids
+     */
     public static Cache<String, UUID> tokenCache;
 
     /**
@@ -95,7 +102,7 @@ public class Controller_WebSocket extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Token successfully generated",  response = Swagger_Websocket_Token.class),
             @ApiResponse(code = 401, message = "Unauthorized request",          response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",             response = Result_InternalServerError.class)
@@ -119,43 +126,110 @@ public class Controller_WebSocket extends BaseController {
 
     public WebSocket homer(String token) {
         return WebSocket.Json.acceptOrResult(request -> {
-            if (token != null) { // TODO
-                return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(WS_Homer::props, actorSystem, materializer)));
-            } else {
-                return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
+            try {
+
+                logger.info("homer - incoming connection: " + token);
+
+                //Find object (only ID)
+                Model_HomerServer homer = Model_HomerServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
+                if(homer != null){
+                    if (homers.containsKey(homer.id)) {
+                        logger.warn("homer - server is already connected, trying to ping previous connection");
+
+                        WS_Message_Homer_ping result = homer.ping();
+                        if(!result.status.equals("success")){
+                            logger.error("homer - ping failed, removing previous connection");
+                            homers.get(homer.id).close();
+                        } else {
+                            logger.warn("homer - server is already connected, connection is working, cannot connect twice");
+                            return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
+                        }
+                    }
+
+                    logger.info("homer - connection was successful");
+                    return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_Homer.props(actorRef, homer.id), actorSystem, materializer)));
+
+                } else {
+                    logger.warn("homer - server with token: {} is not registered in the database, rejecting", token);
+                }
+
+            } catch (Exception e) {
+                logger.internalServerError(e);
             }
+
+            return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
         });
     }
 
     public WebSocket compiler(String token) {
         return WebSocket.Json.acceptOrResult(request -> {
-            if (token != null) { // TODO
-                return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(WS_Compiler::props, actorSystem, materializer)));
-            } else {
-                return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
+            try {
+
+                logger.info("compiler - incoming connection: {}", token);
+
+                //Find object (only ID)
+                Model_CompilationServer compiler = Model_CompilationServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
+                if(compiler != null){
+                    if (compilers.containsKey(compiler.id)) {
+                        logger.warn("compiler - server is already connected, trying to ping previous connection");
+
+                        WS_Message_Ping_compilation_server result = compiler.ping();
+                        if(!result.status.equals("success")){
+                            logger.error("compiler - ping failed, removing previous connection");
+                            compilers.get(compiler.id).close();
+                        } else {
+                            logger.warn("compiler - server is already connected, connection is working, cannot connect twice");
+                            return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
+                        }
+                    }
+
+                    logger.info("compiler - connection was successful");
+                    return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_Compiler.props(actorRef, compiler.id), actorSystem, materializer)));
+
+                } else {
+                    logger.warn("compiler - server with token: {} is not registered in the database, rejecting", token);
+                }
+
+            } catch (Exception e) {
+                logger.internalServerError(e);
             }
+
+            return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
         });
     }
 
     public WebSocket portal(String token) {
         return WebSocket.Json.acceptOrResult(request -> {
+            try {
+                logger.info("portal - incoming connection: {}", token);
 
-            Model_Person person;
+                Model_Person person;
 
-            if (tokenCache.containsKey(token) && (person = Model_Person.getById(tokenCache.get(token))) != null) {
+                if (tokenCache.containsKey(token) && (person = Model_Person.getById(tokenCache.get(token))) != null) {
 
-                WS_Portal portal;
+                    WS_Portal portal;
 
-                if (portals.containsKey(UUID.fromString(token))) {
-                    portal = portals.get(person.id);
+                    if (portals.containsKey(person.id)) {
+                        portal = portals.get(person.id);
+                    } else {
+                        portal = new WS_Portal(person.id);
+                    }
+
+                    tokenCache.remove(token);
+
+                    if (!portal.singles.containsKey(UUID.fromString(token))) {
+                        return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_PortalSingle.props(actorRef, portal, UUID.fromString(token)), actorSystem, materializer)));
+                    } else {
+                        logger.info("portal - rejecting connection: {}, already established", token);
+                    }
                 } else {
-                    portal = new WS_Portal(person.id);
+                    logger.info("portal - rejecting connection: {}, token is expired or person not found", token);
                 }
-
-                return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_PortalSingle.props(actorRef, portal), actorSystem, materializer)));
-            } else {
-                return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
+            } catch (Exception e) {
+                logger.internalServerError(e);
             }
+
+            return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
         });
     }
 }

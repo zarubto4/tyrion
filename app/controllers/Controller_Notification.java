@@ -47,7 +47,7 @@ public class Controller_Notification extends BaseController {
           protocols = "https",
           code = 200
   )
-  @ApiResponses(value = {
+  @ApiResponses({
           @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Notification_List.class),
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
           @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
@@ -77,7 +77,7 @@ public class Controller_Notification extends BaseController {
           protocols = "https",
           code = 200
   )
-  @ApiResponses(value = {
+  @ApiResponses({
           @ApiResponse(code = 200, message = "Delete Successful",       response = Result_Ok.class),
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
           @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -119,7 +119,7 @@ public class Controller_Notification extends BaseController {
                   )
           }
   )
-  @ApiResponses(value = {
+  @ApiResponses({
           @ApiResponse(code = 200, message = "Successfully marked as read", response = Result_Ok.class),
           @ApiResponse(code = 400, message = "Invalid body",                response = Result_InvalidBody.class),
           @ApiResponse(code = 401, message = "Unauthorized request",        response = Result_Unauthorized.class),
@@ -157,7 +157,7 @@ public class Controller_Notification extends BaseController {
           protocols = "https",
           code = 200
   )
-  @ApiResponses(value = {
+  @ApiResponses({
           @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
           @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
           @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
@@ -200,7 +200,7 @@ public class Controller_Notification extends BaseController {
                   )
           }
   )
-  @ApiResponses(value = {
+  @ApiResponses({
           @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
           @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
           @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),

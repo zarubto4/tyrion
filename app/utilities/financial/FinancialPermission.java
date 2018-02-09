@@ -147,7 +147,7 @@ public class FinancialPermission {
         }
 
         /*
-        new Thread( () -> {
+        new Thread(() -> {
             try {
                 Server.documentClient.createDocument(DocumentDB.blocko_request_collection.getSelfLink(), DM_RestApiRequestRecord.make_request(custom_id), null, true);
                 terminal_logger.debug("checkRestApiRequest: saving request record");

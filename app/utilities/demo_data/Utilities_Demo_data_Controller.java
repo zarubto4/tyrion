@@ -186,7 +186,7 @@ public class Utilities_Demo_data_Controller extends BaseController {
             batch_proto.hardware_type = hardwareType;
             batch_proto.revision = "Test Private Collection";
             batch_proto.production_batch = "First Try";
-            batch_proto.date_of_assembly = "12.6.2017";
+            batch_proto.assembled = "12.6.2017";
             batch_proto.pcb_manufacture_name = "PragoBoard s.r.o.";
             batch_proto.pcb_manufacture_id = "25615149";
             batch_proto.assembly_manufacture_name = "Byzance IoT Solution s.r.o";
@@ -204,7 +204,7 @@ public class Utilities_Demo_data_Controller extends BaseController {
             batch_test.hardware_type = hardwareType;
             batch_test.revision = "VF250717";
             batch_test.production_batch = "1000001 - Test Collection";
-            batch_test.date_of_assembly = "27.9.2017";
+            batch_test.assembled = "27.9.2017";
             batch_test.pcb_manufacture_name = "PCB Benešov a.s";
             batch_test.pcb_manufacture_id = "45147698";
             batch_test.assembly_manufacture_name = "TTC TELEKOMUNIKACE, s.r.o.";
@@ -223,7 +223,7 @@ public class Utilities_Demo_data_Controller extends BaseController {
             batch_final_first.hardware_type = hardwareType;
             batch_final_first.revision = "VF250717";
             batch_final_first.production_batch = "1000001 - Test Collection";
-            batch_final_first.date_of_assembly = "27.9.2017";
+            batch_final_first.assembled = "27.9.2017";
             batch_final_first.pcb_manufacture_name = "PCB Benešov a.s";
             batch_final_first.pcb_manufacture_id = "45147698";
             batch_final_first.assembly_manufacture_name = "TTC TELEKOMUNIKACE, s.r.o.";

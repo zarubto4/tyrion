@@ -160,8 +160,8 @@ public class Model_Hardware extends NamedModel {
     }
 
 
-    @JsonProperty public String available_bootloader_version_name()  { return getHardwareType().main_boot_loader()  == null ? null :  getHardwareType().main_boot_loader().name;}
-    @JsonProperty public UUID available_bootloader_id()              { return getHardwareType().main_boot_loader()  == null ? null :  getHardwareType().main_boot_loader().id;}
+    @JsonProperty public String available_bootloader_version_name()  { return getHardwareType().main_boot_loader() == null ? null :  getHardwareType().main_boot_loader().name;}
+    @JsonProperty public UUID available_bootloader_id()              { return getHardwareType().main_boot_loader() == null ? null :  getHardwareType().main_boot_loader().id;}
     @JsonProperty public String ip_address() {
         try {
 
@@ -183,7 +183,7 @@ public class Model_Hardware extends NamedModel {
 
             List<BoardAlert> list = new ArrayList<>();
 
-            if ( ( available_bootloader_id() != null &&  actual_bootloader_id() == null ) || ( available_bootloader_id() != null  && !actual_bootloader_id().equals(available_bootloader_id()) )) list.add(BoardAlert.BOOTLOADER_REQUIRED);
+            if (( available_bootloader_id() != null &&  actual_bootloader_id() == null) || ( available_bootloader_id() != null  && !actual_bootloader_id().equals(available_bootloader_id()) )) list.add(BoardAlert.BOOTLOADER_REQUIRED);
 
             return list;
         } catch (Exception e) {
@@ -348,7 +348,7 @@ public class Model_Hardware extends NamedModel {
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public Swagger_Board_for_fast_upload_detail get_short_board_for_fast_upload() {
+    public Swagger_Board_for_fast_upload_detail getHardwareForUpdate() {
         try {
 
             Swagger_Board_for_fast_upload_detail board_for_fast_upload_detail = new Swagger_Board_for_fast_upload_detail();
@@ -2184,7 +2184,7 @@ public class Model_Hardware extends NamedModel {
     // Online Offline Notification
     @JsonIgnore
     public void notification_board_connect() {
-        new Thread( () -> {
+        new Thread(() -> {
             if (project_id() == null) return;
 
             try {
@@ -2204,7 +2204,7 @@ public class Model_Hardware extends NamedModel {
 
     @JsonIgnore
     public void notification_board_disconnect() {
-        new Thread( () -> {
+        new Thread(() -> {
             if (project_id() == null) return;
             try {
 
@@ -2224,7 +2224,7 @@ public class Model_Hardware extends NamedModel {
 
     @JsonIgnore
     public void notification_board_unstable_actual_firmware_version(Model_Version firmware_version) {
-        new Thread( () -> {
+        new Thread(() -> {
 
             // Pokud to není yoda ale device tak neupozorňovat v notifikaci, že je deska offline - zbytečné zatížení
             if (project_id() == null) return;
@@ -2253,7 +2253,7 @@ public class Model_Hardware extends NamedModel {
 
     @JsonIgnore
     public void notification_board_not_databased_version() {
-        new Thread( () -> {
+        new Thread(() -> {
 
             if (project_id() == null) return;
 
@@ -2286,7 +2286,7 @@ public class Model_Hardware extends NamedModel {
     public static void notification_set_static_backup_procedure_first_information_single(Model_BPair board_for_update) {
         try {
 
-            new Thread( () -> {
+            new Thread(() -> {
 
                 new Model_Notification()
                         .setImportance(NotificationImportance.LOW)
@@ -2315,7 +2315,7 @@ public class Model_Hardware extends NamedModel {
     public static void notification_set_static_backup_procedure_first_information_list( List<Model_BPair> board_for_update) {
         try {
 
-            new Thread( () -> {
+            new Thread(() -> {
 
                 if ( board_for_update.size() == 0 )  throw new IllegalArgumentException("notification_set_static_backup_procedure_first_information_list:: List is empty! ");
                 if ( board_for_update.size() == 1 ) {
@@ -2344,7 +2344,7 @@ public class Model_Hardware extends NamedModel {
 /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
 
     public void make_log_connect() {
-        new Thread( () -> {
+        new Thread(() -> {
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
             } catch (DocumentClientException e) {
@@ -2354,7 +2354,7 @@ public class Model_Hardware extends NamedModel {
     }
 
     public void make_log_disconnect() {
-        new Thread( () -> {
+        new Thread(() -> {
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Disconnected.make_request(this.id), null, true);
             } catch (DocumentClientException e) {
@@ -2364,7 +2364,7 @@ public class Model_Hardware extends NamedModel {
     }
 
     public void make_log_backup_arrise_change() {
-        new Thread( () -> {
+        new Thread(() -> {
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_BackupIncident.make_request_success_backup(this.id), null, true);
             } catch (DocumentClientException e) {

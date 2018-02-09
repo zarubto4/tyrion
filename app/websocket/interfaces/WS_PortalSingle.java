@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import utilities.logger.Logger;
 import websocket.WS_Interface;
 
+import java.util.UUID;
+
 public class WS_PortalSingle extends WS_Interface {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
@@ -14,21 +16,22 @@ public class WS_PortalSingle extends WS_Interface {
 
 /* STATIC  -------------------------------------------------------------------------------------------------------------*/
 
-    public static Props props(ActorRef out, WS_Portal portal) {
-        return Props.create(WS_PortalSingle.class, out, portal);
+    public static Props props(ActorRef out, WS_Portal portal, UUID id) {
+        return Props.create(WS_PortalSingle.class, out, portal, id);
     }
 
     private WS_Portal portal;
 
-    public WS_PortalSingle(ActorRef out, WS_Portal portal) {
+    public WS_PortalSingle(ActorRef out, WS_Portal portal, UUID id) {
         super(out);
+        this.id = id;
         this.portal = portal;
         this.portal.singles.put(this.id, this);
     }
 
     @Override
     public boolean isOnline() {
-        return false;
+        return true;
     }
 
     @Override
@@ -38,6 +41,7 @@ public class WS_PortalSingle extends WS_Interface {
 
     @Override
     public void onClose() {
+        logger.trace("onClose - single portal connection: {} was closed", this.id);
         this.portal.singles.remove(this.id);
     }
 }

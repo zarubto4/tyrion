@@ -135,7 +135,7 @@ public class Model_Instance extends TaggedModel {
         // který následně vrací latest know online
         try {
 
-            if ( (Model_HomerServer.getById(server_id()) != null) && Model_HomerServer.getById(server_id()).online_state() == NetworkStatus.ONLINE) {
+            if ((Model_HomerServer.getById(server_id()) != null) && Model_HomerServer.getById(server_id()).online_state() == NetworkStatus.ONLINE) {
 
                 if (cache_status.containsKey(id)) {
                     return cache_status.get(id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
@@ -182,7 +182,7 @@ public class Model_Instance extends TaggedModel {
 
             if (getCurrentSnapshot() != null) {
 
-                if (Server.mode  == ServerMode.DEVELOPER) {
+                if (Server.mode == ServerMode.DEVELOPER) {
                     return "ws://" + Model_HomerServer.getById(server_id()).server_url + ":" + Model_HomerServer.getById(server_id()).web_view_port + "/" + id + "/#token";
                 } else {
                     return "wss://" + Model_HomerServer.getById(server_id()).server_url + ":" + Model_HomerServer.getById(server_id()).web_view_port + "/" + id + "/#token";
@@ -521,7 +521,7 @@ public class Model_Instance extends TaggedModel {
                 System.out.println("terminal == null");
                 Model_MProgramInstanceParameter parameter = Model_MProgramInstanceParameter.find.query().where()
                         .eq("connection_token", help.token)
-                        .isNotNull("m_project_program_snapshot.instance_versions.instance_record.actual_running_instance")
+                        .isNotNull("grid_project_program_snapshot.instance_versions.instance_record.actual_running_instance")
                         .findOne();
 
                 if (parameter == null) {

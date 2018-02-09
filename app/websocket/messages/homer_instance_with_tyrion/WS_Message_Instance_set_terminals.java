@@ -30,7 +30,7 @@ public class WS_Message_Instance_set_terminals extends WS_AbstractMessage_Instan
 
             Terminal_parameter terminal_parameter = new Terminal_parameter();
             terminal_parameter.terminal_id = parameter.id.toString();
-            terminal_parameter.target_id = parameter.m_program_version.m_program.m_project_id();
+            terminal_parameter.target_id = parameter.grid_program_version.grid_program.grid_project_id();
             terminal_parameter.settings = parameter.snapshot_settings;
 
             terminal_parameters.add(terminal_parameter);
@@ -48,7 +48,7 @@ public class WS_Message_Instance_set_terminals extends WS_AbstractMessage_Instan
     public class Terminal_parameter {
 
         public String terminal_id; // M_Program_snap_parameter_ID
-        public String target_id;   // m_project_id
+        public String target_id;   // grid_project_id
 
         public GridAccess settings; // absolutely_public, with token etc.
     }

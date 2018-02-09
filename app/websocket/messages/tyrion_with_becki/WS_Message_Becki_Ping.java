@@ -26,7 +26,7 @@ public class WS_Message_Becki_Ping extends WS_AbstractMessage_Instance {
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
         request.put("message_type", messageType);
-        request.put("message_channel", WS_Portal.message_channel);
+        request.put("message_channel", WS_Portal.CHANNEL);
 
         return request;
     }

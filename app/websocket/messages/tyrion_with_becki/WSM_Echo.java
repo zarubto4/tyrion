@@ -17,7 +17,7 @@ public class WSM_Echo extends WS_AbstractMessage {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public static final String message_channel =  WS_Portal.message_channel;
+    @JsonProperty public static final String message_channel =  WS_Portal.CHANNEL;
 
     //------------------------------------------------------------------
 

@@ -24,7 +24,7 @@ public class WS_Message_Subscribe_Notifications extends WS_AbstractMessage {
 
         ObjectNode request = Json.newObject();
         request.put("message_type", messageType);
-        request.put("message_channel", WS_Portal.message_channel);
+        request.put("message_channel", WS_Portal.CHANNEL);
         request.put("status", "success");
         return request;
 

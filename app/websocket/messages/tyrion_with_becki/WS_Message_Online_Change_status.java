@@ -21,7 +21,7 @@ public class WS_Message_Online_Change_status {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public static final String message_channel =  WS_Portal.message_channel;
+    @JsonProperty public static final String message_channel =  WS_Portal.CHANNEL;
 
     //------------------------------------------------------------------
 
@@ -57,7 +57,7 @@ public class WS_Message_Online_Change_status {
         if (project_id == null) {
             throw  new NullPointerException("Project ID is null - Not allow! Something is wrong - Message for Developers and Test Procedures");
         }
-        new Thread( () -> {
+        new Thread(() -> {
             try {
 
                 WS_Message_Online_Change_status message = new WS_Message_Online_Change_status(cls, id, online_state ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE);

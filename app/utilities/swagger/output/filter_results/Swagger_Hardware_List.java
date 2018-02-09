@@ -8,9 +8,9 @@ import models.Model_Hardware;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel(description = "Individual Board List",
-          value = "Board_List")
-public class Swagger_Board_List extends Filter_Common {
+@ApiModel(description = "Individual Hardware List",
+          value = "Hardware_List")
+public class Swagger_Hardware_List extends Filter_Common {
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
@@ -20,7 +20,7 @@ public class Swagger_Board_List extends Filter_Common {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
-    public Swagger_Board_List(Query<Model_Hardware> query , int page_number) {
+    public Swagger_Hardware_List(Query<Model_Hardware> query , int page_number) {
 
         if (page_number < 1) page_number = 1;
 

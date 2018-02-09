@@ -1,6 +1,5 @@
 package utilities.swagger.input;
 
-
 import io.swagger.annotations.ApiModelProperty;
 
 public class Swagger_GridWidgetVersion_GridApp_source {

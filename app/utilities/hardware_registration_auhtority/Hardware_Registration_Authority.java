@@ -52,7 +52,7 @@ public class Hardware_Registration_Authority extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -125,7 +125,7 @@ public class Hardware_Registration_Authority extends BaseController {
         board_registration_central_authority.created = ((Long)hardware.created.getTime()).toString();
         board_registration_central_authority.revision = batch.revision;
         board_registration_central_authority.production_batch = batch.production_batch;
-        board_registration_central_authority.date_of_assembly = batch.date_of_assembly;
+        board_registration_central_authority.date_of_assembly = batch.assembled;
         board_registration_central_authority.pcb_manufacture_name = batch.pcb_manufacture_name;
         board_registration_central_authority.pcb_manufacture_id = batch.pcb_manufacture_id;
         board_registration_central_authority.assembly_manufacture_name = batch.assembly_manufacture_name;

@@ -7,6 +7,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.MappedSuperclass;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @MappedSuperclass
 public abstract class TaggedModel extends NamedModel {
@@ -24,7 +25,9 @@ public abstract class TaggedModel extends NamedModel {
                 tag.save();
             }
 
-            this.tags.add(tag);
+            if (!this.tags.contains(tag)) {
+                this.tags.add(tag);
+            }
         });
 
         this.save();
@@ -32,5 +35,9 @@ public abstract class TaggedModel extends NamedModel {
 
     public void removeTags(List<String> tags) {
 
+        List<Model_Tag> toRemove = this.tags.stream().filter(tag -> tags.contains(tag.value)).collect(Collectors.toList());
+        this.tags.removeAll(toRemove);
+
+        this.save();
     }
 }

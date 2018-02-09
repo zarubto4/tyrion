@@ -4,9 +4,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.Model_Version;
 
-@ApiModel(description = "Json Model for Version of M_program",
-        value = "M_Program_Version")
-public class Swagger_M_Program_Version {
+@ApiModel(description = "Json Model for Version of Grid Program",
+        value = "GridProgramVersion")
+public class Swagger_GridProgramVersion {
 
     @ApiModelProperty(required = true, readOnly = true)
     public Model_Version version;

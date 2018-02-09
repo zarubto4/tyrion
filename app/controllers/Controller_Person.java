@@ -62,7 +62,7 @@ public class Controller_Person extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Successfully created",    response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
@@ -140,7 +140,7 @@ public class Controller_Person extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
@@ -187,7 +187,7 @@ public class Controller_Person extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
@@ -247,7 +247,7 @@ public class Controller_Person extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
@@ -317,7 +317,7 @@ public class Controller_Person extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
@@ -379,7 +379,7 @@ public class Controller_Person extends BaseController {
             protocols = "https",
             code = 200
     )
-      @ApiResponses(value = {
+      @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Model_Person.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -391,7 +391,7 @@ public class Controller_Person extends BaseController {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
-            if (person == null )  return notFound("Person person_id not found");
+            if (person == null)  return notFound("Person person_id not found");
             return ok(Json.toJson(person));
 
         } catch (Exception e) {
@@ -414,7 +414,7 @@ public class Controller_Person extends BaseController {
 
 
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -426,7 +426,7 @@ public class Controller_Person extends BaseController {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
-            if (person == null ) return notFound("Person person_id not found");
+            if (person == null) return notFound("Person person_id not found");
 
 
             if (!person.delete_permission())  return forbiddenEmpty();
@@ -454,7 +454,7 @@ public class Controller_Person extends BaseController {
 
 
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -466,7 +466,7 @@ public class Controller_Person extends BaseController {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
-            if (person == null ) return notFound("Person person_id not found");
+            if (person == null) return notFound("Person person_id not found");
 
             if (!person.edit_permission())  return forbiddenEmpty();
 
@@ -496,7 +496,7 @@ public class Controller_Person extends BaseController {
 
 
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -509,7 +509,7 @@ public class Controller_Person extends BaseController {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
-            if (person == null ) return notFound("Person person_id not found");
+            if (person == null) return notFound("Person person_id not found");
 
             if (!person.activation_permission())  return forbiddenEmpty();
 
@@ -540,7 +540,7 @@ public class Controller_Person extends BaseController {
 
 
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -553,7 +553,7 @@ public class Controller_Person extends BaseController {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
-            if (person == null ) return notFound("Person person_id not found");
+            if (person == null) return notFound("Person person_id not found");
 
             if (!person.activation_permission())  return forbiddenEmpty();
 
@@ -589,7 +589,7 @@ public class Controller_Person extends BaseController {
 
 
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -601,7 +601,7 @@ public class Controller_Person extends BaseController {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
-            if (person == null ) return notFound("Person person_id not found");
+            if (person == null) return notFound("Person person_id not found");
 
             if (!person.activation_permission())  return forbiddenEmpty();
 
@@ -638,7 +638,7 @@ public class Controller_Person extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Successfully updated",    response = Model_Person.class),
             @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -691,7 +691,7 @@ public class Controller_Person extends BaseController {
             }
 
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK result",               response = Model_AuthorizationToken.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -723,7 +723,7 @@ public class Controller_Person extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK result",               response = Result_Ok.class),
             @ApiResponse(code = 404, message = "Not Found object",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
@@ -733,7 +733,7 @@ public class Controller_Person extends BaseController {
         try {
 
             Model_AuthorizationToken token = Model_AuthorizationToken.getById(connection_id);
-            if (token == null ) return notFound("FloatingPersonToken connection_id not found");
+            if (token == null) return notFound("FloatingPersonToken connection_id not found");
 
             if (!token.delete_permission())  return forbiddenEmpty();
 
@@ -761,7 +761,7 @@ public class Controller_Person extends BaseController {
                     value = "Contains Json with values"
             )
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Result if it is possible to use",       response = Swagger_Entity_Validation_Out.class),
             @ApiResponse(code = 400, message = "Something is wrong",                    response = Result_BadRequest.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
@@ -780,7 +780,7 @@ public class Controller_Person extends BaseController {
             switch (help.key) {
 
                 case "mail":{
-                    if (Model_Person.find.query().where().ieq("mail", help.value).findOne() == null ) {
+                    if (Model_Person.find.query().where().ieq("mail", help.value).findOne() == null) {
 
                         validation.valid = true;
                         return ok(Json.toJson(validation));
@@ -793,7 +793,7 @@ public class Controller_Person extends BaseController {
                 }
 
                 case "nick_name" : {
-                    if (Model_Person.find.query().where().ieq("nick_name", help.value).findOne() == null ) {
+                    if (Model_Person.find.query().where().ieq("nick_name", help.value).findOne() == null) {
 
                         validation.valid = true;
                         return ok(Json.toJson(validation));
@@ -877,7 +877,7 @@ public class Controller_Person extends BaseController {
                     value = "Contains Json with values"
             )
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -981,7 +981,7 @@ public class Controller_Person extends BaseController {
                     value = "Contains Json with values"
             )
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -1069,7 +1069,7 @@ public class Controller_Person extends BaseController {
                     value = "Contains Json with values"
             )
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
@@ -1169,7 +1169,7 @@ public class Controller_Person extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),

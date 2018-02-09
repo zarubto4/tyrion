@@ -19,7 +19,7 @@ public class WS_Portal extends WS_Interface {
 
 /* STATIC  -------------------------------------------------------------------------------------------------------------*/
 
-    public static final String message_channel = "becki";
+    public static final String CHANNEL = "becki";
 
     public static Props props(ActorRef out) {
         return Props.create(WS_Portal.class, out);
@@ -28,11 +28,7 @@ public class WS_Portal extends WS_Interface {
     public WS_Portal(UUID id) {
         super(null);
         this.id = id;
-        if (Controller_WebSocket.portals.containsKey(this.id)) {
-            // TODO add single connection
-        } else {
-            Controller_WebSocket.portals.put(this.id, this);
-        }
+        Controller_WebSocket.portals.put(this.id, this);
     }
 
     /**
@@ -47,12 +43,12 @@ public class WS_Portal extends WS_Interface {
 
     @Override
     public boolean isOnline() {
-        return false;
+        return true;
     }
 
     @Override
     public void onMessage(ObjectNode json) {
-
+        // TODO
     }
 
     @Override
@@ -69,6 +65,6 @@ public class WS_Portal extends WS_Interface {
 
     @Override
     public void onClose() {
-
+        Controller_WebSocket.portals.remove(this.id);
     }
 }

@@ -7,6 +7,8 @@ import controllers.Controller_WebSocket;
 import utilities.logger.Logger;
 import websocket.WS_Interface;
 
+import java.util.UUID;
+
 public class WS_Compiler extends WS_Interface {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
@@ -15,12 +17,13 @@ public class WS_Compiler extends WS_Interface {
 
 /* STATIC  -------------------------------------------------------------------------------------------------------------*/
 
-    public static Props props(ActorRef out) {
-        return Props.create(WS_Compiler.class, out);
+    public static Props props(ActorRef out, UUID id) {
+        return Props.create(WS_Compiler.class, out, id);
     }
 
-    public WS_Compiler(ActorRef out) {
+    public WS_Compiler(ActorRef out, UUID id) {
         super(out);
+        this.id = id;
         Controller_WebSocket.compilers.put(this.id, this);
     }
 

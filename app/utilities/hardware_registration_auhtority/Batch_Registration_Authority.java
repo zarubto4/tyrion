@@ -67,14 +67,14 @@ public class Batch_Registration_Authority extends Controller {
         batch_registration_central_authority.id = batch.id;
         batch_registration_central_authority.revision = batch.revision;
         batch_registration_central_authority.production_batch = batch.production_batch;
-        batch_registration_central_authority.date_of_assembly = batch.date_of_assembly;
+        batch_registration_central_authority.date_of_assembly = batch.assembled;
         batch_registration_central_authority.pcb_manufacture_name = batch.pcb_manufacture_name;
         batch_registration_central_authority.pcb_manufacture_id =  batch.pcb_manufacture_id;
         batch_registration_central_authority.assembly_manufacture_name =  batch.assembly_manufacture_name;
         batch_registration_central_authority.assembly_manufacture_id = batch.assembly_manufacture_id;
         batch_registration_central_authority.customer_product_name = batch.customer_product_name;
         batch_registration_central_authority.customer_company_name = batch.customer_company_name;
-        batch_registration_central_authority.date_of_assembly = batch.date_of_assembly;
+        batch_registration_central_authority.date_of_assembly = batch.assembled;
         batch_registration_central_authority.customer_company_made_description = batch.customer_company_made_description;
         batch_registration_central_authority.pcb_manufacture_id = batch.pcb_manufacture_id;
         batch_registration_central_authority.mac_address_start = batch.mac_address_start.toString();
@@ -145,7 +145,7 @@ public class Batch_Registration_Authority extends Controller {
                     batch.revision = help.revision;
                     batch.production_batch = help.production_batch;
 
-                    batch.date_of_assembly = help.date_of_assembly;
+                    batch.assembled = help.date_of_assembly;
 
                     batch.pcb_manufacture_name = help.pcb_manufacture_name;
                     batch.pcb_manufacture_id = help.pcb_manufacture_id;
@@ -162,7 +162,7 @@ public class Batch_Registration_Authority extends Controller {
                     batch.mac_address_end = Long.parseLong(help.mac_address_end, 10);
                     batch.latest_used_mac_address = Long.parseLong(help.latest_used_mac_address, 10);
 
-                    if (batch.mac_address_start == null || batch.mac_address_end == null || batch.latest_used_mac_address == null ) {
+                    if (batch.mac_address_start == null || batch.mac_address_end == null || batch.latest_used_mac_address == null) {
                         logger.error("Batch_Registration_Authority:: incompatible Mac address ");
                         return;
                     }

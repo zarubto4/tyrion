@@ -107,7 +107,7 @@ public class NotificationHandler {
 
             ObjectNode message = Json.newObject();
             message.put("message_type", Model_Notification.messageType);
-            message.put("message_channel", WS_Portal.message_channel);
+            message.put("message_channel", WS_Portal.CHANNEL);
             message.put("notification_type", notification.notification_type.name());
             message.put("notification_level", notification.notification_level.name());
             message.put("notification_importance", notification.notification_importance.name());

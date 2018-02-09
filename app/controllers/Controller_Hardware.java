@@ -21,7 +21,7 @@ import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Logger;
 import utilities.swagger.input.*;
 import utilities.swagger.output.*;
-import utilities.swagger.output.filter_results.Swagger_Board_List;
+import utilities.swagger.output.filter_results.Swagger_Hardware_List;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_change_server;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
@@ -69,7 +69,7 @@ public class Controller_Hardware extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Successfully created",      response = Model_Processor.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -113,7 +113,7 @@ public class Controller_Hardware extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",         response = Model_Processor.class),
             @ApiResponse(code = 404, message = "Object not found",  response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error", response = Result_InternalServerError.class)
@@ -123,7 +123,7 @@ public class Controller_Hardware extends BaseController {
 
             //Zkontroluji validitu
             Model_Processor processor = Model_Processor.getById(processor_id);
-            if (processor == null ) return notFound("Processor processor_id not found");
+            if (processor == null) return notFound("Processor processor_id not found");
 
             // Vracím objekt
             return ok(Json.toJson(processor));
@@ -140,7 +140,7 @@ public class Controller_Hardware extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",         response = Model_Processor.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Server side Error", response = Result_InternalServerError.class)
     })
@@ -181,7 +181,7 @@ public class Controller_Hardware extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Processor.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -200,10 +200,10 @@ public class Controller_Hardware extends BaseController {
 
             // Kontroluji validitu
             Model_Processor processor = Model_Processor.getById(processor_id);
-            if (processor == null ) return notFound("Processor processor_id not found");
+            if (processor == null) return notFound("Processor processor_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (! processor.edit_permission())  return forbiddenEmpty();
+            if (!processor.edit_permission())  return forbiddenEmpty();
 
             // Upravuji objekt
             processor.description    = help.description;
@@ -235,7 +235,7 @@ public class Controller_Hardware extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -247,7 +247,7 @@ public class Controller_Hardware extends BaseController {
 
             // Kontroluji validitu
             Model_Processor processor = Model_Processor.getById(processor_id);
-            if (processor == null ) return notFound("Processor not found");
+            if (processor == null) return notFound("Processor not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
             if (!processor.delete_permission()) return forbiddenEmpty();
@@ -274,7 +274,7 @@ public class Controller_Hardware extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_File_Content.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -309,7 +309,7 @@ public class Controller_Hardware extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_File_Content.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -366,7 +366,7 @@ public class Controller_Hardware extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Successfully created",      response = Model_Producer.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -388,7 +388,7 @@ public class Controller_Hardware extends BaseController {
             producer.description = help.description;
 
             // Kontorluji oprávnění těsně před uložením
-            if (! producer.create_permission()) return forbiddenEmpty();
+            if (!producer.create_permission()) return forbiddenEmpty();
 
             //Ukládám objekt
             producer.save();
@@ -425,7 +425,7 @@ public class Controller_Hardware extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Producer.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -444,10 +444,10 @@ public class Controller_Hardware extends BaseController {
 
             // Kontrola objektu
             Model_Producer producer = Model_Producer.getById(producer_id);
-            if (producer == null ) return notFound("Producer producer_id not found");
+            if (producer == null) return notFound("Producer producer_id not found");
 
             // Kontorluji oprávnění těsně před uložením
-            if (! producer.edit_permission()) return forbiddenEmpty();
+            if (!producer.edit_permission()) return forbiddenEmpty();
 
             // Úprava objektu
             producer.name = help.name;
@@ -472,7 +472,7 @@ public class Controller_Hardware extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Producer.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -501,7 +501,7 @@ public class Controller_Hardware extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Producer.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -513,7 +513,7 @@ public class Controller_Hardware extends BaseController {
 
             // Kontrola objektu
             Model_Producer producer = Model_Producer.getById(producer_id);
-            if (producer == null ) return notFound("Producer producer_id not found");
+            if (producer == null) return notFound("Producer producer_id not found");
 
             // Vrácneí objektu
             return ok(Json.toJson(producer));
@@ -537,7 +537,7 @@ public class Controller_Hardware extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -589,7 +589,7 @@ public class Controller_Hardware extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Successfully created",      response = Model_HardwareType.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -608,11 +608,11 @@ public class Controller_Hardware extends BaseController {
 
             // Kontrola objektu
             Model_Producer producer = Model_Producer.getById(help.producer_id);
-            if (producer == null ) return notFound("Producer not found");
+            if (producer == null) return notFound("Producer not found");
 
             // Kontrola objektu
             Model_Processor processor = Model_Processor.getById(help.processor_id);
-            if (processor == null ) return notFound("Processor not found");
+            if (processor == null) return notFound("Processor not found");
 
             // Tvorba objektu
             Model_HardwareType hardwareType = new Model_HardwareType();
@@ -677,7 +677,7 @@ public class Controller_Hardware extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareType.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -736,7 +736,7 @@ public class Controller_Hardware extends BaseController {
             consumes = "text/html",
             protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -748,7 +748,7 @@ public class Controller_Hardware extends BaseController {
 
             // Kontrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
-            if (hardwareType == null ) return notFound("HardwareType not found") ;
+            if (hardwareType == null) return notFound("HardwareType not found") ;
 
             // Kontorluji oprávnění
             if (!hardwareType.delete_permission()) return forbiddenEmpty();
@@ -771,7 +771,7 @@ public class Controller_Hardware extends BaseController {
             consumes = "text/html",
             protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareType.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -808,7 +808,7 @@ public class Controller_Hardware extends BaseController {
             consumes = "text/html",
             protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareType.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -820,7 +820,7 @@ public class Controller_Hardware extends BaseController {
 
             // Kontrola validity objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
-            if (hardwareType == null ) return notFound("HardwareType not found");
+            if (hardwareType == null) return notFound("HardwareType not found");
 
             // Kontorluji oprávnění
             if (!hardwareType.read_permission()) return forbiddenEmpty();
@@ -849,7 +849,7 @@ public class Controller_Hardware extends BaseController {
                     value = "Contains Json with values"
             )
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
@@ -929,7 +929,7 @@ public class Controller_Hardware extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Successfully created",      response = Model_HardwareBatch.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -948,7 +948,7 @@ public class Controller_Hardware extends BaseController {
 
             // Kontrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
-            if (hardwareType == null ) return notFound("HardwareType not found");
+            if (hardwareType == null) return notFound("HardwareType not found");
 
             // Tvorba objektu
             Model_HardwareBatch batch = new Model_HardwareBatch();
@@ -957,7 +957,7 @@ public class Controller_Hardware extends BaseController {
             batch.revision = help.revision;
             batch.production_batch = help.production_batch;
 
-            batch.date_of_assembly = help.date_of_assembly;
+            batch.assembled = help.date_of_assembly;
 
             batch.pcb_manufacture_name = help.pcb_manufacture_name;
             batch.pcb_manufacture_id = help.pcb_manufacture_id;
@@ -997,7 +997,7 @@ public class Controller_Hardware extends BaseController {
             consumes = "text/html",
             protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -1009,7 +1009,7 @@ public class Controller_Hardware extends BaseController {
 
             // Kontrola objektu
             Model_HardwareBatch batch = Model_HardwareBatch.getById(batch_id);
-            if (batch == null ) return notFound("HardwareBatch not found") ;
+            if (batch == null) return notFound("HardwareBatch not found") ;
 
             // Kontorluji oprávnění
             if (!batch.delete_permission()) return forbiddenEmpty();
@@ -1042,7 +1042,7 @@ public class Controller_Hardware extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareBatch.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -1061,13 +1061,13 @@ public class Controller_Hardware extends BaseController {
 
             // Kontrola objektu
             Model_HardwareBatch batch = Model_HardwareBatch.getById(batch_id);
-            if (batch == null ) return notFound("HardwareBatch not found");
+            if (batch == null) return notFound("HardwareBatch not found");
 
             // Tvorba objektu
             batch.revision = help.revision;
             batch.production_batch = help.production_batch;
 
-            batch.date_of_assembly = help.date_of_assembly;
+            batch.assembled = help.date_of_assembly;
 
             batch.pcb_manufacture_name = help.pcb_manufacture_name;
             batch.pcb_manufacture_id = help.pcb_manufacture_id;
@@ -1119,7 +1119,7 @@ public class Controller_Hardware extends BaseController {
                     value = "Contains Json with values"
             )
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BootLoader.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -1178,7 +1178,7 @@ public class Controller_Hardware extends BaseController {
                     value = "Contains Json with values"
             )
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BootLoader.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -1221,7 +1221,7 @@ public class Controller_Hardware extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -1263,7 +1263,7 @@ public class Controller_Hardware extends BaseController {
                     value = "Contains Json with values"
             )
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -1329,7 +1329,7 @@ public class Controller_Hardware extends BaseController {
                 protocols = "https"
 
             )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -1396,7 +1396,7 @@ public class Controller_Hardware extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -1416,7 +1416,7 @@ public class Controller_Hardware extends BaseController {
             List<Model_Hardware> boards = Model_Hardware.find.query().where().in("id", help.device_ids).findList();
             if (boards.isEmpty()) return notFound("Hardware not found");
 
-            List<WS_Help_Hardware_Pair> board_for_update = new ArrayList<>();
+            List<WS_Help_Hardware_Pair> hardware_for_update = new ArrayList<>();
 
             for (Model_Hardware hardware : boards) {
 
@@ -1434,14 +1434,14 @@ public class Controller_Hardware extends BaseController {
                     pair.bootLoader = Model_BootLoader.find.query().where().eq("main_hardware_type.hardware.id", hardware.id).findOne();
                 }
 
-                board_for_update.add(pair);
+                hardware_for_update.add(pair);
             }
 
-            if (!board_for_update.isEmpty()) {
-                new Thread( () -> {
+            if (!hardware_for_update.isEmpty()) {
+                new Thread(() -> {
                     try {
 
-                        Model_UpdateProcedure procedure = Model_Hardware.create_update_procedure(FirmwareType.BOOTLOADER, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, board_for_update);
+                        Model_UpdateProcedure procedure = Model_Hardware.create_update_procedure(FirmwareType.BOOTLOADER, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, hardware_for_update);
                         procedure.execute_update_procedure();
 
                     } catch (Exception e) {
@@ -1481,7 +1481,7 @@ public class Controller_Hardware extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Successfully created",      response = Model_Hardware.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -1490,7 +1490,7 @@ public class Controller_Hardware extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_create_manual() {
+    public Result hardware_create_manual() {
         try {
 
             // Zpracování Json
@@ -1503,7 +1503,7 @@ public class Controller_Hardware extends BaseController {
 
             // Kotrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById( help.hardware_type_id);
-            if (hardwareType == null ) return notFound("HardwareType not found");
+            if (hardwareType == null) return notFound("HardwareType not found");
 
             // Kontorluji oprávnění
             if (!hardwareType.register_new_device_permission()) return forbiddenEmpty();
@@ -1544,7 +1544,7 @@ public class Controller_Hardware extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Successfully created",      response = Swagger_Hardware_New_Settings_Result.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -1553,7 +1553,7 @@ public class Controller_Hardware extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_create_garfield() {
+    public Result hardware_create_garfield() {
         try {
 
             // Zpracování Json
@@ -1581,7 +1581,7 @@ public class Controller_Hardware extends BaseController {
             Model_Hardware hardware = Model_Hardware.getByFullId(help.full_id);
             if (hardware == null) {
 
-                logger.warn("board_create_garfield - device not found in local DB, registering hardware, id: {}", help.full_id);
+                logger.warn("hardware_create_garfield - device not found in local DB, registering hardware, id: {}", help.full_id);
 
                 // Try to Find it on Registration Authority
                 if (Hardware_Registration_Authority.check_if_value_is_registered(help.full_id, "hardware_id")) {
@@ -1606,9 +1606,9 @@ public class Controller_Hardware extends BaseController {
                 if (Hardware_Registration_Authority.register_device(hardware, hardwareType, batch)) {
                     hardware.save();
                 } else {
-                    Model_Hardware board_repair_from_authority = Model_Hardware.getByFullId(help.full_id);
-                    if (board_repair_from_authority != null) {
-                        hardware = board_repair_from_authority;
+                    Model_Hardware hardware_repair_from_authority = Model_Hardware.getByFullId(help.full_id);
+                    if (hardware_repair_from_authority != null) {
+                        hardware = hardware_repair_from_authority;
                     } else {
                        return notFound("Registration Authority Fail!!");
                     }
@@ -1688,13 +1688,13 @@ public class Controller_Hardware extends BaseController {
     }
 
     @ApiOperation(value = "get Boards for Ide Operation",
-            tags = { "Board"},
+            tags = { "Hardware"},
             notes = "List of hardware under Project for fast upload of Firmware to Board from Web IDE",
             produces = "application/json",
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Board_for_fast_upload_detail.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -1702,25 +1702,24 @@ public class Controller_Hardware extends BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result board_getForFastUpload( String project_id) {
+    public Result hardware_getForFastUpload( String project_id) {
         try {
 
             // Kotrola objektu
             Model_Project project = Model_Project.getById(project_id);
-            if (project == null ) return notFound("Project project not found");
+            if (project == null) return notFound("Project not found");
 
             // Kontrola oprávnění
             if (!project.edit_permission()) return forbiddenEmpty();
 
             // Vyhledání seznamu desek na které lze nahrát firmware - okamžitě
-            List<Model_Hardware> boards = Model_Hardware.find.query().where().eq("hardware_type.connectible_to_internet", true).eq("project.id", project_id).findList();
+            List<Model_Hardware> hw = Model_Hardware.find.query().where().eq("hardware_type.connectible_to_internet", true).eq("registration.project.id", project_id).findList();
 
             List<Swagger_Board_for_fast_upload_detail> list = new ArrayList<>();
 
-            for (Model_Hardware board : boards ) {
-                list.add(board.get_short_board_for_fast_upload());
+            for (Model_Hardware hardware : hw ) {
+                list.add(hardware.getHardwareForUpdate());
             }
-
 
             // Vrácení upravenéh objektu
             return ok(Json.toJson(list));
@@ -1731,8 +1730,8 @@ public class Controller_Hardware extends BaseController {
     }
 
     @ApiOperation(value = "edit Board personal description",
-            tags = { "Board"},
-            notes = "Used for add descriptions by owners. \"Persons\" who registred \"Board\" to own \"Projec\" ",
+            tags = { "Hardware"},
+            notes = "Used for add descriptions by owners. \"Persons\" who registred \"Board\" to own \"Project\" ",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -1748,7 +1747,7 @@ public class Controller_Hardware extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Hardware.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -1757,7 +1756,7 @@ public class Controller_Hardware extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_update_description( String board_id) {
+    public Result hardware_update_description( String hardware_id) {
         try {
 
             // Zpracování Json
@@ -1766,8 +1765,8 @@ public class Controller_Hardware extends BaseController {
             Swagger_NameAndDescription help = form.get();
 
             // Kotrola objektu
-            Model_Hardware hardware = Model_Hardware.getById(board_id);
-            if (hardware == null ) return notFound("Hardware not found");
+            Model_Hardware hardware = Model_Hardware.getById(hardware_id);
+            if (hardware == null) return notFound("Hardware not found");
 
             // Kontrola oprávnění
             if (!hardware.edit_permission()) return forbiddenEmpty();
@@ -1791,7 +1790,7 @@ public class Controller_Hardware extends BaseController {
     }
 
     @ApiOperation(value = "edit Board developers parameters",
-            tags = { "Board"},
+            tags = { "Hardware"},
             notes = "Edit Developers parameters [developer_kit, database_synchronize, web_view, web_port]",
             produces = "application/json",
             protocols = "https",
@@ -1808,7 +1807,7 @@ public class Controller_Hardware extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Hardware.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -1817,7 +1816,7 @@ public class Controller_Hardware extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_update_parameters( String board_id) {
+    public Result hardware_update_parameters( String hardware_id) {
         try {
 
             // Zpracování Json
@@ -1826,8 +1825,8 @@ public class Controller_Hardware extends BaseController {
             Swagger_Board_Developer_parameters help = form.get();
 
             // Kotrola objektu
-            Model_Hardware board = Model_Hardware.getById(board_id);
-            if (board == null ) return notFound("Board hardware_id not found");
+            Model_Hardware board = Model_Hardware.getById(hardware_id);
+            if (board == null) return notFound("Board hardware_id not found");
 
             // Kontrola oprávnění
             if (!board.edit_permission()) return forbiddenEmpty();
@@ -1900,7 +1899,7 @@ public class Controller_Hardware extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -1921,10 +1920,10 @@ public class Controller_Hardware extends BaseController {
 
             if (help.hardware_pairs.isEmpty()) return badRequest("List is Empty");
 
-            for (Swagger_Board_CProgram_Pair board_update_pair : help.hardware_pairs) {
+            for (Swagger_Board_CProgram_Pair hardware_update_pair : help.hardware_pairs) {
 
                 // Ověření objektu
-                Model_Version c_program_version = Model_Version.getById(board_update_pair.c_program_version_id);
+                Model_Version c_program_version = Model_Version.getById(hardware_update_pair.c_program_version_id);
                 if (c_program_version == null) return notFound("Version not found");
 
                 //Zkontroluji validitu Verze zda sedí k C_Programu
@@ -1943,7 +1942,7 @@ public class Controller_Hardware extends BaseController {
                 if (!c_program_version.compilation.status.name().equals(CompilationStatus.SUCCESS.name())) return badRequest("The program is not yet compiled & Restored");
 
                 // Kotrola objektu
-                Model_Hardware hardware = Model_Hardware.getById(board_update_pair.hardware_id);
+                Model_Hardware hardware = Model_Hardware.getById(hardware_update_pair.hardware_id);
                 if (hardware == null) return notFound("Hardware not found");
 
                 // Kontrola oprávnění
@@ -1959,7 +1958,7 @@ public class Controller_Hardware extends BaseController {
             }
 
             if (!b_pairs.isEmpty()) {
-                new Thread( () -> {
+                new Thread(() -> {
                     try {
 
                         Model_UpdateProcedure procedure = Model_Hardware.create_update_procedure(FirmwareType.FIRMWARE, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, b_pairs);
@@ -1981,9 +1980,10 @@ public class Controller_Hardware extends BaseController {
     }
 
     @ApiOperation(value = "update Board Backup",
-            tags = { "Board"},
+            tags = { "Hardware"},
             notes = "",
             produces = "application/json",
+            consumes = "application/json",
             protocols = "https",
             code = 200
     )
@@ -1991,14 +1991,14 @@ public class Controller_Hardware extends BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Board_Backup_settings",
+                            dataType = "utilities.swagger.input.Swagger_HardwareBackupSettings",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -2007,40 +2007,39 @@ public class Controller_Hardware extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_updateBackup() {
+    public Result hardware_updateBackup() {
         try {
 
             // Zpracování Json
-            final Form<Swagger_Board_Backup_settings> form = formFactory.form(Swagger_Board_Backup_settings.class).bindFromRequest();
+            final Form<Swagger_HardwareBackupSettings> form = formFactory.form(Swagger_HardwareBackupSettings.class).bindFromRequest();
             if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Board_Backup_settings help = form.get();
+            Swagger_HardwareBackupSettings help = form.get();
 
-            if (help.board_backup_pair_list.isEmpty()) return notFound("List is Empty");
-
+            if (help.hardware_backup_pairs.isEmpty()) return badRequest("List is Empty");
 
             // Seznam Hardwaru k updatu
-            List<WS_Help_Hardware_Pair> board_pairs = new ArrayList<>();
+            List<WS_Help_Hardware_Pair> hardware_pairs = new ArrayList<>();
 
-            for (Swagger_Board_Backup_settings.Board_backup_pair board_backup_pair : help.board_backup_pair_list) {
+            for (Swagger_HardwareBackupSettings.HardwareBackupPair hardware_backup_pair : help.hardware_backup_pairs) {
 
                 // Kotrola objektu
-                Model_Hardware board = Model_Hardware.getById(board_backup_pair.hardware_id);
+                Model_Hardware board = Model_Hardware.getById(hardware_backup_pair.hardware_id);
                 if (board == null) return notFound("Board hardware_id not found");
 
                 // Kontrola oprávnění
                 if (!board.edit_permission()) return forbiddenEmpty();
 
                 // Pokud je nastaven autobackup na true
-                if (board_backup_pair.backup_mode) {
+                if (hardware_backup_pair.backup_mode) {
 
                     // Na devicu byla nastavená statická - Proto je potřeba jí odstranit a nahradit autobackupem
                     if (!board.backup_mode) {
 
                         DM_Board_Bootloader_DefaultConfig config = board.bootloader_core_configuration();
-                        config.autobackup = board_backup_pair.backup_mode;
+                        config.autobackup = hardware_backup_pair.backup_mode;
                         board.update_bootloader_configuration(config);
 
-                        logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} has own Static Backup - Removing static backup procedure required", board_backup_pair.hardware_id);
+                        logger.debug("hardware_updateBackup - To TRUE:: Board Id: {} has own Static Backup - Removing static backup procedure required", hardware_backup_pair.hardware_id);
 
                         board.actual_backup_c_program_version = null;
                         board.backup_mode = true;
@@ -2051,11 +2050,11 @@ public class Controller_Hardware extends BaseController {
                     // Na devicu už autobackup zapnutý byl - nic nedělám jen překokontroluji???
                     } else {
 
-                        logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} has already sat as a dynamic Backup", board_backup_pair.hardware_id);
+                        logger.debug("hardware_updateBackup - To TRUE:: Board Id: {} has already sat as a dynamic Backup", hardware_backup_pair.hardware_id);
 
                         WS_Message_Hardware_set_settings result = board.set_auto_backup();
                         if (result.status.equals("success")) {
-                            logger.debug("Controller_Board:: board_update_backup:: To TRUE:: Board Id: {} Success of setting of dynamic backup", board_backup_pair.hardware_id);
+                            logger.debug("hardware_updateBackup - To TRUE:: Board Id: {} Success of setting of dynamic backup", hardware_backup_pair.hardware_id);
 
                             // Toto je pro výjmečné případy - kdy při průběhu updatu padne tyrion a transakce není komplentí
                             if ( board.actual_backup_c_program_version != null) {
@@ -2068,12 +2067,12 @@ public class Controller_Hardware extends BaseController {
                 // Autobacku je statický
                 } else {
 
-                    if (board_backup_pair.c_program_version_id == null || board_backup_pair.c_program_version_id.equals("")) return badRequest("If backup_mode is set to false, c_program_version_id is required");
+                    if (hardware_backup_pair.c_program_version_id == null) return badRequest("If backup_mode is set to false, c_program_version_id is required");
 
-                    logger.debug("Controller_Board:: board_update_backup:: To FALSE:: Board Id: {} has dynamic Backup or already set static backup", board_backup_pair.hardware_id);
+                    logger.debug("hardware_updateBackup - To FALSE:: Board Id: {} has dynamic Backup or already set static backup", hardware_backup_pair.hardware_id);
 
                     // Uprava desky na statický backup
-                    Model_Version c_program_version = Model_Version.getById(board_backup_pair.c_program_version_id);
+                    Model_Version c_program_version = Model_Version.getById(hardware_backup_pair.c_program_version_id);
                     if (c_program_version == null) return notFound("Version not found");
 
                     //Zkontroluji validitu Verze zda sedí k C_Programu
@@ -2095,7 +2094,7 @@ public class Controller_Hardware extends BaseController {
                     b_pair.hardware = board;
                     b_pair.c_program_version = c_program_version;
 
-                    board_pairs.add(b_pair);
+                    hardware_pairs.add(b_pair);
 
                     if (!board.backup_mode) {
                         board.actual_backup_c_program_version = null;
@@ -2104,16 +2103,16 @@ public class Controller_Hardware extends BaseController {
                     }
 
                     DM_Board_Bootloader_DefaultConfig config = board.bootloader_core_configuration();
-                    config.autobackup = board_backup_pair.backup_mode;
+                    config.autobackup = hardware_backup_pair.backup_mode;
                     board.update_bootloader_configuration(config);
                 }
             }
 
-            if (!board_pairs.isEmpty()) {
-                new Thread( () -> {
+            if (!hardware_pairs.isEmpty()) {
+                new Thread(() -> {
 
                     try {
-                        Model_UpdateProcedure procedure = Model_Hardware.create_update_procedure(FirmwareType.BACKUP, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, board_pairs);
+                        Model_UpdateProcedure procedure = Model_Hardware.create_update_procedure(FirmwareType.BACKUP, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, hardware_pairs);
                         procedure.execute_update_procedure();
 
                     } catch (Exception e) {
@@ -2121,7 +2120,6 @@ public class Controller_Hardware extends BaseController {
                     }
                 }).start();
             }
-
 
             // Vrácení potvrzení
             return okEmpty();
@@ -2132,39 +2130,30 @@ public class Controller_Hardware extends BaseController {
     }
 
     @ApiOperation(value = "get Boards with filter parameters",
-            tags = { "Board"},
+            tags = { "Hardware"},
             notes = "Get List of hardware. According to permission - system return only hardware from project, where is user owner or" +
                     " all hardware if user have static Permission key",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "Hardware_read"),
-                    }),
-            }
+            protocols = "https"
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Board_Filter",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Board_List.class),
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Board_Filter",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Hardware_List.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_getByFilter(Integer page_number) {
+    public Result hardware_getByFilter(Integer page_number) {
         try {
 
             // Zpracování Json
@@ -2185,7 +2174,7 @@ public class Controller_Hardware extends BaseController {
             }
 
             if (help.projects != null && !help.projects.isEmpty()) {
-                query.where().in("project.id", help.projects);
+                query.where().in("registration.project.id", help.projects);
             }
 
             if (help.producers != null) {
@@ -2207,7 +2196,7 @@ public class Controller_Hardware extends BaseController {
             }
 
             // Vytvářím seznam podle stránky
-            Swagger_Board_List result = new Swagger_Board_List(query, page_number);
+            Swagger_Hardware_List result = new Swagger_Hardware_List(query, page_number);
 
             // Vracím seznam
             return ok(Json.toJson(result));
@@ -2217,8 +2206,8 @@ public class Controller_Hardware extends BaseController {
         }
     }
 
-    @ApiOperation(value = "upload Board picture",
-            tags = { "Board"},
+    @ApiOperation(value = "uploadPicture Hardware",
+            tags = { "Hardware"},
             notes = "Upload Board file",
             produces = "application/json",
             consumes = "text/html",
@@ -2234,15 +2223,15 @@ public class Controller_Hardware extends BaseController {
                     value = "Contains Json with values"
             )
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Hardware.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @BodyParser.Of(value = BodyParser.Json.class) // TODO , maxLength = 1024 * 1024 * 10)
-    public Result board_uploadPicture(String hardware_registration_id) {
+    @BodyParser.Of(value = BodyParser.Json.class)
+    public Result hardware_uploadPicture(String hardware_registration_id) {
         try {
 
             // Získání JSON
@@ -2257,7 +2246,7 @@ public class Controller_Hardware extends BaseController {
 
             // Odebrání předchozího obrázku
             if (hardware.picture != null) {
-                logger.debug("board_uploadPicture - removing previous picture");
+                logger.debug("hardware_uploadPicture - removing previous picture");
                 Model_Blob blob = hardware.picture;
                 hardware.picture = null;
                 hardware.update();
@@ -2269,8 +2258,8 @@ public class Controller_Hardware extends BaseController {
             String[] type = parts[0].split(":");
             String[] dataType = type[1].split(";");
 
-            logger.debug("board_uploadPicture - type:" + dataType[0]);
-            logger.debug("board_uploadPicture - data:" + parts[1].substring(0, 10));
+            logger.debug("hardware_uploadPicture - type:" + dataType[0]);
+            logger.debug("hardware_uploadPicture - data:" + parts[1].substring(0, 10));
 
             String file_name = UUID.randomUUID().toString() + ".png";
             String file_path = hardware.getPath() + "/" + file_name;
@@ -2291,17 +2280,17 @@ public class Controller_Hardware extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Swagger_Hardware_New_Password.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result board_generate_new_password(String board_id) {
+    public Result hardware_generate_new_password(String hardware_id) {
         try {
 
-            Model_Hardware board = Model_Hardware.getById(board_id);
-            if (board == null ) return notFound("Board hardware_id not found");
+            Model_Hardware board = Model_Hardware.getById(hardware_id);
+            if (board == null) return notFound("Board hardware_id not found");
             if (!board.edit_permission()) return forbiddenEmpty();
 
 
@@ -2323,7 +2312,7 @@ public class Controller_Hardware extends BaseController {
     }
 
     @ApiOperation(value = "change_server Board",
-            tags = { "Board"},
+            tags = { "Hardware"},
             notes = "Redirect Board to another server (Change Server)",
             produces = "application/json",
             consumes = "text/html",
@@ -2339,7 +2328,7 @@ public class Controller_Hardware extends BaseController {
                     value = "Contains Json with values"
             )
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -2347,7 +2336,7 @@ public class Controller_Hardware extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_redirect_to_server(String board_id) {
+    public Result hardware_redirect_to_server(String hardware_id) {
         try {
 
             // Získání JSON
@@ -2355,9 +2344,9 @@ public class Controller_Hardware extends BaseController {
             if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
             Swagger_Board_Server_Redirect help = form.get();
 
-            System.out.println("board_redirect_to_server:: Příjem zprávy:: " + Json.toJson(help));
+            System.out.println("hardware_redirect_to_server:: Příjem zprávy:: " + Json.toJson(help));
 
-            Model_Hardware board = Model_Hardware.getById(board_id);
+            Model_Hardware board = Model_Hardware.getById(hardware_id);
             if (board == null) return notFound("Board does not exist");
             if (!board.edit_permission()) {
                 System.out.println(" board.edit_permission - false!");
@@ -2416,14 +2405,14 @@ public class Controller_Hardware extends BaseController {
                     value = "Contains Json with values"
             )
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result board_command_execution() {
+    public Result hardware_command_execution() {
         try {
 
             // Získání JSON
@@ -2433,10 +2422,10 @@ public class Controller_Hardware extends BaseController {
 
 
             Model_Hardware board = Model_Hardware.getById(help.hardware_id);
-            if (board == null ) return notFound("Board hardware_id not found");
+            if (board == null) return notFound("Board hardware_id not found");
             if (!board.edit_permission()) return forbiddenEmpty();
 
-            if (help.command == null ) return notFound("Board command not recognized");
+            if (help.command == null) return notFound("Board command not recognized");
             board.execute_command(help.command, true);
 
             return okEmpty();
@@ -2452,17 +2441,17 @@ public class Controller_Hardware extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result board_removePicture(String hardware_registration_id) {
+    public Result hardware_removePicture(String hardware_registration_id) {
         try {
 
             Model_HardwareRegistration hardware = Model_HardwareRegistration.getById(hardware_registration_id);
-            if (hardware == null ) return notFound("HardwareRegistration not found");
+            if (hardware == null) return notFound("HardwareRegistration not found");
 
             if (!hardware.edit_permission()) return forbiddenEmpty();
 
@@ -2481,7 +2470,7 @@ public class Controller_Hardware extends BaseController {
     }
 
     @ApiOperation(value = "deactivate Board",
-            tags = { "Board"},
+            tags = { "Hardware"},
             notes = "Permanent exclusion from the system - for some reason it is not allowed to remove the Board from database",
             produces = "application/json",
             protocols = "https",
@@ -2493,19 +2482,19 @@ public class Controller_Hardware extends BaseController {
                     }),
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Hardware.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result board_deactivate( String board_id) {
+    public Result hardware_deactivate( String hardware_id) {
         try {
 
             // Kotrola objektu
-            Model_Hardware board = Model_Hardware.getById(board_id);
-            if (board == null ) return notFound("Board hardware_id not found");
+            Model_Hardware board = Model_Hardware.getById(hardware_id);
+            if (board == null) return notFound("Board hardware_id not found");
 
             // Kontrola oprávnění
             if (board.update_permission()) return forbiddenEmpty();
@@ -2526,7 +2515,7 @@ public class Controller_Hardware extends BaseController {
     }
 
     @ApiOperation(value = "get Board",
-            tags = { "Board"},
+            tags = { "Hardware"},
             notes = "if you want get Board object by query = hardware_id. User can get only hardware from project, whitch " +
                     "user owning or user need Permission key \"Board_rea\".",
             produces = "application/json",
@@ -2540,19 +2529,19 @@ public class Controller_Hardware extends BaseController {
                     }),
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Hardware.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result board_get(String board_id) {
+    public Result hardware_get(String hardware_id) {
         try {
 
             // Kotrola objektu
-            Model_Hardware board = Model_Hardware.getById(board_id);
-            if (board == null ) return notFound("Board hardware_id not found");
+            Model_Hardware board = Model_Hardware.getById(hardware_id);
+            if (board == null) return notFound("Board hardware_id not found");
 
             // Kontrola oprávnění
             if (!board.read_permission()) return forbiddenEmpty();
@@ -2575,27 +2564,27 @@ public class Controller_Hardware extends BaseController {
             consumes = "text/html",
             protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Board_Registration_Status.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result board_check(String hash_for_adding) {
+    public Result hardware_check(String hash_for_adding) {
         try {
 
             Swagger_Board_Registration_Status status = new Swagger_Board_Registration_Status();
 
             // Kotrola objektu
-            Model_Hardware board_not_cached = Model_Hardware.find.query().where().eq("registration_hash", hash_for_adding).select("id").findOne();
-            if (board_not_cached == null) {
+            Model_Hardware hardware_not_cached = Model_Hardware.find.query().where().eq("registration_hash", hash_for_adding).select("id").findOne();
+            if (hardware_not_cached == null) {
                 status.status = BoardRegistrationStatus.NOT_EXIST;
                 return ok(Json.toJson(status));
             }
 
-            Model_Hardware board = Model_Hardware.getById(board_not_cached.id);
+            Model_Hardware board = Model_Hardware.getById(hardware_not_cached.id);
 
-            if (board == null ) {
+            if (board == null) {
                 status.status = BoardRegistrationStatus.NOT_EXIST;
             } else if (board.project_id() == null) {
                 status.status = BoardRegistrationStatus.CAN_REGISTER;
@@ -2619,14 +2608,14 @@ public class Controller_Hardware extends BaseController {
             consumes = "text/html",
             protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Boards_For_Blocko.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result board_allDetailsForBlocko(String project_id) {
+    public Result hardware_allDetailsForBlocko(String project_id) {
         try {
             /* // TODO
             // Kontrola objektu
@@ -2634,11 +2623,11 @@ public class Controller_Hardware extends BaseController {
             if (project == null) return notFound("Project project_id not found");
 
             // Kontrola oprávnění
-            if (! project.read_permission()) return forbiddenEmpty();
+            if (!project.read_permission()) return forbiddenEmpty();
 
             // Získání objektu
             Swagger_Boards_For_Blocko boards_for_blocko = new Swagger_Boards_For_Blocko();
-            boards_for_blocko.add_M_Projects(project.getMProjects());
+            boards_for_blocko.add_M_Projects(project.getGridProjects());
             boards_for_blocko.add_C_Programs(project.getCPrograms());
 
             boards_for_blocko.hardware.addAll(project.getHardware());
@@ -2658,12 +2647,12 @@ public class Controller_Hardware extends BaseController {
     }
 
     @ApiOperation(value = "Remove Hardware from Database - Only for Administrators", hidden = true)
-    public Result board_delete(String board_id) {
+    public Result hardware_delete(String hardware_id) {
         try {
 
             // Kontrola objektu
-            Model_Hardware hardware = Model_Hardware.getById(board_id);
-            if (hardware == null ) return notFound("Hardware not found");
+            Model_Hardware hardware = Model_Hardware.getById(hardware_id);
+            if (hardware == null) return notFound("Hardware not found");
 
             // Kontrola oprávnění
             if (!hardware.delete_permission()) return forbiddenEmpty();
@@ -2674,6 +2663,106 @@ public class Controller_Hardware extends BaseController {
             hardware.delete();
 
             return okEmpty();
+
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
+    }
+
+// HARDWARE REGISTRATION ###################################################################################################################
+
+    @ApiOperation(value = "tag HardwareRegistration",
+            tags = {"HardwareRegistration"},
+            notes = "",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Tags",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareRegistration.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result hardwareRegistration_addTags() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
+            Swagger_Tags help = form.get();
+
+            Model_HardwareRegistration registration = Model_HardwareRegistration.getById(help.object_id);
+            if (registration == null) return notFound("HardwareRegistration not found");
+
+            // Kontrola oprávnění těsně před uložením
+            if (!registration.edit_permission()) return forbiddenEmpty();
+
+            registration.addTags(help.tags);
+
+            // Vrácení objektu
+            return ok(registration.json());
+
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "untag HardwareRegistration",
+            tags = {"HardwareRegistration"},
+            notes = "",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Tags",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareRegistration.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result hardwareRegistration_removeTags() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
+            Swagger_Tags help = form.get();
+
+            Model_HardwareRegistration registration = Model_HardwareRegistration.getById(help.object_id);
+            if (registration == null) return notFound("HardwareRegistration not found");
+
+            // Kontrola oprávnění těsně před uložením
+            if (!registration.edit_permission()) return forbiddenEmpty();
+
+            registration.removeTags(help.tags);
+
+            // Vrácení objektu
+            return ok(registration.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -2698,7 +2787,7 @@ public class Controller_Hardware extends BaseController {
                     value = "Contains Json with values"
             )
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareGroup.class),
             @ApiResponse(code = 401, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -2755,7 +2844,7 @@ public class Controller_Hardware extends BaseController {
                     value = "Contains Json with values"
             )
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareGroup.class),
             @ApiResponse(code = 401, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -2764,7 +2853,7 @@ public class Controller_Hardware extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardwareGroup_update(String board_group_id) {
+    public Result hardwareGroup_update(String hardware_group_id) {
         try {
 
             // Zpracování Json
@@ -2772,7 +2861,7 @@ public class Controller_Hardware extends BaseController {
             if (form.hasErrors())return invalidBody(form.errorsAsJson());
             Swagger_NameAndDescription help = form.get();
 
-            Model_HardwareGroup group = Model_HardwareGroup.getById(board_group_id);
+            Model_HardwareGroup group = Model_HardwareGroup.getById(hardware_group_id);
             if (group == null) return notFound("HardwareGroup not found");
 
             if (!group.edit_permission()) return forbiddenEmpty();
@@ -2806,7 +2895,7 @@ public class Controller_Hardware extends BaseController {
                     value = "Contains Json with values"
             )
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareGroup.class),
             @ApiResponse(code = 401, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -2869,7 +2958,7 @@ public class Controller_Hardware extends BaseController {
                     value = "Contains Json with values"
             )
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareGroup.class),
             @ApiResponse(code = 401, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -2923,17 +3012,17 @@ public class Controller_Hardware extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardwareGroup_delete(String board_group_id) {
+    public Result hardwareGroup_delete(String hardware_group_id) {
         try {
 
-            Model_HardwareGroup group = Model_HardwareGroup.getById(board_group_id);
+            Model_HardwareGroup group = Model_HardwareGroup.getById(hardware_group_id);
             if (group == null) return notFound("HardwareGroup not found");
 
             if (!group.delete_permission()) return forbiddenEmpty();
@@ -2955,7 +3044,7 @@ public class Controller_Hardware extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareGroup.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -2967,7 +3056,7 @@ public class Controller_Hardware extends BaseController {
 
             // Kontrola validity objektu
             Model_Project project = Model_Project.getById(project_id);
-            if (project == null ) return notFound("Project project_id not found");
+            if (project == null) return notFound("Project project_id not found");
 
             // Kontorluji oprávnění
             if (!project.read_permission()) return forbiddenEmpty();
@@ -2988,7 +3077,7 @@ public class Controller_Hardware extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareGroup.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),

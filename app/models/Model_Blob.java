@@ -99,10 +99,6 @@ public class Model_Blob extends BaseModel {
         }
     }
 
-
-
-
-
     @JsonIgnore
     public String get_fileRecord_from_Azure_inString() {
         try {

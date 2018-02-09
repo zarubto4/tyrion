@@ -57,7 +57,7 @@ public class Model_Version extends NamedModel {
 
     @JsonIgnore @Transient @Cached private UUID cache_b_program_id;
     @JsonIgnore @Transient @Cached private UUID cache_c_program_id;
-    @JsonIgnore @Transient @Cached private UUID cache_m_program_id;
+    @JsonIgnore @Transient @Cached private UUID cache_grid_program_id;
 
     // Libraries ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -89,10 +89,10 @@ public class Model_Version extends NamedModel {
 
     // M_Program --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY) public Model_MProgram m_program;
+    @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY) public Model_GridProgram grid_program;
                                     @JsonIgnore @Column(columnDefinition = "TEXT")  public String m_program_virtual_input_output;
 
-    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "m_program_version") public List<Model_MProgramInstanceParameter> m_program_instance_parameters = new ArrayList<>();
+    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "grid_program_version") public List<Model_MProgramInstanceParameter> m_program_instance_parameters = new ArrayList<>();
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -487,8 +487,8 @@ public class Model_Version extends NamedModel {
             get_b_program().cache_version_ids.add(0, id);
         }
 
-        if (m_program != null) {
-            m_program.cache_version_ids.add(0, id);
+        if (grid_program != null) {
+            grid_program.cache_version_ids.add(0, id);
         }
 
         cache.put(id, this);
@@ -514,8 +514,8 @@ public class Model_Version extends NamedModel {
             get_b_program().cache_version_ids.remove(id);
         }
 
-        if (m_program != null) {
-            m_program.cache_version_ids.remove(id);
+        if (grid_program != null) {
+            grid_program.cache_version_ids.remove(id);
         }
 
         this.deleted = true;

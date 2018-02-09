@@ -24,22 +24,23 @@ public class Model_MProjectProgramSnapShot extends BaseModel {
 
 /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)      public Model_MProject m_project;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)      public Model_GridProject grid_project;
 
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY) @JoinTable(name = "b_program_version_snapshots") public List<Model_Version> instance_versions = new ArrayList<>(); // Vazba na version Blocka (zatím je využívaná jen jako M:1
 
-    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "m_project_program_snapshot") public List<Model_MProgramInstanceParameter> m_program_snapshots = new ArrayList<>();    // Verze M_Programu // TODO CACHE
+    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "grid_project_program_snapshot") public List<Model_MProgramInstanceParameter> m_program_snapshots = new ArrayList<>();    // Verze M_Programu // TODO CACHE
 
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public UUID m_project_id()          { return m_project.id;}
-    @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public String m_project_name()        { return m_project.name;}
-    @JsonProperty @Transient  @ApiModelProperty(required = true, readOnly = true) public String m_project_description() { return m_project.description;}
+    @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public UUID grid_project_id()              { return grid_project.id;}
+    @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public String grid_project_name()          { return grid_project.name;}
+    @JsonProperty @Transient @ApiModelProperty(required = true, readOnly = true) public String grid_project_description()   { return grid_project.description;}
 
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_MProgramInstanceParameter> m_program_snapshots() {
+    @JsonProperty @ApiModelProperty(required = true)
+    public List<Model_MProgramInstanceParameter> m_program_snapshots() {
         try {
 
-            return Model_MProgramInstanceParameter.find.query().where().eq("m_project_program_snapshot.id", id).order().asc("m_program_version.m_program.name").findList();
+            return Model_MProgramInstanceParameter.find.query().where().eq("grid_project_program_snapshot.id", id).order().asc("grid_program_version.grid_program.name").findList();
 
         } catch (Exception e) {
 
@@ -50,29 +51,7 @@ public class Model_MProjectProgramSnapShot extends BaseModel {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-
-
-
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override
-    public void save() {
-
-        logger.debug("update :: Update object Id: {}",  this.id);
-        super.save();
-    }
-
-    @JsonIgnore @Override
-    public void update() {
-
-        logger.debug("update :: Update object Id: {}",  this.id);
-        super.update();
-    }
-
-    @JsonIgnore @Override
-    public boolean delete() {
-        return false;
-    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -95,6 +74,6 @@ public class Model_MProjectProgramSnapShot extends BaseModel {
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<UUID, Model_MProjectProgramSnapShot> find = new Finder<>(Model_MProjectProgramSnapShot.class);
 
+    public static Finder<UUID, Model_MProjectProgramSnapShot> find = new Finder<>(Model_MProjectProgramSnapShot.class);
 }

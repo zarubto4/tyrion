@@ -36,8 +36,8 @@ public class Model_MProgramInstanceParameter extends BaseModel {
 
 /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @ManyToOne public Model_MProjectProgramSnapShot m_project_program_snapshot;
-    @JsonIgnore @ManyToOne public Model_Version m_program_version;
+    @JsonIgnore @ManyToOne public Model_MProjectProgramSnapShot grid_project_program_snapshot;
+    @JsonIgnore @ManyToOne public Model_Version grid_program_version;
 
     @JsonIgnore public String connection_token;      // Token, pomocí kterého se vrátí konkrétní aplikace s podporou propojení na websocket
     @JsonIgnore public GridAccess snapshot_settings; // Typ Aplikace
@@ -72,12 +72,12 @@ public class Model_MProgramInstanceParameter extends BaseModel {
           return Server.grid_app_main_url + "/" + connection_token();
     }
 
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public UUID m_program_id()  { return m_program_version.m_program.id;}
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String m_program_name()  { return m_program_version.m_program.name;}
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String m_program_description()  { return m_program_version.m_program.description;}
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public UUID version_id()  { return m_program_version.id;}
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_name()  { return m_program_version.name;}
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_description()  { return m_program_version.description;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public UUID grid_program_id()  { return grid_program_version.grid_program.id;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String grid_program_name()  { return grid_program_version.grid_program.name;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String grid_program_description()  { return grid_program_version.grid_program.description;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public UUID version_id()  { return grid_program_version.id;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_name()  { return grid_program_version.name;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_description()  { return grid_program_version.description;}
 
 /* JSON IGNORE  ---------------------------------------------------------------------------------------------------------*/
 
@@ -88,7 +88,7 @@ public class Model_MProgramInstanceParameter extends BaseModel {
     private Model_Instance get_instance() {
         if (instance_exist_searched) return instance;
         instance_exist_searched = true;
-        instance = Model_Instance.find.query().where().eq("actual_instance.version.b_program_version_snapshots.id", m_project_program_snapshot.id).findOne(); // TODO fix query
+        instance = Model_Instance.find.query().where().eq("actual_instance.version.b_program_version_snapshots.id", grid_project_program_snapshot.id).findOne(); // TODO fix query
         return instance;
     }
 
@@ -115,7 +115,7 @@ public class Model_MProgramInstanceParameter extends BaseModel {
         Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
 
         // Nastavení SSL
-        if (Server.mode  == ServerMode.DEVELOPER) {
+        if (Server.mode == ServerMode.DEVELOPER) {
             summary.grid_app_url = "ws://";
         } else {
             summary.grid_app_url = "wss://";
@@ -129,13 +129,13 @@ public class Model_MProgramInstanceParameter extends BaseModel {
 
             case PUBLIC: {
 
-                summary.grid_app_url += Model_HomerServer.getById(instance.server_id()).get_Grid_APP_URL() + instance.id + "/" + m_project_program_snapshot.m_project_id() + "/"  + connection_token();
-                summary.m_program = Model_MProgram.get_m_code(m_program_version).asText();
-                summary.m_project_id = m_program_version.m_program.m_project_id();
-                summary.m_program_id = m_program_id();
-                summary.m_program_version_id = m_program_version.id;
+                summary.grid_app_url += Model_HomerServer.getById(instance.server_id()).get_Grid_APP_URL() + instance.id + "/" + grid_project_program_snapshot.grid_project_id() + "/"  + connection_token();
+                summary.grid_program = Model_GridProgram.get_m_code(grid_program_version).asText();
+                summary.grid_project_id = grid_program_version.grid_program.grid_project_id();
+                summary.grid_program_id = grid_program_id();
+                summary.grid_program_version_id = grid_program_version.id;
                 summary.instance_id = get_instance().id;
-                summary.source_code_list = version_separator(Model_MProgram.get_m_code(m_program_version));
+                summary.source_code_list = version_separator(Model_GridProgram.get_m_code(grid_program_version));
 
                 return summary;
             }
@@ -161,13 +161,13 @@ public class Model_MProgramInstanceParameter extends BaseModel {
                 terminal.person = person;
                 terminal.save();
 
-                summary.grid_app_url += Model_HomerServer.getById(instance.server_id()).get_Grid_APP_URL() + instance.id + "/" + m_project_program_snapshot.m_project_id() + "/" + terminal.terminal_token;
-                summary.m_project_id = m_program_version.m_program.m_project_id();
-                summary.m_program = Model_MProgram.get_m_code(m_program_version).asText();
-                summary.m_program_id = m_program_id();
-                summary.m_program_version_id = m_program_version.id;
+                summary.grid_app_url += Model_HomerServer.getById(instance.server_id()).get_Grid_APP_URL() + instance.id + "/" + grid_project_program_snapshot.grid_project_id() + "/" + terminal.terminal_token;
+                summary.grid_project_id = grid_program_version.grid_program.grid_project_id();
+                summary.grid_program = Model_GridProgram.get_m_code(grid_program_version).asText();
+                summary.grid_program_id = grid_program_id();
+                summary.grid_program_version_id = grid_program_version.id;
                 summary.instance_id = get_instance().id;
-                summary.source_code_list = version_separator(Model_MProgram.get_m_code(m_program_version));
+                summary.source_code_list = version_separator(Model_GridProgram.get_m_code(grid_program_version));
 
                 return summary;
             }
@@ -177,7 +177,7 @@ public class Model_MProgramInstanceParameter extends BaseModel {
             case only_for_project_members_and_imitated_emails: {
 
                 summary.grid_app_url += instance.cloud_homer_server.server_url + instance.cloud_homer_server.grid_port + "/" + instance.b_program_name() + "/#token";
-                summary.m_program = Model_MProgram.get_m_code(m_program_version);
+                summary.grid_program = Model_MProgram.get_m_code(grid_program_version);
                 summary.instance_id = get_instance().id;
 
                 return summary;
@@ -282,7 +282,7 @@ public class Model_MProgramInstanceParameter extends BaseModel {
         }
 
         // if not (for programers of blocko versions)
-        return m_program_version.m_program.read_permission();
+        return grid_program_version.grid_program.read_permission();
     }
 
     @JsonProperty @ApiModelProperty(required = true)

@@ -62,7 +62,7 @@ public class Controller_Garfield extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Garfield.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -119,7 +119,7 @@ public class Controller_Garfield extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Garfield.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -166,7 +166,7 @@ public class Controller_Garfield extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -181,7 +181,7 @@ public class Controller_Garfield extends BaseController {
             if (garfield == null) return notFound("Garfield not found");
 
             // Kontrola oprávnění
-            if (! garfield.delete_permission()) return forbiddenEmpty();
+            if (!garfield.delete_permission()) return forbiddenEmpty();
 
             // Odsranit objekt
             garfield.delete();
@@ -201,7 +201,7 @@ public class Controller_Garfield extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Garfield.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -216,7 +216,7 @@ public class Controller_Garfield extends BaseController {
             if (garfield == null) return notFound("Garfield not found");
 
             // Kontrola oprávnění
-            if (! garfield.read_permission()) return forbiddenEmpty();
+            if (!garfield.read_permission()) return forbiddenEmpty();
 
             // Vrácení objektu
             return ok(Json.toJson(garfield));
@@ -233,7 +233,7 @@ public class Controller_Garfield extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Garfield.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -246,7 +246,7 @@ public class Controller_Garfield extends BaseController {
 
             // Kotrola objektu
             Model_Hardware hardware = Model_Hardware.getById(board_id);
-            if (hardware == null ) {
+            if (hardware == null) {
                 logger.error("print_label:: Device ID not found");
                 return notFound("Hardware not found");
             }
@@ -320,7 +320,7 @@ public class Controller_Garfield extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Garfield.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -352,7 +352,7 @@ public class Controller_Garfield extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Printer.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -367,10 +367,10 @@ public class Controller_Garfield extends BaseController {
             if (garfield == null) return notFound("Garfield not found");
 
             // Kontrola oprávnění
-            if (! garfield.read_permission()) return forbiddenEmpty();
+            if (!garfield.read_permission()) return forbiddenEmpty();
 
 
-            if (! ( garfield.print_label_id_1.equals(printer_id) || garfield.print_label_id_2.equals(printer_id) || garfield.print_sticker_id.equals(printer_id))) {
+            if (!( garfield.print_label_id_1.equals(printer_id) || garfield.print_label_id_2.equals(printer_id) || garfield.print_sticker_id.equals(printer_id))) {
 
                 return forbiddenEmpty();
             }
@@ -394,7 +394,7 @@ public class Controller_Garfield extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
@@ -409,7 +409,7 @@ public class Controller_Garfield extends BaseController {
             if (garfield == null) return notFound("Garfield not found");
 
             // Kontrola oprávnění
-            if (! garfield.read_permission()) return forbiddenEmpty();
+            if (!garfield.read_permission()) return forbiddenEmpty();
 
 
             if (garfield.print_label_id_1.equals(printer_id)) {
@@ -431,7 +431,7 @@ public class Controller_Garfield extends BaseController {
                 Model_HardwareBatch info = new Model_HardwareBatch();
                 info.revision = "1.9.9";
                 info.production_batch = "1.9.9";
-                info.date_of_assembly = "1.9.9";
+                info.assembled = "1.9.9";
                 info.pcb_manufacture_name = "1.9.9";
                 info.pcb_manufacture_id = "1.9.9";
                 info.assembly_manufacture_name = "1.9.9";

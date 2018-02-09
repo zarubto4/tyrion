@@ -20,29 +20,29 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel( value = "M_Project", description = "Model of M_Project")
-@Table(name="MProject")
-public class Model_MProject extends TaggedModel {
+@ApiModel( value = "GridProject", description = "Model of GridProject")
+@Table(name="GridProject")
+public class Model_GridProject extends TaggedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(Model_MProject.class);
+    private static final Logger logger = new Logger(Model_GridProject.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)
     public Model_Project project;
 
-    @JsonIgnore @OneToMany(mappedBy = "m_project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore @OneToMany(mappedBy = "grid_project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     public List<Model_MProjectProgramSnapShot> snapShots = new ArrayList<>();
 
-    @JsonIgnore @OneToMany(mappedBy = "m_project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    public List<Model_MProgram> m_programs = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "grid_project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    public List<Model_GridProgram> grid_programs = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Cached private UUID cache_project_id;
-    @JsonIgnore @Transient @Cached public List<UUID> m_programs_ids = new ArrayList<>();
+    @JsonIgnore @Transient @Cached public List<UUID> grid_programs_ids = new ArrayList<>();
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -50,34 +50,33 @@ public class Model_MProject extends TaggedModel {
         return project.id;
     }
 
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_MProgram> m_programs() { return get_m_programs_not_deleted();}
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_GridProgram> m_programs() { return getGridPrograms();}
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
 /* GET SQL PARAMETER - CACHE OBJECTS ------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public List<Model_MProgram> get_m_programs_not_deleted() {
+    public List<Model_GridProgram> getGridPrograms() {
         try {
 
-            if (m_programs_ids.isEmpty()) {
+            if (grid_programs_ids.isEmpty()) {
 
-                List<Model_MProgram> m_programs =  Model_MProgram.find.query().where().eq("m_project.id", id).eq("deleted", false).orderBy("UPPER(name) ASC").select("id").findList();
+                List<Model_GridProgram> gridPrograms =  Model_GridProgram.find.query().where().eq("grid_project.id", id).orderBy("UPPER(name) ASC").select("id").findList();
 
                 // Získání seznamu
-                for (Model_MProgram m_program : m_programs) {
-                    m_programs_ids.add(m_program.id);
+                for (Model_GridProgram gridProgram : gridPrograms) {
+                    grid_programs_ids.add(gridProgram.id);
                 }
-
             }
 
-            List<Model_MProgram> m_programs  = new ArrayList<>();
+            List<Model_GridProgram> gridPrograms  = new ArrayList<>();
 
-            for (UUID version_id : m_programs_ids) {
-                m_programs.add(Model_MProgram.getById(version_id));
+            for (UUID version_id : grid_programs_ids) {
+                gridPrograms.add(Model_GridProgram.getById(version_id));
             }
 
-            return m_programs;
+            return gridPrograms;
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -90,12 +89,12 @@ public class Model_MProject extends TaggedModel {
     @JsonIgnore @Override
     public void save() {
 
-        this.azure_m_project_link = project.getPath()  + "/m-projects/"  + UUID.randomUUID().toString();
+        this.blob_link = project.getPath()  + "/grid-projects/"  + UUID.randomUUID().toString();
 
         super.save();
 
         if (project != null) {
-            project.cache_m_project_ids.add(id);
+            project.cache_grid_project_ids.add(id);
         }
 
         cache.put(id, this);
@@ -111,7 +110,7 @@ public class Model_MProject extends TaggedModel {
 
         super.update();
 
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_MProject.class, project_id(), id))).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_GridProject.class, project_id(), id))).start();
 
     }
 
@@ -124,7 +123,7 @@ public class Model_MProject extends TaggedModel {
         super.update();
 
         if (project_id() != null) {
-            Model_Project.getById( project_id() ).cache_m_project_ids.remove(id);
+            Model_Project.getById( project_id() ).cache_grid_project_ids.remove(id);
         }
 
         cache.remove(id);
@@ -141,11 +140,11 @@ public class Model_MProject extends TaggedModel {
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    private String azure_m_project_link;
+    private String blob_link;
 
     @JsonIgnore
     public String get_path() {
-        return  azure_m_project_link;
+        return blob_link;
     }
 
 
@@ -159,24 +158,24 @@ public class Model_MProject extends TaggedModel {
 
     @JsonIgnore
     public boolean create_permission() {
-        if (BaseController.person().has_permission("MProject_create")) return true;
+        if (BaseController.person().has_permission("GridProject_create")) return true;
         return (project.update_permission());
     }
     @JsonProperty
     public boolean update_permission() {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("m_project_update_" + id)) return BaseController.person().has_permission("m_project_update_"+ id);
-        if (BaseController.person().has_permission("MProject_update")) return true;
+        if (BaseController.person().has_permission("grid_project_update_" + id)) return BaseController.person().has_permission("grid_project_update_"+ id);
+        if (BaseController.person().has_permission("GridProject_update")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_MProject.find.query().where().where().eq("project.participants.person.id", BaseController.person().id ).where().eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("m_project_update_" + id, true);
+        if ( Model_GridProject.find.query().where().where().eq("project.participants.person.id", BaseController.personId()).where().eq("id", id).findCount() > 0) {
+            BaseController.person().cache_permission("grid_project_update_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("m_project_update_" + id, false);
+        BaseController.person().cache_permission("grid_project_update_" + id, false);
         return false;
 
     }
@@ -184,17 +183,17 @@ public class Model_MProject extends TaggedModel {
     public boolean read_permission() {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("m_project_read_" + id)) return BaseController.person().has_permission("m_project_read_"+ id);
-        if (BaseController.person().has_permission("MProject_read")) return true;
+        if (BaseController.person().has_permission("grid_project_read_" + id)) return BaseController.person().has_permission("grid_project_read_"+ id);
+        if (BaseController.person().has_permission("GridProject_read")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_MProject.find.query().where().where().eq("project.participants.person.id", BaseController.person().id ).where().eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("m_project_m_project_read_" + id, true);
+        if ( Model_GridProject.find.query().where().where().eq("project.participants.person.id", BaseController.personId()).where().eq("id", id).findCount() > 0) {
+            BaseController.person().cache_permission("grid_project_read_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("m_project_read_" + id, false);
+        BaseController.person().cache_permission("grid_project_read_" + id, false);
         return false;
 
     }
@@ -202,64 +201,64 @@ public class Model_MProject extends TaggedModel {
     public boolean edit_permission() {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("m_project_edit_" + id)) return BaseController.person().has_permission("m_project_edit_"+ id);
-        if (BaseController.person().has_permission("MProject_edit")) return true;
+        if (BaseController.person().has_permission("grid_project_edit_" + id)) return BaseController.person().has_permission("grid_project_edit_"+ id);
+        if (BaseController.person().has_permission("GridProject_edit")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_MProject.find.query().where().where().eq("project.participants.person.id", BaseController.person().id ).where().eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("m_project_edit_" + id, true);
+        if ( Model_GridProject.find.query().where().where().eq("project.participants.person.id", BaseController.personId()).where().eq("id", id).findCount() > 0) {
+            BaseController.person().cache_permission("grid_project_edit_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("m_project_edit_" + id, false);
+        BaseController.person().cache_permission("grid_project_edit_" + id, false);
         return false;
 
     }
     @JsonProperty
     public boolean delete_permission() {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("m_project_delete_" + id)) return BaseController.person().has_permission("m_project_delete_"+ id);
-        if (BaseController.person().has_permission("MProject_delete")) return true;
+        if (BaseController.person().has_permission("grid_project_delete_" + id)) return BaseController.person().has_permission("grid_project_delete_"+ id);
+        if (BaseController.person().has_permission("GridProject_delete")) return true;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_MProject.find.query().where().where().eq("project.participants.person.id", BaseController.person().id ).where().eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("m_project_delete_" + id, true);
+        if ( Model_GridProject.find.query().where().where().eq("project.participants.person.id", BaseController.personId()).where().eq("id", id).findCount() > 0) {
+            BaseController.person().cache_permission("grid_project_delete_" + id, true);
             return true;
         }
 
         // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("m_project_delete_" + id, false);
+        BaseController.person().cache_permission("grid_project_delete_" + id, false);
         return false;
 
     }
-    public enum Permission { MProject_create, MProject_read, MProject_update, MProject_edit, MProject_delete}
+    public enum Permission { GridProject_create, GridProject_read, GridProject_update, GridProject_edit, GridProject_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(Model_MProject.class)
-    public static Cache<UUID, Model_MProject> cache;
+    @CacheField(Model_GridProject.class)
+    public static Cache<UUID, Model_GridProject> cache;
 
-    public static Model_MProject getById(String id) {
+    public static Model_GridProject getById(String id) {
         return getById(UUID.fromString(id));
     }
     
-    public static Model_MProject getById(UUID id) {
+    public static Model_GridProject getById(UUID id) {
 
-        Model_MProject m_project= cache.get(id);
-        if (m_project == null) {
+        Model_GridProject grid_project= cache.get(id);
+        if (grid_project == null) {
 
-            m_project = Model_MProject.find.byId(id);
-            if (m_project == null) return null;
+            grid_project = Model_GridProject.find.byId(id);
+            if (grid_project == null) return null;
 
-            cache.put(id, m_project);
+            cache.put(id, grid_project);
         }
 
-        return m_project;
+        return grid_project;
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     
-    public static Finder<UUID, Model_MProject> find = new Finder<>(Model_MProject.class);
+    public static Finder<UUID, Model_GridProject> find = new Finder<>(Model_GridProject.class);
 }
 

@@ -107,23 +107,23 @@ public class Swagger_Boards_For_Blocko {
 
 // M_Projects ----------------------------------------------------------------------------------------------------------
 
-    public void add_M_Projects(List<Model_MProject> real_m_projects) {
+    public void add_M_Projects(List<Model_GridProject> real_m_projects) {
 
-        for (Model_MProject project: real_m_projects) {
+        for (Model_GridProject project: real_m_projects) {
 
             Swagger_M_Project_Short_Detail_For_Blocko m_project_short_detail_for_blocko = new Swagger_M_Project_Short_Detail_For_Blocko();
             m_project_short_detail_for_blocko.id = project.id;
             m_project_short_detail_for_blocko.name = project.name;
             m_project_short_detail_for_blocko.description = project.description;
 
-            for (Model_MProgram program : project.get_m_programs_not_deleted()) {
+            for (Model_GridProgram program : project.getGridPrograms()) {
 
                 Swagger_M_Program_Short_Detail_For_Blocko m_program_short_detail_for_blocko = new Swagger_M_Program_Short_Detail_For_Blocko();
                 m_program_short_detail_for_blocko.id = program.id;
                 m_program_short_detail_for_blocko.name =program.name;
                 m_program_short_detail_for_blocko.description = program.description;
 
-                for (Model_Version version : program.getVersions_not_removed_by_person()) {
+                for (Model_Version version : program.getVersions()) {
 
                     Swagger_M_Program_Versions_Short_Detail_For_Blocko versions_short_detail_for_blocko = new Swagger_M_Program_Versions_Short_Detail_For_Blocko();
                     versions_short_detail_for_blocko.id = version.id;

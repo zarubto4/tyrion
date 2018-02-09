@@ -236,6 +236,44 @@ create table garfield (
   constraint pk_garfield primary key (id)
 );
 
+create table gridprogram (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  grid_project_id               uuid,
+  blob_link                     varchar(255),
+  deleted                       boolean default false not null,
+  constraint pk_gridprogram primary key (id)
+);
+
+create table gridprogram_tag (
+  grid_program_id               uuid not null,
+  tag_id                        uuid not null,
+  constraint pk_gridprogram_tag primary key (grid_program_id,tag_id)
+);
+
+create table gridproject (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  project_id                    uuid,
+  blob_link                     varchar(255),
+  deleted                       boolean default false not null,
+  constraint pk_gridproject primary key (id)
+);
+
+create table gridproject_tag (
+  grid_project_id               uuid not null,
+  tag_id                        uuid not null,
+  constraint pk_gridproject_tag primary key (grid_project_id,tag_id)
+);
+
 create table gridterminal (
   id                            uuid not null,
   created                       timestamptz,
@@ -289,7 +327,7 @@ create table hardwarebatch (
   removed                       timestamptz,
   revision                      varchar(255),
   production_batch              varchar(255),
-  date_of_assembly              varchar(255),
+  assembled                     varchar(255),
   pcb_manufacture_name          varchar(255),
   pcb_manufacture_id            varchar(255),
   assembly_manufacture_name     varchar(255),
@@ -566,32 +604,13 @@ create table log (
   constraint pk_log primary key (id)
 );
 
-create table mprogram (
-  id                            uuid not null,
-  created                       timestamptz,
-  updated                       timestamptz,
-  removed                       timestamptz,
-  name                          varchar(255),
-  description                   TEXT,
-  m_project_id                  uuid,
-  azure_m_program_link          varchar(255),
-  deleted                       boolean default false not null,
-  constraint pk_mprogram primary key (id)
-);
-
-create table mprogram_tag (
-  mprogram_id                   uuid not null,
-  tag_id                        uuid not null,
-  constraint pk_mprogram_tag primary key (mprogram_id,tag_id)
-);
-
 create table mprograminstanceparameter (
   id                            uuid not null,
   created                       timestamptz,
   updated                       timestamptz,
   removed                       timestamptz,
-  m_project_program_snapshot_id uuid,
-  m_program_version_id          uuid,
+  grid_project_program_snapshot_id uuid,
+  grid_program_version_id       uuid,
   connection_token              varchar(255),
   snapshot_settings             varchar(7),
   deleted                       boolean default false not null,
@@ -599,31 +618,12 @@ create table mprograminstanceparameter (
   constraint pk_mprograminstanceparameter primary key (id)
 );
 
-create table mproject (
-  id                            uuid not null,
-  created                       timestamptz,
-  updated                       timestamptz,
-  removed                       timestamptz,
-  name                          varchar(255),
-  description                   TEXT,
-  project_id                    uuid,
-  azure_m_project_link          varchar(255),
-  deleted                       boolean default false not null,
-  constraint pk_mproject primary key (id)
-);
-
-create table mproject_tag (
-  mproject_id                   uuid not null,
-  tag_id                        uuid not null,
-  constraint pk_mproject_tag primary key (mproject_id,tag_id)
-);
-
 create table mprojectprogramsnapshot (
   id                            uuid not null,
   created                       timestamptz,
   updated                       timestamptz,
   removed                       timestamptz,
-  m_project_id                  uuid,
+  grid_project_id               uuid,
   deleted                       boolean default false not null,
   constraint pk_mprojectprogramsnapshot primary key (id)
 );
@@ -717,6 +717,7 @@ create table person (
   last_name                     varchar(255),
   country                       varchar(255),
   gender                        varchar(255),
+  portal_config                 varchar(255),
   validated                     boolean default false not null,
   frozen                        boolean default false not null,
   password                      varchar(255),
@@ -965,7 +966,7 @@ create table version (
   default_program_id            uuid,
   b_program_id                  uuid,
   additional_configuration      varchar(255),
-  m_program_id                  uuid,
+  grid_program_id               uuid,
   m_program_virtual_input_output TEXT,
   blob_version_link             varchar(255),
   deleted                       boolean default false not null,
@@ -1091,6 +1092,24 @@ create index ix_employee_person_id on employee (person_id);
 alter table employee add constraint fk_employee_customer_id foreign key (customer_id) references customer (id) on delete restrict on update restrict;
 create index ix_employee_customer_id on employee (customer_id);
 
+alter table gridprogram add constraint fk_gridprogram_grid_project_id foreign key (grid_project_id) references gridproject (id) on delete restrict on update restrict;
+create index ix_gridprogram_grid_project_id on gridprogram (grid_project_id);
+
+alter table gridprogram_tag add constraint fk_gridprogram_tag_gridprogram foreign key (grid_program_id) references gridprogram (id) on delete restrict on update restrict;
+create index ix_gridprogram_tag_gridprogram on gridprogram_tag (grid_program_id);
+
+alter table gridprogram_tag add constraint fk_gridprogram_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
+create index ix_gridprogram_tag_tag on gridprogram_tag (tag_id);
+
+alter table gridproject add constraint fk_gridproject_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
+create index ix_gridproject_project_id on gridproject (project_id);
+
+alter table gridproject_tag add constraint fk_gridproject_tag_gridproject foreign key (grid_project_id) references gridproject (id) on delete restrict on update restrict;
+create index ix_gridproject_tag_gridproject on gridproject_tag (grid_project_id);
+
+alter table gridproject_tag add constraint fk_gridproject_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
+create index ix_gridproject_tag_tag on gridproject_tag (tag_id);
+
 alter table gridterminal add constraint fk_gridterminal_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
 create index ix_gridterminal_person_id on gridterminal (person_id);
 
@@ -1215,32 +1234,14 @@ create index ix_library_hardwaretype_hardwaretype on library_hardwaretype (hardw
 
 alter table log add constraint fk_log_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
 
-alter table mprogram add constraint fk_mprogram_m_project_id foreign key (m_project_id) references mproject (id) on delete restrict on update restrict;
-create index ix_mprogram_m_project_id on mprogram (m_project_id);
+alter table mprograminstanceparameter add constraint fk_mprograminstanceparameter_grid_project_program_snapsho_1 foreign key (grid_project_program_snapshot_id) references mprojectprogramsnapshot (id) on delete restrict on update restrict;
+create index ix_mprograminstanceparameter_grid_project_program_snapsho_1 on mprograminstanceparameter (grid_project_program_snapshot_id);
 
-alter table mprogram_tag add constraint fk_mprogram_tag_mprogram foreign key (mprogram_id) references mprogram (id) on delete restrict on update restrict;
-create index ix_mprogram_tag_mprogram on mprogram_tag (mprogram_id);
+alter table mprograminstanceparameter add constraint fk_mprograminstanceparameter_grid_program_version_id foreign key (grid_program_version_id) references version (id) on delete restrict on update restrict;
+create index ix_mprograminstanceparameter_grid_program_version_id on mprograminstanceparameter (grid_program_version_id);
 
-alter table mprogram_tag add constraint fk_mprogram_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
-create index ix_mprogram_tag_tag on mprogram_tag (tag_id);
-
-alter table mprograminstanceparameter add constraint fk_mprograminstanceparameter_m_project_program_snapshot_id foreign key (m_project_program_snapshot_id) references mprojectprogramsnapshot (id) on delete restrict on update restrict;
-create index ix_mprograminstanceparameter_m_project_program_snapshot_id on mprograminstanceparameter (m_project_program_snapshot_id);
-
-alter table mprograminstanceparameter add constraint fk_mprograminstanceparameter_m_program_version_id foreign key (m_program_version_id) references version (id) on delete restrict on update restrict;
-create index ix_mprograminstanceparameter_m_program_version_id on mprograminstanceparameter (m_program_version_id);
-
-alter table mproject add constraint fk_mproject_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
-create index ix_mproject_project_id on mproject (project_id);
-
-alter table mproject_tag add constraint fk_mproject_tag_mproject foreign key (mproject_id) references mproject (id) on delete restrict on update restrict;
-create index ix_mproject_tag_mproject on mproject_tag (mproject_id);
-
-alter table mproject_tag add constraint fk_mproject_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
-create index ix_mproject_tag_tag on mproject_tag (tag_id);
-
-alter table mprojectprogramsnapshot add constraint fk_mprojectprogramsnapshot_m_project_id foreign key (m_project_id) references mproject (id) on delete restrict on update restrict;
-create index ix_mprojectprogramsnapshot_m_project_id on mprojectprogramsnapshot (m_project_id);
+alter table mprojectprogramsnapshot add constraint fk_mprojectprogramsnapshot_grid_project_id foreign key (grid_project_id) references gridproject (id) on delete restrict on update restrict;
+create index ix_mprojectprogramsnapshot_grid_project_id on mprojectprogramsnapshot (grid_project_id);
 
 alter table b_program_version_snapshots add constraint fk_b_program_version_snapshots_mprojectprogramsnapshot foreign key (mproject_program_snap_shot_id) references mprojectprogramsnapshot (id) on delete restrict on update restrict;
 create index ix_b_program_version_snapshots_mprojectprogramsnapshot on b_program_version_snapshots (mproject_program_snap_shot_id);
@@ -1324,8 +1325,8 @@ alter table version add constraint fk_version_default_program_id foreign key (de
 alter table version add constraint fk_version_b_program_id foreign key (b_program_id) references bprogram (id) on delete restrict on update restrict;
 create index ix_version_b_program_id on version (b_program_id);
 
-alter table version add constraint fk_version_m_program_id foreign key (m_program_id) references mprogram (id) on delete restrict on update restrict;
-create index ix_version_m_program_id on version (m_program_id);
+alter table version add constraint fk_version_grid_program_id foreign key (grid_program_id) references gridprogram (id) on delete restrict on update restrict;
+create index ix_version_grid_program_id on version (grid_program_id);
 
 alter table widget add constraint fk_widget_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
 create index ix_widget_author_id on widget (author_id);
@@ -1424,6 +1425,24 @@ drop index if exists ix_employee_person_id;
 
 alter table if exists employee drop constraint if exists fk_employee_customer_id;
 drop index if exists ix_employee_customer_id;
+
+alter table if exists gridprogram drop constraint if exists fk_gridprogram_grid_project_id;
+drop index if exists ix_gridprogram_grid_project_id;
+
+alter table if exists gridprogram_tag drop constraint if exists fk_gridprogram_tag_gridprogram;
+drop index if exists ix_gridprogram_tag_gridprogram;
+
+alter table if exists gridprogram_tag drop constraint if exists fk_gridprogram_tag_tag;
+drop index if exists ix_gridprogram_tag_tag;
+
+alter table if exists gridproject drop constraint if exists fk_gridproject_project_id;
+drop index if exists ix_gridproject_project_id;
+
+alter table if exists gridproject_tag drop constraint if exists fk_gridproject_tag_gridproject;
+drop index if exists ix_gridproject_tag_gridproject;
+
+alter table if exists gridproject_tag drop constraint if exists fk_gridproject_tag_tag;
+drop index if exists ix_gridproject_tag_tag;
 
 alter table if exists gridterminal drop constraint if exists fk_gridterminal_person_id;
 drop index if exists ix_gridterminal_person_id;
@@ -1549,32 +1568,14 @@ drop index if exists ix_library_hardwaretype_hardwaretype;
 
 alter table if exists log drop constraint if exists fk_log_file_id;
 
-alter table if exists mprogram drop constraint if exists fk_mprogram_m_project_id;
-drop index if exists ix_mprogram_m_project_id;
+alter table if exists mprograminstanceparameter drop constraint if exists fk_mprograminstanceparameter_grid_project_program_snapsho_1;
+drop index if exists ix_mprograminstanceparameter_grid_project_program_snapsho_1;
 
-alter table if exists mprogram_tag drop constraint if exists fk_mprogram_tag_mprogram;
-drop index if exists ix_mprogram_tag_mprogram;
+alter table if exists mprograminstanceparameter drop constraint if exists fk_mprograminstanceparameter_grid_program_version_id;
+drop index if exists ix_mprograminstanceparameter_grid_program_version_id;
 
-alter table if exists mprogram_tag drop constraint if exists fk_mprogram_tag_tag;
-drop index if exists ix_mprogram_tag_tag;
-
-alter table if exists mprograminstanceparameter drop constraint if exists fk_mprograminstanceparameter_m_project_program_snapshot_id;
-drop index if exists ix_mprograminstanceparameter_m_project_program_snapshot_id;
-
-alter table if exists mprograminstanceparameter drop constraint if exists fk_mprograminstanceparameter_m_program_version_id;
-drop index if exists ix_mprograminstanceparameter_m_program_version_id;
-
-alter table if exists mproject drop constraint if exists fk_mproject_project_id;
-drop index if exists ix_mproject_project_id;
-
-alter table if exists mproject_tag drop constraint if exists fk_mproject_tag_mproject;
-drop index if exists ix_mproject_tag_mproject;
-
-alter table if exists mproject_tag drop constraint if exists fk_mproject_tag_tag;
-drop index if exists ix_mproject_tag_tag;
-
-alter table if exists mprojectprogramsnapshot drop constraint if exists fk_mprojectprogramsnapshot_m_project_id;
-drop index if exists ix_mprojectprogramsnapshot_m_project_id;
+alter table if exists mprojectprogramsnapshot drop constraint if exists fk_mprojectprogramsnapshot_grid_project_id;
+drop index if exists ix_mprojectprogramsnapshot_grid_project_id;
 
 alter table if exists b_program_version_snapshots drop constraint if exists fk_b_program_version_snapshots_mprojectprogramsnapshot;
 drop index if exists ix_b_program_version_snapshots_mprojectprogramsnapshot;
@@ -1658,8 +1659,8 @@ alter table if exists version drop constraint if exists fk_version_default_progr
 alter table if exists version drop constraint if exists fk_version_b_program_id;
 drop index if exists ix_version_b_program_id;
 
-alter table if exists version drop constraint if exists fk_version_m_program_id;
-drop index if exists ix_version_m_program_id;
+alter table if exists version drop constraint if exists fk_version_grid_program_id;
+drop index if exists ix_version_grid_program_id;
 
 alter table if exists widget drop constraint if exists fk_widget_author_id;
 drop index if exists ix_widget_author_id;
@@ -1714,6 +1715,14 @@ drop table if exists employee cascade;
 
 drop table if exists garfield cascade;
 
+drop table if exists gridprogram cascade;
+
+drop table if exists gridprogram_tag cascade;
+
+drop table if exists gridproject cascade;
+
+drop table if exists gridproject_tag cascade;
+
 drop table if exists gridterminal cascade;
 
 drop table if exists hardware cascade;
@@ -1758,15 +1767,7 @@ drop table if exists library_hardwaretype cascade;
 
 drop table if exists log cascade;
 
-drop table if exists mprogram cascade;
-
-drop table if exists mprogram_tag cascade;
-
 drop table if exists mprograminstanceparameter cascade;
-
-drop table if exists mproject cascade;
-
-drop table if exists mproject_tag cascade;
 
 drop table if exists mprojectprogramsnapshot cascade;
 

@@ -56,7 +56,7 @@ public class Controller_Project extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Successfully created",      response = Model_Project.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -119,7 +119,7 @@ public class Controller_Project extends BaseController {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class, responseContainer = "list"),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -155,7 +155,7 @@ public class Controller_Project extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -163,7 +163,7 @@ public class Controller_Project extends BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result project_get(@ApiParam(value = "project_id String path", required = true)  String project_id) {
+    public Result project_get(@ApiParam(value = "project_id String path", required = true) String project_id) {
 
         try {
 
@@ -196,7 +196,7 @@ public class Controller_Project extends BaseController {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -253,7 +253,7 @@ public class Controller_Project extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -262,7 +262,7 @@ public class Controller_Project extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_update(@ApiParam(value = "project_id String path", required = true)  String project_id) {
+    public Result project_update(@ApiParam(value = "project_id String path", required = true) String project_id) {
         try {
 
             // Zpracování Json
@@ -315,7 +315,7 @@ public class Controller_Project extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
@@ -325,7 +325,7 @@ public class Controller_Project extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_invite(@ApiParam(value = "project_id String path", required = true)  String project_id) {
+    public Result project_invite(@ApiParam(value = "project_id String path", required = true) String project_id) {
         try {
 
             // Zpracování Json
@@ -446,7 +446,7 @@ public class Controller_Project extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_ProjectParticipant.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -454,7 +454,7 @@ public class Controller_Project extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_changeParticipantStatus(@ApiParam(value = "project_id String path", required = true)  String project_id) {
+    public Result project_changeParticipantStatus(@ApiParam(value = "project_id String path", required = true) String project_id) {
         try {
 
             // Zpracování Json
@@ -509,7 +509,7 @@ public class Controller_Project extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -581,6 +581,7 @@ public class Controller_Project extends BaseController {
             tags = {"Project"},
             notes = "",
             produces = "application/json",
+            consumes = "application/json",
             protocols = "https"
     )
     @ApiImplicitParams(
@@ -594,7 +595,7 @@ public class Controller_Project extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -627,10 +628,62 @@ public class Controller_Project extends BaseController {
         }
     }
 
+    @ApiOperation(value = "untag Project",
+            tags = {"Project"},
+            notes = "",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_Tags",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result project_removeTags() {
+        try {
+
+            // Zpracování Json
+            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
+            Swagger_Tags help = form.get();
+
+            Model_Project project = Model_Project.getById(help.object_id);
+            if (project == null) return notFound("Project not found");
+
+            // Kontrola oprávnění těsně před uložením
+            if (!project.edit_permission())  return forbiddenEmpty();
+
+            project.removeTags(help.tags);
+
+            // Vrácení objektu
+            return ok(project.json());
+
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
+    }
+
     @ApiOperation(value = "addHW Project",
             tags = {"Project"},
             notes = "add new HW to Project, creates HardwareRegistration",
             produces = "application/json",
+            consumes = "application/json",
             protocols = "https",
             code = 201
     )
@@ -645,7 +698,7 @@ public class Controller_Project extends BaseController {
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Ok Result",                 response = Model_HardwareRegistration.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -705,7 +758,7 @@ public class Controller_Project extends BaseController {
             protocols = "https"
     )
 
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),

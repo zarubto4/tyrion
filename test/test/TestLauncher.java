@@ -28,7 +28,7 @@ class StreamGobbler extends Thread
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
             String line = null;
-            while ( (line = br.readLine()) != null)
+            while ((line = br.readLine()) != null)
                 System.out.println(type + ">" + line);
         } catch (IOException ioe)
         {

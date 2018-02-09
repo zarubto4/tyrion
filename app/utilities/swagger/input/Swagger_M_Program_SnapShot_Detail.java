@@ -21,7 +21,7 @@ public class Swagger_M_Program_SnapShot_Detail {
     @Constraints.Required @ApiModelProperty(required = true, readOnly = true) public String version_description;
 
 
-    @Constraints.Required @ApiModelProperty(required = true, readOnly = true, value = "Path To program connection:: https:/grid_app_url.com/{instance_id}/{m_program_id}") public String grid_app_url;
+    @Constraints.Required @ApiModelProperty(required = true, readOnly = true, value = "Path To program connection:: https:/grid_app_url.com/{instance_id}/{grid_program_id}") public String grid_app_url;
 
     @Constraints.Required @ApiModelProperty(required = true, readOnly = true) public GridAccess snapshot_settings;
 

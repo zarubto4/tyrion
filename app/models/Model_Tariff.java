@@ -149,7 +149,7 @@ public class Model_Tariff extends NamedModel {
     public void up() {
 
         Model_Tariff up = Model_Tariff.find.query().where().eq("order_position", (order_position-1) ).findOne();
-        if (up == null)return;
+        if (up == null) return;
 
         up.order_position += 1;
         up.update();
@@ -162,7 +162,7 @@ public class Model_Tariff extends NamedModel {
     public void down() {
 
         Model_Tariff down = Model_Tariff.find.query().where().eq("order_position", (order_position+1) ).findOne();
-        if (down == null)return;
+        if (down == null) return;
 
         down.order_position -= 1;
         down.update();

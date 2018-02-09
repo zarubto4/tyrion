@@ -36,16 +36,16 @@ public class Model_Project extends TaggedModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Product product;
 
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_BProgram>              b_programs   = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_CProgram>              c_programs   = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Library>               libraries    = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_MProject>              m_projects   = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Block>                 blocks       = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Widget>                widgets      = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareRegistration>  hardware     = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareGroup> hardware_groups = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("created desc") public List<Model_Invitation>            invitations  = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("id asc")       public List<Model_ProjectParticipant>    participants = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_BProgram>              b_programs      = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_CProgram>              c_programs      = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Library>               libraries       = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_GridProject>           grid_projects   = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Block>                 blocks          = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Widget>                widgets         = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareRegistration>  hardware        = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareGroup>         hardware_groups = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("created desc") public List<Model_Invitation>            invitations     = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("id asc")       public List<Model_ProjectParticipant>    participants    = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -53,7 +53,7 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore @Transient @Cached public List<UUID> cache_c_program_ids;
     @JsonIgnore @Transient @Cached public List<UUID> cache_library_ids;
     @JsonIgnore @Transient @Cached public List<UUID> cache_b_program_ids;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_m_project_ids;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_grid_project_ids;
     @JsonIgnore @Transient @Cached public List<UUID> cache_hardware_group_ids;
     @JsonIgnore @Transient @Cached public List<UUID> cache_widget_ids;
     @JsonIgnore @Transient @Cached public List<UUID> cache_block_ids;
@@ -62,14 +62,14 @@ public class Model_Project extends TaggedModel {
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_HardwareRegistration>    hardware()   { return active() ? getHardware()  : new ArrayList<>(); }
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_BProgram>                b_programs() { return active() ? getBPrograms() : new ArrayList<>(); }
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_CProgram>                c_programs() { return active() ? getCPrograms() : new ArrayList<>(); }
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_Library>                 libraries()  { return active() ? getLibraries() : new ArrayList<>(); }
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_MProject>                m_projects() { return active() ? getMProjects() : new ArrayList<>(); }
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_Widget>                  widgets()    { return active() ? getWidgets()   : new ArrayList<>(); }
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_Block>                   blocks()     { return active() ? getBlocks()    : new ArrayList<>(); }
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_Instance>                instances()  { return active() ? getInstances() : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_HardwareRegistration>    hardware()      { return active() ? getHardware()       : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_BProgram>                b_programs()    { return active() ? getBPrograms()      : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_CProgram>                c_programs()    { return active() ? getCPrograms()      : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_Library>                 libraries()     { return active() ? getLibraries()      : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_GridProject>             grid_projects() { return active() ? getGridProjects()   : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_Widget>                  widgets()       { return active() ? getWidgets()        : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_Block>                   blocks()        { return active() ? getBlocks()         : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_Instance>                instances()     { return active() ? getInstances()      : new ArrayList<>(); }
     @JsonProperty @ApiModelProperty(required = true) public boolean active() { return getProduct().active;}
 
     @JsonProperty @ApiModelProperty(required = true) public String product_name() { return getProduct().name;}
@@ -81,7 +81,7 @@ public class Model_Project extends TaggedModel {
 
         for (Model_Invitation invitation : invitations) {
 
-            Model_Person person = Model_Person.find.query().where().eq("mail", invitation.email).findOne();
+            Model_Person person = Model_Person.getByEmail(invitation.email);
 
             Model_ProjectParticipant project_participant = new Model_ProjectParticipant();
 
@@ -277,31 +277,31 @@ public class Model_Project extends TaggedModel {
     }
 
     @JsonIgnore
-    public List<Model_MProject> getMProjects() {
+    public List<Model_GridProject> getGridProjects() {
         try {
 
-            List<Model_MProject> mProjects;
+            List<Model_GridProject> gridProjects;
 
-            if (cache_m_project_ids == null) {
+            if (cache_grid_project_ids == null) {
 
-                mProjects = Model_MProject.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").findList();
+                gridProjects = Model_GridProject.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").findList();
 
                 // Získání seznamu
-                for (Model_MProject mProject : mProjects) {
-                    cache_m_project_ids.add(mProject.id);
-                    mProject.cache();
+                for (Model_GridProject gridProject : gridProjects) {
+                    cache_grid_project_ids.add(gridProject.id);
+                    gridProject.cache();
                 }
 
-                return mProjects;
+                return gridProjects;
             } else {
-                mProjects = new ArrayList<>();
+                gridProjects = new ArrayList<>();
 
-                for (UUID id : cache_m_project_ids) {
-                    mProjects.add(Model_MProject.getById(id));
+                for (UUID id : cache_grid_project_ids) {
+                    gridProjects.add(Model_GridProject.getById(id));
                 }
             }
 
-            return mProjects;
+            return gridProjects;
 
         } catch (Exception e) {
             logger.internalServerError(e);

@@ -35,8 +35,8 @@ public class Model_Tag extends BaseModel {
     @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_Library> libraries = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_CProgram> c_programs = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_BProgram> b_programs = new ArrayList<>();
-    @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_MProgram> m_programs = new ArrayList<>();
-    @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_MProject> m_projects = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_GridProgram> m_programs = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_GridProject> m_projects = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_Instance> instances = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_HardwareRegistration> hardware = new ArrayList<>();
 
