@@ -11,6 +11,8 @@ import org.ehcache.Cache;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.ProgramType;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
@@ -110,19 +112,25 @@ public class Model_Block extends TaggedModel {
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public Model_Project getProject() {
+    public UUID get_project_id() throws _Base_Result_Exception {
 
         if (cache_project_id == null) {
-            Model_Project project = Model_Project.find.query().where().eq("blocks.id", id).findOne();
+            Model_Project project = Model_Project.find.query().where().eq("blocks.id", id).select("id").findOne();
             if (project == null) return null;
-
             cache_project_id = project.id;
-            project.cache();
-
-            return project;
         }
 
-        return Model_Project.getById(cache_project_id);
+        return cache_project_id;
+    }
+
+    @JsonIgnore
+    public Model_Project get_project() throws _Base_Result_Exception {
+
+        if (cache_project_id == null) {
+            return Model_Project.getById(get_project_id());
+        }else {
+            return Model_Project.getById(cache_project_id);
+        }
     }
 
     @JsonIgnore
@@ -180,17 +188,6 @@ public class Model_Block extends TaggedModel {
         return Model_Producer.getById(cache_producer_id);
     }
 
-    @JsonIgnore
-    public UUID getProjectId() {
-        if (cache_project_id == null) {
-            Model_Project project = getProject();
-            if (project == null) return null;
-
-            return project.id;
-        }
-
-        return cache_project_id;
-    }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -276,12 +273,39 @@ public class Model_Block extends TaggedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore                                      public boolean create_permission() { return (this.project != null && this.project.update_permission()) || BaseController.person().has_permission(Permission.Block_create.name()); }
-    @JsonIgnore                                      public boolean read_permission()   { return publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN || getProject().read_permission();}
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()   { return getProjectId() != null ? getProject().update_permission() : BaseController.person().has_permission(Permission.Block_edit.name());}
-    @JsonProperty @ApiModelProperty(required = true) public boolean update_permission() { return getProjectId() != null ? getProject().update_permission() : BaseController.person().has_permission(Permission.Block_update.name());}
-    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission() { return getProjectId() != null ? getProject().update_permission() : BaseController.person().has_permission(Permission.Block_delete.name());}
-    @JsonProperty @ApiModelProperty("Visible only for Administrator with permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  { return BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name());}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Block_create.name())) return;
+        project.check_update_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception   {
+        if(BaseController.person().has_permission(Permission.Block_read.name())) return;
+        if(publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN ) return;
+        get_project().check_read_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_edit_permission() throws _Base_Result_Exception   {
+        if(BaseController.person().has_permission(Permission.Block_edit.name())) return;
+        get_project().check_update_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Block_update.name())) return;
+        get_project().check_update_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception  {
+        if(BaseController.person().has_permission(Permission.Block_delete.name())) return;
+        get_project().check_update_permission();
+    }
+    @JsonProperty @ApiModelProperty("Visible only for Administrator with permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
+        try {
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if(BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return true;
+            return null;
+        }catch (_Base_Result_Exception exception){
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 
     public enum Permission { Block_create, Block_read, Block_edit, Block_update, Block_delete }
 
@@ -290,17 +314,17 @@ public class Model_Block extends TaggedModel {
     @CacheField(Model_Block.class)
     public static Cache<UUID, Model_Block> cache;
 
-    public static Model_Block getById(String id) {
+    public static Model_Block getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_Block getById(UUID id) {
+    public static Model_Block getById(UUID id) throws _Base_Result_Exception {
 
         Model_Block block = cache.get(id);
         if (block == null) {
 
             block = find.query().where().idEq(id).eq("deleted", false).findOne();
-            if (block == null) return null;
+            if (block == null) throw new Result_Error_NotFound(Model_MProgramInstanceParameter.class);
 
             cache.put(id, block);
         }

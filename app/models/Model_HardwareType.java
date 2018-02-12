@@ -12,6 +12,8 @@ import org.ehcache.Cache;
 import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.swagger.input.Swagger_CompilationLibrary;
@@ -316,15 +318,60 @@ public class Model_HardwareType extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   public boolean create_permission() {  return BaseController.person().has_permission("HardwareType_create"); }
-    @JsonIgnore   public boolean read_permission()  {  return true; }
-    @JsonProperty public boolean edit_permission()  {  return BaseController.person().has_permission("HardwareType_edit");   }
-    @JsonProperty public boolean update_permission()  {  return BaseController.person().has_permission("HardwareType_update");   }
-    @JsonProperty public boolean delete_permission() {  return BaseController.person().has_permission("HardwareType_delete"); }
-    @JsonProperty public boolean register_new_device_permission() { return BaseController.person().has_permission("HardwareType_register_new_device"); }
-    @JsonProperty public boolean bootloader_edit_permission() { return BaseController.person().has_permission("HardwareType_bootloader"); }
-    @JsonProperty public boolean default_c_program_edit_permission() { return BaseController.person().has_permission("HardwareType_c_program_edit_permission"); }
-    @JsonProperty public boolean test_c_program_edit_permission() { return BaseController.person().has_permission("HardwareType_test_c_program_edit_permission"); }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.HardwareType_create.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {}
+    @JsonIgnore @Transient @Override public void check_edit_permission()   throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.HardwareType_edit.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.HardwareType_update.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.HardwareType_delete.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+
+    @JsonIgnore @Transient public void register_new_device_permission() throws _Base_Result_Exception  {
+        if(BaseController.person().has_permission(Permission.HardwareType_register_new_device.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Boolean bootloader_edit_permission() throws _Base_Result_Exception {
+        try {
+            if (BaseController.person().has_permission(Permission.HardwareType_bootloader.name())) return true;
+            return null;
+        }catch (_Base_Result_Exception e){
+            return null;
+        }
+    }
+
+    @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Boolean default_c_program_edit_permission() throws _Base_Result_Exception {
+        try {
+            if (BaseController.person().has_permission(Permission.HardwareType_c_program_edit_permission.name())) return true;
+            return null;
+        }catch (_Base_Result_Exception e){
+            return null;
+        }
+    }
+
+    @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Boolean test_c_program_edit_permission() {
+        try {
+            if (BaseController.person().has_permission(Permission.HardwareType_test_c_program_edit_permission.name())) return true;
+            return null;
+        }catch (_Base_Result_Exception e){
+            return null;
+        }
+    }
 
     public enum Permission { HardwareType_create, HardwareType_edit, HardwareType_update, HardwareType_delete, HardwareType_register_new_device, HardwareType_bootloader,  HardwareType_c_program_edit_permission, HardwareType_test_c_program_edit_permission }
 

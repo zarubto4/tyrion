@@ -1,20 +1,25 @@
 package utilities.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.ebean.Model;
 import io.ebean.annotation.SoftDelete;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.libs.Json;
+import scala.xml.Null;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.models_update_echo.EchoHandler;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import javax.transaction.NotSupportedException;
 import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.UUID;
@@ -46,7 +51,7 @@ public abstract class BaseModel extends Model {
 /* COMMON METHODS ------------------------------------------------------------------------------------------------------*/
 
     @Override
-    public void save() {
+    public void save() throws NullPointerException {
 
         boolean isNew = this.id == null;
 
@@ -72,10 +77,16 @@ public abstract class BaseModel extends Model {
 
     @Override
     public boolean delete() {
-        logger.trace("delete - deleting '{}' from DB, id: {}", this.getClass().getSimpleName(), this.id);
+        logger.trace("delete:: - deleting '{}' from DB, id: {}", this.getClass().getSimpleName(), this.id);
+
+        this.deleted = true;
+        this.removed = new Date();
+        super.update();
+
         new Thread(this::evict).start(); // Evict the object from cache
         this.echoParent(); // Send echo update of parent object
-        return super.delete();
+
+        return true;
     }
 
     @Override
@@ -211,12 +222,59 @@ public abstract class BaseModel extends Model {
         }
     }
 
-/* ABSTRACT METHODS ----------------------------------------------------------------------------------------------------*/
+/* Permission Contents ----------------------------------------------------------------------------------------------------*/
+
 /*
-    public abstract boolean create_permission();
-    public abstract boolean read_permission();
-    public abstract boolean update_permission();
-    public abstract boolean delete_permission();
+    @ApiModelProperty(readOnly = true, value = "can be hidden, if Widget is created by Byzance or Other Company") public boolean edit_permission(){
+        try{
+            check_edit_permission();
+            return true;
+        }catch (_Base_Result_Exception e) {
+            return false;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return false;
+        }
+    }
+
+    @ApiModelProperty(readOnly = true, value = "can be hidden, if Widget is created by Byzance or Other Company") public boolean update_permission(){
+        try{
+            check_update_permission();
+            return true;
+        }catch (_Base_Result_Exception e) {
+            return false;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return false;
+        }
+    }
+
+    @ApiModelProperty(readOnly = true, value = "can be hidden, if Widget is created by Byzance or Other Company") public boolean delete_permission(){
+        try{
+            check_delete_permission();
+            return true;
+        }catch (_Base_Result_Exception e) {
+            return false;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return false;
+        }
+    }
 */
+
+/* ABSTRACT METHODS ----------------------------------------------------------------------------------------------------*/
+
+    /*
+     * Required for all Models in Database.
+     * You can used this one, or Override this
+     *
+     */
+    @JsonIgnore public abstract void check_create_permission() throws _Base_Result_Exception;
+    @JsonIgnore public abstract void check_read_permission()   throws _Base_Result_Exception;
+    @JsonIgnore public abstract void check_edit_permission()   throws _Base_Result_Exception;
+    @JsonIgnore public abstract void check_update_permission() throws _Base_Result_Exception;
+    @JsonIgnore public abstract void check_delete_permission() throws _Base_Result_Exception;
+
+
 }
 

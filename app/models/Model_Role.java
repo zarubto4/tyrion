@@ -6,6 +6,9 @@ import controllers.BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.enums.ProgramType;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 
@@ -54,12 +57,29 @@ public class Model_Role extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore                                      public boolean create_permission() { return BaseController.person().has_permission("Role_create"); }
-    @JsonIgnore                                      public boolean read_permission()   { return BaseController.person().has_permission("Role_read"); }
-    @JsonProperty @ApiModelProperty(required = true) public boolean update_permission() { return BaseController.person().has_permission("Role_update"); }
-    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission() { return BaseController.person().has_permission("Role_delete");}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Role_create.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Role_read.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override  public void check_edit_permission()   throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Role_edit.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Role_update.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
 
-    public enum Permission { Role_create, Role_read, Role_update, Role_delete }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Role_delete.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+
+    public enum Permission { Role_create, Role_read, Role_edit, Role_update, Role_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

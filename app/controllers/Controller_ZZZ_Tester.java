@@ -23,7 +23,7 @@ public class Controller_ZZZ_Tester extends BaseController {
      public Result test1() {
          try {
 
-             JsonNode json = request().body().asJson();
+             JsonNode json = getBodyAsJson();
 
              String tag = json.get("tag").asText();
 
@@ -69,7 +69,7 @@ public class Controller_ZZZ_Tester extends BaseController {
 
             // logger.error(BCrypt.hashpw("password", BCrypt.gensalt(12)));
             // Test online change stavů
-            JsonNode json = request().body().asJson();
+            JsonNode json = getBodyAsJson();
 
             String type = json.get("type").asText();
             UUID id = UUID.fromString(json.get("id").asText());
@@ -100,7 +100,7 @@ public class Controller_ZZZ_Tester extends BaseController {
     public Result test3() {
         try {
 
-            return okEmpty();
+            return ok();
         } catch (Exception e) {
             e.printStackTrace();
             return internalServerError(e);
@@ -111,7 +111,7 @@ public class Controller_ZZZ_Tester extends BaseController {
     public Result test4() {
         try {
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             e.printStackTrace();

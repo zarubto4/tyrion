@@ -89,7 +89,7 @@ public class Controller_Blocko extends BaseController {
             if (project == null) return notFound("Project not found");
 
             // Kontrola oprávnění
-            if (!project.update_permission()) return forbiddenEmpty();
+            if (!project.update_permission()) return forbidden();
 
             // Tvorba programu
             Model_BProgram bProgram        = new Model_BProgram();
@@ -98,7 +98,7 @@ public class Controller_Blocko extends BaseController {
             bProgram.project               = project;
 
             // Kontrola oprávnění těsně před uložením
-            if (!bProgram.create_permission()) return forbiddenEmpty();
+            if (!bProgram.create_permission()) return forbidden();
 
             // Uložení objektu
             bProgram.save();
@@ -138,7 +138,7 @@ public class Controller_Blocko extends BaseController {
             if (bProgram == null) return notFound("BProgram not found");
 
             // Kontrola oprávnění
-            if (!bProgram.read_permission()) return forbiddenEmpty();
+            if (!bProgram.read_permission()) return forbidden();
 
             // Vrácení objektu
             return ok(bProgram.json());
@@ -246,7 +246,7 @@ public class Controller_Blocko extends BaseController {
             if (b_program == null) return notFound("B_Program not found");
 
             // Kontrola oprávěnní
-            if (!b_program.edit_permission()) return forbiddenEmpty();
+            if (!b_program.edit_permission()) return forbidden();
 
             // Úprava objektu
             b_program.description = help.description;
@@ -302,7 +302,7 @@ public class Controller_Blocko extends BaseController {
             if (bProgram == null) return notFound("BProgram not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!bProgram.edit_permission())  return forbiddenEmpty();
+            if (!bProgram.edit_permission())  return forbidden();
 
             bProgram.addTags(help.tags);
 
@@ -353,7 +353,7 @@ public class Controller_Blocko extends BaseController {
             if (bProgram == null) return notFound("BProgram not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!bProgram.edit_permission())  return forbiddenEmpty();
+            if (!bProgram.edit_permission())  return forbidden();
 
             bProgram.removeTags(help.tags);
 
@@ -393,13 +393,13 @@ public class Controller_Blocko extends BaseController {
             if (program == null) return notFound("B_Program id not found");
 
             // Kontrola oprávění
-            if (!program.delete_permission()) return forbiddenEmpty();
+            if (!program.delete_permission()) return forbidden();
 
             // Smazání objektu
             program.delete();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -457,7 +457,7 @@ public class Controller_Blocko extends BaseController {
             if (bProgram == null) return notFound("BProgram id not found");
 
             // Kontrola oprávnění
-            if (!bProgram.update_permission()) return forbiddenEmpty();
+            if (!bProgram.update_permission()) return forbidden();
 
             // První nová Verze
             Model_Version version = new Model_Version();
@@ -473,7 +473,7 @@ public class Controller_Blocko extends BaseController {
 
                     Model_GridProject m_project = Model_GridProject.getById(help_m_project_snap.m_project_id);
                     if (m_project == null) return notFound("GridProject not found");
-                    if (!m_project.update_permission()) return forbiddenEmpty();
+                    if (!m_project.update_permission()) return forbidden();
 
                     Model_MProjectProgramSnapShot snap = new Model_MProjectProgramSnapShot();
                     snap.grid_project = m_project;
@@ -539,7 +539,7 @@ public class Controller_Blocko extends BaseController {
             if (version.get_b_program() == null) return notFound("Version is not version of B_Program");
 
             // Kontrola oprávnění
-            if (!version.get_b_program().read_permission()) return forbiddenEmpty();
+            if (!version.get_b_program().read_permission()) return forbidden();
 
             // Vrácení objektu
             return ok(Json.toJson(version.get_b_program().program_version(version)));
@@ -598,13 +598,13 @@ public class Controller_Blocko extends BaseController {
             version.description = help.description;
 
             // Kontrola oprávnění
-            if (!version.get_b_program().edit_permission()) return forbiddenEmpty();
+            if (!version.get_b_program().edit_permission()) return forbidden();
 
             // Smazání objektu
             version.update();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -643,13 +643,13 @@ public class Controller_Blocko extends BaseController {
             if (version.get_b_program() == null) return badRequest("BProgram not found");
 
             // Kontrola oprávnění
-            if (!version.get_b_program().delete_permission()) return forbiddenEmpty();
+            if (!version.get_b_program().delete_permission()) return forbidden();
 
             // Smazání objektu
             version.delete();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -703,7 +703,7 @@ public class Controller_Blocko extends BaseController {
             instance.description = help.description;
             instance.project = project;
 
-            if (!instance.create_permission()) return forbiddenEmpty();
+            if (!instance.create_permission()) return forbidden();
 
             instance.save();
 
@@ -733,7 +733,7 @@ public class Controller_Blocko extends BaseController {
             Model_Instance instance = Model_Instance.getById(instance_id);
             if (instance == null) return notFound("Instance not found");
 
-            if (!instance.read_permission()) return forbiddenEmpty();
+            if (!instance.read_permission()) return forbidden();
 
             return ok(instance.json());
 
@@ -781,7 +781,7 @@ public class Controller_Blocko extends BaseController {
             Model_Instance instance = Model_Instance.getById(instance_id);
             if (instance == null) return notFound("Instance not found");
 
-            if (!instance.update_permission()) return forbiddenEmpty();
+            if (!instance.update_permission()) return forbidden();
 
             instance.name = help.name;
             instance.description = help.description;
@@ -832,7 +832,7 @@ public class Controller_Blocko extends BaseController {
             if (instance == null) return notFound("Instance not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!instance.edit_permission())  return forbiddenEmpty();
+            if (!instance.edit_permission())  return forbidden();
 
             instance.addTags(help.tags);
 
@@ -881,7 +881,7 @@ public class Controller_Blocko extends BaseController {
             if (instance == null) return notFound("Instance not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!instance.edit_permission())  return forbiddenEmpty();
+            if (!instance.edit_permission())  return forbidden();
 
             instance.removeTags(help.tags);
 
@@ -912,11 +912,11 @@ public class Controller_Blocko extends BaseController {
             Model_Instance instance = Model_Instance.getById(instance_id);
             if (instance == null) return notFound("Instance not found");
 
-            if (!instance.delete_permission()) return forbiddenEmpty();
+            if (!instance.delete_permission()) return forbidden();
 
             instance.delete();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -996,7 +996,7 @@ public class Controller_Blocko extends BaseController {
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
             if (snapshot == null) return notFound("Snapshot not found");
 
-            if (!snapshot.read_permission()) return forbiddenEmpty();
+            if (!snapshot.read_permission()) return forbidden();
 
             return ok(snapshot.json());
 
@@ -1046,7 +1046,7 @@ public class Controller_Blocko extends BaseController {
             if (snapshot == null) return notFound("Snapshot not found");
 
             // Kontrola oprávnění
-            if (!snapshot.update_permission()) return forbiddenEmpty();
+            if (!snapshot.update_permission()) return forbidden();
 
             if (help.upload_time != null) {
 
@@ -1063,7 +1063,7 @@ public class Controller_Blocko extends BaseController {
 
             snapshot.update();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1089,11 +1089,11 @@ public class Controller_Blocko extends BaseController {
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
             if (snapshot == null) return notFound("Instance not found");
 
-            if (!snapshot.update_permission()) return forbiddenEmpty();
+            if (!snapshot.update_permission()) return forbidden();
 
             snapshot.stop();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1121,11 +1121,11 @@ public class Controller_Blocko extends BaseController {
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
             if (snapshot == null) return notFound("Instance not found");
 
-            if (!snapshot.delete_permission()) return forbiddenEmpty();
+            if (!snapshot.delete_permission()) return forbidden();
 
             snapshot.delete();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1263,7 +1263,7 @@ public class Controller_Blocko extends BaseController {
             if (program_parameter == null) return notFound("Object not found");
 
             //Ohlídám oprávnění
-            if (!program_parameter.edit_permission()) return forbiddenEmpty();
+            if (!program_parameter.edit_permission()) return forbidden();
 
             //PArsuju Enum kdyžtak chyba IllegalArgumentException
             GridAccess settings = GridAccess.valueOf(help.snapshot_settings);
@@ -1352,7 +1352,7 @@ public class Controller_Blocko extends BaseController {
             }
 
             // Kontrola oprávnění těsně před uložením
-            if (!block.create_permission()) return forbiddenEmpty();
+            if (!block.create_permission()) return forbidden();
 
             // Uložení objektu
             block.save();
@@ -1421,14 +1421,14 @@ public class Controller_Blocko extends BaseController {
             if (blockOld == null) return notFound("Block not found");
 
             // Zkontroluji oprávnění
-            if (!blockOld.read_permission()) return forbiddenEmpty();
+            if (!blockOld.read_permission()) return forbidden();
 
             // Vyhledám Objekt
             Model_Project project = Model_Project.getById(help.project_id);
             if (project == null) return notFound("Project not found");
 
             // Zkontroluji oprávnění
-            if (!project.update_permission())  return forbiddenEmpty();
+            if (!project.update_permission())  return forbidden();
 
             Model_Block blockNew = new Model_Block();
             blockNew.name = help.name;
@@ -1556,7 +1556,7 @@ public class Controller_Blocko extends BaseController {
             if (block == null) return notFound("Block not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!block.edit_permission())  return forbiddenEmpty();
+            if (!block.edit_permission())  return forbidden();
 
             block.addTags(help.tags);
 
@@ -1605,7 +1605,7 @@ public class Controller_Blocko extends BaseController {
             if (block == null) return notFound("Block not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!block.edit_permission())  return forbiddenEmpty();
+            if (!block.edit_permission())  return forbidden();
 
             block.removeTags(help.tags);
 
@@ -1637,7 +1637,7 @@ public class Controller_Blocko extends BaseController {
             if (block == null) return notFound("Block not found");
 
             // Kontrola oprávnění
-            if (!block.read_permission()) return forbiddenEmpty();
+            if (!block.read_permission()) return forbidden();
 
             // Vrácení objektu
             return ok(Json.toJson(block));
@@ -1725,13 +1725,13 @@ public class Controller_Blocko extends BaseController {
             if (blockoBlock == null) return notFound("Block not found");
 
             // Kontrola oprávnění
-            if (!blockoBlock.delete_permission()) return forbiddenEmpty();
+            if (!blockoBlock.delete_permission()) return forbidden();
 
             // Smazání objektu
             blockoBlock.delete();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1760,11 +1760,11 @@ public class Controller_Blocko extends BaseController {
             if (block == null) return notFound("Block not found");
 
             // Kontrola oprávnění
-            if (!block.edit_permission()) return forbiddenEmpty();
+            if (!block.edit_permission()) return forbidden();
 
             block.up();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1792,11 +1792,11 @@ public class Controller_Blocko extends BaseController {
             if (block == null) return notFound("Block not found");
 
             // Kontrola oprávnění
-            if (!block.edit_permission()) return forbiddenEmpty();
+            if (!block.edit_permission()) return forbidden();
 
             block.down();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1825,17 +1825,17 @@ public class Controller_Blocko extends BaseController {
             if (block == null) return notFound("Block not found");
 
             // Kontrola oprávnění
-            if (!block.edit_permission()) return forbiddenEmpty();
+            if (!block.edit_permission()) return forbidden();
 
             if (!block.active) return badRequest("Block is already deactivated");
 
-            if (!block.update_permission()) return forbiddenEmpty();
+            if (!block.update_permission()) return forbidden();
 
             block.active = false;
 
             block.update();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1865,13 +1865,13 @@ public class Controller_Blocko extends BaseController {
 
             if (block.active) return badRequest("Block is already activated");
 
-            if (!block.update_permission()) return forbiddenEmpty();
+            if (!block.update_permission()) return forbidden();
 
             block.active = true;
 
             block.update();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1924,7 +1924,7 @@ public class Controller_Blocko extends BaseController {
 
             // Zkontroluji oprávnění
             if (!block_old.community_publishing_permission()) {
-                return forbiddenEmpty();
+                return forbidden();
             }
 
             if (help.decision) {
@@ -1958,7 +1958,7 @@ public class Controller_Blocko extends BaseController {
 
                 // TODO notifikace a emaily
 
-                return okEmpty();
+                return ok();
 
             } else {
                 // Změna stavu schválení
@@ -1980,7 +1980,7 @@ public class Controller_Blocko extends BaseController {
                 private_block_version.update();
 
                 // Vrácení výsledku
-                return okEmpty();
+                return ok();
             }
 
         } catch (Exception e) {
@@ -2043,7 +2043,7 @@ public class Controller_Blocko extends BaseController {
             version.author = person();
 
             // Kontrola oprávnění
-            if (!version.create_permission()) return forbiddenEmpty();
+            if (!version.create_permission()) return forbidden();
 
             // Uložení objektu
             version.save();
@@ -2165,13 +2165,13 @@ public class Controller_Blocko extends BaseController {
             if (version == null) return notFound("BlockVersion not found");
 
             // Kontrola oprávnění
-            if (!version.delete_permission()) return forbiddenEmpty();
+            if (!version.delete_permission()) return forbidden();
 
             // Smazání objektu
             version.delete();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -2200,7 +2200,7 @@ public class Controller_Blocko extends BaseController {
             if (version == null) return notFound("BlockVersion not found");
 
             // Kontrola orávnění
-            if (!(version.edit_permission())) return forbiddenEmpty();
+            if (!(version.edit_permission())) return forbidden();
 
             // Úprava objektu
             version.approval_state = Approval.PENDING;
@@ -2238,7 +2238,7 @@ public class Controller_Blocko extends BaseController {
             if (version == null) return notFound("BlockVersion not found");
 
             // Kontrola oprávnění
-            if (!version.edit_permission()) return forbiddenEmpty();
+            if (!version.edit_permission()) return forbidden();
 
             if (!version.get_block_id().equals(UUID.fromString("00000000-0000-0000-0000-000000000001"))) {
                 return notFound("BlockVersion not from default program");
@@ -2255,7 +2255,7 @@ public class Controller_Blocko extends BaseController {
             version.update();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -2318,7 +2318,7 @@ public class Controller_Blocko extends BaseController {
             version.update();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -2401,7 +2401,7 @@ public class Controller_Blocko extends BaseController {
             privateVersion.update();
 
             // Vrácení výsledku
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);

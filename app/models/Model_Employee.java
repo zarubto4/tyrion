@@ -6,6 +6,9 @@ import controllers.BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import utilities.enums.ParticipantStatus;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
@@ -57,12 +60,29 @@ public class Model_Employee extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   public boolean create_permission()    {return true;}
-    @JsonProperty public boolean update_permission()    {return true;}
-    @JsonProperty public boolean edit_permission()      {return true;}
-    @JsonProperty public boolean delete_permission()    {return person.id.equals(BaseController.personId()) || customer.isEmployee(BaseController.person()) || BaseController.person().has_permission("Employee_delete");}
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Employee_read.name())) return;
+        customer.check_read_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Employee_crate.name())) return;
+        customer.check_update_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Employee_update.name())) return;
+        customer.check_update_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_edit_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Employee_edit.name())) return;
+        customer.check_edit_permission();
+    }
 
-    public enum Permission { Employee_edit, Employee_read, Employee_update, Employee_delete }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Employee_delete.name())) return;
+        customer.check_delete_permission();
+    }
+
+    public enum Permission { Employee_crate, Employee_edit, Employee_read, Employee_update, Employee_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

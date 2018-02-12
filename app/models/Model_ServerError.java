@@ -9,11 +9,18 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.mvc.Http;
 import utilities.authentication.Attributes;
+import utilities.enums.ProgramType;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.logger.Logger;
 import utilities.model.NamedModel;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,6 +30,8 @@ import java.util.UUID;
 public class Model_ServerError extends NamedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Logger logger = new Logger(Model_ServerError.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
                                         public String type;
@@ -127,6 +136,7 @@ public class Model_ServerError extends NamedModel {
         return pretty.toString();
     }
 
+
     public static String formatStackTrace(StackTraceElement[] stackTrace) {
         StringBuilder builder = new StringBuilder();
         for (StackTraceElement element : stackTrace) {
@@ -143,30 +153,48 @@ public class Model_ServerError extends NamedModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+/* PERMISSION ----------------------------------------------------------------------------------------------*/
+
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public boolean read_permission() { return BaseController.person().has_permission("ServerError_read");}
-    
-    @JsonProperty @ApiModelProperty(required = true)
-    public boolean edit_permission()  {  return BaseController.person().has_permission("ServerError_edit");}
-    
-    @JsonProperty @ApiModelProperty(required = true)
-    public boolean delete_permission() {  return BaseController.person().has_permission("ServerError_delete");}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        throw new Result_Error_NotSupportedException();
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.ServerError_read.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override  public void check_edit_permission()   throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.ServerError_edit.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.ServerError_update.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
 
-    public enum Permission { ServerError_read, ServerError_edit, ServerError_delete }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.ServerError_delete.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+
+    public enum Permission { ServerError_read, ServerError_edit, ServerError_update, ServerError_delete }
 
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_ServerError getById(String id) {
-        return getById(UUID.fromString(id));
+    public static Model_ServerError getById(String id) throws _Base_Result_Exception {
+        return   getById(UUID.fromString(id));
     }
     
-    public static Model_ServerError getById(UUID id) {
-        return find.byId(id);
+    public static Model_ServerError getById(UUID id) throws _Base_Result_Exception {
+        Model_ServerError error = find.byId(id);
+        if(error != null) {
+            return error;
+        } else {
+            throw new Result_Error_NotFound(Model_ServerError.class);
+        }
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

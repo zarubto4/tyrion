@@ -67,7 +67,7 @@ public class Controller_Update extends BaseController {
             if (procedure == null) return notFound("ActualizationProcedure not found");
 
             // Kontrola oprávnění
-            if (!procedure.read_permission()) return forbiddenEmpty();
+            if (!procedure.read_permission()) return forbidden();
 
             // Vrácení objektu
             return ok(Json.toJson(procedure));
@@ -120,7 +120,7 @@ public class Controller_Update extends BaseController {
                 for (UUID project_id : help.project_ids) {
                     Model_Project project = Model_Project.getById(project_id);
                     if (project == null) return notFound("Project not found");
-                    if (!project.read_permission()) return forbiddenEmpty();
+                    if (!project.read_permission()) return forbidden();
                 }
 
                 query.where().in("project_id", help.project_ids);
@@ -162,7 +162,7 @@ public class Controller_Update extends BaseController {
             if (procedure == null) return notFound("UpdateProcedure not found");
 
             // Kontrola oprávnění
-            if (!procedure.read_permission()) return forbiddenEmpty();
+            if (!procedure.read_permission()) return forbidden();
 
             procedure.cancel_procedure();
 
@@ -215,7 +215,7 @@ public class Controller_Update extends BaseController {
             // Kontrola Projektu
             Model_Project project = Model_Project.getById(help.project_id);
             if (project == null)  return notFound("firmware_type not found");
-            if (!project.update_permission()) return forbiddenEmpty();
+            if (!project.update_permission()) return forbidden();
 
             // Kontrola
 
@@ -233,7 +233,7 @@ public class Controller_Update extends BaseController {
 
             Model_HardwareGroup group = Model_HardwareGroup.getById(help.hardware_group_id);
             if (group == null)  return notFound("HardwareGroup not found");
-            if (!group.read_permission()) return forbiddenEmpty();
+            if (!group.read_permission()) return forbidden();
 
             Model_UpdateProcedure procedure = new Model_UpdateProcedure();
             procedure.type_of_update = UpdateType.MANUALLY_RELEASE_MANAGER;
@@ -258,7 +258,7 @@ public class Controller_Update extends BaseController {
                     c_program_version = Model_Version.getById(hardware_type_settings.c_program_version_id);
                     if (c_program_version == null) return notFound("firmware_type not found");
                     if (c_program_version.get_c_program() == null) return notFound("Version is not c Program");
-                    if (!c_program_version.get_c_program().read_permission()) return forbiddenEmpty();
+                    if (!c_program_version.get_c_program().read_permission()) return forbidden();
                     if (!c_program_version.get_c_program().getHardwareType().id.equals(hardwareType.id)) badRequest("Invalid type of CProgram for HardwareType");
                 }
 
@@ -267,7 +267,7 @@ public class Controller_Update extends BaseController {
                 if (firmware_type == FirmwareType.BOOTLOADER) {
                     bootLoader = Model_BootLoader.getById(hardware_type_settings.bootloader_id);
                     if (bootLoader == null) return notFound("firmware_type  found");
-                    if (!bootLoader.read_permission()) return forbiddenEmpty();
+                    if (!bootLoader.read_permission()) return forbidden();
                     if (!bootLoader.hardware_type.id.equals(hardwareType.id)) badRequest("Invalid type of Bootloader for HardwareType");
                 }
 
@@ -276,7 +276,7 @@ public class Controller_Update extends BaseController {
                 for (Model_HardwareRegistration hardware_not_cached : hw) {
                     Model_HardwareRegistration hardware = Model_HardwareRegistration.getById(hardware_not_cached.id);
                     if (hardware == null) return notFound("hardware_id not found");
-                    if (!hardware.update_permission()) return forbiddenEmpty();
+                    if (!hardware.update_permission()) return forbidden();
                     if (!hardware.getProject().id.equals(project.id))
                         return notFound("hardware_id is not from same project");
 
@@ -330,7 +330,7 @@ public class Controller_Update extends BaseController {
             if (plan == null) return notFound("CProgramUpdatePlan not found");
 
             // Kontrola oprávnění
-            if (!plan.read_permission()) return forbiddenEmpty();
+            if (!plan.read_permission()) return forbidden();
 
             // Vrácení objektu
             return ok(Json.toJson(plan));
@@ -393,7 +393,7 @@ public class Controller_Update extends BaseController {
                 for (UUID hardware_id : help.hardware_ids) {
                     Model_Hardware hardware = Model_Hardware.getById(hardware_id);
                     if (hardware == null) return notFound("Hardware not found");
-                    if (!hardware.read_permission()) return forbiddenEmpty();
+                    if (!hardware.read_permission()) return forbidden();
                 }
 
                 query.where().in("hardware.id", help.hardware_ids);
@@ -404,7 +404,7 @@ public class Controller_Update extends BaseController {
                 for (UUID instance_id : help.instance_ids) {
                     Model_Instance instance = Model_Instance.getById(instance_id);
                     if (instance == null) return notFound("Instance not found");
-                    if (!instance.read_permission()) return forbiddenEmpty();
+                    if (!instance.read_permission()) return forbidden();
                 }
 
                 query.where().in("actualization_procedure.homer_instance_record.main_instance_history.id", help.instance_ids); // TODO
@@ -415,7 +415,7 @@ public class Controller_Update extends BaseController {
                 for (UUID procedure_id : help.actualization_procedure_ids) {
                     Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(procedure_id);
                     if (procedure == null) return notFound("ActualizationProcedure not found");
-                    if (!procedure.read_permission()) return forbiddenEmpty();
+                    if (!procedure.read_permission()) return forbidden();
                 }
 
                 query.where().in("actualization_procedure.id", help.actualization_procedure_ids);

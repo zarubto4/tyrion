@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.hardware_registration_auhtority.Batch_Registration_Authority;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
 import utilities.logger.Logger;
@@ -159,11 +160,11 @@ public class Model_HardwareBatch extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore                                      public boolean create_permission() {  return hardware_type.update_permission(); }
-    @JsonIgnore                                      public boolean read_permission()  {  return hardware_type.read_permission(); }
-
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()  {  return hardware_type.edit_permission();   }
-    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission() {  return hardware_type.delete_permission(); }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {  hardware_type.check_update_permission(); }
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {  hardware_type.check_read_permission(); }
+    @JsonIgnore @Transient @Override public void check_edit_permission()   throws _Base_Result_Exception {  hardware_type.check_edit_permission();   }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { hardware_type.check_update_permission(); }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {  hardware_type.check_delete_permission(); }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

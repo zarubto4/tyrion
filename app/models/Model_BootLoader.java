@@ -17,6 +17,8 @@ import utilities.cache.Cached;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
 import utilities.enums.NotificationType;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.notifications.helps_objects.Becki_color;
@@ -298,11 +300,25 @@ public class Model_BootLoader extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @ApiModelProperty(required = true) public boolean create_permission() {  return BaseController.person().has_permission("BootLoader_create");}
-    @JsonProperty @ApiModelProperty(required = true) public boolean update_permission() {  return BaseController.person().has_permission("BootLoader_update");}
-    @JsonIgnore   @ApiModelProperty(required = true) public boolean read_permission()  {  return true; }
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()  {  return BaseController.person().has_permission("BootLoader_read");}
-    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission() {  return BaseController.person().has_permission("BootLoader_delete");}
+    @JsonIgnore @Override @Transient public void check_create_permission() throws _Base_Result_Exception {
+        if(!BaseController.person().has_permission(Permission.BootLoader_create.name())) throw new Result_Error_PermissionDenied();
+    }
+
+    @JsonIgnore @Override  @Transient public void check_read_permission() throws _Base_Result_Exception  {
+        // Nothing now??
+    }
+
+    @JsonIgnore @Override  @Transient public void check_edit_permission() throws _Base_Result_Exception {
+        if(!BaseController.person().has_permission(Permission.BootLoader_update.name())) throw new Result_Error_PermissionDenied();
+    }
+
+    @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception {
+        if(!BaseController.person().has_permission(Permission.BootLoader_edit.name())) throw new Result_Error_PermissionDenied();
+    }
+
+    @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception {
+        if(!BaseController.person().has_permission(Permission.BootLoader_delete.name())) throw new Result_Error_PermissionDenied();
+    }
 
     public enum Permission { BootLoader_create,  BootLoader_update, BootLoader_read, BootLoader_edit, BootLoader_delete }
 
@@ -310,7 +326,7 @@ public class Model_BootLoader extends NamedModel {
 
     public static final String CACHE = Model_BootLoader.class.getSimpleName();
 
-    @CacheField(value = Model_BootLoader.class, timeToIdle = 600)
+    @CacheField(value = Model_BootLoader.class)
     public static Cache<UUID, Model_BootLoader> cache;
 
     public static Model_BootLoader getById(String id) {

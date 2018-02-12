@@ -103,7 +103,7 @@ public class Controller_Finance extends BaseController {
 
             tariff.active                   = false;
 
-            if (!tariff.create_permission()) return forbiddenEmpty();
+            if (!tariff.create_permission()) return forbidden();
 
             tariff.save();
 
@@ -153,7 +153,7 @@ public class Controller_Finance extends BaseController {
             if (Model_Tariff.find.query().where().ne("id", tariff_id).eq("identifier", help.identifier).findOne() != null)
                 return badRequest("Identifier must be unique!");
 
-            if (!tariff.edit_permission()) return forbiddenEmpty();
+            if (!tariff.edit_permission()) return forbidden();
 
             tariff.name                     = help.name;
             tariff.identifier               = help.identifier;
@@ -202,13 +202,13 @@ public class Controller_Finance extends BaseController {
 
             if (!tariff.active) return badRequest("Tariff is already deactivated");
 
-            if (!tariff.update_permission()) return forbiddenEmpty();
+            if (!tariff.update_permission()) return forbidden();
 
             tariff.active = false;
 
             tariff.update();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -238,13 +238,13 @@ public class Controller_Finance extends BaseController {
 
             if (tariff.active) return badRequest("Tariff is already activated");
 
-            if (!tariff.update_permission()) return forbiddenEmpty();
+            if (!tariff.update_permission()) return forbidden();
 
             tariff.active = true;
 
             tariff.update();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -272,11 +272,11 @@ public class Controller_Finance extends BaseController {
             Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
             if (tariff == null) return notFound("Tariff not found");
 
-            if (!tariff.edit_permission()) return forbiddenEmpty();
+            if (!tariff.edit_permission()) return forbidden();
 
             tariff.up();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -304,11 +304,11 @@ public class Controller_Finance extends BaseController {
             Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
             if (tariff == null) return notFound("Tariff not found");
 
-            if (!tariff.edit_permission()) return forbiddenEmpty();
+            if (!tariff.edit_permission()) return forbidden();
 
             tariff.down();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -336,11 +336,11 @@ public class Controller_Finance extends BaseController {
             Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
             if (tariff == null) return notFound("Tariff not found");
 
-            if (!tariff.delete_permission()) return forbiddenEmpty();
+            if (!tariff.delete_permission()) return forbidden();
 
             tariff.delete();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -368,7 +368,7 @@ public class Controller_Finance extends BaseController {
             Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
             if (tariff == null) return notFound("Tariff not found");
 
-            if (!tariff.read_permission()) return forbiddenEmpty();
+            if (!tariff.read_permission()) return forbidden();
 
 
             return ok(Json.toJson(tariff));
@@ -436,7 +436,7 @@ public class Controller_Finance extends BaseController {
             Object config = Configuration.getConfiguration( extension.type , help.config);
             extension.configuration = Json.toJson(config).toString();
 
-            if (!extension.create_permission()) return forbiddenEmpty();
+            if (!extension.create_permission()) return forbidden();
 
             extension.save();
 
@@ -470,7 +470,7 @@ public class Controller_Finance extends BaseController {
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
             if (extension == null) return notFound("Extension not found");
 
-            if (!extension.read_permission()) return forbiddenEmpty();
+            if (!extension.read_permission()) return forbidden();
 
             return ok(Json.toJson(extension));
 
@@ -538,7 +538,7 @@ public class Controller_Finance extends BaseController {
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
             if (extension == null) return notFound("Extension not found");
 
-            if (!extension.edit_permission()) return forbiddenEmpty();
+            if (!extension.edit_permission()) return forbidden();
 
             extension.name = help.name;
             extension.description = help.description;
@@ -574,7 +574,7 @@ public class Controller_Finance extends BaseController {
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
             if (extension == null) return notFound("Extension not found");
 
-            if (!extension.act_deactivate_permission()) return forbiddenEmpty();
+            extension.check_act_deactivate_permission();
 
             if (extension.active) return badRequest("Extension is already activated");
 
@@ -608,14 +608,12 @@ public class Controller_Finance extends BaseController {
         try {
 
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
-            if (extension == null) return notFound("Extension not found");
 
-            if (!extension.act_deactivate_permission()) return forbiddenEmpty();
+            extension.check_act_deactivate_permission();
 
             if (!extension.active) return badRequest("Extension is already deactivated");
 
             extension.active = false;
-
             extension.update();
 
             return ok(Json.toJson(extension));
@@ -645,13 +643,13 @@ public class Controller_Finance extends BaseController {
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
             if (extension == null) return notFound("Extension not found");
 
-            if (!extension.delete_permission()) return forbiddenEmpty();
+            if (!extension.delete_permission()) return forbidden();
 
             extension.deleted = true;
 
             extension.update();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -730,7 +728,7 @@ public class Controller_Finance extends BaseController {
                 extension.tariff_optional = tariff;
             }
 
-            if (!extension.create_permission()) return forbiddenEmpty();
+            if (!extension.create_permission()) return forbidden();
 
             extension.save();
 
@@ -781,7 +779,7 @@ public class Controller_Finance extends BaseController {
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
             if (extension == null) return notFound("Extension not found");
 
-            if (!extension.edit_permission()) return forbiddenEmpty();
+            if (!extension.edit_permission()) return forbidden();
 
             extension.name = help.name;
             extension.description = help.description;
@@ -842,7 +840,7 @@ public class Controller_Finance extends BaseController {
             if (extension == null) return notFound("Extension not found");
             extension.up();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -874,7 +872,7 @@ public class Controller_Finance extends BaseController {
 
             extension.down();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -907,7 +905,7 @@ public class Controller_Finance extends BaseController {
             extension.active = false;
             extension.update();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -940,7 +938,7 @@ public class Controller_Finance extends BaseController {
             extension.active = true;
             extension.update();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -972,7 +970,7 @@ public class Controller_Finance extends BaseController {
 
             extension.delete();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1248,7 +1246,7 @@ public class Controller_Finance extends BaseController {
                     Model_ProductExtension extension = ext.copy();
                     extension.product = product;
 
-                    if (!extension.create_permission()) return forbiddenEmpty();
+                    if (!extension.create_permission()) return forbidden();
 
                     extension.save();
                 }
@@ -1364,7 +1362,7 @@ public class Controller_Finance extends BaseController {
             if (product == null) return notFound("Product not found");
 
             // Oprávnění operace
-            if (!product.edit_permission()) return forbiddenEmpty();
+            if (!product.edit_permission()) return forbidden();
 
             // úpravy objektu
             product.name = help.name;
@@ -1405,7 +1403,7 @@ public class Controller_Finance extends BaseController {
             if (product == null) return notFound("Product product_id not found");
 
             // Kontorla oprávnění
-            if (!product.act_deactivate_permission()) return forbiddenEmpty();
+            if (!product.act_deactivate_permission()) return forbidden();
 
             if (!product.active) return badRequest("Product is already deactivated");
 
@@ -1446,7 +1444,7 @@ public class Controller_Finance extends BaseController {
             if (product == null) return notFound("Product product_id not found");
 
             // Kontrola oprávnění
-            if (!product.act_deactivate_permission()) return forbiddenEmpty();
+            if (!product.act_deactivate_permission()) return forbidden();
 
             if (product.active) return badRequest("Product is already activated");
 
@@ -1505,7 +1503,7 @@ public class Controller_Finance extends BaseController {
             if (product == null) return notFound("Product not found");
 
             // Check permission
-            if (!product.edit_permission()) return forbiddenEmpty();
+            if (!product.edit_permission()) return forbidden();
 
             Model_Invoice invoice = new Model_Invoice();
             invoice.product = product;
@@ -1561,13 +1559,13 @@ public class Controller_Finance extends BaseController {
             if (product == null) return notFound("Product product_id not found");
 
             // Kontorla oprávnění
-            if (!product.delete_permission()) return forbiddenEmpty();
+            if (!product.delete_permission()) return forbidden();
 
             // Trvalé odstranění produktu!
             product.delete();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1639,7 +1637,7 @@ public class Controller_Finance extends BaseController {
             }
 
             // Oprávnění operace
-            if (!payment_details.create_permission()) return forbiddenEmpty();
+            if (!payment_details.create_permission()) return forbidden();
 
             product.fakturoid_subject_id = fakturoid.create_subject(payment_details);
             if (product.fakturoid_subject_id == null) return badRequest("Unable to create your payment details, check provided information.");
@@ -1696,7 +1694,7 @@ public class Controller_Finance extends BaseController {
             if (payment_details == null) return notFound("PaymentDetails not found");
 
             // Oprávnění operace
-            if (!payment_details.edit_permission()) return forbiddenEmpty();
+            if (!payment_details.edit_permission()) return forbidden();
 
             // úpravy objektu
             payment_details.street          = help.street;
@@ -1821,7 +1819,7 @@ public class Controller_Finance extends BaseController {
             if (product == null) return notFound("Product not found");
 
             // Oprávnění operace
-            if (!product.edit_permission()) return forbiddenEmpty();
+            if (!product.edit_permission()) return forbidden();
 
             if (product.gopay_id == null) return badRequest("Product has on demand payments turned off.");
 
@@ -1870,7 +1868,7 @@ public class Controller_Finance extends BaseController {
             Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
             if (invoice == null) return notFound("Invoice invoice_id not found");
 
-            if (!invoice.read_permission()) return forbiddenEmpty();
+            if (!invoice.read_permission()) return forbidden();
             Swagger_Invoice_FullDetails help = new Swagger_Invoice_FullDetails();
             help.invoice = invoice;
             help.invoice_items = Model_InvoiceItem.find.query().where().eq("invoice.id", invoice_id).findList();
@@ -1918,11 +1916,11 @@ public class Controller_Finance extends BaseController {
             // Kontrola objektu
             Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
             if (invoice == null) return notFound("Invoice invoice_id not found");
-            if (!invoice.read_permission()) return forbiddenEmpty();
+            if (!invoice.read_permission()) return forbidden();
 
             fakturoid.sendInvoiceEmail(invoice, help.email);
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1950,7 +1948,7 @@ public class Controller_Finance extends BaseController {
             Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
             if (invoice == null) return notFound("Invoice invoice_id not found");
 
-            if (!invoice.read_permission()) return forbiddenEmpty();
+            if (!invoice.read_permission()) return forbidden();
             if ( invoice.status.equals(PaymentStatus.PAID)) return badRequest("Invoice is already paid");
 
             // vyvolání nové platby ale bez vytváření faktury nebo promofaktury
@@ -1988,11 +1986,11 @@ public class Controller_Finance extends BaseController {
 
             if (kind.equals("proforma") && invoice.proforma_pdf_url == null) return badRequest("Proforma PDF is unavailable");
 
-            if (!invoice.read_permission()) return forbiddenEmpty();
+            if (!invoice.read_permission()) return forbidden();
 
             byte[] pdf_in_array = fakturoid.download_PDF_invoice(kind, invoice);
 
-            return pdfFile(pdf_in_array, kind.equals("proforma") ? "proforma_" + invoice.invoice_number + ".pdf" : invoice.invoice_number + ".pdf");
+            return file(pdf_in_array, kind.equals("proforma") ? "proforma_" + invoice.invoice_number + ".pdf" : invoice.invoice_number + ".pdf");
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -2020,10 +2018,10 @@ public class Controller_Finance extends BaseController {
             Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
             if (invoice == null) return notFound("Invoice not found");
 
-            if (!invoice.remind_permission()) return forbiddenEmpty();
+            if (!invoice.remind_permission()) return forbidden();
             fakturoid.sendInvoiceReminderEmail(invoice,"You have pending unpaid invoice.");
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -2052,7 +2050,7 @@ public class Controller_Finance extends BaseController {
             if (invoice == null) return notFound("Invoice invoice_id not found");
 
             // Kontrola oprávnění
-            if (!invoice.delete_permission()) return forbiddenEmpty();
+            if (!invoice.delete_permission()) return forbidden();
 
             // TODO - Chybí navázání na fakturoid - smazání faktury (nějaký proces?)
             //Fakturoid_Controller.fakturoid_delete()
@@ -2061,7 +2059,7 @@ public class Controller_Finance extends BaseController {
             // Vykonání operace
             invoice.delete();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -2152,7 +2150,7 @@ public class Controller_Finance extends BaseController {
 
             Model_Customer customer = new Model_Customer();
 
-            if (!customer.create_permission()) return forbiddenEmpty();
+            if (!customer.create_permission()) return forbidden();
 
             customer.save();
 
@@ -2260,7 +2258,7 @@ public class Controller_Finance extends BaseController {
             Model_Customer customer = Model_Customer.getById(customer_id);
             if (customer == null) return notFound("Customer not found");
 
-            if (!customer.update_permission()) return forbiddenEmpty();
+            if (!customer.update_permission()) return forbidden();
 
             Model_PaymentDetails details = customer.payment_details;
             details.street          = help.street;
@@ -2330,7 +2328,7 @@ public class Controller_Finance extends BaseController {
             Model_Customer customer = Model_Customer.getById(help.customer_id);
             if (customer == null) return notFound("Customer not found");
 
-            if (!customer.update_permission()) return forbiddenEmpty();
+            if (!customer.update_permission()) return forbidden();
 
             for (Model_Person person : Model_Person.find.query().where().in("mail", help.mails).findList()) {
 
@@ -2373,11 +2371,11 @@ public class Controller_Finance extends BaseController {
             Model_Employee employee = Model_Employee.getById(employee_id);
             if (employee == null) return notFound("Employee not found");
 
-            if (!employee.delete_permission()) return forbiddenEmpty();
+            if (!employee.delete_permission()) return forbidden();
 
             employee.delete();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -2405,11 +2403,11 @@ public class Controller_Finance extends BaseController {
             Model_Customer customer = Model_Customer.getById(customer_id);
             if (customer == null) return notFound("Customer not found");
 
-            if (!customer.delete_permission()) return forbiddenEmpty();
+            if (!customer.delete_permission()) return forbidden();
 
             customer.delete();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);

@@ -91,10 +91,10 @@ public class Controller_Notification extends BaseController {
       Model_Notification notification = Model_Notification.getById(notification_id);
       if (notification == null) return notFound("Notification does not exist");
 
-      if (!notification.delete_permission()) return forbiddenEmpty();
+      if (!notification.delete_permission()) return forbidden();
 
       notification.delete();
-      return okEmpty();
+      return ok();
 
     } catch (Exception e) {
       return internalServerError(e);
@@ -142,7 +142,7 @@ public class Controller_Notification extends BaseController {
         notification.send();
       }
 
-      return okEmpty();
+      return ok();
 
     } catch (Exception e) {
       return internalServerError(e);
@@ -220,7 +220,7 @@ public class Controller_Notification extends BaseController {
           Model_Notification notification = Model_Notification.getById(notification_id);
           if (notification == null) return notFound("Notification no longer exists");
 
-          if (!notification.confirm_permission()) return forbiddenEmpty();
+          if (!notification.confirm_permission()) return forbidden();
 
           if (notification.confirmed) return badRequest("Notification is already confirmed");
 
@@ -236,7 +236,7 @@ public class Controller_Notification extends BaseController {
 
           notification.confirm();
 
-          return okEmpty();
+          return ok();
       } catch (Exception e) {
           return internalServerError(e);
       }

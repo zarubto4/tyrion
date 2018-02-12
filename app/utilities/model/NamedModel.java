@@ -7,7 +7,5 @@ import javax.persistence.MappedSuperclass;
 public abstract class NamedModel extends BaseModel {
 
     public String name;
-
-    @Column(columnDefinition = "TEXT")
-    public String description;
+    @Column(columnDefinition = "TEXT") public String description;
 }

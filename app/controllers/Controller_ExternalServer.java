@@ -88,7 +88,7 @@ public class Controller_ExternalServer extends BaseController {
             server.server_url = help.server_url;
 
             // Kontrola oprávnění
-            if (!server.create_permission()) return forbiddenEmpty();
+            if (!server.create_permission()) return forbidden();
 
             // Uložení objektu
             server.save();
@@ -126,7 +126,7 @@ public class Controller_ExternalServer extends BaseController {
             Model_HomerServer main_server = Model_HomerServer.find.query().where().eq("server_type", HomerType.MAIN).findOne();
             if (main_server != null) return badRequest("HomerServer Main server is already set.");
 
-            if (!server.edit_permission()) return forbiddenEmpty();
+            if (!server.edit_permission()) return forbidden();
 
             server.server_type = HomerType.MAIN;
             server.update();
@@ -164,7 +164,7 @@ public class Controller_ExternalServer extends BaseController {
             Model_HomerServer backup_server = Model_HomerServer.find.query().where().eq("server_type", HomerType.BACKUP).findOne();
             if (backup_server != null) return badRequest("HomerServer Main server is already set.");
 
-            if (!server.edit_permission()) return forbiddenEmpty();
+            if (!server.edit_permission()) return forbidden();
 
             server.server_type = HomerType.BACKUP;
             server.update();
@@ -222,7 +222,7 @@ public class Controller_ExternalServer extends BaseController {
             if (server == null) return notFound("Cloud_Blocko_Server server_id not found");
 
             // Kontrola oprávnění
-            if (!server.edit_permission()) return forbiddenEmpty();
+            if (!server.edit_permission()) return forbidden();
 
             // Úprava objektu
             server.personal_server_name = help.personal_server_name;
@@ -304,7 +304,7 @@ public class Controller_ExternalServer extends BaseController {
             Model_HomerServer serves = Model_HomerServer.getById(server_id);
             if (serves == null) return notFound("Cloud_Compilation_Server server_id not found");
 
-            if (!serves.read_permission()) return forbiddenEmpty();
+            if (!serves.read_permission()) return forbidden();
 
             // Vrácení seznamu
             return ok(Json.toJson(serves));
@@ -342,13 +342,13 @@ public class Controller_ExternalServer extends BaseController {
             if (server == null) return notFound("Cloud_Compilation_Server server_id not found");
 
             // Kontrola oprávnění
-            if (!server.delete_permission()) return forbiddenEmpty();
+            if (!server.delete_permission()) return forbidden();
 
             // Smzání objektu
             server.delete();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -403,7 +403,7 @@ public class Controller_ExternalServer extends BaseController {
             server.server_url = help.server_url;
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!server.create_permission())  return forbiddenEmpty();
+            if (!server.create_permission())  return forbidden();
 
             // Ukládám objekt
             server.save();
@@ -461,7 +461,7 @@ public class Controller_ExternalServer extends BaseController {
             if (server == null) return notFound("Cloud_Compilation_Server server_id not found");
 
             // Zkontroluji oprávnění
-            if (!server.edit_permission()) return forbiddenEmpty();
+            if (!server.edit_permission()) return forbidden();
 
             // Upravím objekt
             server.personal_server_name = help.personal_server_name;
@@ -530,7 +530,7 @@ public class Controller_ExternalServer extends BaseController {
             if (server == null) return notFound("Cloud_Compilation_Server server_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!server.read_permission())  return forbiddenEmpty();
+            if (!server.read_permission())  return forbidden();
 
             // Vracím odpověď
             return ok(Json.toJson(server));
@@ -569,13 +569,13 @@ public class Controller_ExternalServer extends BaseController {
             if (server == null) return notFound("Cloud_Compilation_Server server_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!server.delete_permission())  return forbiddenEmpty();
+            if (!server.delete_permission())  return forbidden();
 
             // Smažu objekt
             server.delete();
 
             // Vracím odpověď
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -610,7 +610,7 @@ public class Controller_ExternalServer extends BaseController {
             }
 
             if (version.get_b_program() == null) {
-                return forbiddenEmpty();
+                return forbidden();
             }
 
             // Separace na Container a Blob
@@ -667,7 +667,7 @@ public class Controller_ExternalServer extends BaseController {
             // Zkontroluji validitu Verze zda sedí k C_Programu
             if (version.get_c_program() == null) return badRequest("Version is not version of C_Program");
 
-            if (!version.get_c_program().read_permission()) return forbiddenEmpty();
+            if (!version.get_c_program().read_permission()) return forbidden();
 
             // Získám soubor
             Model_Compilation compilation = version.compilation;
@@ -683,7 +683,7 @@ public class Controller_ExternalServer extends BaseController {
             byte[] bytes = Model_Blob.get_decoded_binary_string_from_Base64(compilation.blob.get_fileRecord_from_Azure_inString());
 
             // Vrátím soubor
-            return binFile(bytes, "firmware.bin");
+            return file(bytes, "firmware.bin");
 
         } catch (Exception e) {
             return internalServerError(e);

@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 
@@ -142,11 +144,11 @@ public class Model_Garfield  extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
     
-    @JsonIgnore   public boolean create_permission() {  return  BaseController.person().has_permission(Permission.Garfield_create.name());}
-    @JsonProperty public boolean edit_permission()   {  return  BaseController.person().has_permission(Permission.Garfield_edit.name());}
-    @JsonProperty public boolean read_permission()   {  return  BaseController.person().has_permission(Permission.Garfield_read.name());}
-    @JsonProperty public boolean delete_permission() {  return  BaseController.person().has_permission(Permission.Garfield_delete.name());}
-    @JsonProperty public boolean update_permission() {  return  BaseController.person().has_permission(Permission.Garfield_update.name());}
+    @JsonIgnore   public void check_create_permission() throws _Base_Result_Exception {  if(!BaseController.person().has_permission(Permission.Garfield_create.name())) throw new Result_Error_PermissionDenied();}
+    @JsonProperty public void check_edit_permission()   throws _Base_Result_Exception {  if(!BaseController.person().has_permission(Permission.Garfield_edit.name()))   throw new Result_Error_PermissionDenied();}
+    @JsonProperty public void check_read_permission()   throws _Base_Result_Exception {  if(!BaseController.person().has_permission(Permission.Garfield_read.name()))   throw new Result_Error_PermissionDenied();}
+    @JsonProperty public void check_delete_permission() throws _Base_Result_Exception {  if(!BaseController.person().has_permission(Permission.Garfield_delete.name())) throw new Result_Error_PermissionDenied();}
+    @JsonProperty public void check_update_permission() throws _Base_Result_Exception {  if(!BaseController.person().has_permission(Permission.Garfield_update.name())) throw new Result_Error_PermissionDenied();}
 
     public enum Permission { Garfield_create, Garfield_read, Garfield_edit, Garfield_update, Garfield_delete }
 

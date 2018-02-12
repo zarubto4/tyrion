@@ -6,6 +6,8 @@ import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.ParticipantStatus;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
@@ -29,8 +31,8 @@ public class Model_ProjectParticipant extends BaseModel {
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true) public UUID id()          { if (person == null) return null; return person.id;}
-    @JsonProperty @ApiModelProperty(required = true) public String mail()  { if (person == null) return this.user_email; return person.email;}
+    @JsonProperty @ApiModelProperty(required = true) public UUID id()            { if (person == null) return null; return person.id;}
+    @JsonProperty @ApiModelProperty(required = true) public String mail()        { if (person == null) return this.user_email; return person.email;}
     @JsonProperty @ApiModelProperty(required = true) public String full_name()   { if (person == null) return "Unregistered user"; return person.full_name();}
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
@@ -49,9 +51,16 @@ public class Model_ProjectParticipant extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_edit_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Finder<UUID, Model_ProjectParticipant> find = new Finder<>(Model_ProjectParticipant.class);
+
 }

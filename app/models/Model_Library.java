@@ -13,6 +13,7 @@ import play.libs.Json;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.ProgramType;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
@@ -40,9 +41,10 @@ public class Model_Library extends TaggedModel {
 
     public ProgramType publish_type;
 
+
     @ManyToMany(fetch = FetchType.LAZY) public List<Model_HardwareType> hardware_types = new ArrayList<>();
 
-    @JsonIgnore @OneToMany(mappedBy = "library", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("created DESC") public List<Model_Version> versions = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "library", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("created DESC") public List<Model_LibraryVersion> versions = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -53,8 +55,22 @@ public class Model_Library extends TaggedModel {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
+
     @JsonProperty
-    public UUID project_id()           {
+    public List<Swagger_Library_Version> versions() {
+
+        List<Swagger_Library_Version> versions = new ArrayList<>();
+        for (Model_LibraryVersion version : this.getVersions()) {
+            versions.add(this.library_version(version));
+        }
+
+        return versions;
+    }
+
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public UUID get_project_id() {
 
         if (cache_project_id == null) {
             Model_Project project = Model_Project.find.query().where().eq("libraries.id", id).select("id").findOne();
@@ -65,53 +81,34 @@ public class Model_Library extends TaggedModel {
         return cache_project_id;
     }
 
-    @JsonProperty
-    public String project_name()         {
-        try {
+    @JsonIgnore
+    public Model_Project get_project() throws _Base_Result_Exception {
 
-            if (cache_project_name == null) {
-                if (project_id() == null) return null;
-                cache_project_name = Model_Project.getById(project_id()).name;
-            }
-
-            return cache_project_name;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
+        if (cache_project_id == null) {
+            return Model_Project.getById(get_project_id());
+        }else {
+            return Model_Project.getById(cache_project_id);
         }
     }
-    @JsonProperty
-    public List<Swagger_Library_Version> versions() {
-
-        List<Swagger_Library_Version> versions = new ArrayList<>();
-        for (Model_Version version : this.getVersions()) {
-            versions.add(this.library_version(version));
-        }
-
-        return versions;
-    }
-
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public List<Model_Version> getVersions() {
+    public List<Model_LibraryVersion> getVersions() {
         try {
 
             if (cache_version_ids.isEmpty()) {
 
-                List<Model_Version> versions =  Model_Version.find.query().where().eq("library.id", id).eq("deleted", false).order().desc("created").select("id").findList();
+                List<Model_LibraryVersion> versions =  Model_LibraryVersion.find.query().where().eq("library.id", id).eq("deleted", false).order().desc("created").select("id").findList();
 
                 // Získání seznamu
-                for (Model_Version version : versions) {
+                for (Model_LibraryVersion version : versions) {
                     cache_version_ids.add(version.id);
                 }
             }
 
-            List<Model_Version> versions  = new ArrayList<>();
+            List<Model_LibraryVersion> versions  = new ArrayList<>();
 
             for (UUID version_id : cache_version_ids) {
-                versions.add(Model_Version.getById(version_id));
+                versions.add(Model_LibraryVersion.getById(version_id));
             }
 
             return versions;
@@ -155,7 +152,7 @@ public class Model_Library extends TaggedModel {
     }
 
     @JsonIgnore
-    public Swagger_Library_Version library_version(Model_Version version) {
+    public Swagger_Library_Version library_version(Model_LibraryVersion version) {
         try {
 
             Swagger_Library_Version help = new Swagger_Library_Version();
@@ -195,7 +192,7 @@ public class Model_Library extends TaggedModel {
         super.save();
 
         if (project != null) {
-            Model_Project.getById(project.id).cache_library_ids.add(id);
+            project.cache_library_ids.add(id);
         }
 
         cache.put(id, this);
@@ -206,12 +203,7 @@ public class Model_Library extends TaggedModel {
 
         logger.debug("update :: Update object Id: " + this.id);
 
-        //Cache Update
-        if (cache.get(this.id) != null) {
-            cache.replace(this.id, this);
-        } else cache.put(this.id, this);
-
-        if (project_id() != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Library.class, project_id(), this.id))).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Library.class, get_project_id(), this.id))).start();
 
         //Database Update
         super.update();
@@ -221,16 +213,14 @@ public class Model_Library extends TaggedModel {
 
         logger.debug("remove :: Update (hide) object Id: " + this.id);
 
-        deleted = true;
+        super.delete();
 
-        if (project_id() != null) {
-            Model_Project.getById(project_id()).cache_library_ids.remove(id);
+        try{
+            Model_Project.getById(get_project_id()).cache_library_ids.remove(id);
+        }catch (_Base_Result_Exception exception){
+            // Nothing
         }
 
-        cache.remove(id);
-
-        //Database Update
-        super.update();
         return false;
     }
 
@@ -240,63 +230,53 @@ public class Model_Library extends TaggedModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore     private String azure_library_link;
-    @JsonIgnore     public String get_path() {
-        return azure_library_link;
-    }
+    @JsonIgnore private String azure_library_link;
+    @JsonIgnore public String get_path() { return azure_library_link; }
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient public boolean create_permission() {
-        try {
-            if (project != null) return Model_Project.getById(project.id).update_permission(); return BaseController.person().has_permission("Library_create");
-        } catch (NullPointerException exception) {
-            logger.warn("create_permission null pointer exception - project is not probably in cache");
-            return false;
-        }
+    @JsonIgnore @Override @Transient public void check_create_permission() throws _Base_Result_Exception  {
+         if(BaseController.person().has_permission(Permission.Library_create.name())) return;
+        get_project().check_update_permission();
     }
-    @JsonIgnore   @Transient public boolean read_permission()  {  return true; }
-    @JsonProperty @Transient public boolean edit_permission()  {
-        try {
-          
-            if (project_id() != null) return Model_Project.getById(project_id()).update_permission();
-            return BaseController.person().has_permission("Library_edit");
 
-        } catch (NullPointerException exception) {
-            logger.warn("edit_permission null pointer exception - project is not probably in cache");
-            return false;
-        }
+    @JsonIgnore @Override  @Transient public void check_read_permission() throws _Base_Result_Exception  {
+        if(BaseController.person().has_permission(Permission.Library_read.name())) return;
+        get_project().check_update_permission();
+
     }
-    @JsonProperty @Transient public boolean delete_permission() {
-        try {
 
-             if (project_id() != null) return Model_Project.getById(project_id()).update_permission();
-             return BaseController.person().has_permission("Library_delete");
-
-        } catch (NullPointerException exception) {
-            logger.warn("delete_permission null pointer exception - project is not probably in cache");
-            return false;
-        }
+    @JsonIgnore @Override  @Transient public void check_edit_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Library_edit.name())) return;
+        get_project().check_edit_permission();
     }
-    @JsonProperty @Transient public boolean update_permission() {
-        try {
 
-            if (project_id() != null) return Model_Project.getById(project_id()).update_permission();
-            return BaseController.person().has_permission("Library_update");
+    @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Library_update.name())) return;
+        get_project().check_edit_permission();
+    }
 
-        } catch (NullPointerException exception) {
-            logger.warn("update_permission null pointer exception - project is not probably in cache");
-            return false;
-        }
-   }
+    @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Library_delete.name())) return;
+        get_project().check_update_permission();
+    }
+
     @JsonProperty @Transient  @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        return BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name());
+        try {
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if(BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return true;
+            return null;
+        }catch (_Base_Result_Exception exception){
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
-    public enum Permission { Library_create, Library_edit, Library_update, Library_delete }
+    public enum Permission { Library_create, Library_read, Library_edit, Library_update, Library_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

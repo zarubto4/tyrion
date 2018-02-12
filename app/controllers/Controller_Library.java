@@ -99,7 +99,7 @@ public class Controller_Library extends BaseController {
             }
 
             // Kontorluji oprávnění těsně před uložením
-            if (!library.create_permission()) return forbiddenEmpty();
+            if (!library.create_permission()) return forbidden();
 
             // Ukládám objekt
             library.save();
@@ -152,14 +152,14 @@ public class Controller_Library extends BaseController {
             if (library_old == null) return notFound("Library not found");
 
             // Zkontroluji oprávnění
-            if (!library_old.read_permission())  return forbiddenEmpty();
+            if (!library_old.read_permission()) return forbidden();
 
             // Vyhledám Objekt
             Model_Project project = Model_Project.getById(help.project_id);
             if (project == null) return notFound("Project not found");
 
             // Zkontroluji oprávnění
-            if (!project.update_permission())  return forbiddenEmpty();
+            if (!project.update_permission())  return forbidden();
 
 
             Model_Library library_new =  new Model_Library();
@@ -278,7 +278,7 @@ public class Controller_Library extends BaseController {
 
                 Model_Project project = Model_Project.getById(help.project_id);
                 if (project == null) return notFound("Project not found");
-                if (!project.read_permission())return forbiddenEmpty();
+                if (!project.read_permission())return forbidden();
 
                 query.where().eq("project_id", help.project_id).eq("deleted", false);
 
@@ -291,7 +291,7 @@ public class Controller_Library extends BaseController {
             }
 
             if (help.pending_library) {
-                if (!BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return forbiddenEmpty();
+                if (!BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return forbidden();
                 query.where().eq("versions.approval_state", Approval.PENDING.name());
             }
 
@@ -351,7 +351,7 @@ public class Controller_Library extends BaseController {
             if (library == null) return notFound("Library not found");
 
             // Kontrola oprávnění
-            if (!library.edit_permission()) return forbiddenEmpty();
+            if (!library.edit_permission()) return forbidden();
 
             // Change values
             library.name = help.name;
@@ -405,7 +405,7 @@ public class Controller_Library extends BaseController {
             if (library == null) return notFound("Library not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!library.edit_permission()) return forbiddenEmpty();
+            if (!library.edit_permission()) return forbidden();
 
             library.addTags(help.tags);
 
@@ -454,7 +454,7 @@ public class Controller_Library extends BaseController {
             if (library == null) return notFound("Library not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!library.edit_permission()) return forbiddenEmpty();
+            if (!library.edit_permission()) return forbidden();
 
             library.removeTags(help.tags);
 
@@ -494,14 +494,14 @@ public class Controller_Library extends BaseController {
             if (library == null) return notFound("Library not found");
 
             // Kontrola oprávnění
-            if (!library.delete_permission()) return forbiddenEmpty();
+            if (!library.delete_permission()) return forbidden();
 
             // Smazání objektu
             library.deleted = true;
             library.update();
 
             // Vrácneí potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -555,7 +555,7 @@ public class Controller_Library extends BaseController {
             if (library == null) return notFound("Library not found");
 
             // Zkontroluji oprávnění
-            if (!library.update_permission()) return forbiddenEmpty();
+            if (!library.update_permission()) return forbidden();
 
             // První nová Verze
             Model_Version version = new Model_Version();
@@ -619,7 +619,7 @@ public class Controller_Library extends BaseController {
             if (version.library == null) return badRequest("Version is not version of Library");
 
             // Zkontroluji oprávnění
-            if (!version.library.read_permission()) return forbiddenEmpty();
+            if (!version.library.read_permission()) return forbidden();
 
             // Vracím Objekt
             return ok(Json.toJson(version.library.library_version(version)));
@@ -671,7 +671,7 @@ public class Controller_Library extends BaseController {
             if (version.library == null) return badRequest("Version is not version of Library");
 
             // Kontrola oprávnění
-            if (!version.library.edit_permission()) return forbiddenEmpty();
+            if (!version.library.edit_permission()) return forbidden();
 
             //Uprava objektu
             version.name = help.name;
@@ -713,13 +713,13 @@ public class Controller_Library extends BaseController {
             if (version.library == null) return badRequest("Version is not version of Library");
 
             // Kontrola oprávnění
-            if (!version.library.delete_permission()) return forbiddenEmpty();
+            if (!version.library.delete_permission()) return forbidden();
 
             // Smažu zástupný objekt
             version.delete();
 
             // Vracím potvrzení o smazání
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -770,13 +770,13 @@ public class Controller_Library extends BaseController {
             version.approval_state = Approval.PENDING;
 
             // Kontrola oprávnění
-            if (!(version.library.edit_permission())) return forbiddenEmpty();
+            if (!(version.library.edit_permission())) return forbidden();
 
             // Uložení změn
             version.update();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -830,7 +830,7 @@ public class Controller_Library extends BaseController {
             // Zkontroluji oprávnění
 
             if (!library_old.community_publishing_permission()) {
-                return forbiddenEmpty();
+                return forbidden();
             }
 
             if (help.decision) {
@@ -943,7 +943,7 @@ public class Controller_Library extends BaseController {
             }
 
             // Potvrzení
-            return  okEmpty();
+            return  ok();
 
         } catch (Exception e) {
             return internalServerError(e);

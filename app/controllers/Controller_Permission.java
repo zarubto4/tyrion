@@ -69,13 +69,13 @@ public class Controller_Permission extends BaseController {
             if (personPermission == null)
                 return notFound("PersonPermission permission_id not found");
 
-            if (!personPermission.edit_person_permission()) return forbiddenEmpty();
+            if (!personPermission.edit_person_permission()) return forbidden();
 
 
             if (!person.permissions.contains(personPermission)) person.permissions.add(personPermission);
             person.update();
 
-            return okEmpty();
+            return ok();
 
 
         } catch (Exception e) {
@@ -113,13 +113,13 @@ public class Controller_Permission extends BaseController {
             if (personPermission == null)
                 return notFound("PersonPermission permission_id not found");
 
-            if (!personPermission.edit_person_permission()) return forbiddenEmpty();
+            if (!personPermission.edit_person_permission()) return forbidden();
 
             if (person.permissions.contains(personPermission))
                 person.permissions.remove(personPermission);
             person.update();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -264,7 +264,7 @@ public class Controller_Permission extends BaseController {
             Model_Role securityRole = Model_Role.getById(role_id);
             if (securityRole == null) return notFound("SecurityRole role_id not found");
 
-            if (!securityRole.update_permission()) return forbiddenEmpty();
+            if (!securityRole.update_permission()) return forbidden();
 
             for(Model_Permission permission : personPermissions) {
                 if (!securityRole.permissions.contains(permission)) {
@@ -312,14 +312,14 @@ public class Controller_Permission extends BaseController {
             Model_Role securityRole = Model_Role.getById(role_id);
             if (securityRole == null) return notFound("SecurityRole role_id not found");
 
-            if (!securityRole.update_permission()) return forbiddenEmpty();
+            if (!securityRole.update_permission()) return forbidden();
 
             if (securityRole.permissions.contains(personPermission))
                 securityRole.permissions.remove(personPermission);
 
             securityRole.update();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -367,7 +367,7 @@ public class Controller_Permission extends BaseController {
             securityRole.name = help.name;
             securityRole.description = help.description;
 
-            if (!securityRole.create_permission()) return forbiddenEmpty();
+            if (!securityRole.create_permission()) return forbidden();
 
             securityRole.save();
 
@@ -404,11 +404,11 @@ public class Controller_Permission extends BaseController {
             Model_Role securityRole = Model_Role.getById(role_id);
             if (securityRole == null) return notFound("SecurityRole role_id not found");
 
-            if (!securityRole.delete_permission()) return forbiddenEmpty();
+            if (!securityRole.delete_permission()) return forbidden();
 
             securityRole.delete();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -456,7 +456,7 @@ public class Controller_Permission extends BaseController {
             Model_Role role = Model_Role.getById(role_id);
             if (role == null) return notFound("Role not found");
 
-            if (!role.update_permission()) return forbiddenEmpty();
+            if (!role.update_permission()) return forbidden();
 
             role.name = help.name;
             role.description = help.description;
@@ -495,7 +495,7 @@ public class Controller_Permission extends BaseController {
             Model_Role securityRole = Model_Role.getById(role_id);
             if (securityRole == null) return notFound("SecurityRole role_id not found");
 
-            if (!securityRole.read_permission()) return forbiddenEmpty();
+            if (!securityRole.read_permission()) return forbidden();
 
             return ok(Json.toJson(securityRole));
 
@@ -552,7 +552,7 @@ public class Controller_Permission extends BaseController {
             if (securityRole == null) return notFound("SecurityRole not found");
 
             // Kontrola oprávnění
-            if (!securityRole.update_permission()) return forbiddenEmpty();
+            if (!securityRole.update_permission()) return forbidden();
 
             logger.debug("role_add_person: Finding {} person(s)", help.persons_mail.size());
 
@@ -599,12 +599,12 @@ public class Controller_Permission extends BaseController {
             Model_Role securityRole = Model_Role.getById(role_id);
             if (securityRole == null) return notFound("SecurityRole role_id not found");
 
-            if (!securityRole.update_permission()) return forbiddenEmpty();
+            if (!securityRole.update_permission()) return forbidden();
 
             if (person.roles.contains(securityRole)) person.roles.remove(securityRole);
             person.update();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);

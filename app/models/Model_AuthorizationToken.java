@@ -7,6 +7,9 @@ import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.PlatformAccess;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions.Result_Error_Unauthorized;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
@@ -28,7 +31,7 @@ public class Model_AuthorizationToken extends BaseModel {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                               @JsonIgnore                   public UUID token;
-       @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE)  public Model_Person person;     //TODO Lazy loading??
+       @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE)  public Model_Person person;     //TODO Lazy loading
 
     @ApiModelProperty(required = true, value = "Record, where user make login")  public PlatformAccess where_logged; // Záznam, kde došlo k přihlášení (Becki, Tyrion, Homer, Compilator
 
@@ -39,13 +42,13 @@ public class Model_AuthorizationToken extends BaseModel {
     @ApiModelProperty(required = true)                      public String user_agent;
 
 
-    @ApiModelProperty(required = true)                      public String provider_user_id;             // user_id ze sociální služby (facebook, git atd)
+    @ApiModelProperty(required = true)  public String provider_user_id;             // user_id ze sociální služby (facebook, git atd)
     @Column(columnDefinition = "TEXT")
-    @ApiModelProperty(required = true)                      public String provider_key;                 // provider key - slouží k identifikaci pro oauth2
-    @ApiModelProperty(required = true)                      public String type_of_connection;           // Typ Spojení
-    @ApiModelProperty(required = true)                      public String return_url;                   // Url na které uživatele nakonci přesměrujeme
+    @ApiModelProperty(required = true)  public String provider_key;                 // provider key - slouží k identifikaci pro oauth2
+    @ApiModelProperty(required = true)  public String type_of_connection;           // Typ Spojení
+    @ApiModelProperty(required = true)  public String return_url;                   // Url na které uživatele nakonci přesměrujeme
 
-    @ApiModelProperty(required = true)                      public boolean social_token_verified;       // Pro ověření, že token byl sociální sítí ověřen
+    @ApiModelProperty(required = true)  public boolean social_token_verified;       // Pro ověření, že token byl sociální sítí ověřen
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -54,11 +57,6 @@ public class Model_AuthorizationToken extends BaseModel {
 
     @JsonIgnore @Transient
     public boolean isValid() {
-
-        return true;
-
-        // TODO Cleerio - Aby jim fungoval dlouhodobě token bez přihlášení.
-        /*
         try {
             if (this.access_age.getTime() < new Date().getTime()) {
 
@@ -75,16 +73,7 @@ public class Model_AuthorizationToken extends BaseModel {
         } catch (Exception e) {
             logger.error("isValid() :: Error:: ", e);
             return false;
-        }*/
-    }
-
-/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override
-    public void save() {
-        this.token = UUID.randomUUID();
-        this.setDate();
-        super.save();
+        }
     }
 
     @JsonIgnore
@@ -120,6 +109,17 @@ public class Model_AuthorizationToken extends BaseModel {
         return token;
     }
 
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override
+    public void save() {
+        this.token = UUID.randomUUID();
+        this.setDate();
+        super.save();
+    }
+
+
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -130,8 +130,18 @@ public class Model_AuthorizationToken extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean read_permission()  {  return ( person.id.equals( BaseController.personId()) ) || BaseController.person().has_permission("AuthorizationToken_read");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission() {  return ( person.id.equals( BaseController.personId()) ) || BaseController.person().has_permission("AuthorizationToken_delete"); }
+
+    @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException(); }
+    @Override public void check_read_permission()   throws _Base_Result_Exception {
+       if(BaseController.person().has_permission(Permission.AuthorizationToken_read.name())) return;
+       if(person.id.equals( BaseController.personId())) throw new Result_Error_Unauthorized();
+    }
+    @Override public void check_edit_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException(); }
+    @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException(); }
+    @Override public void check_delete_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.AuthorizationToken_delete.name())) return;
+        if(person.id.equals( BaseController.personId())) throw new Result_Error_Unauthorized();
+    }
 
     public enum Permission { AuthorizationToken_read, AuthorizationToken_delete }
 

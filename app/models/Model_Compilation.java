@@ -13,6 +13,8 @@ import utilities.cache.Cached;
 import utilities.enums.CompilationStatus;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.notifications.helps_objects.Notification_Text;
@@ -32,7 +34,7 @@ public class Model_Compilation extends BaseModel {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name="c_compilation_version") public Model_Version version;
+    @JoinColumn(name="c_compilation_version") public Model_CProgramVersion version;
 
                                  @JsonIgnore  public CompilationStatus status;
 
@@ -118,7 +120,6 @@ public class Model_Compilation extends BaseModel {
         //new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_CProgram.class, version.get_c_program().project_id(), version.get_c_program().id))).start();
 
         super.update();
-        this.version.cache_refresh();
     }
 
     @JsonIgnore @Transient @Override
@@ -127,7 +128,8 @@ public class Model_Compilation extends BaseModel {
         return false;
     }
 
-/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+    /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -227,6 +229,17 @@ public class Model_Compilation extends BaseModel {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @java.beans.Transient
+    @Override public void check_read_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @java.beans.Transient
+    @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @java.beans.Transient
+    @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @java.beans.Transient
+    @Override public void check_edit_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @java.beans.Transient
+    @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

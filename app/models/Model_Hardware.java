@@ -23,6 +23,9 @@ import utilities.document_db.document_objects.DM_Board_Connect;
 import utilities.document_db.document_objects.DM_Board_Disconnected;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.models_update_echo.EchoHandler;
@@ -65,6 +68,11 @@ public class Model_Hardware extends NamedModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
+    /**
+     * Adresa (full_id) zařízení je dána výrobcem čipu. Je to komunikační ID s Homer Serverem.
+     * Ale jelikož potřebujeme umožnit uživatelovi odstranit Hardware z projektu a zase ho tam vrátit, bylo nutné
+     * mít více ID na tutéž full_id. Jde zejmena o to, abychom zachovali historii nad objektem a další návaznosti.
+    */
     public String full_id;
     public String wifi_mac_address;
     public String mac_address;
@@ -92,8 +100,8 @@ public class Model_Hardware extends NamedModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_HardwareType hardware_type; // Typ desky - (Cachováno)
 
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Version actual_c_program_version;           // OVěřená verze firmwaru, která na hardwaru běží (Cachováno)
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Version actual_backup_c_program_version;    // Ověřený statický backup - nebo aktuálně zazálohovaný firmware (Cachováno)
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_CProgramVersion actual_c_program_version;           // OVěřená verze firmwaru, která na hardwaru běží (Cachováno)
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_CProgramVersion actual_backup_c_program_version;    // Ověřený statický backup - nebo aktuálně zazálohovaný firmware (Cachováno)
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BootLoader actual_boot_loader;              // Aktuální bootloader (Cachováno)
 
     @JsonIgnore public UUID connected_server_id;      // Latest know Server ID
@@ -121,7 +129,7 @@ public class Model_Hardware extends NamedModel {
     @JsonProperty public String hardware_type_name()                   { try { return cache_hardware_type_name != null ? cache_hardware_type_name : getHardwareType().name;} catch (NullPointerException e) {return  null;}}
     @JsonProperty public UUID producer_id()                          { try { return cache_producer_id != null ? cache_producer_id : get_producer().id;} catch (NullPointerException e) {return  null;}}
     @JsonProperty public String producer_name()                        { try { return get_producer().name; } catch (NullPointerException e) {return  null;}}
-    @JsonProperty public UUID project_id()                           { try { return cache_project_id != null ? cache_project_id : getProject().id; } catch (NullPointerException e) {return  null;}}
+    @JsonProperty public UUID project_id()                           { try { return cache_project_id != null ? cache_project_id : get_project().id; } catch (NullPointerException e) {return  null;}}
     @JsonProperty public String actual_bootloader_version_name()       { try { return get_actual_bootloader().name; } catch (NullPointerException e) {return  null;}}
     @JsonProperty public UUID actual_bootloader_id()                 { try { return cache_actual_boot_loader_id != null ? cache_actual_boot_loader_id : get_actual_bootloader().id; } catch (NullPointerException e) {return  null;}}
     @JsonProperty public UUID bootloader_update_in_progress_bootloader_id()       {
@@ -259,9 +267,9 @@ public class Model_Hardware extends NamedModel {
 
     @JsonProperty public UUID actual_c_program_backup_version_id() { return cache_actual_c_program_backup_version_id != null ? cache_actual_c_program_backup_version_id : (get_backup_c_program_version() == null ? null :  get_backup_c_program_version().id) ;}
     @JsonProperty public String actual_c_program_backup_version_name() { return get_backup_c_program_version() == null ? null :  get_backup_c_program_version().name; }
-    @JsonProperty  public String actual_c_program_backup_version_description() {return get_backup_c_program_version() == null ? null :  get_backup_c_program_version().description;}
+    @JsonProperty public String actual_c_program_backup_version_description() {return get_backup_c_program_version() == null ? null :  get_backup_c_program_version().description;}
 
-    @JsonProperty @ApiModelProperty(value = "Value is null, if device status is online.") public Long latest_online() {
+    @JsonProperty @ApiModelProperty(value = "Value is null, if device status is online") public Long latest_online() {
         if (online_state() == NetworkStatus.ONLINE) return null;
         try {
 
@@ -303,8 +311,7 @@ public class Model_Hardware extends NamedModel {
         }
     }
 
-    @JsonProperty
-    public NetworkStatus online_state() {
+    @JsonProperty @ApiModelProperty(value = "Value is cached with asynchronous refresh") public NetworkStatus online_state() {
 
         try {
             // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
@@ -391,93 +398,132 @@ public class Model_Hardware extends NamedModel {
 
     @JsonIgnore
     public Model_Instance get_instance() {
-        if (connected_instance_id == null) return null;
-        return Model_Instance.getById(connected_instance_id);
+        try {
+            if (connected_instance_id == null) return null;
+            return Model_Instance.getById(connected_instance_id);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @JsonIgnore
-    public Model_CProgram get_actual_c_program() {
-
-        if (cache_actual_c_program_id == null) {
-            Model_CProgram program = Model_CProgram.find.query().where().eq("versions.c_program_version_boards.id", id).select("id").findOne();
-            if (program == null) return null;
-            cache_actual_c_program_id = program.id;
+    public Model_CProgram get_actual_c_program(){
+        try {
+            if (cache_actual_c_program_id == null) {
+                Model_CProgram program = Model_CProgram.find.query().where().eq("versions.c_program_version_boards.id", id).select("id").findOne();
+                if (program == null) return null;
+                cache_actual_c_program_id = program.id;
+            }
+            return Model_CProgram.getById(cache_actual_c_program_id);
+        }catch (Exception e){
+            return null;
         }
-
-        return Model_CProgram.getById(cache_actual_c_program_id);
     }
 
     @JsonIgnore
-    public Model_Version get_actual_c_program_version() {
-
-        if (cache_actual_c_program_version_id == null) {
-            Model_Version version = Model_Version.find.query().where().eq("c_program_version_boards.id", id).select("id").findOne();
-            if (version == null) return null;
-            cache_actual_c_program_version_id = version.id;
+    public Model_CProgramVersion get_actual_c_program_version(){
+        try {
+            if (cache_actual_c_program_version_id == null) {
+                Model_CProgramVersion version = Model_CProgramVersion.find.query().where().eq("c_program_version_boards.id", id).select("id").findOne();
+                if (version == null) throw new Result_Error_NotFound(Model_CProgramVersion.class);
+                cache_actual_c_program_version_id = version.id;
+            }
+            return Model_CProgramVersion.getById(cache_actual_c_program_version_id);
+        }catch (Exception e){
+            return null;
         }
-
-        return Model_Version.getById(cache_actual_c_program_version_id);
     }
 
     @JsonIgnore
     public Model_BootLoader get_actual_bootloader() {
+        try {
 
-        if (cache_actual_boot_loader_id == null) {
-            Model_BootLoader bootLoader = Model_BootLoader.find.query().where().eq("hardware.id", id).select("id").findOne();
-            if (bootLoader == null) return null;
-            cache_actual_boot_loader_id = bootLoader.id;
+            if (cache_actual_boot_loader_id == null) {
+                Model_BootLoader bootLoader = Model_BootLoader.find.query().where().eq("hardware.id", id).select("id").findOne();
+                if (bootLoader == null) return null;
+                cache_actual_boot_loader_id = bootLoader.id;
+            }
+
+            return Model_BootLoader.getById(cache_actual_boot_loader_id);
+
+        }catch (Exception e){
+            return null;
         }
-
-        return Model_BootLoader.getById(cache_actual_boot_loader_id);
     }
 
     @JsonIgnore
     public Model_CProgram get_backup_c_program() {
+        try {
+            if (cache_actual_c_program_backup_id == null) {
+                Model_CProgram program = Model_CProgram.find.query().where().eq("versions.c_program_version_backup_boards.id", id).select("id").findOne();
+                if (program == null) return null;
+                cache_actual_c_program_backup_id = program.id;
+            }
 
-        if (cache_actual_c_program_backup_id == null) {
-            Model_CProgram program = Model_CProgram.find.query().where().eq("versions.c_program_version_backup_boards.id", id).select("id").findOne();
-            if (program == null) return null;
-            cache_actual_c_program_backup_id = program.id;
+            return Model_CProgram.getById(cache_actual_c_program_backup_id);
+        } catch (Exception e){
+            return null;
         }
-
-        return Model_CProgram.getById(cache_actual_c_program_backup_id);
     }
 
     @JsonIgnore
-    public Model_Version get_backup_c_program_version() {
+    public Model_CProgramVersion get_backup_c_program_version() {
+        try {
+            if (cache_actual_c_program_backup_version_id == null) {
+                Model_CProgramVersion version = Model_CProgramVersion.find.query().where().eq("c_program_version_backup_boards.id", id).select("id").findOne();
+                if (version == null) return null;
+                cache_actual_c_program_backup_version_id = version.id;
+            }
 
-        if (cache_actual_c_program_backup_version_id == null) {
-            Model_Version version = Model_Version.find.query().where().eq("c_program_version_backup_boards.id", id).select("id").findOne();
-            if (version == null) return null;
-            cache_actual_c_program_backup_version_id = version.id;
+            return Model_CProgramVersion.getById(cache_actual_c_program_backup_version_id);
+
+        }catch (Exception e){
+            return null;
         }
-
-        return Model_Version.getById(cache_actual_c_program_backup_version_id);
     }
 
     @JsonIgnore
     public Model_HardwareType getHardwareType() {
+        try {
+            if (cache_hardware_type_id == null) {
+                Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("hardware.id", id).select("id").select("name").findOne();
+                if (hardwareType == null) return null;
+                cache_hardware_type_id = hardwareType.id;
+                cache_hardware_type_name = hardwareType.name;
+            }
 
-        if (cache_hardware_type_id == null) {
-            Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("hardware.id", id).select("id").select("name").findOne();
-            if (hardwareType == null) return null;
-            cache_hardware_type_id = hardwareType.id;
-            cache_hardware_type_name = hardwareType.name;
+            return Model_HardwareType.getById(cache_hardware_type_id);
+        }catch (Exception e){
+            return null;
         }
-
-        return Model_HardwareType.getById(cache_hardware_type_id);
     }
 
     @JsonIgnore
-    public Model_Project getProject() {
+    public Model_Project get_project() {
+        try {
+            if (cache_project_id == null) {
+                return Model_Project.getById(get_project_id());
+            }
 
-        if (cache_project_id == null) {
-            Model_Project project = Model_Project.find.query().where().eq("hardware.id", registration.id).select("id").findOne();
-            if (project == null) return null;
-            cache_project_id = project.id;
+            return Model_Project.getById(cache_project_id);
+        }catch (Exception e){
+            return  null;
         }
+    }
 
-        return Model_Project.getById(cache_project_id);
+    @JsonIgnore
+    public UUID get_project_id() {
+        try {
+            if (cache_project_id == null) {
+                Model_Project project = Model_Project.find.query().where().eq("hardware.id", registration.id).select("id").findOne();
+                if (project == null) throw new Result_Error_NotFound(Model_Project.class);
+                cache_project_id = project.id;
+            }
+
+            return cache_project_id;
+        }catch (Exception e){
+            return  null;
+        }
     }
 
     @JsonIgnore
@@ -717,7 +763,7 @@ public class Model_Hardware extends NamedModel {
                 logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.hardware_id);
                 return;
             }
-            Model_Version c_program_version = Model_Version.find.query().where().eq("compilation.firmware_build_id", help.build_id).select("id").findOne();
+            Model_CProgramVersion c_program_version = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", help.build_id).select("id").findOne();
             if (c_program_version == null) throw new Exception("Firmware with build ID = " + help.build_id + " was not found in the database!");
 
             device.actual_backup_c_program_version = c_program_version;
@@ -1864,10 +1910,10 @@ public class Model_Hardware extends NamedModel {
                 // Ale mohl bych udělat áznam o tom co tam je - kdyby to nebylo stejné s tím co si myslí tyrion že tam je:
 
                 if (overview.binaries.backup != null && (overview.binaries.backup.build_id == null || !overview.binaries.backup.build_id.equals(""))) {
-                    Model_Version version_not_cached = Model_Version.find.query().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findOne();
+                    Model_CProgramVersion version_not_cached = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findOne();
                     if (version_not_cached != null) {
                         logger.debug("check_backup:: Ještě nebyla přiřazena žádná Backup verze k HW v Tyrionovi - ale program se podařilo najít");
-                        Model_Version cached_version = Model_Version.getById(version_not_cached.id);
+                        Model_CProgramVersion cached_version = Model_CProgramVersion.getById(version_not_cached.id);
                         this.actual_backup_c_program_version = cached_version;
                         this.cache_actual_c_program_backup_id = cached_version.get_c_program().id;
                         this.cache_actual_c_program_backup_version_id = cached_version.id;
@@ -1893,11 +1939,11 @@ public class Model_Hardware extends NamedModel {
                 if (overview.binaries.backup != null && (overview.binaries.backup.build_id == null || !overview.binaries.backup.build_id.equals(""))) {
 
                     // Try to find it in User programs and
-                    Model_Version version_not_cached = Model_Version.find.query().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findOne();
+                    Model_CProgramVersion version_not_cached = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findOne();
 
                     if (version_not_cached != null) {
                         logger.debug("check_backup:: Ještě nebyla přiřazena žádná Backup verze k HW v Tyrionovi - ale program se podařilo najít");
-                        Model_Version cached_version = Model_Version.getById(version_not_cached.id);
+                        Model_CProgramVersion cached_version = Model_CProgramVersion.getById(version_not_cached.id);
                         this.actual_backup_c_program_version = cached_version;
                         this.cache_actual_c_program_backup_id = cached_version.get_c_program().id;
                         this.cache_actual_c_program_backup_version_id = cached_version.id;
@@ -2223,7 +2269,7 @@ public class Model_Hardware extends NamedModel {
     }
 
     @JsonIgnore
-    public void notification_board_unstable_actual_firmware_version(Model_Version firmware_version) {
+    public void notification_board_unstable_actual_firmware_version(Model_CProgramVersion firmware_version) {
         new Thread(() -> {
 
             // Pokud to není yoda ale device tak neupozorňovat v notifikaci, že je deska offline - zbytečné zatížení
@@ -2377,17 +2423,85 @@ public class Model_Hardware extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    // Floating shared documentation for Swagger
-    @JsonIgnore @Transient public static final String connection_permission_docs    = "read: If user want connect Project with hardware, he needs two Permission! Project.update_permission == true and also Board.first_connect_permission == true. " +
-                                                                                      " - Or user need combination of static/dynamic permission key and Board.first_connect_permission == true";
-    @JsonIgnore @Transient public static final String disconnection_permission_docs = "read: If user want remove Board from Project, he needs one single permission Project.update_permission, where hardware is registered. - Or user need static/dynamic permission key";
+    @JsonIgnore @Transient @Override  public void check_create_permission() throws _Base_Result_Exception {
+        // Only for Garfield Registration or Manual Registration
+        if (BaseController.person().has_permission(Permission.Hardware_create.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
 
-    // TODO Cachování oprávnění - Dá se to tu zlepšít obdobně jako třeba v C_Program
-    @JsonIgnore   public boolean create_permission() {  return  BaseController.isAuthenticated() && BaseController.person().has_permission("Hardware_create"); }
-    @JsonProperty public boolean edit_permission()   {  return  BaseController.isAuthenticated() && ((project_id() != null && getProject().update_permission()) || BaseController.person().has_permission("Hardware_edit")) ;}
-    @JsonProperty public boolean read_permission()   {  return  BaseController.isAuthenticated() && ((project_id() != null && getProject().read_permission())   || BaseController.isAuthenticated() && BaseController.person().has_permission("Hardware_read"));}
-    @JsonProperty public boolean delete_permission() {  return  BaseController.isAuthenticated() && ((project_id() != null && getProject().update_permission()) || BaseController.isAuthenticated() && BaseController.person().has_permission("Hardware_delete"));}
-    @JsonProperty public boolean update_permission() {  return  BaseController.isAuthenticated() && ((project_id() != null && getProject().update_permission()) || BaseController.isAuthenticated() && BaseController.person().has_permission("Hardware_update"));}
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        try {
+
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (BaseController.person().has_permission("hardware_read_" + id)) BaseController.person().valid_permission("hardware_read_" + id);
+            if (BaseController.person().has_permission(Permission.Hardware_read.name())) return;
+
+            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+            get_project().check_read_permission();
+            BaseController.person().cache_permission("hardware_read_" + id, true);
+
+        } catch (_Base_Result_Exception e){
+            BaseController.person().cache_permission("hardware_read_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
+    }
+
+    @JsonIgnore @Transient @Override public void check_edit_permission()  throws _Base_Result_Exception  {
+        try {
+           
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (BaseController.person().has_permission("hardware_update_" + id)) BaseController.person().valid_permission("hardware_update_" + id);
+            if (BaseController.person().has_permission(Permission.Hardware_edit.name())) return;
+
+            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+            get_project().check_edit_permission();
+            BaseController.person().cache_permission("hardware_update_" + id, true);
+            
+        } catch (_Base_Result_Exception e){
+            BaseController.person().cache_permission("hardware_update_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
+    }
+
+
+    /**
+     * For this case - its not delete, but unregistration from Project
+     * @throws _Base_Result_Exception
+     */
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception  {
+        try {
+
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (BaseController.person().has_permission("hardware_delete_" + id)) BaseController.person().valid_permission("hardware_delete_" + id);
+            if (BaseController.person().has_permission(Permission.Hardware_delete.name())) return;
+
+            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+            get_project().check_update_permission();
+            BaseController.person().cache_permission("hardware_delete_" + id, true);
+
+        } catch (_Base_Result_Exception e){
+            BaseController.person().cache_permission("hardware_delete_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
+    }
+
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception  {
+        try {
+
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (BaseController.person().has_permission("hardware_update_" + id)) BaseController.person().valid_permission("hardware_update_" + id);
+            if (BaseController.person().has_permission(Permission.Hardware_update.name())) return;
+
+            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+            get_project().check_update_permission();
+            BaseController.person().cache_permission("hardware_update_" + id, true);
+
+        } catch (_Base_Result_Exception e){
+            BaseController.person().cache_permission("hardware_update_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
+    }
+
     @JsonIgnore   public boolean first_connect_permission() { return project_id() == null;}
 
     public enum Permission {Hardware_create, Hardware_read, Hardware_update, Hardware_edit, Hardware_delete}

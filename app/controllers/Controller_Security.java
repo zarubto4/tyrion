@@ -255,7 +255,7 @@ public class Controller_Security extends BaseController {
     public Result logout() {
         try {
 
-            Optional<String> optional = request().header("X-AUTH-TOKEN");
+            Optional<String> optional = Controller.request().header("X-AUTH-TOKEN");
             if (optional.isPresent()) {
 
                 UUID token = UUID.fromString(optional.get());
@@ -272,11 +272,11 @@ public class Controller_Security extends BaseController {
                 }
             }
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return okEmpty();
+            return ok();
         }
     }
 
@@ -718,11 +718,11 @@ public class Controller_Security extends BaseController {
     @ApiOperation( value = "option", hidden = true)
     public Result option() {
 
-        return okEmpty();
+        return ok();
     }
 
     @ApiOperation( value = "optionLink", hidden = true)
     public Result optionLink(String url) {
-        return okEmpty();
+        return ok();
     }
 }

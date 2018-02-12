@@ -48,8 +48,7 @@ public class Controller_Garfield extends BaseController {
             tags = {"Garfield"},
             notes = "edit Garfield",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -89,9 +88,9 @@ public class Controller_Garfield extends BaseController {
             garfield.print_sticker_id =  help.print_sticker_id; // 65 mm
 
             // Kontrola oprávnění
-            if (!garfield.edit_permission()) return forbiddenEmpty();
+            garfield.update_permission();
 
-            garfield.update();
+            garfield.update(
 
             // Vrácení objektu
             return ok(Json.toJson(garfield));
@@ -148,7 +147,7 @@ public class Controller_Garfield extends BaseController {
             garfield.producer_id = help.producer_id;
 
             // Kontrola oprávnění
-            if (!garfield.create_permission()) return forbiddenEmpty();
+            if (!garfield.create_permission()) return forbidden();
 
             garfield.save();
 
@@ -181,13 +180,13 @@ public class Controller_Garfield extends BaseController {
             if (garfield == null) return notFound("Garfield not found");
 
             // Kontrola oprávnění
-            if (!garfield.delete_permission()) return forbiddenEmpty();
+            if (!garfield.delete_permission()) return forbidden();
 
             // Odsranit objekt
             garfield.delete();
 
             // Vrácení objektu
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -216,7 +215,7 @@ public class Controller_Garfield extends BaseController {
             if (garfield == null) return notFound("Garfield not found");
 
             // Kontrola oprávnění
-            if (!garfield.read_permission()) return forbiddenEmpty();
+            if (!garfield.read_permission()) return forbidden();
 
             // Vrácení objektu
             return ok(Json.toJson(garfield));
@@ -254,7 +253,7 @@ public class Controller_Garfield extends BaseController {
             // Kontrola oprávnění
             if (!hardware.read_permission()) {
                 logger.error("print_label:: Device missing read permission");
-                return forbiddenEmpty();
+                return forbidden();
             }
 
             Model_HardwareBatch batch = Model_HardwareBatch.getById(hardware.batch_id);
@@ -282,7 +281,7 @@ public class Controller_Garfield extends BaseController {
             // Kontrola oprávnění
             if (!garfield.read_permission()) {
                 logger.error("print_label:: Missing garfield not found");
-                return forbiddenEmpty();
+                return forbidden();
             }
 
             Printer_Api api = new Printer_Api();
@@ -306,7 +305,7 @@ public class Controller_Garfield extends BaseController {
 
 
             // Vrácení objektu
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -330,7 +329,7 @@ public class Controller_Garfield extends BaseController {
     public Result get_Garfield_list() {
         try {
 
-            if (!person().has_permission(Model_Garfield.Permission.Garfield_read.name()))  return forbiddenEmpty();
+            if (!person().has_permission(Model_Garfield.Permission.Garfield_read.name()))  return forbidden();
 
             // Kontrola objektu
             List<Model_Garfield> garfield_s = Model_Garfield.find.query().where().orderBy("UPPER(name) ASC").findList();
@@ -367,12 +366,12 @@ public class Controller_Garfield extends BaseController {
             if (garfield == null) return notFound("Garfield not found");
 
             // Kontrola oprávnění
-            if (!garfield.read_permission()) return forbiddenEmpty();
+            if (!garfield.read_permission()) return forbidden();
 
 
             if (!( garfield.print_label_id_1.equals(printer_id) || garfield.print_label_id_2.equals(printer_id) || garfield.print_sticker_id.equals(printer_id))) {
 
-                return forbiddenEmpty();
+                return forbidden();
             }
 
             Printer printer =  Printer_Api.get_printer(printer_id);
@@ -409,7 +408,7 @@ public class Controller_Garfield extends BaseController {
             if (garfield == null) return notFound("Garfield not found");
 
             // Kontrola oprávnění
-            if (!garfield.read_permission()) return forbiddenEmpty();
+            if (!garfield.read_permission()) return forbidden();
 
 
             if (garfield.print_label_id_1.equals(printer_id)) {
@@ -448,7 +447,7 @@ public class Controller_Garfield extends BaseController {
             }
 
             // Vrácení objektu
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);

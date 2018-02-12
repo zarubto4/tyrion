@@ -12,6 +12,9 @@ import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.cache.IdsList;
 import utilities.enums.*;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.notifications.helps_objects.Becki_color;
@@ -44,8 +47,8 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Widget>                widgets         = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareRegistration>  hardware        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareGroup>         hardware_groups = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("created desc") public List<Model_Invitation>            invitations     = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL) @OrderBy("id asc")       public List<Model_ProjectParticipant>    participants    = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("created desc") public List<Model_Invitation>            invitations     = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("id asc")       public List<Model_ProjectParticipant>    participants    = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -62,6 +65,11 @@ public class Model_Project extends TaggedModel {
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
+    @JsonProperty @ApiModelProperty(required = true) public Model_Product product() { return getProduct();}
+
+    /*
+    // TODO Promyslet: Tomáš Záruba: Toto je dosti nebezpoečné -> vracet vše, časový zabiják - nedělat short objekty,
+    // ale vracet nemusíme vše pokud tonení nutné a nejde torequestout jinak!
     @JsonProperty @ApiModelProperty(required = true) public List<Model_HardwareRegistration>    hardware()      { return active() ? getHardware()       : new ArrayList<>(); }
     @JsonProperty @ApiModelProperty(required = true) public List<Model_BProgram>                b_programs()    { return active() ? getBPrograms()      : new ArrayList<>(); }
     @JsonProperty @ApiModelProperty(required = true) public List<Model_CProgram>                c_programs()    { return active() ? getCPrograms()      : new ArrayList<>(); }
@@ -70,11 +78,12 @@ public class Model_Project extends TaggedModel {
     @JsonProperty @ApiModelProperty(required = true) public List<Model_Widget>                  widgets()       { return active() ? getWidgets()        : new ArrayList<>(); }
     @JsonProperty @ApiModelProperty(required = true) public List<Model_Block>                   blocks()        { return active() ? getBlocks()         : new ArrayList<>(); }
     @JsonProperty @ApiModelProperty(required = true) public List<Model_Instance>                instances()     { return active() ? getInstances()      : new ArrayList<>(); }
-    @JsonProperty @ApiModelProperty(required = true) public boolean active() { return getProduct().active;}
+    */
 
-    @JsonProperty @ApiModelProperty(required = true) public String product_name() { return getProduct().name;}
-    @JsonProperty @ApiModelProperty(required = true) public UUID product_id()   { return getProduct().id;}
-
+    /**
+     * Making List of Model_ProjectParticipant from Model_ProjectParticipant and also from all invitations!
+     * @return Model_ProjectParticipant[]
+     */
     @JsonProperty @ApiModelProperty(required = true) public List<Model_ProjectParticipant> participants() {
 
         List<Model_ProjectParticipant> project_participants = new ArrayList<>(this.participants);
@@ -461,36 +470,47 @@ public class Model_Project extends TaggedModel {
 
     @JsonIgnore @Transient
     public void notification_project_invitation(Model_Person person, Model_Invitation invitation) {
+        try {
+            Model_Person owner = BaseController.person();
 
-        Model_Person owner = BaseController.person();
-
-        new Model_Notification()
-                .setImportance(NotificationImportance.NORMAL)
-                .setLevel(NotificationLevel.INFO)
-                .setText(new Notification_Text().setText("User "))
-                .setObject(owner)
-                .setText(new Notification_Text().setText(" invited you into the project "))
-                .setObject(this)
-                .setText(new Notification_Text().setText(". Do you accept the invitation?"))
-                .setButton( new Notification_Button().setAction(NotificationAction.ACCEPT_PROJECT_INVITATION).setPayload(invitation.id.toString()).setColor(Becki_color.byzance_green).setText("Yes")  )
-                .setButton( new Notification_Button().setAction(NotificationAction.REJECT_PROJECT_INVITATION).setPayload(invitation.id.toString()).setColor(Becki_color.byzance_red).setText("No")  )
-                .send(person);
+            new Model_Notification()
+                    .setImportance(NotificationImportance.NORMAL)
+                    .setLevel(NotificationLevel.INFO)
+                    .setText(new Notification_Text().setText("User "))
+                    .setObject(owner)
+                    .setText(new Notification_Text().setText(" invited you into the project "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(". Do you accept the invitation?"))
+                    .setButton(new Notification_Button().setAction(NotificationAction.ACCEPT_PROJECT_INVITATION).setPayload(invitation.id.toString()).setColor(Becki_color.byzance_green).setText("Yes"))
+                    .setButton(new Notification_Button().setAction(NotificationAction.REJECT_PROJECT_INVITATION).setPayload(invitation.id.toString()).setColor(Becki_color.byzance_red).setText("No"))
+                    .send(person);
+        } catch (Result_Error_NotFound e){
+            logger.error("notification_project_invitation::Result_Error_NotFound::Person Not Found");
+        } catch (Exception e){
+            logger.internalServerError(e);
+        }
     }
 
     @JsonIgnore @Transient
     public void notification_project_invitation_rejected(Model_Person owner) {
+        try {
 
-        Model_Person person = BaseController.person();
+            Model_Person person = BaseController.person();
 
-        new Model_Notification()
-                .setImportance(NotificationImportance.NORMAL)
-                .setLevel(NotificationLevel.INFO)
-                .setText(new Notification_Text().setText("User "))
-                .setObject(person)
-                .setText(new Notification_Text().setText(" did not accept your invitation to the project "))
-                .setObject(this)
-                .setText(new Notification_Text().setText("."))
-                .send(owner);
+            new Model_Notification()
+                    .setImportance(NotificationImportance.NORMAL)
+                    .setLevel(NotificationLevel.INFO)
+                    .setText(new Notification_Text().setText("User "))
+                    .setObject(person)
+                    .setText(new Notification_Text().setText(" did not accept your invitation to the project "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText("."))
+                    .send(owner);
+        } catch (Result_Error_NotFound e){
+            logger.error("notification_project_invitation_rejected::Result_Error_NotFound::Person Not Found");
+        } catch (Exception e){
+            logger.internalServerError(e);
+        }
     }
 
     @JsonIgnore @Transient
@@ -509,18 +529,24 @@ public class Model_Project extends TaggedModel {
 
     @JsonIgnore @Transient
     public void notification_project_participant_change_status(Model_ProjectParticipant participant) {
+        try {
 
-        Model_Person person = BaseController.person();
+            Model_Person person = BaseController.person();
+            new Model_Notification()
+                    .setImportance(NotificationImportance.NORMAL)
+                    .setLevel(NotificationLevel.INFO)
+                    .setText(new Notification_Text().setText("User "))
+                    .setObject(person)
+                    .setText(new Notification_Text().setText(" changed your status in project "))
+                    .setObject(this)
+                    .setText(new Notification_Text().setText(" to " + participant.state.name() + ". You have different permissions now."))
+                    .send(participant.person);
 
-        new Model_Notification()
-                .setImportance(NotificationImportance.NORMAL)
-                .setLevel(NotificationLevel.INFO)
-                .setText(new Notification_Text().setText("User "))
-                .setObject(person)
-                .setText(new Notification_Text().setText(" changed your status in project "))
-                .setObject(this)
-                .setText(new Notification_Text().setText(" to " + participant.state.name() + ". You have different permissions now."))
-                .send(participant.person);
+        } catch (Result_Error_NotFound e){
+            logger.error("notification_project_participant_change_status::Result_Error_NotFound::Person Not Found");
+        } catch (Exception e){
+            logger.internalServerError(e);
+        }
     }
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
@@ -538,143 +564,135 @@ public class Model_Project extends TaggedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore public boolean create_permission() {
-        return product.active && product.create_permission();
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception  {
+        if(!product.active) throw new Result_Error_PermissionDenied();
+        product.create_permission();
     }
 
-    @JsonProperty
-    public boolean update_permission()    {
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("project_update_" + id)) return BaseController.person().has_permission("project_update_"+ id);
-        if (BaseController.person().has_permission("Project_update")) return true;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_Project.find.query().where().eq("participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("project_update_" + id, true);
-            return true;
-        }
-
-        // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("project_update_" + id, false);
-        return false;
-    }
-
-    @JsonIgnore
-    public boolean read_permission()      {
-
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("project_read_" + id)) return BaseController.person().has_permission("project_read_"+ id);
-        if (BaseController.person().has_permission("Project_read")) return true;
+        if (BaseController.person().has_permission("project_read_" + id)) BaseController.person().valid_permission("project_read_" + id);
+        if (BaseController.person().has_permission("Project_read")) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
         if ( Model_Project.find.query().where().eq("participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
             BaseController.person().cache_permission("project_read_" + id, true);
-            return true;
+            return;
         }
 
         // Přidávám do listu false a vracím false
         BaseController.person().cache_permission("project_read_" + id, false);
-        return false;
+        throw new Result_Error_PermissionDenied();
     }
 
-    @JsonProperty
-    public boolean edit_permission()      {
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception   {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("project_edit_" + id)) return BaseController.person().has_permission("project_edit_"+ id);
-        if (BaseController.person().has_permission("Project_edit")) return true;
+        if (BaseController.person().has_permission("project_update_" + id)) BaseController.person().valid_permission("project_update_" + id);
+        if (BaseController.person().has_permission("Project_update")) return;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+        if ( Model_Project.find.query().where().eq("participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
+            BaseController.person().cache_permission("project_update_" + id, true);
+            return;
+        }
+
+        // Přidávám do listu false a vracím false
+        BaseController.person().cache_permission("project_update_" + id, false);
+        throw new Result_Error_PermissionDenied();
+    }
+
+    @JsonIgnore @Transient @Override public void check_edit_permission()  throws _Base_Result_Exception {
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if (BaseController.person().has_permission("project_edit_" + id)) BaseController.person().valid_permission("project_edit_" + id);
+        if (BaseController.person().has_permission("Project_edit")) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if (Model_Project.find.query().where().eq("participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
             BaseController.person().cache_permission("project_edit_" + id, true);
-            return true;
+            return;
         }
 
         // Přidávám do listu false a vracím false
         BaseController.person().cache_permission("projecte_edit_" + id, false);
-        return false;
+        throw new Result_Error_PermissionDenied();
     }
 
-    @JsonProperty
-    public boolean delete_permission()    {
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("project_delete_" + id)) {
-            return BaseController.person().has_permission("project_delete_"+ id);
-        }
-        if (BaseController.person().has_permission("Project_delete")) {
-            return true;
-        }
+        if (BaseController.person().has_permission("project_delete_" + id)) BaseController.person().valid_permission("project_delete_" + id);
+        if (BaseController.person().has_permission("Project_delete")) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if (Model_ProjectParticipant.find.query().where().eq("project.id", id).eq("person.id", BaseController.personId()).eq("state", ParticipantStatus.OWNER).findCount() > 0) {
             BaseController.person().cache_permission("project_delete_" + id, true);
-            return true;
+            return;
         }
 
         // Přidávám do listu false a vracím false
         BaseController.person().cache_permission("project_delete_" + id, false);
-        return false;
+        throw new Result_Error_PermissionDenied();
     }
 
-    @JsonProperty
-    public boolean unshare_permission()   {
+    @JsonIgnore @Transient public void unshare_permission() throws _Base_Result_Exception {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("project_share_" + id)) return BaseController.person().has_permission("project_share_"+ id);
-        if (BaseController.person().has_permission("Project_unshare")) return true;
+        if (BaseController.person().has_permission("project_share_" + id)) if(!BaseController.person().has_permission("project_share_"+ id)) throw new Result_Error_PermissionDenied();;
+        if (BaseController.person().has_permission("Project_unshare")) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if (Model_ProjectParticipant.find.query().where().eq("project.id", id).eq("person.id", BaseController.personId()).disjunction().add(Expr.eq("state", ParticipantStatus.OWNER)).add(Expr.eq("state", ParticipantStatus.ADMIN)).findCount()> 0) {
             BaseController.person().cache_permission("project_share_" + id, true);
-            return true;
+            return;
         }
 
         // Přidávám do listu false a vracím false
         BaseController.person().cache_permission("project_share_" + id, false);
-        return false;
+        throw new Result_Error_PermissionDenied();
     }
 
-    @JsonProperty
-    public boolean share_permission ()    {
+    @JsonIgnore @Transient public void share_permission ()throws _Base_Result_Exception {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("project_unshare_" + id)) return BaseController.person().has_permission("project_unshare_"+ id);
-        if (BaseController.person().has_permission("Project_share")) return true;
+        if (BaseController.person().has_permission("project_unshare_" + id)) if(!BaseController.person().has_permission("project_unshare_"+ id)) throw new Result_Error_PermissionDenied();
+        if (BaseController.person().has_permission("Project_share")) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if (Model_ProjectParticipant.find.query().where().eq("project.id", id).eq("person.id", BaseController.personId()).disjunction().add(Expr.eq("state", ParticipantStatus.OWNER)).add(Expr.eq("state", ParticipantStatus.ADMIN)).findCount()> 0) {
             BaseController.person().cache_permission("project_unshare_" + id, true);
-            return true;
+            return;
         }
 
         // Přidávám do listu false a vracím false
         BaseController.person().cache_permission("project_unshare_" + id, false);
-        return false;
+        throw new Result_Error_PermissionDenied();
     }
 
-    @JsonProperty
-    public boolean admin_permission ()    {
+    @JsonIgnore @Transient public void admin_permission () throws _Base_Result_Exception {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("project_admin_permission_" + id)) return BaseController.person().has_permission("project_admin_permission_"+ id);
-        if (BaseController.person().has_permission("Project_admin")) return true;
+        if (BaseController.person().has_permission("project_admin_permission_" + id)) if(!BaseController.person().has_permission("project_admin_permission_"+ id)) throw new Result_Error_PermissionDenied();
+        if (BaseController.person().has_permission("Project_admin")) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if (Model_ProjectParticipant.find.query().where().eq("project.id", id).where().eq("person.id", BaseController.personId()).where().disjunction().add(Expr.eq("state", ParticipantStatus.OWNER)).add(Expr.eq("state", ParticipantStatus.ADMIN)).findCount()> 0) {
             BaseController.person().cache_permission("project_admin_permission_" + id, true);
-            return true;
+            return;
         }
 
         // Přidávám do listu false a vracím false
         BaseController.person().cache_permission("project_admin_permission_" + id, false);
-        return false;
-
+        throw new Result_Error_PermissionDenied();
     }
 
-    @JsonIgnore
-    public boolean financial_permission() {return this.product.financial_permission("project");}
+    @JsonIgnore @Transient public void financial_permission() throws _Base_Result_Exception {
+        // TODO Doplnit oprávnění na tvorbu Projektů
+        //throw new Result_Error_PermissionDenied("You cannot create project right now. Buy an extension for projects.");
+        // return this.product.financial_permission("project");
+    }
 
     public enum Permission { Project_update, Project_read, Project_unshare , Project_share, Project_edit, Project_delete, Project_admin }
 
@@ -686,20 +704,21 @@ public class Model_Project extends TaggedModel {
     @CacheField(value = IdsList.class, name = "Model_Project_Person_Ids")
     public static Cache<UUID, IdsList> token_cache;
 
-    public static Model_Project getById(String id) {
+
+    public static Model_Project getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_Project getById(UUID id) {
+    public static Model_Project getById(UUID id) throws _Base_Result_Exception {
 
         Model_Project project = cache.get(id);
         if (project == null) {
-
             project = find.query().where().idEq(id).eq("deleted", false).findOne();
-            if (project == null) return null;
-
+            if (project == null) throw new Result_Error_NotFound(Model_Project.class);
             cache.put(id, project);
         }
+
+        project.check_read_permission();
 
         return project;
     }
@@ -760,24 +779,29 @@ public class Model_Project extends TaggedModel {
 
         IdsList idlist = token_cache.get(project_id);
 
-        if (idlist == null) {
+        try {
+            if (idlist == null) {
 
-            idlist = new IdsList();
+                idlist = new IdsList();
 
-            Model_Project project = getById(project_id);
-            if (project == null) return idlist.list;
+                Model_Project project = getById(project_id);
 
-            for (Model_ProjectParticipant participant : project.participants) {
+                for (Model_ProjectParticipant participant : project.participants) {
 
-                if (participant.state == ParticipantStatus.INVITED) continue;
+                    if (participant.state == ParticipantStatus.INVITED) continue;
 
-                if (!idlist.list.contains(participant.person.id))  idlist.list.add(participant.person.id);
+                    if (!idlist.list.contains(participant.person.id)) idlist.list.add(participant.person.id);
+                }
+
+                token_cache.put(project_id, idlist);
             }
-
-            token_cache.put(project_id, idlist);
+        } catch (Result_Error_NotFound exception){
+            // Its Legal Operation
+        } catch (Exception exception){
+            logger.internalServerError(exception);
+        } finally {
+            return idlist.list;
         }
-
-        return idlist.list;
     }
 
     public void cache_refresh() {

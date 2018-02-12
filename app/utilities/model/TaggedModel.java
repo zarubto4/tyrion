@@ -2,6 +2,9 @@ package utilities.model;
 
 import controllers.BaseController;
 import models.Model_Tag;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.logger.Logger;
 
 import javax.persistence.ManyToMany;
 import javax.persistence.MappedSuperclass;
@@ -12,8 +15,15 @@ import java.util.stream.Collectors;
 @MappedSuperclass
 public abstract class TaggedModel extends NamedModel {
 
-    @ManyToMany
-    public List<Model_Tag> tags = new ArrayList<>();
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Logger logger = new Logger(TaggedModel.class);
+
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
+    @ManyToMany public List<Model_Tag> tags = new ArrayList<>();
+
+
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     public void addTags(List<String> tags) {
         tags.forEach(value -> {
@@ -21,7 +31,17 @@ public abstract class TaggedModel extends NamedModel {
             if (tag == null) {
                 tag = new Model_Tag();
                 tag.value = value;
-                tag.person = BaseController.person();
+
+                try {
+                    tag.person = BaseController.person();
+                } catch (_Base_Result_Exception exception){
+                    if(exception.getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
+                        logger.error("addTags::Person not found");
+                    }else {
+                        logger.internalServerError(exception);
+                    }
+                }
+
                 tag.save();
             }
 

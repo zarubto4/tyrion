@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers.BaseController;
@@ -16,6 +17,8 @@ import utilities.cache.CacheField;
 import utilities.enums.NotificationAction;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.notifications.helps_objects.Becki_color;
@@ -49,7 +52,8 @@ public class Model_Person extends BaseModel {
     public String last_name;
     public String country;
     public String gender;
-    public String portal_config;
+
+    @JsonIgnore public String portal_config; // Prostor kde si vývojáři Becki mohou poznamenávat nějaké detaily o uživately
 
     @JsonIgnore public boolean validated;
     @JsonIgnore public boolean frozen;
@@ -76,7 +80,9 @@ public class Model_Person extends BaseModel {
     @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BlockVersion>          blockVersions        = new ArrayList<>(); // Propojení, které verze bločků uživatel vytvořil
     @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Widget>                widgets              = new ArrayList<>(); // Propojení, které widgety uživatel vytvořil
     @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_WidgetVersion>         widgetVersions       = new ArrayList<>(); // Propojení, které verze widgetů uživatel vytvořil
-    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Version>               versions             = new ArrayList<>(); // Propojení, které verze uživatel vytvořil
+    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BProgramVersion>       bprogram_versions    = new ArrayList<>(); // Propojení, které verze uživatel vytvořil
+    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_CProgramVersion>       cprogram_versions    = new ArrayList<>(); // Propojení, které verze uživatel vytvořil
+    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_GridProgramVersion>    gridprogram_versions = new ArrayList<>(); // Propojení, které verze uživatel vytvořil
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_AuthorizationToken>    authorizationTokens  = new ArrayList<>(); // Propojení, které uživatel napsal
     @JsonIgnore @OneToMany(mappedBy = "owner",  cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Invitation>            invitations          = new ArrayList<>(); // Pozvánky, které uživatel rozeslal
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Notification>          notifications        = new ArrayList<>();
@@ -120,14 +126,12 @@ public class Model_Person extends BaseModel {
         List<Model_Project> projects = new ArrayList<>();
 
         for (UUID project_id : cache_project_ids) {
-
-            Model_Project project = Model_Project.getById(project_id);
-
-            if (project == null) {
-                continue;
+            try {
+                Model_Project project = Model_Project.getById(project_id);
+                projects.add(project);
+            }catch (_Base_Result_Exception e){
+                // Nothing
             }
-
-            projects.add(project);
         }
 
         return projects;
@@ -181,17 +185,39 @@ public class Model_Person extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   public boolean create_permission()     { return true; }
-    @JsonIgnore   public boolean read_permission()       { return true; }
-    @JsonProperty public boolean edit_permission()       { return BaseController.person() != null && (BaseController.personId().equals(this.id) || BaseController.person().has_permission("Person_edit"));}
-    @JsonIgnore   public boolean activation_permission() { return BaseController.person().has_permission("Person_activation");}
-    @JsonIgnore   public boolean delete_permission()     { return BaseController.person().has_permission("Person_delete");}
-    @JsonIgnore   public boolean admin_permission()      { return BaseController.person().has_permission("Byzance_employee");}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {}
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {}
+    @JsonIgnore @Transient @Override public void check_update_permission()   throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Person_update.name())) return;
+        if(!BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_edit_permission()   throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Person_edit.name())) return;
+        if(!BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Person_delete.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient public void activation_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Person_activation.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
 
-    public enum Permission { Person_edit, Person_delete, Person_activation, Byzance_employee }
+    @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission") @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnore public Boolean is_admin()  {
+        try {
+            if (BaseController.person().has_permission(Permission.Byzance_employee.name())) return true;
+            return null;
+        }catch (_Base_Result_Exception e){
+            return null;
+        }
+    }
+
+    public enum Permission { Person_edit, Person_update, Person_delete, Person_activation, Byzance_employee }
 
     @JsonIgnore
-    public boolean has_permission(String permission_key) {
+    public boolean has_permission(String permission_key)  {
         if (cache_permissions_keys.isEmpty()) {
             for (Model_Permission m :  Model_Permission.find.query().where().eq("roles.persons.id", id).findList() ) cache_permission(m.name, true);
         }
@@ -199,6 +225,15 @@ public class Model_Person extends BaseModel {
         logger.debug("has_permission - permissions: {}", Json.toJson(this.cache_permissions_keys));
 
         return this.cache_permissions_keys.containsKey(permission_key);
+    }
+
+    @JsonIgnore
+    public void valid_permission(String permission_key) throws _Base_Result_Exception {
+        if(this.cache_permissions_keys.get(permission_key)){
+            return;
+        }else {
+            throw new Result_Error_PermissionDenied();
+        }
     }
 
     @JsonIgnore

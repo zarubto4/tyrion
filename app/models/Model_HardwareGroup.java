@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 
@@ -30,7 +31,7 @@ public class Model_HardwareGroup extends NamedModel {
 
     @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY) public Model_Project project;  // Projekt, pod který Hardware Group spadá
 
-    @JsonIgnore @OneToMany(mappedBy = "group", fetch = FetchType.LAZY) public List<Model_HardwareRegistration> hardware = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "group", fetch = FetchType.LAZY) public List<Model_Hardware> hardware = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -86,8 +87,8 @@ public class Model_HardwareGroup extends NamedModel {
         }
     }
 
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
-    public UUID project_id()           {
+    @JsonIgnore
+    public UUID get_project_id()           {
 
         if (cache_project_id == null) {
             Model_Project project = Model_Project.find.query().where().eq("hardware_groups.id", id).select("id").findOne();
@@ -96,6 +97,10 @@ public class Model_HardwareGroup extends NamedModel {
         }
 
         return cache_project_id;
+    }
+
+    @JsonIgnore @Transient public Model_Project get_project() throws _Base_Result_Exception  {
+        return  Model_Project.getById(get_project_id());
     }
 
     // TODO teoreticky cachovat?
@@ -122,22 +127,16 @@ public class Model_HardwareGroup extends NamedModel {
 
         logger.debug("delete: Delete object Id: {} ", this.id);
 
-        // Case 1.1 :: We delete the object
-
-        // Case 1.2 :: After Update - we send notification to frontend (Only if it is desirable)
-        // new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( _Model_ExampleModelName.class, "project.id", "model.id"))).start();
-
-        // Case 2.1 :: We delete the object with change of ORM parameter  @JsonIgnore  public boolean deleted;
         this.hardware.clear();
+        this.deletePermanent();
 
-        this.deleted = true;
-        this.update();
-
-        if (project_id() != null) {
-            Model_Project project = Model_Project.getById(project_id());
-            if (project != null) project.cache_hardware_group_ids.remove(id);
+        try {
+            get_project().cache_hardware_group_ids.remove(id);
+        } catch (_Base_Result_Exception e) {
+           // Nothing
         }
 
+        // TODO opravit Info o updatu
         // Case 1.2 :: After Delete - we send notification to frontend (Only if it is desirable)
         //new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, "project.id", "model.id"))).start();
 
@@ -161,11 +160,11 @@ public class Model_HardwareGroup extends NamedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     // Create Permission is always JsonIgnore
-    @JsonIgnore   public boolean create_permission()  {  return  project != null && project.edit_permission(); }
-    @JsonIgnore   public boolean read_permission()    {  return  project != null && project.read_permission(); }
-    @JsonProperty public boolean update_permission()  {  return  project != null && project.update_permission(); }
-    @JsonProperty public boolean edit_permission()    {  return  project != null && project.update_permission(); }
-    @JsonProperty public boolean delete_permission()  {  return  project != null && project.update_permission(); }
+    @JsonIgnore   public void check_create_permission() throws _Base_Result_Exception {  project.check_update_permission(); }
+    @JsonIgnore   public void check_read_permission()   throws _Base_Result_Exception {  get_project().check_read_permission(); }
+    @JsonProperty public void check_update_permission() throws _Base_Result_Exception {  get_project().check_update_permission(); }
+    @JsonProperty public void check_edit_permission()   throws _Base_Result_Exception {  get_project().check_update_permission(); }
+    @JsonProperty public void check_delete_permission() throws _Base_Result_Exception {  get_project().check_update_permission(); }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

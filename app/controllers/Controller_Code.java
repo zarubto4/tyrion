@@ -93,7 +93,7 @@ public class Controller_Code extends BaseController {
      // ObjectNode result =  Controller_WebSocket.incomingConnections_homers.get(instance_id).write_with_confirmation(request, 1000*30, 0, 3);
 
      if (request.get("status").asText().equals("success")) {
-     return okEmpty();
+     return ok();
      }
      else {
      return badRequest(request);
@@ -141,13 +141,13 @@ public class Controller_Code extends BaseController {
 
             // Ověření objektu
             Model_Version version = Model_Version.getById(version_id);
-            if (version == null) return notFound("Version not found");
+            if (version == null) return notFound(Model_Version.class);
 
             // Smažu předchozí kompilaci
             if (version.get_c_program() == null) return badRequest("Version is not version of C_Program");
 
             // Kontrola oprávnění
-            if (!version.get_c_program().read_permission()) return forbiddenEmpty();
+            if (!version.get_c_program().read_permission()) return forbidden();
 
             // Odpovím předchozí kompilací
             if (version.compilation != null) return ok(Json.toJson(new Swagger_Compilation_Ok()));
@@ -358,7 +358,7 @@ public class Controller_Code extends BaseController {
      Board board = Board.getById(board_id);
      if (board == null) return notFound("Board board_id object not found");
 
-     if (!board.update_permission()) return forbiddenEmpty();
+     if (!board.update_permission()) return forbidden();
 
      Firmware_type firmware_type = Firmware_type.getFirmwareType(firmware_type_string);
      if (firmware_type == null) return notFound("FirmwareType not found!");
@@ -390,7 +390,7 @@ public class Controller_Code extends BaseController {
      FileRecord fileRecord = FileRecord.create_Binary_file("byzance-private/binaryfiles", binary_file, file_name);
      Controller_Actualization.add_new_actualization_request_with_user_file(board.project, firmware_type, board, fileRecord);
 
-     return okEmpty();
+     return ok();
 
      } catch (Exception e) {
      return Server_Logger.result_internalServerError(e, request());
@@ -462,7 +462,7 @@ public class Controller_Code extends BaseController {
             }
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!c_program.create_permission()) return forbiddenEmpty();
+            if (!c_program.create_permission()) return forbidden();
 
             // Uložení C++ Programu
             c_program.save();
@@ -479,7 +479,7 @@ public class Controller_Code extends BaseController {
                 version.public_version = help.c_program_public_admin_create;
 
                 // Zkontroluji oprávnění
-                if (!c_program.update_permission()) return forbiddenEmpty();
+                if (!c_program.update_permission()) return forbidden();
 
                 version.save();
 
@@ -556,14 +556,14 @@ public class Controller_Code extends BaseController {
             if (c_program_old == null) return notFound("C_Program c_program not found");
 
             // Zkontroluji oprávnění
-            if (!c_program_old.read_permission())  return forbiddenEmpty();
+            if (!c_program_old.read_permission())  return forbidden();
 
             // Vyhledám Objekt
             Model_Project project = Model_Project.getById(help.project_id);
             if (project == null) return notFound("Project project_id not found");
 
             // Zkontroluji oprávnění
-            if (!project.update_permission())  return forbiddenEmpty();
+            if (!project.update_permission())  return forbidden();
 
             Model_CProgram c_program_new =  new Model_CProgram();
             c_program_new.name = help.name;
@@ -637,7 +637,7 @@ public class Controller_Code extends BaseController {
             if (c_program == null) return notFound("C_Program c_program not found");
 
             // Zkontroluji oprávnění
-            if (!c_program.read_permission())  return forbiddenEmpty();
+            if (!c_program.read_permission())  return forbidden();
 
             // Vracím Objekt
             return ok(Json.toJson(c_program));
@@ -694,7 +694,7 @@ public class Controller_Code extends BaseController {
 
                 Model_Project project = Model_Project.getById(help.project_id);
                 if (project == null) return notFound("Project not found");
-                if (!project.read_permission()) return forbiddenEmpty();
+                if (!project.read_permission()) return forbidden();
 
                 query.where().eq("project.id", help.project_id).eq("deleted", false);
             }
@@ -708,7 +708,7 @@ public class Controller_Code extends BaseController {
             }
 
             if (help.pending_programs) {
-                if (!person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return forbiddenEmpty();
+                if (!person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return forbidden();
                 query.where().eq("versions.approval_state", Approval.PENDING.name());
             }
 
@@ -773,7 +773,7 @@ public class Controller_Code extends BaseController {
             c_program.description = help.description;
 
             // Zkontroluji oprávnění
-            if (!c_program.edit_permission())  return forbiddenEmpty();
+            if (!c_program.edit_permission())  return forbidden();
 
             // Uložení změn
             c_program.update();
@@ -823,7 +823,7 @@ public class Controller_Code extends BaseController {
             if (cProgram == null) return notFound("CProgram not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!cProgram.edit_permission())  return forbiddenEmpty();
+            if (!cProgram.edit_permission())  return forbidden();
 
             cProgram.addTags(help.tags);
 
@@ -872,7 +872,7 @@ public class Controller_Code extends BaseController {
             if (cProgram == null) return notFound("CProgram not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!cProgram.edit_permission())  return forbiddenEmpty();
+            if (!cProgram.edit_permission())  return forbidden();
 
             cProgram.removeTags(help.tags);
 
@@ -913,7 +913,7 @@ public class Controller_Code extends BaseController {
             if (c_program == null) return notFound("C_Program c_program_id not found");
 
             // Kontrola oprávnění
-            if (!c_program.delete_permission()) return forbiddenEmpty();
+            if (!c_program.delete_permission()) return forbidden();
 
             // Vyhledání PRoduct pro získání kontejneru
             //Model_Product product = Model_Product.find.query().where().eq("projects.c_programs.id", c_program_id).findOne();
@@ -922,7 +922,7 @@ public class Controller_Code extends BaseController {
             c_program.delete();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -973,13 +973,12 @@ public class Controller_Code extends BaseController {
 
             // Ověření objektu
             Model_CProgram c_program = Model_CProgram.getById(c_program_id);
-            if (c_program == null) return notFound("C_Program c_program_id not found");
 
             // Zkontroluji oprávnění
-            if (!c_program.update_permission()) return forbiddenEmpty();
+            c_program.check_update_permission();
 
             // První nová Verze
-            Model_Version version = new Model_Version();
+            Model_CProgramVersion version = new Model_CProgramVersion();
             version.name            = help.name;
             version.description     = help.description;
             version.author          = person();
@@ -987,7 +986,7 @@ public class Controller_Code extends BaseController {
             version.public_version  = false;
 
             // Zkontroluji oprávnění
-            if (!c_program.update_permission()) return forbiddenEmpty();
+            version.check_create_permission();
 
             version.save();
 
@@ -998,7 +997,7 @@ public class Controller_Code extends BaseController {
             version.compile_program_thread(help.library_compilation_version);
 
             // Vracím vytvořený objekt
-            return created(Json.toJson(c_program.program_version(version)));
+            return created(Json.toJson(version));
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1041,7 +1040,7 @@ public class Controller_Code extends BaseController {
             if (version.get_c_program() == null) return badRequest("Version is not version of C_Program");
 
             // Zkontroluji oprávnění
-            if (!version.get_c_program().read_permission())  return forbiddenEmpty();
+            if (!version.get_c_program().read_permission())  return forbidden();
 
             // Vracím Objekt
             return ok(Json.toJson(version.get_c_program().program_version(version)));
@@ -1097,7 +1096,7 @@ public class Controller_Code extends BaseController {
             if (version == null) return notFound("Version not found");
 
             // Kontrola oprávnění
-            if (!version.get_c_program().edit_permission()) return forbiddenEmpty();
+            if (!version.get_c_program().edit_permission()) return forbidden();
 
             //Uprava objektu
             version.name        = help.name;
@@ -1146,13 +1145,13 @@ public class Controller_Code extends BaseController {
             if (version.get_c_program() == null) return badRequest("Version is not version of C_Program");
 
             // Kontrola oprávnění
-            if (!version.get_c_program().delete_permission()) return forbiddenEmpty();
+            if (!version.get_c_program().delete_permission()) return forbidden();
 
             // Smažu zástupný objekt
             version.delete();
 
             // Vracím potvrzení o smazání
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1205,13 +1204,13 @@ public class Controller_Code extends BaseController {
             version.approval_state = Approval.PENDING;
 
             // Kontrola oprávnění
-            if (!(version.get_c_program().edit_permission())) return forbiddenEmpty();
+            if (!(version.get_c_program().edit_permission())) return forbidden();
 
             // Uložení změn
             version.update();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1265,7 +1264,7 @@ public class Controller_Code extends BaseController {
 
             // Zkontroluji oprávnění
             if (!c_program_old.community_publishing_permission()) {
-                return forbiddenEmpty();
+                return forbidden();
             }
 
             if (help.decision) {
@@ -1373,7 +1372,7 @@ public class Controller_Code extends BaseController {
             }
 
             // Potvrzení
-            return  okEmpty();
+            return  ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1404,7 +1403,7 @@ public class Controller_Code extends BaseController {
             if (version.get_c_program() == null || (version.get_c_program().hardware_type_default == null && version.get_c_program().hardware_type_test == null)) return badRequest("Version_object is not version of c_program or is not default firmware");
 
             // Kontrola oprávnění
-            if (!version.get_c_program().edit_permission()) return forbiddenEmpty();
+            if (!version.get_c_program().edit_permission()) return forbidden();
 
             Model_Version previous_main_version_not_cached = Model_Version.find.query().where().eq("c_program.id", version.get_c_program().id).isNotNull("default_program").select("id").findOne();
             if (previous_main_version_not_cached != null) {

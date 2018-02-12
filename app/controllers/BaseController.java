@@ -1,103 +1,141 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.annotations.ApiModel;
 import models.Model_Person;
+import models.Model_Version;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import responses.*;
+import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 
+import javax.persistence.Column;
+import java.lang.reflect.Field;
 import java.util.UUID;
 
 /**
  * This class provides some common API for Tyrion REST Controller.
  * Creates results with given content.
  */
-public abstract class BaseController extends Controller {
+public abstract class BaseController {
+
+// LOGGER ##############################################################################################################
 
     private static final Logger logger = new Logger(BaseController.class);
+
+// PERSON OPERATIONS ###################################################################################################
 
     /**
      * Pulls up the current user from the request context.
      * Calling this method in non-authenticated context will throw an exception.
+     *
      * @return current person {@link Model_Person}
      */
-    public static Model_Person person() {
+    public static Model_Person person() throws _Base_Result_Exception {
         try {
-            return (Model_Person) ctx().args.get("person");
+            Model_Person person = (Model_Person) Controller.ctx().args.get("person");
+
+            if(person != null) {
+                return person;
+            } else {
+                throw new Result_Error_Unauthorized();
+            }
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
+            throw new Result_Error_Unauthorized();
         }
     }
 
     /**
      * Pulls up the current user from the request context.
      * Calling this method in non-authenticated context will throw an exception.
+     *
      * @return current person id {@link UUID}
      */
-    public static UUID personId() {
+    public static UUID personId() throws _Base_Result_Exception {
         try {
-            return ((Model_Person) ctx().args.get("person")).id;
+            UUID id = ((Model_Person) Controller.ctx().args.get("person")).id;
+            if(id != null) {
+                return id;
+            } else {
+                throw new Result_Error_Unauthorized();
+            }
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
+            throw new Result_Error_Unauthorized();
         }
     }
 
     /**
      * Returns true if there is a authenticated person in the context.
+     *
      * @return boolean true if there is a person
      */
     public static boolean isAuthenticated() {
         try {
-            return ctx().args.containsKey("person");
+            return Controller.ctx().args.containsKey("person");
         } catch (Exception e) {
             logger.internalServerError(e);
             return false;
         }
     }
+
+
+
+// REQUEST OPERATIONS ###################################################################################################
 
     /**
      * Returns true if there is a authenticated person in the context
      * and if he has specified permission.
+     *
      * @return boolean true if person is permitted
      */
-    public static boolean isPermitted(String permission) {
+    public JsonNode getBodyAsJson() {
         try {
-            Model_Person person = person();
-            return person != null && person.has_permission(permission);
+
+            return Controller.request().body().asJson();
         } catch (Exception e) {
             logger.internalServerError(e);
-            return false;
+            throw new NullPointerException();
         }
     }
 
+
+
+
+
+// RESPONSE OPERATIONS ###################################################################################################
+
     /**
      * Creates a result based on the provided status code.
+     *
      * @param statusCode integer of
-     * @param message string to send in result
+     * @param message    string to send in result
      * @return result with status code and message
      */
     public static Result customResult(int statusCode, String message) {
         Result_Custom result = new Result_Custom();
         result.code = statusCode;
         result.message = message;
-        return status(statusCode, Json.toJson(result));
+        return Controller.status(statusCode, Json.toJson(result));
     }
 
     /**
      * Create an empty ok result.
+     *
      * @return 200 result
      */
-    public static Result okEmpty() {
-        return ok(Json.toJson(new Result_Ok()));
+    public static Result ok() {
+        return Controller.ok(Json.toJson(new Result_Ok()));
     }
 
     /**
      * Creates a result with the code 200 and provided json as the body.
+     *
      * @param json JsonNode serialized object
      * @return 200 result ok with json
      */
@@ -107,34 +145,17 @@ public abstract class BaseController extends Controller {
 
     /**
      * Creates an ok result with given message.
+     *
      * @param message string to be sent
      * @return 200 result with message
      */
     public static Result ok(String message) {
-        return ok(Json.toJson(new Result_Ok(message)));
-    }
-
-    /**
-     * Creates redirect result.
-     * @param url to redirect to
-     * @return 303 result
-     */
-    public static Result redirect(String url) {
-        return Controller.redirect(url);
-    }
-
-    public static Result pdfFile(byte[] byte_array, String  file_name) {
-        response().setHeader("filename", file_name);
-        return ok(byte_array);
-    }
-
-    public static Result binFile(byte[] byte_array, String  file_name) {
-        response().setHeader("filename", file_name);
-        return ok(byte_array);
+        return Controller.ok(Json.toJson(new Result_Ok(message)));
     }
 
     /**
      * Creates result created. Body of this result is some object itself instead of classic result json.
+     *
      * @param json to send
      * @return 201 result
      */
@@ -143,15 +164,39 @@ public abstract class BaseController extends Controller {
     }
 
     /**
+     * Create response with File in PDF
+     * @param byte_array
+     * @param file_name
+     * @return 200 result with file in body
+     */
+    public static Result file(byte[] byte_array, String file_name) {
+        Controller.response().setHeader("filename", file_name);
+        return Controller.ok(byte_array);
+    }
+
+    /**
+     * Creates redirect result.
+     *
+     * @param url to redirect to
+     * @return 303 result
+     */
+    public static Result redirect(String url) {
+        return Controller.redirect(url);
+    }
+
+
+    /**
      * Creates result bad request, when there is a client error.
+     *
      * @return 400 result
      */
-    public static Result badRequestEmpty() {
+    public static Result badRequest() {
         return badRequest(Json.toJson(new Result_BadRequest()));
     }
 
     /**
      * Creates result bad request with message, when there is a client error.
+     *
      * @param message to send
      * @return 400 result with message
      */
@@ -161,6 +206,7 @@ public abstract class BaseController extends Controller {
 
     /**
      * Creates result bad request with provided json as a body, when there is a client error.
+     *
      * @param json to send
      * @return 400 result with message
      */
@@ -168,119 +214,183 @@ public abstract class BaseController extends Controller {
         return Controller.badRequest(Json.toJson(json));
     }
 
+
+
     /**
      * Creates result when compilation was unsuccessful.
+     *
      * @param json describing errors
      * @return 422 result
      */
     public static Result buildErrors(JsonNode json) {
-        return status(422, Json.toJson(json));
+        return Controller.status(422, Json.toJson(json));
     }
 
     /**
      * Creates result when target server is offline
+     *
      * @param message to send
      * @return 477 result
      */
     public static Result externalServerOffline(String message) {
-        return status(477, Json.toJson(new Result_ServerOffline(message)));
+        return Controller.status(477, Json.toJson(new Result_ServerOffline(message)));
     }
 
     /**
      * Creates result signaling that error occurred outside this server.
+     *
      * @return 478 result
      */
     public static Result externalServerError() {
-        return status(478, Json.toJson(new Result_ExternalServerSideError()));
+        return Controller.status(478, Json.toJson(new Result_ExternalServerSideError()));
     }
 
     /**
      * Creates result signaling that error occurred outside this server.
+     *
      * @param message describing error
      * @return 478 result with message
      */
     public static Result externalServerError(String message) {
-        return status(478, Json.toJson(new Result_ExternalServerSideError(message)));
+        return Controller.status(478, Json.toJson(new Result_ExternalServerSideError(message)));
     }
 
     /**
      * Creates result signaling that error occurred outside this server.
+     *
      * @param json with error
      * @return 478 result with json body
      */
     public static Result externalServerError(JsonNode json) {
-        return status(478, json);
+        return Controller.status(478, json);
     }
 
     /**
-     * Creates a not found result with message.
-     * @param message to be sent
+     * Creates a not found result with message from Class where code try to find annotation for Swagger
+     *
+     * @param class_type model what is missing
      * @return 404 result with message
      */
+    public static Result notFound(Class class_type) {
+
+        // Get Swagger Name from Annotation and return ii with name and description
+        for (Field f: class_type.getFields()) {
+            ApiModel apiModel = f.getAnnotation(ApiModel.class);
+            if (apiModel != null) {
+                return Controller.notFound(Json.toJson(new Result_NotFound("Object not Found. Probably from " + apiModel.value() + " model type. Object Swagger APi Description: " + apiModel.description())));
+            }
+        }
+
+        // Return name of object if Anotations is missing
+        logger.error("Returning result notFound for incoming request, but class in constructor not contain ApiModel annotation");
+        return Controller.notFound(Json.toJson(new Result_NotFound("Not Found Object. Probably from " + class_type.getSimpleName().replace("Model_","") + " model type.")));
+    }
+
     public static Result notFound(String message) {
-        return notFound(Json.toJson(new Result_NotFound(message)));
+        return Controller.notFound(Json.toJson(new Result_NotFound(message))); // todo smazat
     }
 
     /**
      * Creates result unauthorized.
      * Signals that user have to be logged in.
+     *
      * @return 401 result
      */
-    public static Result unauthorizedEmpty() {
-        return unauthorized(Json.toJson(new Result_Unauthorized()));
+    public static Result unauthorized() {
+        return Controller.unauthorized(Json.toJson(new Result_Unauthorized()));
     }
 
     /**
      * Creates result forbidden
+     *
      * @return 403 result
      */
-    public static Result forbiddenEmpty() {
-        return forbidden(Json.toJson(new Result_Forbidden()));
+    public static Result forbidden() {
+        return Controller.forbidden(Json.toJson(new Result_Forbidden()));
     }
 
     /**
      * Creates result forbidden with custom message.
+     *
      * @param message to send
      * @return 403 result with message
      */
     public static Result forbidden(String message) {
-        return forbidden(Json.toJson(new Result_Forbidden(message)));
+        return Controller.forbidden(Json.toJson(new Result_Forbidden(message)));
     }
 
     /**
      * Creates result to reject the user, when his email is not validated.
+     *
      * @return 705 result
      */
     public static Result notValidated() {
-        return status(705, Json.toJson(new Result_NotValidated()));
+        return Controller.status(705, Json.toJson(new Result_NotValidated()));
     }
 
     /**
      * Creates result with custom message to reject the user, when his email is not validated.
+     *
      * @return 705 result with message
      */
     public static Result notValidated(String message) {
-        return status(705, Json.toJson(new Result_NotValidated(message)));
+        return Controller.status(705, Json.toJson(new Result_NotValidated(message)));
     }
 
     /**
      * Creates result with code 400. Used when binding incoming json to form.
      * If form has error, they are returned in the exception field.
+     *
      * @param errors JsonNode with errors
      * @return 400 result
      */
+    // TODO tohle pujde taky hodit do controllerServerError, kde ale ten typ Erroru bude mít body které si z Erroru vytáhnu
     public static Result invalidBody(JsonNode errors) {
         return badRequest(Json.toJson(new Result_InvalidBody(errors)));
     }
 
+    public static Result controllerServerError(Exception error) {
+        try{
+
+            // Result_Error_NotFound
+            if(error.getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
+                Result_Error_NotFound not_found = (Result_Error_NotFound) error.getCause();
+                return notFound(not_found.getClass_not_found());
+            }
+
+            // Result_Error_InvalidBody
+            if(error.getClass().getSimpleName().equals(Result_Error_InvalidBody.class.getSimpleName())){
+                Result_Error_InvalidBody invalid_body = (Result_Error_InvalidBody) error.getCause();
+                return badRequest(invalid_body.getForm_error());
+            }
+
+            // Result_Error_InvalidBody
+            if(error.getClass().getSimpleName().equals(Result_Error_Unauthorized.class.getSimpleName())){
+                return unauthorized();
+            }
+
+            // Result_Error_InvalidBody
+            if(error.getClass().getSimpleName().equals(Result_Error_PermissionDenied.class.getSimpleName())){
+                return forbidden();
+            }
+
+            logger.error("controllerServerError::There is unExcepted Kind of Error. Now - its Critical!");
+            return internalServerError(error);
+
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
+    }
+
     /**
      * Creates result internal server error and also saves the error to the database.
+     *
      * @param error that was thrown
      * @return 500 result
      */
-    public static Result internalServerError(Throwable error) {
+    public static Result internalServerError(Exception error) {
         StackTraceElement current_stack = Thread.currentThread().getStackTrace()[2]; // Find the caller origin
-        ServerLogger.error(error, current_stack.getClassName() + "::" + current_stack.getMethodName(), request());
-        return internalServerError(Json.toJson(new Result_InternalServerError()));
+        ServerLogger.error(error, current_stack.getClassName() + "::" + current_stack.getMethodName(), Controller.request());
+        return Controller.internalServerError(Json.toJson(new Result_InternalServerError()));
     }
 }

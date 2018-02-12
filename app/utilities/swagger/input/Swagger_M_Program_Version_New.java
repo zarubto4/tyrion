@@ -17,5 +17,5 @@ public class Swagger_M_Program_Version_New extends Swagger_NameAndDescription {
     public String virtual_input_output;
 
     @ApiModelProperty(required = false, value = "if value is true - program can be open throw the QR token (public) by everyone!")
-    public boolean public_mode;
+    public boolean public_access;
 }

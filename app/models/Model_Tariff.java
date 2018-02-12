@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.enums.BusinessModel;
 import utilities.enums.PaymentMethod;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.swagger.input.Swagger_TariffLabel;
@@ -50,7 +52,7 @@ public class Model_Tariff extends NamedModel {
                             public String awesome_icon;
                 @JsonIgnore public String labels_json;
 
-   @JsonIgnore @OneToMany(mappedBy="tariff_included", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_ProductExtension> extensions_included = new ArrayList<>();
+   @JsonIgnore @OneToMany(mappedBy="tariff_included", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC")  public List<Model_ProductExtension> extensions_included = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="tariff_optional", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_ProductExtension> extensions_optional = new ArrayList<>();
 
 
@@ -66,9 +68,13 @@ public class Model_Tariff extends NamedModel {
         return methods;
     }
 
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient public Long credit_for_beginning() {
-        if (!this.edit_permission()) return null;
-        return credit_for_beginning;
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Visible only for Administrator with Special Permission") @Transient public Long credit_for_beginning() {
+        try {
+            this.check_edit_permission();
+            return credit_for_beginning;
+        } catch (_Base_Result_Exception e){
+            return null;
+        }
     }
 
 
@@ -99,21 +105,28 @@ public class Model_Tariff extends NamedModel {
 
     @JsonProperty
     public List<Model_ProductExtension> extensions_included() {
-        if (!edit_permission()) return  Model_ProductExtension.find.query().where().eq("tariff_included.id", id).eq("active", true).orderBy("order_position").findList();
-        else return  Model_ProductExtension.find.query().where().eq("tariff_included.id", id).orderBy("order_position").findList();
+        try {
+            this.check_edit_permission();
+            return Model_ProductExtension.find.query().where().eq("tariff_included.id", id).orderBy("order_position").findList();
+        } catch (_Base_Result_Exception e){
+            return Model_ProductExtension.find.query().where().eq("tariff_included.id", id).eq("active", true).orderBy("order_position").findList();
+        }
     }
 
     @JsonProperty
     public List<Model_ProductExtension> extensions_optional() {
-        if (!edit_permission())  return  Model_ProductExtension.find.query().where().eq("tariff_optional.id", id).eq("active", true).orderBy("order_position").findList();
-        else return  Model_ProductExtension.find.query().where().eq("tariff_optional.id", id).orderBy("order_position").findList();
+        try {
+            this.check_edit_permission();
+            return  Model_ProductExtension.find.query().where().eq("tariff_optional.id", id).orderBy("order_position").findList();
+        } catch (_Base_Result_Exception e){
+            return  Model_ProductExtension.find.query().where().eq("tariff_optional.id", id).eq("active", true).orderBy("order_position").findList();
+        }
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public Double total_per_month() {
-
         try {
             Long total_price = 0L;
 
@@ -139,7 +152,6 @@ public class Model_Tariff extends NamedModel {
     public void save() {
 
         order_position = Model_Tariff.find.query().findCount() + 1;
-
         super.save();
     }
 
@@ -197,11 +209,26 @@ public class Model_Tariff extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   public boolean create_permission() {  return BaseController.person().has_permission("Tariff_create");}
-    @JsonIgnore   public boolean read_permission()  {  return BaseController.person().has_permission("Tariff_read") || active;}
-    @JsonProperty public boolean edit_permission()  {  return BaseController.person().has_permission("Tariff_edit");}
-    @JsonProperty public boolean update_permission() {  return BaseController.person().has_permission("Tariff_update");}
-    @JsonProperty public boolean delete_permission() {  return BaseController.person().has_permission("Tariff_delete");}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if (BaseController.person().has_permission(Permission.Tariff_create.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
+        if (BaseController.person().has_permission(Permission.Tariff_read.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_edit_permission()   throws _Base_Result_Exception {
+        if (BaseController.person().has_permission(Permission.Tariff_edit.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        if (BaseController.person().has_permission(Permission.Tariff_update.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        if (BaseController.person().has_permission(Permission.Tariff_delete.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
 
     public enum Permission { Tariff_create, Tariff_read, Tariff_edit, Tariff_update, Tariff_delete }
 

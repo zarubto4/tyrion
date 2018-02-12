@@ -12,8 +12,10 @@ import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.Approval;
 import utilities.enums.ProgramType;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
+import utilities.model.VersionModel;
 import utilities.models_update_echo.EchoHandler;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
@@ -24,7 +26,7 @@ import java.util.UUID;
 @Entity
 @ApiModel( value = "BlockVersion", description = "Model of BlockVersion")
 @Table(name="BlockVersion")
-public class Model_BlockVersion extends NamedModel {
+public class Model_BlockVersion extends VersionModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -35,48 +37,16 @@ public class Model_BlockVersion extends NamedModel {
     @Column(columnDefinition = "TEXT") public String design_json;
     @Column(columnDefinition = "TEXT") public String logic_json;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if user make request for publishing") @Enumerated(EnumType.STRING)
-    public Approval approval_state;
-    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only for main / default program - and access only for administrators") @Enumerated(EnumType.STRING)
-    public ProgramType publish_type;
-    
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Person author;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Block block;
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Cached private UUID cache_block_id;
-    @JsonIgnore @Transient @Cached private UUID cache_author_id;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true)
-    public Model_Person author() {
-        try {
-
-            if (author == null) return null;
-
-            return get_author();
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
-
-    @JsonIgnore
-    public Model_Person get_author() {
-
-        if (cache_author_id == null) {
-            Model_Person person = Model_Person.find.query().where().eq("blockVersionsAuthor.id", id).select("id").findOne();
-            cache_author_id = person.id;
-        }
-
-        return Model_Person.getById(cache_author_id);
-    }
 
 
     @JsonIgnore
@@ -110,13 +80,17 @@ public class Model_BlockVersion extends NamedModel {
         
         super.save();
 
-        if (block.project != null ) {
-            new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, get_block().getProjectId(), get_block().id))).start();
-        }
 
-        if (block != null) {
-            block.cache_versions_id.add(0, id);
-        }
+        new Thread(() -> {
+            try {
+                EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, get_block().get_project_id(), get_block().id));
+            } catch (_Base_Result_Exception e) {
+                // Nothing
+            }
+        }).start();
+
+        block.cache_versions_id.add(0, id);
+
     }
 
     @JsonIgnore @Override
@@ -124,17 +98,28 @@ public class Model_BlockVersion extends NamedModel {
 
         super.update();
 
-        if (get_block().getProjectId() != null) {
-            new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_BlockVersion.class, get_block().getProjectId(), id))).start();
-        }
+        new Thread(() -> {
+            try {
+                EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, get_block().get_project_id(), get_block().id));
+            } catch (_Base_Result_Exception e) {
+                // Nothing
+            }
+        }).start();
+
     }
 
     @JsonIgnore @Override
     public boolean delete() {
 
-        if (get_block() != null && get_block().getProjectId() != null) {
-            new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, get_block().getProjectId(), get_block().id))).start();
-        }
+
+        new Thread(() -> {
+            try {
+                EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, get_block().get_project_id(), get_block().id));
+            } catch (_Base_Result_Exception e) {
+                // Nothing
+            }
+        }).start();
+
 
         if (get_block() != null) {
             get_block().cache_versions_id.remove(id);
@@ -156,13 +141,11 @@ public class Model_BlockVersion extends NamedModel {
 
 /* PERMISSIONS ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true) public boolean create_permission()  {  return  block.update_permission() || BaseController.person().has_permission("BlockVersion_create"); }
-    @JsonProperty @ApiModelProperty(required = true) public boolean read_permission()    {  return  get_block().read_permission()   || BaseController.person().has_permission("BlockVersion_read");   }
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()    {  return  get_block().update_permission() || BaseController.person().has_permission("BlockVersion_update");   }
-    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission()  {  return  get_block().update_permission() || BaseController.person().has_permission("BlockVersion_delete"); }
-    @JsonProperty @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  { return BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name());}
-
-    public enum Permission { BlockVersion_create, BlockVersion_read, BlockVersion_update, BlockVersion_delete }
+    @JsonIgnore public void check_create_permission() throws _Base_Result_Exception { get_block().check_update_permission();}
+    @JsonIgnore public void check_read_permission()   throws _Base_Result_Exception { get_block().check_read_permission();}
+    @JsonIgnore public void check_edit_permission()   throws _Base_Result_Exception { get_block().check_edit_permission();}
+    @JsonIgnore public void check_update_permission() throws _Base_Result_Exception { get_block().check_update_permission();}
+    @JsonIgnore public void check_delete_permission() throws _Base_Result_Exception { get_block().check_update_permission();}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

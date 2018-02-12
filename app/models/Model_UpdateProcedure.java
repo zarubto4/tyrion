@@ -11,6 +11,8 @@ import org.ehcache.Cache;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.*;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.models_update_echo.EchoHandler;
@@ -42,7 +44,7 @@ public class Model_UpdateProcedure extends BaseModel {
 
     @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public UpdateType type_of_update;
 
-    @JsonIgnore public UUID project_id;
+    @JsonIgnore public UUID project_id; // For Faster Find
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -237,6 +239,12 @@ public class Model_UpdateProcedure extends BaseModel {
     }
 
     @JsonIgnore @Transient
+    public Model_Project get_project() throws _Base_Result_Exception  {
+        return  Model_Project.getById(get_project_id());
+    }
+
+
+    @JsonIgnore @Transient
     public void execute_update_procedure() {
         Model_Hardware.execute_update_procedure(this);
     }
@@ -302,7 +310,9 @@ public class Model_UpdateProcedure extends BaseModel {
         return false;
     }
 
-/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+
+    /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -561,19 +571,33 @@ public class Model_UpdateProcedure extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public static final String read_permission_docs   = "User can read Actualization_procedure if they have ID of Actualization_procedure";
-
-    @JsonIgnore
-    public boolean read_permission()      {
-        return Model_Project.getById(project_id).read_permission() || BaseController.person().has_permission("UpdateProcedure_read");
+    @JsonIgnore @Transient @Override
+    public void check_create_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.UpdateProcedure_crate.name())) return;
+        get_project().check_update_permission();
     }
 
-    @JsonProperty
-    public boolean edit_permission()      {
-        return Model_Project.getById(project_id).update_permission() || BaseController.person().has_permission("UpdateProcedure_edit");
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.UpdateProcedure_read.name())) return;
+        get_project().check_read_permission();
     }
 
-    public enum Permission { UpdateProcedure_read, UpdateProcedure_edit }
+    @JsonIgnore @Transient @Override public void check_edit_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.UpdateProcedure_edit.name())) return;
+        get_project().check_update_permission();
+    }
+
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.UpdateProcedure_update.name())) return;
+        get_project().check_update_permission();
+    }
+
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.UpdateProcedure_delete.name())) return;
+        get_project().check_update_permission();
+    }
+
+    public enum Permission { UpdateProcedure_crate, UpdateProcedure_read, UpdateProcedure_update, UpdateProcedure_edit, UpdateProcedure_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

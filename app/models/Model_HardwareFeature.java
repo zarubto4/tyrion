@@ -3,6 +3,8 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 
@@ -52,7 +54,12 @@ public class Model_HardwareFeature extends NamedModel {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_edit_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Finder<UUID, Model_HardwareFeature> find = new Finder<>(Model_HardwareFeature.class);

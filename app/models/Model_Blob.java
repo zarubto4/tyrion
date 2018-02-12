@@ -8,10 +8,14 @@ import io.swagger.annotations.ApiModel;
 import org.ehcache.Cache;
 import utilities.Server;
 import utilities.cache.CacheField;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.model.VersionModel;
 
 import javax.persistence.*;
+import java.beans.Transient;
 import java.io.*;
 import java.util.*;
 
@@ -35,22 +39,26 @@ public class Model_Blob extends BaseModel {
     public String container; // TODO
 
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_Person person;
-    @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "program")     public Model_InstanceSnapshot snapshot;// personal_picture
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "program")     public Model_InstanceSnapshot snapshot;  // personal_picture
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_HardwareType hardware_type; // picture
-    @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_HardwareRegistration hardware;                 // board_picture
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_Hardware hardware;          // private board_picture
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "file")        public Model_Log log;
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY)                           public Model_BootLoader boot_loader;
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                          public Model_Version version;
     @JsonIgnore @OneToMany(mappedBy="binary_file",fetch = FetchType.LAZY)   public List<Model_HardwareUpdate> updates = new ArrayList<>();
-    @JsonIgnore @OneToOne(mappedBy="blob")                  public Model_Compilation c_compilations_binary_file;
+    @JsonIgnore @OneToOne(mappedBy="blob")                                  public Model_Compilation c_compilations_binary_file;
+
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                          public Model_CProgramVersion c_program_version;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                          public Model_LibraryVersion  library_version;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                          public Model_BProgramVersion b_program_version;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                          public Model_BProgramVersion grid_program_version;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
 
     @JsonIgnore
     public String  get_file_path_for_direct_download() {
-
         return Server.azure_blob_Link + path;
     }
 
@@ -146,7 +154,7 @@ public class Model_Blob extends BaseModel {
     }
 
     @JsonIgnore
-    public static Model_Blob uploadAzure_Version(String file_content, String file_name, String file_path, Model_Version version) throws Exception{
+    public static Model_Blob uploadAzure_Version(String file_content, String file_name, String file_path, VersionModel version) throws Exception{
         try {
 
             logger.debug("uploadAzure_Version:: Azure upload: "+ file_path + version.get_path() + "/" + file_name );
@@ -162,9 +170,17 @@ public class Model_Blob extends BaseModel {
             blob.upload(is, -1);
 
             Model_Blob fileRecord = new Model_Blob();
-            fileRecord.name = file_name;
-            fileRecord.version = version;
-            fileRecord.path =  file_path   + version.get_path() + "/" + file_name;
+            fileRecord.name =  file_name;
+            fileRecord.path =  file_path  + version.get_path() + "/" + file_name;
+
+            if(version.getClass().getName().equals(Model_CProgramVersion.class.getName())) {
+                fileRecord.c_program_version = (Model_CProgramVersion) version;
+            } else if(version.getClass().getName().equals(Model_LibraryVersion.class.getName())){
+                fileRecord.library_version = (Model_LibraryVersion) version;
+            } else if(version.getClass().getName().equals(Model_BProgramVersion.class.getName())){
+                fileRecord.b_program_version = (Model_BProgramVersion) version;
+            }
+
             fileRecord.save();
 
             version.files.add(fileRecord);
@@ -179,7 +195,7 @@ public class Model_Blob extends BaseModel {
     }
 
     @JsonIgnore
-    public static Model_Blob uploadAzure_Version(File file, String file_name, String file_path, Model_Version version) throws Exception{
+    public static Model_Blob uploadAzure_Version(File file, String file_name, String file_path, VersionModel version) throws Exception{
 
         try {
 
@@ -198,8 +214,16 @@ public class Model_Blob extends BaseModel {
 
             Model_Blob fileRecord = new Model_Blob();
             fileRecord.name = file_name;
-            fileRecord.version = version;
             fileRecord.path =   file_path + version.get_path()+ "/" + file_name;
+
+            if(version.getClass().getName().equals(Model_CProgramVersion.class.getName())) {
+                fileRecord.c_program_version = (Model_CProgramVersion) version;
+            } else if(version.getClass().getName().equals(Model_LibraryVersion.class.getName())){
+                fileRecord.library_version = (Model_LibraryVersion) version;
+            } else if(version.getClass().getName().equals(Model_BProgramVersion.class.getName())){
+                fileRecord.b_program_version = (Model_BProgramVersion) version;
+            }
+
             fileRecord.save();
 
             version.files.add(fileRecord);
@@ -375,22 +399,23 @@ public class Model_Blob extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   public boolean create_permission() { return false; }
-    @JsonIgnore   public boolean read_permission() { return false; }
-    @JsonProperty public boolean update_permission() { return false; }
-    @JsonProperty public boolean edit_permission()   { return false; }
-    @JsonProperty public boolean delete_permission() { return false; }
+    // Create Permission is always JsonIgnore
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_edit_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     @CacheField(value = String.class, timeToIdle = 1800, maxElements = 500)
     public static Cache<UUID, String> cache_public_link;
 
-    public static Model_Blob getById(String id) {
+    public static Model_Blob getById(String id) throws _Base_Result_Exception  {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_Blob getById(UUID id) {
+    public static Model_Blob getById(UUID id) throws _Base_Result_Exception  {
         return Model_Blob.find.byId(id);
     }
 

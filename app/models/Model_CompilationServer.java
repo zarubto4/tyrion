@@ -16,6 +16,8 @@ import utilities.document_db.document_objects.DM_CompilationServer_Connect;
 import utilities.document_db.document_objects.DM_CompilationServer_Disconnect;
 import utilities.enums.CompilationStatus;
 import utilities.enums.NetworkStatus;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.model.BaseModel;
 import utilities.threads.compilator_server.Compilation_After_BlackOut;
 import utilities.logger.Logger;
@@ -188,12 +190,13 @@ public class Model_CompilationServer extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore                                      public boolean create_permission() {  return BaseController.person().has_permission("CompilationServer_create"); }
-    @JsonIgnore                                      public boolean read_permission()  {  return true; }
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()  {  return BaseController.person().has_permission("CompilationServer_edit");   }
-    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission() {  return BaseController.person().has_permission("CompilationServer_delete"); }
+    @JsonIgnore @Override @Transient public void check_create_permission()  throws _Base_Result_Exception { if(!BaseController.person().has_permission(Permission.CompilationServer_create.name())) throw new Result_Error_PermissionDenied();}
+    @JsonIgnore @Override  @Transient public void check_read_permission()   throws _Base_Result_Exception  {}
+    @JsonIgnore @Override  @Transient public void check_edit_permission()   throws _Base_Result_Exception { if(!BaseController.person().has_permission(Permission.CompilationServer_edit.name()))   throw new Result_Error_PermissionDenied();}
+    @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception { if(!BaseController.person().has_permission(Permission.CompilationServer_update.name())) throw new Result_Error_PermissionDenied();}
+    @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception { if(!BaseController.person().has_permission(Permission.CompilationServer_delete.name())) throw new Result_Error_PermissionDenied();}
 
-    public enum Permission { CompilationServer_create, CompilationServer_edit, CompilationServer_delete }
+    public enum Permission { CompilationServer_create, CompilationServer_update, CompilationServer_edit, CompilationServer_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

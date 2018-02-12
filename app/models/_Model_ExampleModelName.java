@@ -4,9 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
+import java.beans.Transient;
 import java.util.UUID;
 
 /**
@@ -86,11 +89,11 @@ public class _Model_ExampleModelName extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    // Create Permission is always JsonIgnore
-    @JsonIgnore   public boolean create_permission() { return false; }
-    @JsonProperty public boolean update_permission() { return false; }
-    @JsonProperty public boolean edit_permission()   { return false; }
-    @JsonProperty public boolean delete_permission() { return false; }
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_edit_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

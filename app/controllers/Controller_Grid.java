@@ -15,9 +15,7 @@ import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.Approval;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions.Tyrion_Exp_ForbidenPermission;
-import utilities.errors.Exceptions.Tyrion_Exp_ObjectNotValidAnymore;
-import utilities.errors.Exceptions.Tyrion_Exp_Unauthorized;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.logger.Logger;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_M_Program_Interface;
@@ -26,6 +24,8 @@ import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
 import utilities.swagger.output.filter_results.Swagger_GridWidget_List;
 
 import java.util.*;
+
+import static play.mvc.Controller.ctx;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Grid extends BaseController {
@@ -49,8 +49,7 @@ public class Controller_Grid extends BaseController {
                     "Different screens for family members, for employee etc.. But of course - you can used that for only one GridProgram",
             produces = "application/json",
             consumes = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -81,20 +80,19 @@ public class Controller_Grid extends BaseController {
             Swagger_NameAndDescription help = form.get();
 
             Model_Project project = Model_Project.getById( project_id );
-            if (project == null) return notFound("Project not found");
 
             Model_GridProject gridProject = new Model_GridProject();
             gridProject.description = help.description;
             gridProject.name = help.name;
             gridProject.project = project;
 
-            if (!gridProject.create_permission())  return forbiddenEmpty();
+
             gridProject.save();
 
             return created(gridProject.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -116,13 +114,10 @@ public class Controller_Grid extends BaseController {
         try {
 
             Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
-            if (gridProject == null) return notFound("GridProject not found");
-
-            if (!gridProject.read_permission())  return forbiddenEmpty();
             return ok(gridProject.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -130,8 +125,7 @@ public class Controller_Grid extends BaseController {
             tags = {"Grid"},
             notes = "edit basic information in M_Project by query = grid_project_id",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -161,18 +155,18 @@ public class Controller_Grid extends BaseController {
             Swagger_NameAndDescription help = form.get();
 
             Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
-            if (gridProject == null) return notFound("GridProject not found");
 
-            if (!gridProject.edit_permission()) return forbiddenEmpty();
+            gridProject.check_edit_permission();
 
             gridProject.name = help.name;
             gridProject.description = help.description;
 
             gridProject.update();
+            
             return ok(gridProject.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -210,10 +204,9 @@ public class Controller_Grid extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_GridProject gridProject = Model_GridProject.getById(help.object_id);
-            if (gridProject == null) return notFound("GridProject not found");
-
+            
             // Kontrola oprávnění těsně před uložením
-            if (!gridProject.edit_permission())  return forbiddenEmpty();
+             gridProject.check_edit_permission();
 
             gridProject.addTags(help.tags);
 
@@ -221,7 +214,7 @@ public class Controller_Grid extends BaseController {
             return ok(gridProject.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -259,10 +252,9 @@ public class Controller_Grid extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_GridProject gridProject = Model_GridProject.getById(help.object_id);
-            if (gridProject == null) return notFound("GridProject not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!gridProject.edit_permission())  return forbiddenEmpty();
+            gridProject.check_edit_permission();
 
             gridProject.removeTags(help.tags);
 
@@ -270,7 +262,7 @@ public class Controller_Grid extends BaseController {
             return ok(gridProject.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
     
@@ -299,14 +291,12 @@ public class Controller_Grid extends BaseController {
 
             Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
             if (gridProject == null) return notFound("M_project grid_project_id not found");
-
-            if (!gridProject.delete_permission())  return forbiddenEmpty();
+            
             gridProject.delete();
 
-            return okEmpty();
-
+            return ok();
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -328,10 +318,7 @@ public class Controller_Grid extends BaseController {
         try {
 
             Model_GridProject m_project = Model_GridProject.getById(grid_project_id);
-            if (m_project == null) return notFound("M_project grid_project_id not found");
-
-            if (!m_project.read_permission())  return forbiddenEmpty();
-
+            
             Swagger_M_Project_Interface m_project_interface = new Swagger_M_Project_Interface();
             m_project_interface.name = m_project.name;
             m_project_interface.description = m_project.description;
@@ -351,7 +338,7 @@ public class Controller_Grid extends BaseController {
             return ok(Json.toJson(m_project_interface));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -363,8 +350,7 @@ public class Controller_Grid extends BaseController {
             notes = "creating new GridProgram",
             produces = "application/json",
             consumes = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
     )
     @ApiImplicitParams({
             @ApiImplicitParam(
@@ -393,19 +379,17 @@ public class Controller_Grid extends BaseController {
             Swagger_NameAndDescription help = form.get();
 
             Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
-            if (gridProject == null) return notFound("GridProject not found");
 
             Model_GridProgram gridProgram = new Model_GridProgram();
             gridProgram.description         = help.description;
             gridProgram.name                = help.name;
             gridProgram.grid_project = gridProject;
-
-            if (!gridProgram.create_permission()) return forbiddenEmpty();
+            
             gridProgram.save();
 
             return created(gridProgram.json());
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -425,14 +409,12 @@ public class Controller_Grid extends BaseController {
     @Security.Authenticated(Authentication.class)
     public Result gridProgram_get(@ApiParam(value = "grid_program_id String query", required = true)  String grid_program_id) {
         try {
+            
             Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
-            if (gridProgram == null) return notFound("GridProgram not found");
-
-            if (!gridProgram.read_permission())  return forbiddenEmpty();
-
             return ok(gridProgram.json());
+            
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -470,7 +452,7 @@ public class Controller_Grid extends BaseController {
             Swagger_NameAndDescription help = form.get();
 
             Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
-            if (!gridProgram.edit_permission())  return forbiddenEmpty();
+            gridProgram.check_edit_permission();
 
             if (gridProgram.grid_project == null) return badRequest("You cannot change program on version");
 
@@ -481,7 +463,7 @@ public class Controller_Grid extends BaseController {
 
             return ok(gridProgram.json());
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -519,10 +501,9 @@ public class Controller_Grid extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_GridProgram gridProgram = Model_GridProgram.getById(help.object_id);
-            if (gridProgram == null) return notFound("GridProgram not found");
-
+            
             // Kontrola oprávnění těsně před uložením
-            if (!gridProgram.edit_permission())  return forbiddenEmpty();
+            gridProgram.check_edit_permission();
 
             gridProgram.addTags(help.tags);
 
@@ -530,7 +511,7 @@ public class Controller_Grid extends BaseController {
             return ok(gridProgram.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -568,10 +549,9 @@ public class Controller_Grid extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_GridProgram gridProgram = Model_GridProgram.getById(help.object_id);
-            if (gridProgram == null) return notFound("GridProgram not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!gridProgram.edit_permission())  return forbiddenEmpty();
+            gridProgram.check_edit_permission();
 
             gridProgram.removeTags(help.tags);
 
@@ -579,7 +559,7 @@ public class Controller_Grid extends BaseController {
             return ok(gridProgram.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -601,15 +581,12 @@ public class Controller_Grid extends BaseController {
         try {
 
             Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
-            if (gridProgram == null) return notFound("GridProgram not found");
-
-            if (!gridProgram.delete_permission())  return forbiddenEmpty();
             gridProgram.delete();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -619,8 +596,7 @@ public class Controller_Grid extends BaseController {
             tags = {"Grid"},
             notes = "creating new GridProgramVersion",
             produces = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
     )
     @ApiImplicitParams({
             @ApiImplicitParam(
@@ -649,30 +625,26 @@ public class Controller_Grid extends BaseController {
             Swagger_M_Program_Version_New help = form.get();
 
             Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
-            if (gridProgram == null) return notFound("GridProgram not found");
-
-            if (!gridProgram.create_permission()) return forbiddenEmpty();
-
-            Model_Version version       = new Model_Version();
+            
+            Model_GridProgramVersion version       = new Model_GridProgramVersion();
             version.name                = help.name;
             version.description         = help.description;
             version.grid_program        = gridProgram;
             version.author              = BaseController.person();
-            version.public_version      = help.public_mode;
+            version.public_access       = help.public_access;
             version.m_program_virtual_input_output =  help.virtual_input_output;
+          
             version.save();
-
-            gridProgram.getVersions().add(version);
 
             ObjectNode content = Json.newObject();
             content.put("m_code", help.m_code);
 
             Model_Blob.uploadAzure_Version(content.toString(), "grid_program.json" , gridProgram.get_path() ,  version);
 
-            return created(Json.toJson(Model_GridProgram.program_version(version)));
+            return created(gridProgram.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -691,24 +663,15 @@ public class Controller_Grid extends BaseController {
     })
     @Security.Authenticated(Authentication.class)
     public Result gridProgramVersion_get(@ApiParam(value = "version_id String query", required = true) String version_id) {
-
         try {
             // Kontrola objektu
-            Model_Version version = Model_Version.getById(version_id);
-            if (version == null) return notFound("Version not found");
-
-            // Kontrola oprávnění
-            if (version.grid_program == null)
-                return notFound("Version is not version of B_Program");
-
-            // Kontrola oprávnění
-            if (!version.grid_program.read_permission()) return forbiddenEmpty();
+            Model_GridProgramVersion version = Model_GridProgramVersion.getById(version_id);
 
             // Vrácení objektu
-            return ok(Json.toJson(Model_GridProgram.program_version(version)));
+            return ok(version.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -745,25 +708,22 @@ public class Controller_Grid extends BaseController {
             Swagger_NameAndDescription help = form.get();
 
             // Získání objektu
-            Model_Version version = Model_Version.getById(version_id);
-
-            // Kontrola objektu
-            if (version == null) return notFound("Version not found");
-            if (version.grid_program == null) return badRequest("GridProgram not found");
-
+            Model_GridProgramVersion version = Model_GridProgramVersion.getById(version_id);
+            
             // Kontrola oprávnění
-            if (!version.grid_program.edit_permission()) return forbiddenEmpty();
+            version.check_edit_permission();
 
             // Úprava objektu
             version.description = help.description;
             version.name        = help.name;
 
+            // Update
             version.update();
 
-            return ok(Json.toJson(Model_GridProgram.program_version(version)));
+            return ok(Json.toJson(version.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -786,23 +746,16 @@ public class Controller_Grid extends BaseController {
         try {
 
             // Získání objektu
-            Model_Version version  = Model_Version.getById(version_id);
-
-            // Kontrola objektu
-            if (version == null) return notFound("Version not found");
-            if (version.grid_program == null) return badRequest("GridProgram not found");
-
-            // Kontrola oprávnění
-            if (!version.grid_program.delete_permission()) return forbiddenEmpty();
-
+            Model_GridProgramVersion version  = Model_GridProgramVersion.getById(version_id);
+            
             // Smazání objektu
             version.delete();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 //######################################################################################################################
@@ -838,25 +791,10 @@ public class Controller_Grid extends BaseController {
 
             if (parameter == null) return notFound("MProgramInstanceParameter by token not found in database");
 
-            try {
-
-                return ok(Json.toJson(parameter.get_connection_summary( ctx())));
-
-            } catch (Tyrion_Exp_ForbidenPermission e) {
-
-                return forbiddenEmpty();
-
-            } catch (Tyrion_Exp_ObjectNotValidAnymore e) {
-
-                return badRequest("QR token is not valid anymore");
-
-            } catch (Tyrion_Exp_Unauthorized e) {
-
-                return unauthorizedEmpty();
-            }
+            return ok(Json.toJson(parameter.get_connection_summary( ctx())));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -907,11 +845,11 @@ public class Controller_Grid extends BaseController {
                 terminal.ws_permission = true;
                 terminal.m_program_access = true;
                 terminal.update();
-                return ok(Json.toJson(terminal));
+                return ok(terminal.json());
             }
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -921,8 +859,7 @@ public class Controller_Grid extends BaseController {
                     "You need unique identification key. If Person loggs to you application Tyrion connects this device with Person. Try to " +
                     "save this key to cookies or on mobile device, or you have to ask every time again",
             produces = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -977,7 +914,7 @@ public class Controller_Grid extends BaseController {
             return created(Json.toJson(terminal));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -987,8 +924,7 @@ public class Controller_Grid extends BaseController {
             tags = {"Widget"},
             notes = "creating new independent Widget object for Grid tools",
             produces = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
     )
     @ApiImplicitParams({
             @ApiImplicitParam(
@@ -1025,7 +961,6 @@ public class Controller_Grid extends BaseController {
                 }
             } else {
                 project = Model_Project.getById(help.project_id);
-                if (project == null) return notFound("Project not found");
             }
 
             // Vytvoření objektu
@@ -1040,9 +975,6 @@ public class Controller_Grid extends BaseController {
             } else {
                 widget.publish_type = ProgramType.PUBLIC;
             }
-
-            // Kontrola oprávnění těsně před uložením
-            if (!widget.create_permission()) return forbiddenEmpty();
 
             // Uložení objektu
             widget.save();
@@ -1064,10 +996,10 @@ public class Controller_Grid extends BaseController {
             gridWidgetVersion.save();
 
             // Vrácení objektu
-            return created( Json.toJson(widget) );
+            return created(widget.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1091,15 +1023,11 @@ public class Controller_Grid extends BaseController {
             Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
             if (gridWidget == null) return notFound("GridWidget widget_id not found");
 
-            // Kontrola oprávnění
-
-            if (!gridWidget.read_permission()) return forbiddenEmpty();
-
             // Vrácení objektu
             return ok(Json.toJson(gridWidget));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
 
     }
@@ -1108,13 +1036,7 @@ public class Controller_Grid extends BaseController {
             tags = {"Grid-Widget"},
             notes = "get GridWidget List",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "GridWidget_read_permission", value = "No need to check permission, because Tyrion returns only those results which user owns"),
-                    }),
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -1148,9 +1070,6 @@ public class Controller_Grid extends BaseController {
             if (help.project_id != null) {
 
                 Model_Project project = Model_Project.getById(help.project_id);
-                if (project == null) return notFound("Project not found");
-                if (!project.read_permission())return forbiddenEmpty();
-
                 query.where().eq("type_of_widget.project.id", help.project_id);
             }
 
@@ -1165,8 +1084,7 @@ public class Controller_Grid extends BaseController {
             return ok(Json.toJson(result));
 
         } catch (Exception e) {
-            logger.internalServerError(e);
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1206,10 +1124,9 @@ public class Controller_Grid extends BaseController {
 
             // Kontrola objektu
             Model_Widget widget = Model_Widget.getById(grid_widget_id);
-            if (widget == null) return notFound("GridWidget widget_id not found");
 
             // Kontrola oprávnění
-            if (!widget.edit_permission()) return forbiddenEmpty();
+            widget.check_edit_permission();
 
             // Úprava objektu
             widget.description = help.description;
@@ -1222,7 +1139,7 @@ public class Controller_Grid extends BaseController {
             return ok(Json.toJson(widget));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
 
     }
@@ -1261,10 +1178,9 @@ public class Controller_Grid extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_Widget widget = Model_Widget.getById(help.object_id);
-            if (widget == null) return notFound("Widget not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!widget.edit_permission()) return forbiddenEmpty();
+            widget.check_edit_permission();
 
             widget.addTags(help.tags);
 
@@ -1272,7 +1188,7 @@ public class Controller_Grid extends BaseController {
             return ok(widget.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1310,10 +1226,9 @@ public class Controller_Grid extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_Widget widget = Model_Widget.getById(help.object_id);
-            if (widget == null) return notFound("Widget not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!widget.edit_permission()) return forbiddenEmpty();
+            widget.check_edit_permission();
 
             widget.removeTags(help.tags);
 
@@ -1321,7 +1236,7 @@ public class Controller_Grid extends BaseController {
             return ok(widget.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1344,19 +1259,15 @@ public class Controller_Grid extends BaseController {
 
             // Kontrola objektu
             Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
-            if (gridWidget == null) return notFound("GridWidget widget_id not found");
-
-            // Kontrola oprávnění
-            if (!gridWidget.delete_permission()) return forbiddenEmpty();
 
             // Smazání objektu
             gridWidget.delete();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1397,17 +1308,12 @@ public class Controller_Grid extends BaseController {
 
             // Vyhledám Objekt
             Model_Widget grid_widget_old = Model_Widget.getById(help.widget_id);
-            if (grid_widget_old == null) return notFound("Model_GridWidget widget_id not found");
-
-            // Zkontroluji oprávnění
-            if (!grid_widget_old.read_permission())  return forbiddenEmpty();
 
             // Vyhledám Objekt
             Model_Project project = Model_Project.getById(help.project_id);
-            if (project == null) return notFound("Project project_id not found");
 
             // Zkontroluji oprávnění
-            if (!project.update_permission())  return forbiddenEmpty();
+            project.check_update_permission();
 
             Model_Widget grid_widget_new =  new Model_Widget();
             grid_widget_new.name = help.name;
@@ -1417,7 +1323,7 @@ public class Controller_Grid extends BaseController {
 
             grid_widget_new.refresh();
 
-            for (Model_WidgetVersion version : grid_widget_old.getVersions()) {
+            for (Model_WidgetVersion version : grid_widget_old.get_versions()) {
 
                 Model_WidgetVersion copy_object = new Model_WidgetVersion();
                 copy_object.name        = version.name;
@@ -1437,7 +1343,7 @@ public class Controller_Grid extends BaseController {
             return ok(Json.toJson(grid_widget_new));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1445,8 +1351,7 @@ public class Controller_Grid extends BaseController {
             tags = {"Admin-Grid-Widget"},
             notes = "deactivate Widget",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -1461,22 +1366,20 @@ public class Controller_Grid extends BaseController {
         try {
 
             Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
-            if (gridWidget == null) return notFound("GridWidget not found");
 
             // Kontrola oprávnění
-            if (!gridWidget.update_permission()) return forbiddenEmpty();
+            gridWidget.check_update_permission();
 
             if (!gridWidget.active) return badRequest("Tariff is already deactivated");
-
 
             gridWidget.active = false;
 
             gridWidget.update();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1484,8 +1387,7 @@ public class Controller_Grid extends BaseController {
             tags = {"Admin-Grid-Widget"},
             notes = "activate Widget",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class),
@@ -1500,9 +1402,8 @@ public class Controller_Grid extends BaseController {
         try {
 
             Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
-            if (gridWidget == null) return notFound("GridWidget not found");
 
-            if (!gridWidget.update_permission()) return forbiddenEmpty();
+            gridWidget.check_update_permission();
 
             if (gridWidget.active) return badRequest("Tariff is already activated");
 
@@ -1510,10 +1411,10 @@ public class Controller_Grid extends BaseController {
 
             gridWidget.update();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1536,17 +1437,13 @@ public class Controller_Grid extends BaseController {
         try {
 
             Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
-            if (gridWidget == null) return notFound("GridWidget not found");
-
-            // Kontrola oprávnění
-            if (!gridWidget.edit_permission()) return forbiddenEmpty();
 
             gridWidget.up();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1569,17 +1466,13 @@ public class Controller_Grid extends BaseController {
         try {
 
             Model_Widget gridWidget =  Model_Widget.getById(grid_widget_id);
-            if (gridWidget == null) return notFound("GridWidget not found");
-
-            // Kontrola oprávnění
-            if (!gridWidget.edit_permission()) return forbiddenEmpty();
 
             gridWidget.down();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1590,13 +1483,7 @@ public class Controller_Grid extends BaseController {
             notes = "delete GridWidget version",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "GridWidgetVersion.delete_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "GridWidgetVersion_delete_permission")
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
@@ -1611,19 +1498,15 @@ public class Controller_Grid extends BaseController {
 
             // Kontrola objektu
             Model_WidgetVersion version = Model_WidgetVersion.getById(grid_widget_version_id);
-            if (version == null) return notFound("GridWidgetVersion grid_widget_version_id not found");
-
-            // Kontrola oprávnění
-            if (!version.delete_permission()) return forbiddenEmpty();
 
             // Smazání objektu
             version.delete();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1656,7 +1539,7 @@ public class Controller_Grid extends BaseController {
             if (version == null) return notFound("GridWidgetVersion grid_widget_version_id not found");
 
             // Kontrola oprávnění
-            if (!version.edit_permission()) return forbiddenEmpty();
+            version.check_edit_permission();
 
             if (!version.get_grid_widget_id().equals("00000000-0000-0000-0000-000000000001")) {
                 return notFound("GridWidgetVersion grid_widget_version_id not from default program");
@@ -1673,10 +1556,10 @@ public class Controller_Grid extends BaseController {
             version.update();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1685,14 +1568,7 @@ public class Controller_Grid extends BaseController {
             notes = "Make C_Program public, so other users can see it and use it. Attention! Attention! Attention! A user can publish only three programs at the stage waiting for approval.",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "C_Program.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "CProgram_edit"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -1705,15 +1581,10 @@ public class Controller_Grid extends BaseController {
     @Security.Authenticated(Authentication.class)
     public Result widgetVersion_version_make_public(String grid_widget_version_id) {
         try {
-
-            System.out.println("widgetVersion_version_make_public .... ");
+            
             // Kontrola objektu
             Model_WidgetVersion gridWidgetVersion = Model_WidgetVersion.getById(grid_widget_version_id);
-            if (gridWidgetVersion == null) return notFound("GridWidgetVersion grid_widget_version_id not found");
-
-            // Kontrola orávnění
-            if (!(gridWidgetVersion.read_permission())) return forbiddenEmpty();
-
+            
             if (Model_WidgetVersion.find.query().where().eq("approval_state", Approval.PENDING.name())
                     .eq("author.id", BaseController.personId())
                     .findList().size() > 3) {
@@ -1727,16 +1598,16 @@ public class Controller_Grid extends BaseController {
             gridWidgetVersion.approval_state = Approval.PENDING;
 
             // Kontrola oprávnění
-            if (!(gridWidgetVersion.edit_permission())) return forbiddenEmpty();
+            gridWidgetVersion.check_edit_permission();
 
             // Uložení změn
             gridWidgetVersion.update();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1744,17 +1615,7 @@ public class Controller_Grid extends BaseController {
             tags = {"Grid-Widget"},
             notes = "new GridWidget version",
             produces = "application/json",
-            protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "GridWidgetVersion_create_permission", value = Model_WidgetVersion.create_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "GridWidget.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "GridWidgetVersion_create_permission" )
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -1789,7 +1650,6 @@ public class Controller_Grid extends BaseController {
 
             // Kontrola objektu
             Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
-            if (gridWidget == null) return notFound("GridWidget not found");
 
             // Vytvoření objektu
             Model_WidgetVersion version = new Model_WidgetVersion();
@@ -1799,10 +1659,7 @@ public class Controller_Grid extends BaseController {
             version.logic_json = help.logic_json;
             version.widget = gridWidget;
             version.author = BaseController.person();
-
-            // Kontrola oprávnění
-            if (!version.create_permission()) return forbiddenEmpty();
-
+            
             // Uložení objektu
             version.save();
 
@@ -1810,7 +1667,7 @@ public class Controller_Grid extends BaseController {
             return created(Json.toJson(gridWidget));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1820,39 +1677,27 @@ public class Controller_Grid extends BaseController {
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "GridWidgetVersion_read_permission", value = Model_WidgetVersion.read_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "GridWidget.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "GridWidgetVersion_read_permission")
-                    })
-            }
+            code = 200
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_WidgetVersion.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result widgetVersion_get(@ApiParam(value = "grid_widget_version_id String path",   required = true) String grid_widget_version_id) {
         try {
+            
             // Kontrola objektu
             Model_WidgetVersion version = Model_WidgetVersion.getById(grid_widget_version_id);
-            if (version == null) return notFound("GridWidget widget_id not found");
-
-            // Kontrola oprávnění
-            if (!version.read_permission()) return forbidden("You have no permission to get that");
-
+       
             // Vrácení objektu
-            return ok(Json.toJson(version));
+            return ok(version.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
 
     }
@@ -1863,13 +1708,7 @@ public class Controller_Grid extends BaseController {
                     "you have to create a new version!",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "GridWidgetVersion.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "GridWidgetVersion_edit_permission" )
-                    })
-            }
+            code = 200
     )
     @ApiImplicitParams(
             {
@@ -1901,12 +1740,14 @@ public class Controller_Grid extends BaseController {
 
             // Kontrola objektu
             Model_WidgetVersion version = Model_WidgetVersion.getById(version_id);
-            if (version == null) return notFound("Version not found");
 
+            // Kontrola oprávnění
+            version.check_update_permission();
+            
             // Úprava objektu
             version.name = help.name;
             version.description = help.description;
-
+            
             // Uložení objektu
             version.update();
 
@@ -1914,7 +1755,7 @@ public class Controller_Grid extends BaseController {
             return ok(Json.toJson(version));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1922,17 +1763,7 @@ public class Controller_Grid extends BaseController {
             tags = {"Grid-Widget"},
             notes = "get all versions (content) from independent GridWidget",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "GridWidgetVersion_read_permission", value = Model_WidgetVersion.read_permission_docs),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "GridWidget.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "GridWidgetVersion_read_permission")
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -1958,16 +1789,12 @@ public class Controller_Grid extends BaseController {
 
             // Kontrola objektu
             Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
-            if (gridWidget == null) return notFound("GridWidget widget_id not found");
-
-            // Kontrola oprávnění
-            if (!gridWidget.read_permission()) return forbiddenEmpty();
 
             // Vrácení objektu
             return ok(Json.toJson(gridWidget.versions));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1978,8 +1805,7 @@ public class Controller_Grid extends BaseController {
             tags = {"Admin-Grid-Widget"},
             notes = "sets Approval_state to pending",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -2014,15 +1840,13 @@ public class Controller_Grid extends BaseController {
 
             // Kontrola objektu
             Model_WidgetVersion privateGridWidgetVersion = Model_WidgetVersion.getById(help.version_id);
-            if (privateGridWidgetVersion == null) return notFound("grid_widget_version not found");
 
             // Kontrola nadřazeného objektu
             Model_Widget widget_old = Model_Widget.getById(privateGridWidgetVersion.get_grid_widget_id());
 
             // Zkontroluji oprávnění
-            if (!widget_old.community_publishing_permission()) {
-                return forbiddenEmpty();
-            }
+            widget_old.check_community_permission();
+           
 
             if (help.decision) {
 
@@ -2055,7 +1879,7 @@ public class Controller_Grid extends BaseController {
 
                 // TODO notifikace a emaily
 
-                return okEmpty();
+                return ok();
 
             } else {
                 // Změna stavu schválení
@@ -2070,18 +1894,18 @@ public class Controller_Grid extends BaseController {
                             .send(privateGridWidgetVersion.get_grid_widget().get_author().email, "Version of Widget disapproved" );
 
                 } catch (Exception e) {
-                    logger.internalServerError (e);
+                    logger.internalServerError(e);
                 }
 
                 // Uložení změn
                 privateGridWidgetVersion.update();
 
                 // Vrácení výsledku
-                return okEmpty();
+                return ok();
             }
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 

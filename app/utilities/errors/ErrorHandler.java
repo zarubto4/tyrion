@@ -10,6 +10,7 @@ import java.util.concurrent.CompletionStage;
 
 
 public class ErrorHandler implements HttpErrorHandler {
+
     @Override
     public CompletionStage<Result> onClientError(Http.RequestHeader request, int statusCode, String message) {
         switch (statusCode) {

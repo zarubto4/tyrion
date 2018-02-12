@@ -13,6 +13,7 @@ import responses.*;
 import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
+import utilities.errors.Exceptions.Result_Error_InvalidBody;
 import utilities.logger.Logger;
 import utilities.swagger.input.*;
 
@@ -42,8 +43,7 @@ public class Controller_Project extends BaseController {
             tags = {"Project"},
             notes = "create new Project",
             produces = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -69,7 +69,8 @@ public class Controller_Project extends BaseController {
 
             // Zpracování Json
             final Form<Swagger_Project_New> form = formFactory.form(Swagger_Project_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
+            if (form.hasErrors()) throw new Result_Error_InvalidBody(form.errorsAsJson());
+
             Swagger_Project_New help = form.get();
 
             Model_Product product = Model_Product.getById(help.product_id);
@@ -82,8 +83,8 @@ public class Controller_Project extends BaseController {
             project.product = product;
 
             // Kontrola oprávnění těsně před uložením
-            if (!project.create_permission())  return forbiddenEmpty();
-            // TODO if (!project.financial_permission())  return badRequest("You cannot create project right now. Buy an extension for projects.");
+            project.create_permission();
+            project.financial_permission();
 
             // Uložení objektu
             project.save();
@@ -108,7 +109,7 @@ public class Controller_Project extends BaseController {
             return created(project.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -116,8 +117,7 @@ public class Controller_Project extends BaseController {
             tags = {"Project"},
             notes = "get all Projects by logged Person",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class, responseContainer = "list"),
@@ -134,7 +134,7 @@ public class Controller_Project extends BaseController {
             return ok(Json.toJson(person().get_user_access_projects()));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -142,18 +142,7 @@ public class Controller_Project extends BaseController {
             tags = {"Project"},
             notes = "get Projects by project_id",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Project.read_permission", value = Model_Project.read_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "Project_read" ),
-                            @ExtensionProperty(name = "Dynamic Permission key", value = "Project_read.{project_id}"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
@@ -169,16 +158,15 @@ public class Controller_Project extends BaseController {
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
-            if (project == null) return notFound("Project not found");
 
             // Kontrola oprávnění
-            if (!project.read_permission()) return forbiddenEmpty();
+            project.read_permission();
 
             // Vraácení objektu
             return ok(project.json());
 
          } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
 
     }
@@ -209,10 +197,9 @@ public class Controller_Project extends BaseController {
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
-            if (project == null) return notFound("Project project_id not found");
 
             // Kontrola oprávnění
-            if (!project.delete_permission())   return forbiddenEmpty();
+            project.delete_permission();
 
             // Kvuli bezpečnosti abych nesmazal něco co nechceme
             for (Model_CProgram c : project.getCPrograms()) {
@@ -223,10 +210,10 @@ public class Controller_Project extends BaseController {
             project.delete();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -234,13 +221,7 @@ public class Controller_Project extends BaseController {
             tags = {"Project"},
             notes = "edit ne Project",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.edit_permission", value = "true")
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -272,10 +253,9 @@ public class Controller_Project extends BaseController {
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
-            if (project == null) return notFound("Project not found");
 
             // Kontrola oprávnění
-            if (!project.edit_permission()) return forbiddenEmpty();
+            project.edit_permission();
 
             // Úprava objektu
             project.name = help.name;
@@ -288,7 +268,7 @@ public class Controller_Project extends BaseController {
             return ok(project.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -296,13 +276,7 @@ public class Controller_Project extends BaseController {
             tags = {"Project"},
             notes = "sends Invitation to all users in list: List<persons_mail>",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.share_permission", value = "true")
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -335,10 +309,9 @@ public class Controller_Project extends BaseController {
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
-            if (project == null) return notFound("Project project_id not found");
 
             // Kontrola oprávnění
-            if (!project.share_permission()) return forbiddenEmpty();
+            project.share_permission();
 
             // Získání seznamu uživatelů, kteří jsou registrovaní(listIn) a kteří ne(listOut)
             List<Model_Person> listIn = new ArrayList<>();
@@ -424,7 +397,7 @@ public class Controller_Project extends BaseController {
             return ok(project.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -432,8 +405,7 @@ public class Controller_Project extends BaseController {
             tags = {"Project"},
             notes = "Changes participant status ",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -464,10 +436,9 @@ public class Controller_Project extends BaseController {
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
-            if (project == null) return notFound("Project no longer exists");
 
             // Kontrola oprávnění
-            if (!project.admin_permission()) return forbiddenEmpty();
+            project.admin_permission();
 
             // Kontrola objektu
             Model_ProjectParticipant participant = Model_ProjectParticipant.find.query().where().eq("person.id", help.person_id).eq("project.id", project_id).findOne();
@@ -482,7 +453,7 @@ public class Controller_Project extends BaseController {
 
             return ok(Json.toJson(participant));
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -490,13 +461,7 @@ public class Controller_Project extends BaseController {
             tags = {"Project"},
             notes = "unshare Project with all users in list: List<person_id>",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.unshare_permission", value = "true")
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -528,10 +493,9 @@ public class Controller_Project extends BaseController {
 
             //Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
-            if (project == null) return notFound("Project not found");
 
             // Kontrola oprávnění
-            if (!project.unshare_permission()) return forbiddenEmpty();
+            project.unshare_permission();
 
             List<Model_Person> list = new ArrayList<>();
 
@@ -573,7 +537,7 @@ public class Controller_Project extends BaseController {
             return ok(project.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -613,10 +577,9 @@ public class Controller_Project extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_Project project = Model_Project.getById(help.object_id);
-            if (project == null) return notFound("Project not found");
             
             // Kontrola oprávnění těsně před uložením
-            if (!project.edit_permission())  return forbiddenEmpty();
+            project.edit_permission();
 
             project.addTags(help.tags);
 
@@ -624,7 +587,7 @@ public class Controller_Project extends BaseController {
             return ok(project.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -664,10 +627,9 @@ public class Controller_Project extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_Project project = Model_Project.getById(help.object_id);
-            if (project == null) return notFound("Project not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!project.edit_permission())  return forbiddenEmpty();
+            project.edit_permission();
 
             project.removeTags(help.tags);
 
@@ -675,7 +637,7 @@ public class Controller_Project extends BaseController {
             return ok(project.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -684,8 +646,7 @@ public class Controller_Project extends BaseController {
             notes = "add new HW to Project, creates HardwareRegistration",
             produces = "application/json",
             consumes = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -724,8 +685,7 @@ public class Controller_Project extends BaseController {
 
             // Kotrola objektu
             Model_Project project = Model_Project.getById(help.project_id);
-            if (project == null) return notFound("Project not found");
-            if (!project.update_permission()) return forbiddenEmpty();
+            project.update_permission();
 
             Model_HardwareRegistration registration = new Model_HardwareRegistration();
             registration.hardware = hardware;
@@ -734,7 +694,7 @@ public class Controller_Project extends BaseController {
             if (help.group_id != null) {
                 Model_HardwareGroup group = Model_HardwareGroup.getById(help.group_id);
                 if (group == null) return notFound("HardwareGroup not found");
-                if (!group.update_permission()) return forbiddenEmpty();
+                if (!group.update_permission()) return forbidden();
 
                 registration.group = group;
                 registration.cache_group_id = group.id;
@@ -747,7 +707,7 @@ public class Controller_Project extends BaseController {
             return created(registration.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -774,18 +734,17 @@ public class Controller_Project extends BaseController {
             if (registration == null) return notFound("HardwareRegistration not found");
 
             Model_Project project = registration.getProject();
-            if (project == null) return notFound("Project not found");
-            if (!project.update_permission()) return forbiddenEmpty();
+            project.update_permission();
 
             if (registration.hardware == null) return badRequest("Already removed");
 
             registration.hardware = null;
             registration.save();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 }

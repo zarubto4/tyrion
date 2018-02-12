@@ -11,8 +11,13 @@ import org.ehcache.Cache;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.ProgramType;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.models_update_echo.EchoHandler;
+import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -98,7 +103,7 @@ public class Model_Widget extends TaggedModel {
 
     @JsonProperty @ApiModelProperty(required = true)
     public  List<Model_WidgetVersion> versions() {
-        return getVersions();
+        return get_versions();
     }
 
 
@@ -109,27 +114,14 @@ public class Model_Widget extends TaggedModel {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public Model_Project getProject() {
+    public UUID get_project_id() throws _Base_Result_Exception {
 
         if (cache_project_id == null) {
+
             Model_Project project = Model_Project.find.query().where().eq("widgets.id", id).findOne();
-            if (project == null) return null;
+            if (project == null) throw new Result_Error_NotFound(Model_Project.class);
 
             cache_project_id = project.id;
-            project.cache();
-
-            return project;
-        }
-
-        return Model_Project.getById(cache_project_id);
-    }
-
-    @JsonIgnore
-    public UUID getProjectId() {
-        if (cache_project_id == null) {
-            Model_Project project = getProject();
-            if (project == null) return null;
-
             return project.id;
         }
 
@@ -137,7 +129,17 @@ public class Model_Widget extends TaggedModel {
     }
 
     @JsonIgnore
-    public List<Model_WidgetVersion> getVersions() {
+    public Model_Project get_project() throws _Base_Result_Exception {
+
+        if (cache_project_id == null) {
+            return Model_Project.getById(get_project_id());
+        }else {
+            return Model_Project.getById(cache_project_id);
+        }
+    }
+
+    @JsonIgnore
+    public List<Model_WidgetVersion> get_versions() {
         try {
 
             if (cache_version_ids.isEmpty()) {
@@ -194,11 +196,69 @@ public class Model_Widget extends TaggedModel {
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Override
+    public void save() {
+
+        logger.debug("save::Creating new Object");
+
+        super.save();
+
+        // Add to Cache
+        if (project != null) {
+            new Thread(() -> { EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, project.id, project.id)); }).start();
+            project.cache_widget_ids.add(0,id);
+        }
+    }
+
+    @JsonIgnore @Override
+    public void update() {
+
+        logger.debug("update::Update object Id: {}",  this.id);
+        super.update();
+
+        new Thread(() -> {
+            try {
+                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_project_id(), get_project_id()));
+            } catch (_Base_Result_Exception e) {
+                // Nothing
+            }
+        }).start();
+
+    }
+
+    @JsonIgnore @Override
+    public boolean delete() {
+
+        logger.debug("delete::Delete object Id: {}",  this.id);
+
+        super.delete();
+
+        // Remove from Project Cache
+        try {
+            get_project().cache_widget_ids.remove(id);
+        } catch (_Base_Result_Exception e) {
+            // Nothing
+        }
+
+        new Thread(() -> {
+            try {
+                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_project_id(), get_project_id()));
+            } catch (_Base_Result_Exception e) {
+                // Nothing
+            }
+        }).start();
+
+        return false;
+    }
+
 /* ORDER  -------------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public void up() {
-/*
+    public void up() throws _Base_Result_Exception {
+
+        check_edit_permission();
+
+        /*
         Model_Widget up = Model_Widget.find.query().where().eq("order_position", (order_position-1) ).eq("type_of_widget.id", type_of_widget_id()).findOne();
         if (up == null) return;
 
@@ -206,12 +266,15 @@ public class Model_Widget extends TaggedModel {
         up.update();
 
         this.order_position -= 1;
-        this.update();*/
+        this.update();
+        */
     }
 
     @JsonIgnore @Transient
-    public void down() {
-/*
+    public void down() throws _Base_Result_Exception {
+
+        check_edit_permission();
+        /*
         Model_Widget down = Model_Widget.find.query().where().eq("order_position", (order_position+1) ).eq("type_of_widget.id", type_of_widget_id()).findOne();
         if (down == null) return;
 
@@ -219,29 +282,54 @@ public class Model_Widget extends TaggedModel {
         down.update();
 
         this.order_position += 1;
-        this.update();*/
-
+        this.update();
+        */
     }
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
-    // Floating shared documentation for Swagger
-    @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user can read TypeOfWidget, than can read all GridWidgets from list of TypeOfWidget ( You get ids of list of GridWidgets in object \"GridWidgets\" in json)  - Or you need static/dynamic permission key";
-    @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have TypeOfWidget.update_permission = true, you can create new GridWidgets on this TypeOfWidget - Or you need static/dynamic permission key if user want create GridWidget in public TypeOfWidget";
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore                                      public boolean create_permission() { return (this.project != null && this.project.update_permission()) || BaseController.person().has_permission(Permission.Widget_create.name()); }
-    @JsonIgnore                                      public boolean read_permission()   { return publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN || getProject().read_permission();}
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()   { return getProjectId() != null ? getProject().update_permission() : BaseController.person().has_permission(Permission.Widget_edit.name()) ;}
-    @JsonProperty @ApiModelProperty(required = true) public boolean update_permission() { return getProjectId() != null ? getProject().update_permission() : BaseController.person().has_permission(Permission.Widget_update.name()) ;}
-    @JsonProperty @ApiModelProperty(required = true) public boolean delete_permission() { return getProjectId() != null ? getProject().update_permission() : BaseController.person().has_permission(Permission.Widget_delete.name()) ;}
-    @JsonProperty @ApiModelProperty("Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  { return BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name());}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Widget_create.name())) return;
+        if(this.project == null) throw new Result_Error_PermissionDenied();
+        this.project.check_update_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
+        if(publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN ) return;
+        get_project().check_read_permission();
+    }
+    @JsonIgnore @Transient @Override  public void check_edit_permission()   throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Widget_edit.name())) return;
+        get_project().check_edit_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Widget_update.name())) return;
+        get_project().check_update_permission();
+    }
+
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Widget_delete.name())) return;
+        get_project().check_delete_permission();
+    }
+
+    @JsonIgnore @Transient public void check_community_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+
+    @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
+        try {
+            BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name());
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+    }
 
     public enum Permission { Widget_create, Widget_read, Widget_edit, Widget_update, Widget_delete }
 
@@ -250,17 +338,17 @@ public class Model_Widget extends TaggedModel {
     @CacheField(Model_Widget.class)
     public static Cache<UUID, Model_Widget> cache;
 
-    public static Model_Widget getById(String id) {
+    public static Model_Widget getById(String id)  throws _Base_Result_Exception{
     return getById(UUID.fromString(id));
     }
 
-    public static Model_Widget getById(UUID id) {
+    public static Model_Widget getById(UUID id)  throws _Base_Result_Exception{
 
         Model_Widget grid_widget = cache.get(id);
         if (grid_widget == null) {
 
             grid_widget = Model_Widget.find.byId(id);
-            if (grid_widget == null) return null;
+            if (grid_widget == null) throw new Result_Error_NotFound(Model_Widget.class);
 
             cache.put(id, grid_widget);
         }

@@ -5,10 +5,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
 import javax.persistence.*;
+import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -38,7 +41,7 @@ public class Model_Tag extends BaseModel {
     @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_GridProgram> m_programs = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_GridProject> m_projects = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_Instance> instances = new ArrayList<>();
-    @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_HardwareRegistration> hardware = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_Hardware> hardware = new ArrayList<>();
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -58,11 +61,11 @@ public class Model_Tag extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    // Create Permission is always JsonIgnore
-    @JsonIgnore   public boolean create_permission() { return true; }
-    @JsonProperty public boolean update_permission() { return false; }
-    @JsonProperty public boolean edit_permission()   { return false; }
-    @JsonProperty public boolean delete_permission() { return false; }
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_edit_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
@@ -74,7 +77,7 @@ public class Model_Tag extends BaseModel {
         return find.byId(id);
     }
 
-    public static Model_Tag getByValue(String value) {
+    public static Model_Tag getByValue(String value) throws _Base_Result_Exception {
         return find.query().where().eq("value", value).eq("person.id", BaseController.personId()).findOne();
     }
 

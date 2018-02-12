@@ -93,7 +93,7 @@ public class Controller_Hardware extends BaseController {
             processor.speed          = help.speed;
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!processor.create_permission()) return forbiddenEmpty();
+            if (!processor.create_permission()) return forbidden();
 
             // Ukládám objekt
             processor.save();
@@ -203,7 +203,7 @@ public class Controller_Hardware extends BaseController {
             if (processor == null) return notFound("Processor processor_id not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!processor.edit_permission())  return forbiddenEmpty();
+            if (!processor.edit_permission())  return forbidden();
 
             // Upravuji objekt
             processor.description    = help.description;
@@ -250,14 +250,14 @@ public class Controller_Hardware extends BaseController {
             if (processor == null) return notFound("Processor not found");
 
             // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!processor.delete_permission()) return forbiddenEmpty();
+            if (!processor.delete_permission()) return forbidden();
 
             if (processor.hardware_types.size() > 0) return badRequest("Processor is assigned to some type of board, so cannot be deleted");
 
             // Mažu z databáze
             processor.delete();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -287,7 +287,7 @@ public class Controller_Hardware extends BaseController {
             Model_BootLoader boot_loader = Model_BootLoader.getById(bootloader_id);
             if (boot_loader == null) return notFound("BootLoader not found");
 
-            if (!boot_loader.read_permission()) return forbiddenEmpty();
+            if (!boot_loader.read_permission()) return forbidden();
 
             // Swagger_File_Content - Zástupný dokumentační objekt
             Swagger_File_Content content = new Swagger_File_Content();
@@ -324,10 +324,10 @@ public class Controller_Hardware extends BaseController {
             if (version == null) return notFound("Version not found");
 
             // Swagger_File_Content - Zástupný dokumentační objekt
-            if (version.get_c_program() == null) return badRequestEmpty();
+            if (version.get_c_program() == null) return badRequest();
 
             // Kontrola oprávnění
-            if (!version.get_c_program().read_permission()) return badRequestEmpty();
+            if (!version.get_c_program().read_permission()) return badRequest();
 
             // Swagger_File_Content - Zástupný dokumentační objekt
             Swagger_File_Content content = new Swagger_File_Content();
@@ -388,7 +388,7 @@ public class Controller_Hardware extends BaseController {
             producer.description = help.description;
 
             // Kontorluji oprávnění těsně před uložením
-            if (!producer.create_permission()) return forbiddenEmpty();
+            if (!producer.create_permission()) return forbidden();
 
             //Ukládám objekt
             producer.save();
@@ -447,7 +447,7 @@ public class Controller_Hardware extends BaseController {
             if (producer == null) return notFound("Producer producer_id not found");
 
             // Kontorluji oprávnění těsně před uložením
-            if (!producer.edit_permission()) return forbiddenEmpty();
+            if (!producer.edit_permission()) return forbidden();
 
             // Úprava objektu
             producer.name = help.name;
@@ -552,7 +552,7 @@ public class Controller_Hardware extends BaseController {
             if (producer == null) return notFound("Producer not found");
 
             // Kontorluji oprávnění
-            if (!producer.delete_permission()) return forbiddenEmpty();
+            if (!producer.delete_permission()) return forbidden();
 
             if (producer.hardware_types.size() > 0 || producer.blocks.size() > 0 || producer.widgets.size() > 0)
                 return badRequest("Producer is assigned to some objects, so cannot be deleted.");
@@ -561,7 +561,7 @@ public class Controller_Hardware extends BaseController {
             producer.delete();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -624,7 +624,7 @@ public class Controller_Hardware extends BaseController {
             hardwareType.connectible_to_internet = help.connectible_to_internet;
 
             // Kontorluji oprávnění
-            if (!hardwareType.create_permission()) return forbiddenEmpty();
+            if (!hardwareType.create_permission()) return forbidden();
 
             // Uložení objektu do DB
             hardwareType.save();
@@ -707,7 +707,7 @@ public class Controller_Hardware extends BaseController {
             if (processor == null) return notFound("Processor processor_id not found");
 
             // Kontorluji oprávnění
-            if (!hardwareType.edit_permission()) return forbiddenEmpty();
+            if (!hardwareType.edit_permission()) return forbidden();
 
             // Uprava objektu
             hardwareType.name = help.name;
@@ -751,13 +751,13 @@ public class Controller_Hardware extends BaseController {
             if (hardwareType == null) return notFound("HardwareType not found") ;
 
             // Kontorluji oprávnění
-            if (!hardwareType.delete_permission()) return forbiddenEmpty();
+            if (!hardwareType.delete_permission()) return forbidden();
 
             // Smazání objektu
             hardwareType.delete();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -823,7 +823,7 @@ public class Controller_Hardware extends BaseController {
             if (hardwareType == null) return notFound("HardwareType not found");
 
             // Kontorluji oprávnění
-            if (!hardwareType.read_permission()) return forbiddenEmpty();
+            if (!hardwareType.read_permission()) return forbidden();
 
             // Vrácení validity objektu
             return ok(hardwareType.json());
@@ -869,7 +869,7 @@ public class Controller_Hardware extends BaseController {
             if (hardwareType == null) return notFound("HardwareType not found");
 
 
-            if (!hardwareType.edit_permission()) return forbiddenEmpty();
+            if (!hardwareType.edit_permission()) return forbidden();
 
             logger.debug("hardwareType_uploadPicture - update picture");
 
@@ -978,7 +978,7 @@ public class Controller_Hardware extends BaseController {
             batch.description = help.description;
 
             // Kontorluji oprávnění
-            if (!batch.create_permission()) return forbiddenEmpty();
+            if (!batch.create_permission()) return forbidden();
 
             // Uložení objektu do DB
             batch.save();
@@ -1012,13 +1012,13 @@ public class Controller_Hardware extends BaseController {
             if (batch == null) return notFound("HardwareBatch not found") ;
 
             // Kontorluji oprávnění
-            if (!batch.delete_permission()) return forbiddenEmpty();
+            if (!batch.delete_permission()) return forbidden();
 
             // Smazání objektu
             batch.delete();
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1088,7 +1088,7 @@ public class Controller_Hardware extends BaseController {
             batch.description = help.description;
 
             // Kontorluji oprávnění
-            if (!batch.create_permission()) return forbiddenEmpty();
+            if (!batch.create_permission()) return forbidden();
 
             // Uložení objektu do DB
             batch.save();
@@ -1150,7 +1150,7 @@ public class Controller_Hardware extends BaseController {
             boot_loader.version_identifier = identifier;
             boot_loader.hardware_type = hardwareType;
 
-            if (!boot_loader.create_permission()) return forbiddenEmpty();
+            if (!boot_loader.create_permission()) return forbidden();
             boot_loader.save();
 
             // Vracím seznam
@@ -1197,7 +1197,7 @@ public class Controller_Hardware extends BaseController {
             Model_BootLoader boot_loader = Model_BootLoader.getById(boot_loader_id);
             if (boot_loader == null) return notFound("BootLoader not found");
 
-            if (!boot_loader.edit_permission()) return forbiddenEmpty();
+            if (!boot_loader.edit_permission()) return forbidden();
 
             boot_loader.name = help.name;
             boot_loader.changing_note = help.changing_note;
@@ -1235,7 +1235,7 @@ public class Controller_Hardware extends BaseController {
             Model_BootLoader boot_loader = Model_BootLoader.getById(boot_loader_id);
             if (boot_loader == null) return notFound("BootLoader not found");
 
-            if (!boot_loader.delete_permission()) return forbiddenEmpty();
+            if (!boot_loader.delete_permission()) return forbidden();
 
             if (!boot_loader.hardware.isEmpty()) return badRequest("Bootloader is already used on some Board. Cannot be deleted.");
 
@@ -1283,7 +1283,7 @@ public class Controller_Hardware extends BaseController {
             Model_BootLoader boot_loader = Model_BootLoader.getById(boot_loader_id);
             if (boot_loader == null) return notFound("BootLoader boot_loader_id not found");
 
-            if (!boot_loader.edit_permission()) return forbiddenEmpty();
+            if (!boot_loader.edit_permission()) return forbidden();
 
             //  data:image/png;base64,
             String[] parts = help.file.split(",");
@@ -1344,7 +1344,7 @@ public class Controller_Hardware extends BaseController {
             Model_BootLoader boot_loader = Model_BootLoader.getById(boot_loader_id);
             if (boot_loader == null) return notFound("BootLoader boot_loader_id not found");
 
-            if (!boot_loader.edit_permission()) return forbiddenEmpty();
+            if (!boot_loader.edit_permission()) return forbidden();
             if (boot_loader.file == null) return badRequest("Required bootloader object with file");
 
             if (boot_loader.getMainHardwareType() != null) return badRequest("Bootloader is Already Main");
@@ -1452,7 +1452,7 @@ public class Controller_Hardware extends BaseController {
 
 
             // Vracím Json
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1506,7 +1506,7 @@ public class Controller_Hardware extends BaseController {
             if (hardwareType == null) return notFound("HardwareType not found");
 
             // Kontorluji oprávnění
-            if (!hardwareType.register_new_device_permission()) return forbiddenEmpty();
+            if (!hardwareType.register_new_device_permission()) return forbidden();
 
             Model_Hardware hardware = new Model_Hardware();
             hardware.full_id = help.full_id;
@@ -1566,7 +1566,7 @@ public class Controller_Hardware extends BaseController {
             if (hardwareType == null) return notFound("HardwareType not found");
 
             // Kontorluji oprávnění
-            if (!hardwareType.register_new_device_permission()) return forbiddenEmpty();
+            if (!hardwareType.register_new_device_permission()) return forbidden();
 
             Model_HardwareBatch batch = Model_HardwareBatch.getById(help.batch_id);
             if (batch == null) return notFound("Batch not found");
@@ -1710,7 +1710,7 @@ public class Controller_Hardware extends BaseController {
             if (project == null) return notFound("Project not found");
 
             // Kontrola oprávnění
-            if (!project.edit_permission()) return forbiddenEmpty();
+            if (!project.edit_permission()) return forbidden();
 
             // Vyhledání seznamu desek na které lze nahrát firmware - okamžitě
             List<Model_Hardware> hw = Model_Hardware.find.query().where().eq("hardware_type.connectible_to_internet", true).eq("registration.project.id", project_id).findList();
@@ -1769,7 +1769,7 @@ public class Controller_Hardware extends BaseController {
             if (hardware == null) return notFound("Hardware not found");
 
             // Kontrola oprávnění
-            if (!hardware.edit_permission()) return forbiddenEmpty();
+            if (!hardware.edit_permission()) return forbidden();
 
             // Uprava desky
             hardware.name = help.name;
@@ -1829,7 +1829,7 @@ public class Controller_Hardware extends BaseController {
             if (board == null) return notFound("Board hardware_id not found");
 
             // Kontrola oprávnění
-            if (!board.edit_permission()) return forbiddenEmpty();
+            if (!board.edit_permission()) return forbidden();
 
             DM_Board_Bootloader_DefaultConfig config = board.bootloader_core_configuration();
 
@@ -1930,7 +1930,7 @@ public class Controller_Hardware extends BaseController {
                 if (c_program_version.get_c_program() == null) return badRequest("Version is not version of C_Program");
 
                 // Zkontroluji oprávnění
-                if (!c_program_version.get_c_program().read_permission()) return forbiddenEmpty();
+                if (!c_program_version.get_c_program().read_permission()) return forbidden();
 
                 //Zkontroluji validitu Verze zda sedí k C_Programu
                 if (c_program_version.compilation == null) return badRequest("Version is not version of C_Program - Missing compilation File");
@@ -1946,7 +1946,7 @@ public class Controller_Hardware extends BaseController {
                 if (hardware == null) return notFound("Hardware not found");
 
                 // Kontrola oprávnění
-                if (!hardware.edit_permission()) return forbiddenEmpty();
+                if (!hardware.edit_permission()) return forbidden();
 
 
                 WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
@@ -1972,7 +1972,7 @@ public class Controller_Hardware extends BaseController {
 
 
             // Vracím odpověď
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -2027,7 +2027,7 @@ public class Controller_Hardware extends BaseController {
                 if (board == null) return notFound("Board hardware_id not found");
 
                 // Kontrola oprávnění
-                if (!board.edit_permission()) return forbiddenEmpty();
+                if (!board.edit_permission()) return forbidden();
 
                 // Pokud je nastaven autobackup na true
                 if (hardware_backup_pair.backup_mode) {
@@ -2079,7 +2079,7 @@ public class Controller_Hardware extends BaseController {
                     if (c_program_version.get_c_program() == null) return badRequest("Version is not version of C_Program");
 
                     // Zkontroluji oprávnění
-                    if (!c_program_version.get_c_program().read_permission()) return forbiddenEmpty();
+                    if (!c_program_version.get_c_program().read_permission()) return forbidden();
 
                     //Zkontroluji validitu Verze zda sedí k C_Programu
                     if (c_program_version.compilation == null) return badRequest("Version is not version of C_Program - Missing compilation File");
@@ -2122,7 +2122,7 @@ public class Controller_Hardware extends BaseController {
             }
 
             // Vrácení potvrzení
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -2242,7 +2242,7 @@ public class Controller_Hardware extends BaseController {
             Model_HardwareRegistration hardware = Model_HardwareRegistration.getById(hardware_registration_id);
             if (hardware == null) return notFound("HardwareRegistration not found");
 
-            if (!hardware.edit_permission()) return forbiddenEmpty();
+            if (!hardware.edit_permission()) return forbidden();
 
             // Odebrání předchozího obrázku
             if (hardware.picture != null) {
@@ -2291,7 +2291,7 @@ public class Controller_Hardware extends BaseController {
 
             Model_Hardware board = Model_Hardware.getById(hardware_id);
             if (board == null) return notFound("Board hardware_id not found");
-            if (!board.edit_permission()) return forbiddenEmpty();
+            if (!board.edit_permission()) return forbidden();
 
 
             String mqtt_password_not_hashed = UUID.randomUUID().toString();
@@ -2350,7 +2350,7 @@ public class Controller_Hardware extends BaseController {
             if (board == null) return notFound("Board does not exist");
             if (!board.edit_permission()) {
                 System.out.println(" board.edit_permission - false!");
-                return forbiddenEmpty();
+                return forbidden();
             }
 
             // Jedná se o přesměrování na server v rámci stejné hierarchie - na server co mám v DB
@@ -2362,7 +2362,7 @@ public class Controller_Hardware extends BaseController {
                 if (server == null) return notFound("Board does not exist");
                 if (!server.read_permission()) {
                     System.out.println("!server.read_permission() - false!");
-                    return forbiddenEmpty();
+                    return forbidden();
                 }
 
                 board.device_relocate_server(server);
@@ -2376,14 +2376,14 @@ public class Controller_Hardware extends BaseController {
 
                 WS_Message_Hardware_change_server response = board.device_relocate_server(help.server_url, help.server_port);
                 if (response.status.equals("success")) {
-                    return okEmpty();
+                    return ok();
                 } else {
                     return badRequest("Cloud Device Execution Error: " + response.error_message);
                 }
 
             }
 
-            return okEmpty();
+            return ok();
         } catch (Exception e) {
             return internalServerError(e);
         }
@@ -2423,12 +2423,12 @@ public class Controller_Hardware extends BaseController {
 
             Model_Hardware board = Model_Hardware.getById(help.hardware_id);
             if (board == null) return notFound("Board hardware_id not found");
-            if (!board.edit_permission()) return forbiddenEmpty();
+            if (!board.edit_permission()) return forbidden();
 
             if (help.command == null) return notFound("Board command not recognized");
             board.execute_command(help.command, true);
 
-            return okEmpty();
+            return ok();
         } catch (Exception e) {
             return internalServerError(e);
         }
@@ -2453,7 +2453,7 @@ public class Controller_Hardware extends BaseController {
             Model_HardwareRegistration hardware = Model_HardwareRegistration.getById(hardware_registration_id);
             if (hardware == null) return notFound("HardwareRegistration not found");
 
-            if (!hardware.edit_permission()) return forbiddenEmpty();
+            if (!hardware.edit_permission()) return forbidden();
 
             if (hardware.picture != null) {
                 hardware.picture.delete();
@@ -2497,7 +2497,7 @@ public class Controller_Hardware extends BaseController {
             if (board == null) return notFound("Board hardware_id not found");
 
             // Kontrola oprávnění
-            if (board.update_permission()) return forbiddenEmpty();
+            if (board.update_permission()) return forbidden();
 
             // Úprava stavu
             board.is_active = false;
@@ -2544,7 +2544,7 @@ public class Controller_Hardware extends BaseController {
             if (board == null) return notFound("Board hardware_id not found");
 
             // Kontrola oprávnění
-            if (!board.read_permission()) return forbiddenEmpty();
+            if (!board.read_permission()) return forbidden();
 
             // vrácení objektu
             return ok(Json.toJson(board));
@@ -2623,7 +2623,7 @@ public class Controller_Hardware extends BaseController {
             if (project == null) return notFound("Project project_id not found");
 
             // Kontrola oprávnění
-            if (!project.read_permission()) return forbiddenEmpty();
+            if (!project.read_permission()) return forbidden();
 
             // Získání objektu
             Swagger_Boards_For_Blocko boards_for_blocko = new Swagger_Boards_For_Blocko();
@@ -2655,14 +2655,14 @@ public class Controller_Hardware extends BaseController {
             if (hardware == null) return notFound("Hardware not found");
 
             // Kontrola oprávnění
-            if (!hardware.delete_permission()) return forbiddenEmpty();
+            if (!hardware.delete_permission()) return forbidden();
 
             if (hardware.registration != null)
                 return badRequest("Board is already in use.");
 
             hardware.delete();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -2708,7 +2708,7 @@ public class Controller_Hardware extends BaseController {
             if (registration == null) return notFound("HardwareRegistration not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!registration.edit_permission()) return forbiddenEmpty();
+            if (!registration.edit_permission()) return forbidden();
 
             registration.addTags(help.tags);
 
@@ -2757,7 +2757,7 @@ public class Controller_Hardware extends BaseController {
             if (registration == null) return notFound("HardwareRegistration not found");
 
             // Kontrola oprávnění těsně před uložením
-            if (!registration.edit_permission()) return forbiddenEmpty();
+            if (!registration.edit_permission()) return forbidden();
 
             registration.removeTags(help.tags);
 
@@ -2816,7 +2816,7 @@ public class Controller_Hardware extends BaseController {
             group.description = help.description;
             group.project = project;
 
-            if (!group.create_permission()) return forbiddenEmpty();
+            if (!group.create_permission()) return forbidden();
             group.save();
 
             // Vracím seznam
@@ -2864,7 +2864,7 @@ public class Controller_Hardware extends BaseController {
             Model_HardwareGroup group = Model_HardwareGroup.getById(hardware_group_id);
             if (group == null) return notFound("HardwareGroup not found");
 
-            if (!group.edit_permission()) return forbiddenEmpty();
+            if (!group.edit_permission()) return forbidden();
 
             group.name = help.name;
             group.description = help.description;
@@ -2914,7 +2914,7 @@ public class Controller_Hardware extends BaseController {
 
             Model_HardwareGroup group = Model_HardwareGroup.getById(help.group_id);
             if (group == null) return notFound("HardwareGroup not found");
-            if (!group.update_permission()) return forbiddenEmpty();
+            if (!group.update_permission()) return forbidden();
             
             List<UUID> inGroup = group.getHardwareIds();
 
@@ -2924,7 +2924,7 @@ public class Controller_Hardware extends BaseController {
 
                 Model_HardwareRegistration hardware = Model_HardwareRegistration.getById(hardware_id);
                 if (hardware == null) return notFound("HardwareRegistration not found");
-                if (!hardware.update_permission()) return forbiddenEmpty();
+                if (!hardware.update_permission()) return forbidden();
 
                 logger.debug("hardwareGroup_addHardware - hardware: {}", hardware.hardware.full_id);
                 
@@ -2977,7 +2977,7 @@ public class Controller_Hardware extends BaseController {
 
             Model_HardwareGroup group = Model_HardwareGroup.getById(help.group_id);
             if (group == null) return notFound("HardwareGroup not found");
-            if (!group.update_permission()) return forbiddenEmpty();
+            if (!group.update_permission()) return forbidden();
 
             List<UUID> inGroup = group.getHardwareIds();
 
@@ -2987,7 +2987,7 @@ public class Controller_Hardware extends BaseController {
 
                 Model_HardwareRegistration hardware = Model_HardwareRegistration.getById(hardware_id);
                 if (hardware == null) return notFound("HardwareRegistration not found");
-                if (!hardware.update_permission()) return forbiddenEmpty();
+                if (!hardware.update_permission()) return forbidden();
 
                 logger.debug("hardwareGroup_removeHardware - hardware: {}", hardware.hardware.full_id);
 
@@ -3025,11 +3025,11 @@ public class Controller_Hardware extends BaseController {
             Model_HardwareGroup group = Model_HardwareGroup.getById(hardware_group_id);
             if (group == null) return notFound("HardwareGroup not found");
 
-            if (!group.delete_permission()) return forbiddenEmpty();
+            if (!group.delete_permission()) return forbidden();
 
             group.delete();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -3059,7 +3059,7 @@ public class Controller_Hardware extends BaseController {
             if (project == null) return notFound("Project project_id not found");
 
             // Kontorluji oprávnění
-            if (!project.read_permission()) return forbiddenEmpty();
+            if (!project.read_permission()) return forbidden();
 
             // Vrácení validity objektu
             return ok(Json.toJson(project.getHardwareGroups()));
@@ -3091,7 +3091,7 @@ public class Controller_Hardware extends BaseController {
             Model_HardwareGroup group = Model_HardwareGroup.getById(group_id);
             if (group == null) return notFound("HardwareGroup not found");
 
-            if (!group.read_permission()) return forbiddenEmpty();
+            if (!group.read_permission()) return forbidden();
 
             // Vrácení validity objektu
             return ok(group.json());

@@ -25,7 +25,7 @@ public class Utilities_Demo_data_Controller extends BaseController {
 
             System.out.println("Demo_Data_Controller :: test :: start");
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -79,7 +79,7 @@ public class Utilities_Demo_data_Controller extends BaseController {
 
             garfield.save();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -101,7 +101,7 @@ public class Utilities_Demo_data_Controller extends BaseController {
             producer.description = "Developed with love from Byzance";
             producer.save();
 
-            return okEmpty();
+            return ok();
         } catch (Exception e) {
             return internalServerError(e);
         }
@@ -237,7 +237,7 @@ public class Utilities_Demo_data_Controller extends BaseController {
             // batch_final_first.save(); Odkomentovat s finální produkcí
 
 
-            return okEmpty();
+            return ok();
         } catch (Exception e) {
             return internalServerError(e);
         }
@@ -312,7 +312,7 @@ public class Utilities_Demo_data_Controller extends BaseController {
             compilation_server_2.personal_server_name = "Pegas";
             compilation_server_2.save();
 
-            return okEmpty();
+            return ok();
         } catch (Exception e) {
             return internalServerError(e);
         }
@@ -366,7 +366,7 @@ public class Utilities_Demo_data_Controller extends BaseController {
             extensions_2.configuration = "{\"price\":400,\"count\":2}";
             extensions_2.save();
 
-            return okEmpty();
+            return ok();
         } catch (Exception e) {
             return internalServerError(e);
         }
@@ -399,7 +399,7 @@ public class Utilities_Demo_data_Controller extends BaseController {
             token.setDate();
             token.save();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);

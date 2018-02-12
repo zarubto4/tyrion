@@ -4,9 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
-
 import javax.persistence.*;
 import java.util.UUID;
 
@@ -23,9 +24,9 @@ public class Model_GridTerminal extends BaseModel {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true, example = "Mobile, WebBrowser") public String terminal_token;
-    @ApiModelProperty(required = false, readOnly = true)                                public String user_agent;
-    @ApiModelProperty(required = true, example = "Mobile, WebBrowser")                  public String device_type;
-    @ApiModelProperty(required = true, example = "Iphone 5S, Chrome 4")                 public String device_name;
+    @ApiModelProperty(required = false, readOnly = true, example = "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405") public String user_agent;
+    @ApiModelProperty(required = false, example = "Mobile, WebBrowser")                  public String device_type;
+    @ApiModelProperty(required = false, example = "Iphone 5S, Chrome 4")                 public String device_name;
 
     // public Integer resolution_height;
     // public Integer resolution_width; -resolution_width teoreticky potřebné pro vývojáře Gridu
@@ -63,7 +64,11 @@ public class Model_GridTerminal extends BaseModel {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_edit_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     public static Model_GridTerminal getById(String id) {

@@ -192,9 +192,9 @@ public class Controller_Admin extends BaseController {
             Swagger_Bug_Description help = form.get();
 
             Model_ServerError error = Model_ServerError.getById(bug_id);
-            if (error == null) return notFound("Bug not found");
 
-            if (!error.edit_permission()) return forbiddenEmpty();
+
+            if (!error.edit_permission()) return forbidden();
 
             error.description = help.description;
             error.update();
@@ -224,9 +224,8 @@ public class Controller_Admin extends BaseController {
         try {
 
             Model_ServerError error = Model_ServerError.getById(bug_id);
-            if (error == null) return notFound("Bug not found");
 
-            if (!error.edit_permission()) return forbiddenEmpty();
+            error.check_edit_permission();
 
             error.youtrack_url = youTrack.report(error);
             error.update();
@@ -257,11 +256,11 @@ public class Controller_Admin extends BaseController {
             Model_ServerError error = Model_ServerError.getById(bug_id);
             if (error == null) return notFound("Bug not found");
 
-            if (!error.delete_permission()) return forbiddenEmpty();
+            if (!error.delete_permission()) return forbidden();
 
             error.delete();
 
-            return okEmpty();
+            return ok();
         } catch (Exception e) {
             return internalServerError(e);
         }
@@ -286,11 +285,11 @@ public class Controller_Admin extends BaseController {
             List<Model_ServerError> errors = Model_ServerError.find.all();
 
             if (!errors.isEmpty()) {
-                if (!errors.get(0).delete_permission()) return forbiddenEmpty();
+                if (!errors.get(0).delete_permission()) return forbidden();
                 Ebean.delete(errors);
             }
 
-            return okEmpty();
+            return ok();
         } catch (Exception e) {
             return internalServerError(e);
         }
@@ -368,7 +367,7 @@ public class Controller_Admin extends BaseController {
                 return badRequest("Bad release, cannot find the asset file");
             }
 
-            return okEmpty();
+            return ok();
         } catch (Exception e) {
             return internalServerError(e);
         }

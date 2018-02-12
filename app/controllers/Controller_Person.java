@@ -127,7 +127,7 @@ public class Controller_Person extends BaseController {
                 }
             }
 
-            return okEmpty();
+            return ok();
         } catch (Exception e) {
             return internalServerError(e);
         }
@@ -224,7 +224,7 @@ public class Controller_Person extends BaseController {
                 logger.internalServerError(e);
             }
 
-            return okEmpty();
+            return ok();
         } catch (Exception e) {
             return internalServerError(e);
         }
@@ -263,7 +263,7 @@ public class Controller_Person extends BaseController {
             String link;
 
             Model_Person person = Model_Person.getByEmail(help.email);
-            if (person == null) return okEmpty();
+            if (person == null) return ok();
 
             Model_PasswordRecoveryToken previousToken = Model_PasswordRecoveryToken.find.query().where().eq("person_id", person.id).findOne();
 
@@ -294,7 +294,7 @@ public class Controller_Person extends BaseController {
             } catch (Exception e) {
                 logger.internalServerError(e);
             }
-            return okEmpty();
+            return ok();
         } catch (Exception e) {
             return internalServerError(e);
         }
@@ -429,10 +429,10 @@ public class Controller_Person extends BaseController {
             if (person == null) return notFound("Person person_id not found");
 
 
-            if (!person.delete_permission())  return forbiddenEmpty();
+            if (!person.delete_permission())  return forbidden();
             person.delete();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -468,13 +468,13 @@ public class Controller_Person extends BaseController {
             Model_Person person = Model_Person.getById(person_id);
             if (person == null) return notFound("Person person_id not found");
 
-            if (!person.edit_permission())  return forbiddenEmpty();
+            if (!person.edit_permission())  return forbidden();
 
             for(Model_AuthorizationToken token : Model_AuthorizationToken.find.query().where().eq("person.id",  person().id).findList()) {
                 token.delete();
             }
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -511,14 +511,14 @@ public class Controller_Person extends BaseController {
             Model_Person person = Model_Person.getById(person_id);
             if (person == null) return notFound("Person person_id not found");
 
-            if (!person.activation_permission())  return forbiddenEmpty();
+            if (!person.activation_permission())  return forbidden();
 
             if (!person.frozen) return badRequest("Person is already active.");
 
             person.frozen = false;
             person.update();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -555,7 +555,7 @@ public class Controller_Person extends BaseController {
             Model_Person person = Model_Person.getById(person_id);
             if (person == null) return notFound("Person person_id not found");
 
-            if (!person.activation_permission())  return forbiddenEmpty();
+            if (!person.activation_permission())  return forbidden();
 
             if (person.frozen) return badRequest("Person is already deactivated.");
 
@@ -567,7 +567,7 @@ public class Controller_Person extends BaseController {
 
             person.update();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -603,12 +603,12 @@ public class Controller_Person extends BaseController {
             Model_Person person = Model_Person.getById(person_id);
             if (person == null) return notFound("Person person_id not found");
 
-            if (!person.activation_permission())  return forbiddenEmpty();
+            if (!person.activation_permission())  return forbidden();
 
             person.validated = true;
             person.update();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -657,7 +657,7 @@ public class Controller_Person extends BaseController {
 
             Model_Person person = Model_Person.getById(person_id);
             if (person == null) return notFound("Person not found");
-            if (!person.edit_permission())  return forbiddenEmpty();
+            if (!person.edit_permission())  return forbidden();
 
             person.nick_name  = help.nick_name;
             person.first_name = help.first_name;
@@ -735,11 +735,11 @@ public class Controller_Person extends BaseController {
             Model_AuthorizationToken token = Model_AuthorizationToken.getById(connection_id);
             if (token == null) return notFound("FloatingPersonToken connection_id not found");
 
-            if (!token.delete_permission())  return forbiddenEmpty();
+            if (!token.delete_permission())  return forbidden();
 
             token.delete();
 
-            return okEmpty();
+            return ok();
         } catch (Exception e) {
             return internalServerError(e);
         }
@@ -1092,7 +1092,7 @@ public class Controller_Person extends BaseController {
             }
 
             // Kontzrola oprávnění
-            if (!person.edit_permission()) return forbiddenEmpty();
+            if (!person.edit_permission()) return forbidden();
 
           // Odeberu cache - jen projistotu
             person.cache_picture_link = null;
@@ -1106,7 +1106,7 @@ public class Controller_Person extends BaseController {
                 fileRecord.refresh();
                 fileRecord.delete();
 
-                return okEmpty();
+                return ok();
             }
 
             //  data:image/png;base64,

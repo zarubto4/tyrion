@@ -11,6 +11,8 @@ import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.cache.CacheField;
 import utilities.enums.ExtensionType;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.extensions.extensions.Extension;
 import utilities.financial.extensions.configurations.*;
 import utilities.logger.Logger;
@@ -60,7 +62,7 @@ public class Model_ProductExtension extends NamedModel {
     }
 
 
-    @JsonProperty @ApiModelProperty(required = true, value = "Only for Administration used") @Transient  @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty @ApiModelProperty(required = false, value ="Visible only for Administrator with Special Permission") @Transient  @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean include() {
         try {
             if (edit_permission()) return tariff_included!= null;
@@ -70,7 +72,7 @@ public class Model_ProductExtension extends NamedModel {
         }
     }
 
-    @JsonProperty @ApiModelProperty(required = false, value = "only with edit permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty  @ApiModelProperty(required = false, value = "Visible only for Administrator with Special Permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
     public String config() {
         try {
 
@@ -402,37 +404,40 @@ public class Model_ProductExtension extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public boolean create_permission() {
-        return (product != null && product.customer.isEmployee(BaseController.person()))
-                || BaseController.person().has_permission("ProductExtension_create");
+
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.ProductExtension_create.name())) return;
+        if(product.customer.isEmployee(BaseController.person())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.ProductExtension_read.name())) return;
+        if(product.customer.isEmployee(BaseController.person())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override  public void check_edit_permission()   throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.ProductExtension_edit.name())) return;
+        if(product.customer.isEmployee(BaseController.person())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.ProductExtension_update.name())) return;
+        if(product.customer.isEmployee(BaseController.person())) return;
+        throw new Result_Error_PermissionDenied();
     }
 
-    @JsonIgnore
-    public boolean read_permission() {
-        return product == null
-                ||  product.customer.isEmployee(BaseController.person())
-                || BaseController.person().has_permission("ProductExtension_read");
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.ProductExtension_delete.name())) return;
+        throw new Result_Error_PermissionDenied();
     }
 
-    @JsonProperty @ApiModelProperty(required = true)
-    public boolean edit_permission() {
-        return (product != null && product.customer.isEmployee(BaseController.person()))
-                || BaseController.person().has_permission("ProductExtension_edit");
+    @JsonProperty @ApiModelProperty(required = true) public void check_act_deactivate_permission()  throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.ProductExtension_act_deactivate.name())) return;
+        if(product.customer.isEmployee(BaseController.person())) return;
+        throw new Result_Error_PermissionDenied();
     }
 
-    @JsonProperty @ApiModelProperty(required = true)
-    public boolean act_deactivate_permission() {
-        return (product != null && product.customer.isEmployee(BaseController.person()))
-                || BaseController.person().has_permission("ProductExtension_act_deactivate");
-    }
-
-    @JsonProperty @ApiModelProperty(required = true)
-    public boolean delete_permission() {
-        return BaseController.person().has_permission("ProductExtension_delete");
-    }
-
-    public enum Permission { ProductExtension_create, ProductExtension_read, ProductExtension_edit, ProductExtension_act_deactivate, ProductExtension_delete }
+    public enum Permission { ProductExtension_create, ProductExtension_read, ProductExtension_edit, ProductExtension_update, ProductExtension_act_deactivate, ProductExtension_delete }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

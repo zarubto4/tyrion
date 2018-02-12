@@ -11,6 +11,8 @@ import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
@@ -36,51 +38,61 @@ public class Model_GridProgram extends TaggedModel {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                                      public Model_GridProject grid_project;
-    @JsonIgnore @OneToMany(mappedBy="grid_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Version> versions = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="grid_program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_GridProgramVersion> versions = new ArrayList<>();
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @Cached public List<UUID> cache_version_ids = new ArrayList<>();
+    @JsonIgnore @Transient @Cached public UUID cache_grid_project_id = null;
 
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true)
-    public UUID grid_project_id() {
-        return grid_project.id;
-    }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_GridProgramVersion> program_versions() {
 
-    @JsonProperty @ApiModelProperty(required = true)
-    public List<Swagger_GridProgramVersion> program_versions() {
+        List<Model_GridProgramVersion> versions = new ArrayList<>();
 
-        List<Swagger_GridProgramVersion> versions = new ArrayList<>();
-
-        for (Model_Version v : getVersions().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())) {
-            versions.add(program_version(v));
+        for (Model_GridProgramVersion v : get_versions().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())) {
+            versions.add(v);
         }
 
         return versions;
     }
 
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Cached public List<UUID> cache_version_ids = new ArrayList<>();
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public List<Model_Version> getVersions() {
+    @JsonIgnore @Transient public UUID get_grid_project_id() throws _Base_Result_Exception {
+
+        if (cache_grid_project_id == null) {
+            Model_GridProject project = Model_GridProject.find.query().where().eq("grid_programs.id", id).select("id").findOne();
+            if (project == null) return null;
+            cache_grid_project_id = project.id;
+        }
+
+        return cache_grid_project_id;
+    }
+
+    @JsonIgnore @Transient public Model_GridProject get_grid_project() throws _Base_Result_Exception  {
+        return  Model_GridProject.getById(get_grid_project_id());
+    }
+
+    @JsonIgnore @Transient public List<Model_GridProgramVersion> get_versions() {
         try {
 
             if (cache_version_ids.isEmpty()) {
 
-                List<Model_Version> versions =  Model_Version.find.query().where().eq("grid_program.id", this.id).order().desc("created").select("id").findList();
+                List<Model_GridProgramVersion> versions =  Model_GridProgramVersion.find.query().where().eq("grid_program.id", this.id).order().desc("created").select("id").findList();
 
                 // Získání seznamu
-                for (Model_Version version : versions) {
+                for (Model_GridProgramVersion version : versions) {
                     cache_version_ids.add(version.id);
                 }
             }
 
-            List<Model_Version> versions  = new ArrayList<>();
+            List<Model_GridProgramVersion> versions  = new ArrayList<>();
 
             for (UUID version_id : cache_version_ids) {
-                versions.add(Model_Version.getById(version_id));
+                versions.add(Model_GridProgramVersion.getById(version_id));
             }
 
             return versions;
@@ -90,36 +102,10 @@ public class Model_GridProgram extends TaggedModel {
             return new ArrayList<>();
         }
     }
-    
-    public static Swagger_GridProgramVersion program_version(Model_Version version) {
-        try {
 
-            Swagger_GridProgramVersion grid_version = new Swagger_GridProgramVersion();
 
-            grid_version.version = version;
-            grid_version.public_mode = version.public_version;
 
-            grid_version.virtual_input_output = version.m_program_virtual_input_output;
-
-            Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version.id).eq("name", "grid_program.json").findOne();
-
-            if (fileRecord != null) {
-
-                JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
-                grid_version.m_code = json.get("m_code").asText();
-
-            }
-
-            return grid_version;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonIgnore
-    public static JsonNode get_m_code(Model_Version version) {
+    @JsonIgnore @Transient public static JsonNode get_m_code(Model_GridProgramVersion version) {
         try {
 
             Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version.id).eq("name", "grid_program.json").findOne();
@@ -137,13 +123,12 @@ public class Model_GridProgram extends TaggedModel {
         }
     }
 
-    @JsonIgnore
-    public List<Swagger_M_Program_Version_Interface> program_versions_interface() {
+    @JsonIgnore @Transient public List<Swagger_M_Program_Version_Interface> program_versions_interface() {
         try {
 
             List<Swagger_M_Program_Version_Interface> versions = new ArrayList<>();
 
-            for (Model_Version v : getVersions()) {
+            for (Model_GridProgramVersion v : get_versions()) {
                 Swagger_M_Program_Version_Interface help = new Swagger_M_Program_Version_Interface();
                 help.version = v;
                 help.virtual_input_output = v.m_program_virtual_input_output;
@@ -164,9 +149,15 @@ public class Model_GridProgram extends TaggedModel {
 
         this.blob_link = grid_project.get_path()  + "/grid-programs/"  + UUID.randomUUID();
 
-        if (grid_project.project_id() != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_GridProject.class, grid_project.project_id(), grid_project.id))).start();
-
         super.save();
+
+        new Thread(() -> {
+            try {
+                EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, grid_project.get_project_id(), grid_project.id));
+            } catch (_Base_Result_Exception e) {
+                // Nothing
+            }
+        }).start();
 
         if (grid_project != null) {
             grid_project.grid_programs_ids.add(id);
@@ -182,24 +173,34 @@ public class Model_GridProgram extends TaggedModel {
 
         super.update();
 
-        if (grid_project.project != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_GridProgram.class, grid_project.project_id(), id))).start();
+        new Thread(() -> {
+            try {
+                EchoHandler.addToQueue(new WSM_Echo( Model_GridProgram.class, get_grid_project().get_project_id(), id));
+            } catch (_Base_Result_Exception e) {
+                // Nothing
+            }
+        }).start();
     }
-
 
     @JsonIgnore @Override
     public boolean delete() {
         logger.debug("update :: Delete object Id: {} ", this.id);
 
-        deleted = true;
-        super.update();
+        super.delete();
 
-        if (grid_project_id() != null) {
-            Model_GridProject.getById(grid_project_id()).grid_programs_ids.remove(id);
+        try {
+            get_grid_project().grid_programs_ids.remove(id);
+        }catch (_Base_Result_Exception e){
+            // Nothing
         }
 
-        cache.remove(id);
-
-        if (grid_project.project != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_GridProject.class, grid_project.project_id(), grid_project.id))).start();
+        new Thread(() -> {
+            try {
+                EchoHandler.addToQueue(new WSM_Echo( Model_GridProject.class, get_grid_project().get_project_id(), get_grid_project_id()));
+            } catch (_Base_Result_Exception e) {
+                // Nothing
+            }
+        }).start();
 
         return false;
     }
@@ -220,92 +221,86 @@ public class Model_GridProgram extends TaggedModel {
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
-    // Floating shared documentation for Swagger
-    @JsonIgnore @Transient public static final String read_permission_docs              = "read: If user have M_Project.read_permission = true, you can create M_program on this M_Project - Or you need static/dynamic permission key";
-    @JsonIgnore @Transient public static final String create_permission_docs            = "create: If user have M_Project.update_permission = true, you can create M_Program on this M_Project - Or you need static/dynamic permission key";
-    @JsonIgnore @Transient public static final String read_qr_token_permission_docs     = "read: Private settings for M_Program";
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public boolean create_permission() {
-
-        if (BaseController.person().has_permission("GridProgram_create")) return true;
-        return grid_project != null && grid_project.update_permission();
+    public void  check_create_permission() throws _Base_Result_Exception {
+        if (BaseController.person().has_permission(Permission.GridProgram_create.name())) return;
+        grid_project.check_update_permission();
     }
 
     @JsonProperty
-    public boolean update_permission() {
+    public void check_update_permission() throws _Base_Result_Exception  {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("grid_program_update_" + id)) return BaseController.person().has_permission("grid_program_update_"+ id);
-        if (BaseController.person().has_permission("M_Program_update")) return true;
+        if (BaseController.person().has_permission("grid_program_update_" + id)) BaseController.person().valid_permission("grid_program_update_" + id);
+        if (BaseController.person().has_permission(Permission.GridProgram_update.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if ( Model_GridProgram.find.query().where().eq("grid_project.project.participants.person.id", BaseController.person().id).eq("id", id).findCount() > 0) {
             BaseController.person().cache_permission("grid_program_update_" + id, true);
-            return true;
+            return;
         }
 
         // Přidávám do listu false a vracím false
         BaseController.person().cache_permission("grid_program_update_" + id, false);
-        return false;
+        throw new Result_Error_PermissionDenied();
     }
 
     @JsonIgnore
-    public boolean read_permission() {
+    public void check_read_permission() throws _Base_Result_Exception {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("grid_program_read_" + id)) return BaseController.person().has_permission("grid_program_read_"+ id);
-        if (BaseController.person().has_permission("GridProgram_read")) return true;
+        if (BaseController.person().has_permission("grid_program_read_" + id)) BaseController.person().valid_permission("grid_program_read_" + id);
+        if (BaseController.person().has_permission(Permission.GridProgram_read.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
         if (Model_GridProgram.find.query().where().eq("grid_project.project.participants.person.id", BaseController.person().id).eq("id", id).findCount() > 0) {
             BaseController.person().cache_permission("grid_program_read_" + id, true);
-            return true;
+            return;
         }
 
         // Přidávám do listu false a vracím false
         BaseController.person().cache_permission("grid_program_read_" + id, false);
-        return false;
+        throw new Result_Error_PermissionDenied();
     }
 
     @JsonProperty
-    public boolean edit_permission() {
+    public void check_edit_permission() throws _Base_Result_Exception {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("grid_program_edit_" + id)) return BaseController.person().has_permission("grid_program_edit_"+ id);
-        if (BaseController.person().has_permission("GridProgram_edit")) return true;
+        if (BaseController.person().has_permission("grid_program_edit_" + id)) BaseController.person().valid_permission("grid_program_edit_" + id);
+        if (BaseController.person().has_permission(Permission.GridProgram_edit.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if ( Model_GridProgram.find.query().where().eq("grid_project.project.participants.person.id", BaseController.person().id).eq("id", id).findCount() > 0) {
             BaseController.person().cache_permission("grid_program_edit_" + id, true);
-            return true;
+            return;
         }
 
         // Přidávám do listu false a vracím false
         BaseController.person().cache_permission("edit_" + id, false);
-        return false;
+        throw new Result_Error_PermissionDenied();
     }
 
     @JsonProperty
-    public boolean delete_permission() {
+    public void check_delete_permission() throws _Base_Result_Exception  {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("grid_program_delete_" + id)) return BaseController.person().has_permission("grid_program_delete_"+ id);
-        if (BaseController.person().has_permission("GridProgram_delete")) return true;
+        if (BaseController.person().has_permission("grid_program_delete_" + id)) BaseController.person().valid_permission("grid_program_delete_" + id);
+        if (BaseController.person().has_permission(Permission.GridProgram_delete.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if ( Model_GridProgram.find.query().where().eq("grid_project.project.participants.person.id", BaseController.person().id).eq("id", id).findCount() > 0) {
             BaseController.person().cache_permission("grid_program_delete_" + id, true);
-            return true;
+            return;
         }
 
         // Přidávám do listu false a vracím false
         BaseController.person().cache_permission("grid_program_delete_" + id, false);
-        return false;
+        throw new Result_Error_PermissionDenied();
     }
 
-    public enum Permission {GridProgram_create, GridProgram_read, GridProgram_edit, GridProgram_delete}
+    public enum Permission {GridProgram_create, GridProgram_update, GridProgram_read, GridProgram_edit, GridProgram_delete}
 
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/

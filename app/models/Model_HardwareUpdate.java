@@ -13,6 +13,8 @@ import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.models_update_echo.EchoHandler;
@@ -51,11 +53,11 @@ public class Model_HardwareUpdate extends BaseModel {
                                                     value = "UNIX time in ms",
                                                     example = "1466163478925")  public Date finished;
 
-              @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Model_HardwareRegistration hardware; // Deska k aktualizaci
+              @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Model_Hardware hardware; // Deska k aktualizaci
               @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public FirmwareType firmware_type;          // Typ Firmwaru
 
                                                                                 // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
-    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                 public Model_Version c_program_version_for_update; // C_program k aktualizaci
+    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                 public Model_CProgramVersion c_program_version_for_update; // C_program k aktualizaci
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_BootLoader bootloader;                      // Když nahrávám Firmware
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_Blob binary_file;                     // Soubor, když firmware nahrává uživatel sám mimo flow
 
@@ -697,16 +699,22 @@ public class Model_HardwareUpdate extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public boolean read_permission() {
-        return Model_UpdateProcedure.getById(actualization_procedure_id()).read_permission() || BaseController.person().has_permission("UpdateProcedure_read");
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.UpdateProcedure_read.name())) return;
+        getHardware().get_project().check_read_permission();
     }
 
-    @JsonProperty
-    public boolean edit_permission() {
-        return Model_UpdateProcedure.getById(actualization_procedure_id()).edit_permission() || BaseController.person().has_permission("UpdateProcedure_edit");
+    @JsonIgnore @Transient @Override public void check_edit_permission() throws _Base_Result_Exception  {
+        if(BaseController.person().has_permission(Permission.UpdateProcedure_read.name())) return;
+        getHardware().get_project().check_read_permission();
     }
 
+
+    @JsonIgnore @java.beans.Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @java.beans.Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @java.beans.Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+
+    public enum Permission { UpdateProcedure_read, UpdateProcedure_edit }
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     @CacheField(Model_HardwareUpdate.class)

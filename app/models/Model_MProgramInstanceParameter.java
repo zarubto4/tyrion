@@ -7,15 +7,21 @@ import controllers.BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import play.libs.Json;
 import play.mvc.Http;
+import responses.Result_NotFound;
 import utilities.Server;
 import utilities.authentication.Authentication;
+import utilities.cache.CacheField;
 import utilities.enums.GridAccess;
 import utilities.enums.ServerMode;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_Unauthorized;
 import utilities.errors.Exceptions.Tyrion_Exp_ForbidenPermission;
 import utilities.errors.Exceptions.Tyrion_Exp_ObjectNotValidAnymore;
-import utilities.errors.Exceptions.Tyrion_Exp_Unauthorized;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.swagger.input.Swagger_GridWidgetVersion_GridApp_source;
@@ -37,7 +43,7 @@ public class Model_MProgramInstanceParameter extends BaseModel {
 /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @ManyToOne public Model_MProjectProgramSnapShot grid_project_program_snapshot;
-    @JsonIgnore @ManyToOne public Model_Version grid_program_version;
+    @JsonIgnore @ManyToOne public Model_GridProgramVersion grid_program_version;
 
     @JsonIgnore public String connection_token;      // Token, pomocí kterého se vrátí konkrétní aplikace s podporou propojení na websocket
     @JsonIgnore public GridAccess snapshot_settings; // Typ Aplikace
@@ -109,7 +115,7 @@ public class Model_MProgramInstanceParameter extends BaseModel {
     }
 
     @JsonIgnore
-    public Swagger_Mobile_Connection_Summary get_connection_summary(Http.Context context) throws Tyrion_Exp_ForbidenPermission, Tyrion_Exp_ObjectNotValidAnymore, Tyrion_Exp_Unauthorized {
+    public Swagger_Mobile_Connection_Summary get_connection_summary(Http.Context context) throws _Base_Result_Exception {
 
         // OBJEKT který se variabilně naplní a vrátí
         Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
@@ -124,14 +130,14 @@ public class Model_MProgramInstanceParameter extends BaseModel {
         switch (snapshot_settings()) {
 
             case TESTING: {
-                throw new Tyrion_Exp_ObjectNotValidAnymore("Token is required");
+                throw new Result_Error_Unauthorized();
             }
 
             case PUBLIC: {
 
                 summary.grid_app_url += Model_HomerServer.getById(instance.server_id()).get_Grid_APP_URL() + instance.id + "/" + grid_project_program_snapshot.grid_project_id() + "/"  + connection_token();
                 summary.grid_program = Model_GridProgram.get_m_code(grid_program_version).asText();
-                summary.grid_project_id = grid_program_version.grid_program.grid_project_id();
+                summary.grid_project_id = grid_program_version.get_grid_program().get_grid_project_id();
                 summary.grid_program_id = grid_program_id();
                 summary.grid_program_version_id = grid_program_version.id;
                 summary.instance_id = get_instance().id;
@@ -142,14 +148,16 @@ public class Model_MProgramInstanceParameter extends BaseModel {
 
             case PROJECT: {
 
+                // Check Token
                 String token = new Authentication().getUsername(context);
+                if (token == null) throw new Result_Error_PermissionDenied();
 
-                if (token == null) throw new Tyrion_Exp_Unauthorized("Login is required");
-
+                // Check Person By Token (who send request)
                 Model_Person person = BaseController.person();
-                if (person == null) throw new Tyrion_Exp_Unauthorized("Login is required");
+                if (person == null) throw new Result_Error_PermissionDenied();
 
-                if (!read_permission()) throw new Tyrion_Exp_ForbidenPermission("Login is required");
+                //Chekc Permission
+                check_read_permission()
 
                 Model_GridTerminal terminal = new Model_GridTerminal();
                 terminal.device_name = "Unknown";
@@ -162,7 +170,7 @@ public class Model_MProgramInstanceParameter extends BaseModel {
                 terminal.save();
 
                 summary.grid_app_url += Model_HomerServer.getById(instance.server_id()).get_Grid_APP_URL() + instance.id + "/" + grid_project_program_snapshot.grid_project_id() + "/" + terminal.terminal_token;
-                summary.grid_project_id = grid_program_version.grid_program.grid_project_id();
+                summary.grid_project_id = grid_program_version.get_grid_program().get_grid_project_id();
                 summary.grid_program = Model_GridProgram.get_m_code(grid_program_version).asText();
                 summary.grid_program_id = grid_program_id();
                 summary.grid_program_version_id = grid_program_version.id;
@@ -282,7 +290,7 @@ public class Model_MProgramInstanceParameter extends BaseModel {
         }
 
         // if not (for programers of blocko versions)
-        return grid_program_version.grid_program.read_permission();
+        grid_program_version.get_grid_program().check_read_permission();
     }
 
     @JsonProperty @ApiModelProperty(required = true)
@@ -295,13 +303,24 @@ public class Model_MProgramInstanceParameter extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_MProgramInstanceParameter getById(String id) {
+    @CacheField(value = Model_MProgramInstanceParameter.class)
+    public static Cache<UUID, Model_MProgramInstanceParameter> cache;
+
+    public static Model_MProgramInstanceParameter getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_MProgramInstanceParameter getById(UUID id) {
-        logger.warn("CACHE is not implemented - TODO");
-        return find.byId(id);
+    public static Model_MProgramInstanceParameter getById(UUID id) throws _Base_Result_Exception {
+        Model_MProgramInstanceParameter instanceParameter = cache.get(id);
+        if (instanceParameter == null) {
+
+            instanceParameter = find.query().where().idEq(id).eq("deleted", false).findOne();
+            if (instanceParameter == null) throw new Result_Error_NotFound(Model_MProgramInstanceParameter.class);
+
+            cache.put(id, instanceParameter);
+        }
+
+        return instanceParameter;
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
