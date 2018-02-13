@@ -89,7 +89,7 @@ public class Controller_Garfield extends _BaseController {
             return ok(garfield.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -142,7 +142,7 @@ public class Controller_Garfield extends _BaseController {
             return ok(garfield.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -172,7 +172,7 @@ public class Controller_Garfield extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -199,7 +199,7 @@ public class Controller_Garfield extends _BaseController {
             return ok(Json.toJson(garfield));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -262,7 +262,7 @@ public class Controller_Garfield extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -291,7 +291,7 @@ public class Controller_Garfield extends _BaseController {
             return ok(Json.toJson(garfield_s));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -327,7 +327,7 @@ public class Controller_Garfield extends _BaseController {
             return ok(Json.toJson(printer));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -390,7 +390,7 @@ public class Controller_Garfield extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 

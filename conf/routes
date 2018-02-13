@@ -204,6 +204,7 @@ PUT       /project/tags/add                                             controll
 PUT       /project/tags/remove                                          controllers.Controller_Project.project_removeTags
 PUT       /project/hardware/add                                         controllers.Controller_Project.project_addHardware
 PUT       /project/hardware/remove/:registration_id                     controllers.Controller_Project.project_removeHardware(registration_id)
+PUT       /project/hardware/freze/:registration_id                      controllers.Controller_Project.project_frezeHardware(registration_id)
 
 #Program
 POST      /b_program/version/:b_program_id                              controllers.Controller_Blocko.bProgramVersion_create(b_program_id)
@@ -391,8 +392,7 @@ PUT       /hardware_registration/tags/remove                            controll
 
 #Hardware Group
 POST      /hardware_group                                               controllers.Controller_Hardware.hardwareGroup_create()
-PUT       /hardware_group/add_hw                                        controllers.Controller_Hardware.hardwareGroup_addHardware()
-PUT       /hardware_group/remove_hw                                     controllers.Controller_Hardware.hardwareGroup_removeHardware()
+PUT       /hardware_group/hardware_synnchronize                         controllers.Controller_Hardware.board_group_update_device_list()
 PUT       /hardware_group/:group_id                                     controllers.Controller_Hardware.hardwareGroup_update(group_id)
 GET       /hardware_group/project/:project_id                           controllers.Controller_Hardware.hardwareGroup_get_filter(page_number: Int)
 GET       /hardware_group/individual/:group_id                          controllers.Controller_Hardware.hardwareGroup_get(group_id)

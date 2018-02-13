@@ -28,6 +28,7 @@ import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
+import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.input.Swagger_Board_Developer_parameters;
@@ -50,7 +51,7 @@ import java.util.concurrent.*;
 @Entity
 @ApiModel(value = "Hardware", description = "Model of Hardware")
 @Table(name="Hardware")
-public class Model_Hardware extends NamedModel {
+public class Model_Hardware extends TaggedModel {
 
 /* DOCUMENTATION -------------------------------------------------------------------------------------------------------*/
 
@@ -96,16 +97,26 @@ public class Model_Hardware extends NamedModel {
                                                         // Pozor tato hodna se také propisuje do json_bootloader_core_configuration!!!!
                  public boolean database_synchronize;   // Defautlní hodnota je True. Je možnost vypnout synchronizaci a to pro případy, že uživatel vypaluje firmwaru lokálně pomocí svého programaátoru a IIDE
 
-    @JsonIgnore @OneToOne(mappedBy = "hardware")  public Model_HardwareRegistration registration;
-
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_HardwareType hardware_type; // Typ desky - (Cachováno)
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_CProgramVersion actual_c_program_version;           // OVěřená verze firmwaru, která na hardwaru běží (Cachováno)
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_CProgramVersion actual_backup_c_program_version;    // Ověřený statický backup - nebo aktuálně zazálohovaný firmware (Cachováno)
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BootLoader actual_boot_loader;              // Aktuální bootloader (Cachováno)
 
+    // Hardware Groups
+    @JsonIgnore @ManyToMany(mappedBy = "hardware", fetch = FetchType.LAZY)  public List<Model_HardwareGroup> hardware_groups = new ArrayList<>();
+
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)  public Model_Blob picture;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Project project;
+
+    @JsonIgnore @OneToMany(mappedBy = "hardware", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_HardwareUpdate> updates = new ArrayList<>();
+
+
+
     @JsonIgnore public UUID connected_server_id;      // Latest know Server ID
     @JsonIgnore public UUID connected_instance_id;    // Latest know Instance ID
+
+
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -121,16 +132,18 @@ public class Model_Hardware extends NamedModel {
     @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_backup_id;              // Backup
     @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_backup_version_id;      // Backup - version
     @JsonIgnore @Transient @Cached public String cache_latest_know_ip_address;
+    @Transient @JsonIgnore @Cached public List<UUID> cache_hardware_groups_ids;
+    @JsonIgnore @Transient @Cached public UUID cache_picture_id;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty public BackupMode backup_mode() { return backup_mode ? BackupMode.AUTO_BACKUP : BackupMode.STATIC_BACKUP;}
     @JsonProperty public UUID hardware_type_id()                     { try { return cache_hardware_type_id != null ? cache_hardware_type_id : getHardwareType().id;} catch (NullPointerException e) {return  null;}}
-    @JsonProperty public String hardware_type_name()                   { try { return cache_hardware_type_name != null ? cache_hardware_type_name : getHardwareType().name;} catch (NullPointerException e) {return  null;}}
+    @JsonProperty public String hardware_type_name()                 { try { return cache_hardware_type_name != null ? cache_hardware_type_name : getHardwareType().name;} catch (NullPointerException e) {return  null;}}
     @JsonProperty public UUID producer_id()                          { try { return cache_producer_id != null ? cache_producer_id : get_producer().id;} catch (NullPointerException e) {return  null;}}
-    @JsonProperty public String producer_name()                        { try { return get_producer().name; } catch (NullPointerException e) {return  null;}}
+    @JsonProperty public String producer_name()                      { try { return get_producer().name; } catch (NullPointerException e) {return  null;}}
     @JsonProperty public UUID project_id()                           { try { return cache_project_id != null ? cache_project_id : get_project().id; } catch (NullPointerException e) {return  null;}}
-    @JsonProperty public String actual_bootloader_version_name()       { try { return get_actual_bootloader().name; } catch (NullPointerException e) {return  null;}}
+    @JsonProperty public String actual_bootloader_version_name()     { try { return get_actual_bootloader().name; } catch (NullPointerException e) {return  null;}}
     @JsonProperty public UUID actual_bootloader_id()                 { try { return cache_actual_boot_loader_id != null ? cache_actual_boot_loader_id : get_actual_bootloader().id; } catch (NullPointerException e) {return  null;}}
     @JsonProperty public UUID bootloader_update_in_progress_bootloader_id()       {
         try {
@@ -166,8 +179,6 @@ public class Model_Hardware extends NamedModel {
             return null; // Raději true než false aby to uživatel neodpálil další update
         }
     }
-
-
     @JsonProperty public String available_bootloader_version_name()  { return getHardwareType().main_boot_loader() == null ? null :  getHardwareType().main_boot_loader().name;}
     @JsonProperty public UUID available_bootloader_id()              { return getHardwareType().main_boot_loader() == null ? null :  getHardwareType().main_boot_loader().id;}
     @JsonProperty public String ip_address() {
@@ -185,6 +196,7 @@ public class Model_Hardware extends NamedModel {
             return null;
         }
     }
+
     @JsonProperty
     public List<BoardAlert> alert_list() {
         try {
@@ -253,23 +265,45 @@ public class Model_Hardware extends NamedModel {
         return get_instance();
     }
 
-    @JsonProperty public UUID actual_c_program_id() { return cache_actual_c_program_id != null ? cache_actual_c_program_id : (get_actual_c_program() == null ? null : get_actual_c_program().id);}
-    @JsonProperty public String actual_c_program_name() { return get_actual_c_program() == null ? null : get_actual_c_program().name;}
-    @JsonProperty public String actual_c_program_description() { return get_actual_c_program() == null ? null :  get_actual_c_program().description;}
+    @JsonProperty
+    public UUID actual_c_program_id() { return cache_actual_c_program_id != null ? cache_actual_c_program_id : (get_actual_c_program() == null ? null : get_actual_c_program().id);}
 
-    @JsonProperty public UUID actual_c_program_version_id() { return cache_actual_c_program_version_id != null ? cache_actual_c_program_version_id : (get_actual_c_program_version() == null ? null : get_actual_c_program_version().id);}
-    @JsonProperty public String actual_c_program_version_name() { return get_actual_c_program_version() == null ? null : get_actual_c_program_version().name;}
-    @JsonProperty public String actual_c_program_version_description() {  return get_actual_c_program_version() == null ? null : get_actual_c_program_version().description;}
+    @JsonProperty
+    public String actual_c_program_name() { return get_actual_c_program() == null ? null : get_actual_c_program().name;}
 
-    @JsonProperty public UUID actual_c_program_backup_id() {  return cache_actual_c_program_backup_id != null ? cache_actual_c_program_backup_id : (get_backup_c_program() == null ? null : get_backup_c_program().id); }
-    @JsonProperty public String actual_c_program_backup_name() { return get_backup_c_program() == null ? null : get_backup_c_program().name;}
-    @JsonProperty public String actual_c_program_backup_description() { return get_backup_c_program() == null ? null : get_backup_c_program().description;}
+    @JsonProperty
+    public String actual_c_program_description() { return get_actual_c_program() == null ? null :  get_actual_c_program().description;}
 
-    @JsonProperty public UUID actual_c_program_backup_version_id() { return cache_actual_c_program_backup_version_id != null ? cache_actual_c_program_backup_version_id : (get_backup_c_program_version() == null ? null :  get_backup_c_program_version().id) ;}
-    @JsonProperty public String actual_c_program_backup_version_name() { return get_backup_c_program_version() == null ? null :  get_backup_c_program_version().name; }
-    @JsonProperty public String actual_c_program_backup_version_description() {return get_backup_c_program_version() == null ? null :  get_backup_c_program_version().description;}
+    @JsonProperty
+    public UUID actual_c_program_version_id() { return cache_actual_c_program_version_id != null ? cache_actual_c_program_version_id : (get_actual_c_program_version() == null ? null : get_actual_c_program_version().id);}
 
-    @JsonProperty @ApiModelProperty(value = "Value is null, if device status is online") public Long latest_online() {
+    @JsonProperty
+    public String actual_c_program_version_name() { return get_actual_c_program_version() == null ? null : get_actual_c_program_version().name;}
+
+    @JsonProperty
+    public String actual_c_program_version_description() {  return get_actual_c_program_version() == null ? null : get_actual_c_program_version().description;}
+
+    @JsonProperty
+    public UUID actual_c_program_backup_id() {  return cache_actual_c_program_backup_id != null ? cache_actual_c_program_backup_id : (get_backup_c_program() == null ? null : get_backup_c_program().id); }
+
+    @JsonProperty
+    public String actual_c_program_backup_name() { return get_backup_c_program() == null ? null : get_backup_c_program().name;}
+
+    @JsonProperty
+    public String actual_c_program_backup_description() { return get_backup_c_program() == null ? null : get_backup_c_program().description;}
+
+    @JsonProperty
+    public UUID actual_c_program_backup_version_id() { return cache_actual_c_program_backup_version_id != null ? cache_actual_c_program_backup_version_id : (get_backup_c_program_version() == null ? null :  get_backup_c_program_version().id) ;}
+
+    @JsonProperty
+    public String actual_c_program_backup_version_name() { return get_backup_c_program_version() == null ? null :  get_backup_c_program_version().name; }
+
+    @JsonProperty
+    public String actual_c_program_backup_version_description() {return get_backup_c_program_version() == null ? null :  get_backup_c_program_version().description;}
+
+    @JsonProperty
+    @ApiModelProperty(value = "Value is null, if device status is online")
+    public Long latest_online() {
         if (online_state() == NetworkStatus.ONLINE) return null;
         try {
 
@@ -311,7 +345,9 @@ public class Model_Hardware extends NamedModel {
         }
     }
 
-    @JsonProperty @ApiModelProperty(value = "Value is cached with asynchronous refresh") public NetworkStatus online_state() {
+    @JsonProperty
+    @ApiModelProperty(value = "Value is cached with asynchronous refresh")
+    public NetworkStatus online_state() {
 
         try {
             // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
@@ -352,7 +388,41 @@ public class Model_Hardware extends NamedModel {
         }
     }
 
-/* GET Variable short type of objects ----------------------------------------------------------------------------------*/
+    @JsonProperty @ApiModelProperty(required = true)
+    public List<Model_HardwareGroup> hardware_groups() {
+        List<Model_HardwareGroup> l = new ArrayList<>();
+        for (Model_HardwareGroup m : get_hardware_groups())
+            l.add(m);
+        return l;
+    }
+
+    @JsonProperty @ApiModelProperty(required = true)
+    public String picture_link() {
+        try {
+
+            if ( cache_picture_id == null) {
+
+                Model_Blob fileRecord = Model_Blob.find.query().where().eq("hardware.id",id).select("id").findOne();
+                if (fileRecord != null) {
+                    cache_picture_id =  fileRecord.id;
+                }
+            }
+
+            if (cache_picture_id != null) {
+                Model_Blob record = Model_Blob.getById(cache_picture_id);
+                if (record != null) {
+                    return record.getPublicDownloadLink(300);
+                }
+            }
+
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public Swagger_Board_for_fast_upload_detail getHardwareForUpdate() {
@@ -514,15 +584,44 @@ public class Model_Hardware extends NamedModel {
     @JsonIgnore
     public UUID get_project_id() {
         try {
+
             if (cache_project_id == null) {
-                Model_Project project = Model_Project.find.query().where().eq("hardware.id", registration.id).select("id").findOne();
+                Model_Project project = Model_Project.find.query().where().eq("hardware.id", id).select("id").findOne();
                 if (project == null) throw new Result_Error_NotFound(Model_Project.class);
                 cache_project_id = project.id;
             }
 
             return cache_project_id;
-        }catch (Exception e){
-            return  null;
+        }catch (Exception e) {
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public List<Model_HardwareGroup> get_hardware_groups() {
+
+        if (cache_hardware_groups_ids == null) {
+            get_hardware_group_ids();
+        }
+
+        List<Model_HardwareGroup> groups = new ArrayList<>();
+
+        for(UUID group_id : cache_hardware_groups_ids) {
+            groups.add(Model_HardwareGroup.getById(group_id));
+        }
+
+        return groups;
+    }
+
+    @JsonIgnore
+    public List<UUID> get_hardware_group_ids() {
+        if (cache_hardware_groups_ids == null) {
+
+            List<UUID> group_ids = Model_HardwareGroup.find.query().where().eq("boards.id", id).select("id").findIds();
+            this.cache_hardware_groups_ids = group_ids;
+            return cache_hardware_groups_ids;
+        } else {
+            return cache_hardware_groups_ids;
         }
     }
 
@@ -1131,10 +1230,10 @@ public class Model_Hardware extends NamedModel {
 
     // Set Hardware groups in Hardware Instance on Homer --//
     @JsonIgnore
-    public WS_Message_Hardware_set_hardware_groups set_hardware_groups_on_hardware(UUID hardware_groups_id, Enum_type_of_command command) {
+    public WS_Message_Hardware_set_hardware_groups set_hardware_groups_on_hardware(List<UUID> hardware_groups_ids, Enum_type_of_command command) {
         try {
 
-            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_hardware_groups().make_request(Collections.singletonList(this), hardware_groups_id, command), 1000 * 5, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_hardware_groups().make_request(Collections.singletonList(this), hardware_groups_ids, command), 1000 * 5, 0, 2);
 
             return Json.fromJson(node, WS_Message_Hardware_set_hardware_groups.class);
 
@@ -1433,7 +1532,7 @@ public class Model_Hardware extends NamedModel {
                 }
 
                 if (Model_HomerServer.getById(plan.getHardware().connected_server_id).online_state() != NetworkStatus.ONLINE) {
-                    logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id, Model_HomerServer.getById(plan.hardware.hardware.connected_server_id).personal_server_name);
+                    logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id, Model_HomerServer.getById(plan.hardware.connected_server_id).personal_server_name);
                     plan.state = HardwareUpdateState.HOMER_SERVER_IS_OFFLINE;
                     plan.update();
                     continue;
@@ -1589,10 +1688,12 @@ public class Model_Hardware extends NamedModel {
             this.update();
         }
 
-        if (this.registration != null) {
-            Model_HardwareGroup group = this.registration.getGroup();
-            if (group != null && (overview.hardware_group_id == null || !overview.hardware_group_id.equals(group.id))) {
-                set_hardware_groups_on_hardware(group.id, Enum_type_of_command.SET);
+        // Kontrola Skupin Hardware Groups - To není synchronizace s HW ale s Instancí HW na Homerovi
+        for(UUID hardware_group_id : get_hardware_group_ids()) {
+            // Pokud neobsahuje přidám - ale abych si ušetřil čas - nastavím rovnou celý seznam - Homer si s tím poradí
+            if (!overview.hardware_group_ids.contains(hardware_group_id)) {
+                set_hardware_groups_on_hardware(get_hardware_group_ids(), Enum_type_of_command.SET);
+                break;
             }
         }
 
@@ -2194,7 +2295,7 @@ public class Model_Hardware extends NamedModel {
             }
 
             Model_HardwareUpdate plan = new Model_HardwareUpdate();
-            plan.hardware = b_pair.hardware.registration;
+            plan.hardware = b_pair.hardware;
             plan.firmware_type = firmware_type;
             plan.actualization_procedure = procedure;
 
@@ -2549,6 +2650,11 @@ public class Model_Hardware extends NamedModel {
     }
 
 /* BlOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public String getPath() {
+        return get_project().getPath() + "/hardware";
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

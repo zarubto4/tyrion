@@ -364,7 +364,6 @@ public abstract class _BaseController {
      * @param errors JsonNode with errors
      * @return 400 result
      */
-    // TODO tohle pujde taky hodit do controllerServerError, kde ale ten typ Erroru bude mít body které si z Erroru vytáhnu
     public static Result invalidBody(JsonNode errors) {
         return badRequest(Json.toJson(new Result_InvalidBody(errors)));
     }

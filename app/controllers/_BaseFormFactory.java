@@ -13,7 +13,7 @@ import javax.inject.Singleton;
 import javax.validation.Validator;
 
 /**
- * Helper to create HTML forms.
+ * Helper to create better forms.
  */
 @Singleton
 public class _BaseFormFactory extends FormFactory {
@@ -30,6 +30,7 @@ public class _BaseFormFactory extends FormFactory {
     }
 
     /**
+     * Automaticaly get Json from request, and valid that with hasErrors immediately in one step
      * @param <T>   the type of value in the form.
      * @param clazz    the class to map to a form.
      * @return a new form that wraps the specified class.
@@ -43,7 +44,6 @@ public class _BaseFormFactory extends FormFactory {
             logger.warn("formFromRequestWithValidation::InvalidBody::ErrorList::{}", bind.errorsAsJson());
             throw new Result_Error_InvalidBody(form.errorsAsJson());
         }
-
 
         T s = bind.get();
 
@@ -66,7 +66,6 @@ public class _BaseFormFactory extends FormFactory {
             logger.warn("formFromJsonWithValidation::InvalidBody::ErrorList::{}", bind.errorsAsJson());
             throw new Result_Error_InvalidBody(form.errorsAsJson());
         }
-
 
         T s = bind.get();
 

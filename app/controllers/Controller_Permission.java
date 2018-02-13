@@ -69,7 +69,7 @@ public class Controller_Permission extends _BaseController {
 
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -102,7 +102,7 @@ public class Controller_Permission extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -125,7 +125,7 @@ public class Controller_Permission extends _BaseController {
             return ok(Json.toJson(permissions));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
 
     }
@@ -170,7 +170,7 @@ public class Controller_Permission extends _BaseController {
             return ok(Json.toJson(permission));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
 
     }
@@ -225,7 +225,7 @@ public class Controller_Permission extends _BaseController {
             return ok(securityRole.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -259,7 +259,7 @@ public class Controller_Permission extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -306,7 +306,7 @@ public class Controller_Permission extends _BaseController {
             return created(Json.toJson(securityRole));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -335,7 +335,7 @@ public class Controller_Permission extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -381,7 +381,7 @@ public class Controller_Permission extends _BaseController {
             return ok(role.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -408,7 +408,7 @@ public class Controller_Permission extends _BaseController {
             return ok(role.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -470,7 +470,7 @@ public class Controller_Permission extends _BaseController {
             return ok(Json.toJson(securityRole));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -503,7 +503,7 @@ public class Controller_Permission extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -526,7 +526,7 @@ public class Controller_Permission extends _BaseController {
             return ok(Json.toJson(roles));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
 
     }
@@ -560,7 +560,7 @@ public class Controller_Permission extends _BaseController {
             return ok(Json.toJson(system_access));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
 
 

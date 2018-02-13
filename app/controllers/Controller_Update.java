@@ -42,7 +42,7 @@ public class Controller_Update extends _BaseController {
     private _BaseFormFactory baseFormFactory;
     
     @Inject
-    public Controller_Update(FormFactory formFactory) {
+    public Controller_Update(_BaseFormFactory formFactory) {
         this.baseFormFactory = formFactory;
     }
 
@@ -71,7 +71,7 @@ public class Controller_Update extends _BaseController {
             return ok(Json.toJson(procedure));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -129,7 +129,7 @@ public class Controller_Update extends _BaseController {
             return ok(result.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -157,7 +157,7 @@ public class Controller_Update extends _BaseController {
 
             return ok(Json.toJson(procedure));
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -245,14 +245,13 @@ public class Controller_Update extends _BaseController {
                     if (!bootLoader.hardware_type.id.equals(hardwareType.id)) badRequest("Invalid type of Bootloader for HardwareType");
                 }
 
-                List<Model_HardwareRegistration> hw = Model_HardwareRegistration.find.query().where().eq("group.id", group.id).eq("hardware.hardware_type.id", hardwareType.id).select("id").findList();
+                List<Model_Hardware> hw = Model_Hardware.find.query().where().eq("group.id", group.id).eq("hardware.hardware_type.id", hardwareType.id).select("id").findList();
 
-                for (Model_HardwareRegistration hardware_not_cached : hw) {
-                    Model_HardwareRegistration hardware = Model_HardwareRegistration.getById(hardware_not_cached.id);
-                    if (hardware == null) return notFound("hardware_id not found");
-                    if (!hardware.update_permission()) return forbidden();
-                    if (!hardware.getProject().id.equals(project.id))
-                        return notFound("hardware_id is not from same project");
+                for (Model_Hardware hardware_not_cached : hw) {
+                    Model_Hardware hardware = Model_Hardware.getById(hardware_not_cached.id);
+
+                    if (!hardware.get_project_id().equals(project.id))
+                    return notFound("hardware_id is not from same project");
 
                     Model_HardwareUpdate plan = new Model_HardwareUpdate();
                     plan.hardware = hardware;
@@ -275,7 +274,7 @@ public class Controller_Update extends _BaseController {
 
             return created(procedure.json());
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -306,7 +305,7 @@ public class Controller_Update extends _BaseController {
             return ok(plan.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -390,7 +389,7 @@ public class Controller_Update extends _BaseController {
             return ok(Json.toJson(result));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 }

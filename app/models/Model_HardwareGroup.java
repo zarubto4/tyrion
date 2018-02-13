@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
@@ -45,7 +46,7 @@ public class Model_HardwareGroup extends NamedModel {
     public int size() {
 
         if (cache_group_size == null) {
-            cache_group_size = Model_HardwareRegistration.find.query().where().eq("group.id", this.id).findCount();
+            cache_group_size = Model_Hardware.find.query().where().eq("group.id", this.id).findCount();
         }
 
         return cache_group_size;
@@ -106,7 +107,7 @@ public class Model_HardwareGroup extends NamedModel {
     // TODO teoreticky cachovat?
     @JsonIgnore
     public List<UUID> getHardwareIds() {
-        return Model_HardwareRegistration.find.query().where().eq("groups.id", id).findIds();
+        return Model_Hardware.find.query().where().eq("groups.id", id).findIds();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -160,31 +161,31 @@ public class Model_HardwareGroup extends NamedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     // Create Permission is always JsonIgnore
-    @JsonIgnore   public void check_create_permission() throws _Base_Result_Exception {  project.check_update_permission(); }
-    @JsonIgnore   public void check_read_permission()   throws _Base_Result_Exception {  get_project().check_read_permission(); }
-    @JsonProperty public void check_update_permission() throws _Base_Result_Exception {  get_project().check_update_permission(); }
-    @JsonProperty public void check_delete_permission() throws _Base_Result_Exception {  get_project().check_update_permission(); }
+    @JsonIgnore @Override @Transient public void check_create_permission() throws _Base_Result_Exception {  project.check_update_permission(); }
+    @JsonIgnore @Override @Transient public void check_read_permission()   throws _Base_Result_Exception {  get_project().check_read_permission(); }
+    @JsonIgnore @Override @Transient public void check_update_permission() throws _Base_Result_Exception {  get_project().check_update_permission(); }
+    @JsonIgnore @Override @Transient public void check_delete_permission() throws _Base_Result_Exception {  get_project().check_update_permission(); }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     @CacheField(Model_HardwareGroup.class)
     public static Cache<UUID, Model_HardwareGroup> cache;
 
-    public static Model_HardwareGroup getById(String id) {
+    public static Model_HardwareGroup getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_HardwareGroup getById(UUID id) {
+    public static Model_HardwareGroup getById(UUID id) throws _Base_Result_Exception {
 
         Model_HardwareGroup group = cache.get(id);
         if (group == null) {
 
             group = find.byId(id);
-            if (group == null) return null;
-
+            if (group == null) throw new Result_Error_NotFound(Model_Product.class);
             cache.put(id, group);
         }
 
+        group.check_read_permission();
         return group;
     }
 

@@ -647,24 +647,21 @@ public class Controller_Project extends _BaseController {
             // Kotrola objektu
             Model_Project project = Model_Project.getById(help.project_id);
 
-            Model_HardwareRegistration registration = new Model_HardwareRegistration();
-            registration.hardware = hardware;
-            registration.project = project;
+            hardware.project = project;
 
             if (help.group_id != null) {
                 Model_HardwareGroup group = Model_HardwareGroup.getById(help.group_id);
-                if (group == null) return notFound("HardwareGroup not found");
-                if (!group.update_permission()) return forbidden();
+                group.hardware.add(hardware);
 
-                registration.group = group;
-                registration.cache_group_id = group.id;
+                hardware.hardware_groups.add(group);
+                hardware.cache_hardware_groups_ids.add(group.id);
             }
 
-            registration.save();
+            hardware.update();
 
-            project.cache_hardware_ids.add(registration.id);
+            project.cache_hardware_ids.add(hardware.id);
 
-            return created(registration.json());
+            return created(hardware.json());
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -690,17 +687,74 @@ public class Controller_Project extends _BaseController {
     public Result project_removeHardware(String registration_id) {
         try {
 
-            Model_HardwareRegistration registration = Model_HardwareRegistration.getById(registration_id);
+            Model_Hardware hardware = Model_Hardware.getById(registration_id);
 
-            Model_Project project = registration.getProject();
-
-
-            if (registration.hardware == null) return badRequest("Already removed");
-
-            registration.hardware = null;
-            registration.save();
 
             return ok();
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "deactiveHW Project",
+            tags = {"Project"},
+            notes = "freze HW from Project",
+            produces = "application/json",
+            protocols = "https"
+    )
+
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Hardware.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result project_deactiveHardware(String registration_id) {
+        try {
+
+            Model_Hardware registration = Model_Hardware.getById(registration_id);
+
+            // TODO
+
+            registration.save();
+
+            return ok(registration.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "activeHW Project",
+            tags = {"Project"},
+            notes = "freze HW from Project",
+            produces = "application/json",
+            protocols = "https"
+    )
+
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Hardware.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result project_activeHardware(String registration_id) {
+        try {
+
+            Model_Hardware registration = Model_Hardware.getById(registration_id);
+
+            // TODO
+
+            registration.save();
+
+            return ok(registration.json());
 
         } catch (Exception e) {
             return controllerServerError(e);

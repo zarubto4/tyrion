@@ -13,12 +13,17 @@ import play.mvc.*;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.document_db.document_objects.DM_Board_Bootloader_DefaultConfig;
+import utilities.errors.Exceptions.Result_Error_InvalidBody;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions.Result_Error_Unauthorized;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Logger;
+import utilities.logger.ServerLogger;
 import utilities.swagger.input.*;
 import utilities.swagger.output.*;
 import utilities.swagger.output.filter_results.Swagger_HardwareGroup_List;
@@ -96,7 +101,7 @@ public class Controller_Hardware extends _BaseController {
             return created(Json.toJson(processor));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -124,7 +129,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(processor.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -151,7 +156,7 @@ public class Controller_Hardware extends _BaseController {
            return ok(Json.toJson(processors));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -203,7 +208,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(processor.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -235,7 +240,7 @@ public class Controller_Hardware extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -269,7 +274,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(Json.toJson(content));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -302,7 +307,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(Json.toJson(content));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -351,7 +356,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(producer.json());
             
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -401,7 +406,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(producer.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -429,7 +434,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(Json.toJson(producers));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -457,7 +462,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(producer.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -492,7 +497,7 @@ public class Controller_Hardware extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -577,7 +582,7 @@ public class Controller_Hardware extends _BaseController {
             return created(hardwareType.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -638,7 +643,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(hardwareType.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
 
     }
@@ -670,7 +675,7 @@ public class Controller_Hardware extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -707,7 +712,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(Json.toJson(hardwareTypes));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -735,7 +740,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(hardwareType.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -762,15 +767,14 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    @BodyParser.Of(value = BodyParser.Json.class)//, TODO maxLength = 1024 * 1024 * 10)
+    @BodyParser.Of(value = BodyParser.Json.class)
     public Result hardwareType_uploadPicture(String hardware_type_id) {
         try {
 
-            // Získání JSON
-            final Form<Swagger_BASE64_FILE> form = formFactory.form(Swagger_BASE64_FILE.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_BASE64_FILE help = form.get();
+            // Get and Validate Object
+            Swagger_BASE64_FILE help = baseFormFactory.formFromRequestWithValidation(Swagger_BASE64_FILE.class);
 
+            // Kontrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
 
             logger.debug("hardwareType_uploadPicture - update picture");
@@ -807,7 +811,7 @@ public class Controller_Hardware extends _BaseController {
             return ok();
             
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -882,7 +886,7 @@ public class Controller_Hardware extends _BaseController {
             return created(Json.toJson(batch));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -913,7 +917,7 @@ public class Controller_Hardware extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -982,7 +986,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(batch.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1038,7 +1042,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(Json.toJson(boot_loader));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1085,7 +1089,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(Json.toJson(boot_loader));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1117,7 +1121,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(Json.toJson(boot_loader));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1187,7 +1191,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(boot_loader.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1240,7 +1244,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(boot_loader.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1318,7 +1322,7 @@ public class Controller_Hardware extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1381,7 +1385,7 @@ public class Controller_Hardware extends _BaseController {
             return created(hardware.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1538,7 +1542,7 @@ public class Controller_Hardware extends _BaseController {
         } catch (IllegalCharsetNameException e) {
             return badRequest("All Mac Address used");
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1576,7 +1580,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(Json.toJson(list));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1609,11 +1613,6 @@ public class Controller_Hardware extends _BaseController {
     public Result hardware_update_description( String hardware_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_NameAndDescription help = form.get();
-
             // Get and Validate Object
             Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
@@ -1636,7 +1635,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(Json.toJson(hardware));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1724,7 +1723,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(Json.toJson(board));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1809,7 +1808,7 @@ public class Controller_Hardware extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1946,7 +1945,7 @@ public class Controller_Hardware extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2021,7 +2020,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(Json.toJson(result));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2057,10 +2056,9 @@ public class Controller_Hardware extends _BaseController {
             Swagger_BASE64_FILE help = baseFormFactory.formFromRequestWithValidation(Swagger_BASE64_FILE.class);
 
             //Kontrola objektu
-            Model_HardwareRegistration hardware = Model_HardwareRegistration.getById(hardware_registration_id);
-            if (hardware == null) return notFound("HardwareRegistration not found");
+            Model_Hardware hardware = Model_Hardware.getById(hardware_registration_id);
 
-            if (!hardware.edit_permission()) return forbidden();
+            hardware.check_update_permission();
 
             // Odebrání předchozího obrázku
             if (hardware.picture != null) {
@@ -2087,7 +2085,7 @@ public class Controller_Hardware extends _BaseController {
 
             return ok(hardware.json());
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2121,7 +2119,7 @@ public class Controller_Hardware extends _BaseController {
 
             return ok(Json.toJson(pss));
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2185,7 +2183,7 @@ public class Controller_Hardware extends _BaseController {
 
             return ok();
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2227,7 +2225,7 @@ public class Controller_Hardware extends _BaseController {
 
             return ok();
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2247,10 +2245,7 @@ public class Controller_Hardware extends _BaseController {
     public Result hardware_removePicture(String hardware_registration_id) {
         try {
 
-            Model_HardwareRegistration hardware = Model_HardwareRegistration.getById(hardware_registration_id);
-            if (hardware == null) return notFound("HardwareRegistration not found");
-
-            if (!hardware.edit_permission()) return forbidden();
+            Model_Hardware hardware = Model_Hardware.getById(hardware_registration_id);
 
             if (hardware.picture != null) {
                 hardware.picture.delete();
@@ -2262,7 +2257,7 @@ public class Controller_Hardware extends _BaseController {
 
             return ok();
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2297,7 +2292,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(Json.toJson(board));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2326,7 +2321,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(board.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2358,22 +2353,45 @@ public class Controller_Hardware extends _BaseController {
                 return ok(Json.toJson(status));
             }
 
-            Model_Hardware board = Model_Hardware.getById(hardware_not_cached.id);
+            try {
 
-            if (board == null) {
-                status.status = BoardRegistrationStatus.NOT_EXIST;
-            } else if (board.project_id() == null) {
-                status.status = BoardRegistrationStatus.CAN_REGISTER;
-            } else if (board.project_id() != null && board.read_permission()) {
-                status.status = BoardRegistrationStatus.ALREADY_REGISTERED_IN_YOUR_ACCOUNT;
-            } else {
-                status.status = BoardRegistrationStatus.ALREADY_REGISTERED;
+                Model_Hardware board = Model_Hardware.getById(hardware_not_cached.id);
+
+            } catch (Exception error){
+
+                // Result_Error_NotFound
+                if(error.getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
+                    status.status = BoardRegistrationStatus.NOT_EXIST;
+                    return ok(Json.toJson(status));
+                }
+
+                // Result_Error_PermissionDenied
+                if(error.getClass().getSimpleName().equals(Result_Error_PermissionDenied.class.getSimpleName())){
+                    return forbidden();
+                }
+
             }
+
+            Model_Hardware board = Model_Hardware.getById(hardware_not_cached.id);
+            if (board.project == null) {
+                status.status = BoardRegistrationStatus.CAN_REGISTER;
+                return ok(Json.toJson(status));
+            }
+
+            /*
+                } else if (board.project_id() == null) {
+                    status.status = BoardRegistrationStatus.CAN_REGISTER;
+                } else if (board.project_id() != null && board.read_permission()) {
+                    status.status = BoardRegistrationStatus.ALREADY_REGISTERED_IN_YOUR_ACCOUNT;
+                } else {
+                    status.status = BoardRegistrationStatus.ALREADY_REGISTERED;
+                }
+            */
 
             return ok(Json.toJson(status));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2419,7 +2437,7 @@ public class Controller_Hardware extends _BaseController {
             return ok("TODO");
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2430,14 +2448,12 @@ public class Controller_Hardware extends _BaseController {
             // Kontrola objektu
             Model_Hardware hardware = Model_Hardware.getById(hardware_id);
 
-            if (hardware.registration != null) return badRequest("Board is already in use.");
-
             hardware.delete();
 
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2460,7 +2476,7 @@ public class Controller_Hardware extends _BaseController {
             )
     })
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareRegistration.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Hardware.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -2475,20 +2491,16 @@ public class Controller_Hardware extends _BaseController {
             Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_HardwareRegistration registration = Model_HardwareRegistration.getById(help.object_id);
-            if (registration == null) return notFound("HardwareRegistration not found");
-
-            // Kontrola oprávnění těsně před uložením
-            if (!registration.edit_permission()) return forbidden();
+            Model_Hardware hardware = Model_Hardware.getById(help.object_id);
 
             // Add Tags
-            registration.addTags(help.tags);
+            hardware.addTags(help.tags);
 
             // Vrácení objektu
-            return ok(registration.json());
+            return ok(hardware.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2509,7 +2521,7 @@ public class Controller_Hardware extends _BaseController {
             )
     })
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareRegistration.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Hardware.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -2524,20 +2536,16 @@ public class Controller_Hardware extends _BaseController {
             Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola Objektu
-            Model_HardwareRegistration registration = Model_HardwareRegistration.getById(help.object_id);
-            if (registration == null) return notFound("HardwareRegistration not found");
-
-            // Kontrola oprávnění těsně před uložením
-            if (!registration.edit_permission()) return forbidden();
+            Model_Hardware hardware = Model_Hardware.getById(help.object_id);
 
             // Remove Tags
-            registration.removeTags(help.tags);
+            hardware.removeTags(help.tags);
 
             // Vrácení objektu
-            return ok(registration.json());
+            return ok(hardware.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2592,7 +2600,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(Json.toJson(group));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2643,125 +2651,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(Json.toJson(group));
 
         } catch (Exception e) {
-            return internalServerError(e);
-        }
-    }
-
-    @ApiOperation(value = "addHW HardwareGroup",
-            tags = { "HardwareGroup"},
-            notes = "update HardwareGroup add devices",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https"
-    )
-    @ApiImplicitParams(
-            @ApiImplicitParam(
-                    name = "body",
-                    dataType = "utilities.swagger.input.Swagger_HardwareGroup_Edit",
-                    required = true,
-                    paramType = "body",
-                    value = "Contains Json with values"
-            )
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareGroup.class),
-            @ApiResponse(code = 401, message = "Invalid body",              response = Result_InvalidBody.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result hardwareGroup_addHardware() {
-        try {
-
-            // Get and Validate Object
-            Swagger_HardwareGroup_Edit help = baseFormFactory.formFromRequestWithValidation(Swagger_HardwareGroup_Edit.class);
-
-            // Kontrola objektu
-            Model_HardwareGroup group = Model_HardwareGroup.getById(help.group_id);
-
-            List<UUID> inGroup = group.getHardwareIds();
-
-            for (UUID hardware_id : help.hardware_ids) {
-                
-                if (inGroup.contains(hardware_id)) continue;
-
-                Model_HardwareRegistration hardware = Model_HardwareRegistration.getById(hardware_id);
-                if (hardware == null) return notFound("HardwareRegistration not found");
-                if (!hardware.update_permission()) return forbidden();
-
-                logger.debug("hardwareGroup_addHardware - hardware: {}", hardware.hardware.full_id);
-                
-                hardware.group = group;
-                hardware.save();
-            }
-
-            group.refresh();
-            
-            return ok(group.json());
-
-        } catch (Exception e) {
-            return internalServerError(e);
-        }
-    }
-
-    @ApiOperation(value = "removeHW HardwareGroup",
-            tags = { "HardwareGroup"},
-            notes = "update HardwareGroup remove devices",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https"
-    )
-    @ApiImplicitParams(
-            @ApiImplicitParam(
-                    name = "body",
-                    dataType = "utilities.swagger.input.Swagger_HardwareGroup_Edit",
-                    required = true,
-                    paramType = "body",
-                    value = "Contains Json with values"
-            )
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareGroup.class),
-            @ApiResponse(code = 401, message = "Invalid body",              response = Result_InvalidBody.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result hardwareGroup_removeHardware() {
-        try {
-
-            // Get and Validate Object
-            Swagger_HardwareGroup_Edit help = baseFormFactory.formFromRequestWithValidation(Swagger_HardwareGroup_Edit.class);
-
-            // Kontrla objektu
-            Model_HardwareGroup group = Model_HardwareGroup.getById(help.group_id);
-
-            List<UUID> inGroup = group.getHardwareIds();
-
-            for (UUID hardware_id : help.hardware_ids) {
-
-                if (inGroup.contains(hardware_id)) continue;
-
-                Model_HardwareRegistration hardware = Model_HardwareRegistration.getById(hardware_id);
-                if (hardware == null) return notFound("HardwareRegistration not found");
-                if (!hardware.update_permission()) return forbidden();
-
-                logger.debug("hardwareGroup_removeHardware - hardware: {}", hardware.hardware.full_id);
-
-                hardware.group = null;
-                hardware.save();
-            }
-
-            group.refresh();
-
-            return ok(group.json());
-
-        } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2790,7 +2680,110 @@ public class Controller_Hardware extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "update BoardGroup Device List",
+            tags = { "BoardGroup"},
+            notes = "update BoardGroup add or remove device list",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.documentationClass.Swagger_Hardware_Group_DeviceListEdit",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok Result", response = Result_Ok.class),
+            @ApiResponse(code = 404, message = "Objects not found - details in message", response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error")
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result board_group_update_device_list() {
+        try {
+            
+            // Get and Validate Object
+            Swagger_Hardware_Group_DeviceListEdit help = baseFormFactory.formFromRequestWithValidation(Swagger_Hardware_Group_DeviceListEdit.class);
+
+            if (help.device_synchro != null) {
+
+                Model_Hardware board = Model_Hardware.getById(help.device_synchro.device_id);
+                
+                logger.debug("board_group_update_device_list - board: {}", board.id);
+
+
+                logger.debug("board_group_update_device_list - cached groups: {}", Json.toJson(board.get_hardware_group_ids()));
+
+                List<UUID> group_hardware_ids = board.get_hardware_group_ids();
+
+                // Cyklus pro přidávání
+                for (UUID board_group_id: help.device_synchro.group_ids) {
+
+                    // Přidám všechny, které nejsou už součásti cache_hardware_groups_id
+                    if (!group_hardware_ids.contains(board_group_id)) {
+
+                        logger.debug("board_group_update_device_list - adding group {}", board_group_id );
+
+                        Model_HardwareGroup group = Model_HardwareGroup.getById(board_group_id);
+
+                        board.get_hardware_group_ids().add(group.id);
+                        board.hardware_groups.add(group);
+                        group.cache_group_size +=1;
+                    }
+                }
+
+                // Cyklus pro mazání java.util.ConcurrentModificationException
+                for (Iterator<UUID> it = board.get_hardware_group_ids().iterator(); it.hasNext(); ) {
+
+                    UUID board_group_id = it.next();
+
+                    // Není a tak mažu
+                    if (!help.device_synchro.group_ids.contains(board_group_id)) {
+
+                        logger.debug("board_group_update_device_list - removing group {}", board_group_id );
+
+                        Model_HardwareGroup group = Model_HardwareGroup.getById(board_group_id);
+
+                        board.hardware_groups.remove(group);
+                        group.cache_group_size -=1;
+                        it.remove();
+                    }
+                }
+
+                board.set_hardware_groups_on_hardware(board.get_hardware_group_ids(),  Enum_type_of_command.SET);
+                board.update();
+            }
+
+            if (help.group_synchro != null) {
+
+                Model_HardwareGroup group = Model_HardwareGroup.getById(help.group_synchro.group_id);
+                group.check_update_permission();
+
+                for (String board_id: help.group_synchro.device_ids) {
+                    Model_Hardware board = Model_Hardware.getById(board_id);
+
+                    board.cache_hardware_groups_id.add(help.group_synchro.group_id);
+                    board.hardware_groups.add(group);
+
+                }
+
+                group.refresh();
+            }
+
+            return ok();
+
+        } catch (Exception e) {
+            return controllerServerError(e);
         }
     }
 
@@ -2845,7 +2838,7 @@ public class Controller_Hardware extends _BaseController {
 
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2873,7 +2866,7 @@ public class Controller_Hardware extends _BaseController {
             return ok(group.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 }

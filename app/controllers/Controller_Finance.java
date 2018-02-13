@@ -107,7 +107,7 @@ public class Controller_Finance extends _BaseController {
 
             return created(Json.toJson(tariff));
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -167,7 +167,7 @@ public class Controller_Finance extends _BaseController {
             return ok(tariff.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -198,7 +198,7 @@ public class Controller_Finance extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -230,7 +230,7 @@ public class Controller_Finance extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -258,7 +258,7 @@ public class Controller_Finance extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -286,7 +286,7 @@ public class Controller_Finance extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -314,7 +314,7 @@ public class Controller_Finance extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -340,7 +340,7 @@ public class Controller_Finance extends _BaseController {
             return ok(Json.toJson(tariff));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -406,7 +406,7 @@ public class Controller_Finance extends _BaseController {
         } catch (IllegalStateException e) {
             return badRequest("Illegal or not Valid Config");
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -433,7 +433,7 @@ public class Controller_Finance extends _BaseController {
             return ok(Json.toJson(extension));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -454,7 +454,7 @@ public class Controller_Finance extends _BaseController {
             return ok(Json.toJson(Model_ProductExtension.getByUser(personId())));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -502,7 +502,7 @@ public class Controller_Finance extends _BaseController {
             return ok(Json.toJson(extension));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -537,7 +537,7 @@ public class Controller_Finance extends _BaseController {
             return ok(Json.toJson(extension));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -572,7 +572,7 @@ public class Controller_Finance extends _BaseController {
             return ok(extension.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -600,7 +600,7 @@ public class Controller_Finance extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -681,7 +681,7 @@ public class Controller_Finance extends _BaseController {
         } catch (IllegalStateException e) {
             return badRequest("Illegal or not Valid Config");
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -751,7 +751,7 @@ public class Controller_Finance extends _BaseController {
             return ok(Json.toJson(extension));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -781,7 +781,7 @@ public class Controller_Finance extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -813,7 +813,7 @@ public class Controller_Finance extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -847,7 +847,7 @@ public class Controller_Finance extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -881,7 +881,7 @@ public class Controller_Finance extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -912,7 +912,7 @@ public class Controller_Finance extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -952,7 +952,7 @@ public class Controller_Finance extends _BaseController {
             return ok(Json.toJson(types));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -984,7 +984,7 @@ public class Controller_Finance extends _BaseController {
             }
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1191,7 +1191,7 @@ public class Controller_Finance extends _BaseController {
 
         } catch (Exception e) {
             Ebean.endTransaction();
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1220,7 +1220,7 @@ public class Controller_Finance extends _BaseController {
             return ok(Json.toJson(products));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1247,7 +1247,7 @@ public class Controller_Finance extends _BaseController {
             return ok(Json.toJson(product));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1296,7 +1296,7 @@ public class Controller_Finance extends _BaseController {
             return  ok(Json.toJson(product));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
 
     }
@@ -1336,7 +1336,7 @@ public class Controller_Finance extends _BaseController {
             return ok(Json.toJson(product));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1375,7 +1375,7 @@ public class Controller_Finance extends _BaseController {
             return ok(product.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1440,7 +1440,7 @@ public class Controller_Finance extends _BaseController {
             return  ok(invoice.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
 
     }
@@ -1473,7 +1473,7 @@ public class Controller_Finance extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1551,7 +1551,7 @@ public class Controller_Finance extends _BaseController {
             return created(Json.toJson(payment_details));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1649,7 +1649,7 @@ public class Controller_Finance extends _BaseController {
             return  ok(Json.toJson(payment_details));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1683,7 +1683,7 @@ public class Controller_Finance extends _BaseController {
             return ok( Json.toJson(products));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1727,7 +1727,7 @@ public class Controller_Finance extends _BaseController {
             return badRequest("Request was unsuccessful.");
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1759,7 +1759,7 @@ public class Controller_Finance extends _BaseController {
             return ok(Json.toJson(help));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1801,7 +1801,7 @@ public class Controller_Finance extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1833,7 +1833,7 @@ public class Controller_Finance extends _BaseController {
             return ok(Json.toJson(invoice));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1866,7 +1866,7 @@ public class Controller_Finance extends _BaseController {
             return file(pdf_in_array, kind.equals("proforma") ? "proforma_" + invoice.invoice_number + ".pdf" : invoice.invoice_number + ".pdf");
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1894,7 +1894,7 @@ public class Controller_Finance extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1924,7 +1924,7 @@ public class Controller_Finance extends _BaseController {
             
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1948,7 +1948,7 @@ public class Controller_Finance extends _BaseController {
             throw new Result_Error_NotSupportedException();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
     
@@ -1973,7 +1973,7 @@ public class Controller_Finance extends _BaseController {
             throw new Result_Error_NotSupportedException();
          
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2051,7 +2051,7 @@ public class Controller_Finance extends _BaseController {
         } catch (IllegalArgumentException e) {
             return badRequest("Payment details are invalid.");
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2074,7 +2074,7 @@ public class Controller_Finance extends _BaseController {
             return ok(Json.toJson(customers));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2136,7 +2136,7 @@ public class Controller_Finance extends _BaseController {
             return ok(Json.toJson(customer));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2191,7 +2191,7 @@ public class Controller_Finance extends _BaseController {
             return ok(Json.toJson(customer));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2218,7 +2218,7 @@ public class Controller_Finance extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2246,7 +2246,7 @@ public class Controller_Finance extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 }

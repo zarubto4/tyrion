@@ -48,6 +48,33 @@ public abstract class BaseModel extends Model {
     @JsonIgnore @SoftDelete
     public boolean deleted;
 
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    /**
+     * Converts this model to JSON
+     * @return JSON representation of this model
+     */
+    public JsonNode json() {
+        return Json.toJson(this);
+    }
+
+    /**
+     * Converts this model to JSON and than stringify
+     * @return string from JSON representation
+     */
+    public String string() {
+        return json().toString();
+    }
+
+    /**
+     * Converts this model to printable string
+     * @return formatted string
+     */
+    public String prettyPrint() {
+        return this.getClass() + ":\n" + Json.prettyPrint(json());
+    }
+
+
 /* COMMON METHODS ------------------------------------------------------------------------------------------------------*/
 
     /**
@@ -120,29 +147,7 @@ public abstract class BaseModel extends Model {
         return super.deletePermanent();
     }
 
-    /**
-     * Converts this model to JSON
-     * @return JSON representation of this model
-     */
-    public JsonNode json() {
-        return Json.toJson(this);
-    }
-
-    /**
-     * Converts this model to JSON and than stringify
-     * @return string from JSON representation
-     */
-    public String string() {
-        return json().toString();
-    }
-
-    /**
-     * Converts this model to printable string
-     * @return formatted string
-     */
-    public String prettyPrint() {
-        return this.getClass() + ":\n" + Json.prettyPrint(json());
-    }
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     /**
      * Method finds the cache field in the class
@@ -249,20 +254,8 @@ public abstract class BaseModel extends Model {
 
 /* Permission Contents ----------------------------------------------------------------------------------------------------*/
 
-/*
-    @ApiModelProperty(readOnly = true, value = "can be hidden, if Widget is created by Byzance or Other Company") public boolean edit_permission(){
-        try{
-            check_edit_permission();
-            return true;
-        }catch (_Base_Result_Exception e) {
-            return false;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return false;
-        }
-    }
-
-    @ApiModelProperty(readOnly = true, value = "can be hidden, if Widget is created by Byzance or Other Company") public boolean update_permission(){
+/* TODO odkomentovat na konci - Volné API pro Swagger [TZ]
+    @ApiModelProperty(readOnly = true, value = "can be hidden", required = false) public boolean update_permission(){
         try{
             check_update_permission();
             return true;
@@ -274,7 +267,7 @@ public abstract class BaseModel extends Model {
         }
     }
 
-    @ApiModelProperty(readOnly = true, value = "can be hidden, if Widget is created by Byzance or Other Company") public boolean delete_permission(){
+    @ApiModelProperty(readOnly = true, value = "can be hidden", required = false) public boolean delete_permission(){
         try{
             check_delete_permission();
             return true;
@@ -285,6 +278,7 @@ public abstract class BaseModel extends Model {
             return false;
         }
     }
+
 */
 
 /* ABSTRACT METHODS ----------------------------------------------------------------------------------------------------*/

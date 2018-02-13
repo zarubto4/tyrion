@@ -128,7 +128,7 @@ public class Controller_Person extends _BaseController {
 
             return ok();
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -163,7 +163,7 @@ public class Controller_Person extends _BaseController {
 
             return redirect( Server.becki_mainUrl + "/" + Server.becki_accountAuthorizedSuccessful );
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -222,7 +222,7 @@ public class Controller_Person extends _BaseController {
 
             return ok();
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -290,7 +290,7 @@ public class Controller_Person extends _BaseController {
             }
             return ok();
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -360,7 +360,7 @@ public class Controller_Person extends _BaseController {
 
             return ok("Password was changed successfully");
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -386,7 +386,7 @@ public class Controller_Person extends _BaseController {
             return ok(Json.toJson(person));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -415,7 +415,7 @@ public class Controller_Person extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -444,7 +444,7 @@ public class Controller_Person extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -479,7 +479,7 @@ public class Controller_Person extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -519,7 +519,7 @@ public class Controller_Person extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -549,7 +549,7 @@ public class Controller_Person extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -603,7 +603,7 @@ public class Controller_Person extends _BaseController {
             return ok(person.json());
 
          } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -627,7 +627,7 @@ public class Controller_Person extends _BaseController {
            return ok(Json.toJson( Model_AuthorizationToken.find.query().where().eq("person.id",  personId()).findList() ));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -653,7 +653,7 @@ public class Controller_Person extends _BaseController {
 
             return ok();
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -767,7 +767,7 @@ public class Controller_Person extends _BaseController {
             return ok(Json.toJson(validation));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -867,7 +867,7 @@ public class Controller_Person extends _BaseController {
             return ok("Change was requested. You must authorize the change in next 4 hours via your email. Authorization email was sent.");
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -953,7 +953,7 @@ public class Controller_Person extends _BaseController {
             return redirect(Server.becki_mainUrl);
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1057,7 +1057,7 @@ public class Controller_Person extends _BaseController {
 
             return ok("Picture successfully uploaded");
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1092,7 +1092,7 @@ public class Controller_Person extends _BaseController {
 
             return ok("Picture successfully removed");
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 

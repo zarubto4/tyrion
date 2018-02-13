@@ -138,7 +138,7 @@ public class Controller_Code extends _BaseController {
             return version.compile_program_procedure();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
 
     }
@@ -247,7 +247,7 @@ public class Controller_Code extends _BaseController {
             // Neznámá chyba se kterou nebylo počítání
             return badRequest("Unknown error");
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -403,7 +403,7 @@ public class Controller_Code extends _BaseController {
             return created(c_program.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -480,7 +480,7 @@ public class Controller_Code extends _BaseController {
             return ok(c_program_new.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
     
@@ -508,7 +508,7 @@ public class Controller_Code extends _BaseController {
             return ok(c_program.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -573,7 +573,7 @@ public class Controller_Code extends _BaseController {
             return ok(result.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -623,7 +623,7 @@ public class Controller_Code extends _BaseController {
             return ok(Json.toJson(c_program));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -668,7 +668,7 @@ public class Controller_Code extends _BaseController {
             return ok(cProgram.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -713,7 +713,7 @@ public class Controller_Code extends _BaseController {
             return ok(cProgram.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -744,7 +744,7 @@ public class Controller_Code extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -811,7 +811,7 @@ public class Controller_Code extends _BaseController {
             return created(version.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -840,7 +840,7 @@ public class Controller_Code extends _BaseController {
             return ok(version.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -890,7 +890,7 @@ public class Controller_Code extends _BaseController {
             return ok(Json.toJson(version));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -921,7 +921,7 @@ public class Controller_Code extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -966,7 +966,7 @@ public class Controller_Code extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1119,7 +1119,7 @@ public class Controller_Code extends _BaseController {
             return  ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1166,7 +1166,7 @@ public class Controller_Code extends _BaseController {
             return ok(Json.toJson(version.get_c_program()));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 

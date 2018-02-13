@@ -107,7 +107,7 @@ public class Controller_Security extends _BaseController {
             return ok(Json.toJson(result));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -184,7 +184,7 @@ public class Controller_Security extends _BaseController {
             return ok(Json.toJson(swagger_login_token));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -227,7 +227,7 @@ public class Controller_Security extends _BaseController {
 
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -399,7 +399,7 @@ public class Controller_Security extends _BaseController {
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return internalServerError(e);
+            return controllerServerError(e);
         }
 
     }
@@ -552,7 +552,7 @@ public class Controller_Security extends _BaseController {
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -627,7 +627,7 @@ public class Controller_Security extends _BaseController {
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -694,7 +694,7 @@ public class Controller_Security extends _BaseController {
             return result_ok(Json.toJson(result));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 

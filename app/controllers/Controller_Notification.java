@@ -65,7 +65,7 @@ public class Controller_Notification extends _BaseController {
         return ok(Json.toJson(result));
 
      } catch (Exception e) {
-       return internalServerError(e);
+       return controllerServerError(e);
      }
   }
 
@@ -93,7 +93,7 @@ public class Controller_Notification extends _BaseController {
       return ok();
 
     } catch (Exception e) {
-      return internalServerError(e);
+      return controllerServerError(e);
     }
   }
 
@@ -140,7 +140,7 @@ public class Controller_Notification extends _BaseController {
         return ok();
 
     } catch (Exception e) {
-      return internalServerError(e);
+      return controllerServerError(e);
     }
   }
 
@@ -171,7 +171,7 @@ public class Controller_Notification extends _BaseController {
       return ok("Notifications were sent again");
 
     } catch (Exception e) {
-      return internalServerError(e);
+      return controllerServerError(e);
     }
   }
 
@@ -230,7 +230,7 @@ public class Controller_Notification extends _BaseController {
 
           return ok();
       } catch (Exception e) {
-          return internalServerError(e);
+          return controllerServerError(e);
       }
   }
 

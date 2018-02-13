@@ -100,7 +100,7 @@ public class Controller_Library extends _BaseController {
             return created(library.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -179,7 +179,7 @@ public class Controller_Library extends _BaseController {
             return ok(library_new.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -207,7 +207,7 @@ public class Controller_Library extends _BaseController {
             return ok(library.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -276,7 +276,7 @@ public class Controller_Library extends _BaseController {
             return ok(Json.toJson(result));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -326,7 +326,7 @@ public class Controller_Library extends _BaseController {
             return ok(Json.toJson(library));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -370,7 +370,7 @@ public class Controller_Library extends _BaseController {
             return ok(library.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -414,7 +414,7 @@ public class Controller_Library extends _BaseController {
             return ok(library.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -444,7 +444,7 @@ public class Controller_Library extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -507,7 +507,7 @@ public class Controller_Library extends _BaseController {
             return created(Json.toJson(version.library.library_version(version)));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -536,7 +536,7 @@ public class Controller_Library extends _BaseController {
             return ok(Json.toJson(version.library.library_version(version)));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -586,7 +586,7 @@ public class Controller_Library extends _BaseController {
             return ok(Json.toJson(version));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -618,7 +618,7 @@ public class Controller_Library extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -667,7 +667,7 @@ public class Controller_Library extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -822,7 +822,7 @@ public class Controller_Library extends _BaseController {
             return  ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 

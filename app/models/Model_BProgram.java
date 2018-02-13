@@ -105,8 +105,6 @@ public class Model_BProgram extends TaggedModel {
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
-
-
     @JsonIgnore @Transient public UUID get_project_id() throws _Base_Result_Exception  {
 
         if (cache_project_id == null) {
@@ -121,7 +119,6 @@ public class Model_BProgram extends TaggedModel {
     @JsonIgnore @Transient public Model_Project get_project() throws _Base_Result_Exception  {
         return  Model_Project.getById(get_project_id());
     }
-
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -315,5 +312,6 @@ public class Model_BProgram extends TaggedModel {
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
      
     public static Finder<UUID, Model_BProgram> find = new Finder<>(Model_BProgram.class);
+
 }
 

@@ -105,7 +105,7 @@ public class Controller_Admin extends _BaseController {
             return ok(Json.toJson(report));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -130,7 +130,7 @@ public class Controller_Admin extends _BaseController {
             return ok(Json.toJson(errors));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -157,7 +157,7 @@ public class Controller_Admin extends _BaseController {
             return ok(Json.toJson(error));
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -202,7 +202,7 @@ public class Controller_Admin extends _BaseController {
 
             return ok(Json.toJson(error));
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -231,7 +231,7 @@ public class Controller_Admin extends _BaseController {
 
             return ok(Json.toJson(error));
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -257,7 +257,7 @@ public class Controller_Admin extends _BaseController {
 
             return ok();
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -285,7 +285,7 @@ public class Controller_Admin extends _BaseController {
 
             return ok();
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -359,7 +359,7 @@ public class Controller_Admin extends _BaseController {
 
             return ok();
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -481,7 +481,7 @@ public class Controller_Admin extends _BaseController {
 
             return ok(Json.toJson(updates));
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 }

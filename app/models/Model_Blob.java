@@ -400,10 +400,21 @@ public class Model_Blob extends BaseModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     // Create Permission is always JsonIgnore
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
+        throw new Result_Error_NotSupportedException();
+    }
+
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        throw new Result_Error_NotSupportedException();
+    }
+
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        throw new Result_Error_NotSupportedException();
+    }
+
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        throw new Result_Error_NotSupportedException();
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
