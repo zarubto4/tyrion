@@ -50,8 +50,16 @@ public abstract class BaseModel extends Model {
 
 /* COMMON METHODS ------------------------------------------------------------------------------------------------------*/
 
+    /**
+     * Default save method - Permission is checked inside
+     */
     @Override
-    public void save() throws NullPointerException {
+    public void save() {
+
+        logger.debug("save::Creating new Object");
+
+        // Check Permission
+        check_create_permission();
 
         boolean isNew = this.id == null;
 
@@ -75,6 +83,23 @@ public abstract class BaseModel extends Model {
         }
     }
 
+    /**
+     * Default update method - Permission is checked inside
+     */
+    @JsonIgnore @Override
+    public void update() {
+
+        logger.debug("update::Update object Id: {}", this.id);
+
+        // Check Permission
+        check_update_permission();
+
+    }
+
+    /**
+     * Default delete method - Permission is checked inside
+     * Its not removed permanently!
+     */
     @Override
     public boolean delete() {
         logger.trace("delete:: - deleting '{}' from DB, id: {}", this.getClass().getSimpleName(), this.id);
@@ -271,7 +296,6 @@ public abstract class BaseModel extends Model {
      */
     @JsonIgnore public abstract void check_create_permission() throws _Base_Result_Exception;
     @JsonIgnore public abstract void check_read_permission()   throws _Base_Result_Exception;
-    @JsonIgnore public abstract void check_edit_permission()   throws _Base_Result_Exception;
     @JsonIgnore public abstract void check_update_permission() throws _Base_Result_Exception;
     @JsonIgnore public abstract void check_delete_permission() throws _Base_Result_Exception;
 

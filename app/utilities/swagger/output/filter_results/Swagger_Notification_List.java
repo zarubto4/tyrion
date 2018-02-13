@@ -12,7 +12,7 @@ import java.util.List;
 
 @ApiModel(description = "Individual Notification List",
           value = "Notification_List")
-public class Swagger_Notification_List {
+public class Swagger_Notification_List extends Filter_Common {
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
@@ -21,18 +21,8 @@ public class Swagger_Notification_List {
 
 /* Basic Filter Value --------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = true, readOnly = true, value = "First value position from all subjects. Minimum is 0.")
-    public int from;
-
-    @ApiModelProperty(required = true, readOnly = true, value = "Minimum is \"from\" Maximum is \"total\"")
-    public int to;
-
-    @ApiModelProperty(required = true, readOnly = true, value = "Total subjects")
-    public int total;
-
     @ApiModelProperty(required = true, readOnly = true, value = "Numbers of pages, which you can call")
     public List<Integer> pages = new ArrayList<>();
-
 
     @ApiModelProperty(required = true, readOnly = true, value = "Total unread subjects")
     public int unread_total = Model_Notification.find.query().where().eq("was_read", false).eq("person.id", BaseController.personId()).findCount();

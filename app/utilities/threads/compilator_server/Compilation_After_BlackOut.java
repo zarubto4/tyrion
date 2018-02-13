@@ -1,8 +1,8 @@
 package utilities.threads.compilator_server;
 
 import controllers.Controller_WebSocket;
+import models.Model_CProgramVersion;
 import models.Model_CompilationServer;
-import models.Model_Version;
 import utilities.enums.CompilationStatus;
 import utilities.logger.Logger;
 
@@ -78,7 +78,7 @@ public class Compilation_After_BlackOut {
                             break;
                         }
 
-                        Model_Version version = Model_Version.find.query().where().eq("c_compilation.status", CompilationStatus.SERVER_OFFLINE.name()).order().desc("created").setMaxRows(1).findOne();
+                        Model_CProgramVersion version = Model_CProgramVersion.find.query().where().eq("c_compilation.status", CompilationStatus.SERVER_OFFLINE.name()).order().desc("created").setMaxRows(1).findOne();
                         if (version == null) {
                             break;
                         }

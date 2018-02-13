@@ -14,6 +14,7 @@ import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.ProgramType;
 import utilities.enums.CompilationStatus;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -181,7 +182,8 @@ public class Model_CProgram extends TaggedModel {
             logger.debug("save :: is a private Program");
             this.azure_c_program_link = project.getPath() + "/c-programs/" + this.id;
 
-        } else {    // C_Program is public C_Program for every users
+        } else {
+            // C_Program is public C_Program for every users
             logger.debug("save :: is a public Program");
             this.azure_c_program_link = "public-c-programs/"  + this.id;
         }
@@ -241,6 +243,7 @@ public class Model_CProgram extends TaggedModel {
         return false;
     }
 
+
     @JsonIgnore @Override public void refresh() {
         logger.debug("update :: Delete object Id: {} ", this.id);
 
@@ -291,7 +294,7 @@ public class Model_CProgram extends TaggedModel {
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
 
         try{
-            // Object project not exist so - its public program
+            // Object project not exist so its public program, and user not need read permission
             get_project();
         }catch (_Base_Result_Exception exception) {
             return;
@@ -311,23 +314,6 @@ public class Model_CProgram extends TaggedModel {
         // Přidávám do listu false a vracím false
         BaseController.person().cache_permission("read_" + id, false);
         throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_edit_permission()   throws _Base_Result_Exception    {
-
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("c_program_edit_" + id))  BaseController.person().valid_permission("c_program_edit_" + id);
-        if (BaseController.person().has_permission(Permission.CProgram_edit.name())) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_CProgram.find.query().where().where().eq("project.participants.person.id", BaseController.person().id ).where().eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("c_program_edit_" + id, true);
-            return ;
-        }
-
-        // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("c_program_edit_" + id, false);
-        throw new Result_Error_PermissionDenied();
-
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
@@ -356,24 +342,24 @@ public class Model_CProgram extends TaggedModel {
         }
     }
 
-    public enum Permission { CProgram_create, CProgram_read, CProgram_edit, CProgram_update, CProgram_delete, C_Program_community_publishing_permission }
+    public enum Permission { CProgram_create, CProgram_read, CProgram_update, CProgram_delete, C_Program_community_publishing_permission }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
     
     @CacheField(Model_CProgram.class)
     public static Cache<UUID, Model_CProgram> cache;
 
-    public static Model_CProgram getById(String id) {
+    public static Model_CProgram getById(String id) throws _Base_Result_Exception  {
         return getById(UUID.fromString(id));
     }
     
-    public static Model_CProgram getById(UUID id) {
+    public static Model_CProgram getById(UUID id) throws _Base_Result_Exception  {
 
         Model_CProgram c_program = cache.get(id);
         if (c_program == null) {
 
             c_program = Model_CProgram.find.byId(id);
-            if (c_program == null) return null;
+            if (c_program == null) throw new Result_Error_NotFound(Model_Product.class);
 
             cache.put(id, c_program);
         }

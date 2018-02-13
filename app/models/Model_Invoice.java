@@ -7,8 +7,13 @@ import controllers.BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import utilities.Server;
+import utilities.cache.CacheField;
 import utilities.enums.*;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.extensions.configurations.*;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -296,26 +301,53 @@ public class Model_Invoice extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean create_permission() {  return product.customer.isEmployee(BaseController.person()) || BaseController.person().has_permission("Invoice_create");}
-    @JsonIgnore @Transient public boolean read_permission()   {  return product.customer.isEmployee(BaseController.person()) || BaseController.person().has_permission("Invoice_read");}
-    @JsonIgnore @Transient public boolean remind_permission() {  return true;  }
-    @JsonIgnore @Transient public boolean edit_permission()   {  return true;  }
-    @JsonIgnore @Transient public boolean delete_permission() {  return true;  }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Invoice_create.name())) return;
+        product.customer.check_read_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Invoice_read.name())) return;
+        product.customer.check_read_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Invoice_update.name())) return;
+        product.customer.check_read_permission();
+    }
 
-    public enum Permission {Invoice_create, Invoice_update, Invoice_read, Invoice_edit, Invoice_delete}
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Invoice_delete.name())) return;
+        product.customer.check_read_permission();
+    }
+
+
+    public enum Permission {Invoice_create, Invoice_update, Invoice_read, Invoice_delete}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Invoice get_byId(String id) {
-        return get_byId(UUID.fromString(id));
+    @CacheField(value = Model_Invoice.class)
+    public static Cache<UUID, Model_Invoice> cache;
+
+    public static Model_Invoice getById(String id) throws _Base_Result_Exception {
+        return getById(UUID.fromString(id));
     }
 
-    public static Model_Invoice get_byId(UUID id) {
-        logger.warn("CACHE is not implemented - TODO");
-        return find.byId(id);
+    public static Model_Invoice getById(UUID id) throws _Base_Result_Exception {
+        Model_Invoice invoice = cache.get(id);
+
+        if (invoice == null) {
+
+            invoice = Model_Invoice.find.byId(id);
+            if (invoice == null) throw new Result_Error_NotFound(Model_Invoice.class);
+
+            cache.put(id, invoice);
+        }
+
+        invoice.check_read_permission();
+        return invoice;
     }
 
-/* FINDER --------------------------------------------------------------------------------------------------------------*/
+
+    /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Finder<UUID, Model_Invoice> find = new Finder<>(Model_Invoice.class);
 

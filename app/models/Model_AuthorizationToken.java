@@ -118,9 +118,7 @@ public class Model_AuthorizationToken extends BaseModel {
         super.save();
     }
 
-
-
-/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+    /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -136,7 +134,6 @@ public class Model_AuthorizationToken extends BaseModel {
        if(BaseController.person().has_permission(Permission.AuthorizationToken_read.name())) return;
        if(person.id.equals( BaseController.personId())) throw new Result_Error_Unauthorized();
     }
-    @Override public void check_edit_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException(); }
     @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException(); }
     @Override public void check_delete_permission() throws _Base_Result_Exception {
         if(BaseController.person().has_permission(Permission.AuthorizationToken_delete.name())) return;

@@ -33,11 +33,12 @@ public class Controller_Person extends BaseController {
 
     private static final Logger logger = new Logger(Controller_Person.class);
 
+// CONTROLLER CONFIGURATION ############################################################################################
+
     private FormFactory formFactory;
     private WSClient ws;
 
-    @Inject
-    public Controller_Person(FormFactory formFactory, WSClient ws) {
+    @Inject public Controller_Person(FormFactory formFactory, WSClient ws) {
         this.formFactory = formFactory;
         this.ws = ws;
     }
@@ -48,8 +49,7 @@ public class Controller_Person extends BaseController {
             tags = {"Person"},
             notes = "create new Person with unique email and nick_name",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -137,8 +137,7 @@ public class Controller_Person extends BaseController {
             tags = {"Admin-Person"},
             notes = "sends authentication email, if user did not get the first one from the registration",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
@@ -173,8 +172,7 @@ public class Controller_Person extends BaseController {
             tags = {"Person"},
             notes = "sends authentication email, if user did not get the first one from the registration",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -233,8 +231,7 @@ public class Controller_Person extends BaseController {
     @ApiOperation(value = "send Email password recovery email",
             tags = {"Access"},
             notes = "sends email with link for changing forgotten password",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -303,8 +300,7 @@ public class Controller_Person extends BaseController {
     @ApiOperation(value = "restart Person password",
             tags = {"Access"},
             notes = "changes password if password_recovery_token is not older than 24 hours, deletes all FloatingPersonTokens",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -376,8 +372,7 @@ public class Controller_Person extends BaseController {
             tags = {"Person"},
             notes = "get Person by id",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
       @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Model_Person.class),
@@ -404,15 +399,7 @@ public class Controller_Person extends BaseController {
             notes = "delete Person by id",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Person.delete_permission", value = "true"),
-                    })
-            }
-
-
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
@@ -426,10 +413,7 @@ public class Controller_Person extends BaseController {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
-            if (person == null) return notFound("Person person_id not found");
 
-
-            if (!person.delete_permission())  return forbidden();
             person.delete();
 
             return ok();
@@ -444,15 +428,7 @@ public class Controller_Person extends BaseController {
             notes = "remove all connection tokens",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Person.activation_permission", value = "true"),
-                    })
-            }
-
-
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
@@ -464,11 +440,6 @@ public class Controller_Person extends BaseController {
     @Security.Authenticated(Authentication.class)
     public Result person_removeAllConnections(@ApiParam(value = "person_id String query", required = true) String person_id) {
         try {
-
-            Model_Person person = Model_Person.getById(person_id);
-            if (person == null) return notFound("Person person_id not found");
-
-            if (!person.edit_permission())  return forbidden();
 
             for(Model_AuthorizationToken token : Model_AuthorizationToken.find.query().where().eq("person.id",  person().id).findList()) {
                 token.delete();
@@ -486,15 +457,7 @@ public class Controller_Person extends BaseController {
             notes = "activate Person by id",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Person.activation_permission", value = "true"),
-                    })
-            }
-
-
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
@@ -509,9 +472,8 @@ public class Controller_Person extends BaseController {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
-            if (person == null) return notFound("Person person_id not found");
 
-            if (!person.activation_permission())  return forbidden();
+            person.check_activation_permission();
 
             if (!person.frozen) return badRequest("Person is already active.");
 
@@ -530,15 +492,7 @@ public class Controller_Person extends BaseController {
             notes = "deactivate Person by id",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Person.activation_permission", value = "true"),
-                    })
-            }
-
-
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
@@ -553,9 +507,8 @@ public class Controller_Person extends BaseController {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
-            if (person == null) return notFound("Person person_id not found");
 
-            if (!person.activation_permission())  return forbidden();
+            person.check_activation_permission();
 
             if (person.frozen) return badRequest("Person is already deactivated.");
 
@@ -579,15 +532,7 @@ public class Controller_Person extends BaseController {
             notes = "valid Person email by id",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Person.activation_permission", value = "true"),
-                    })
-            }
-
-
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",               response = Result_Ok.class),
@@ -601,9 +546,6 @@ public class Controller_Person extends BaseController {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
-            if (person == null) return notFound("Person person_id not found");
-
-            if (!person.activation_permission())  return forbidden();
 
             person.validated = true;
             person.update();
@@ -619,13 +561,7 @@ public class Controller_Person extends BaseController {
             tags = {"Person"},
             notes = "Edit person basic information",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Person.edit_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -656,8 +592,6 @@ public class Controller_Person extends BaseController {
             Swagger_Person_Update help = form.get();
 
             Model_Person person = Model_Person.getById(person_id);
-            if (person == null) return notFound("Person not found");
-            if (!person.edit_permission())  return forbidden();
 
             person.nick_name  = help.nick_name;
             person.first_name = help.first_name;
@@ -671,7 +605,7 @@ public class Controller_Person extends BaseController {
 
             person.update();
 
-            return ok(Json.toJson(person));
+            return ok(person.json());
 
          } catch (Exception e) {
             return internalServerError(e);
@@ -682,14 +616,7 @@ public class Controller_Person extends BaseController {
             tags = {"Person"},
             notes = "get all connections, where user is logged",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "FloatingPersonToken.read_permission", value = "Only user can get own connections - its not possible get that from another account!"),
-                    })
-            }
-
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK result",               response = Model_AuthorizationToken.class, responseContainer = "List"),
@@ -701,7 +628,6 @@ public class Controller_Person extends BaseController {
     @Security.Authenticated(Authentication.class)
     public  Result person_getAllConnections() {
         try {
-
 
            return ok(Json.toJson( Model_AuthorizationToken.find.query().where().eq("person.id",  personId()).findList() ));
 
@@ -715,13 +641,7 @@ public class Controller_Person extends BaseController {
             notes = "You know where the user is logged in. And you can log out this connection. (Terminate token)",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "FloatingPersonToken.delete_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK result",               response = Result_Ok.class),
@@ -733,9 +653,6 @@ public class Controller_Person extends BaseController {
         try {
 
             Model_AuthorizationToken token = Model_AuthorizationToken.getById(connection_id);
-            if (token == null) return notFound("FloatingPersonToken connection_id not found");
-
-            if (!token.delete_permission())  return forbidden();
 
             token.delete();
 
@@ -749,8 +666,7 @@ public class Controller_Person extends BaseController {
             tags = {"Person"},
             notes = "for cyclical validation during registration, key contains 'mail' or 'nick_name'. Or can be used for 'vat_number' as a key.",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             @ApiImplicitParam(
@@ -865,8 +781,7 @@ public class Controller_Person extends BaseController {
             notes = "Request password or email change. API does not change password or email, only sends email for authorization of the change and holds values in different object." +
                     "JSON value 'property' contains only 'password' or 'email'",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             @ApiImplicitParam(
@@ -888,7 +803,6 @@ public class Controller_Person extends BaseController {
     public Result person_changeLoginProperty() {
 
         try {
-
             // Získání JSON
             final Form<Swagger_Person_ChangeProperty> form = formFactory.form(Swagger_Person_ChangeProperty.class).bindFromRequest();
             if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
@@ -969,8 +883,7 @@ public class Controller_Person extends BaseController {
             tags = {"Admin-Person"},
             notes = "",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             @ApiImplicitParam(
@@ -1057,8 +970,7 @@ public class Controller_Person extends BaseController {
             notes = "Uploads personal photo. Picture must be smaller than 800 KB and its dimensions must be between 50 and 400 pixels. If user already has a picture, it will be replaced by the new one. " +
                     "API requires base64 Content-Type, name of the property is 'file'.",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             @ApiImplicitParam(
@@ -1090,9 +1002,6 @@ public class Controller_Person extends BaseController {
             if (person ==  null) {
                 return badRequest("User not found"); // Just for compiler Error
             }
-
-            // Kontzrola oprávnění
-            if (!person.edit_permission()) return forbidden();
 
           // Odeberu cache - jen projistotu
             person.cache_picture_link = null;

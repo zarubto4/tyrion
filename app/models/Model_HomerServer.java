@@ -22,6 +22,9 @@ import utilities.enums.LogLevel;
 import utilities.enums.NetworkStatus;
 import utilities.enums.ServerMode;
 import utilities.errors.ErrorCode;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
@@ -60,7 +63,7 @@ public class Model_HomerServer extends BaseModel {
     @ApiModelProperty(required = true, readOnly = true) public Integer mqtt_port;                       // MqTT Port
     @ApiModelProperty(required = true, readOnly = true) public Integer grid_port;                       // Grid APP
     @ApiModelProperty(required = true, readOnly = true) public Integer web_view_port;                   // Blocko web View
-    @ApiModelProperty(required = true, readOnly = true) public Integer server_remote_port;              // HW logger
+    @ApiModelProperty(required = true, readOnly = true) public Integer hardware_logger_port;              // HW logger
     @ApiModelProperty(required = true, readOnly = true) public Integer rest_api_port;                   // Rest APi Port
 
     @ApiModelProperty(required = true, readOnly = true) public String server_url;  // Může být i IP adresa
@@ -91,23 +94,23 @@ public class Model_HomerServer extends BaseModel {
     @ApiModelProperty(required = false, readOnly = true)
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public String connection_identificator() {
-
-        if (this.edit_permission()) {
+        try {
+            check_update_permission();
             return connection_identifier;
+        }catch (Exception e){
+            return null;
         }
-
-        return null;
     }
 
     @ApiModelProperty(required = false, readOnly = true)
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public String hash_certificate() {
-
-        if (this.edit_permission()) {
+        try {
+            check_update_permission();
             return hash_certificate;
+        }catch (Exception e){
+            return null;
         }
-
-        return null;
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
@@ -119,16 +122,16 @@ public class Model_HomerServer extends BaseModel {
     @Override
     public void save() {
 
-        logger.debug("save :: Creating new Object");
-
+        logger.debug("save::Creating new Object");
         this.time_stamp_configuration = new Date();
 
-        // TODO - ADD SSH public KEY from USER
+        // TODO - ADD SSH public KEY by USER
         if (hash_certificate == null)
             hash_certificate = UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString();
         if (connection_identifier == null)
             connection_identifier = UUID.randomUUID().toString() + "-" + UUID.randomUUID().toString();
 
+        // Save Object
         super.save();
 
         //Cache Update
@@ -139,20 +142,23 @@ public class Model_HomerServer extends BaseModel {
     @Override
     public void update() {
 
-        logger.debug("update :: Update object id: {}", this.id.toString());
+        logger.debug("update::Update object Id: {}",  this.id);
+
+        // Update Object
+        super.update();
+
+        //this.set_new_configuration_on_homer();
 
         //Cache Update
         cache.put(this.id, this);
 
-        super.update();
-        //this.set_new_configuration_on_homer();
     }
 
     @JsonIgnore
     @Override
     public boolean delete() {
 
-        logger.debug("delete :: Delete object id: {}", this.id.toString());
+        logger.debug("delete::Delete object Id: {}",  this.id);
 
         //Cache Update
         cache.remove(this.id);
@@ -613,36 +619,25 @@ public class Model_HomerServer extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    public static final String read_permission_docs = "read: User (Admin with privileges) can read public servers, User (Customer) can read own private servers";
-    public static final String create_permission_docs = "create: User (Admin with privileges) can create public cloud cloud_blocko_server where the system uniformly creating Blocko instantiates or (Customer) can create private cloud_blocko_server for own projects";
-
-    // TODO oprávnění bude komplikovanější až se budou podporovat lokální servery
-    @JsonIgnore
-    public boolean create_permission() {
-        return BaseController.person().has_permission("Homer_create");
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Homer_create.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Homer_read.name())) return;
+        if(server_type == HomerType.PUBLIC || server_type == HomerType.MAIN  || server_type == HomerType.BACKUP) return;
+        throw new Result_Error_PermissionDenied();
     }
 
-    @JsonIgnore
-    public boolean read_permission() {
-        return BaseController.person().has_permission("Homer_read");
+    @JsonIgnore @Transient @Override public void check_update_permission()  throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Homer_update.name())) return;
+        throw new Result_Error_PermissionDenied();
     }
-
-    @JsonProperty
-    public boolean edit_permission() {
-        return BaseController.person().has_permission("Homer_edit");
+    @JsonIgnore @Transient @Override public void check_delete_permission()  throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Homer_delete.name())) return;
+        throw new Result_Error_PermissionDenied();
     }
-
-    @JsonProperty
-    public boolean update_permission() {
-        return BaseController.person().has_permission("Homer_update");
-    }
-
-    @JsonProperty
-    public boolean delete_permission() {
-        return BaseController.person().has_permission("Homer_delete");
-    }
-
-    public enum Permission { Homer_create, Homer_read, Homer_edit, Homer_update, Homer_delete }
+    public enum Permission { Homer_create, Homer_read, Homer_update, Homer_delete }
 
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
@@ -650,17 +645,17 @@ public class Model_HomerServer extends BaseModel {
     @CacheField(value = Model_HomerServer.class, timeToIdle = 600)
     public static Cache<UUID, Model_HomerServer> cache;
 
-    public static Model_HomerServer getById(String id) {
+    public static Model_HomerServer getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
     
-    public static Model_HomerServer getById(UUID id) {
+    public static Model_HomerServer getById(UUID id) throws _Base_Result_Exception  {
 
         Model_HomerServer server = cache.get(id);
         if (server == null) {
 
             server = find.byId(id);
-            if (server == null) return null;
+            if (server == null) throw new Result_Error_NotFound(Model_HomerServer.class);
 
             cache.put(id, server);
         }

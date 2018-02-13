@@ -70,7 +70,7 @@ public class Model_Tariff extends NamedModel {
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Visible only for Administrator with Special Permission") @Transient public Long credit_for_beginning() {
         try {
-            this.check_edit_permission();
+            this.check_update_permission();
             return credit_for_beginning;
         } catch (_Base_Result_Exception e){
             return null;
@@ -106,7 +106,7 @@ public class Model_Tariff extends NamedModel {
     @JsonProperty
     public List<Model_ProductExtension> extensions_included() {
         try {
-            this.check_edit_permission();
+            this.check_update_permission();
             return Model_ProductExtension.find.query().where().eq("tariff_included.id", id).orderBy("order_position").findList();
         } catch (_Base_Result_Exception e){
             return Model_ProductExtension.find.query().where().eq("tariff_included.id", id).eq("active", true).orderBy("order_position").findList();
@@ -116,7 +116,7 @@ public class Model_Tariff extends NamedModel {
     @JsonProperty
     public List<Model_ProductExtension> extensions_optional() {
         try {
-            this.check_edit_permission();
+            this.check_update_permission();
             return  Model_ProductExtension.find.query().where().eq("tariff_optional.id", id).orderBy("order_position").findList();
         } catch (_Base_Result_Exception e){
             return  Model_ProductExtension.find.query().where().eq("tariff_optional.id", id).eq("active", true).orderBy("order_position").findList();
@@ -160,6 +160,8 @@ public class Model_Tariff extends NamedModel {
     @JsonIgnore @Transient
     public void up() {
 
+        check_update_permission();
+
         Model_Tariff up = Model_Tariff.find.query().where().eq("order_position", (order_position-1) ).findOne();
         if (up == null) return;
 
@@ -172,6 +174,8 @@ public class Model_Tariff extends NamedModel {
 
     @JsonIgnore @Transient
     public void down() {
+
+        check_update_permission();
 
         Model_Tariff down = Model_Tariff.find.query().where().eq("order_position", (order_position+1) ).findOne();
         if (down == null) return;
@@ -217,10 +221,6 @@ public class Model_Tariff extends NamedModel {
         if (BaseController.person().has_permission(Permission.Tariff_read.name())) return;
         throw new Result_Error_PermissionDenied();
     }
-    @JsonIgnore @Transient @Override public void check_edit_permission()   throws _Base_Result_Exception {
-        if (BaseController.person().has_permission(Permission.Tariff_edit.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
         if (BaseController.person().has_permission(Permission.Tariff_update.name())) return;
         throw new Result_Error_PermissionDenied();
@@ -230,15 +230,16 @@ public class Model_Tariff extends NamedModel {
         throw new Result_Error_PermissionDenied();
     }
 
-    public enum Permission { Tariff_create, Tariff_read, Tariff_edit, Tariff_update, Tariff_delete }
+    public enum Permission { Tariff_create, Tariff_read, Tariff_update, Tariff_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Tariff getById(String id) {
+    // TODO Cache
+    public static Model_Tariff getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_Tariff getById(UUID id) {
+    public static Model_Tariff getById(UUID id) throws _Base_Result_Exception {
         logger.warn("CACHE is not implemented - TODO");
         return find.byId(id);
     }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
@@ -63,13 +64,12 @@ public class Model_MProjectProgramSnapShot extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore                                      public boolean create_permission()      {return true;}
-    @JsonIgnore                                      public boolean read_permission()      {return true;}
-    @JsonProperty @ApiModelProperty(required = true) public boolean unshare_permission()   {return true;}
-    @JsonProperty @ApiModelProperty(required = true) public boolean share_permission ()    {return true;}
-    @JsonProperty @ApiModelProperty(required = true) public boolean admin_permission ()    {return true;}
-    @JsonIgnore                                      public boolean update_permission()      {return true;}
-    @JsonIgnore                                      public boolean delete_permission()      {return true;}
+    // TODO Permission podle /pravy na novou generaci Blocka
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { }
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { }
+
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

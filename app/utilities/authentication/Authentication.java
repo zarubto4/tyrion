@@ -42,6 +42,6 @@ public class Authentication extends Security.Authenticator {
     @Override
     public Result onUnauthorized(Http.Context ctx) {
         logger.warn("onUnauthorized - authorization failed for request: {} {}", ctx.request().method(), ctx.request().path());
-        return BaseController.unauthorizedEmpty();
+        return BaseController.unauthorized();
     }
 }

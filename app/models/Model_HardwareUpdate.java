@@ -704,12 +704,6 @@ public class Model_HardwareUpdate extends BaseModel {
         getHardware().get_project().check_read_permission();
     }
 
-    @JsonIgnore @Transient @Override public void check_edit_permission() throws _Base_Result_Exception  {
-        if(BaseController.person().has_permission(Permission.UpdateProcedure_read.name())) return;
-        getHardware().get_project().check_read_permission();
-    }
-
-
     @JsonIgnore @java.beans.Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
     @JsonIgnore @java.beans.Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
     @JsonIgnore @java.beans.Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}

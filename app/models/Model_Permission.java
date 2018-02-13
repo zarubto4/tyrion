@@ -6,6 +6,9 @@ import controllers.BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 
@@ -42,17 +45,26 @@ public class Model_Permission extends NamedModel {
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
-    // Floating shared documentation for Swagger
-    @JsonIgnore public static final String read_permission_docs         = "read: If user have M_Project.read_permission = true, you can create M_program on this M_Project - Or you need static/dynamic permission key";
-    @JsonIgnore public static final String create_permission_docs       = "create: If user have M_Project.update_permission = true, you can create M_Program on this M_Project - Or you need static/dynamic permission key";
-    @JsonIgnore public static final String read_qr_token_permission_docs = "read: Private settings for M_Program";
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_person_permission() {  return BaseController.person() != null && BaseController.person().has_permission("Permission_edit_person_permission");  }
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()        {  return BaseController.person() != null && BaseController.person().has_permission("Permission_edit"); }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        throw new Result_Error_NotSupportedException();
+    }
 
-    public enum Permission { Permission_edit_person_permission, Permission_edit }
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        // Not limited now
+        return;
+    }
+
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Permission_update.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        throw new Result_Error_NotSupportedException();
+    }
+
+    public enum Permission { Permission_crate, Permission_edit_person_permission, Permission_update }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

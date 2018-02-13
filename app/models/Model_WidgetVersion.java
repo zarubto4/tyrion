@@ -80,8 +80,9 @@ public class Model_WidgetVersion extends VersionModel {
     @JsonIgnore @Override
     public void save() {
 
-        logger.debug("save :: Creating new Object");
+        logger.debug("save::Creating new Object");
 
+        // Save Object
         super.save();
 
         new Thread(() -> {
@@ -102,6 +103,8 @@ public class Model_WidgetVersion extends VersionModel {
     public void update() {
 
         logger.debug("update::Update object Id: {}",  this.id);
+
+        // Update Object
         super.update();
 
         new Thread(() -> {
@@ -119,9 +122,10 @@ public class Model_WidgetVersion extends VersionModel {
 
         logger.debug("delete::Delete object Id: {}",  this.id);
 
+        // Delete
         super.delete();
 
-        // Add to Cache
+        // Remove from Cache Cache
         try {
             get_grid_widget().cache_version_ids.remove(id);
         } catch (_Base_Result_Exception e) {
@@ -147,17 +151,16 @@ public class Model_WidgetVersion extends VersionModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore public void check_create_permission() throws _Base_Result_Exception { get_grid_widget().check_update_permission();}
-    @JsonIgnore public void check_read_permission()   throws _Base_Result_Exception { get_grid_widget().check_read_permission();}
-    @JsonIgnore public void check_edit_permission()   throws _Base_Result_Exception { get_grid_widget().check_edit_permission();}
-    @JsonIgnore public void check_update_permission() throws _Base_Result_Exception { get_grid_widget().check_update_permission();}
-    @JsonIgnore public void check_delete_permission() throws _Base_Result_Exception { get_grid_widget().check_update_permission();}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { get_grid_widget().check_update_permission();}
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { get_grid_widget().check_read_permission();}
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { get_grid_widget().check_update_permission();}
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { get_grid_widget().check_update_permission();}
 
     public enum Permission {} // Not Required here
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_WidgetVersion.class, timeToIdle = 600)
+    @CacheField(value = Model_WidgetVersion.class)
     public static Cache<UUID, Model_WidgetVersion> cache;
 
     public static Model_WidgetVersion getById(String id) throws _Base_Result_Exception {
@@ -176,6 +179,7 @@ public class Model_WidgetVersion extends VersionModel {
             cache.put(id, grid_widget_version);
         }
 
+        grid_widget_version.check_read_permission();
         return grid_widget_version;
     }
 

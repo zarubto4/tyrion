@@ -10,6 +10,10 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.enums.*;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.notifications.NotificationHandler;
@@ -199,7 +203,7 @@ public class Model_Notification extends BaseModel {
                 element.name = class_name;
                 element.id = cProgram.id;
                 element.text = cProgram.name;
-                element.project_id = cProgram.project_id();
+                element.project_id = cProgram.get_project_id();
                 break;
             }
             case "BProgram" : {
@@ -210,27 +214,38 @@ public class Model_Notification extends BaseModel {
                 element.project_id = bProgram.project != null ? bProgram.project.id : null;
                 break;
             }
-            case "Version" : {
+            case "CProgramVersion" : {
 
-                Model_Version version = (Model_Version)object;
+                Model_CProgramVersion version = (Model_CProgramVersion) object;
 
+
+                element.name = class_name;
                 element.id = version.id;
+                element.text = version.name;
+                element.program_id = version.get_c_program_id();
+                element.project_id = version.get_c_program().get_project_id();
+                break;
+            }
+            case "BProgramVersion" : {
 
-                if (version.get_c_program() != null) {
+                Model_BProgramVersion version = (Model_BProgramVersion) object;
 
-                    element.name = "C_Program_Version";
-                    element.text = version.name;
-                    element.program_id = version.get_c_program().id;
-                    element.project_id = version.get_c_program().project_id();
+                element.name = class_name;
+                element.id = version.id;
+                element.text = version.name;
+                element.program_id = version.get_b_program_id();
+                element.project_id = version.get_b_program().get_project_id();
+                break;
+            }
+            case "GridProgramVersion" : {
 
-                } else if (version.get_b_program() != null) {
+                Model_GridProgramVersion version = (Model_GridProgramVersion) object;
 
-                    element.name = "B_Program_Version";
-                    element.text = version.name;
-                    element.program_id = version.get_b_program().id;
-                    element.project_id = version.get_b_program().project != null ? version.get_b_program().project.id : null;
-                }
-
+                element.name = class_name;
+                element.id = version.id;
+                element.text = version.name;
+                element.program_id = version.get_grid_program_id();
+                element.project_id = version.get_grid_program().get_grid_project_id();
                 break;
             }
 
@@ -387,20 +402,45 @@ public class Model_Notification extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore public boolean delete_permission() {return this.person.id.equals(BaseController.personId()) || BaseController.person().has_permission("Notification_delete") ;}
-    @JsonIgnore public boolean confirm_permission() {return this.person.id.equals(BaseController.personId()) || BaseController.person().has_permission("Notification_confirm") ;}
 
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        throw new Result_Error_NotSupportedException();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        throw new Result_Error_NotSupportedException();
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Notification_read.name())) return;
+        if(this.person.id.equals(BaseController.personId())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_delete_permission() {
+        if(BaseController.person().has_permission(Permission.Notification_delete.name())) return;
+        if(this.person.id.equals(BaseController.personId())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient public void check_confirm_permission() {
+        if(this.person.id.equals(BaseController.personId())) return;
+        throw new Result_Error_PermissionDenied();
+    }
 
+    public enum Permission {Notification_crete, Notification_update, Notification_read, Notification_delete}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Notification getById(String id) {
+    //!!!!! Do not implement Cache!!!
+
+    public static Model_Notification getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_Notification getById(UUID id) {
-        logger.warn("CACHE is not implemented - TODO");
-        return find.byId(id);
+    public static Model_Notification getById(UUID id) throws _Base_Result_Exception {
+        Model_Notification notification = find.byId(id);
+        if(notification == null)  throw new Result_Error_NotFound(Model_Notification.class);
+
+        // Check Permission
+        notification.check_read_permission();
+        return notification;
     }
 
 

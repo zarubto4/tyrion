@@ -204,6 +204,8 @@ public class Model_UpdateProcedure extends BaseModel {
     @JsonIgnore
     public void cancel_procedure() {
 
+        check_update_permission();
+
         logger.trace("cancel_procedure :: operation");
 
         List<Model_HardwareUpdate> list = Model_HardwareUpdate.find.query().where()
@@ -257,15 +259,17 @@ public class Model_UpdateProcedure extends BaseModel {
     @JsonIgnore @Override
     public void save() {
 
-        logger.trace("save :: Creating new Object");
+        logger.debug("save::Creating new Object");
 
+        // If date of plane is mission - its mean do it now!
         if (date_of_planing == null) {
             date_of_planing = new Date();
         }
 
+        // State is always not_start_yet on begging
         this.state = Enum_Update_group_procedure_state.not_start_yet;
 
-        // ORM
+        // Save Object
         super.save();
 
         // Cache
@@ -291,9 +295,9 @@ public class Model_UpdateProcedure extends BaseModel {
     @JsonIgnore @Override
     public void update() {
 
-        logger.trace("update :: Update object Id: " + this.id);
+        logger.debug("update::Update object Id: {}",  this.id);
 
-        //ORM
+        // Update Object
         super.update();
 
         // Cache
@@ -582,11 +586,6 @@ public class Model_UpdateProcedure extends BaseModel {
         get_project().check_read_permission();
     }
 
-    @JsonIgnore @Transient @Override public void check_edit_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.UpdateProcedure_edit.name())) return;
-        get_project().check_update_permission();
-    }
-
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
         if(BaseController.person().has_permission(Permission.UpdateProcedure_update.name())) return;
         get_project().check_update_permission();
@@ -597,7 +596,7 @@ public class Model_UpdateProcedure extends BaseModel {
         get_project().check_update_permission();
     }
 
-    public enum Permission { UpdateProcedure_crate, UpdateProcedure_read, UpdateProcedure_update, UpdateProcedure_edit, UpdateProcedure_delete }
+    public enum Permission { UpdateProcedure_crate, UpdateProcedure_read, UpdateProcedure_update, UpdateProcedure_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

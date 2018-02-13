@@ -145,7 +145,6 @@ public class Model_Garfield  extends NamedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
     
     @JsonIgnore   public void check_create_permission() throws _Base_Result_Exception {  if(!BaseController.person().has_permission(Permission.Garfield_create.name())) throw new Result_Error_PermissionDenied();}
-    @JsonProperty public void check_edit_permission()   throws _Base_Result_Exception {  if(!BaseController.person().has_permission(Permission.Garfield_edit.name()))   throw new Result_Error_PermissionDenied();}
     @JsonProperty public void check_read_permission()   throws _Base_Result_Exception {  if(!BaseController.person().has_permission(Permission.Garfield_read.name()))   throw new Result_Error_PermissionDenied();}
     @JsonProperty public void check_delete_permission() throws _Base_Result_Exception {  if(!BaseController.person().has_permission(Permission.Garfield_delete.name())) throw new Result_Error_PermissionDenied();}
     @JsonProperty public void check_update_permission() throws _Base_Result_Exception {  if(!BaseController.person().has_permission(Permission.Garfield_update.name())) throw new Result_Error_PermissionDenied();}

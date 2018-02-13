@@ -28,12 +28,13 @@ public class Controller_Notification extends BaseController {
 
   private static final Logger logger = new Logger(Controller_Notification.class);
 
+// CONTROLLER CONFIGURATION ############################################################################################
     private FormFactory formFactory;
 
-    @Inject
-    public Controller_Notification(FormFactory formFactory) {
+    @Inject public Controller_Notification(FormFactory formFactory) {
         this.formFactory = formFactory;
     }
+
 
 // PUBLIC CONTROLLER METHODS ###########################################################################################
 
@@ -44,8 +45,7 @@ public class Controller_Notification extends BaseController {
                   "May missing or you can insert Integer values from page[1,2...,n] in Json" +
                   "Notification body cannot by documented through swagger. Visit wiki.byzance.cz",
           produces = "application/json",
-          protocols = "https",
-          code = 200
+          protocols = "https"
   )
   @ApiResponses({
           @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Notification_List.class),
@@ -67,15 +67,12 @@ public class Controller_Notification extends BaseController {
      }
   }
 
-
-
   @ApiOperation(value = "delete Notification",
           tags = {"Notifications"},
           notes = "remove notification by id",
           produces = "application/json",
           consumes = "text/html",
-          protocols = "https",
-          code = 200
+          protocols = "https"
   )
   @ApiResponses({
           @ApiResponse(code = 200, message = "Delete Successful",       response = Result_Ok.class),
@@ -85,13 +82,10 @@ public class Controller_Notification extends BaseController {
           @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
   })
   @Security.Authenticated(Authentication.class)
-  public Result notification_delete(@ApiParam(value = "notification_id String path", required = true) String notification_id) {
+  public Result notification_delete(String notification_id) {
     try {
 
       Model_Notification notification = Model_Notification.getById(notification_id);
-      if (notification == null) return notFound("Notification does not exist");
-
-      if (!notification.delete_permission()) return forbidden();
 
       notification.delete();
       return ok();
@@ -154,8 +148,7 @@ public class Controller_Notification extends BaseController {
           notes = "This API should by called right after user logs in. Sends notifications which require confirmation via websocket.",
           produces = "application/json",
           consumes = "text/html",
-          protocols = "https",
-          code = 200
+          protocols = "https"
   )
   @ApiResponses({
           @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
@@ -186,8 +179,7 @@ public class Controller_Notification extends BaseController {
           notes = "Confirms notification",
           produces = "application/json",
           consumes = "text/html",
-          protocols = "https",
-          code = 200
+          protocols = "https"
   )
   @ApiImplicitParams(
           {
@@ -210,7 +202,7 @@ public class Controller_Notification extends BaseController {
           @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
   })
   @Security.Authenticated(Authentication.class)
-  public Result notification_confirm(@ApiParam(value = "notification_id String path", required = true) String notification_id) {
+  public Result notification_confirm( String notification_id) {
       try {
 
           final Form<Swagger_Notification_Confirm> form = formFactory.form(Swagger_Notification_Confirm.class).bindFromRequest();
@@ -218,9 +210,8 @@ public class Controller_Notification extends BaseController {
           Swagger_Notification_Confirm help = form.get();
 
           Model_Notification notification = Model_Notification.getById(notification_id);
-          if (notification == null) return notFound("Notification no longer exists");
 
-          if (!notification.confirm_permission()) return forbidden();
+          notification.check_confirm_permission();
 
           if (notification.confirmed) return badRequest("Notification is already confirmed");
 
@@ -241,4 +232,5 @@ public class Controller_Notification extends BaseController {
           return internalServerError(e);
       }
   }
+
 }

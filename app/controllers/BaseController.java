@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.ApiModel;
 import models.Model_Person;
-import models.Model_Version;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -349,6 +348,12 @@ public abstract class BaseController {
         return badRequest(Json.toJson(new Result_InvalidBody(errors)));
     }
 
+    /**
+     * General Flow Exception for Controllers Method.
+     * Here we recognized and logged all exception like Object not found, Incoming Json is not valid according Form Exception
+     * @param error
+     * @return
+     */
     public static Result controllerServerError(Exception error) {
         try{
 

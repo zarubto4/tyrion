@@ -23,8 +23,6 @@ import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_B_Program_List;
 import utilities.swagger.output.filter_results.Swagger_Block_List;
 import utilities.swagger.output.filter_results.Swagger_Instance_List;
-import utilities.swagger.output.Swagger_B_Program_Version;
-
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -37,6 +35,8 @@ public class Controller_Blocko extends BaseController {
 
     private static final Logger logger = new Logger(Controller_Blocko.class);
 
+// CONTROLLER CONFIGURATION ############################################################################################
+
     private FormFactory formFactory;
     private SchedulerController scheduler;
 
@@ -45,7 +45,9 @@ public class Controller_Blocko extends BaseController {
         this.formFactory = formFactory;
         this.scheduler = scheduler;
     }
-    
+
+// CONTROLLER CONTENT ##################################################################################################
+
 // B PROGRAM ###########################################################################################################
 
     @ApiOperation(value = "create B_Program",
@@ -86,19 +88,12 @@ public class Controller_Blocko extends BaseController {
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
-            if (project == null) return notFound("Project not found");
-
-            // Kontrola oprávnění
-            if (!project.update_permission()) return forbidden();
 
             // Tvorba programu
             Model_BProgram bProgram        = new Model_BProgram();
             bProgram.description           = help.description;
             bProgram.name                  = help.name;
             bProgram.project               = project;
-
-            // Kontrola oprávnění těsně před uložením
-            if (!bProgram.create_permission()) return forbidden();
 
             // Uložení objektu
             bProgram.save();
@@ -107,7 +102,7 @@ public class Controller_Blocko extends BaseController {
             return created(bProgram.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -115,13 +110,7 @@ public class Controller_Blocko extends BaseController {
             tags = {"B_Program"},
             notes = "get B_Program object",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BProgram.class),
@@ -135,16 +124,11 @@ public class Controller_Blocko extends BaseController {
 
             // Kontrola objektu
             Model_BProgram bProgram = Model_BProgram.getById(b_program_id);
-            if (bProgram == null) return notFound("BProgram not found");
 
-            // Kontrola oprávnění
-            if (!bProgram.read_permission()) return forbidden();
-
-            // Vrácení objektu
             return ok(bProgram.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -152,13 +136,7 @@ public class Controller_Blocko extends BaseController {
             tags = {"B_Program"},
             notes = "get B_Program List",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "B_Program_read_permission", value = "No need to check permission, because Tyrion returns only those results which user owns"),
-                    }),
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -191,7 +169,6 @@ public class Controller_Blocko extends BaseController {
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
-
                 query.where().eq("project.id", help.project_id);
             }
 
@@ -199,10 +176,10 @@ public class Controller_Blocko extends BaseController {
             Swagger_B_Program_List result = new Swagger_B_Program_List(query, page_number);
 
             // Vrácení výsledku
-            return ok(Json.toJson(result));
+            return ok(result.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -243,10 +220,6 @@ public class Controller_Blocko extends BaseController {
 
             // Kontrola objektu
             Model_BProgram b_program = Model_BProgram.getById(b_program_id);
-            if (b_program == null) return notFound("B_Program not found");
-
-            // Kontrola oprávěnní
-            if (!b_program.edit_permission()) return forbidden();
 
             // Úprava objektu
             b_program.description = help.description;
@@ -256,10 +229,10 @@ public class Controller_Blocko extends BaseController {
             b_program.update();
 
             // Vrácení objektu
-            return ok(Json.toJson(b_program));
+            return ok(b_program.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -299,10 +272,6 @@ public class Controller_Blocko extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_BProgram bProgram = Model_BProgram.getById(help.object_id);
-            if (bProgram == null) return notFound("BProgram not found");
-
-            // Kontrola oprávnění těsně před uložením
-            if (!bProgram.edit_permission())  return forbidden();
 
             bProgram.addTags(help.tags);
 
@@ -310,7 +279,7 @@ public class Controller_Blocko extends BaseController {
             return ok(bProgram.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -350,10 +319,6 @@ public class Controller_Blocko extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_BProgram bProgram = Model_BProgram.getById(help.object_id);
-            if (bProgram == null) return notFound("BProgram not found");
-
-            // Kontrola oprávnění těsně před uložením
-            if (!bProgram.edit_permission())  return forbidden();
 
             bProgram.removeTags(help.tags);
 
@@ -361,7 +326,7 @@ public class Controller_Blocko extends BaseController {
             return ok(bProgram.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -370,13 +335,7 @@ public class Controller_Blocko extends BaseController {
             notes = "remove B_Program object",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.delete_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -390,10 +349,7 @@ public class Controller_Blocko extends BaseController {
 
             // Kontrola objektu
             Model_BProgram program = Model_BProgram.getById(b_program_id);
-            if (program == null) return notFound("B_Program id not found");
 
-            // Kontrola oprávění
-            if (!program.delete_permission()) return forbidden();
 
             // Smazání objektu
             program.delete();
@@ -402,7 +358,7 @@ public class Controller_Blocko extends BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -412,13 +368,7 @@ public class Controller_Blocko extends BaseController {
             tags = {"B_Program"},
             notes = "create new vesion in Blocko program",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.update_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -432,7 +382,7 @@ public class Controller_Blocko extends BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_B_Program_Version.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BProgramVersion.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -454,13 +404,10 @@ public class Controller_Blocko extends BaseController {
 
             // Ověření programu
             Model_BProgram bProgram = Model_BProgram.getById(b_program_id);
-            if (bProgram == null) return notFound("BProgram id not found");
 
-            // Kontrola oprávnění
-            if (!bProgram.update_permission()) return forbidden();
 
             // První nová Verze
-            Model_Version version = new Model_Version();
+            Model_BProgramVersion version = new Model_BProgramVersion();
             version.name        = help.name;
             version.description = help.description;
             version.b_program   = bProgram;
@@ -472,14 +419,13 @@ public class Controller_Blocko extends BaseController {
                 for (Swagger_B_Program_Version_New.M_Project_SnapShot help_m_project_snap : help.m_project_snapshots) {
 
                     Model_GridProject m_project = Model_GridProject.getById(help_m_project_snap.m_project_id);
-                    if (m_project == null) return notFound("GridProject not found");
-                    if (!m_project.update_permission()) return forbidden();
+
 
                     Model_MProjectProgramSnapShot snap = new Model_MProjectProgramSnapShot();
                     snap.grid_project = m_project;
 
                     for (Swagger_B_Program_Version_New.M_Program_SnapShot help_m_program_snap : help_m_project_snap.m_program_snapshots) {
-                        Model_Version m_program_version = Model_Version.find.query().where().eq("id", help_m_program_snap.version_id).eq("grid_program.id", help_m_program_snap.m_program_id).eq("grid_program.grid_project.id", m_project.id).findOne();
+                        Model_GridProgramVersion m_program_version = Model_GridProgramVersion.find.query().where().eq("id", help_m_program_snap.version_id).eq("grid_program.id", help_m_program_snap.m_program_id).eq("grid_program.grid_project.id", m_project.id).findOne();
 
                         if (m_program_version == null) return notFound("Version not found");
 
@@ -502,10 +448,10 @@ public class Controller_Blocko extends BaseController {
             Model_Blob.uploadAzure_Version(file_content, "blocko.json", bProgram.get_path() , version);
 
             // Vrácení objektu
-            return ok(Json.toJson(version.get_b_program().program_version(version)));
+            return ok(version.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -513,16 +459,10 @@ public class Controller_Blocko extends BaseController {
             tags = {"B_Program"},
             notes = "get B_Program version object",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.read_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_B_Program_Version.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BProgramVersion.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
@@ -532,20 +472,13 @@ public class Controller_Blocko extends BaseController {
         try {
 
             // Kontrola objektu
-            Model_Version version = Model_Version.getById(version_id);
-            if (version == null) return notFound("Version not found");
-
-            // Kontrola oprávnění
-            if (version.get_b_program() == null) return notFound("Version is not version of B_Program");
-
-            // Kontrola oprávnění
-            if (!version.get_b_program().read_permission()) return forbidden();
+            Model_BProgramVersion version = Model_BProgramVersion.getById(version_id);
 
             // Vrácení objektu
-            return ok(Json.toJson(version.get_b_program().program_version(version)));
+            return ok(version.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -554,13 +487,7 @@ public class Controller_Blocko extends BaseController {
             notes = "edit Version object",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.delete_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -591,14 +518,10 @@ public class Controller_Blocko extends BaseController {
             Swagger_NameAndDescription help = form.get();
 
             // Získání objektu
-            Model_Version version = Model_Version.getById(version_id);
-            if (version == null) return notFound("Version not found");
+            Model_BProgramVersion version = Model_BProgramVersion.getById(version_id);
 
             version.name = help.name;
             version.description = help.description;
-
-            // Kontrola oprávnění
-            if (!version.get_b_program().edit_permission()) return forbidden();
 
             // Smazání objektu
             version.update();
@@ -607,7 +530,7 @@ public class Controller_Blocko extends BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -616,13 +539,7 @@ public class Controller_Blocko extends BaseController {
             notes = "remove B_Program version object",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.delete_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -636,14 +553,7 @@ public class Controller_Blocko extends BaseController {
         try {
 
             // Získání objektu
-            Model_Version version  = Model_Version.getById(version_id);
-
-            // Kontrola objektu
-            if (version == null) return notFound("Version not found");
-            if (version.get_b_program() == null) return badRequest("BProgram not found");
-
-            // Kontrola oprávnění
-            if (!version.get_b_program().delete_permission()) return forbidden();
+            Model_BProgramVersion version  = Model_BProgramVersion.getById(version_id);
 
             // Smazání objektu
             version.delete();
@@ -652,7 +562,7 @@ public class Controller_Blocko extends BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -663,8 +573,7 @@ public class Controller_Blocko extends BaseController {
             notes = "",
             produces = "application/json",
             consumes = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -695,7 +604,6 @@ public class Controller_Blocko extends BaseController {
             Swagger_NameAndDesc_ProjectIdRequired help = form.get();
 
             Model_Project project = Model_Project.getById(help.project_id);
-            if (project == null) return notFound("Project not found");
 
             // Kontrola objektu
             Model_Instance instance = new Model_Instance();
@@ -703,14 +611,12 @@ public class Controller_Blocko extends BaseController {
             instance.description = help.description;
             instance.project = project;
 
-            if (!instance.create_permission()) return forbidden();
-
             instance.save();
 
             return created(instance.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -731,14 +637,11 @@ public class Controller_Blocko extends BaseController {
         try {
 
             Model_Instance instance = Model_Instance.getById(instance_id);
-            if (instance == null) return notFound("Instance not found");
-
-            if (!instance.read_permission()) return forbidden();
 
             return ok(instance.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -779,9 +682,6 @@ public class Controller_Blocko extends BaseController {
 
             // Kontrola objektu
             Model_Instance instance = Model_Instance.getById(instance_id);
-            if (instance == null) return notFound("Instance not found");
-
-            if (!instance.update_permission()) return forbidden();
 
             instance.name = help.name;
             instance.description = help.description;
@@ -791,7 +691,7 @@ public class Controller_Blocko extends BaseController {
             return ok(instance.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -829,10 +729,6 @@ public class Controller_Blocko extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_Instance instance = Model_Instance.getById(help.object_id);
-            if (instance == null) return notFound("Instance not found");
-
-            // Kontrola oprávnění těsně před uložením
-            if (!instance.edit_permission())  return forbidden();
 
             instance.addTags(help.tags);
 
@@ -840,7 +736,7 @@ public class Controller_Blocko extends BaseController {
             return ok(instance.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -878,10 +774,6 @@ public class Controller_Blocko extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_Instance instance = Model_Instance.getById(help.object_id);
-            if (instance == null) return notFound("Instance not found");
-
-            // Kontrola oprávnění těsně před uložením
-            if (!instance.edit_permission())  return forbidden();
 
             instance.removeTags(help.tags);
 
@@ -889,7 +781,7 @@ public class Controller_Blocko extends BaseController {
             return ok(instance.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -908,18 +800,13 @@ public class Controller_Blocko extends BaseController {
     public Result instance_delete(@ApiParam(value = "instance_id String path", required = true) String instance_id) {
         try {
 
-            // Kontrola objektu
             Model_Instance instance = Model_Instance.getById(instance_id);
-            if (instance == null) return notFound("Instance not found");
-
-            if (!instance.delete_permission()) return forbidden();
-
             instance.delete();
 
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -928,8 +815,7 @@ public class Controller_Blocko extends BaseController {
             notes = "",
             produces = "application/json",
             consumes = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -960,20 +846,19 @@ public class Controller_Blocko extends BaseController {
             Swagger_InstanceSnapshot_New help = form.get();
 
             Model_Instance instance = Model_Instance.getById(help.instance_id);
-            if (instance == null) return notFound("Instance not found");
 
-            Model_Version version = Model_Version.getById(help.version_id);
+            Model_BProgramVersion version = Model_BProgramVersion.getById(help.version_id);
             if (version == null) return notFound("Version not found");
 
             Model_InstanceSnapshot snapshot = new Model_InstanceSnapshot();
-            snapshot.b_version = version;
+            snapshot.b_program_version = version;
             snapshot.instance = instance;
-            snapshot.program = Model_Blob.upload(help.snapshot, "snapshot.json", "TODO" );
+            snapshot.program = Model_Blob.upload(help.snapshot, "snapshot.json", "TODO" ); // PATH TODO
 
             return created(snapshot.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -994,14 +879,11 @@ public class Controller_Blocko extends BaseController {
         try {
 
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
-            if (snapshot == null) return notFound("Snapshot not found");
-
-            if (!snapshot.read_permission()) return forbidden();
 
             return ok(snapshot.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1043,10 +925,6 @@ public class Controller_Blocko extends BaseController {
 
             // Kontrola objektu: Verze B programu kterou budu nahrávat do cloudu
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(help.snapshot_id);
-            if (snapshot == null) return notFound("Snapshot not found");
-
-            // Kontrola oprávnění
-            if (!snapshot.update_permission()) return forbidden();
 
             if (help.upload_time != null) {
 
@@ -1066,7 +944,7 @@ public class Controller_Blocko extends BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1087,16 +965,13 @@ public class Controller_Blocko extends BaseController {
         try {
 
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
-            if (snapshot == null) return notFound("Instance not found");
-
-            if (!snapshot.update_permission()) return forbidden();
-
+          
             snapshot.stop();
 
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1119,52 +994,16 @@ public class Controller_Blocko extends BaseController {
         try {
 
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
-            if (snapshot == null) return notFound("Instance not found");
-
-            if (!snapshot.delete_permission()) return forbidden();
 
             snapshot.delete();
 
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
-
-    @ApiOperation(value = "get Instances List by Project",
-            tags = {"Instance"},
-            notes = "get list of instance_ids details under project id",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.update_permission", value = "true"),
-                    })
-            }
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Successfully uploaded",     response = Model_Instance.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result get_b_program_instance_under_project(String project_id) {
-        try {
-
-            List<Model_Instance> instances = Model_Instance.find.query().where()
-                    .isNotNull("actual_instance")
-                    .eq("b_program.project.id", project_id)
-                    .findList();
-
-            return ok(Json.toJson(instances));
-
-        } catch (Exception e) {
-            return internalServerError(e);
-        }
-    }
-
+    
     @ApiOperation(value = "get Instance by Filter",
             tags = { "Instance"},
             notes = "Get List of Instances. According to permission - system return only Instance from project, where is user owner or" +
@@ -1218,10 +1057,10 @@ public class Controller_Blocko extends BaseController {
             Swagger_Instance_List result = new Swagger_Instance_List(query, page_number);
 
             // Vracím seznam
-            return ok(Json.toJson(result));
+            return ok(result.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1275,7 +1114,7 @@ public class Controller_Blocko extends BaseController {
             program_parameter.update();
 
             // Vracím Objekt
-            return ok(Json.toJson(program_parameter));
+            return ok(program_parameter.json());
 
         } catch (IllegalArgumentException e) {
 
@@ -1284,7 +1123,7 @@ public class Controller_Blocko extends BaseController {
 
         } catch (Exception e) {
 
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1335,7 +1174,6 @@ public class Controller_Blocko extends BaseController {
                 }
             } else {
                 project = Model_Project.getById(help.project_id);
-                if (project == null) return notFound("Project not found");
             }
 
             // Vytvoření objektu
@@ -1350,10 +1188,7 @@ public class Controller_Blocko extends BaseController {
             } else {
                 block.publish_type = ProgramType.PUBLIC;
             }
-
-            // Kontrola oprávnění těsně před uložením
-            if (!block.create_permission()) return forbidden();
-
+            
             // Uložení objektu
             block.save();
 
@@ -1361,7 +1196,7 @@ public class Controller_Blocko extends BaseController {
             Model_BlockVersion scheme = Model_BlockVersion.get_scheme();
 
             // Kontrola objektu
-            if (scheme == null) return created(Json.toJson(block));
+            if (scheme == null) return created(block.json());
 
             // Vytvoření objektu první verze
             Model_BlockVersion blockoBlockVersion = new Model_BlockVersion();
@@ -1375,10 +1210,10 @@ public class Controller_Blocko extends BaseController {
             blockoBlockVersion.save();
 
             // Vrácení objektu
-            return created(Json.toJson(block));
+            return created(block.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1418,17 +1253,9 @@ public class Controller_Blocko extends BaseController {
 
             // Vyhledám Objekt
             Model_Block blockOld = Model_Block.getById(help.block_id);
-            if (blockOld == null) return notFound("Block not found");
-
-            // Zkontroluji oprávnění
-            if (!blockOld.read_permission()) return forbidden();
-
+        
             // Vyhledám Objekt
             Model_Project project = Model_Project.getById(help.project_id);
-            if (project == null) return notFound("Project not found");
-
-            // Zkontroluji oprávnění
-            if (!project.update_permission())  return forbidden();
 
             Model_Block blockNew = new Model_Block();
             blockNew.name = help.name;
@@ -1455,10 +1282,10 @@ public class Controller_Blocko extends BaseController {
             blockNew.refresh();
 
             // Vracím Objekt
-            return ok(Json.toJson(blockNew));
+            return ok(blockNew.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1498,11 +1325,7 @@ public class Controller_Blocko extends BaseController {
 
             // Kontrola objektu
             Model_Block block = Model_Block.getById(block_id);
-            if (block == null) return notFound("Block not found");
-
-            // Kontrola oprávnění
-            if (!block.edit_permission()) return forbidden("You have no permission to edit");
-
+            
             // Úprava objektu
             block.description = help.description;
             block.name        = help.name;
@@ -1511,10 +1334,10 @@ public class Controller_Blocko extends BaseController {
             block.update();
 
             // Vrácení objektu
-            return ok(Json.toJson(block));
+            return ok(block.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
 
     }
@@ -1553,10 +1376,6 @@ public class Controller_Blocko extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_Block block = Model_Block.getById(help.object_id);
-            if (block == null) return notFound("Block not found");
-
-            // Kontrola oprávnění těsně před uložením
-            if (!block.edit_permission())  return forbidden();
 
             block.addTags(help.tags);
 
@@ -1564,7 +1383,7 @@ public class Controller_Blocko extends BaseController {
             return ok(block.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1602,18 +1421,14 @@ public class Controller_Blocko extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_Block block = Model_Block.getById(help.object_id);
-            if (block == null) return notFound("Block not found");
-
-            // Kontrola oprávnění těsně před uložením
-            if (!block.edit_permission())  return forbidden();
-
+       
             block.removeTags(help.tags);
 
             // Vrácení objektu
             return ok(block.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1634,16 +1449,12 @@ public class Controller_Blocko extends BaseController {
         try {
             // Kontrola objektu
             Model_Block block = Model_Block.getById(block_id);
-            if (block == null) return notFound("Block not found");
-
-            // Kontrola oprávnění
-            if (!block.read_permission()) return forbidden();
-
+         
             // Vrácení objektu
-            return ok(Json.toJson(block));
+            return ok(block.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
 
     }
@@ -1687,7 +1498,7 @@ public class Controller_Blocko extends BaseController {
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
-
+                Model_Project.getById(help.project_id);
                 query.where().eq("type_of_block.project.id", help.project_id);
             }
 
@@ -1695,10 +1506,10 @@ public class Controller_Blocko extends BaseController {
             Swagger_Block_List result = new Swagger_Block_List(query, page_number);
 
             // Vrácení výsledku
-            return ok(Json.toJson(result));
+            return ok(result.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1722,11 +1533,7 @@ public class Controller_Blocko extends BaseController {
 
             // Kontrola objektu
             Model_Block blockoBlock = Model_Block.getById(block_id);
-            if (blockoBlock == null) return notFound("Block not found");
-
-            // Kontrola oprávnění
-            if (!blockoBlock.delete_permission()) return forbidden();
-
+       
             // Smazání objektu
             blockoBlock.delete();
 
@@ -1734,7 +1541,7 @@ public class Controller_Blocko extends BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1757,17 +1564,13 @@ public class Controller_Blocko extends BaseController {
         try {
 
             Model_Block block = Model_Block.getById(block_id);
-            if (block == null) return notFound("Block not found");
-
-            // Kontrola oprávnění
-            if (!block.edit_permission()) return forbidden();
-
+           
             block.up();
 
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1789,17 +1592,13 @@ public class Controller_Blocko extends BaseController {
         try {
 
             Model_Block block =  Model_Block.getById(block_id);
-            if (block == null) return notFound("Block not found");
-
-            // Kontrola oprávnění
-            if (!block.edit_permission()) return forbidden();
-
+        
             block.down();
 
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1807,8 +1606,7 @@ public class Controller_Blocko extends BaseController {
             tags = {"Admin-Block"},
             notes = "deactivate Block",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -1822,15 +1620,8 @@ public class Controller_Blocko extends BaseController {
         try {
 
             Model_Block block = Model_Block.getById(block_id);
-            if (block == null) return notFound("Block not found");
-
-            // Kontrola oprávnění
-            if (!block.edit_permission()) return forbidden();
-
             if (!block.active) return badRequest("Block is already deactivated");
-
-            if (!block.update_permission()) return forbidden();
-
+            
             block.active = false;
 
             block.update();
@@ -1838,7 +1629,7 @@ public class Controller_Blocko extends BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1846,8 +1637,7 @@ public class Controller_Blocko extends BaseController {
             tags = {"Admin-Block"},
             notes = "activate Block",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class),
@@ -1861,12 +1651,9 @@ public class Controller_Blocko extends BaseController {
         try {
 
             Model_Block block = Model_Block.getById(block_id);
-            if (block == null) return notFound("Block not found");
 
             if (block.active) return badRequest("Block is already activated");
-
-            if (!block.update_permission()) return forbidden();
-
+            
             block.active = true;
 
             block.update();
@@ -1874,7 +1661,7 @@ public class Controller_Blocko extends BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1984,7 +1771,7 @@ public class Controller_Blocko extends BaseController {
             }
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -1994,8 +1781,7 @@ public class Controller_Blocko extends BaseController {
             tags = {"Block"},
             notes = "new Block version",
             produces = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -2031,7 +1817,6 @@ public class Controller_Blocko extends BaseController {
 
             // Kontrola objektu
             Model_Block block = Model_Block.getById(block_id);
-            if (block == null) return notFound("Block not found");
 
             // Vytvoření objektu
             Model_BlockVersion version = new Model_BlockVersion();
@@ -2041,18 +1826,15 @@ public class Controller_Blocko extends BaseController {
             version.logic_json = help.logic_json;
             version.block = block;
             version.author = person();
-
-            // Kontrola oprávnění
-            if (!version.create_permission()) return forbidden();
-
+            
             // Uložení objektu
             version.save();
 
             // Vrácení objektu
-            return created(Json.toJson(block));
+            return created(block.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2072,18 +1854,15 @@ public class Controller_Blocko extends BaseController {
     })
     public Result blockVersion_get(@ApiParam(value = "version_id String path",   required = true) String version_id) {
         try {
+            
             // Kontrola objektu
             Model_BlockVersion version = Model_BlockVersion.getById(version_id);
-            if (version == null) return notFound("BlockVersion not found");
-
-            // Kontrola oprávnění
-            if (!version.read_permission()) return forbidden("You have no permission to get that");
-
+          
             // Vrácení objektu
             return ok(version.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2127,8 +1906,7 @@ public class Controller_Blocko extends BaseController {
 
             // Kontrola objektu
             Model_BlockVersion version = Model_BlockVersion.getById(version_id);
-            if (version == null) return notFound("Version not found");
-
+  
             // Úprava objektu
             version.name = help.name;
             version.description = help.description;
@@ -2140,7 +1918,7 @@ public class Controller_Blocko extends BaseController {
             return ok(version.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2162,10 +1940,6 @@ public class Controller_Blocko extends BaseController {
 
             // Kontrola objektu
             Model_BlockVersion version = Model_BlockVersion.getById(version_id);
-            if (version == null) return notFound("BlockVersion not found");
-
-            // Kontrola oprávnění
-            if (!version.delete_permission()) return forbidden();
 
             // Smazání objektu
             version.delete();
@@ -2174,7 +1948,7 @@ public class Controller_Blocko extends BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2197,11 +1971,7 @@ public class Controller_Blocko extends BaseController {
 
             // Kontrola objektu
             Model_BlockVersion version = Model_BlockVersion.getById(version_id);
-            if (version == null) return notFound("BlockVersion not found");
-
-            // Kontrola orávnění
-            if (!(version.edit_permission())) return forbidden();
-
+        
             // Úprava objektu
             version.approval_state = Approval.PENDING;
 
@@ -2212,7 +1982,7 @@ public class Controller_Blocko extends BaseController {
             return ok(version.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2235,10 +2005,6 @@ public class Controller_Blocko extends BaseController {
 
             // Kontrola objektu
             Model_BlockVersion version = Model_BlockVersion.getById(version_id);
-            if (version == null) return notFound("BlockVersion not found");
-
-            // Kontrola oprávnění
-            if (!version.edit_permission()) return forbidden();
 
             if (!version.get_block_id().equals(UUID.fromString("00000000-0000-0000-0000-000000000001"))) {
                 return notFound("BlockVersion not from default program");
@@ -2258,7 +2024,7 @@ public class Controller_Blocko extends BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2298,8 +2064,7 @@ public class Controller_Blocko extends BaseController {
 
             // Kontrola objektu
             Model_BlockVersion version = Model_BlockVersion.getById(help.object_id);
-            if (version == null) return notFound("BlockVersion not found");
-
+          
             // Změna stavu schválení
             version.approval_state = Approval.DISAPPROVED;
 
@@ -2321,7 +2086,7 @@ public class Controller_Blocko extends BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -2362,7 +2127,6 @@ public class Controller_Blocko extends BaseController {
 
             // Kontrola objektu
             Model_BlockVersion privateVersion = Model_BlockVersion.getById(help.object_id);
-            if (privateVersion == null) return notFound("BlockVersion not found");
 
             // Vytvoření objektu
             Model_Block block = new Model_Block();
@@ -2404,7 +2168,7 @@ public class Controller_Blocko extends BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 }

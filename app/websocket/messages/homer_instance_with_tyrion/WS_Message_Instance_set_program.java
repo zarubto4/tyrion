@@ -2,6 +2,7 @@ package websocket.messages.homer_instance_with_tyrion;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import models.Model_BProgramVersion;
 import models.Model_Instance;
 import models.Model_InstanceSnapshot;
 import models.Model_Version;
@@ -29,7 +30,7 @@ public class WS_Message_Instance_set_program extends WS_AbstractMessage_Instance
 
         List<Instance_Update_Request> request_list = new ArrayList<>();
 
-        Model_Version version = snapshot.get_b_program_version();
+        Model_BProgramVersion version = snapshot.get_b_program_version();
 
         Instance_Update_Request update = new Instance_Update_Request();
         update.instance_id = snapshot.instance.id;

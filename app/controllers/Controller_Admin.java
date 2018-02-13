@@ -44,6 +44,8 @@ public class Controller_Admin extends BaseController {
 
     private static final Logger logger = new Logger(Controller_Admin.class);
 
+// CONTROLLER CONFIGURATION ############################################################################################
+
     private FormFactory formFactory;
     private WSClient ws;
     private Environment environment;
@@ -60,6 +62,8 @@ public class Controller_Admin extends BaseController {
         this.config = config;
         this.scheduler = scheduler;
     }
+
+// CONTROLLER CONTENT ##################################################################################################
 
     @ApiOperation(
             value = "get Report_Admin_Dashboard",
@@ -193,9 +197,6 @@ public class Controller_Admin extends BaseController {
 
             Model_ServerError error = Model_ServerError.getById(bug_id);
 
-
-            if (!error.edit_permission()) return forbidden();
-
             error.description = help.description;
             error.update();
 
@@ -225,8 +226,6 @@ public class Controller_Admin extends BaseController {
 
             Model_ServerError error = Model_ServerError.getById(bug_id);
 
-            error.check_edit_permission();
-
             error.youtrack_url = youTrack.report(error);
             error.update();
 
@@ -241,8 +240,7 @@ public class Controller_Admin extends BaseController {
             notes = "",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",                 response = Result_Ok.class),
@@ -253,11 +251,8 @@ public class Controller_Admin extends BaseController {
     })
     public Result serverError_delete(@ApiParam(value = "bug_id String path", required = true) String bug_id) {
         try {
+
             Model_ServerError error = Model_ServerError.getById(bug_id);
-            if (error == null) return notFound("Bug not found");
-
-            if (!error.delete_permission()) return forbidden();
-
             error.delete();
 
             return ok();
@@ -271,8 +266,7 @@ public class Controller_Admin extends BaseController {
             notes = "",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",                 response = Result_Ok.class),
@@ -285,7 +279,7 @@ public class Controller_Admin extends BaseController {
             List<Model_ServerError> errors = Model_ServerError.find.all();
 
             if (!errors.isEmpty()) {
-                if (!errors.get(0).delete_permission()) return forbidden();
+                errors.get(0).check_delete_permission();
                 Ebean.delete(errors);
             }
 
@@ -302,8 +296,7 @@ public class Controller_Admin extends BaseController {
             notes = "",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -377,8 +370,7 @@ public class Controller_Admin extends BaseController {
             tags = {"Admin"},
             notes = "",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",                 response = Swagger_ServerUpdates.class),

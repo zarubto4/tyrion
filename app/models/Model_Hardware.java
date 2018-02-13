@@ -1093,6 +1093,7 @@ public class Model_Hardware extends NamedModel {
     // Change Hardware Alias  --//GRID Apps
     @JsonIgnore
     public WS_Message_Hardware_set_settings set_alias(String alias) {
+
         try {
 
             if (!this.name.equals(alias)) {
@@ -2446,24 +2447,6 @@ public class Model_Hardware extends NamedModel {
         }
     }
 
-    @JsonIgnore @Transient @Override public void check_edit_permission()  throws _Base_Result_Exception  {
-        try {
-           
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (BaseController.person().has_permission("hardware_update_" + id)) BaseController.person().valid_permission("hardware_update_" + id);
-            if (BaseController.person().has_permission(Permission.Hardware_edit.name())) return;
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            get_project().check_edit_permission();
-            BaseController.person().cache_permission("hardware_update_" + id, true);
-            
-        } catch (_Base_Result_Exception e){
-            BaseController.person().cache_permission("hardware_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-
-
     /**
      * For this case - its not delete, but unregistration from Project
      * @throws _Base_Result_Exception
@@ -2575,17 +2558,17 @@ public class Model_Hardware extends NamedModel {
     @CacheField(value = Boolean.class, timeToIdle = 300, name ="Model_Hardware_Status")
     public static Cache<UUID, Boolean> cache_status;
 
-    public static Model_Hardware getById(String id) {
+    public static Model_Hardware getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_Hardware getById(UUID id) {
+    public static Model_Hardware getById(UUID id) throws _Base_Result_Exception {
 
         Model_Hardware board = cache.get(id);
         if (board == null) {
 
             board = find.byId(id);
-            if (board == null) return null;
+            if (board == null) throw new Result_Error_NotFound(Model_Widget.class);
 
             cache.put(id, board);
         }

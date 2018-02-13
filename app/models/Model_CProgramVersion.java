@@ -55,7 +55,7 @@ public class Model_CProgramVersion extends VersionModel {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                                                   public Model_CProgram c_program;  // TODO - tady je hooodně návazností
-    @JsonIgnore @OneToOne(mappedBy="version", cascade = CascadeType.ALL)                                             public Model_Compilation compilation;
+    @JsonIgnore @OneToOne(mappedBy="version", cascade = CascadeType.ALL)                                             public Model_Compilation compilation; // TODO dá se cachovat
 
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version", fetch = FetchType.LAZY)                              public List<Model_Hardware> c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
     @JsonIgnore @OneToMany(mappedBy="actual_backup_c_program_version", fetch = FetchType.LAZY)                       public List<Model_Hardware>  c_program_version_backup_boards  = new ArrayList<>();
@@ -521,7 +521,6 @@ public class Model_CProgramVersion extends VersionModel {
 
     @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { get_c_program().check_update_permission();}
     @JsonIgnore @Override public void check_read_permission()   throws _Base_Result_Exception { get_c_program().check_read_permission();}
-    @JsonIgnore @Override public void check_edit_permission()   throws _Base_Result_Exception { get_c_program().check_edit_permission();}
     @JsonIgnore @Override public void check_update_permission() throws _Base_Result_Exception { get_c_program().check_update_permission();}
     @JsonIgnore @Override public void check_delete_permission() throws _Base_Result_Exception { get_c_program().check_update_permission();}
 

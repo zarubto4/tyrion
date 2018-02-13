@@ -201,6 +201,7 @@ public class Model_Widget extends TaggedModel {
 
         logger.debug("save::Creating new Object");
 
+        // Save Object
         super.save();
 
         // Add to Cache
@@ -214,7 +215,10 @@ public class Model_Widget extends TaggedModel {
     public void update() {
 
         logger.debug("update::Update object Id: {}",  this.id);
+
+        // Update Object
         super.update();
+
 
         new Thread(() -> {
             try {
@@ -231,6 +235,7 @@ public class Model_Widget extends TaggedModel {
 
         logger.debug("delete::Delete object Id: {}",  this.id);
 
+        // Delete
         super.delete();
 
         // Remove from Project Cache
@@ -256,7 +261,7 @@ public class Model_Widget extends TaggedModel {
     @JsonIgnore
     public void up() throws _Base_Result_Exception {
 
-        check_edit_permission();
+        check_update_permission();
 
         /*
         Model_Widget up = Model_Widget.find.query().where().eq("order_position", (order_position-1) ).eq("type_of_widget.id", type_of_widget_id()).findOne();
@@ -273,7 +278,7 @@ public class Model_Widget extends TaggedModel {
     @JsonIgnore @Transient
     public void down() throws _Base_Result_Exception {
 
-        check_edit_permission();
+        check_update_permission();
         /*
         Model_Widget down = Model_Widget.find.query().where().eq("order_position", (order_position+1) ).eq("type_of_widget.id", type_of_widget_id()).findOne();
         if (down == null) return;
@@ -303,10 +308,6 @@ public class Model_Widget extends TaggedModel {
         if(publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN ) return;
         get_project().check_read_permission();
     }
-    @JsonIgnore @Transient @Override  public void check_edit_permission()   throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Widget_edit.name())) return;
-        get_project().check_edit_permission();
-    }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
         if(BaseController.person().has_permission(Permission.Widget_update.name())) return;
         get_project().check_update_permission();
@@ -331,18 +332,18 @@ public class Model_Widget extends TaggedModel {
         }
     }
 
-    public enum Permission { Widget_create, Widget_read, Widget_edit, Widget_update, Widget_delete }
+    public enum Permission { Widget_create, Widget_read, Widget_update, Widget_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     @CacheField(Model_Widget.class)
     public static Cache<UUID, Model_Widget> cache;
 
-    public static Model_Widget getById(String id)  throws _Base_Result_Exception{
+    public static Model_Widget getById(String id) throws _Base_Result_Exception{
     return getById(UUID.fromString(id));
     }
 
-    public static Model_Widget getById(UUID id)  throws _Base_Result_Exception{
+    public static Model_Widget getById(UUID id) throws _Base_Result_Exception {
 
         Model_Widget grid_widget = cache.get(id);
         if (grid_widget == null) {
@@ -353,6 +354,7 @@ public class Model_Widget extends TaggedModel {
             cache.put(id, grid_widget);
         }
 
+        grid_widget.check_read_permission();
         return grid_widget;
     }
 

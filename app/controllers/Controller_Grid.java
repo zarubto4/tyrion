@@ -34,10 +34,11 @@ public class Controller_Grid extends BaseController {
 
     private static final Logger logger = new Logger(Controller_Grid.class);
 
+// CONTROLLER CONFIGURATION ############################################################################################
+
     private FormFactory formFactory;
 
-    @Inject
-    public Controller_Grid(FormFactory formFactory) {
+    @Inject public Controller_Grid(FormFactory formFactory) {
         this.formFactory = formFactory;
     }
 
@@ -86,7 +87,6 @@ public class Controller_Grid extends BaseController {
             gridProject.name = help.name;
             gridProject.project = project;
 
-
             gridProject.save();
 
             return created(gridProject.json());
@@ -110,7 +110,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result gridProject_get(@ApiParam(value = "grid_project_id String query", required = true) String grid_project_id) {
+    public Result gridProject_get(String grid_project_id) {
         try {
 
             Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
@@ -147,7 +147,7 @@ public class Controller_Grid extends BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result gridProject_update(@ApiParam(value = "grid_project_id String query", required = true) String grid_project_id) {
+    public Result gridProject_update(String grid_project_id) {
         try {
 
             final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
@@ -155,8 +155,6 @@ public class Controller_Grid extends BaseController {
             Swagger_NameAndDescription help = form.get();
 
             Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
-
-            gridProject.check_edit_permission();
 
             gridProject.name = help.name;
             gridProject.description = help.description;
@@ -204,9 +202,6 @@ public class Controller_Grid extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_GridProject gridProject = Model_GridProject.getById(help.object_id);
-            
-            // Kontrola oprávnění těsně před uložením
-             gridProject.check_edit_permission();
 
             gridProject.addTags(help.tags);
 
@@ -253,9 +248,6 @@ public class Controller_Grid extends BaseController {
 
             Model_GridProject gridProject = Model_GridProject.getById(help.object_id);
 
-            // Kontrola oprávnění těsně před uložením
-            gridProject.check_edit_permission();
-
             gridProject.removeTags(help.tags);
 
             // Vrácení objektu
@@ -286,7 +278,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result gridProject_delete(@ApiParam(value = "grid_project_id String query", required = true) String grid_project_id) {
+    public Result gridProject_delete(String grid_project_id) {
         try {
 
             Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
@@ -314,7 +306,7 @@ public class Controller_Grid extends BaseController {
     })
     @BodyParser.Of(BodyParser.Empty.class)
     @Security.Authenticated(Authentication.class)
-    public Result gridProject_getInterface(@ApiParam(value = "grid_project_id String query", required = true)  String grid_project_id) {
+    public Result gridProject_getInterface(String grid_project_id) {
         try {
 
             Model_GridProject m_project = Model_GridProject.getById(grid_project_id);
@@ -371,7 +363,7 @@ public class Controller_Grid extends BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result gridProgram_create(@ApiParam(value = "grid_project_id", required = true) String grid_project_id) {
+    public Result gridProgram_create(String grid_project_id) {
         try {
 
             final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
@@ -407,7 +399,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result gridProgram_get(@ApiParam(value = "grid_program_id String query", required = true)  String grid_program_id) {
+    public Result gridProgram_get( String grid_program_id) {
         try {
             
             Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
@@ -444,7 +436,7 @@ public class Controller_Grid extends BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result gridProgram_update(@ApiParam(value = "grid_program_id String query", required = true) String grid_program_id) {
+    public Result gridProgram_update(String grid_program_id) {
         try {
 
             final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
@@ -452,7 +444,6 @@ public class Controller_Grid extends BaseController {
             Swagger_NameAndDescription help = form.get();
 
             Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
-            gridProgram.check_edit_permission();
 
             if (gridProgram.grid_project == null) return badRequest("You cannot change program on version");
 
@@ -501,9 +492,6 @@ public class Controller_Grid extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_GridProgram gridProgram = Model_GridProgram.getById(help.object_id);
-            
-            // Kontrola oprávnění těsně před uložením
-            gridProgram.check_edit_permission();
 
             gridProgram.addTags(help.tags);
 
@@ -550,9 +538,6 @@ public class Controller_Grid extends BaseController {
 
             Model_GridProgram gridProgram = Model_GridProgram.getById(help.object_id);
 
-            // Kontrola oprávnění těsně před uložením
-            gridProgram.check_edit_permission();
-
             gridProgram.removeTags(help.tags);
 
             // Vrácení objektu
@@ -577,7 +562,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result gridProgram_delete(@ApiParam(value = "grid_program_id String query", required = true) String grid_program_id) {
+    public Result gridProgram_delete(String grid_program_id) {
         try {
 
             Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
@@ -608,7 +593,7 @@ public class Controller_Grid extends BaseController {
             )
     })
     @ApiResponses({
-            @ApiResponse(code = 201, message = "Successfully created",      response = Swagger_GridProgramVersion.class),
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_GridProgramVersion.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -617,7 +602,7 @@ public class Controller_Grid extends BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result gridProgramVersion_create(@ApiParam(value = "grid_program_id", required = true) String grid_program_id) {
+    public Result gridProgramVersion_create( String grid_program_id) {
         try {
 
             final Form<Swagger_M_Program_Version_New> form = formFactory.form(Swagger_M_Program_Version_New.class).bindFromRequest();
@@ -655,14 +640,14 @@ public class Controller_Grid extends BaseController {
             protocols = "https"
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_GridProgramVersion.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_GridProgramVersion.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result gridProgramVersion_get(@ApiParam(value = "version_id String query", required = true) String version_id) {
+    public Result gridProgramVersion_get(String version_id) {
         try {
             // Kontrola objektu
             Model_GridProgramVersion version = Model_GridProgramVersion.getById(version_id);
@@ -692,7 +677,7 @@ public class Controller_Grid extends BaseController {
             )
     })
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_GridProgramVersion.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_GridProgramVersion.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -700,7 +685,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result gridProgramVersion_update(@ApiParam(value = "version_id String query", required = true) String version_id) {
+    public Result gridProgramVersion_update( String version_id) {
         try {
 
             final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
@@ -709,9 +694,6 @@ public class Controller_Grid extends BaseController {
 
             // Získání objektu
             Model_GridProgramVersion version = Model_GridProgramVersion.getById(version_id);
-            
-            // Kontrola oprávnění
-            version.check_edit_permission();
 
             // Úprava objektu
             version.description = help.description;
@@ -720,7 +702,7 @@ public class Controller_Grid extends BaseController {
             // Update
             version.update();
 
-            return ok(Json.toJson(version.json());
+            return ok(version.json());
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -742,7 +724,7 @@ public class Controller_Grid extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Empty.class)
-    public Result gridProgramVersion_delete( @ApiParam(value = "version_id", required = true) String version_id) {
+    public Result gridProgramVersion_delete(String version_id) {
         try {
 
             // Získání objektu
@@ -758,6 +740,7 @@ public class Controller_Grid extends BaseController {
             return controllerServerError(e);
         }
     }
+
 //######################################################################################################################
 
     // Příkazy pro Terminál
@@ -1125,9 +1108,6 @@ public class Controller_Grid extends BaseController {
             // Kontrola objektu
             Model_Widget widget = Model_Widget.getById(grid_widget_id);
 
-            // Kontrola oprávnění
-            widget.check_edit_permission();
-
             // Úprava objektu
             widget.description = help.description;
             widget.name        = help.name;
@@ -1179,9 +1159,6 @@ public class Controller_Grid extends BaseController {
 
             Model_Widget widget = Model_Widget.getById(help.object_id);
 
-            // Kontrola oprávnění těsně před uložením
-            widget.check_edit_permission();
-
             widget.addTags(help.tags);
 
             // Vrácení objektu
@@ -1226,9 +1203,6 @@ public class Controller_Grid extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_Widget widget = Model_Widget.getById(help.object_id);
-
-            // Kontrola oprávnění těsně před uložením
-            widget.check_edit_permission();
 
             widget.removeTags(help.tags);
 
@@ -1538,9 +1512,6 @@ public class Controller_Grid extends BaseController {
             Model_WidgetVersion version = Model_WidgetVersion.getById(grid_widget_version_id);
             if (version == null) return notFound("GridWidgetVersion grid_widget_version_id not found");
 
-            // Kontrola oprávnění
-            version.check_edit_permission();
-
             if (!version.get_grid_widget_id().equals("00000000-0000-0000-0000-000000000001")) {
                 return notFound("GridWidgetVersion grid_widget_version_id not from default program");
             }
@@ -1596,9 +1567,6 @@ public class Controller_Grid extends BaseController {
 
             // Úprava objektu
             gridWidgetVersion.approval_state = Approval.PENDING;
-
-            // Kontrola oprávnění
-            gridWidgetVersion.check_edit_permission();
 
             // Uložení změn
             gridWidgetVersion.update();

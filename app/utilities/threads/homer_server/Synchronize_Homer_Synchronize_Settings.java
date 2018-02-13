@@ -8,9 +8,6 @@ import websocket.WS_Message;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_with_tyrion.configuration.WS_Message_Homer_Get_homer_server_configuration;
 
-import java.nio.channels.ClosedChannelException;
-import java.util.concurrent.TimeoutException;
-
 public class Synchronize_Homer_Synchronize_Settings extends Thread {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -56,11 +53,11 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
             Model_HomerServer homer = Model_HomerServer.getById(homer_server.id);
 
             //homer.personal_server_name = help.server_name;
-            if (homer.mqtt_port != help.mqtt_port || homer.grid_port != help.grid_port || homer.web_view_port != help.web_view_port ||  homer.server_remote_port != help.hw_logger_port ||  homer.rest_api_port != help.rest_api_port) {
+            if (homer.mqtt_port != help.mqtt_port || homer.grid_port != help.grid_port || homer.web_view_port != help.web_view_port ||  homer.hardware_logger_port != help.hw_logger_port ||  homer.rest_api_port != help.rest_api_port) {
                 homer.mqtt_port = help.mqtt_port;   // 1881
                 homer.grid_port = help.grid_port;   // 8503
                 homer.web_view_port = help.web_view_port;  //8501
-                homer.server_remote_port = help.hw_logger_port; // 8505
+                homer.hardware_logger_port = help.hw_logger_port; // 8505
                 homer.rest_api_port = help.rest_api_port; // 3000
                 homer.update();
             }

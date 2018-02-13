@@ -20,7 +20,6 @@ import utilities.enums.Approval;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
 import utilities.swagger.input.*;
-import utilities.swagger.output.Swagger_C_Program_Version;
 import utilities.swagger.output.Swagger_Compilation_Build_Error;
 import utilities.swagger.output.Swagger_Compilation_Ok;
 import utilities.swagger.output.filter_results.Swagger_C_Program_List;
@@ -33,7 +32,10 @@ import java.util.*;
 public class Controller_Code extends BaseController {
 
 // LOGGER ##############################################################################################################
+
     private static final Logger logger = new Logger(Controller_Hardware.class);
+
+// CONTROLLER CONFIGURATION ############################################################################################
 
     private FormFactory formFactory;
 
@@ -41,7 +43,8 @@ public class Controller_Code extends BaseController {
     public Controller_Code(FormFactory formFactory) {
         this.formFactory = formFactory;
     }
-    
+
+// CONTROLLER CONTENT ##################################################################################################
     
     /**
      @ApiOperation(value = "only for Tyrion Front End", hidden = true)
@@ -112,17 +115,7 @@ public class Controller_Code extends BaseController {
                     "This appi is udes by Tyrion Calling on own API",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "C_Program.Version.read_permission", value = Model_Version.read_permission_docs),
-                    }),
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "CProgram_read"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Compilation successful",    response = Swagger_Compilation_Ok.class),
@@ -140,38 +133,12 @@ public class Controller_Code extends BaseController {
             logger.debug("Starting compilation on version_id = " + version_id);
 
             // Ověření objektu
-            Model_Version version = Model_Version.getById(version_id);
-            if (version == null) return notFound(Model_Version.class);
-
-            // Smažu předchozí kompilaci
-            if (version.get_c_program() == null) return badRequest("Version is not version of C_Program");
-
-            // Kontrola oprávnění
-            if (!version.get_c_program().read_permission()) return forbidden();
+            Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
 
             // Odpovím předchozí kompilací
             if (version.compilation != null) return ok(Json.toJson(new Swagger_Compilation_Ok()));
 
-            Response_Interface result = version.compile_program_procedure();
-
-            if (result instanceof Result_Ok) {
-                return  ok(Json.toJson(new Swagger_Compilation_Ok()));
-            }
-
-            if (result instanceof Result_CompilationListError) {
-                return  ok(Json.toJson(((Result_CompilationListError) result).errors));
-            }
-
-            if (result instanceof Result_ExternalServerSideError ) {
-                return externalServerError(Json.toJson(result));
-            }
-
-            if (result instanceof Result_ServerOffline) {
-                return externalServerOffline(((Result_ServerOffline) result).message);
-            }
-
-            // Neznámá chyba se kterou nebylo počítání
-            return badRequest("unknown_error");
+            return version.compile_program_procedure();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -183,13 +150,7 @@ public class Controller_Code extends BaseController {
             tags = {"C_Program"},
             notes = "Compile code",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Permission: ", value = "Permission is not required!"),
-                    }),
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -203,7 +164,7 @@ public class Controller_Code extends BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Compilation successful",    response = Swagger_Cloud_Compilation_Server_CompilationResult.class),
+            @ApiResponse(code = 200, message = "Compilation successful",    response = Swagger_Compilation_Server_CompilationResult.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
@@ -235,19 +196,7 @@ public class Controller_Code extends BaseController {
             for (String lib_id : help.imported_libraries) {
 
                 logger.trace("compile_C_Program_code:: Looking for library Version Id " + lib_id);
-                Model_Version lib_version = Model_Version.getById(lib_id);
-
-                if (lib_version == null || lib_version.library == null) {
-
-                    logger.internalServerError(new Exception("Error in reading libraries version not found! Version ID = " + lib_version));
-
-                    ObjectNode error = Json.newObject();
-                    error.put("status", "error");
-                    error.put("error_message", "Error getting libraries - Library not found!");
-                    error.put("error_code", 400);
-                    return buildErrors(error);
-                }
-
+                Model_LibraryVersion lib_version = Model_LibraryVersion.getById(lib_id);
                 if (!lib_version.files.isEmpty()) {
 
                     logger.trace("compile_C_Program_code:: Library contains files");
@@ -296,7 +245,7 @@ public class Controller_Code extends BaseController {
             // V případě úspěšného buildu obsahuje příchozí JsonNode build_url
             if (compilation_result.build_url != null && compilation_result.status.equals("success")) {
 
-                Swagger_Cloud_Compilation_Server_CompilationResult result = new Swagger_Cloud_Compilation_Server_CompilationResult();
+                Swagger_Compilation_Server_CompilationResult result = new Swagger_Compilation_Server_CompilationResult();
                 result.interface_code = compilation_result.interface_code;
 
                 return ok(Json.toJson(result));
@@ -304,7 +253,6 @@ public class Controller_Code extends BaseController {
 
             // Kompilace nebyla úspěšná a tak vracím obsah neuspěšné kompilace
             if (!compilation_result.build_errors.isEmpty()) {
-
                 return buildErrors(Json.toJson(compilation_result.build_errors));
             }
 
@@ -333,13 +281,6 @@ public class Controller_Code extends BaseController {
      produces = "application/json",
      protocols = "https",
      consumes = "application/octet-stream",
-     code = 200,
-     extensions = {
-     @Extension(name = "permission_required", properties = {
-     @ExtensionProperty(name = "Board.update_permission", value = "true"),
-     @ExtensionProperty(name = "Static Permission key", value = "Hardware_update"),
-     })
-     }
      )
      @ApiResponses({
      @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
@@ -397,23 +338,14 @@ public class Controller_Code extends BaseController {
      }
      }
      */
-// C_ Program && Version ###############################################################################################
+
+// C_PROGRAM AND VERSION  ###############################################################################################
 
     @ApiOperation(value = "create C_Program",
             tags = {"C_Program"},
             notes = "If you want create new C_Program in project.id = {project_id}. Send required json values and cloud_compilation_server respond with new object",
             produces = "application/json",
-            protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "C_Program.create_permission", value = Model_CProgram.create_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "CProgram_create" ),
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -445,7 +377,6 @@ public class Controller_Code extends BaseController {
 
             // Ověření Typu Desky
             Model_HardwareType hardwareType = Model_HardwareType.getById(help.hardware_type_id);
-            if (hardwareType == null) return notFound("HardwareType hardware_type_id not found");
 
             // Tvorba programu
             Model_CProgram c_program        = new Model_CProgram();
@@ -455,31 +386,21 @@ public class Controller_Code extends BaseController {
             c_program.publish_type          = ProgramType.PRIVATE;
 
             if (help.project_id != null) {
-                // Ověření projektu
-                Model_Project project = Model_Project.getById(help.project_id);
-                if (project == null) return notFound("Project not found");
-                c_program.project = project;
+                c_program.project = Model_Project.getById(help.project_id);
             }
-
-            // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!c_program.create_permission()) return forbidden();
 
             // Uložení C++ Programu
             c_program.save();
-            c_program.refresh();
 
             // Přiřadím první verzi!
             if (hardwareType.get_main_c_program() != null && hardwareType.get_main_c_program().default_main_version != null) {
 
-                Model_Version version = new Model_Version();
+                Model_CProgramVersion version = new Model_CProgramVersion();
                 version.name = "1.0.1";
                 version.description = hardwareType.get_main_c_program().description;
                 version.author = person();
                 version.c_program = c_program;
-                version.public_version = help.c_program_public_admin_create;
-
-                // Zkontroluji oprávnění
-                if (!c_program.update_permission()) return forbidden();
+                version.publish_type = help.c_program_public_admin_create ? ProgramType.PUBLIC : ProgramType.PRIVATE;
 
                 version.save();
 
@@ -508,9 +429,7 @@ public class Controller_Code extends BaseController {
                 version.compile_program_thread(hardwareType.get_main_c_program().default_main_version.compilation.firmware_version_lib);
             }
 
-            c_program.refresh();
-
-            return created(Json.toJson(c_program));
+            return created(c_program.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -522,8 +441,7 @@ public class Controller_Code extends BaseController {
             notes = "clone C_Program for private",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -543,6 +461,7 @@ public class Controller_Code extends BaseController {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result c_program_clone() {
         try {
 
@@ -553,34 +472,26 @@ public class Controller_Code extends BaseController {
 
             // Vyhledám Objekt
             Model_CProgram c_program_old = Model_CProgram.getById(help.c_program_id);
-            if (c_program_old == null) return notFound("C_Program c_program not found");
-
-            // Zkontroluji oprávnění
-            if (!c_program_old.read_permission())  return forbidden();
 
             // Vyhledám Objekt
             Model_Project project = Model_Project.getById(help.project_id);
-            if (project == null) return notFound("Project project_id not found");
-
-            // Zkontroluji oprávnění
-            if (!project.update_permission())  return forbidden();
 
             Model_CProgram c_program_new =  new Model_CProgram();
             c_program_new.name = help.name;
             c_program_new.description = help.description;
-            c_program_new.hardware_type = c_program_old.getHardwareType();
+            c_program_new.hardware_type = c_program_old.get_hardware_type();
             c_program_new.project = project;
             c_program_new.save();
 
             c_program_new.refresh();
 
-            for (Model_Version version : c_program_old.getVersions()) {
+            for (Model_CProgramVersion version : c_program_old.get_versions()) {
 
-                Model_Version copy_object = new Model_Version();
+                Model_CProgramVersion copy_object = new Model_CProgramVersion();
                 copy_object.name            = version.name;
                 copy_object.description     = version.description;
                 copy_object.c_program       = c_program_new;
-                copy_object.public_version  = false;
+                copy_object.publish_type    = ProgramType.PRIVATE;
                 copy_object.author          = version.author;
 
                 // Zkontroluji oprávnění
@@ -598,7 +509,7 @@ public class Controller_Code extends BaseController {
             c_program_new.refresh();
 
             // Vracím Objekt
-            return ok(Json.toJson(c_program_new));
+            return ok(c_program_new.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -610,17 +521,7 @@ public class Controller_Code extends BaseController {
             notes = "get C_Program by query = c_program_id",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "C_Program.read_permission", value = Model_CProgram.read_permission_docs),
-                    }),
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "CProgram_read"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_CProgram.class),
@@ -634,13 +535,9 @@ public class Controller_Code extends BaseController {
 
             // Vyhledám Objekt
             Model_CProgram c_program = Model_CProgram.getById(c_program_id);
-            if (c_program == null) return notFound("C_Program c_program not found");
-
-            // Zkontroluji oprávnění
-            if (!c_program.read_permission())  return forbidden();
 
             // Vracím Objekt
-            return ok(Json.toJson(c_program));
+            return ok(c_program.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -651,13 +548,7 @@ public class Controller_Code extends BaseController {
             tags = {"C_Program"},
             notes = "get all C_Programs that belong to logged person",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "C_Program.read_permission", value = "Tyrion only returns C_Programs which person owns, there is no need to check permissions"),
-                    }),
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -692,10 +583,7 @@ public class Controller_Code extends BaseController {
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
 
-                Model_Project project = Model_Project.getById(help.project_id);
-                if (project == null) return notFound("Project not found");
-                if (!project.read_permission()) return forbidden();
-
+                Model_Project.getById(help.project_id);
                 query.where().eq("project.id", help.project_id).eq("deleted", false);
             }
 
@@ -716,7 +604,7 @@ public class Controller_Code extends BaseController {
             Swagger_C_Program_List result = new Swagger_C_Program_List(query,page_number);
 
             // Vrácení výsledku
-            return ok(Json.toJson(result));
+            return ok(result.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -727,14 +615,7 @@ public class Controller_Code extends BaseController {
             tags = {"C_Program"},
             notes = "If you want edit base information about C_Program by  query = c_program_id. Send required json values and cloud_compilation_server respond with new object",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "C_Program.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "CProgram_edit"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -766,14 +647,10 @@ public class Controller_Code extends BaseController {
 
             // Ověření objektu
             Model_CProgram c_program = Model_CProgram.getById(c_program_id);
-            if (c_program == null) return notFound("C_Program not found");
 
             // Úprava objektu
             c_program.name = help.name;
             c_program.description = help.description;
-
-            // Zkontroluji oprávnění
-            if (!c_program.edit_permission())  return forbidden();
 
             // Uložení změn
             c_program.update();
@@ -820,10 +697,6 @@ public class Controller_Code extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_CProgram cProgram = Model_CProgram.getById(help.object_id);
-            if (cProgram == null) return notFound("CProgram not found");
-
-            // Kontrola oprávnění těsně před uložením
-            if (!cProgram.edit_permission())  return forbidden();
 
             cProgram.addTags(help.tags);
 
@@ -869,10 +742,6 @@ public class Controller_Code extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_CProgram cProgram = Model_CProgram.getById(help.object_id);
-            if (cProgram == null) return notFound("CProgram not found");
-
-            // Kontrola oprávnění těsně před uložením
-            if (!cProgram.edit_permission())  return forbidden();
 
             cProgram.removeTags(help.tags);
 
@@ -889,14 +758,7 @@ public class Controller_Code extends BaseController {
             notes = "delete C_Program by query = c_program_id, query = version_id",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "C_Program.delete_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "CProgram_delete"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -911,12 +773,6 @@ public class Controller_Code extends BaseController {
             // Ověření objektu
             Model_CProgram c_program = Model_CProgram.getById(c_program_id);
             if (c_program == null) return notFound("C_Program c_program_id not found");
-
-            // Kontrola oprávnění
-            if (!c_program.delete_permission()) return forbidden();
-
-            // Vyhledání PRoduct pro získání kontejneru
-            //Model_Product product = Model_Product.find.query().where().eq("projects.c_programs.id", c_program_id).findOne();
 
             // Smazání objektu
             c_program.delete();
@@ -933,14 +789,7 @@ public class Controller_Code extends BaseController {
             tags = {"C_Program"},
             notes = "If you want add new code to C_Program by query = c_program_id. Send required json values and cloud_compilation_server respond with new object",
             produces = "application/json",
-            protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "C_Program.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "CProgram_update"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -954,7 +803,7 @@ public class Controller_Code extends BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 201, message = "Successfully created",      response = Swagger_C_Program_Version.class),
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_CProgramVersion.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
@@ -983,7 +832,7 @@ public class Controller_Code extends BaseController {
             version.description     = help.description;
             version.author          = person();
             version.c_program       = c_program;
-            version.public_version  = false;
+            version.publish_type    = ProgramType.PRIVATE;
 
             // Zkontroluji oprávnění
             version.check_create_permission();
@@ -997,7 +846,7 @@ public class Controller_Code extends BaseController {
             version.compile_program_thread(help.library_compilation_version);
 
             // Vracím vytvořený objekt
-            return created(Json.toJson(version));
+            return created(version.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1009,20 +858,10 @@ public class Controller_Code extends BaseController {
             notes = "get Version of C_Program by query = version_id",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "C_Program.Version.read_permission", value = Model_Version.read_permission_docs),
-                    }),
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "CProgram_read"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_C_Program_Version.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_CProgramVersion.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -1033,17 +872,10 @@ public class Controller_Code extends BaseController {
         try {
 
             // Vyhledám Objekt
-            Model_Version version = Model_Version.getById(version_id);
-            if (version == null) return notFound("Version not found");
-
-            //Zkontroluji validitu Verze zda sedí k C_Programu
-            if (version.get_c_program() == null) return badRequest("Version is not version of C_Program");
-
-            // Zkontroluji oprávnění
-            if (!version.get_c_program().read_permission())  return forbidden();
+            Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
 
             // Vracím Objekt
-            return ok(Json.toJson(version.get_c_program().program_version(version)));
+            return ok(version.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1055,14 +887,7 @@ public class Controller_Code extends BaseController {
             notes = "For update basic (name and description) information in Version of C_Program. If you want update code. You have to create new version. " +
                     "And after that you can delete previous version",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "C_Program.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "CProgram_edit"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -1076,7 +901,7 @@ public class Controller_Code extends BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Version.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_CProgramVersion.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
@@ -1092,11 +917,7 @@ public class Controller_Code extends BaseController {
             Swagger_NameAndDescription help = form.get();
 
             // Ověření objektu
-            Model_Version version = Model_Version.getById(version_id);
-            if (version == null) return notFound("Version not found");
-
-            // Kontrola oprávnění
-            if (!version.get_c_program().edit_permission()) return forbidden();
+            Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
 
             //Uprava objektu
             version.name        = help.name;
@@ -1118,17 +939,10 @@ public class Controller_Code extends BaseController {
             notes = "delete Version.id = version_id in C_Program by query = c_program_id, query = version_id",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "C_Program.delete_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "CProgram_delete"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response =  Result_Ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
@@ -1138,14 +952,7 @@ public class Controller_Code extends BaseController {
         try {
 
             // Ověření objektu
-            Model_Version version = Model_Version.getById(version_id);
-            if (version == null) return notFound("Version not found");
-
-            // Zkontroluji validitu Verze zda sedí k C_Programu
-            if (version.get_c_program() == null) return badRequest("Version is not version of C_Program");
-
-            // Kontrola oprávnění
-            if (!version.get_c_program().delete_permission()) return forbidden();
+            Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
 
             // Smažu zástupný objekt
             version.delete();
@@ -1164,14 +971,7 @@ public class Controller_Code extends BaseController {
             notes = "Make C_Program public, so other users can see it and use it. Attention! Attention! Attention! A user can publish only three programs at the stage waiting for approval.",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "C_Program.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value = "CProgram_edit"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -1185,13 +985,9 @@ public class Controller_Code extends BaseController {
         try {
 
             // Kontrola objektu
-            Model_Version version = Model_Version.getById(version_id);
-            if (version == null) return notFound("Version not found");
+            Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
 
-            if (version.get_c_program() == null) return notFound("Version not found");
-
-
-            if (Model_Version.find.query().where().eq("approval_state", Approval.PENDING.name())
+            if (Model_CProgramVersion.find.query().where().eq("approval_state", Approval.PENDING.name())
                     .eq("c_program.project.participants.person.id", BaseController.personId())
                     .findList().size() > 3) {
                 // TODO Notifikace uživatelovi
@@ -1202,9 +998,6 @@ public class Controller_Code extends BaseController {
 
             // Úprava objektu
             version.approval_state = Approval.PENDING;
-
-            // Kontrola oprávnění
-            if (!(version.get_c_program().edit_permission())) return forbidden();
 
             // Uložení změn
             version.update();
@@ -1221,8 +1014,7 @@ public class Controller_Code extends BaseController {
             tags = {"Admin-C_Program"},
             notes = "sets Approval_state to pending",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -1251,16 +1043,10 @@ public class Controller_Code extends BaseController {
             Swagger_Community_Version_Publish_Response help = form.get();
 
             // Kontrola objektu
-            Model_Version version_old = Model_Version.getById(help.version_id);
-            if (version_old == null) return notFound("Version not found");
-
-            if (version_old.get_c_program() == null) {
-                return notFound("C_Program c_program_id not found");
-            }
+            Model_CProgramVersion version_old = Model_CProgramVersion.getById(help.version_id);
 
             // Ověření objektu
             Model_CProgram c_program_old = Model_CProgram.getById(version_old.get_c_program().id);
-
 
             // Zkontroluji oprávnění
             if (!c_program_old.community_publishing_permission()) {
@@ -1286,11 +1072,11 @@ public class Controller_Code extends BaseController {
                     c_program.save();
                 }
 
-                Model_Version version = new Model_Version();
+                Model_CProgramVersion version = new Model_CProgramVersion();
                 version.name             = help.version_name;
                 version.description      = help.version_description;
                 version.c_program        = c_program;
-                version.public_version   = true;
+                version.publish_type     = ProgramType.PUBLIC;
                 version.author           = version_old.author;
 
                 // Zkontroluji oprávnění
@@ -1383,8 +1169,7 @@ public class Controller_Code extends BaseController {
             tags = {"Admin-C_Program, HardwareType"},
             notes = "set C_Program version as Main for This Type of Device. Version must be from Main or Test C Program of this version",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -1397,18 +1182,15 @@ public class Controller_Code extends BaseController {
     public Result c_program_markScheme(@ApiParam(value = "version_id", required = true) String version_id) {
         try {
 
-            Model_Version version = Model_Version.getById(version_id);
-            if (version == null) return notFound("Version not found");
+            Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
 
-            if (version.get_c_program() == null || (version.get_c_program().hardware_type_default == null && version.get_c_program().hardware_type_test == null)) return badRequest("Version_object is not version of c_program or is not default firmware");
+            if (version.get_c_program().hardware_type_default == null && version.get_c_program().hardware_type_test == null) return badRequest("Version_object is not version of c_program or is not default firmware");
 
-            // Kontrola oprávnění
-            if (!version.get_c_program().edit_permission()) return forbidden();
 
-            Model_Version previous_main_version_not_cached = Model_Version.find.query().where().eq("c_program.id", version.get_c_program().id).isNotNull("default_program").select("id").findOne();
+            Model_CProgramVersion previous_main_version_not_cached = Model_CProgramVersion.find.query().where().eq("c_program.id", version.get_c_program().id).isNotNull("default_program").select("id").findOne();
             if (previous_main_version_not_cached != null) {
 
-                Model_Version previous_main_version = Model_Version.getById(previous_main_version_not_cached.id);
+                Model_CProgramVersion previous_main_version = Model_CProgramVersion.getById(previous_main_version_not_cached.id);
                 if (previous_main_version != null) {
                     previous_main_version.default_program = null;
                     version.get_c_program().default_main_version = null;
@@ -1429,4 +1211,5 @@ public class Controller_Code extends BaseController {
             return internalServerError(e);
         }
     }
+
 }

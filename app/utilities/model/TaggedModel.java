@@ -25,9 +25,10 @@ public abstract class TaggedModel extends NamedModel {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    public void addTags(List<String> tags) {
-        tags.forEach(value -> {
+    public void addTags(List<String> new_tags) throws _Base_Result_Exception {
+        new_tags.forEach(value -> {
             Model_Tag tag = Model_Tag.getByValue(value);
+
             if (tag == null) {
                 tag = new Model_Tag();
                 tag.value = value;
@@ -53,11 +54,13 @@ public abstract class TaggedModel extends NamedModel {
         this.save();
     }
 
-    public void removeTags(List<String> tags) {
+    public void removeTags(List<String> tags) throws _Base_Result_Exception {
+
+        check_update_permission();
 
         List<Model_Tag> toRemove = this.tags.stream().filter(tag -> tags.contains(tag.value)).collect(Collectors.toList());
         this.tags.removeAll(toRemove);
 
-        this.save();
+        this.update();
     }
 }

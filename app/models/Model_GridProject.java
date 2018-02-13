@@ -224,22 +224,6 @@ public class Model_GridProject extends TaggedModel {
         BaseController.person().cache_permission("grid_project_read_" + id, false);
         throw new Result_Error_PermissionDenied();
     }
-    @JsonIgnore @Transient @Override public void check_edit_permission()   throws _Base_Result_Exception {
-
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("grid_project_edit_" + id)) BaseController.person().valid_permission("grid_project_edit_" + id);
-        if (BaseController.person().has_permission(Permission.GridProject_edit.name())) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_GridProject.find.query().where().where().eq("project.participants.person.id", BaseController.personId()).where().eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("grid_project_edit_" + id, true);
-            return;
-        }
-
-        // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("grid_project_edit_" + id, false);
-        throw new Result_Error_PermissionDenied();
-    }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if (BaseController.person().has_permission("grid_project_delete_" + id)) BaseController.person().valid_permission("grid_project_delete_" + id);

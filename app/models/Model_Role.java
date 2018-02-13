@@ -7,6 +7,7 @@ import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.ProgramType;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -65,10 +66,6 @@ public class Model_Role extends NamedModel {
         if(BaseController.person().has_permission(Permission.Role_read.name())) return;
         throw new Result_Error_PermissionDenied();
     }
-    @JsonIgnore @Transient @Override  public void check_edit_permission()   throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Role_edit.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
         if(BaseController.person().has_permission(Permission.Role_update.name())) return;
         throw new Result_Error_PermissionDenied();
@@ -79,17 +76,22 @@ public class Model_Role extends NamedModel {
         throw new Result_Error_PermissionDenied();
     }
 
-    public enum Permission { Role_create, Role_read, Role_edit, Role_update, Role_delete }
+    public enum Permission { Role_create, Role_read, Role_update, Role_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Role getById(String id) {
+    // TODO Cache
+    public static Model_Role getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_Role getById(UUID id) {
-        logger.warn("CACHE is not implemented - TODO");
-        return find.byId(id);
+    public static Model_Role getById(UUID id) throws _Base_Result_Exception {
+        Model_Role role = Model_Role.find.byId(id);
+        if (role == null) throw new Result_Error_NotFound(Model_Product.class);
+
+        // Check Permission
+        role.check_read_permission();
+        return role;
     }
 
     public static Model_Role getByName(String name) {

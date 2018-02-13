@@ -1,10 +1,10 @@
 package utilities.financial;
 
-import models.Model_Person;
-import models.Model_Product;
-import models.Model_ProductExtension;
-import models.Model_Project;
+import models.*;
 import utilities.enums.ExtensionType;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.extensions.configurations.Configuration_Project;
 import utilities.financial.extensions.configurations.Configuration_RestApi;
 import utilities.logger.Logger;
@@ -27,7 +27,7 @@ public class FinancialPermission {
      * @param action String action that is being performed.
      * @return Boolean true if user is allowed to do it, otherwise false.
      */
-    public static boolean check(Model_Product product, String action) {
+    public static void check_permission(Model_Product product, String action) throws _Base_Result_Exception {
 
         switch (action) {
 
@@ -41,10 +41,11 @@ public class FinancialPermission {
                     available += ((Configuration_Project)extension.getConfiguration()).count;
                 }
 
-                return Model_Project.find.query().where().eq("product.id", product.id).findCount() < available;
+                if( Model_Project.find.query().where().eq("product.id", product.id).findCount() < available) return;
+                throw new Result_Error_PermissionDenied();
             }
 
-            default: return false;
+            default: throw new Result_Error_PermissionDenied();
         }
     }
 

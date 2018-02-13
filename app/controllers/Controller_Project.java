@@ -82,10 +82,6 @@ public class Controller_Project extends BaseController {
             project.description = help.description;
             project.product = product;
 
-            // Kontrola oprávnění těsně před uložením
-            project.create_permission();
-            project.financial_permission();
-
             // Uložení objektu
             project.save();
 
@@ -159,9 +155,6 @@ public class Controller_Project extends BaseController {
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
 
-            // Kontrola oprávnění
-            project.read_permission();
-
             // Vraácení objektu
             return ok(project.json());
 
@@ -197,9 +190,6 @@ public class Controller_Project extends BaseController {
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
-
-            // Kontrola oprávnění
-            project.delete_permission();
 
             // Kvuli bezpečnosti abych nesmazal něco co nechceme
             for (Model_CProgram c : project.getCPrograms()) {
@@ -253,9 +243,6 @@ public class Controller_Project extends BaseController {
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
-
-            // Kontrola oprávnění
-            project.edit_permission();
 
             // Úprava objektu
             project.name = help.name;
@@ -311,7 +298,7 @@ public class Controller_Project extends BaseController {
             Model_Project project = Model_Project.getById(project_id);
 
             // Kontrola oprávnění
-            project.share_permission();
+            project.check_share_permission();
 
             // Získání seznamu uživatelů, kteří jsou registrovaní(listIn) a kteří ne(listOut)
             List<Model_Person> listIn = new ArrayList<>();
@@ -495,7 +482,7 @@ public class Controller_Project extends BaseController {
             Model_Project project = Model_Project.getById(project_id);
 
             // Kontrola oprávnění
-            project.unshare_permission();
+            project.check_share_permission();
 
             List<Model_Person> list = new ArrayList<>();
 
@@ -577,9 +564,6 @@ public class Controller_Project extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_Project project = Model_Project.getById(help.object_id);
-            
-            // Kontrola oprávnění těsně před uložením
-            project.edit_permission();
 
             project.addTags(help.tags);
 
@@ -627,9 +611,6 @@ public class Controller_Project extends BaseController {
             Swagger_Tags help = form.get();
 
             Model_Project project = Model_Project.getById(help.object_id);
-
-            // Kontrola oprávnění těsně před uložením
-            project.edit_permission();
 
             project.removeTags(help.tags);
 
@@ -685,7 +666,6 @@ public class Controller_Project extends BaseController {
 
             // Kotrola objektu
             Model_Project project = Model_Project.getById(help.project_id);
-            project.update_permission();
 
             Model_HardwareRegistration registration = new Model_HardwareRegistration();
             registration.hardware = hardware;

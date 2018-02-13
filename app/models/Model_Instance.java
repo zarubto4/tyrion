@@ -16,6 +16,9 @@ import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import websocket.interfaces.WS_Homer;
@@ -202,10 +205,30 @@ public class Model_Instance extends TaggedModel {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public Model_Project getProject() {
+    public UUID get_project_id() throws _Base_Result_Exception {
 
-        return Model_Project.getById(project_id());
+        if (cache_project_id == null) {
+
+            Model_Project project = Model_Project.find.query().where().eq("instances.id", id).select("id").findOne();
+            if (project == null) throw new Result_Error_NotFound(Model_Project.class);
+
+            cache_project_id = project.id;
+            return project.id;
+        }
+
+        return cache_project_id;
     }
+
+    @JsonIgnore
+    public Model_Project get_project() throws _Base_Result_Exception {
+
+        if (cache_project_id == null) {
+            return Model_Project.getById(get_project_id());
+        }else {
+            return Model_Project.getById(cache_project_id);
+        }
+    }
+
 
     @JsonIgnore
     public Model_InstanceSnapshot getCurrentSnapshot() {
@@ -487,7 +510,7 @@ public class Model_Instance extends TaggedModel {
     public void stop() {
 
         cache_status.put(this.id, false);
-        WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, true, getProject().id);
+        WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, true, get_project_id());
 
         if (getCurrentSnapshot() != null) {
             getCurrentSnapshot().stop();
@@ -633,13 +656,25 @@ public class Model_Instance extends TaggedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   public boolean create_permission() { return getProject().read_permission()   || BaseController.person().has_permission("Instance_create"); }
-    @JsonProperty public boolean update_permission() { return getProject().update_permission() || BaseController.person().has_permission("Instance_update"); }
-    @JsonIgnore   public boolean read_permission()   { return getProject().read_permission()   || BaseController.person().has_permission("Instance_read"); }
-    @JsonProperty public boolean edit_permission()   { return getProject().edit_permission()   || BaseController.person().has_permission("Instance_edit"); }
-    @JsonProperty public boolean delete_permission() { return getProject().delete_permission() || BaseController.person().has_permission("Instance_delete"); }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Instance_create.name())) return;
+        this.project.check_update_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Instance_read.name())) return;
+        get_project().check_read_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Instance_update.name())) return;
+        get_project().check_update_permission();
+    }
 
-    public enum Permission { Instance_create, Instance_read, Instance_edit, Instance_update, Instance_delete }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Instance_delete.name())) return;
+        get_project().check_delete_permission();
+    }
+
+    public enum Permission { Instance_create, Instance_read, Instance_update, Instance_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
@@ -649,17 +684,17 @@ public class Model_Instance extends TaggedModel {
     @CacheField(value = Boolean.class, name = "Model_Instance_Status")
     public static Cache<UUID, Boolean> cache_status;
 
-    public static Model_Instance getById(String id) {
+    public static Model_Instance getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_Instance getById(UUID id) {
+    public static Model_Instance getById(UUID id) throws _Base_Result_Exception {
 
         Model_Instance instance = cache.get(id);
         if (instance == null) {
 
             instance = Model_Instance.find.query().where().idEq(id).eq("deleted", false).findOne();
-            if (instance == null) return null;
+            if (instance == null) throw new Result_Error_NotFound(Model_Instance.class);
 
             cache.put(id, instance);
         }

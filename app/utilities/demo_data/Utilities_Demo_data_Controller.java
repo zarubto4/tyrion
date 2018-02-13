@@ -264,7 +264,7 @@ public class Utilities_Demo_data_Controller extends BaseController {
             cloud_server_1.grid_port = 8503;
             cloud_server_1.mqtt_port = 1881;
             cloud_server_1.web_view_port = 8502;
-            cloud_server_1.server_remote_port = 8505;
+            cloud_server_1.hardware_logger_port = 8505;
             cloud_server_1.server_type = HomerType.MAIN;
             cloud_server_1.connection_identifier = "aaaaaaaaaaaaaaa";
             cloud_server_1.hash_certificate = "bbbbbbbbbbbbbbb";
@@ -276,7 +276,7 @@ public class Utilities_Demo_data_Controller extends BaseController {
             cloud_server_2.grid_port = 8503;
             cloud_server_2.mqtt_port = 1881;
             cloud_server_2.web_view_port = 8502;
-            cloud_server_2.server_remote_port = 8505;
+            cloud_server_2.hardware_logger_port = 8505;
             cloud_server_2.server_type = HomerType.BACKUP;
             cloud_server_2.save();
 
@@ -287,7 +287,7 @@ public class Utilities_Demo_data_Controller extends BaseController {
             cloud_server_3.grid_port = 8503;
             cloud_server_3.mqtt_port = 1881;
             cloud_server_3.web_view_port = 8502;
-            cloud_server_3.server_remote_port = 8505;
+            cloud_server_3.hardware_logger_port = 8505;
             cloud_server_3.server_type = HomerType.PUBLIC;
             cloud_server_3.save();
 
@@ -297,7 +297,7 @@ public class Utilities_Demo_data_Controller extends BaseController {
             cloud_server_4.grid_port = 8503;
             cloud_server_4.mqtt_port = 1881;
             cloud_server_4.web_view_port = 8502;
-            cloud_server_4.server_remote_port = 8505;
+            cloud_server_4.hardware_logger_port = 8505;
             cloud_server_4.server_type = HomerType.PUBLIC;
             cloud_server_4.save();
 

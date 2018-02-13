@@ -13,6 +13,7 @@ import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.enums.*;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.financial.extensions.configurations.*;
 import utilities.financial.fakturoid.Fakturoid;
 import utilities.financial.goPay.GoPay;
@@ -33,25 +34,25 @@ public class Controller_Finance extends BaseController {
 
     private static final Logger logger = new Logger(Controller_Finance.class);
 
+// CONTROLLER CONFIGURATION ############################################################################################
+
     private FormFactory formFactory;
     private Fakturoid fakturoid;
     private GoPay goPay;
 
-    @Inject
-    public Controller_Finance(FormFactory formFactory, Fakturoid fakturoid, GoPay goPay) {
+    @Inject public Controller_Finance(FormFactory formFactory, Fakturoid fakturoid, GoPay goPay) {
         this.formFactory = formFactory;
         this.fakturoid = fakturoid;
         this.goPay = goPay;
     }
 
-// ADMIN - TARIFF SETTINGS #############################################################################################
+// ADMIN - TARIFF SETTINGS #############################################################################################//
 
     @ApiOperation(value = "create Tariff",
             tags = {"Admin-Tariff"},
             notes = "create new Tariff",
             produces = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
 
     )
     @ApiImplicitParams(
@@ -102,9 +103,7 @@ public class Controller_Finance extends BaseController {
 
 
             tariff.active                   = false;
-
-            if (!tariff.create_permission()) return forbidden();
-
+            
             tariff.save();
 
             return created(Json.toJson(tariff));
@@ -117,8 +116,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Tariff"},
             notes = "create new Tariff",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -148,13 +146,10 @@ public class Controller_Finance extends BaseController {
             Swagger_Tariff_New help = form.get();
 
             Model_Tariff tariff = Model_Tariff.getById(tariff_id);
-            if (tariff == null) return notFound("Tariff not found");
-
+            
             if (Model_Tariff.find.query().where().ne("id", tariff_id).eq("identifier", help.identifier).findOne() != null)
                 return badRequest("Identifier must be unique!");
-
-            if (!tariff.edit_permission()) return forbidden();
-
+            
             tariff.name                     = help.name;
             tariff.identifier               = help.identifier;
             tariff.description              = help.description;
@@ -172,7 +167,7 @@ public class Controller_Finance extends BaseController {
 
             tariff.update();
 
-            return ok(Json.toJson(tariff));
+            return ok(tariff.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -183,8 +178,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Tariff"},
             notes = "deactivate Tariff",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -198,12 +192,8 @@ public class Controller_Finance extends BaseController {
         try {
 
             Model_Tariff tariff = Model_Tariff.getById(tariff_id);
-            if (tariff == null) return notFound("Tariff not found");
-
+            
             if (!tariff.active) return badRequest("Tariff is already deactivated");
-
-            if (!tariff.update_permission()) return forbidden();
-
             tariff.active = false;
 
             tariff.update();
@@ -219,8 +209,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Tariff"},
             notes = "activate Tariff",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class),
@@ -234,12 +223,9 @@ public class Controller_Finance extends BaseController {
         try {
 
             Model_Tariff tariff = Model_Tariff.getById(tariff_id);
-            if (tariff == null) return notFound("Tariff not found");
-
+            
             if (tariff.active) return badRequest("Tariff is already activated");
-
-            if (!tariff.update_permission()) return forbidden();
-
+            
             tariff.active = true;
 
             tariff.update();
@@ -255,8 +241,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Tariff"},
             notes = "activate Tariff",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -270,10 +255,7 @@ public class Controller_Finance extends BaseController {
         try {
 
             Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
-            if (tariff == null) return notFound("Tariff not found");
-
-            if (!tariff.edit_permission()) return forbidden();
-
+   
             tariff.up();
 
             return ok();
@@ -287,8 +269,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Tariff"},
             notes = "activate Tariff",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -302,10 +283,7 @@ public class Controller_Finance extends BaseController {
         try {
 
             Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
-            if (tariff == null) return notFound("Tariff not found");
-
-            if (!tariff.edit_permission()) return forbidden();
-
+  
             tariff.down();
 
             return ok();
@@ -319,8 +297,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Tariff"},
             notes = "activate Tariff",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -334,10 +311,7 @@ public class Controller_Finance extends BaseController {
         try {
 
             Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
-            if (tariff == null) return notFound("Tariff not found");
-
-            if (!tariff.delete_permission()) return forbidden();
-
+      
             tariff.delete();
 
             return ok();
@@ -351,8 +325,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Tariff"},
             notes = "activate Tariff",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class),
@@ -366,11 +339,7 @@ public class Controller_Finance extends BaseController {
         try {
 
             Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
-            if (tariff == null) return notFound("Tariff not found");
-
-            if (!tariff.read_permission()) return forbidden();
-
-
+          
             return ok(Json.toJson(tariff));
 
         } catch (Exception e) {
@@ -378,15 +347,13 @@ public class Controller_Finance extends BaseController {
         }
     }
 
-
 // USER -  EXTENSION PACKAGES ##########################################################################################
 
     @ApiOperation(value = "create Product_Extension",
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -416,8 +383,7 @@ public class Controller_Finance extends BaseController {
             Swagger_ProductExtension_New help = form.get();
 
             Model_Product product = Model_Product.getById(product_id);
-            if (product == null) return notFound("Product not found");
-
+            
             try {
                 ExtensionType type = ExtensionType.valueOf(help.extension_type);
             } catch (Exception e) {
@@ -435,9 +401,7 @@ public class Controller_Finance extends BaseController {
 
             Object config = Configuration.getConfiguration( extension.type , help.config);
             extension.configuration = Json.toJson(config).toString();
-
-            if (!extension.create_permission()) return forbidden();
-
+            
             extension.save();
 
             return ok(Json.toJson(extension));
@@ -453,8 +417,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",                 response = Model_ProductExtension.class),
@@ -468,10 +431,7 @@ public class Controller_Finance extends BaseController {
         try {
 
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
-            if (extension == null) return notFound("Extension not found");
-
-            if (!extension.read_permission()) return forbidden();
-
+            
             return ok(Json.toJson(extension));
 
         } catch (Exception e) {
@@ -483,8 +443,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",                 response = Model_ProductExtension.class, responseContainer = "list"),
@@ -505,8 +464,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "Updates extension. User can change name, description or color.",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -536,10 +494,7 @@ public class Controller_Finance extends BaseController {
             Swagger_ProductExtension_Edit help = form.get();
 
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
-            if (extension == null) return notFound("Extension not found");
-
-            if (!extension.edit_permission()) return forbidden();
-
+ 
             extension.name = help.name;
             extension.description = help.description;
             extension.color = help.color;
@@ -557,8 +512,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",                 response = Model_ProductExtension.class),
@@ -572,8 +526,7 @@ public class Controller_Finance extends BaseController {
         try {
 
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
-            if (extension == null) return notFound("Extension not found");
-
+   
             extension.check_act_deactivate_permission();
 
             if (extension.active) return badRequest("Extension is already activated");
@@ -593,8 +546,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",                 response = Model_ProductExtension.class),
@@ -616,7 +568,7 @@ public class Controller_Finance extends BaseController {
             extension.active = false;
             extension.update();
 
-            return ok(Json.toJson(extension));
+            return ok(extension.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -627,8 +579,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Extension"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",                 response = Result_Ok.class),
@@ -641,10 +592,7 @@ public class Controller_Finance extends BaseController {
         try {
 
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
-            if (extension == null) return notFound("Extension not found");
-
-            if (!extension.delete_permission()) return forbidden();
-
+      
             extension.deleted = true;
 
             extension.update();
@@ -662,8 +610,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Extension"},
             notes = "",
             produces = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -693,7 +640,6 @@ public class Controller_Finance extends BaseController {
             Swagger_TariffExtension_New help = form.get();
 
             Model_Tariff tariff = Model_Tariff.getById(tariff_id);
-            if (tariff == null) return notFound("Tariff not found");
 
             try {
                 ExtensionType type = ExtensionType.valueOf(help.extension_type);
@@ -728,8 +674,6 @@ public class Controller_Finance extends BaseController {
                 extension.tariff_optional = tariff;
             }
 
-            if (!extension.create_permission()) return forbidden();
-
             extension.save();
 
             return created(Json.toJson(extension));
@@ -745,9 +689,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Extension"},
             notes = "create new Tariff",
             produces = "application/json",
-            protocols = "https",
-            code = 200
-
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -777,9 +719,6 @@ public class Controller_Finance extends BaseController {
             Swagger_TariffExtension_Edit help = form.get();
 
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
-            if (extension == null) return notFound("Extension not found");
-
-            if (!extension.edit_permission()) return forbidden();
 
             extension.name = help.name;
             extension.description = help.description;
@@ -822,8 +761,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Extension"},
             notes = "order Tariff in list",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -837,7 +775,6 @@ public class Controller_Finance extends BaseController {
         try {
 
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
-            if (extension == null) return notFound("Extension not found");
             extension.up();
 
             return ok();
@@ -851,8 +788,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Extension"},
             notes = "order Tariff_Extension Down",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
 
     )
 
@@ -868,7 +804,6 @@ public class Controller_Finance extends BaseController {
         try {
 
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
-            if (extension == null) return notFound("Extension not found");
 
             extension.down();
 
@@ -883,8 +818,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Extension"},
             notes = "order Tariff_Extension Down",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
 
     )
 
@@ -900,7 +834,6 @@ public class Controller_Finance extends BaseController {
         try {
 
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
-            if (extension == null) return notFound("Extension not found");
 
             extension.active = false;
             extension.update();
@@ -916,8 +849,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Extension"},
             notes = "order Tariff_Extension Down",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
 
     )
 
@@ -933,7 +865,6 @@ public class Controller_Finance extends BaseController {
         try {
 
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
-            if (extension == null) return notFound("Extension not found");
 
             extension.active = true;
             extension.update();
@@ -949,8 +880,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Extension"},
             notes = "order Tariff_Extension Down",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
 
     )
 
@@ -966,7 +896,6 @@ public class Controller_Finance extends BaseController {
         try {
 
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
-            if (extension == null) return notFound("Extension not found");
 
             extension.delete();
 
@@ -981,8 +910,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",                 response = Swagger_ProductExtension_Type.class, responseContainer = "list"),
@@ -1024,8 +952,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "get all Tariffs - required for every else action in system. For example: Project is created under the Product which is under some Tariff",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class, responseContainer = "list"),
@@ -1036,7 +963,7 @@ public class Controller_Finance extends BaseController {
         try {
 
             // Pokud má uživatel oprávnění vracím upravený SQL
-            if (person().has_permission(Model_Tariff.Permission.Tariff_edit.name())) {
+            if (person().has_permission(Model_Tariff.Permission.Tariff_update.name())) {
 
                 return ok(Json.toJson(Model_Tariff.find.query().where().order().asc("order_position").findList()));
 
@@ -1093,7 +1020,6 @@ public class Controller_Finance extends BaseController {
             Swagger_Product_New help = form.get();
 
             Model_Tariff tariff = Model_Tariff.getById(help.tariff_id);
-            if (tariff == null) return notFound("Tariff not found");
 
             Model_Customer customer = null;
             Model_Person person = BaseController.person();
@@ -1103,7 +1029,6 @@ public class Controller_Finance extends BaseController {
             if (help.customer_id != null) {
 
                 customer = Model_Customer.getById(help.customer_id);
-                if (customer == null) return notFound("Customer not found");
 
             } else {
 
@@ -1245,9 +1170,6 @@ public class Controller_Finance extends BaseController {
 
                     Model_ProductExtension extension = ext.copy();
                     extension.product = product;
-
-                    if (!extension.create_permission()) return forbidden();
-
                     extension.save();
                 }
             }
@@ -1268,8 +1190,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "List of users Products",    response = Model_Product.class, responseContainer = "List"),
@@ -1298,8 +1219,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "List of users Products",    response = Model_Product.class),
@@ -1313,8 +1233,6 @@ public class Controller_Finance extends BaseController {
 
             // Kontrola Objektu
             Model_Product product = Model_Product.getById(product_id);
-            if (product == null) return notFound("Product product_id not found");
-
             // Vrácení seznamu
             return ok(Json.toJson(product));
 
@@ -1327,8 +1245,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "edit basic details of Product",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -1349,7 +1266,7 @@ public class Controller_Finance extends BaseController {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result product_update(@ApiParam(required = true, value = "product_id String path") String product_id) {
+    public Result product_update(String product_id) {
         try {
 
             // Vytvoření pomocného Objektu
@@ -1359,10 +1276,6 @@ public class Controller_Finance extends BaseController {
 
             // Kontrola Objektu
             Model_Product product = Model_Product.getById(product_id);
-            if (product == null) return notFound("Product not found");
-
-            // Oprávnění operace
-            if (!product.edit_permission()) return forbidden();
 
             // úpravy objektu
             product.name = help.name;
@@ -1384,8 +1297,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "deactivate product Tariff and deactivate all stuff under it",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Deactivating was successful",   response = Model_Product.class),
@@ -1400,10 +1312,9 @@ public class Controller_Finance extends BaseController {
 
             // Kontrola objektu
             Model_Product product = Model_Product.getById(product_id);
-            if (product == null) return notFound("Product product_id not found");
 
-            // Kontorla oprávnění
-            if (!product.act_deactivate_permission()) return forbidden();
+            // Kontrola oprávnění
+            product.check_act_deactivate_permission();
 
             if (!product.active) return badRequest("Product is already deactivated");
 
@@ -1425,8 +1336,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "Activate product Tariff and deactivate all staff around that",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Activating was successful", response = Model_Product.class),
@@ -1441,10 +1351,9 @@ public class Controller_Finance extends BaseController {
 
             // Kontrola objektu
             Model_Product product = Model_Product.getById(product_id);
-            if (product == null) return notFound("Product product_id not found");
 
             // Kontrola oprávnění
-            if (!product.act_deactivate_permission()) return forbidden();
+            product.check_act_deactivate_permission();
 
             if (product.active) return badRequest("Product is already activated");
 
@@ -1455,7 +1364,7 @@ public class Controller_Finance extends BaseController {
             product.notificationActivation();
 
             // Vrácení potvrzení
-            return ok(Json.toJson(product));
+            return ok(product.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1466,8 +1375,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "creates invoice - credit will be added after payment if payment method is bank transfer or if getting money from credit card is successful",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -1500,10 +1408,6 @@ public class Controller_Finance extends BaseController {
 
             // Find object
             Model_Product product = Model_Product.getById(product_id);
-            if (product == null) return notFound("Product not found");
-
-            // Check permission
-            if (!product.edit_permission()) return forbidden();
 
             Model_Invoice invoice = new Model_Invoice();
             invoice.product = product;
@@ -1527,7 +1431,7 @@ public class Controller_Finance extends BaseController {
             }
 
             // Return serialized object
-            return  ok(Json.toJson(invoice));
+            return  ok(invoice.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -1539,8 +1443,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin"},
             notes = "get PDF invoice file",
             produces = "multipartFormData",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -1556,10 +1459,6 @@ public class Controller_Finance extends BaseController {
 
             // Kontrola objektu
             Model_Product product = Model_Product.getById(product_id);
-            if (product == null) return notFound("Product product_id not found");
-
-            // Kontorla oprávnění
-            if (!product.delete_permission()) return forbidden();
 
             // Trvalé odstranění produktu!
             product.delete();
@@ -1576,8 +1475,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "create payments details in Product",
             produces = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -1603,7 +1501,6 @@ public class Controller_Finance extends BaseController {
 
             // Kontrola Objektu
             Model_Product product = Model_Product.getById(product_id);
-            if (product == null) return notFound("Product not found");
 
             if (product.payment_details != null) return badRequest("Product already has Payment Details");
 
@@ -1636,8 +1533,7 @@ public class Controller_Finance extends BaseController {
                 payment_details.company_web              = help.company_web;
             }
 
-            // Oprávnění operace
-            if (!payment_details.create_permission()) return forbidden();
+            product.check_update_permission();
 
             product.fakturoid_subject_id = fakturoid.create_subject(payment_details);
             if (product.fakturoid_subject_id == null) return badRequest("Unable to create your payment details, check provided information.");
@@ -1659,8 +1555,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "edit payments details in Product",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -1691,12 +1586,7 @@ public class Controller_Finance extends BaseController {
 
             // Kontrola Objektu
             Model_PaymentDetails payment_details = Model_PaymentDetails.getById(payment_details_id);
-            if (payment_details == null) return notFound("PaymentDetails not found");
 
-            // Oprávnění operace
-            if (!payment_details.edit_permission()) return forbidden();
-
-            // úpravy objektu
             payment_details.street          = help.street;
             payment_details.street_number   = help.street_number;
             payment_details.city            = help.city;
@@ -1765,8 +1655,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "get all the products that the user can use when creating new projects",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Product_Active.class, responseContainer = "List"),
@@ -1800,8 +1689,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "cancel automatic payments in Product",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Successfully updated",      response = Result_Ok.class),
@@ -1816,10 +1704,6 @@ public class Controller_Finance extends BaseController {
 
             // Kontrola objektu
             Model_Product product = Model_Product.getById(product_id);
-            if (product == null) return notFound("Product not found");
-
-            // Oprávnění operace
-            if (!product.edit_permission()) return forbidden();
 
             if (product.gopay_id == null) return badRequest("Product has on demand payments turned off.");
 
@@ -1851,8 +1735,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "get summary information from invoice",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Invoice_FullDetails.class),
@@ -1865,10 +1748,8 @@ public class Controller_Finance extends BaseController {
         try {
 
             // Kontrola objektu
-            Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
-            if (invoice == null) return notFound("Invoice invoice_id not found");
+            Model_Invoice invoice = Model_Invoice.getById(invoice_id);
 
-            if (!invoice.read_permission()) return forbidden();
             Swagger_Invoice_FullDetails help = new Swagger_Invoice_FullDetails();
             help.invoice = invoice;
             help.invoice_items = Model_InvoiceItem.find.query().where().eq("invoice.id", invoice_id).findList();
@@ -1884,8 +1765,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "resend Invoice to specific email",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -1914,9 +1794,7 @@ public class Controller_Finance extends BaseController {
             Swagger_Resend_Email help = form.get();
 
             // Kontrola objektu
-            Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
-            if (invoice == null) return notFound("Invoice invoice_id not found");
-            if (!invoice.read_permission()) return forbidden();
+            Model_Invoice invoice = Model_Invoice.getById(invoice_id);
 
             fakturoid.sendInvoiceEmail(invoice, help.email);
 
@@ -1931,8 +1809,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "reimbursement of an unpaid invoice - with settings from creating product before",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Invoice.class),
@@ -1945,10 +1822,8 @@ public class Controller_Finance extends BaseController {
     public Result invoice_reimbursement(String invoice_id) {
         try {
 
-            Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
-            if (invoice == null) return notFound("Invoice invoice_id not found");
+            Model_Invoice invoice = Model_Invoice.getById(invoice_id);
 
-            if (!invoice.read_permission()) return forbidden();
             if ( invoice.status.equals(PaymentStatus.PAID)) return badRequest("Invoice is already paid");
 
             // vyvolání nové platby ale bez vytváření faktury nebo promofaktury
@@ -1966,8 +1841,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "get PDF invoice file",
             produces = "multipartFormData",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -1981,12 +1855,11 @@ public class Controller_Finance extends BaseController {
 
             if (!kind.equals("proforma") && !kind.equals("invoice")) return badRequest("kind should be 'proforma' or 'invoice'");
 
-            Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
-            if (invoice == null) return notFound("Invoice not found");
+            Model_Invoice invoice = Model_Invoice.getById(invoice_id);
+
 
             if (kind.equals("proforma") && invoice.proforma_pdf_url == null) return badRequest("Proforma PDF is unavailable");
 
-            if (!invoice.read_permission()) return forbidden();
 
             byte[] pdf_in_array = fakturoid.download_PDF_invoice(kind, invoice);
 
@@ -2001,8 +1874,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Invoice"},
             notes = "get PDF invoice file",
             produces = "multipartFormData",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -2015,10 +1887,8 @@ public class Controller_Finance extends BaseController {
         try {
 
             // Kontrola objektu
-            Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
-            if (invoice == null) return notFound("Invoice not found");
+            Model_Invoice invoice = Model_Invoice.getById(invoice_id);
 
-            if (!invoice.remind_permission()) return forbidden();
             fakturoid.sendInvoiceReminderEmail(invoice,"You have pending unpaid invoice.");
 
             return ok();
@@ -2032,8 +1902,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin-Invoice"},
             notes = "remove Invoice only with permission",
             produces = "multipartFormData",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -2046,20 +1915,13 @@ public class Controller_Finance extends BaseController {
         try {
 
             // Kontrola objektu
-            Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
-            if (invoice == null) return notFound("Invoice invoice_id not found");
-
-            // Kontrola oprávnění
-            if (!invoice.delete_permission()) return forbidden();
-
+            Model_Invoice invoice = Model_Invoice.getById(invoice_id);
+          
             // TODO - Chybí navázání na fakturoid - smazání faktury (nějaký proces?)
+           
             //Fakturoid_Controller.fakturoid_delete()
-            logger.internalServerError(new IllegalAccessException("unsuported remove from fakturoid!! - TODO "));
-
-            // Vykonání operace
-            invoice.delete();
-
-            return ok();
+            throw new Result_Error_NotSupportedException();
+            
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -2070,8 +1932,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Admin"},
             notes = "remove Invoice only with permission",
             produces = "multipartFormData",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -2081,15 +1942,21 @@ public class Controller_Finance extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result invoice_synchronizeFakturoid(String invoice_id) {
-        return TODO;
+
+        try {
+            // TODO invoice_synchronizeFakturoid
+            throw new Result_Error_NotSupportedException();
+
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
     }
     
     @ApiOperation(value = "edit Invoice Set As Paid",
             tags = {"Admin-Invoice"},
             notes = "remove Invoice only with permission",
             produces = "multipartFormData",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -2102,10 +1969,9 @@ public class Controller_Finance extends BaseController {
     public Result invoice_set_as_paid(String invoice_id) {
         try {
 
-            //TODO
-            List<Model_Invoice> invoices = Model_Invoice.find.all();
-            return ok(Json.toJson(invoices) );
-
+            // TODO invoice_set_as_paid
+            throw new Result_Error_NotSupportedException();
+         
         } catch (Exception e) {
             return internalServerError(e);
         }
@@ -2149,9 +2015,7 @@ public class Controller_Finance extends BaseController {
             Swagger_Customer_New help = form.get();
 
             Model_Customer customer = new Model_Customer();
-
-            if (!customer.create_permission()) return forbidden();
-
+            
             customer.save();
 
             Model_Employee employee = new Model_Employee();
@@ -2182,10 +2046,7 @@ public class Controller_Finance extends BaseController {
             details.company_account = true;
             details.save();
 
-            customer.refresh();
-
             customer.fakturoid_subject_id = fakturoid.create_subject(details);
-
             customer.update();
 
             return created(Json.toJson(customer));
@@ -2200,8 +2061,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "Gets all companies by logged user.",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Created successfully",      response = Model_Customer.class, responseContainer = "list"),
@@ -2224,8 +2084,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "Updates payment details of a company.",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -2256,10 +2115,7 @@ public class Controller_Finance extends BaseController {
             Swagger_Customer_New help = form.get();
 
             Model_Customer customer = Model_Customer.getById(customer_id);
-            if (customer == null) return notFound("Customer not found");
-
-            if (!customer.update_permission()) return forbidden();
-
+        
             Model_PaymentDetails details = customer.payment_details;
             details.street          = help.street;
             details.street_number   = help.street_number;
@@ -2278,8 +2134,6 @@ public class Controller_Finance extends BaseController {
 
             details.update();
 
-            customer.refresh();
-
             if (!fakturoid.update_subject(details))
                 return badRequest("Payment details are invalid.");
 
@@ -2294,8 +2148,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "Adds employee to a company.",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -2326,10 +2179,7 @@ public class Controller_Finance extends BaseController {
             Swagger_Customer_Employee help = form.get();
 
             Model_Customer customer = Model_Customer.getById(help.customer_id);
-            if (customer == null) return notFound("Customer not found");
-
-            if (!customer.update_permission()) return forbidden();
-
+         
             for (Model_Person person : Model_Person.find.query().where().in("mail", help.mails).findList()) {
 
                 // Abych nepřidával ty co už tam jsou
@@ -2355,8 +2205,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "Removes employee from a company.",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Removed successfully",      response = Result_Ok.class),
@@ -2369,10 +2218,7 @@ public class Controller_Finance extends BaseController {
         try {
             
             Model_Employee employee = Model_Employee.getById(employee_id);
-            if (employee == null) return notFound("Employee not found");
-
-            if (!employee.delete_permission()) return forbidden();
-
+  
             employee.delete();
 
             return ok();
@@ -2386,8 +2232,7 @@ public class Controller_Finance extends BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "Deletes company.",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Removed successfully",      response = Result_Ok.class),
@@ -2401,10 +2246,7 @@ public class Controller_Finance extends BaseController {
         try {
 
             Model_Customer customer = Model_Customer.getById(customer_id);
-            if (customer == null) return notFound("Customer not found");
-
-            if (!customer.delete_permission()) return forbidden();
-
+       
             customer.delete();
 
             return ok();

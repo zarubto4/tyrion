@@ -146,7 +146,7 @@ public class Model_CompilationServer extends BaseModel {
 
         // a) ověřím zda existuje vůbec něco, co by mělo smysl kompilovat
 
-        Model_Version version = Model_Version.find.query().where().eq("compilation.status", CompilationStatus.SERVER_OFFLINE.name()).order().desc("created").setMaxRows(1).findOne();
+        Model_CProgramVersion version = Model_CProgramVersion.find.query().where().eq("compilation.status", CompilationStatus.SERVER_OFFLINE.name()).order().desc("created").setMaxRows(1).findOne();
         if (version == null) {
             logger.debug("check_after_connection:: 0 c_program versions for compilations");
             return;
@@ -192,7 +192,6 @@ public class Model_CompilationServer extends BaseModel {
 
     @JsonIgnore @Override @Transient public void check_create_permission()  throws _Base_Result_Exception { if(!BaseController.person().has_permission(Permission.CompilationServer_create.name())) throw new Result_Error_PermissionDenied();}
     @JsonIgnore @Override  @Transient public void check_read_permission()   throws _Base_Result_Exception  {}
-    @JsonIgnore @Override  @Transient public void check_edit_permission()   throws _Base_Result_Exception { if(!BaseController.person().has_permission(Permission.CompilationServer_edit.name()))   throw new Result_Error_PermissionDenied();}
     @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception { if(!BaseController.person().has_permission(Permission.CompilationServer_update.name())) throw new Result_Error_PermissionDenied();}
     @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception { if(!BaseController.person().has_permission(Permission.CompilationServer_delete.name())) throw new Result_Error_PermissionDenied();}
 

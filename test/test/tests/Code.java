@@ -29,9 +29,9 @@ public class Code extends TestHelper {
     public static Model_Producer producer;
     public static Model_Processor processor;
     public static Model_HardwareType typeOfBoard;
-    public static Model_Board board;
+    public static Model_Hardware board;
     public static Model_CProgram private_c_program;
-    public static Model_VersionObject private_c_program_version;
+    public static Model_CProgramVersion private_c_program_version;
 
     public static String adminToken;
 

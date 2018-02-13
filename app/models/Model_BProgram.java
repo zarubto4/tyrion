@@ -291,23 +291,6 @@ public class Model_BProgram extends TaggedModel {
         throw new Result_Error_PermissionDenied();
 
     }
-    @JsonIgnore @Override @Transient
-    public void check_edit_permission() throws _Base_Result_Exception {
-
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("b_program_edit_" + id)) BaseController.person().valid_permission("b_program_edit_" + id);
-        if (BaseController.person().has_permission(Permission.BProgram_edit.name())) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_BProgram.find.query().where().eq("project.participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("b_program_edit_" + id, true);
-            return;
-        }
-
-        // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("edit_" + id, false);
-        throw new Result_Error_PermissionDenied();
-    }
 
     @JsonIgnore @Override @Transient
     public void check_delete_permission() throws _Base_Result_Exception {

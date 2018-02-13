@@ -9,10 +9,15 @@ import controllers.BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import play.data.Form;
 import play.libs.Json;
 import utilities.Server;
+import utilities.cache.CacheField;
 import utilities.enums.*;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.FinancialPermission;
 import utilities.financial.history.History;
 import utilities.financial.history.HistoryEvent;
@@ -494,13 +499,15 @@ public class Model_Product extends NamedModel {
             if (Model_Product.find.query().where().eq("subscription_id", subscription_id ).findOne() == null) break;
         }
 
+        //Save Object
         super.save();
     }
 
     @JsonIgnore @Override public void update() {
 
-        logger.debug("update: Update object value: {}",  this.id);
+        logger.debug("update::Update object Id: {}",  this.id);
 
+        // Update Object
         super.update();
     }
 
@@ -724,34 +731,70 @@ public class Model_Product extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore  public boolean create_permission()                                                  {  return true;  }
-    @JsonIgnore  public boolean read_permission()                                                    {  return customer.isEmployee(BaseController.person()) || BaseController.person().has_permission("Product_read");  }
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()                {  return customer.isEmployee(BaseController.person()) || BaseController.person().has_permission("Product_edit");  }
-    @JsonProperty @ApiModelProperty(required = true) public boolean act_deactivate_permission()      {  return customer.isEmployee(BaseController.person()) || BaseController.person().has_permission("Product_act_deactivate"); }
-    @JsonIgnore  public boolean delete_permission()                                                  {  return BaseController.person().has_permission("Product_delete");}
-    @JsonIgnore  public boolean financial_permission(String action)                                  {  return FinancialPermission.check(this, action);}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        // Not Limited now, Maybe max per user?
+        return;
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Product_read.name())) return;
+        if(customer.isEmployee(BaseController.person())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception  {
+        if(BaseController.person().has_permission(Permission.Product_update.name())) return;
+        if(customer.isEmployee(BaseController.person())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception  {
+        if(BaseController.person().has_permission(Permission.Product_delete.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient public void check_act_deactivate_permission()  throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.Product_act_deactivate.name())) return;
+        if(customer.isEmployee(BaseController.person())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient public void check_financial_permission(String action)  throws _Base_Result_Exception {
+        FinancialPermission.check_permission(this, action);
+    }
 
-    public enum Permission {Product_update, Product_read, Product_edit,Product_act_deactivate, Product_delete}
+    public enum Permission {Product_crete, Product_update, Product_read, Product_act_deactivate, Product_delete}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Product getById(String id) {
+    @CacheField(value = Model_Product.class)
+    public static Cache<UUID, Model_Product> cache;
+
+    public static Model_Product getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_Product getById(UUID id) {
-        return find.byId(id);
+    public static Model_Product getById(UUID id) throws _Base_Result_Exception  {
+
+        Model_Product product = cache.get(id);
+
+        if (product == null) {
+
+            product = Model_Product.find.byId(id);
+            if (product == null) throw new Result_Error_NotFound(Model_Product.class);
+
+            cache.put(id, product);
+        }
+
+        // Check Permission
+        product.check_read_permission();
+        return product;
     }
 
-    public static Model_Product getByInvoice(UUID invoice_id) {
+    public static Model_Product getByInvoice(UUID invoice_id) throws _Base_Result_Exception  {
         return find.query().where().eq("invoices.id", invoice_id).findOne();
     }
 
-    public static List<Model_Product> getByOwner(UUID owner_id) {
+    public static List<Model_Product> getByOwner(UUID owner_id) throws _Base_Result_Exception  {
         return find.query().where().disjunction().eq("customer.employees.person.id", owner_id).findList();
     }
 
-    public static List<Model_Product> getApplicableByOwner(UUID owner_id) {
+    public static List<Model_Product> getApplicableByOwner(UUID owner_id) throws _Base_Result_Exception {
         return find.query().where().eq("active",true).eq("customer.employees.person.id", owner_id).select("id").select("name").findList();
     }
 

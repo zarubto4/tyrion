@@ -3,9 +3,12 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
@@ -23,8 +26,6 @@ public class Model_PaymentDetails extends BaseModel {
 
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-
-                                           // @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public Long id; TODO
 
     @JsonIgnore @OneToOne                                                                           public Model_Customer customer;
     @JsonIgnore @OneToOne() @JoinColumn(name="productidpaymentdetails")                             public Model_Product product;
@@ -149,8 +150,25 @@ public class Model_PaymentDetails extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore     public boolean create_permission()  { return true; }
-    @JsonProperty   public boolean edit_permission()    { return true; }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.PaymentDetail_crete.name())) return;
+        customer.check_update_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.PaymentDetail_read.name())) return;
+        customer.check_update_permission();
+    }
+
+    @JsonIgnore @Transient @Override public void check_update_permission()  throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.PaymentDetail_update.name())) return;
+        customer.check_update_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_delete_permission()  throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.PaymentDetail_delete.name())) return;
+        customer.check_update_permission();
+    }
+
+    public enum Permission {PaymentDetail_crete, PaymentDetail_update, PaymentDetail_read, PaymentDetail_delete}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

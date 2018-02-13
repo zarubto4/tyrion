@@ -17,6 +17,7 @@ import utilities.cache.CacheField;
 import utilities.enums.NotificationAction;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -191,15 +192,11 @@ public class Model_Person extends BaseModel {
         if(BaseController.person().has_permission(Permission.Person_update.name())) return;
         if(!BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
     }
-    @JsonIgnore @Transient @Override public void check_edit_permission()   throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Person_edit.name())) return;
-        if(!BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
-    }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
         if(BaseController.person().has_permission(Permission.Person_delete.name())) return;
         throw new Result_Error_PermissionDenied();
     }
-    @JsonIgnore @Transient public void activation_permission() throws _Base_Result_Exception {
+    @JsonIgnore @Transient public void check_activation_permission() throws _Base_Result_Exception {
         if(BaseController.person().has_permission(Permission.Person_activation.name())) return;
         throw new Result_Error_PermissionDenied();
     }
@@ -249,7 +246,7 @@ public class Model_Person extends BaseModel {
     @CacheField(value = UUID.class, timeToIdle = 3600, maxElements = 200, name = "Model_Person_Token")
     public static Cache<UUID, UUID> token_cache;
 
-    public static Model_Person getById(String id) {
+    public static Model_Person getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
@@ -259,7 +256,7 @@ public class Model_Person extends BaseModel {
         if (person == null) {
 
             person = Model_Person.find.byId(id);
-            if (person == null) return null;
+            if (person == null) throw new Result_Error_NotFound(Model_Product.class);
 
             for (Model_Permission permission : person.permissions) {
                 person.cache_permissions_keys.put(permission.name, true);
@@ -268,6 +265,7 @@ public class Model_Person extends BaseModel {
             cache.put(id, person);
         }
 
+        person.check_read_permission();
         return person;
     }
 
@@ -275,11 +273,11 @@ public class Model_Person extends BaseModel {
         return  find.query().where().eq("email", email).findOne();
     }
 
-    public static Model_Person getByAuthToken(String token) {
+    public static Model_Person getByAuthToken(String token)  throws _Base_Result_Exception  {
         return getByAuthToken(UUID.fromString(token));
     }
 
-    public static Model_Person getByAuthToken(UUID token) {
+    public static Model_Person getByAuthToken(UUID token) throws _Base_Result_Exception  {
 
         UUID id = token_cache.get(token);
         if (id == null) {

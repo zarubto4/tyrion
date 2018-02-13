@@ -17,6 +17,7 @@ import utilities.cache.Cached;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
 import utilities.enums.NotificationType;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -308,10 +309,6 @@ public class Model_BootLoader extends NamedModel {
         // Nothing now??
     }
 
-    @JsonIgnore @Override  @Transient public void check_edit_permission() throws _Base_Result_Exception {
-        if(!BaseController.person().has_permission(Permission.BootLoader_update.name())) throw new Result_Error_PermissionDenied();
-    }
-
     @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception {
         if(!BaseController.person().has_permission(Permission.BootLoader_edit.name())) throw new Result_Error_PermissionDenied();
     }
@@ -329,17 +326,17 @@ public class Model_BootLoader extends NamedModel {
     @CacheField(value = Model_BootLoader.class)
     public static Cache<UUID, Model_BootLoader> cache;
 
-    public static Model_BootLoader getById(String id) {
+    public static Model_BootLoader getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_BootLoader getById(UUID id) {
+    public static Model_BootLoader getById(UUID id) throws _Base_Result_Exception {
 
         Model_BootLoader bootloader = cache.get(id);
         if (bootloader == null) {
 
             bootloader = find.byId(id);
-            if (bootloader == null) return null;
+            if (bootloader == null)  throw new Result_Error_NotFound(Model_BootLoader.class);
 
             cache.put(id, bootloader);
         }

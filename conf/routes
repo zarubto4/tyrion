@@ -6,10 +6,12 @@
 OPTIONS   /*all                                                         controllers.Controller_Security.optionLink(all)
 
 ### DEVELOPERS TEST ############ DEVELOPERS TEST ############### DEVELOPERS TEST ################ DEVELOPERS TEST ###################################################
-POST      /test                                                         controllers.Controller_ZZZ_Tester.test1()
+POST      /test1                                                        controllers.Controller_ZZZ_Tester.test1()
 POST      /test2                                                        controllers.Controller_ZZZ_Tester.test2()
 GET       /test3                                                        controllers.Controller_ZZZ_Tester.test3()
 GET       /test4                                                        controllers.Controller_ZZZ_Tester.test4()
+
+                                                                        #Allowed only in Developer Mode!
 GET       /demodata                                                     utilities.demo_data.Utilities_Demo_data_Controller.all_for_becki()
 
 ### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET ###########################################################################
@@ -271,7 +273,7 @@ POST      /homer_server                                                 controll
 PUT       /homer_server/set_backup/:server_id                           controllers.Controller_ExternalServer.homer_server_set_backup_server(server_id)
 PUT       /homer_server/set_main/:server_id                             controllers.Controller_ExternalServer.homer_server_set_main_server(server_id)
 
-GET       /homer_server/all                                             controllers.Controller_ExternalServer.homer_server_get_all()
+GET       /homer_server/:page_number                                    controllers.Controller_ExternalServer.homer_server_by_filter(page_number: Int)
 DELETE    /homer_server/server/:server_id                               controllers.Controller_ExternalServer.homer_server_delete(server_id)
 PUT       /homer_server/server/edit/:server_id                          controllers.Controller_ExternalServer.homer_server_edit(server_id)
 GET       /homer_server/server/:server_id                               controllers.Controller_ExternalServer.homer_server_get(server_id)
@@ -392,7 +394,7 @@ POST      /hardware_group                                               controll
 PUT       /hardware_group/add_hw                                        controllers.Controller_Hardware.hardwareGroup_addHardware()
 PUT       /hardware_group/remove_hw                                     controllers.Controller_Hardware.hardwareGroup_removeHardware()
 PUT       /hardware_group/:group_id                                     controllers.Controller_Hardware.hardwareGroup_update(group_id)
-GET       /hardware_group/project/:project_id                           controllers.Controller_Hardware.hardwareGroup_getByProject(project_id)
+GET       /hardware_group/project/:project_id                           controllers.Controller_Hardware.hardwareGroup_get_filter(page_number: Int)
 GET       /hardware_group/individual/:group_id                          controllers.Controller_Hardware.hardwareGroup_get(group_id)
 DELETE    /hardware_group/:group_id                                     controllers.Controller_Hardware.hardwareGroup_delete(group_id)
 

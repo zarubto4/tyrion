@@ -159,14 +159,11 @@ public class Model_ServerError extends NamedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(BaseController.person().has_permission(Permission.ServerError_crate.name())) return;
         throw new Result_Error_NotSupportedException();
     }
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
         if(BaseController.person().has_permission(Permission.ServerError_read.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override  public void check_edit_permission()   throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.ServerError_edit.name())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
@@ -179,7 +176,7 @@ public class Model_ServerError extends NamedModel {
         throw new Result_Error_PermissionDenied();
     }
 
-    public enum Permission { ServerError_read, ServerError_edit, ServerError_update, ServerError_delete }
+    public enum Permission { ServerError_crate, ServerError_read, ServerError_update, ServerError_delete }
 
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/

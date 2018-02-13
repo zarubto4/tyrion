@@ -49,8 +49,7 @@ public class Controller_Update extends BaseController {
             tags = {"Actualization"},
             notes = "get Actualization Procedure by ID",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_UpdateProcedure.class),
@@ -64,10 +63,6 @@ public class Controller_Update extends BaseController {
 
             // Kontrola objektu
             Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(actualization_procedure_id);
-            if (procedure == null) return notFound("ActualizationProcedure not found");
-
-            // Kontrola oprávnění
-            if (!procedure.read_permission()) return forbidden();
 
             // Vrácení objektu
             return ok(Json.toJson(procedure));
@@ -81,8 +76,7 @@ public class Controller_Update extends BaseController {
             tags = {"Actualization"},
             notes = "get actualization Procedure by query",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -118,9 +112,7 @@ public class Controller_Update extends BaseController {
             if (!help.project_ids.isEmpty()) {
 
                 for (UUID project_id : help.project_ids) {
-                    Model_Project project = Model_Project.getById(project_id);
-                    if (project == null) return notFound("Project not found");
-                    if (!project.read_permission()) return forbidden();
+                    Model_Project.getById(project_id);
                 }
 
                 query.where().in("project_id", help.project_ids);
@@ -133,7 +125,7 @@ public class Controller_Update extends BaseController {
             Swagger_ActualizationProcedure_List result = new Swagger_ActualizationProcedure_List(query,page_number);
 
             // Vrácení objektu
-            return ok(Json.toJson(result));
+            return ok(result.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -159,10 +151,6 @@ public class Controller_Update extends BaseController {
 
             // Kontrola objektu
             Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(procedure_id);
-            if (procedure == null) return notFound("UpdateProcedure not found");
-
-            // Kontrola oprávnění
-            if (!procedure.read_permission()) return forbidden();
 
             procedure.cancel_procedure();
 
@@ -176,8 +164,7 @@ public class Controller_Update extends BaseController {
             tags = {"Actualization"},
             notes = "make procedure",
             produces = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -214,8 +201,6 @@ public class Controller_Update extends BaseController {
 
             // Kontrola Projektu
             Model_Project project = Model_Project.getById(help.project_id);
-            if (project == null)  return notFound("firmware_type not found");
-            if (!project.update_permission()) return forbidden();
 
             // Kontrola
 
@@ -232,8 +217,6 @@ public class Controller_Update extends BaseController {
             }
 
             Model_HardwareGroup group = Model_HardwareGroup.getById(help.hardware_group_id);
-            if (group == null)  return notFound("HardwareGroup not found");
-            if (!group.read_permission()) return forbidden();
 
             Model_UpdateProcedure procedure = new Model_UpdateProcedure();
             procedure.type_of_update = UpdateType.MANUALLY_RELEASE_MANAGER;
@@ -252,22 +235,16 @@ public class Controller_Update extends BaseController {
                 Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_settings.hardware_type_id);
                 if (hardwareType == null) return notFound("firmware_type not found");
 
-                Model_Version c_program_version = null;
+                Model_CProgramVersion c_program_version = null;
 
                 if (firmware_type == FirmwareType.FIRMWARE || firmware_type == FirmwareType.BACKUP) {
-                    c_program_version = Model_Version.getById(hardware_type_settings.c_program_version_id);
-                    if (c_program_version == null) return notFound("firmware_type not found");
-                    if (c_program_version.get_c_program() == null) return notFound("Version is not c Program");
-                    if (!c_program_version.get_c_program().read_permission()) return forbidden();
-                    if (!c_program_version.get_c_program().getHardwareType().id.equals(hardwareType.id)) badRequest("Invalid type of CProgram for HardwareType");
+                    c_program_version = Model_CProgramVersion.getById(hardware_type_settings.c_program_version_id);
                 }
 
                 Model_BootLoader bootLoader = null;
 
                 if (firmware_type == FirmwareType.BOOTLOADER) {
                     bootLoader = Model_BootLoader.getById(hardware_type_settings.bootloader_id);
-                    if (bootLoader == null) return notFound("firmware_type  found");
-                    if (!bootLoader.read_permission()) return forbidden();
                     if (!bootLoader.hardware_type.id.equals(hardwareType.id)) badRequest("Invalid type of Bootloader for HardwareType");
                 }
 
@@ -327,13 +304,9 @@ public class Controller_Update extends BaseController {
 
             // Kontrola objektu
             Model_HardwareUpdate plan = Model_HardwareUpdate.getById(plan_id);
-            if (plan == null) return notFound("CProgramUpdatePlan not found");
-
-            // Kontrola oprávnění
-            if (!plan.read_permission()) return forbidden();
 
             // Vrácení objektu
-            return ok(Json.toJson(plan));
+            return ok(plan.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -391,9 +364,7 @@ public class Controller_Update extends BaseController {
             if (!help.hardware_ids.isEmpty()) {
 
                 for (UUID hardware_id : help.hardware_ids) {
-                    Model_Hardware hardware = Model_Hardware.getById(hardware_id);
-                    if (hardware == null) return notFound("Hardware not found");
-                    if (!hardware.read_permission()) return forbidden();
+                    Model_Hardware.getById(hardware_id);
                 }
 
                 query.where().in("hardware.id", help.hardware_ids);
@@ -402,9 +373,7 @@ public class Controller_Update extends BaseController {
             if (!help.instance_ids.isEmpty()) {
 
                 for (UUID instance_id : help.instance_ids) {
-                    Model_Instance instance = Model_Instance.getById(instance_id);
-                    if (instance == null) return notFound("Instance not found");
-                    if (!instance.read_permission()) return forbidden();
+                    Model_Instance.getById(instance_id);
                 }
 
                 query.where().in("actualization_procedure.homer_instance_record.main_instance_history.id", help.instance_ids); // TODO
@@ -413,9 +382,7 @@ public class Controller_Update extends BaseController {
             if (!help.actualization_procedure_ids.isEmpty()) {
 
                 for (UUID procedure_id : help.actualization_procedure_ids) {
-                    Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(procedure_id);
-                    if (procedure == null) return notFound("ActualizationProcedure not found");
-                    if (!procedure.read_permission()) return forbidden();
+                    Model_UpdateProcedure.getById(procedure_id);
                 }
 
                 query.where().in("actualization_procedure.id", help.actualization_procedure_ids);

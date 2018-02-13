@@ -12,6 +12,15 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface CacheField {
 
     /**
+     * Shortcuts for TimeToIdle
+     */
+    public static Integer DayCacheConstant = 60 * 60 * 24;
+    public static Integer HalfDayCacheConstant = 60 * 60 * 12;
+    public static Integer HourCacheConstant = 60 * 60;
+    public static Integer ThirtyMinutesCacheConstant = 60 * 30;
+
+
+    /**
      * Value type that will be cached.
      * @return value
      */

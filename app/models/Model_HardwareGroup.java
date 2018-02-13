@@ -163,7 +163,6 @@ public class Model_HardwareGroup extends NamedModel {
     @JsonIgnore   public void check_create_permission() throws _Base_Result_Exception {  project.check_update_permission(); }
     @JsonIgnore   public void check_read_permission()   throws _Base_Result_Exception {  get_project().check_read_permission(); }
     @JsonProperty public void check_update_permission() throws _Base_Result_Exception {  get_project().check_update_permission(); }
-    @JsonProperty public void check_edit_permission()   throws _Base_Result_Exception {  get_project().check_update_permission(); }
     @JsonProperty public void check_delete_permission() throws _Base_Result_Exception {  get_project().check_update_permission(); }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/

@@ -323,10 +323,6 @@ public class Model_HardwareType extends NamedModel {
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {}
-    @JsonIgnore @Transient @Override public void check_edit_permission()   throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.HardwareType_edit.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
         if(BaseController.person().has_permission(Permission.HardwareType_update.name())) return;
         throw new Result_Error_PermissionDenied();
@@ -336,7 +332,7 @@ public class Model_HardwareType extends NamedModel {
         throw new Result_Error_PermissionDenied();
     }
 
-    @JsonIgnore @Transient public void register_new_device_permission() throws _Base_Result_Exception  {
+    @JsonIgnore @Transient public void check_register_new_device_permission() throws _Base_Result_Exception  {
         if(BaseController.person().has_permission(Permission.HardwareType_register_new_device.name())) return;
         throw new Result_Error_PermissionDenied();
     }

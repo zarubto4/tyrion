@@ -12,6 +12,7 @@ import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.Approval;
 import utilities.enums.ProgramType;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
@@ -136,14 +137,10 @@ public class Model_BlockVersion extends VersionModel {
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user can read BlockoBlock, than can read all Versions from list of BlockoBlock ( You get ids of list of version in object \"BlockoBlocks\" in json)  - Or you need static/dynamic permission key";
-    @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have BlockoBlock.update_permission = true, you can create new version of BlockoBlocks on this BlockoBlock - Or you need static/dynamic permission key if user want create version of BlockoBlock in public BlockoBlock in public TypeOfBlock";
-
 /* PERMISSIONS ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore public void check_create_permission() throws _Base_Result_Exception { get_block().check_update_permission();}
     @JsonIgnore public void check_read_permission()   throws _Base_Result_Exception { get_block().check_read_permission();}
-    @JsonIgnore public void check_edit_permission()   throws _Base_Result_Exception { get_block().check_edit_permission();}
     @JsonIgnore public void check_update_permission() throws _Base_Result_Exception { get_block().check_update_permission();}
     @JsonIgnore public void check_delete_permission() throws _Base_Result_Exception { get_block().check_update_permission();}
 
@@ -152,17 +149,17 @@ public class Model_BlockVersion extends VersionModel {
     @CacheField(Model_BlockVersion.class)
     public static Cache<UUID, Model_BlockVersion> cache;
 
-    public static Model_BlockVersion getById(String id) {
+    public static Model_BlockVersion getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_BlockVersion getById(UUID id) {
+    public static Model_BlockVersion getById(UUID id) throws _Base_Result_Exception {
 
         Model_BlockVersion version = cache.get(id);
         if (version == null) {
 
             version = find.query().where().idEq(id).eq("deleted", false).findOne();
-            if (version == null) return null;
+            if (version == null) throw new Result_Error_NotFound(Model_Widget.class);
 
             cache.put(id, version);
         }

@@ -1,6 +1,7 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.typesafe.config.Config;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
@@ -19,6 +20,12 @@ public class Controller_ZZZ_Tester extends BaseController {
 
     private static final Logger logger = new Logger(Controller_ZZZ_Tester.class);
 
+// CONTROLLER CONFIGURATION ############################################################################################
+
+    // Nothing
+    private Config config;
+
+// CONTROLLER CONTENT ##################################################################################################
     @ApiOperation(value = "Hidden test Method", hidden = true)
      public Result test1() {
          try {

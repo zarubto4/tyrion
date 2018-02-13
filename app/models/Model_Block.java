@@ -194,6 +194,8 @@ public class Model_Block extends TaggedModel {
     @JsonIgnore @Override
     public void save() {
 
+        if(project != null) project.check_update_permission();
+
         super.save();
 
         if (project != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, project.id, project.id))).start();
@@ -210,13 +212,13 @@ public class Model_Block extends TaggedModel {
             cache.put(this.id, this);
         }
 
-        if (project != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, project.id, id))).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, get_project_id(), id))).start();
     }
 
     @JsonIgnore @Override
     public boolean delete() {
 
-        if (project != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, project.id, project.id))).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, get_project_id(), get_project_id()))).start();
 
         return super.delete();
     }
@@ -224,7 +226,8 @@ public class Model_Block extends TaggedModel {
 /* ORDER ---------------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public void up() {
+    public void up() throws _Base_Result_Exception {
+        check_update_permission();
 /*
         logger.trace("up :: Change Order Position! Up");
 
@@ -242,7 +245,8 @@ public class Model_Block extends TaggedModel {
     }
 
     @JsonIgnore
-    public void down() {
+    public void down() throws _Base_Result_Exception {
+        check_update_permission();
 /*
         logger.trace("down :: Change Order Position! DOWN ");
 
@@ -281,10 +285,6 @@ public class Model_Block extends TaggedModel {
         if(BaseController.person().has_permission(Permission.Block_read.name())) return;
         if(publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN ) return;
         get_project().check_read_permission();
-    }
-    @JsonIgnore @Transient @Override public void check_edit_permission() throws _Base_Result_Exception   {
-        if(BaseController.person().has_permission(Permission.Block_edit.name())) return;
-        get_project().check_update_permission();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
         if(BaseController.person().has_permission(Permission.Block_update.name())) return;

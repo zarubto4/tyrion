@@ -8,6 +8,7 @@ import models.Model_HardwareBatch;
 import play.data.Form;
 import play.data.FormFactory;
 import play.libs.Json;
+import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
@@ -23,10 +24,6 @@ import utilities.swagger.input.Swagger_Garfield_New;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Created by zaruba on 23.08.17.
- */
-
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
 public class Controller_Garfield extends BaseController {
@@ -35,14 +32,14 @@ public class Controller_Garfield extends BaseController {
 
     private static final Logger logger = new Logger(Controller_Garfield.class);
 
+// CONTROLLER CONFIGURATION ############################################################################################
     private FormFactory formFactory;
 
-    @Inject
-    public Controller_Garfield(FormFactory formFactory) {
+    @Inject public Controller_Garfield(FormFactory formFactory) {
         this.formFactory = formFactory;
     }
 
-// REST - API GARFIELD -------------------------------------------------------------------------------------------------
+// REST - API GARFIELD  #################################################################################################
 
     @ApiOperation(value = "edit Garfield",
             tags = {"Garfield"},
@@ -68,6 +65,7 @@ public class Controller_Garfield extends BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result edit_Garfield(@ApiParam(required = true) String garfield_id) {
         try {
 
@@ -78,7 +76,6 @@ public class Controller_Garfield extends BaseController {
 
             // Kontrola objektu
             Model_Garfield garfield = Model_Garfield.getById(garfield_id);
-            if (garfield == null) return notFound("Garfield not found");
 
             garfield.name = help.name;
             garfield.description = help.description;
@@ -87,13 +84,10 @@ public class Controller_Garfield extends BaseController {
             garfield.print_label_id_2 =  help.print_label_id_2;  // 24 mm
             garfield.print_sticker_id =  help.print_sticker_id; // 65 mm
 
-            // Kontrola oprávnění
-            garfield.update_permission();
-
-            garfield.update(
+            garfield.update();
 
             // Vrácení objektu
-            return ok(Json.toJson(garfield));
+            return ok(garfield.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -104,8 +98,7 @@ public class Controller_Garfield extends BaseController {
             tags = {"Garfield"},
             notes = "create Garfield",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -125,6 +118,7 @@ public class Controller_Garfield extends BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
+    @BodyParser.Of(BodyParser.Json.class)
     public Result create_Garfield() {
         try {
 
@@ -146,12 +140,9 @@ public class Controller_Garfield extends BaseController {
             garfield.hardware_type_id = help.hardware_type_id;
             garfield.producer_id = help.producer_id;
 
-            // Kontrola oprávnění
-            if (!garfield.create_permission()) return forbidden();
-
             garfield.save();
 
-            return ok(Json.toJson(garfield));
+            return ok(garfield.json());
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -162,8 +153,7 @@ public class Controller_Garfield extends BaseController {
             tags = {"Garfield"},
             notes = "get Garfield  by ID",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
@@ -177,11 +167,6 @@ public class Controller_Garfield extends BaseController {
 
             // Kontrola objektu
             Model_Garfield garfield = Model_Garfield.getById(garfield_id);
-            if (garfield == null) return notFound("Garfield not found");
-
-            // Kontrola oprávnění
-            if (!garfield.delete_permission()) return forbidden();
-
             // Odsranit objekt
             garfield.delete();
 
@@ -197,8 +182,7 @@ public class Controller_Garfield extends BaseController {
             tags = {"Garfield"},
             notes = "get Garfield  by ID",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Garfield.class),
@@ -212,10 +196,6 @@ public class Controller_Garfield extends BaseController {
 
             // Kontrola objektu
             Model_Garfield garfield = Model_Garfield.getById(garfield_id);
-            if (garfield == null) return notFound("Garfield not found");
-
-            // Kontrola oprávnění
-            if (!garfield.read_permission()) return forbidden();
 
             // Vrácení objektu
             return ok(Json.toJson(garfield));
@@ -245,22 +225,8 @@ public class Controller_Garfield extends BaseController {
 
             // Kotrola objektu
             Model_Hardware hardware = Model_Hardware.getById(board_id);
-            if (hardware == null) {
-                logger.error("print_label:: Device ID not found");
-                return notFound("Hardware not found");
-            }
-
-            // Kontrola oprávnění
-            if (!hardware.read_permission()) {
-                logger.error("print_label:: Device missing read permission");
-                return forbidden();
-            }
 
             Model_HardwareBatch batch = Model_HardwareBatch.getById(hardware.batch_id);
-            if (batch == null) {
-                logger.error("print_label:: Device missing Batch");
-                return notFound("Batch " + hardware.batch_id + " not found");
-            }
 
             // TODO tady je potřeba pohlídat online tiskárny - tiskne se na prvním garfieldovy - to není uplně super cool věc
             // Zrovna mě ale nenapadá jak v rozumném čase doprogramovat řešení lépe - snad jen pomocí selektoru tiskáren???
@@ -273,16 +239,6 @@ public class Controller_Garfield extends BaseController {
 
             // Kontrola objektu
             Model_Garfield garfield = Model_Garfield.getById(garfields.get(0).id.toString());
-            if (garfield == null) {
-                logger.error("print_label:: garfield not found");
-                return notFound("Garfield not found");
-            }
-
-            // Kontrola oprávnění
-            if (!garfield.read_permission()) {
-                logger.error("print_label:: Missing garfield not found");
-                return forbidden();
-            }
 
             Printer_Api api = new Printer_Api();
 
@@ -316,15 +272,14 @@ public class Controller_Garfield extends BaseController {
             tags = {"Garfield"},
             notes = "get Garfield List",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Model_Garfield.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     public Result get_Garfield_list() {
         try {
@@ -342,7 +297,7 @@ public class Controller_Garfield extends BaseController {
         }
     }
 
-// Printer TASK --------------------------------------------------------------------------------------------------------
+// Printer TASK  #######################################################################################################
 
     @ApiOperation(value = "get_Online_State Printer",
             tags = {"Garfield"},
@@ -356,27 +311,19 @@ public class Controller_Garfield extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     public Result online_state_Printer(@ApiParam(required = true) String garfield_id, @ApiParam(required = true) Integer printer_id) {
         try {
 
             // Kontrola objektu
             Model_Garfield garfield = Model_Garfield.getById(garfield_id);
-            if (garfield == null) return notFound("Garfield not found");
-
-            // Kontrola oprávnění
-            if (!garfield.read_permission()) return forbidden();
-
 
             if (!( garfield.print_label_id_1.equals(printer_id) || garfield.print_label_id_2.equals(printer_id) || garfield.print_sticker_id.equals(printer_id))) {
-
                 return forbidden();
             }
 
             Printer printer =  Printer_Api.get_printer(printer_id);
-
-            if (printer == null) return notFound("Printer not found");
 
             // Vrácení objektu
             return ok(Json.toJson(printer));
@@ -398,18 +345,13 @@ public class Controller_Garfield extends BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     public Result print_test_Printer(@ApiParam(required = true) String garfield_id, @ApiParam(required = true) Integer printer_id) {
         try {
 
             // Kontrola objektu
             Model_Garfield garfield = Model_Garfield.getById(garfield_id);
-            if (garfield == null) return notFound("Garfield not found");
-
-            // Kontrola oprávnění
-            if (!garfield.read_permission()) return forbidden();
-
 
             if (garfield.print_label_id_1.equals(printer_id)) {
                 // TODO Lexa - odzkoušet a naimlementovat tiskárny P750W
@@ -456,7 +398,7 @@ public class Controller_Garfield extends BaseController {
 
 
 
-// REST - BURN TASK ----------------------------------------------------------------------------------------------------
+// REST - BURN TASK ####################################################################################################
 
 
 

@@ -26,7 +26,7 @@ public class WS_Message_Homer_Get_configuration extends WS_AbstractMessage {
         request_conf.put("server_name", server.personal_server_name);
         request_conf.put("mqtt_port", server.mqtt_port);
         request_conf.put("grid_port", server.grid_port);
-        request_conf.put("web_port", server.server_remote_port);
+        request_conf.put("web_port", server.hardware_logger_port);
         request_conf.put("becki_port", server.web_view_port);
         request_conf.put("timeStamp", server.time_stamp_configuration.getTime());
         request_conf.put("daysInArchive", server.days_in_archive);

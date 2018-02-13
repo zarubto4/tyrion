@@ -65,8 +65,8 @@ public class Model_ProductExtension extends NamedModel {
     @JsonProperty @ApiModelProperty(required = false, value ="Visible only for Administrator with Special Permission") @Transient  @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean include() {
         try {
-            if (edit_permission()) return tariff_included!= null;
-            return null;
+            check_update_permission();
+            return tariff_included!= null;
         } catch (Exception e) {
             return null;
         }
@@ -76,12 +76,12 @@ public class Model_ProductExtension extends NamedModel {
     public String config() {
         try {
 
-            if (!edit_permission()) return null;
+            check_update_permission();
             return Json.toJson(Configuration.getConfiguration(type, configuration)).toString();
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return "{\"error\":\"config file error\"}";
+            return "{\"error\":\"config file error, or required permission\"}";
         }
     }
 
@@ -147,6 +147,8 @@ public class Model_ProductExtension extends NamedModel {
     @JsonIgnore
     public void up() {
 
+        check_update_permission();
+
         if (order_position == 1) return;
 
         if (tariff_included != null) {
@@ -165,6 +167,7 @@ public class Model_ProductExtension extends NamedModel {
     @JsonIgnore
     public void down() {
 
+        check_update_permission();
 
         if (tariff_included != null) {
 
@@ -415,17 +418,11 @@ public class Model_ProductExtension extends NamedModel {
         if(product.customer.isEmployee(BaseController.person())) return;
         throw new Result_Error_PermissionDenied();
     }
-    @JsonIgnore @Transient @Override  public void check_edit_permission()   throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.ProductExtension_edit.name())) return;
-        if(product.customer.isEmployee(BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
-    }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
         if(BaseController.person().has_permission(Permission.ProductExtension_update.name())) return;
         if(product.customer.isEmployee(BaseController.person())) return;
         throw new Result_Error_PermissionDenied();
     }
-
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
         if(BaseController.person().has_permission(Permission.ProductExtension_delete.name())) return;
         throw new Result_Error_PermissionDenied();
@@ -437,7 +434,7 @@ public class Model_ProductExtension extends NamedModel {
         throw new Result_Error_PermissionDenied();
     }
 
-    public enum Permission { ProductExtension_create, ProductExtension_read, ProductExtension_edit, ProductExtension_update, ProductExtension_act_deactivate, ProductExtension_delete }
+    public enum Permission { ProductExtension_create, ProductExtension_read, ProductExtension_update, ProductExtension_act_deactivate, ProductExtension_delete }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

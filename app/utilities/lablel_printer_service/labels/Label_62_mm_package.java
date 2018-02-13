@@ -7,10 +7,10 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Image;
 import controllers.BaseController;
+import models.Model_CProgramVersion;
 import models.Model_Garfield;
 import models.Model_Hardware;
 import models.Model_HardwareBatch;
-import models.Model_Version;
 import utilities.logger.Logger;
 
 import java.text.ParseException;
@@ -37,8 +37,8 @@ public class Label_62_mm_package {
         this.garfield = garfield;
 
 
-        Model_Version test_version = Model_Version.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_test").findOne();
-        Model_Version production_version = Model_Version.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_default").findOne();
+        Model_CProgramVersion test_version = Model_CProgramVersion.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_test").findOne();
+        Model_CProgramVersion production_version = Model_CProgramVersion.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_default").findOne();
 
 
         if (test_version == null) {
@@ -184,8 +184,8 @@ public class Label_62_mm_package {
             board.getHardwareType().main_test_c_program();
 
 
-            Model_Version test_version = Model_Version.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_test").findOne();
-            Model_Version production_version = Model_Version.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_default").findOne();
+        Model_CProgramVersion test_version = Model_CProgramVersion.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_test").findOne();
+        Model_CProgramVersion production_version = Model_CProgramVersion.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_default").findOne();
 
 
             Paragraph p_test_version = new Paragraph("FW Test Version: ", bold);

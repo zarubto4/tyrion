@@ -49,6 +49,7 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareGroup>         hardware_groups = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("created desc") public List<Model_Invitation>            invitations     = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("id asc")       public List<Model_ProjectParticipant>    participants    = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("name asc")     public List<Model_Instance>    instancies    = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -120,6 +121,9 @@ public class Model_Project extends TaggedModel {
     }
 
     @JsonIgnore @Override public void save() {
+
+        financial_permission();
+
         this.blob_project_link = product.get_path() + "/projects/" + UUID.randomUUID();
         super.save();
     }
@@ -565,15 +569,16 @@ public class Model_Project extends TaggedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception  {
+        if (BaseController.person().has_permission(Permission.Project_read.name())) return;
         if(!product.active) throw new Result_Error_PermissionDenied();
-        product.create_permission();
+        product.check_create_permission();
     }
 
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if (BaseController.person().has_permission("project_read_" + id)) BaseController.person().valid_permission("project_read_" + id);
-        if (BaseController.person().has_permission("Project_read")) return;
+        if (BaseController.person().has_permission(Permission.Project_read.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
         if ( Model_Project.find.query().where().eq("participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
@@ -590,7 +595,7 @@ public class Model_Project extends TaggedModel {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if (BaseController.person().has_permission("project_update_" + id)) BaseController.person().valid_permission("project_update_" + id);
-        if (BaseController.person().has_permission("Project_update")) return;
+        if (BaseController.person().has_permission(Permission.Project_update.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if ( Model_Project.find.query().where().eq("participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
@@ -603,28 +608,11 @@ public class Model_Project extends TaggedModel {
         throw new Result_Error_PermissionDenied();
     }
 
-    @JsonIgnore @Transient @Override public void check_edit_permission()  throws _Base_Result_Exception {
-
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("project_edit_" + id)) BaseController.person().valid_permission("project_edit_" + id);
-        if (BaseController.person().has_permission("Project_edit")) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_Project.find.query().where().eq("participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("project_edit_" + id, true);
-            return;
-        }
-
-        // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("projecte_edit_" + id, false);
-        throw new Result_Error_PermissionDenied();
-    }
-
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if (BaseController.person().has_permission("project_delete_" + id)) BaseController.person().valid_permission("project_delete_" + id);
-        if (BaseController.person().has_permission("Project_delete")) return;
+        if (BaseController.person().has_permission(Permission.Project_delete.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if (Model_ProjectParticipant.find.query().where().eq("project.id", id).eq("person.id", BaseController.personId()).eq("state", ParticipantStatus.OWNER).findCount() > 0) {
@@ -637,28 +625,11 @@ public class Model_Project extends TaggedModel {
         throw new Result_Error_PermissionDenied();
     }
 
-    @JsonIgnore @Transient public void unshare_permission() throws _Base_Result_Exception {
-
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("project_share_" + id)) if(!BaseController.person().has_permission("project_share_"+ id)) throw new Result_Error_PermissionDenied();;
-        if (BaseController.person().has_permission("Project_unshare")) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_ProjectParticipant.find.query().where().eq("project.id", id).eq("person.id", BaseController.personId()).disjunction().add(Expr.eq("state", ParticipantStatus.OWNER)).add(Expr.eq("state", ParticipantStatus.ADMIN)).findCount()> 0) {
-            BaseController.person().cache_permission("project_share_" + id, true);
-            return;
-        }
-
-        // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("project_share_" + id, false);
-        throw new Result_Error_PermissionDenied();
-    }
-
-    @JsonIgnore @Transient public void share_permission ()throws _Base_Result_Exception {
+    @JsonIgnore @Transient public void check_share_permission ()throws _Base_Result_Exception {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if (BaseController.person().has_permission("project_unshare_" + id)) if(!BaseController.person().has_permission("project_unshare_"+ id)) throw new Result_Error_PermissionDenied();
-        if (BaseController.person().has_permission("Project_share")) return;
+        if (BaseController.person().has_permission(Permission.Project_share.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if (Model_ProjectParticipant.find.query().where().eq("project.id", id).eq("person.id", BaseController.personId()).disjunction().add(Expr.eq("state", ParticipantStatus.OWNER)).add(Expr.eq("state", ParticipantStatus.ADMIN)).findCount()> 0) {
@@ -675,7 +646,7 @@ public class Model_Project extends TaggedModel {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if (BaseController.person().has_permission("project_admin_permission_" + id)) if(!BaseController.person().has_permission("project_admin_permission_"+ id)) throw new Result_Error_PermissionDenied();
-        if (BaseController.person().has_permission("Project_admin")) return;
+        if (BaseController.person().has_permission(Permission.Project_admin.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
         if (Model_ProjectParticipant.find.query().where().eq("project.id", id).where().eq("person.id", BaseController.personId()).where().disjunction().add(Expr.eq("state", ParticipantStatus.OWNER)).add(Expr.eq("state", ParticipantStatus.ADMIN)).findCount()> 0) {
@@ -694,7 +665,7 @@ public class Model_Project extends TaggedModel {
         // return this.product.financial_permission("project");
     }
 
-    public enum Permission { Project_update, Project_read, Project_unshare , Project_share, Project_edit, Project_delete, Project_admin }
+    public enum Permission { Project_create, Project_update, Project_read, Project_unshare , Project_share, Project_delete, Project_admin }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

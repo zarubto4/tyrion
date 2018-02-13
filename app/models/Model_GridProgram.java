@@ -16,7 +16,6 @@ import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
-import utilities.swagger.output.Swagger_GridProgramVersion;
 import utilities.swagger.output.Swagger_M_Program_Version_Interface;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
@@ -262,24 +261,6 @@ public class Model_GridProgram extends TaggedModel {
 
         // Přidávám do listu false a vracím false
         BaseController.person().cache_permission("grid_program_read_" + id, false);
-        throw new Result_Error_PermissionDenied();
-    }
-
-    @JsonProperty
-    public void check_edit_permission() throws _Base_Result_Exception {
-
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("grid_program_edit_" + id)) BaseController.person().valid_permission("grid_program_edit_" + id);
-        if (BaseController.person().has_permission(Permission.GridProgram_edit.name())) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_GridProgram.find.query().where().eq("grid_project.project.participants.person.id", BaseController.person().id).eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("grid_program_edit_" + id, true);
-            return;
-        }
-
-        // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("edit_" + id, false);
         throw new Result_Error_PermissionDenied();
     }
 

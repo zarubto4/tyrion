@@ -14,6 +14,8 @@ import utilities.cache.Cached;
 import utilities.enums.NetworkStatus;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.notifications.helps_objects.Notification_Text;
@@ -47,8 +49,8 @@ public class Model_InstanceSnapshot extends BaseModel {
     @ApiModelProperty(required = true, readOnly = true, dataType = "integer", example = "1466163478925")
     public Date stopped;
 
-    @ManyToOne public Model_Instance instance;
-    @ManyToOne public Model_Version b_version;
+    @ManyToOne(fetch = FetchType.LAZY) public Model_Instance instance;
+    @ManyToOne public Model_BProgramVersion b_program_version;
     @OneToOne  public Model_Blob program;
     @JsonIgnore @OneToMany(fetch = FetchType.LAZY)  public List<Model_UpdateProcedure> procedures = new ArrayList<>();
     @JsonIgnore @ManyToMany(fetch = FetchType.LAZY) public List<Model_HardwareRegistration> hardware = new ArrayList<>();
@@ -56,20 +58,54 @@ public class Model_InstanceSnapshot extends BaseModel {
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Cached private UUID cache_version_id;
+    @JsonIgnore @Transient @Cached private UUID cache_instance_id;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public Model_Version get_b_program_version() {
+    public Model_BProgramVersion get_b_program_version() {
+
 
         if (cache_version_id == null) {
-            Model_Version version = Model_Version.find.query().where().eq("instances.id", id).select("id").findOne();
+            return Model_BProgramVersion.getById(get_b_program_version_id());
+        }else {
+            return Model_BProgramVersion.getById(cache_version_id);
+        }
+    }
+
+    @JsonIgnore
+    public UUID get_b_program_version_id() {
+
+        if (cache_version_id == null) {
+            Model_BProgramVersion version = Model_BProgramVersion.find.query().where().eq("instances.id", id).select("id").findOne();
+            if (version == null) throw new Result_Error_NotFound(Model_BProgramVersion.class);
             cache_version_id = version.id;
         }
 
-        return Model_Version.getById(cache_version_id);
+        return cache_version_id;
+    }
+
+    @JsonIgnore
+    public Model_Instance get_instance() {
+        if (cache_instance_id == null) {
+            return Model_Instance.getById(get_instance_id());
+        }else {
+            return Model_Instance.getById(cache_instance_id);
+        }
+    }
+
+    @JsonIgnore
+    public UUID get_instance_id() {
+
+        if (cache_instance_id == null) {
+            Model_Instance instance = Model_Instance.find.query().where().eq("snapshots.id", id).select("id").findOne();
+            if (instance == null) throw new Result_Error_NotFound(Model_Instance.class);
+            cache_instance_id = instance.id;
+        }
+
+        return cache_instance_id;
     }
 
     public void deploy() {
@@ -77,31 +113,31 @@ public class Model_InstanceSnapshot extends BaseModel {
 
             // Step 1
             logger.debug("deploy - begin");
-            if (this.instance.current_snapshot_id != null && !this.instance.current_snapshot_id.equals(this.id)) {
+            if (this.get_instance().current_snapshot_id != null && !this.get_instance().current_snapshot_id.equals(this.id)) {
                 logger.debug("deploy - stop previous running snapshot");
-                Model_InstanceSnapshot previous = getById(this.instance.current_snapshot_id);
+                Model_InstanceSnapshot previous = getById(this.get_instance().current_snapshot_id);
                 if (previous != null) {
                     previous.stop();
                 }
             }
 
-            if (instance.server_online_state() != NetworkStatus.ONLINE) {
+            if (get_instance().server_online_state() != NetworkStatus.ONLINE) {
                 logger.debug("deploy - server is offline, it is not possible to continue");
                 return;
             }
 
-            WS_Message_Instance_status status = instance.get_instance_status();
+            WS_Message_Instance_status status = get_instance().get_instance_status();
 
-            WS_Message_Instance_status.InstanceStatus instanceStatus = status.get_status(instance.id);
+            WS_Message_Instance_status.InstanceStatus instanceStatus = status.get_status(get_instance_id());
 
             if (instanceStatus.error_code != null ) {
-                logger.warn("deploy - instance {} is not set in Homer Server ", instance.id);
+                logger.warn("deploy - instance {} is not set in Homer Server ", get_instance_id());
             }
 
             // Instance status
             if (!instanceStatus.status) {
                 // Vytvořím Instanci
-                WS_Message_Homer_Instance_add result_instance   = instance.server_main.add_instance(instance);
+                WS_Message_Homer_Instance_add result_instance   = get_instance().server_main.add_instance(instance);
                 if (!result_instance.status.equals("success")) {
                     logger.internalServerError(new Exception("Failed to add Instance. ErrorCode: " + result_instance.error_code + ". Error: " + result_instance.error));
                     return;
@@ -111,26 +147,26 @@ public class Model_InstanceSnapshot extends BaseModel {
             // Step 2
             WS_Message_Instance_set_program result_step_2 = this.setProgram();
             if (!result_step_2.status.equals("success")) {
-                logger.warn("deploy - instance {}, step 2 failed: {}", instance.id, result_step_2.error_code);
+                logger.warn("deploy - instance {}, step 2 failed: {}", get_instance_id(), result_step_2.error_code);
                 return;
             }
 
             // Step 3
             WS_Message_Instance_set_hardware result_step_3 = this.setHardware();
             if (!result_step_3.status.equals("success")) {
-                logger.warn("deploy - instance {}, step 3 failed: {}", instance.id, result_step_3.error_code);
+                logger.warn("deploy - instance {}, step 3 failed: {}", get_instance_id(), result_step_3.error_code);
                 return;
             }
 
             // Step 4
             WS_Message_Instance_set_terminals result_step_4 = this.setTerminals();
             if (!result_step_4.status.equals("success")) {
-                logger.warn("deploy - instance {}, step 4 failed: {}", instance.id, result_step_4.error_code);
+                logger.warn("deploy - instance {}, step 4 failed: {}", get_instance_id(), result_step_4.error_code);
                 return;
             }
 
-            Model_Instance.cache_status.put(this.instance.id, true);
-            WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.instance.id, true, this.instance.project_id());
+            Model_Instance.cache_status.put(get_instance_id(), true);
+            WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, get_instance_id(), true, this.get_instance().project_id());
 
             // Step 4
             // TODO this.create_actualization_hardware_request();
@@ -139,8 +175,11 @@ public class Model_InstanceSnapshot extends BaseModel {
         }).start();
     }
 
-    public void stop() { // TODO notifikace
-        instance.stop();
+    public void stop() {
+        check_update_permission();
+
+        // TODO notifikace
+        get_instance().stop();
     }
 
     @JsonIgnore
@@ -152,7 +191,7 @@ public class Model_InstanceSnapshot extends BaseModel {
 
             // Přidat nový otisk hardwaru
             if (!hardware_ids_required_by_instance.isEmpty()) {
-                return instance.set_device_to_instance(hardware_ids_required_by_instance);
+                return get_instance().set_device_to_instance(hardware_ids_required_by_instance);
             } else {
                 WS_Message_Instance_set_hardware result = new WS_Message_Instance_set_hardware();
                 result.status = "success";
@@ -176,7 +215,7 @@ public class Model_InstanceSnapshot extends BaseModel {
             }
 
             if (!terminalIds.isEmpty()) {
-                return instance.setTerminals(terminalIds);
+                return get_instance().setTerminals(terminalIds);
             } else {
                 WS_Message_Instance_set_terminals result = new WS_Message_Instance_set_terminals();
                 result.status = "success";
@@ -193,7 +232,7 @@ public class Model_InstanceSnapshot extends BaseModel {
     public WS_Message_Instance_set_program setProgram() {
         try {
 
-            JsonNode node = instance.write_with_confirmation(new WS_Message_Instance_set_program().make_request(this), 1000 * 6, 0, 2);
+            JsonNode node = get_instance().write_with_confirmation(new WS_Message_Instance_set_program().make_request(this), 1000 * 6, 0, 2);
 
             return Json.fromJson(node, WS_Message_Instance_set_program.class);
 
@@ -212,7 +251,7 @@ public class Model_InstanceSnapshot extends BaseModel {
 
     @JsonIgnore
     public Model_Product getProduct() {
-        return this.instance.getProject().getProduct();
+        return this.get_instance().get_project().getProduct();
 
     }
 
@@ -250,7 +289,7 @@ public class Model_InstanceSnapshot extends BaseModel {
                     .setObject(this.get_b_program_version())
                     .setText(new Notification_Text().setText(" from Blocko program "))
                     .setObject(this.get_b_program_version().get_b_program())
-                    .send_under_project(this.instance.project_id());
+                    .send_under_project(this.get_instance().project_id());
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -273,7 +312,7 @@ public class Model_InstanceSnapshot extends BaseModel {
                     .setText( new Notification_Text().setText(" from Blocko program "))
                     .setObject(this.get_b_program_version().get_b_program())
                     .setText( new Notification_Text().setText(". Server will try to do that as soon as possible."))
-                    .send_under_project(this.instance.project_id());
+                    .send_under_project(this.get_instance().project_id());
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -288,7 +327,7 @@ public class Model_InstanceSnapshot extends BaseModel {
                     .setLevel(NotificationLevel.INFO)
                     .setText( new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
                     .setObject(this.get_b_program_version())
-                    .send_under_project(this.instance.project_id());
+                    .send_under_project(this.get_instance().project_id());
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -317,20 +356,21 @@ public class Model_InstanceSnapshot extends BaseModel {
     @CacheField(Model_InstanceSnapshot.class)
     public static Cache<UUID, Model_InstanceSnapshot> cache;
 
-    public static Model_InstanceSnapshot getById(String id) {
+    public static Model_InstanceSnapshot getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_InstanceSnapshot getById(UUID id) {
+    public static Model_InstanceSnapshot getById(UUID id) throws _Base_Result_Exception {
         Model_InstanceSnapshot snapshot = cache.get(id);
         if (snapshot == null) {
 
             snapshot = find.byId(id);
-            if (snapshot == null) return null;
+            if (snapshot == null) throw new Result_Error_NotFound(Model_InstanceSnapshot.class);
 
             cache.put(id, snapshot);
         }
 
+        snapshot.check_read_permission();
         return snapshot;
     }
 

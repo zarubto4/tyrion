@@ -36,7 +36,7 @@ public class Controller_Security extends BaseController {
 
     private static final Logger logger = new Logger(Controller_Security.class);
 
-//######################################################################################################################
+// CONTROLLER CONFIGURATION ############################################################################################
 
     private FormFactory formFactory;
     private WSClient ws;
@@ -47,15 +47,13 @@ public class Controller_Security extends BaseController {
         this.ws = ws;
     }
 
-//######################################################################################################################
+// CLASIC LOGIN ########################################################################################################
 
     @ApiOperation(value = "check Request Token",
             tags = {"Blocko"},
             notes = "",
             produces = "application/json",
-            response =  Swagger_Blocko_Token_validation_result.class,
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -117,8 +115,7 @@ public class Controller_Security extends BaseController {
             tags = {"Access", "Person", "APP-Api"},
             notes = "Get access Token",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -241,9 +238,7 @@ public class Controller_Security extends BaseController {
             notes = "for logout person - that's deactivate person token ",
             produces = "application/json",
             consumes = "text/html",
-            response =  Result_Ok.class,
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Successfully logged out",   response = Result_Ok.class),
@@ -280,8 +275,8 @@ public class Controller_Security extends BaseController {
         }
     }
 
-//#### Oaut pro příjem Requestů zvenčí ################################################################################
-/* TODO
+// EXTERNAL LOGIN ######################################################################################################
+
 
     // Metoda slouží pro příjem autentifikačních klíču ze sociálních sítí když se přihlásí uživatel.
     // Taktéž spojuje přihlášené účty pod jednu cvirtuální Person - aby v systému bylo jendotné rozpoznávání.
@@ -710,7 +705,7 @@ public class Controller_Security extends BaseController {
         } catch (Exception e) {
             return internalServerError(e);
         }
-    }*/
+    }
 
 
 ///###### Option########################################################################################################

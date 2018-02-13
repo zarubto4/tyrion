@@ -15,7 +15,6 @@ import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.VersionModel;
 import utilities.models_update_echo.EchoHandler;
-import utilities.swagger.output.Swagger_GridProgramVersion;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
@@ -167,7 +166,6 @@ public class Model_GridProgramVersion extends VersionModel {
 
     @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { get_grid_program().check_update_permission();}
     @JsonIgnore @Override public void check_read_permission()   throws _Base_Result_Exception { get_grid_program().check_read_permission();}
-    @JsonIgnore @Override public void check_edit_permission()   throws _Base_Result_Exception { get_grid_program().check_edit_permission();}
     @JsonIgnore @Override public void check_update_permission() throws _Base_Result_Exception { get_grid_program().check_update_permission();}
     @JsonIgnore @Override public void check_delete_permission() throws _Base_Result_Exception { get_grid_program().check_update_permission();}
 

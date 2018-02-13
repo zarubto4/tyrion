@@ -2,7 +2,7 @@ package utilities.scheduler.jobs;
 
 import controllers.Controller_WebSocket;
 
-import models.Model_Version;
+import models.Model_CProgramVersion;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -47,7 +47,7 @@ public class Job_StuckCompilationCheck implements Job {
 
                     while (true) {
                         // Vyhledání všech, které je nutné projit
-                        List<Model_Version> versions = Model_Version.find.query()
+                        List<Model_CProgramVersion> versions = Model_CProgramVersion.find.query()
                                 .where()
                                 .disjunction()
                                 .eq("compilation.status", CompilationStatus.SERVER_OFFLINE.name())
@@ -64,7 +64,7 @@ public class Job_StuckCompilationCheck implements Job {
                         logger.debug("compilation_check_thread:: compiling versions (100 per cycle)");
 
                         // Postupná procházení a kompilování
-                        for (Model_Version version : versions) {
+                        for (Model_CProgramVersion version : versions) {
 
                             // Pokud neobsahuje verzi - je to špatně, ale zde neřešitelné - proto se to přeskočí.
                             if (version == null) {

@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @ApiModel(description = "Json Model for new Blocko Server",
           value = "Cloud_Homer_Server_New")
-public class Swagger_Cloud_Homer_Server_New {
+public class Swagger_HomerServer_New {
 
     @Constraints.Required
     @Constraints.MinLength(value = 4, message = "The name must have at least 6 characters")
@@ -21,7 +21,7 @@ public class Swagger_Cloud_Homer_Server_New {
 
     @Constraints.Required public int grid_port;
     @Constraints.Required public int web_view_port;
-    @Constraints.Required public int server_remote_port;
+    @Constraints.Required public int hardware_logger_port;
 
     @Constraints.MinLength(value = 6, message = "The name must have at least 4 characters")
     @Constraints.MaxLength(value = 60, message = "The name must have at least 60 characters")

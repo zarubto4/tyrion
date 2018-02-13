@@ -4,6 +4,8 @@ import com.google.inject.Inject;
 import com.microsoft.azure.storage.blob.CloudAppendBlob;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
+import io.ebean.Ebean;
+import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
 import play.data.Form;
@@ -18,9 +20,13 @@ import utilities.authentication.Authentication;
 import utilities.authentication.AuthenticationHomer;
 import utilities.enums.CompilationStatus;
 import utilities.enums.HomerType;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.logger.Logger;
-import utilities.swagger.input.Swagger_Cloud_Compilation_Server_New;
-import utilities.swagger.input.Swagger_Cloud_Homer_Server_New;
+import utilities.swagger.input.Swagger_CompilationServer_New;
+import utilities.swagger.input.Swagger_HomerServer_Filter;
+import utilities.swagger.input.Swagger_HomerServer_New;
+import utilities.swagger.output.filter_results.Swagger_C_Program_List;
+import utilities.swagger.output.filter_results.Swagger_HomerServer_List;
 
 import java.util.*;
 
@@ -31,22 +37,24 @@ public class Controller_ExternalServer extends BaseController {
 // LOGGER ##############################################################################################################
 
     private static final Logger logger = new Logger(Controller_ExternalServer.class);
-    
-///###################################################################################################################*/
+
+
+// CONTROLLER CONFIGURATION ############################################################################################
 
     private FormFactory formFactory;
 
-    @Inject
-    public Controller_ExternalServer(FormFactory formFactory) {
+    @Inject public Controller_ExternalServer(FormFactory formFactory) {
         this.formFactory = formFactory;
     }
-    
+
+
+// HOMER SERVER ########################################################################################################
+
     @ApiOperation(value = "create Homer_Server",
             tags = {"External-Server"},
             notes = "Create new Homer_Server - private or public",
             produces = "application/json",
-            protocols = "https",
-            code = 201
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -60,7 +68,7 @@ public class Controller_ExternalServer extends BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 201, message = "Successfully created",    response = Swagger_Cloud_Homer_Server_New.class),
+            @ApiResponse(code = 201, message = "Successfully created",    response = Swagger_HomerServer_New.class),
             @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
@@ -71,9 +79,9 @@ public class Controller_ExternalServer extends BaseController {
         try {
 
             // Zpracování Json
-            final Form<Swagger_Cloud_Homer_Server_New> form = formFactory.form(Swagger_Cloud_Homer_Server_New.class).bindFromRequest();
+            final Form<Swagger_HomerServer_New> form = formFactory.form(Swagger_HomerServer_New.class).bindFromRequest();
             if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Cloud_Homer_Server_New help = form.get();
+            Swagger_HomerServer_New help = form.get();
 
             // Vytvoření objektu
             Model_HomerServer server = new Model_HomerServer();
@@ -83,21 +91,18 @@ public class Controller_ExternalServer extends BaseController {
             server.mqtt_port = help.mqtt_port;
             server.grid_port = help.grid_port;
             server.web_view_port = help.web_view_port;
-            server.server_remote_port = help.server_remote_port;
+            server.hardware_logger_port = help.hardware_logger_port;
 
             server.server_url = help.server_url;
-
-            // Kontrola oprávnění
-            if (!server.create_permission()) return forbidden();
 
             // Uložení objektu
             server.save();
 
             // Vrácení objektu
-            return created(Json.toJson(server));
+            return created(server.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+           return controllerServerError(e);
         }
     }
 
@@ -105,15 +110,14 @@ public class Controller_ExternalServer extends BaseController {
             tags = {"Admin-External-Server"},
             notes = "Edit basic information Compilation_Server",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Updated successfully",    response = Model_HomerServer.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
@@ -121,20 +125,22 @@ public class Controller_ExternalServer extends BaseController {
         try {
 
             Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
-            if (server == null) return notFound("HomerServer homer_server_id not found");
+            if (server.server_type != HomerType.PUBLIC) return badRequest("Server must be in public group!");
 
-            Model_HomerServer main_server = Model_HomerServer.find.query().where().eq("server_type", HomerType.MAIN).findOne();
-            if (main_server != null) return badRequest("HomerServer Main server is already set.");
-
-            if (!server.edit_permission()) return forbidden();
+            Model_HomerServer main_server_not_cached = Model_HomerServer.find.query().where().eq("server_type", HomerType.MAIN).select("id").findOne();
+            if(main_server_not_cached != null) {
+                Model_HomerServer main_server = Model_HomerServer.getById(main_server_not_cached.id);
+                main_server.server_type = HomerType.PUBLIC;
+                main_server.update();
+            }
 
             server.server_type = HomerType.MAIN;
             server.update();
 
-            return ok(Json.toJson(server));
+            return ok(server.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+           return controllerServerError(e);
         }
     }
     
@@ -142,8 +148,7 @@ public class Controller_ExternalServer extends BaseController {
             tags = {"Admin-External-Server"},
             notes = "Edit basic information Compilation_Server",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Updated successfully",      response = Model_HomerServer.class),
@@ -158,21 +163,22 @@ public class Controller_ExternalServer extends BaseController {
         try {
 
             Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
-            if (server == null) return notFound("HomerServer homer_server_id not found");
             if (server.server_type != HomerType.PUBLIC) return badRequest("Server must be in public group!");
 
-            Model_HomerServer backup_server = Model_HomerServer.find.query().where().eq("server_type", HomerType.BACKUP).findOne();
-            if (backup_server != null) return badRequest("HomerServer Main server is already set.");
-
-            if (!server.edit_permission()) return forbidden();
+            Model_HomerServer main_server_not_cached = Model_HomerServer.find.query().where().eq("server_type", HomerType.BACKUP).select("id").findOne();
+            if(main_server_not_cached != null) {
+                Model_HomerServer main_server = Model_HomerServer.getById(main_server_not_cached.id);
+                main_server.server_type = HomerType.PUBLIC;
+                main_server.update();
+            }
 
             server.server_type = HomerType.BACKUP;
             server.update();
 
-            return ok(Json.toJson(server));
+            return ok(server.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+           return controllerServerError(e);
         }
     }
 
@@ -180,14 +186,7 @@ public class Controller_ExternalServer extends BaseController {
             tags = {"External-Server"},
             notes = "Edit basic information Compilation_Server",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Cloud_Homer_Server.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Homer_Server_edit" )
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -203,9 +202,9 @@ public class Controller_ExternalServer extends BaseController {
     @ApiResponses({
             @ApiResponse(code = 200, message = "Updated successfully",    response = Model_HomerServer.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
@@ -213,35 +212,29 @@ public class Controller_ExternalServer extends BaseController {
         try {
 
             // Zpracování Json
-            final Form<Swagger_Cloud_Homer_Server_New> form = formFactory.form(Swagger_Cloud_Homer_Server_New.class).bindFromRequest();
+            final Form<Swagger_HomerServer_New> form = formFactory.form(Swagger_HomerServer_New.class).bindFromRequest();
             if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Cloud_Homer_Server_New help = form.get();
+            Swagger_HomerServer_New help = form.get();
 
             // Kontrola objektu
             Model_HomerServer server = Model_HomerServer.getById(unique_identifier);
-            if (server == null) return notFound("Cloud_Blocko_Server server_id not found");
-
-            // Kontrola oprávnění
-            if (!server.edit_permission()) return forbidden();
 
             // Úprava objektu
             server.personal_server_name = help.personal_server_name;
-
             server.mqtt_port = help.mqtt_port;
-
             server.grid_port = help.grid_port;
             server.web_view_port = help.web_view_port;
+            server.hardware_logger_port = help.hardware_logger_port;
             server.server_url = help.server_url;
-            server.server_remote_port = help.server_remote_port;
 
             // Uložení objektu
             server.update();
 
             // Vrácení objektu
-            return ok(Json.toJson(server));
+            return ok(server.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+           return controllerServerError(e);
         }
     }
 
@@ -250,35 +243,54 @@ public class Controller_ExternalServer extends BaseController {
             notes = "get all Homer Servers",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Cloud_Homer_Server.read_permission", value = Model_HomerServer.read_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Cloud_Homer_Server.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Homer_Server_read")
-                    })
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_HomerServer_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",      response = Model_HomerServer.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_HomerServer_List.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result homer_server_get_all() {
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result homer_server_by_filter(@ApiParam(value = "page_number is Integer. 1,2,3...n. For first call, use 1 (first page of list)", required = true)  int page_number) {
         try {
 
-            // Získání seznamu
-            List<Model_HomerServer> servers = Model_HomerServer.get_all();
+            // Získání JSON
+            final Form<Swagger_HomerServer_Filter> form = formFactory.form(Swagger_HomerServer_Filter.class).bindFromRequest();
+            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
+            Swagger_HomerServer_Filter help = form.get();
+
+            // Získání všech objektů a následné filtrování podle vlastníka
+            Query<Model_HomerServer> query = Ebean.find(Model_HomerServer.class);
+
+            query.orderBy("UPPER(name) ASC");
+
+            if (!help.server_types.isEmpty()) {
+                query.where().in("server_type", help.server_types);
+            }
+            if (help.project_id != null) {
+                throw new Result_Error_NotSupportedException();
+            }
+
+            // Vyvoření odchozího JSON
+            Swagger_HomerServer_List result = new Swagger_HomerServer_List(query, page_number);
 
             // Vrácení seznamu
-            return ok(Json.toJson(servers));
+            return ok(result.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+           return controllerServerError(e);
         }
     }
 
@@ -287,30 +299,26 @@ public class Controller_ExternalServer extends BaseController {
             notes = "get all Homer Servers",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",  response = Model_HomerServer.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_HomerServer.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result homer_server_get(String server_id) {
         try {
 
             // Získání seznamu
-            Model_HomerServer serves = Model_HomerServer.getById(server_id);
-            if (serves == null) return notFound("Cloud_Compilation_Server server_id not found");
-
-            if (!serves.read_permission()) return forbidden();
+            Model_HomerServer server = Model_HomerServer.getById(server_id);
 
             // Vrácení seznamu
-            return ok(Json.toJson(serves));
+            return ok(server.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+           return controllerServerError(e);
         }
     }
 
@@ -318,20 +326,13 @@ public class Controller_ExternalServer extends BaseController {
             tags = {"External-Server"},
             notes = "remove Compilation_Servers",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Cloud_Homer_Server.delete_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "Cloud_Homer_Server_delete")
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result homer_server_delete(String server_id) {
@@ -339,10 +340,6 @@ public class Controller_ExternalServer extends BaseController {
 
             // Kontrola objektu
             Model_HomerServer server = Model_HomerServer.getById(server_id);
-            if (server == null) return notFound("Cloud_Compilation_Server server_id not found");
-
-            // Kontrola oprávnění
-            if (!server.delete_permission()) return forbidden();
 
             // Smzání objektu
             server.delete();
@@ -351,23 +348,17 @@ public class Controller_ExternalServer extends BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+           return controllerServerError(e);
         }
     }
 
-///###################################################################################################################*/
+// COMPILATION SERVER ##################################################################################################
 
     @ApiOperation(value = "create Compilation_Server",
             tags = {"Admin-External-Server"},
             notes = "Create new Gate for Compilation_Server",
             produces = "application/json",
-            protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value =  "CompilationServer_create" ),
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -393,26 +384,23 @@ public class Controller_ExternalServer extends BaseController {
         try {
 
             // Zpracování Json
-            Form<Swagger_Cloud_Compilation_Server_New> form = formFactory.form(Swagger_Cloud_Compilation_Server_New.class).bindFromRequest();
+            Form<Swagger_CompilationServer_New> form = formFactory.form(Swagger_CompilationServer_New.class).bindFromRequest();
             if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Cloud_Compilation_Server_New help = form.get();
+            Swagger_CompilationServer_New help = form.get();
 
             // Vytvářím objekt
             Model_CompilationServer server = new Model_CompilationServer();
             server.personal_server_name = help.personal_server_name;
             server.server_url = help.server_url;
 
-            // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!server.create_permission())  return forbidden();
-
             // Ukládám objekt
             server.save();
 
             // Vracím objekt
-            return created(Json.toJson(server));
+            return created(server.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+           return controllerServerError(e);
         }
     }
 
@@ -420,13 +408,7 @@ public class Controller_ExternalServer extends BaseController {
             tags = {"Admin-External-Server"},
             notes = "Edit basic information Compilation_Server",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value =  "CompilationServer_edit" ),
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -452,16 +434,12 @@ public class Controller_ExternalServer extends BaseController {
         try {
 
             // Zpracování Json
-            Form<Swagger_Cloud_Compilation_Server_New> form = formFactory.form(Swagger_Cloud_Compilation_Server_New.class).bindFromRequest();
+            Form<Swagger_CompilationServer_New> form = formFactory.form(Swagger_CompilationServer_New.class).bindFromRequest();
             if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Cloud_Compilation_Server_New help = form.get();
+            Swagger_CompilationServer_New help = form.get();
 
             // Zkontroluji validitu
             Model_CompilationServer server = Model_CompilationServer.getById(server_id);
-            if (server == null) return notFound("Cloud_Compilation_Server server_id not found");
-
-            // Zkontroluji oprávnění
-            if (!server.edit_permission()) return forbidden();
 
             // Upravím objekt
             server.personal_server_name = help.personal_server_name;
@@ -470,10 +448,10 @@ public class Controller_ExternalServer extends BaseController {
             server.update();
 
             // Vrátím objekt
-            return ok(Json.toJson(server));
+            return ok(server.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+           return controllerServerError(e);
         }
     }
 
@@ -486,8 +464,8 @@ public class Controller_ExternalServer extends BaseController {
             code = 200
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",      response = Model_CompilationServer.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+            @ApiResponse(code = 200, message = "Ok Result",         response = Model_CompilationServer.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "Server side Error", response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     public Result compilation_server_get_all() {
@@ -497,7 +475,7 @@ public class Controller_ExternalServer extends BaseController {
             return ok(Json.toJson(Model_CompilationServer.find.all()));
 
         } catch (Exception e) {
-            return internalServerError(e);
+           return controllerServerError(e);
         }
     }
 
@@ -506,17 +484,11 @@ public class Controller_ExternalServer extends BaseController {
             notes = "get Compilation_Servers",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value =  "CompilationServer_delete" ),
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_CompilationServer.class),
-            @ApiResponse(code = 400, message = "Object not found",         response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
@@ -527,16 +499,12 @@ public class Controller_ExternalServer extends BaseController {
 
             //Zkontroluji validitu
             Model_CompilationServer server = Model_CompilationServer.getById(server_id);
-            if (server == null) return notFound("Cloud_Compilation_Server server_id not found");
-
-            // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!server.read_permission())  return forbidden();
-
+      
             // Vracím odpověď
-            return ok(Json.toJson(server));
+            return ok(server.json());
 
         } catch (Exception e) {
-            return internalServerError(e);
+           return controllerServerError(e);
         }
     }
 
@@ -545,17 +513,11 @@ public class Controller_ExternalServer extends BaseController {
             notes = "remove Compilation_Servers",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Static Permission key", value =  "CompilationServer_delete" ),
-                    })
-            }
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Object not found",         response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
@@ -566,10 +528,6 @@ public class Controller_ExternalServer extends BaseController {
 
             //Zkontroluji validitu
             Model_CompilationServer server = Model_CompilationServer.getById(server_id);
-            if (server == null) return notFound("Cloud_Compilation_Server server_id not found");
-
-            // Ověření oprávnění těsně před uložením (aby se mohlo ověřit oprávnění nad projektem)
-            if (!server.delete_permission())  return forbidden();
 
             // Smažu objekt
             server.delete();
@@ -578,19 +536,19 @@ public class Controller_ExternalServer extends BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+           return controllerServerError(e);
         }
     }
 
-/// PRIVATE FILE STORAGE FOR HOMER SERVERS ###########################################################################*/
+
+// PRIVATE FILE STORAGE FOR HOMER SERVERS ###########################################################################*/
 
     @ApiOperation(value = "get B_Program File",
             tags = {"Homer-Server-API"},
             notes = "Required secure Token changed throw websocket",
             produces = "multipart/form-data",
             consumes = "text/html",
-            protocols = "https",
-            code = 303
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 303, message = "Ok Result"),
@@ -603,15 +561,7 @@ public class Controller_ExternalServer extends BaseController {
         try {
 
             // Získám soubor
-            Model_Version version = Model_Version.getById(b_program_version_id);
-
-            if (version== null) {
-               return notFound("File not found");
-            }
-
-            if (version.get_b_program() == null) {
-                return forbidden();
-            }
+            Model_BProgramVersion version = Model_BProgramVersion.getById(b_program_version_id);
 
             // Separace na Container a Blob
             int slash = version.files.get(0).path.indexOf("/");
@@ -639,7 +589,7 @@ public class Controller_ExternalServer extends BaseController {
             return redirect(total_link);
 
         } catch (Exception e) {
-            return internalServerError(e);
+           return controllerServerError(e);
         }
     }
 
@@ -648,8 +598,7 @@ public class Controller_ExternalServer extends BaseController {
             notes = "Required secure Token changed throw websocket",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 303
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 303, message = "Ok Result"),
@@ -661,13 +610,7 @@ public class Controller_ExternalServer extends BaseController {
         try {
 
             // Ověření objektu
-            Model_Version version = Model_Version.getById(version_id);
-            if (version == null) return notFound("Version not found");
-
-            // Zkontroluji validitu Verze zda sedí k C_Programu
-            if (version.get_c_program() == null) return badRequest("Version is not version of C_Program");
-
-            if (!version.get_c_program().read_permission()) return forbidden();
+            Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
 
             // Získám soubor
             Model_Compilation compilation = version.compilation;
@@ -686,7 +629,7 @@ public class Controller_ExternalServer extends BaseController {
             return file(bytes, "firmware.bin");
 
         } catch (Exception e) {
-            return internalServerError(e);
+           return controllerServerError(e);
         }
     }
 
@@ -695,8 +638,7 @@ public class Controller_ExternalServer extends BaseController {
             notes = "Required secure Token changed throw websocket",
             produces = "multipart/form-data",
             consumes = "text/html",
-            protocols = "https",
-            code = 303
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 303, message = "Ok Result"),
@@ -710,10 +652,6 @@ public class Controller_ExternalServer extends BaseController {
 
             // Získám soubor
             Model_Compilation compilation = Model_Compilation.getById(compilation_id);
-
-            if (compilation == null) {
-                return notFound("File not found");
-            }
 
             if (compilation.status != CompilationStatus.SUCCESS) {
                 return notFound("File not successfully compiled and restored");
@@ -745,7 +683,7 @@ public class Controller_ExternalServer extends BaseController {
             return redirect(total_link);
 
         } catch (Exception e) {
-            return internalServerError(e);
+           return controllerServerError(e);
         }
     }
 
@@ -754,8 +692,7 @@ public class Controller_ExternalServer extends BaseController {
             notes = "Required secure Token changed throw websocket",
             produces = "multipart/form-data",
             consumes = "text/html",
-            protocols = "https",
-            code = 303
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 303, message = "Ok Result"),
@@ -770,9 +707,6 @@ public class Controller_ExternalServer extends BaseController {
             // Získám soubor
             Model_BootLoader bootLoader = Model_BootLoader.getById(bootloader_id);
 
-            if (bootLoader == null) {
-                return notFound("File not found");
-            }
 
             // Separace na Container a Blob
             int slash = bootLoader.file.path.indexOf("/");
@@ -800,7 +734,7 @@ public class Controller_ExternalServer extends BaseController {
             return redirect(total_link);
 
         } catch (Exception e) {
-            return internalServerError(e);
+           return controllerServerError(e);
         }
     }
 }

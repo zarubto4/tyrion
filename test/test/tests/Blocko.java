@@ -27,12 +27,11 @@ public class Blocko extends TestHelper {
     public static Model_Product product;
     public static Model_Project project;
 
-    public static Model_TypeOfBlock type_of_block;
-    public static Model_BlockoBlock blocko_block;
-    public static Model_BlockoBlockVersion blocko_block_version;
+    public static Model_Block blocko_block;
+    public static Model_BlockVersion blocko_block_version;
 
     public static Model_BProgram b_program;
-    public static Model_VersionObject b_program_version;
+    public static Model_BProgramVersion b_program_version;
 
     public static String adminToken;
 
@@ -56,7 +55,6 @@ public class Blocko extends TestHelper {
         product = product_create(person);
         project = project_create(product);
 
-        type_of_block = type_of_block_create(project);
         blocko_block = blocko_block_create(type_of_block);
         blocko_block_version = blocko_block_version_create(blocko_block);
 

@@ -72,10 +72,6 @@ public class Model_Employee extends BaseModel {
         if(BaseController.person().has_permission(Permission.Employee_update.name())) return;
         customer.check_update_permission();
     }
-    @JsonIgnore @Transient @Override public void check_edit_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Employee_edit.name())) return;
-        customer.check_edit_permission();
-    }
 
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
         if(BaseController.person().has_permission(Permission.Employee_delete.name())) return;

@@ -13,6 +13,8 @@ import play.libs.Json;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.ProgramType;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
@@ -151,6 +153,7 @@ public class Model_Library extends TaggedModel {
         }
     }
 
+    // TODO odstranit short object!
     @JsonIgnore
     public Swagger_Library_Version library_version(Model_LibraryVersion version) {
         try {
@@ -186,7 +189,7 @@ public class Model_Library extends TaggedModel {
 
     @JsonIgnore @Override
     public void save() {
-        
+
         this.azure_library_link = "libraries/"  + UUID.randomUUID().toString();
 
         super.save();
@@ -238,7 +241,8 @@ public class Model_Library extends TaggedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override @Transient public void check_create_permission() throws _Base_Result_Exception  {
-         if(BaseController.person().has_permission(Permission.Library_create.name())) return;
+        if(project != null) project.check_update_permission();
+        if(BaseController.person().has_permission(Permission.Library_create.name())) return;
         get_project().check_update_permission();
     }
 
@@ -248,19 +252,19 @@ public class Model_Library extends TaggedModel {
 
     }
 
-    @JsonIgnore @Override  @Transient public void check_edit_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Library_edit.name())) return;
-        get_project().check_edit_permission();
-    }
-
     @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception {
         if(BaseController.person().has_permission(Permission.Library_update.name())) return;
-        get_project().check_edit_permission();
+        get_project().check_update_permission();
     }
 
     @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception {
         if(BaseController.person().has_permission(Permission.Library_delete.name())) return;
         get_project().check_update_permission();
+    }
+
+    @JsonIgnore @Transient public void check_community_publishing_permission() throws _Base_Result_Exception {
+        if(community_publishing_permission()) return;
+        throw new Result_Error_PermissionDenied();
     }
 
     @JsonProperty @Transient  @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
@@ -283,17 +287,17 @@ public class Model_Library extends TaggedModel {
     @CacheField(value = Model_Library.class, timeToIdle = 600)
     public static Cache<UUID, Model_Library> cache;
 
-    public static Model_Library getById(String id) {
+    public static Model_Library getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_Library getById(UUID id) {
+    public static Model_Library getById(UUID id) throws _Base_Result_Exception {
 
         Model_Library library = cache.get(id);
         if (library == null) {
 
             library = Model_Library.find.byId(id);
-            if (library == null) return null;
+            if (library == null) throw new Result_Error_NotFound(Model_Library.class);
 
             cache.put(id, library);
         }
