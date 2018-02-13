@@ -534,17 +534,18 @@ public class Model_CProgramVersion extends VersionModel {
 
     public static Model_CProgramVersion getById(UUID id) throws _Base_Result_Exception {
 
-        Model_CProgramVersion grid_widget_version = cache.get(id);
+        Model_CProgramVersion version = cache.get(id);
 
-        if (grid_widget_version == null) {
+        if (version == null) {
 
-            grid_widget_version = Model_CProgramVersion.find.byId(id);
-            if (grid_widget_version == null) throw new Result_Error_NotFound(Model_CProgramVersion.class);
+            version = find.byId(id);
+            if (version == null) throw new Result_Error_NotFound(Model_CProgramVersion.class);
 
-            cache.put(id, grid_widget_version);
+            cache.put(id, version);
         }
 
-        return grid_widget_version;
+        version.check_create_permission();
+        return version;
     }
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/

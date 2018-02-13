@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.hardware_registration_auhtority.Batch_Registration_Authority;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
@@ -172,7 +173,13 @@ public class Model_HardwareBatch extends BaseModel {
     }
 
     public static Model_HardwareBatch getById(UUID id) {
-        return find.byId(id);
+
+        Model_HardwareBatch batch = find.byId(id);
+        if (batch == null) throw new Result_Error_NotFound(Model_HardwareBatch.class);
+
+        batch.check_read_permission();
+        return batch;
+
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

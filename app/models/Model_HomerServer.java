@@ -660,6 +660,7 @@ public class Model_HomerServer extends BaseModel {
             cache.put(id, server);
         }
 
+        server.check_read_permission();
         return server;
     }
 

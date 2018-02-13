@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -79,12 +80,17 @@ public class Model_Customer extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Customer getById(String id) {
+    public static Model_Customer getById(String id)throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_Customer getById(UUID id) {
-        return find.byId(id);
+    public static Model_Customer getById(UUID id) throws _Base_Result_Exception {
+
+        Model_Customer customer = Model_Customer.find.byId(id);
+        if (customer == null) throw new Result_Error_NotFound(Model_Customer.class);
+
+        customer.check_read_permission();
+        return customer;
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

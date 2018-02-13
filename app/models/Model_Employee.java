@@ -6,6 +6,7 @@ import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import utilities.enums.ParticipantStatus;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -80,12 +81,18 @@ public class Model_Employee extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Employee getById(String id) {
+    public static Model_Employee getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
     
-    public static Model_Employee getById(UUID id) {
-        return find.byId(id);
+    public static Model_Employee getById(UUID id) throws _Base_Result_Exception {
+
+        Model_Employee employee = find.byId(id);
+        if (employee == null) throw new Result_Error_NotFound(Model_Employee.class);
+
+        employee.check_read_permission();
+        return employee;
+
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

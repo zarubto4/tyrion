@@ -10,12 +10,15 @@ import controllers.Controller_WebSocket;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.Server;
+import utilities.cache.CacheField;
 import utilities.document_db.document_objects.DM_CompilationServer_Connect;
 import utilities.document_db.document_objects.DM_CompilationServer_Disconnect;
 import utilities.enums.CompilationStatus;
 import utilities.enums.NetworkStatus;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.model.BaseModel;
@@ -190,8 +193,8 @@ public class Model_CompilationServer extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override @Transient public void check_create_permission()  throws _Base_Result_Exception { if(!_BaseController.person().has_permission(Permission.CompilationServer_create.name())) throw new Result_Error_PermissionDenied();}
-    @JsonIgnore @Override  @Transient public void check_read_permission()   throws _Base_Result_Exception  {}
+    @JsonIgnore @Override  @Transient public void check_create_permission() throws _Base_Result_Exception { if(!_BaseController.person().has_permission(Permission.CompilationServer_create.name())) throw new Result_Error_PermissionDenied();}
+    @JsonIgnore @Override  @Transient public void check_read_permission()   throws _Base_Result_Exception {}
     @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception { if(!_BaseController.person().has_permission(Permission.CompilationServer_update.name())) throw new Result_Error_PermissionDenied();}
     @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception { if(!_BaseController.person().has_permission(Permission.CompilationServer_delete.name())) throw new Result_Error_PermissionDenied();}
 
@@ -199,12 +202,28 @@ public class Model_CompilationServer extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_CompilationServer getById(String id) {
+    @CacheField(value = Model_CompilationServer.class, timeToIdle = CacheField.DayCacheConstant)
+    @JsonIgnore public static Cache<UUID, Model_CompilationServer> cache;
+
+    public static Model_CompilationServer getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_CompilationServer getById(UUID id) {
-        return find.byId(id);
+    public static Model_CompilationServer getById(UUID id) throws _Base_Result_Exception {
+
+        Model_CompilationServer server = cache.get(id);
+
+        if (server == null) {
+
+            server = find.byId(id);
+            if (server == null) throw new Result_Error_NotFound(Model_CompilationServer.class);
+
+            cache.put(id, server);
+        }
+
+        // Check Permission
+        server.check_read_permission();
+        return server;
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

@@ -698,6 +698,7 @@ public class Model_Instance extends TaggedModel {
             cache.put(id, instance);
         }
 
+        instance.check_read_permission();
         return instance;
     }
 

@@ -352,12 +352,13 @@ public class Model_CProgram extends TaggedModel {
         Model_CProgram c_program = cache.get(id);
         if (c_program == null) {
 
-            c_program = Model_CProgram.find.byId(id);
+            c_program = find.byId(id);
             if (c_program == null) throw new Result_Error_NotFound(Model_Product.class);
 
             cache.put(id, c_program);
         }
 
+        c_program.check_create_permission();
         return c_program;
     }
 

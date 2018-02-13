@@ -391,6 +391,7 @@ public class Model_HardwareType extends NamedModel {
             cache.put(id, hardwareType);
         }
 
+        hardwareType.check_read_permission();
         return hardwareType;
     }
 

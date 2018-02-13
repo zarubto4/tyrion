@@ -263,6 +263,7 @@ public class Model_GridProject extends TaggedModel {
             cache.put(id, grid_project);
         }
 
+        grid_project.check_read_permission();
         return grid_project;
     }
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
 import io.ebean.Finder;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.data.validation.Constraints;
@@ -20,6 +21,7 @@ import javax.persistence.*;
 import java.util.UUID;
 
 @Entity
+@ApiModel( value = "Invitation", description = "Model of Invitation")
 @Table(name="Invitation")
 public class Model_Invitation extends BaseModel {
 
@@ -81,7 +83,6 @@ public class Model_Invitation extends BaseModel {
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Invitation_create.name())) return;
         if(!_BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
-
     }
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Invitation_update.name())) return;

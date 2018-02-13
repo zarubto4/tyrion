@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -157,8 +158,14 @@ public class Model_Garfield  extends NamedModel {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_Garfield getById(UUID id) {
-        return find.byId(id);
+    public static Model_Garfield getById(UUID id) throws _Base_Result_Exception {
+
+        Model_Garfield garfield = find.byId(id);
+        if (garfield == null) throw new Result_Error_NotFound(Model_Garfield.class);
+
+        garfield.check_read_permission();
+        return garfield;
+
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -70,14 +71,17 @@ public class Model_GridTerminal extends BaseModel {
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_GridTerminal getById(String id) {
+    public static Model_GridTerminal getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_GridTerminal getById(UUID id) {
+    public static Model_GridTerminal getById(UUID id) throws _Base_Result_Exception {
 
-        logger.warn("CACHE is not implemented - TODO");
-        return find.byId(id);
+        Model_GridTerminal terminal = find.byId(id);
+        if (terminal == null) throw new Result_Error_NotFound(Model_GridTerminal.class);
+
+        terminal.check_read_permission();
+        return terminal;
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
