@@ -54,13 +54,35 @@ public class Model_LibraryVersion extends VersionModel {
     @JsonIgnore @OneToMany(mappedBy = "example_library", cascade = CascadeType.ALL)  public List<Model_CProgram> examples = new ArrayList<>();
 
 
-
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Cached private UUID cache_library_id;
 
+
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
+    // TODO Cache - Performeance [TZ]!
+    @ApiModelProperty(required = true, readOnly = true)
+    public List<Model_CProgram> examples(){
+        return  examples;
+    }
+
+    // TODO Cache - Performeance [TZ]!
+    @ApiModelProperty(required = true, readOnly = true)
+    public List<Swagger_Library_Record> files(){
+
+         List<Swagger_Library_Record> file_list = new ArrayList<>();
+
+        for (Model_Blob file : files) {
+
+            JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
+
+            Swagger_Library_File_Load form = Json.fromJson(json, Swagger_Library_File_Load.class);
+            file_list.addAll(form.files);
+        }
+
+        return file_list;
+    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -188,6 +210,8 @@ public class Model_LibraryVersion extends VersionModel {
             cache.put(id, grid_widget_version);
         }
 
+        // Check Permission
+        grid_widget_version.check_read_permission();
         return grid_widget_version;
     }
 

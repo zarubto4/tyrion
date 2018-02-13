@@ -6,6 +6,7 @@ import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import org.ehcache.Cache;
 import utilities.cache.CacheField;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -76,8 +77,20 @@ public class Model_Producer extends NamedModel {
     }
 
     public static Model_Producer getById(UUID id) throws _Base_Result_Exception {
-        logger.warn("CACHE is not implemented - TODO");
-        return find.byId(id);
+
+        Model_Producer producer = cache.get(id);
+
+        if (producer == null) {
+
+            producer = Model_Producer.find.byId(id);
+            if (producer == null) throw new Result_Error_NotFound(Model_Producer.class);
+
+            cache.put(id, producer);
+        }
+
+        // Check Permission
+        producer.check_read_permission();
+        return producer;
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

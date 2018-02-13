@@ -45,7 +45,7 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_GridProject>           grid_projects   = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Block>                 blocks          = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Widget>                widgets         = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareRegistration>  hardware        = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Hardware>              hardware        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareGroup>         hardware_groups = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("created desc") public List<Model_Invitation>            invitations     = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("id asc")       public List<Model_ProjectParticipant>    participants    = new ArrayList<>();
@@ -158,31 +158,20 @@ public class Model_Project extends TaggedModel {
 /* GET SQL PARAMETER - CACHE OBJECTS ------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public List<Model_HardwareRegistration> getHardware() {
+    public List<Model_Hardware> getHardware() {
         try {
 
-            List<Model_HardwareRegistration> hardwareRegistrations;
+            List<Model_Hardware> hardwares = new ArrayList<>();
 
             if (cache_hardware_ids == null) {
-
-                hardwareRegistrations = Model_HardwareRegistration.find.query().where().eq("project.id", id).findList();
-
-                // Získání seznamu
-                for (Model_HardwareRegistration hardware : hardwareRegistrations) {
-                    cache_hardware_ids.add(hardware.id);
-                    hardware.cache();
-                }
-
-                return hardwareRegistrations;
-            } else {
-                hardwareRegistrations = new ArrayList<>();
-
-                for (UUID id : cache_hardware_ids) {
-                    hardwareRegistrations.add(Model_HardwareRegistration.getById(id));
-                }
+                cache_hardware_ids= Model_Hardware.find.query().where().eq("project.id", id).findIds();
             }
 
-            return hardwareRegistrations;
+            for (UUID id : cache_hardware_ids) {
+                hardwares.add(Model_Hardware.getById(id));
+            }
+
+            return hardwares;
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -667,39 +656,14 @@ public class Model_Project extends TaggedModel {
 
     public enum Permission { Project_create, Project_update, Project_read, Project_unshare , Project_share, Project_delete, Project_admin }
 
-/* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    @CacheField(value = Model_Project.class)
-    public static Cache<UUID, Model_Project> cache ;
-
-    @CacheField(value = IdsList.class, name = "Model_Project_Person_Ids")
-    public static Cache<UUID, IdsList> token_cache;
-
-
-    public static Model_Project getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
-    public static Model_Project getById(UUID id) throws _Base_Result_Exception {
-
-        Model_Project project = cache.get(id);
-        if (project == null) {
-            project = find.query().where().idEq(id).eq("deleted", false).findOne();
-            if (project == null) throw new Result_Error_NotFound(Model_Project.class);
-            cache.put(id, project);
-        }
-
-        project.check_read_permission();
-
-        return project;
-    }
+/* NOTIFICATION ---------------------------------------------------------------------------------------------------------------*/
 
     public static void becki_person_id_subscribe(UUID person_id) {
 
         List<Model_Project> list_of_projects = Model_Project.find.query().where().eq("participants.person.id", person_id).disjunction()
-                    .eq("state", ParticipantStatus.ADMIN)
-                    .eq("state", ParticipantStatus.MEMBER)
-                    .eq("state", ParticipantStatus.OWNER)
+                .eq("state", ParticipantStatus.ADMIN)
+                .eq("state", ParticipantStatus.MEMBER)
+                .eq("state", ParticipantStatus.OWNER)
                 .endJunction()
                 .findList();
 
@@ -773,6 +737,34 @@ public class Model_Project extends TaggedModel {
         } finally {
             return idlist.list;
         }
+    }
+
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @CacheField(value = Model_Project.class)
+    public static Cache<UUID, Model_Project> cache ;
+
+    @CacheField(value = IdsList.class, name = "Model_Project_Person_Ids")
+    public static Cache<UUID, IdsList> token_cache;
+
+
+    public static Model_Project getById(String id) throws _Base_Result_Exception {
+        return getById(UUID.fromString(id));
+    }
+
+    public static Model_Project getById(UUID id) throws _Base_Result_Exception {
+
+        Model_Project project = cache.get(id);
+        if (project == null) {
+            project = find.query().where().idEq(id).eq("deleted", false).findOne();
+            if (project == null) throw new Result_Error_NotFound(Model_Project.class);
+            cache.put(id, project);
+        }
+
+        project.check_read_permission();
+
+        return project;
     }
 
     public void cache_refresh() {

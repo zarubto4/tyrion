@@ -11,6 +11,7 @@ import org.ehcache.Cache;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.*;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -623,11 +624,12 @@ public class Model_UpdateProcedure extends BaseModel {
         if (procedure == null) {
 
             procedure = Model_UpdateProcedure.find.byId(id);
-            if (procedure == null) return null;
+            if (procedure == null)  throw new Result_Error_NotFound(Model_UpdateProcedure.class);
 
             cache.put(id, procedure);
         }
 
+        procedure.check_read_permission();
         return procedure;
     }
 

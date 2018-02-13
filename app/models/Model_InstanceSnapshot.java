@@ -15,6 +15,8 @@ import utilities.enums.NetworkStatus;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
 import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -53,7 +55,6 @@ public class Model_InstanceSnapshot extends BaseModel {
     @ManyToOne public Model_BProgramVersion b_program_version;
     @OneToOne  public Model_Blob program;
     @JsonIgnore @OneToMany(fetch = FetchType.LAZY)  public List<Model_UpdateProcedure> procedures = new ArrayList<>();
-    @JsonIgnore @ManyToMany(fetch = FetchType.LAZY) public List<Model_HardwareRegistration> hardware = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -243,10 +244,15 @@ public class Model_InstanceSnapshot extends BaseModel {
     }
 
     @JsonIgnore
-    public List<UUID> getHardwareIds() { // TODO groups also
-        List<UUID> ids = new ArrayList<>();
-        this.hardware.forEach(hardware -> ids.add(hardware.id));
-        return ids;
+    public List<UUID> getHardwareIds() {
+        // TODO - Vylouskat z Jsonu Snapshotu instance
+        throw new Result_Error_NotSupportedException();
+    }
+
+    @JsonIgnore
+    public List<UUID> getHardwareGroupseIds() {
+        // TODO - Vylouskat z Jsonu Snapshotu instance
+        throw new Result_Error_NotSupportedException();
     }
 
     @JsonIgnore
@@ -342,12 +348,26 @@ public class Model_InstanceSnapshot extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    // Create Permission is always JsonIgnore
-    @JsonIgnore   public boolean create_permission()  {  return  false;  }
-    @JsonIgnore   public boolean read_permission()    {  return  false;  }
-    @JsonProperty public boolean update_permission()  {  return  false;  }
-    @JsonProperty public boolean edit_permission()    {  return  false;  }
-    @JsonProperty public boolean delete_permission()  {  return  false;  }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.InstanceSnapshot_create.name())) return;
+        get_instance().check_update_permission();
+    }
+
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.InstanceSnapshot_read.name())) return;
+        get_instance().check_update_permission();
+    }
+
+    @JsonIgnore @Transient @Override public void check_update_permission()  {
+        if(_BaseController.person().has_permission(Permission.InstanceSnapshot_update.name())) return;
+        get_instance().check_update_permission();
+    }
+
+    @JsonIgnore @Transient @Override public void  check_delete_permission() throws _Base_Result_Exception  {
+        if(_BaseController.person().has_permission(Permission.InstanceSnapshot_delete.name())) return;
+        get_instance().check_update_permission();
+    }
+
 
     public enum Permission { InstanceSnapshot_create, InstanceSnapshot_read, InstanceSnapshot_update, InstanceSnapshot_delete }
 

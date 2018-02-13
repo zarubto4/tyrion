@@ -221,29 +221,6 @@ public class Model_BProgram extends TaggedModel {
         return azure_b_program_link;
     }
 
-/* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    @CacheField(value = Model_BProgram.class)
-    public static Cache<UUID, Model_BProgram> cache;
-
-    public static Model_BProgram getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
-    public static Model_BProgram getById(UUID id) throws _Base_Result_Exception {
-
-        Model_BProgram b_program = cache.get(id);
-        if (b_program == null) {
-
-            b_program = find.byId(id);
-            if (b_program == null) throw new Result_Error_NotFound(Model_BProgram.class);
-
-            cache.put(id, b_program);
-        }
-
-        return b_program;
-    }
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override @Transient
@@ -309,7 +286,33 @@ public class Model_BProgram extends TaggedModel {
      // Statické univerzální klíče
     public enum Permission { BProgram_create, BProgram_read, BProgram_update, BProgram_edit, BProgram_delete }
 
-/* FINDER --------------------------------------------------------------------------------------------------------------*/
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @CacheField(value = Model_BProgram.class)
+    public static Cache<UUID, Model_BProgram> cache;
+
+    public static Model_BProgram getById(String id) throws _Base_Result_Exception {
+        return getById(UUID.fromString(id));
+    }
+
+    public static Model_BProgram getById(UUID id) throws _Base_Result_Exception {
+
+        Model_BProgram b_program = cache.get(id);
+        if (b_program == null) {
+
+            b_program = find.byId(id);
+            if (b_program == null) throw new Result_Error_NotFound(Model_BProgram.class);
+
+            cache.put(id, b_program);
+        }
+
+        // Check Permission
+        b_program.check_read_permission();
+        return b_program;
+    }
+
+
+    /* FINDER --------------------------------------------------------------------------------------------------------------*/
      
     public static Finder<UUID, Model_BProgram> find = new Finder<>(Model_BProgram.class);
 

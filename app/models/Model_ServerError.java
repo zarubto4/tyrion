@@ -183,12 +183,12 @@ public class Model_ServerError extends NamedModel {
     }
     
     public static Model_ServerError getById(UUID id) throws _Base_Result_Exception {
+
         Model_ServerError error = find.byId(id);
-        if(error != null) {
-            return error;
-        } else {
-            throw new Result_Error_NotFound(Model_ServerError.class);
-        }
+        if(error == null)  throw new Result_Error_NotFound(Model_ServerError.class);
+
+        return error;
+
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

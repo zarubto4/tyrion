@@ -324,7 +324,7 @@ public class Model_Block extends TaggedModel {
         if (block == null) {
 
             block = find.query().where().idEq(id).eq("deleted", false).findOne();
-            if (block == null) throw new Result_Error_NotFound(Model_MProgramInstanceParameter.class);
+            if (block == null) throw new Result_Error_NotFound(Model_Block.class);
 
             cache.put(id, block);
         }

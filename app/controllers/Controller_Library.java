@@ -18,7 +18,6 @@ import utilities.enums.Approval;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
 import utilities.swagger.input.*;
-import utilities.swagger.output.Swagger_Library_Version;
 import utilities.swagger.output.filter_results.Swagger_Library_List;
 
 import java.util.UUID;
@@ -468,7 +467,7 @@ public class Controller_Library extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 201, message = "Successfully created",      response = Swagger_Library_Version.class),
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_LibraryVersion.class),
             @ApiResponse(code = 400, message = "Some Json value Missing",   response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -504,7 +503,7 @@ public class Controller_Library extends _BaseController {
             library.refresh();
 
             // Vracím vytvořený objekt
-            return created(Json.toJson(version.library.library_version(version)));
+            return created(Json.toJson(version));
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -519,7 +518,7 @@ public class Controller_Library extends _BaseController {
             protocols = "https"
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Library_Version.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_LibraryVersion.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -533,7 +532,7 @@ public class Controller_Library extends _BaseController {
             Model_LibraryVersion version = Model_LibraryVersion.getById(version_id);
 
             // Vracím Objekt
-            return ok(Json.toJson(version.library.library_version(version)));
+            return ok(Json.toJson(version));
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -559,7 +558,7 @@ public class Controller_Library extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Library_Version.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_LibraryVersion.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),

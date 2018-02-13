@@ -7,6 +7,9 @@ import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
+import utilities.cache.CacheField;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -171,13 +174,28 @@ public class Model_PaymentDetails extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_PaymentDetails getById(String id) {
+    @CacheField(value = Model_PaymentDetails.class, timeToIdle = CacheField.DayCacheConstant)
+    public static Cache<UUID, Model_PaymentDetails> cache;
+
+    public static Model_PaymentDetails getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_PaymentDetails getById(UUID id) {
-        logger.warn("CACHE is not implemented - TODO");
-        return find.byId(id);
+    public static Model_PaymentDetails getById(UUID id) throws _Base_Result_Exception {
+
+        Model_PaymentDetails paymentDetails = cache.get(id);
+
+        if (paymentDetails == null) {
+
+            paymentDetails = Model_PaymentDetails.find.byId(id);
+            if (paymentDetails == null) throw new Result_Error_NotFound(Model_PaymentDetails.class);
+
+            cache.put(id, paymentDetails);
+        }
+
+        // Check Permission
+        paymentDetails.check_read_permission();
+        return paymentDetails;
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

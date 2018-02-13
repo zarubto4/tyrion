@@ -19,10 +19,7 @@ import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
-import utilities.swagger.input.Swagger_Library_File_Load;
-import utilities.swagger.output.Swagger_Library_Version;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
-
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,11 +56,11 @@ public class Model_Library extends TaggedModel {
 
 
     @JsonProperty
-    public List<Swagger_Library_Version> versions() {
+    public List<Model_LibraryVersion> versions() {
 
-        List<Swagger_Library_Version> versions = new ArrayList<>();
+        List<Model_LibraryVersion> versions = new ArrayList<>();
         for (Model_LibraryVersion version : this.getVersions()) {
-            versions.add(this.library_version(version));
+            versions.add(version);
         }
 
         return versions;
@@ -152,40 +149,7 @@ public class Model_Library extends TaggedModel {
             return new ArrayList<>();
         }
     }
-
-    // TODO odstranit short object!
-    @JsonIgnore
-    public Swagger_Library_Version library_version(Model_LibraryVersion version) {
-        try {
-
-            Swagger_Library_Version help = new Swagger_Library_Version();
-
-            help.id = version.id;
-            help.name = version.name;
-            help.description = version.description;
-            help.delete_permission = delete_permission();
-            help.update_permission = update_permission();
-            help.author = version.author();
-            help.examples.addAll(version.examples);
-
-
-            for (Model_Blob file : version.files) {
-
-                JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
-
-                Swagger_Library_File_Load form = Json.fromJson(json, Swagger_Library_File_Load.class);
-                help.files.addAll(form.files);
-            }
-
-            return help;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+    /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
@@ -267,7 +231,7 @@ public class Model_Library extends TaggedModel {
         throw new Result_Error_PermissionDenied();
     }
 
-    @JsonProperty @Transient  @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
+    @JsonProperty @Transient @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
         try {
             // Cache už Obsahuje Klíč a tak vracím hodnotu
             if(_BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return true;
@@ -302,6 +266,8 @@ public class Model_Library extends TaggedModel {
             cache.put(id, library);
         }
 
+        // Check Permission
+        library.check_read_permission();
         return library;
     }
 

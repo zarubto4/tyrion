@@ -2,9 +2,15 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import play.data.validation.Constraints;
+import utilities.cache.CacheField;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.models_update_echo.EchoHandler;
@@ -25,7 +31,7 @@ public class Model_Invitation extends BaseModel {
 
 
     @JsonIgnore                        @ManyToOne public Model_Person owner;
-    @JsonIgnore                        @ManyToOne public Model_Project project; // TODO ID
+    @JsonIgnore                        @ManyToOne public Model_Project project;
     @JsonIgnore @Constraints.Email                public String email;
     @JsonIgnore                                   public UUID notification_id;
 
@@ -72,15 +78,50 @@ public class Model_Invitation extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.Invitation_create.name())) return;
+        if(!_BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
+
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.Invitation_update.name())) return;
+        if(!_BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission()  {
+        if(_BaseController.person().has_permission(Permission.Invitation_update.name())) return;
+        if(!_BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void  check_delete_permission() throws _Base_Result_Exception  {
+        if(_BaseController.person().has_permission(Permission.Invitation_delete.name())) return;
+        if(!_BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
+    }
+
+    public enum Permission { Invitation_create, Invitation_read, Invitation_update, Invitation_delete }
+
+
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Invitation getById(String id) {
+    @CacheField(value = Model_Invitation.class)
+    public static Cache<UUID, Model_Invitation> cache;
+
+    public static Model_Invitation getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_Invitation getById(UUID id) {
-        logger.warn("CACHE is not implemented - TODO");
-        return find.byId(id);
+    public static Model_Invitation getById(UUID id) throws _Base_Result_Exception {
+
+        Model_Invitation invitation = cache.get(id);
+        if (invitation == null) {
+
+            invitation = find.byId(id);
+            if (invitation == null)  throw new Result_Error_NotFound(Model_Invitation.class);
+
+            cache.put(id, invitation);
+        }
+
+        // Check Permission
+        invitation.check_read_permission();
+        return invitation;
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

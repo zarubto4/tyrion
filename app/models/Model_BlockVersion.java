@@ -158,6 +158,7 @@ public class Model_BlockVersion extends VersionModel {
             cache.put(id, version);
         }
 
+        version.check_read_permission();
         return version;
     }
 

@@ -8,9 +8,12 @@ import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import play.libs.Json;
+import utilities.cache.CacheField;
 import utilities.enums.BusinessModel;
 import utilities.enums.PaymentMethod;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -234,14 +237,28 @@ public class Model_Tariff extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    // TODO Cache
+    @CacheField(value = Model_Tariff.class, timeToIdle = CacheField.DayCacheConstant)
+    @JsonIgnore public static Cache<UUID, Model_Tariff> cache;
+
     public static Model_Tariff getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
     public static Model_Tariff getById(UUID id) throws _Base_Result_Exception {
-        logger.warn("CACHE is not implemented - TODO");
-        return find.byId(id);
+
+        Model_Tariff tariff = cache.get(id);
+
+        if (tariff == null) {
+
+            tariff = Model_Tariff.find.byId(id);
+            if (tariff == null) throw new Result_Error_NotFound(Model_Tariff.class);
+
+            cache.put(id, tariff);
+        }
+
+        // Check Permission
+        tariff.check_read_permission();
+        return tariff;
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

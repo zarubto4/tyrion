@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
+import utilities.cache.CacheField;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -27,7 +30,7 @@ public class Model_MProjectProgramSnapShot extends BaseModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)      public Model_GridProject grid_project;
 
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY) @JoinTable(name = "b_program_version_snapshots") public List<Model_Version> instance_versions = new ArrayList<>(); // Vazba na version Blocka (zatím je využívaná jen jako M:1
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY) @JoinTable(name = "b_program_version_snapshots") public List<Model_BProgramVersion> instance_versions = new ArrayList<>(); // Vazba na version Blocka (zatím je využívaná jen jako M:1
 
     @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "grid_project_program_snapshot") public List<Model_MProgramInstanceParameter> m_program_snapshots = new ArrayList<>();    // Verze M_Programu // TODO CACHE
 
@@ -72,6 +75,30 @@ public class Model_MProjectProgramSnapShot extends BaseModel {
 
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    @CacheField(value = Model_MProjectProgramSnapShot.class, timeToIdle = CacheField.DayCacheConstant)
+    public static Cache<UUID, Model_MProjectProgramSnapShot> cache;
+
+    public static Model_MProjectProgramSnapShot getById(String id) throws _Base_Result_Exception {
+        return getById(UUID.fromString(id));
+    }
+
+    public static Model_MProjectProgramSnapShot getById(UUID id) throws _Base_Result_Exception {
+
+        Model_MProjectProgramSnapShot snapShot = cache.get(id);
+
+        if (snapShot == null) {
+
+            snapShot = Model_MProjectProgramSnapShot.find.byId(id);
+            if (snapShot == null) throw new Result_Error_NotFound(Model_MProjectProgramSnapShot.class);
+
+            cache.put(id, snapShot);
+        }
+
+        // Check Permission
+        snapShot.check_read_permission();
+        return snapShot;
+    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

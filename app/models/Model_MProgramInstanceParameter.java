@@ -77,12 +77,12 @@ public class Model_MProgramInstanceParameter extends BaseModel {
           return Server.grid_app_main_url + "/" + connection_token();
     }
 
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public UUID grid_program_id()  { return grid_program_version.grid_program.id;}
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String grid_program_name()  { return grid_program_version.grid_program.name;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public UUID grid_program_id()             { return grid_program_version.grid_program.id;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String grid_program_name()         { return grid_program_version.grid_program.name;}
     @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String grid_program_description()  { return grid_program_version.grid_program.description;}
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public UUID version_id()  { return grid_program_version.id;}
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_name()  { return grid_program_version.name;}
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_description()  { return grid_program_version.description;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public UUID version_id()                  { return grid_program_version.id;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_name()              { return grid_program_version.name;}
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true) public String version_description()       { return grid_program_version.description;}
 
 /* JSON IGNORE  ---------------------------------------------------------------------------------------------------------*/
 
@@ -156,7 +156,7 @@ public class Model_MProgramInstanceParameter extends BaseModel {
                 if (person == null) throw new Result_Error_PermissionDenied();
 
                 //Chekc Permission
-                check_read_permission()
+                check_read_permission();
 
                 Model_GridTerminal terminal = new Model_GridTerminal();
                 terminal.device_name = "Unknown";
@@ -298,7 +298,7 @@ public class Model_MProgramInstanceParameter extends BaseModel {
         return get_instance() != null && get_instance().edit_permission();
     }
 
-    public enum Permission { Library_create, Library_edit, Library_delete, Library_update }
+    public enum Permission { MProgramInstance_create, MProgramInstance_update, MProgramInstance__read, MProgramInstance__delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

@@ -83,6 +83,7 @@ public class Model_Role extends NamedModel {
     }
 
     public static Model_Role getById(UUID id) throws _Base_Result_Exception {
+
         Model_Role role = Model_Role.find.byId(id);
         if (role == null) throw new Result_Error_NotFound(Model_Product.class);
 

@@ -320,8 +320,6 @@ public class Model_BootLoader extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static final String CACHE = Model_BootLoader.class.getSimpleName();
-
     @CacheField(value = Model_BootLoader.class)
     public static Cache<UUID, Model_BootLoader> cache;
 
@@ -340,6 +338,8 @@ public class Model_BootLoader extends NamedModel {
             cache.put(id, bootloader);
         }
 
+        // Check Permission
+        bootloader.check_read_permission();
         return bootloader;
     }
 

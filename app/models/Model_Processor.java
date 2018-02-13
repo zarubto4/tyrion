@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
+import org.ehcache.Cache;
+import utilities.cache.CacheField;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
@@ -69,14 +71,24 @@ public class Model_Processor extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
+    @CacheField(value = Model_Processor.class, timeToIdle = CacheField.DayCacheConstant)
+    public static Cache<UUID, Model_Processor> cache;
+
     public static Model_Processor getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
 
     public static Model_Processor getById(UUID id) throws _Base_Result_Exception {
 
-        Model_Processor processor = Model_Processor.find.byId(id);
-        if (processor == null) throw new Result_Error_NotFound(Model_Product.class);
+        Model_Processor processor = cache.get(id);
+
+        if (processor == null) {
+
+            processor = Model_Processor.find.byId(id);
+            if (processor == null) throw new Result_Error_NotFound(Model_Processor.class);
+
+            cache.put(id, processor);
+        }
 
         // Check Permission
         processor.check_read_permission();
