@@ -3,7 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -409,28 +409,28 @@ public class Model_ProductExtension extends NamedModel {
 
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.ProductExtension_create.name())) return;
-        if(product.customer.isEmployee(BaseController.person())) return;
+        if(_BaseController.person().has_permission(Permission.ProductExtension_create.name())) return;
+        if(product.customer.isEmployee(_BaseController.person())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.ProductExtension_read.name())) return;
-        if(product.customer.isEmployee(BaseController.person())) return;
+        if(_BaseController.person().has_permission(Permission.ProductExtension_read.name())) return;
+        if(product.customer.isEmployee(_BaseController.person())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.ProductExtension_update.name())) return;
-        if(product.customer.isEmployee(BaseController.person())) return;
+        if(_BaseController.person().has_permission(Permission.ProductExtension_update.name())) return;
+        if(product.customer.isEmployee(_BaseController.person())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.ProductExtension_delete.name())) return;
+        if(_BaseController.person().has_permission(Permission.ProductExtension_delete.name())) return;
         throw new Result_Error_PermissionDenied();
     }
 
     @JsonProperty @ApiModelProperty(required = true) public void check_act_deactivate_permission()  throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.ProductExtension_act_deactivate.name())) return;
-        if(product.customer.isEmployee(BaseController.person())) return;
+        if(_BaseController.person().has_permission(Permission.ProductExtension_act_deactivate.name())) return;
+        if(product.customer.isEmployee(_BaseController.person())) return;
         throw new Result_Error_PermissionDenied();
     }
 

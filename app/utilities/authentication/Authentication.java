@@ -1,6 +1,6 @@
 package utilities.authentication;
 
-import controllers.BaseController;
+import controllers._BaseController;
 import models.Model_Person;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -42,6 +42,6 @@ public class Authentication extends Security.Authenticator {
     @Override
     public Result onUnauthorized(Http.Context ctx) {
         logger.warn("onUnauthorized - authorization failed for request: {} {}", ctx.request().method(), ctx.request().path());
-        return BaseController.unauthorized();
+        return _BaseController.unauthorized();
     }
 }

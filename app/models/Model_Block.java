@@ -3,7 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -278,26 +278,26 @@ public class Model_Block extends TaggedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Block_create.name())) return;
+        if(_BaseController.person().has_permission(Permission.Block_create.name())) return;
         project.check_update_permission();
     }
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception   {
-        if(BaseController.person().has_permission(Permission.Block_read.name())) return;
+        if(_BaseController.person().has_permission(Permission.Block_read.name())) return;
         if(publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN ) return;
         get_project().check_read_permission();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Block_update.name())) return;
+        if(_BaseController.person().has_permission(Permission.Block_update.name())) return;
         get_project().check_update_permission();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception  {
-        if(BaseController.person().has_permission(Permission.Block_delete.name())) return;
+        if(_BaseController.person().has_permission(Permission.Block_delete.name())) return;
         get_project().check_update_permission();
     }
     @JsonProperty @ApiModelProperty("Visible only for Administrator with permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
         try {
             // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if(BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return true;
+            if(_BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return true;
             return null;
         }catch (_Base_Result_Exception exception){
             return null;

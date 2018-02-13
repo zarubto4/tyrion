@@ -1,8 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -131,13 +130,13 @@ public class Model_AuthorizationToken extends BaseModel {
 
     @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException(); }
     @Override public void check_read_permission()   throws _Base_Result_Exception {
-       if(BaseController.person().has_permission(Permission.AuthorizationToken_read.name())) return;
-       if(person.id.equals( BaseController.personId())) throw new Result_Error_Unauthorized();
+       if(_BaseController.person().has_permission(Permission.AuthorizationToken_read.name())) return;
+       if(person.id.equals( _BaseController.personId())) throw new Result_Error_Unauthorized();
     }
     @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException(); }
     @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.AuthorizationToken_delete.name())) return;
-        if(person.id.equals( BaseController.personId())) throw new Result_Error_Unauthorized();
+        if(_BaseController.person().has_permission(Permission.AuthorizationToken_delete.name())) return;
+        if(person.id.equals( _BaseController.personId())) throw new Result_Error_Unauthorized();
     }
 
     public enum Permission { AuthorizationToken_read, AuthorizationToken_delete }

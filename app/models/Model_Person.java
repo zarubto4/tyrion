@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -189,22 +189,22 @@ public class Model_Person extends BaseModel {
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {}
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {}
     @JsonIgnore @Transient @Override public void check_update_permission()   throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Person_update.name())) return;
-        if(!BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
+        if(_BaseController.person().has_permission(Permission.Person_update.name())) return;
+        if(!_BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Person_delete.name())) return;
+        if(_BaseController.person().has_permission(Permission.Person_delete.name())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient public void check_activation_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Person_activation.name())) return;
+        if(_BaseController.person().has_permission(Permission.Person_activation.name())) return;
         throw new Result_Error_PermissionDenied();
     }
 
     @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission") @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnore public Boolean is_admin()  {
         try {
-            if (BaseController.person().has_permission(Permission.Byzance_employee.name())) return true;
+            if (_BaseController.person().has_permission(Permission.Byzance_employee.name())) return true;
             return null;
         }catch (_Base_Result_Exception e){
             return null;

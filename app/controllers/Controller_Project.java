@@ -20,21 +20,21 @@ import utilities.swagger.input.*;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
-public class Controller_Project extends BaseController {
+public class Controller_Project extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
     private static final Logger logger = new Logger(Controller_Project.class);
 
-    private FormFactory formFactory;
+// CONTROLLER CONFIGURATION ############################################################################################
 
-    @Inject
-    public Controller_Project(FormFactory formFactory) {
-        this.formFactory = formFactory;
+    private _BaseFormFactory baseFormFactory;
+
+    @Inject public Controller_Project(_BaseFormFactory formFactory) {
+        this.baseFormFactory = formFactory;
     }
     
 // GENERAL PROJECT #####################################################################################################
@@ -67,25 +67,20 @@ public class Controller_Project extends BaseController {
     public Result project_create() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Project_New> form = formFactory.form(Swagger_Project_New.class).bindFromRequest();
-            if (form.hasErrors()) throw new Result_Error_InvalidBody(form.errorsAsJson());
+            // Get and Validate Object
+            Swagger_Project_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_Project_New.class);
 
-            Swagger_Project_New help = form.get();
-
+            // Kontrola objektu
             Model_Product product = Model_Product.getById(help.product_id);
-            if (product == null) {return notFound("Product not found");}
 
             // Vytvoření objektu
             Model_Project project  = new Model_Project();
-            project.name = help.name;
+            project.name        = help.name;
             project.description = help.description;
-            project.product = product;
+            project.product     = product;
 
             // Uložení objektu
             project.save();
-
-            project.refresh();
 
             for (Model_Employee employee : product.customer.getEmployees()) {
 
@@ -95,7 +90,6 @@ public class Controller_Project extends BaseController {
                 participant.state = employee.state;
 
                 participant.save();
-
                 participant.person.cache_project_ids.add(project.id);
             }
 
@@ -149,7 +143,6 @@ public class Controller_Project extends BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result project_get(@ApiParam(value = "project_id String path", required = true) String project_id) {
-
         try {
 
             // Kontrola objektu
@@ -187,7 +180,6 @@ public class Controller_Project extends BaseController {
     })
     public Result project_delete(@ApiParam(value = "project_id String path", required = true) String project_id) {
         try {
-
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
 
@@ -236,10 +228,8 @@ public class Controller_Project extends BaseController {
     public Result project_update(@ApiParam(value = "project_id String path", required = true) String project_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
@@ -289,10 +279,8 @@ public class Controller_Project extends BaseController {
     public Result project_invite(@ApiParam(value = "project_id String path", required = true) String project_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Invite_Person> form = formFactory.form(Swagger_Invite_Person.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Invite_Person help = form.get();
+            // Get and Validate Object
+            Swagger_Invite_Person help = baseFormFactory.formFromRequestWithValidation(Swagger_Invite_Person.class);
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
@@ -416,10 +404,8 @@ public class Controller_Project extends BaseController {
     public Result project_changeParticipantStatus(@ApiParam(value = "project_id String path", required = true) String project_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Project_Participant_status> form = formFactory.form(Swagger_Project_Participant_status.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Project_Participant_status help = form.get();
+            // Get and Validate Object
+            Swagger_Project_Participant_status help = baseFormFactory.formFromRequestWithValidation(Swagger_Project_Participant_status.class);
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
@@ -473,10 +459,8 @@ public class Controller_Project extends BaseController {
     public Result project_removeParticipant(@ApiParam(value = "project_id String path", required = true) String project_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Invite_Person> form = formFactory.form(Swagger_Invite_Person.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Invite_Person help = form.get();
+            // Get and Validate Object
+            Swagger_Invite_Person help = baseFormFactory.formFromRequestWithValidation(Swagger_Invite_Person.class);
 
             //Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
@@ -558,10 +542,8 @@ public class Controller_Project extends BaseController {
     public Result project_addTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
             Model_Project project = Model_Project.getById(help.object_id);
 
@@ -605,13 +587,13 @@ public class Controller_Project extends BaseController {
     public Result project_removeTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
+            // Kontrola Objektu
             Model_Project project = Model_Project.getById(help.object_id);
 
+            // Odstranění Tagu
             project.removeTags(help.tags);
 
             // Vrácení objektu
@@ -652,10 +634,8 @@ public class Controller_Project extends BaseController {
     public Result project_addHardware() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Project_AddHardware> form = formFactory.form(Swagger_Project_AddHardware.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Project_AddHardware help = form.get();
+            // Get and Validate Object
+            Swagger_Project_AddHardware help = baseFormFactory.formFromRequestWithValidation(Swagger_Project_AddHardware.class);
 
             logger.debug("registering new device with hash: {}", help.registration_hash);
 
@@ -711,10 +691,9 @@ public class Controller_Project extends BaseController {
         try {
 
             Model_HardwareRegistration registration = Model_HardwareRegistration.getById(registration_id);
-            if (registration == null) return notFound("HardwareRegistration not found");
 
             Model_Project project = registration.getProject();
-            project.update_permission();
+
 
             if (registration.hardware == null) return badRequest("Already removed");
 

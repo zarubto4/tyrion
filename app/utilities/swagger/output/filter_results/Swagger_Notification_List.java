@@ -1,7 +1,7 @@
 package utilities.swagger.output.filter_results;
 
 
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -25,7 +25,7 @@ public class Swagger_Notification_List extends Filter_Common {
     public List<Integer> pages = new ArrayList<>();
 
     @ApiModelProperty(required = true, readOnly = true, value = "Total unread subjects")
-    public int unread_total = Model_Notification.find.query().where().eq("was_read", false).eq("person.id", BaseController.personId()).findCount();
+    public int unread_total = Model_Notification.find.query().where().eq("was_read", false).eq("person.id", _BaseController.personId()).findCount();
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 

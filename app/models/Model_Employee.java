@@ -2,12 +2,10 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import utilities.enums.ParticipantStatus;
-import utilities.errors.Exceptions.Result_Error_NotSupportedException;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -61,20 +59,20 @@ public class Model_Employee extends BaseModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Employee_read.name())) return;
+        if(_BaseController.person().has_permission(Permission.Employee_read.name())) return;
         customer.check_read_permission();
     }
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Employee_crate.name())) return;
+        if(_BaseController.person().has_permission(Permission.Employee_crate.name())) return;
         customer.check_update_permission();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Employee_update.name())) return;
+        if(_BaseController.person().has_permission(Permission.Employee_update.name())) return;
         customer.check_update_permission();
     }
 
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Employee_delete.name())) return;
+        if(_BaseController.person().has_permission(Permission.Employee_delete.name())) return;
         customer.check_delete_permission();
     }
 

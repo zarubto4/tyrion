@@ -30,18 +30,21 @@ import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
-public class Controller_Update extends BaseController {
-    
-    private FormFactory formFactory;
-    
-    @Inject
-    public Controller_Update(FormFactory formFactory) {
-        this.formFactory = formFactory;
-    }
+public class Controller_Update extends _BaseController {
+
 
 // LOGGER ##############################################################################################################
 
     private static final Logger logger = new Logger(Controller_Update.class);
+
+// CONTROLLER CONFIGURATION ############################################################################################
+
+    private _BaseFormFactory baseFormFactory;
+    
+    @Inject
+    public Controller_Update(FormFactory formFactory) {
+        this.baseFormFactory = formFactory;
+    }
 
 // ACTUALIZATION PROCEDURE #############################################################################################
 
@@ -100,10 +103,8 @@ public class Controller_Update extends BaseController {
     public Result get_Actualization_Procedures_by_filter(int page_number) {
         try {
 
-            // Získání JSON
-            final Form<Swagger_ActualizationProcedure_Filter> form = formFactory.form(Swagger_ActualizationProcedure_Filter.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_ActualizationProcedure_Filter help = form.get();
+            // Get and Validate Object
+            Swagger_ActualizationProcedure_Filter help  = baseFormFactory.formFromRequestWithValidation(Swagger_ActualizationProcedure_Filter.class);
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_UpdateProcedure> query = Ebean.find(Model_UpdateProcedure.class);
@@ -188,12 +189,8 @@ public class Controller_Update extends BaseController {
     public Result make_actualization_procedure() {
         try {
 
-            // Získání JSON
-            final Form<Swagger_ActualizationProcedure_Make> form = formFactory.form(Swagger_ActualizationProcedure_Make.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_ActualizationProcedure_Make help = form.get();
-
-            if (help != null) return created(Json.toJson(help));
+            // Get and Validate Object
+            Swagger_ActualizationProcedure_Make help  = baseFormFactory.formFromRequestWithValidation(Swagger_ActualizationProcedure_Make.class);
 
             // Kontrola Firmware Type
             FirmwareType firmware_type = FirmwareType.getFirmwareType(help.firmware_type);
@@ -342,10 +339,8 @@ public class Controller_Update extends BaseController {
     public Result get_Actualization_CProgramUpdatePlan_by_filter(int page_number) {
         try {
 
-            // Získání JSON
-            final Form<Swagger_ActualizationProcedureTask_Filter> form = formFactory.form(Swagger_ActualizationProcedureTask_Filter.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_ActualizationProcedureTask_Filter help = form.get();
+            // Get and Validate Object
+            Swagger_ActualizationProcedureTask_Filter help  = baseFormFactory.formFromRequestWithValidation(Swagger_ActualizationProcedureTask_Filter.class);
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_HardwareUpdate> query = Ebean.find(Model_HardwareUpdate.class);

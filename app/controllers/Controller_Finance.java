@@ -28,7 +28,7 @@ import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
-public class Controller_Finance extends BaseController {
+public class Controller_Finance extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
@@ -36,12 +36,12 @@ public class Controller_Finance extends BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private FormFactory formFactory;
+    private _BaseFormFactory baseFormFactory;
     private Fakturoid fakturoid;
     private GoPay goPay;
 
-    @Inject public Controller_Finance(FormFactory formFactory, Fakturoid fakturoid, GoPay goPay) {
-        this.formFactory = formFactory;
+    @Inject public Controller_Finance(_BaseFormFactory formFactory, Fakturoid fakturoid, GoPay goPay) {
+        this.baseFormFactory = formFactory;
         this.fakturoid = fakturoid;
         this.goPay = goPay;
     }
@@ -77,12 +77,11 @@ public class Controller_Finance extends BaseController {
     @BodyParser.Of(BodyParser.Json.class)
     public Result tariff_create() {
         try {
-            final Form<Swagger_Tariff_New> form = formFactory.form(Swagger_Tariff_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tariff_New help = form.get();
 
-            if (Model_Tariff.find.query().where().eq("identifier", help.identifier).findOne() != null)
-                return badRequest("Identifier must be unique!");
+            // Get and Validate Object
+            Swagger_Tariff_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_Tariff_New.class);
+
+            if (Model_Tariff.find.query().where().eq("identifier", help.identifier).findOne() != null) return badRequest("Identifier must be unique!");
 
             Model_Tariff tariff = new Model_Tariff();
 
@@ -141,14 +140,12 @@ public class Controller_Finance extends BaseController {
     public Result tariff_edit(String tariff_id) {
         try {
 
-            final Form<Swagger_Tariff_New> form = formFactory.form(Swagger_Tariff_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tariff_New help = form.get();
+            // Get and Validate Object
+            Swagger_Tariff_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_Tariff_New.class);
 
             Model_Tariff tariff = Model_Tariff.getById(tariff_id);
             
-            if (Model_Tariff.find.query().where().ne("id", tariff_id).eq("identifier", help.identifier).findOne() != null)
-                return badRequest("Identifier must be unique!");
+            if (Model_Tariff.find.query().where().ne("id", tariff_id).eq("identifier", help.identifier).findOne() != null) return badRequest("Identifier must be unique!");
             
             tariff.name                     = help.name;
             tariff.identifier               = help.identifier;
@@ -378,10 +375,10 @@ public class Controller_Finance extends BaseController {
     public Result productExtension_create(String product_id) {
         try {
 
-            final Form<Swagger_ProductExtension_New> form = formFactory.form(Swagger_ProductExtension_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_ProductExtension_New help = form.get();
+            // Get and Validate Object
+            Swagger_ProductExtension_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_ProductExtension_New.class);
 
+            // Kontrola objektu
             Model_Product product = Model_Product.getById(product_id);
             
             try {
@@ -430,6 +427,7 @@ public class Controller_Finance extends BaseController {
     public Result productExtension_get(String extension_id) {
         try {
 
+            // Kontrola objektu
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
             
             return ok(Json.toJson(extension));
@@ -489,10 +487,10 @@ public class Controller_Finance extends BaseController {
     public Result productExtension_update(String extension_id) {
         try {
 
-            final Form<Swagger_ProductExtension_Edit> form = formFactory.form(Swagger_ProductExtension_Edit.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_ProductExtension_Edit help = form.get();
+            // Get and Validate Object
+            Swagger_ProductExtension_Edit help  = baseFormFactory.formFromRequestWithValidation(Swagger_ProductExtension_Edit.class);
 
+            // Kontrola objektu
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
  
             extension.name = help.name;
@@ -525,12 +523,13 @@ public class Controller_Finance extends BaseController {
     public Result productExtension_activate(String extension_id) {
         try {
 
+            // Kontrola objektu
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
-   
+
+            // Check Permission
             extension.check_act_deactivate_permission();
 
             if (extension.active) return badRequest("Extension is already activated");
-
             extension.active = true;
 
             extension.update();
@@ -559,13 +558,15 @@ public class Controller_Finance extends BaseController {
     public Result productExtension_deactivate(String extension_id) {
         try {
 
+            // Kontrola objektu
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
 
+            // Check Permission
             extension.check_act_deactivate_permission();
 
             if (!extension.active) return badRequest("Extension is already deactivated");
-
             extension.active = false;
+
             extension.update();
 
             return ok(extension.json());
@@ -591,11 +592,10 @@ public class Controller_Finance extends BaseController {
     public Result productExtension_delete(String extension_id) {
         try {
 
+            // Kontrola objektu
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
-      
-            extension.deleted = true;
 
-            extension.update();
+            extension.delete();
 
             return ok();
 
@@ -635,10 +635,10 @@ public class Controller_Finance extends BaseController {
     public Result tariffExtension_create(String tariff_id) {
         try {
 
-            final Form<Swagger_TariffExtension_New> form = formFactory.form(Swagger_TariffExtension_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_TariffExtension_New help = form.get();
+            // Get and Validate Object
+            Swagger_TariffExtension_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_TariffExtension_New.class);
 
+            // Kontrola objektu
             Model_Tariff tariff = Model_Tariff.getById(tariff_id);
 
             try {
@@ -714,10 +714,10 @@ public class Controller_Finance extends BaseController {
     public Result tariffExtension_update(String extension_id) {
         try {
 
-            final Form<Swagger_TariffExtension_Edit> form = formFactory.form(Swagger_TariffExtension_Edit.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_TariffExtension_Edit help = form.get();
+            // Get and Validate Object
+            Swagger_TariffExtension_Edit help  = baseFormFactory.formFromRequestWithValidation(Swagger_TariffExtension_Edit.class);
 
+            // Kontrola objektu
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
 
             extension.name = help.name;
@@ -727,7 +727,6 @@ public class Controller_Finance extends BaseController {
 
             // Config Validation
             try {
-
                 Object config = Configuration.getConfiguration(extension.type, help.config);
             } catch (Exception e) {
                 logger.warn("Tariff Extension Create - Invalid Json Format ");
@@ -748,7 +747,6 @@ public class Controller_Finance extends BaseController {
             }
 
             extension.update();
-            extension.refresh();
 
             return ok(Json.toJson(extension));
 
@@ -774,7 +772,10 @@ public class Controller_Finance extends BaseController {
     public Result tariffExtension_up(String extension_id) {
         try {
 
+            // Kontrola objektu
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
+
+            // Shift Up
             extension.up();
 
             return ok();
@@ -803,8 +804,10 @@ public class Controller_Finance extends BaseController {
     public Result tariffExtension_down(String extension_id) {
         try {
 
+            // Kontrola objektu
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
 
+            // Shift Down
             extension.down();
 
             return ok();
@@ -833,9 +836,12 @@ public class Controller_Finance extends BaseController {
     public Result tariffExtension_deactivate(String extension_id) {
         try {
 
+            // Kontrola objektu
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
 
+            if (!extension.active) return badRequest("Tariff is already deactivated");
             extension.active = false;
+
             extension.update();
 
             return ok();
@@ -864,9 +870,12 @@ public class Controller_Finance extends BaseController {
     public Result tariffExtension_activate(String extension_id) {
         try {
 
+            // Kontrola objektu
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
 
+            if (extension.active) return badRequest("Tariff is already activated");
             extension.active = true;
+
             extension.update();
 
             return ok();
@@ -895,6 +904,7 @@ public class Controller_Finance extends BaseController {
     public Result tariffExtension_delete(String extension_id) {
         try {
 
+            // Kontrola objektu
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
 
             extension.delete();
@@ -1014,15 +1024,14 @@ public class Controller_Finance extends BaseController {
 
             logger.debug("product_create: Creating new product");
 
-            // Zpracování Json
-            final Form<Swagger_Product_New> form = formFactory.form(Swagger_Product_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Product_New help = form.get();
+            // Get and Validate Object
+            Swagger_Product_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_Product_New.class);
 
+            // Kontrola Objektu
             Model_Tariff tariff = Model_Tariff.getById(help.tariff_id);
 
             Model_Customer customer = null;
-            Model_Person person = BaseController.person();
+            Model_Person person = _BaseController.person();
 
             Ebean.beginTransaction();
 
@@ -1233,6 +1242,7 @@ public class Controller_Finance extends BaseController {
 
             // Kontrola Objektu
             Model_Product product = Model_Product.getById(product_id);
+
             // Vrácení seznamu
             return ok(Json.toJson(product));
 
@@ -1269,10 +1279,8 @@ public class Controller_Finance extends BaseController {
     public Result product_update(String product_id) {
         try {
 
-            // Vytvoření pomocného Objektu
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola Objektu
             Model_Product product = Model_Product.getById(product_id);
@@ -1399,10 +1407,8 @@ public class Controller_Finance extends BaseController {
     public Result product_credit(String product_id) {
         try {
 
-            // Binding Json with help object
-            final Form<Swagger_Product_Credit> form = formFactory.form(Swagger_Product_Credit.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Product_Credit help = form.get();
+            // Get and Validate Object
+            Swagger_Product_Credit help  = baseFormFactory.formFromRequestWithValidation(Swagger_Product_Credit.class);
 
             if (!(help.credit > 0)) return badRequest("Credit must be positive double number");
 
@@ -1499,15 +1505,13 @@ public class Controller_Finance extends BaseController {
     public Result paymentDetails_create(String product_id) {
         try {
 
+            // Get and Validate Object
+            Swagger_PaymentDetails_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_PaymentDetails_New.class);
+
             // Kontrola Objektu
             Model_Product product = Model_Product.getById(product_id);
-
             if (product.payment_details != null) return badRequest("Product already has Payment Details");
 
-            // Vytvoření pomocného Objektu
-            final Form<Swagger_PaymentDetails_New> form = formFactory.form(Swagger_PaymentDetails_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_PaymentDetails_New help = form.get();
 
             Model_PaymentDetails payment_details = new Model_PaymentDetails();
             payment_details.street        = help.street;
@@ -1579,10 +1583,8 @@ public class Controller_Finance extends BaseController {
     public Result paymentDetails_update(String payment_details_id) {
         try {
 
-            // Vytvoření pomocného Objektu
-            final Form<Swagger_PaymentDetails_New> form = formFactory.form(Swagger_PaymentDetails_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_PaymentDetails_New help = form.get();
+            // Get and Validate Object
+            Swagger_PaymentDetails_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_PaymentDetails_New.class);
 
             // Kontrola Objektu
             Model_PaymentDetails payment_details = Model_PaymentDetails.getById(payment_details_id);
@@ -1669,7 +1671,7 @@ public class Controller_Finance extends BaseController {
 
             List<Swagger_Product_Active> products = new ArrayList<>();
 
-            for (Model_Product product : Model_Product.getApplicableByOwner(BaseController.personId())) {
+            for (Model_Product product : Model_Product.getApplicableByOwner(_BaseController.personId())) {
                 Swagger_Product_Active help = new Swagger_Product_Active();
                 help.id = product.id;
                 help.name = product.name;
@@ -1788,10 +1790,8 @@ public class Controller_Finance extends BaseController {
     public Result invoice_resend(String invoice_id) {
         try {
 
-            // Vytvoření pomocného Objektu
-            final Form<Swagger_Resend_Email> form = formFactory.form(Swagger_Resend_Email.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Resend_Email help = form.get();
+            // Get and Validate Object
+            Swagger_Resend_Email help = baseFormFactory.formFromRequestWithValidation(Swagger_Resend_Email.class);
 
             // Kontrola objektu
             Model_Invoice invoice = Model_Invoice.getById(invoice_id);
@@ -2009,17 +2009,15 @@ public class Controller_Finance extends BaseController {
     public Result customer_create_company() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Customer_New> form = formFactory.form(Swagger_Customer_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Customer_New help = form.get();
+            // Get and Validate Object
+            Swagger_Customer_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Customer_New.class);
 
             Model_Customer customer = new Model_Customer();
             
             customer.save();
 
             Model_Employee employee = new Model_Employee();
-            employee.person = BaseController.person();
+            employee.person = _BaseController.person();
             employee.state = ParticipantStatus.OWNER;
             employee.customer = customer;
             employee.save();
@@ -2071,7 +2069,7 @@ public class Controller_Finance extends BaseController {
     public Result customer_get_all() {
         try {
 
-            List<Model_Customer> customers = Model_Customer.find.query().where().eq("employees.person.id", BaseController.personId()).eq("payment_details.company_account", true).findList();
+            List<Model_Customer> customers = Model_Customer.find.query().where().eq("employees.person.id", _BaseController.personId()).eq("payment_details.company_account", true).findList();
 
             return ok(Json.toJson(customers));
 
@@ -2109,10 +2107,8 @@ public class Controller_Finance extends BaseController {
     public Result customer_update_company(String customer_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Customer_New> form = formFactory.form(Swagger_Customer_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Customer_New help = form.get();
+            // Get and Validate Object
+            Swagger_Customer_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Customer_New.class);
 
             Model_Customer customer = Model_Customer.getById(customer_id);
         
@@ -2173,10 +2169,8 @@ public class Controller_Finance extends BaseController {
     public Result customer_add_employee() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Customer_Employee> form = formFactory.form(Swagger_Customer_Employee.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Customer_Employee help = form.get();
+            // Get and Validate Object
+            Swagger_Customer_Employee help  = baseFormFactory.formFromRequestWithValidation(Swagger_Customer_Employee.class);
 
             Model_Customer customer = Model_Customer.getById(help.customer_id);
          

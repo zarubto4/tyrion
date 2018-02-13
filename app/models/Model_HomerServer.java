@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.DocumentClientException;
-import controllers.BaseController;
+import controllers._BaseController;
 import controllers.Controller_WebSocket;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
@@ -620,21 +620,21 @@ public class Model_HomerServer extends BaseModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Homer_create.name())) return;
+        if(_BaseController.person().has_permission(Permission.Homer_create.name())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Homer_read.name())) return;
+        if(_BaseController.person().has_permission(Permission.Homer_read.name())) return;
         if(server_type == HomerType.PUBLIC || server_type == HomerType.MAIN  || server_type == HomerType.BACKUP) return;
         throw new Result_Error_PermissionDenied();
     }
 
     @JsonIgnore @Transient @Override public void check_update_permission()  throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Homer_update.name())) return;
+        if(_BaseController.person().has_permission(Permission.Homer_update.name())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission()  throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Homer_delete.name())) return;
+        if(_BaseController.person().has_permission(Permission.Homer_delete.name())) return;
         throw new Result_Error_PermissionDenied();
     }
     public enum Permission { Homer_create, Homer_read, Homer_update, Homer_delete }

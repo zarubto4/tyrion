@@ -1,6 +1,6 @@
 package utilities.demo_data;
 
-import controllers.BaseController;
+import controllers._BaseController;
 import io.swagger.annotations.Api;
 import models.*;
 import play.mvc.Result;
@@ -14,7 +14,7 @@ import java.util.UUID;
 
 
 @Api(value = "Dashboard Private Api", hidden = true)
-public class Utilities_Demo_data_Controller extends BaseController {
+public class Utilities_Demo_data_Controller extends _BaseController {
 
 // LOGGER ##############################################################################################################
 

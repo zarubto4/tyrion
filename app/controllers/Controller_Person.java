@@ -27,7 +27,7 @@ import java.util.Date;
 import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck") // Překrývá nezdokumentované API do jednotné serverové kategorie ve Swaggeru.
-public class Controller_Person extends BaseController {
+public class Controller_Person extends _BaseController {
     
 // LOGGER ##############################################################################################################
 
@@ -35,11 +35,11 @@ public class Controller_Person extends BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private FormFactory formFactory;
+    private _BaseFormFactory baseFormFactory;
     private WSClient ws;
 
-    @Inject public Controller_Person(FormFactory formFactory, WSClient ws) {
-        this.formFactory = formFactory;
+    @Inject public Controller_Person(_BaseFormFactory formFactory, WSClient ws) {
+        this.baseFormFactory = formFactory;
         this.ws = ws;
     }
 
@@ -72,9 +72,8 @@ public class Controller_Person extends BaseController {
     public Result person_create() {
         try {
 
-            final Form<Swagger_Person_New> form = formFactory.form(Swagger_Person_New.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Person_New help = form.get();
+            // Get and Validate Object
+            Swagger_Person_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Person_New.class);
 
             if (Model_Person.find.query().where().eq("nick_name", help.nick_name).findOne() != null)
                 return badRequest("nick name is used");
@@ -197,9 +196,8 @@ public class Controller_Person extends BaseController {
     public Result person_authenticationSendEmail() {
         try {
 
-            final Form<Swagger_EmailRequired> form = formFactory.form(Swagger_EmailRequired.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_EmailRequired help = form.get();
+            // Get and Validate Object
+            Swagger_EmailRequired help = baseFormFactory.formFromRequestWithValidation(Swagger_EmailRequired.class);
 
             Model_Person person = Model_Person.getByEmail(help.email);
             if (person == null) return notFound("No such user is registered");
@@ -253,9 +251,8 @@ public class Controller_Person extends BaseController {
     public Result person_passwordRecoverySendEmail() {
         try {
 
-            final Form<Swagger_EmailRequired> form = formFactory.form(Swagger_EmailRequired.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_EmailRequired help = form.get();
+            // Get and Validate Object
+            Swagger_EmailRequired help = baseFormFactory.formFromRequestWithValidation(Swagger_EmailRequired.class);
 
             String link;
 
@@ -323,9 +320,8 @@ public class Controller_Person extends BaseController {
     public Result person_passwordRecovery() {
         try {
 
-            final Form<Swagger_Person_Password_New> form = formFactory.form(Swagger_Person_Password_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Person_Password_New help = form.get();
+            // Get and Validate Object
+            Swagger_Person_Password_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Person_Password_New.class);
 
             Model_Person person = Model_Person.getByEmail(help.email);
 
@@ -587,9 +583,8 @@ public class Controller_Person extends BaseController {
     public  Result person_update(@ApiParam(value = "person_id String query", required = true) String person_id) {
         try {
 
-            final Form<Swagger_Person_Update> form = formFactory.form(Swagger_Person_Update.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Person_Update help = form.get();
+            // Get and Validate Object
+            Swagger_Person_Update help = baseFormFactory.formFromRequestWithValidation(Swagger_Person_Update.class);
 
             Model_Person person = Model_Person.getById(person_id);
 
@@ -685,10 +680,10 @@ public class Controller_Person extends BaseController {
     @BodyParser.Of(BodyParser.Json.class)
     public  Result something_validateProperty() {
         try {
-            
-            final Form<Swagger_Entity_Validation_In> form = formFactory.form(Swagger_Entity_Validation_In.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Entity_Validation_In help = form.get();
+
+            // Get and Validate Object
+            Swagger_Entity_Validation_In help = baseFormFactory.formFromRequestWithValidation(Swagger_Entity_Validation_In.class);
+
 
             Swagger_Entity_Validation_Out validation = new Swagger_Entity_Validation_Out();
 
@@ -801,15 +796,12 @@ public class Controller_Person extends BaseController {
     @Security.Authenticated(Authentication.class)
     @BodyParser.Of(BodyParser.Json.class)
     public Result person_changeLoginProperty() {
-
         try {
-            // Získání JSON
-            final Form<Swagger_Person_ChangeProperty> form = formFactory.form(Swagger_Person_ChangeProperty.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Person_ChangeProperty help = form.get();
 
-            if (Model_ChangePropertyToken.find.query().where().eq("person.id", BaseController.personId()).findOne() != null)
-                return badRequest("You can request only one change at this time.");
+            // Get and Validate Object
+            Swagger_Person_ChangeProperty help = baseFormFactory.formFromRequestWithValidation(Swagger_Person_ChangeProperty.class);
+
+            if (Model_ChangePropertyToken.find.query().where().eq("person.id", _BaseController.personId()).findOne() != null) return badRequest("You can request only one change at this time.");
 
             // Proměnné mailu
             String subject;
@@ -993,10 +985,8 @@ public class Controller_Person extends BaseController {
     public Result person_uploadPicture() {
         try {
 
-            // Získání JSON
-            final Form<Swagger_BASE64_FILE> form = formFactory.form(Swagger_BASE64_FILE.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_BASE64_FILE help = form.get();
+            // Get and Validate Object
+            Swagger_BASE64_FILE help = baseFormFactory.formFromRequestWithValidation(Swagger_BASE64_FILE.class);
 
             Model_Person person = person();
             if (person ==  null) {

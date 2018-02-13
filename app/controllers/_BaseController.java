@@ -1,9 +1,9 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.ApiModel;
 import models.Model_Person;
+import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -11,8 +11,8 @@ import responses.*;
 import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
+import utilities.swagger.input.Swagger_Project_New;
 
-import javax.persistence.Column;
 import java.lang.reflect.Field;
 import java.util.UUID;
 
@@ -20,11 +20,11 @@ import java.util.UUID;
  * This class provides some common API for Tyrion REST Controller.
  * Creates results with given content.
  */
-public abstract class BaseController {
+public abstract class _BaseController {
 
 // LOGGER ##############################################################################################################
 
-    private static final Logger logger = new Logger(BaseController.class);
+    private static final Logger logger = new Logger(_BaseController.class);
 
 // PERSON OPERATIONS ###################################################################################################
 
@@ -104,10 +104,7 @@ public abstract class BaseController {
     }
 
 
-
-
-
-// RESPONSE OPERATIONS ###################################################################################################
+// RESPONSE OPERATIONS ##################################################################################################
 
     /**
      * Creates a result based on the provided status code.
@@ -122,6 +119,20 @@ public abstract class BaseController {
         result.message = message;
         return Controller.status(statusCode, Json.toJson(result));
     }
+
+// CREATE JSON! - 201 ##################################################################################################
+
+    /**
+     * Creates result created. Body of this result is some object itself instead of classic result json.
+     *
+     * @param json to send
+     * @return 201 result
+     */
+    public static Result created(JsonNode json) {
+        return Controller.created(json);
+    }
+
+// OK JSON! - 200 ######################################################################################################
 
     /**
      * Create an empty ok result.
@@ -152,15 +163,7 @@ public abstract class BaseController {
         return Controller.ok(Json.toJson(new Result_Ok(message)));
     }
 
-    /**
-     * Creates result created. Body of this result is some object itself instead of classic result json.
-     *
-     * @param json to send
-     * @return 201 result
-     */
-    public static Result created(JsonNode json) {
-        return Controller.created(json);
-    }
+// FILES - 200 #########################################################################################################
 
     /**
      * Create response with File in PDF
@@ -173,6 +176,8 @@ public abstract class BaseController {
         return Controller.ok(byte_array);
     }
 
+// REDIRECT 303 ########################################################################################################
+
     /**
      * Creates redirect result.
      *
@@ -183,6 +188,7 @@ public abstract class BaseController {
         return Controller.redirect(url);
     }
 
+// BAD REQUEST - JSON! 400 #############################################################################################
 
     /**
      * Creates result bad request, when there is a client error.
@@ -213,7 +219,39 @@ public abstract class BaseController {
         return Controller.badRequest(Json.toJson(json));
     }
 
+// BAD REQUEST - JSON! 404 #############################################################################################
 
+    /**
+     * Creates a not found result with message from Class where code try to find annotation for Swagger
+     *
+     * @param class_type model what is missing
+     * @return 404 result with message
+     */
+    public static Result notFound(Class class_type) {
+
+        // Get Swagger Name from Annotation and return ii with name and description
+        for (Field f: class_type.getFields()) {
+            ApiModel apiModel = f.getAnnotation(ApiModel.class);
+            if (apiModel != null) {
+                return Controller.notFound(Json.toJson(new Result_NotFound("Object not Found. Probably from " + apiModel.value() + " model type. Object Swagger APi Description: " + apiModel.description())));
+            }
+        }
+
+        // Return name of object if Anotations is missing
+        logger.error("Returning result notFound for incoming request, but class in constructor not contain ApiModel annotation");
+        return Controller.notFound(Json.toJson(new Result_NotFound("Not Found Object. Probably from " + class_type.getSimpleName().replace("Model_","") + " model type.")));
+    }
+
+    /**
+     * Creates a not found result with message from Class where code try to find annotation for Swagger
+     * @param message
+     * @return
+     */
+    public static Result notFound(String message) {
+        return Controller.notFound(Json.toJson(new Result_NotFound(message))); // todo smazat
+    }
+
+// FOR COMPILATOR ######################################################################################################
 
     /**
      * Creates result when compilation was unsuccessful.
@@ -264,30 +302,8 @@ public abstract class BaseController {
         return Controller.status(478, json);
     }
 
-    /**
-     * Creates a not found result with message from Class where code try to find annotation for Swagger
-     *
-     * @param class_type model what is missing
-     * @return 404 result with message
-     */
-    public static Result notFound(Class class_type) {
 
-        // Get Swagger Name from Annotation and return ii with name and description
-        for (Field f: class_type.getFields()) {
-            ApiModel apiModel = f.getAnnotation(ApiModel.class);
-            if (apiModel != null) {
-                return Controller.notFound(Json.toJson(new Result_NotFound("Object not Found. Probably from " + apiModel.value() + " model type. Object Swagger APi Description: " + apiModel.description())));
-            }
-        }
-
-        // Return name of object if Anotations is missing
-        logger.error("Returning result notFound for incoming request, but class in constructor not contain ApiModel annotation");
-        return Controller.notFound(Json.toJson(new Result_NotFound("Not Found Object. Probably from " + class_type.getSimpleName().replace("Model_","") + " model type.")));
-    }
-
-    public static Result notFound(String message) {
-        return Controller.notFound(Json.toJson(new Result_NotFound(message))); // todo smazat
-    }
+// UNAUTHORIZED 401 - when token is missing (user login required) ##########################################################
 
     /**
      * Creates result unauthorized.
@@ -298,6 +314,8 @@ public abstract class BaseController {
     public static Result unauthorized() {
         return Controller.unauthorized(Json.toJson(new Result_Unauthorized()));
     }
+
+// FORBIDEN 403 - when user do illegal operations ######################################################################
 
     /**
      * Creates result forbidden
@@ -317,6 +335,9 @@ public abstract class BaseController {
     public static Result forbidden(String message) {
         return Controller.forbidden(Json.toJson(new Result_Forbidden(message)));
     }
+
+
+// SPECIAL RESPONSE 70x for Login, Registration etc. ###################################################################
 
     /**
      * Creates result to reject the user, when his email is not validated.
@@ -347,6 +368,9 @@ public abstract class BaseController {
     public static Result invalidBody(JsonNode errors) {
         return badRequest(Json.toJson(new Result_InvalidBody(errors)));
     }
+
+
+// EXCEPTION - ALL GENERAL EXCEPTIONS ##################################################################################
 
     /**
      * General Flow Exception for Controllers Method.

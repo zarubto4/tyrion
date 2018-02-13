@@ -23,7 +23,7 @@ import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
-public class Controller_Permission extends BaseController {
+public class Controller_Permission extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
@@ -31,10 +31,10 @@ public class Controller_Permission extends BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private FormFactory formFactory;
+    private _BaseFormFactory baseFormFactory;
 
-    @Inject public Controller_Permission(FormFactory formFactory) {
-        this.formFactory = formFactory;
+    @Inject public Controller_Permission(_BaseFormFactory formFactory) {
+        this.baseFormFactory = formFactory;
     }
 
 // #####################################################################################################################
@@ -56,8 +56,10 @@ public class Controller_Permission extends BaseController {
     public Result permission_person_add(@ApiParam(required = true) String person_id, @ApiParam(required = true) String permission_id) {
         try {
 
+            // Kontrola objektu
             Model_Person person = Model_Person.getById(person_id);
 
+            // Kontrola objektu
             Model_Permission personPermission = Model_Permission.getById(permission_id);
 
             if (!person.permissions.contains(personPermission)) person.permissions.add(personPermission);
@@ -88,8 +90,10 @@ public class Controller_Permission extends BaseController {
     public Result permission_person_remove(@ApiParam(required = true) String person_id, @ApiParam(required = true) String permission_id) {
         try {
 
+            // Kontrola objektu
             Model_Person person = Model_Person.getById(person_id);
 
+            // Kontrola objektu
             Model_Permission personPermission = Model_Permission.getById(permission_id);
 
             if (person.permissions.contains(personPermission)) person.permissions.remove(personPermission);
@@ -154,11 +158,10 @@ public class Controller_Permission extends BaseController {
     public Result permission_edit(String permission_id) {
         try {
 
-            final Form<Swagger_Permission_Edit> form = formFactory.form(Swagger_Permission_Edit.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
+            // Get and Validate Object
+            Swagger_Permission_Edit help = baseFormFactory.formFromRequestWithValidation(Swagger_Permission_Edit.class);
 
-            Swagger_Permission_Edit help = form.get();
-
+            // Kontrola objektu
             Model_Permission permission = Model_Permission.getById(permission_id);
 
             permission.description = help.description;
@@ -202,12 +205,13 @@ public class Controller_Permission extends BaseController {
     public Result permission_add_to_role(@ApiParam(required = true) String role_id) {
         try {
 
-            final Form<Swagger_Role_Add_Permission> form = formFactory.form(Swagger_Role_Add_Permission.class).bindFromRequest();
-            if (form.hasErrors()) { return invalidBody(form.errorsAsJson());}
-            Swagger_Role_Add_Permission help = form.get();
+            // Get and Validate Object
+            Swagger_Role_Add_Permission help = baseFormFactory.formFromRequestWithValidation(Swagger_Role_Add_Permission.class);
 
+            // Kontrola objektu
             List<Model_Permission> personPermissions = Model_Permission.find.query().where().in("name", help.permissions).findList();
 
+            // Kontrola objektu
             Model_Role securityRole = Model_Role.getById(role_id);
 
             for(Model_Permission permission : personPermissions) {
@@ -242,8 +246,10 @@ public class Controller_Permission extends BaseController {
     public Result permission_remove_from_role(@ApiParam(required = true) String permission_id, @ApiParam(required = true) String role_id) {
         try {
 
+            // Kontrola objektu
             Model_Permission personPermission = Model_Permission.getById(permission_id);
 
+            // Kontrola objektu
             Model_Role securityRole = Model_Role.getById(role_id);
 
             if (securityRole.permissions.contains(personPermission)) securityRole.permissions.remove(personPermission);
@@ -286,11 +292,10 @@ public class Controller_Permission extends BaseController {
     public Result role_create() {
         try {
 
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
-            Swagger_NameAndDescription help = form.get();
-
+            // Kontrola objektu
             Model_Role securityRole = new Model_Role();
 
             securityRole.name = help.name;
@@ -322,6 +327,7 @@ public class Controller_Permission extends BaseController {
     public Result role_delete(@ApiParam(required = true) String role_id) {
         try {
 
+            // Kontrola objektu
             Model_Role securityRole = Model_Role.getById(role_id);
 
             securityRole.delete();
@@ -361,10 +367,10 @@ public class Controller_Permission extends BaseController {
     public Result role_edit(@ApiParam(required = true) String role_id) {
         try {
 
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
+            // Kontrola objektu
             Model_Role role = Model_Role.getById(role_id);
 
             role.name = help.name;
@@ -396,8 +402,9 @@ public class Controller_Permission extends BaseController {
     public Result role_get(@ApiParam(required = true) String role_id) {
         try {
 
+            // Kontrola objektu
             Model_Role role = Model_Role.getById(role_id);
-;
+
             return ok(role.json());
 
         } catch (Exception e) {
@@ -432,10 +439,8 @@ public class Controller_Permission extends BaseController {
     public Result role_add_person(@ApiParam(required = true) String role_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Invite_Person> form = formFactory.form(Swagger_Invite_Person.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Invite_Person help = form.get();
+            // Get and Validate Object
+            Swagger_Invite_Person help = baseFormFactory.formFromRequestWithValidation(Swagger_Invite_Person.class);
 
             if (help.persons_mail.isEmpty()) {
                 return badRequest("Fill in some emails.");
@@ -486,8 +491,10 @@ public class Controller_Permission extends BaseController {
     public Result role_remove_person(@ApiParam(required = true) String role_id, @ApiParam(required = true) String person_id) {
         try {
 
+            // Kontrola objektu
             Model_Person person = Model_Person.getById(person_id);
 
+            // Kontrola objektu
             Model_Role securityRole = Model_Role.getById(role_id);
 
             if (person.roles.contains(securityRole)) person.roles.remove(securityRole);

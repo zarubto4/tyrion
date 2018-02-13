@@ -1,6 +1,6 @@
 package utilities.errors;
 
-import controllers.BaseController;
+import controllers._BaseController;
 import play.http.HttpErrorHandler;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -14,14 +14,14 @@ public class ErrorHandler implements HttpErrorHandler {
     @Override
     public CompletionStage<Result> onClientError(Http.RequestHeader request, int statusCode, String message) {
         switch (statusCode) {
-            case 400 : return CompletableFuture.completedFuture(BaseController.badRequest(message));
-            case 404 : return CompletableFuture.completedFuture(BaseController.notFound(message));
-            default: return CompletableFuture.completedFuture(BaseController.customResult(statusCode, message));
+            case 400 : return CompletableFuture.completedFuture(_BaseController.badRequest(message));
+            case 404 : return CompletableFuture.completedFuture(_BaseController.notFound(message));
+            default: return CompletableFuture.completedFuture(_BaseController.customResult(statusCode, message));
         }
     }
 
     @Override
     public CompletionStage<Result> onServerError(Http.RequestHeader request, Throwable exception) {
-        return CompletableFuture.completedFuture(BaseController.internalServerError(exception));
+        return CompletableFuture.completedFuture(_BaseController.internalServerError(exception));
     }
 }

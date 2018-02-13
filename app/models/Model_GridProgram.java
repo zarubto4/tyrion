@@ -3,7 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -11,6 +11,7 @@ import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -224,7 +225,7 @@ public class Model_GridProgram extends TaggedModel {
 
     @JsonIgnore
     public void  check_create_permission() throws _Base_Result_Exception {
-        if (BaseController.person().has_permission(Permission.GridProgram_create.name())) return;
+        if (_BaseController.person().has_permission(Permission.GridProgram_create.name())) return;
         grid_project.check_update_permission();
     }
 
@@ -232,17 +233,17 @@ public class Model_GridProgram extends TaggedModel {
     public void check_update_permission() throws _Base_Result_Exception  {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("grid_program_update_" + id)) BaseController.person().valid_permission("grid_program_update_" + id);
-        if (BaseController.person().has_permission(Permission.GridProgram_update.name())) return;
+        if (_BaseController.person().has_permission("grid_program_update_" + id)) _BaseController.person().valid_permission("grid_program_update_" + id);
+        if (_BaseController.person().has_permission(Permission.GridProgram_update.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_GridProgram.find.query().where().eq("grid_project.project.participants.person.id", BaseController.person().id).eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("grid_program_update_" + id, true);
+        if ( Model_GridProgram.find.query().where().eq("grid_project.project.participants.person.id", _BaseController.person().id).eq("id", id).findCount() > 0) {
+            _BaseController.person().cache_permission("grid_program_update_" + id, true);
             return;
         }
 
         // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("grid_program_update_" + id, false);
+        _BaseController.person().cache_permission("grid_program_update_" + id, false);
         throw new Result_Error_PermissionDenied();
     }
 
@@ -250,34 +251,34 @@ public class Model_GridProgram extends TaggedModel {
     public void check_read_permission() throws _Base_Result_Exception {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("grid_program_read_" + id)) BaseController.person().valid_permission("grid_program_read_" + id);
-        if (BaseController.person().has_permission(Permission.GridProgram_read.name())) return;
+        if (_BaseController.person().has_permission("grid_program_read_" + id)) _BaseController.person().valid_permission("grid_program_read_" + id);
+        if (_BaseController.person().has_permission(Permission.GridProgram_read.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_GridProgram.find.query().where().eq("grid_project.project.participants.person.id", BaseController.person().id).eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("grid_program_read_" + id, true);
+        if (Model_GridProgram.find.query().where().eq("grid_project.project.participants.person.id", _BaseController.person().id).eq("id", id).findCount() > 0) {
+            _BaseController.person().cache_permission("grid_program_read_" + id, true);
             return;
         }
 
         // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("grid_program_read_" + id, false);
+        _BaseController.person().cache_permission("grid_program_read_" + id, false);
         throw new Result_Error_PermissionDenied();
     }
 
     @JsonProperty
     public void check_delete_permission() throws _Base_Result_Exception  {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("grid_program_delete_" + id)) BaseController.person().valid_permission("grid_program_delete_" + id);
-        if (BaseController.person().has_permission(Permission.GridProgram_delete.name())) return;
+        if (_BaseController.person().has_permission("grid_program_delete_" + id)) _BaseController.person().valid_permission("grid_program_delete_" + id);
+        if (_BaseController.person().has_permission(Permission.GridProgram_delete.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_GridProgram.find.query().where().eq("grid_project.project.participants.person.id", BaseController.person().id).eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("grid_program_delete_" + id, true);
+        if ( Model_GridProgram.find.query().where().eq("grid_project.project.participants.person.id", _BaseController.person().id).eq("id", id).findCount() > 0) {
+            _BaseController.person().cache_permission("grid_program_delete_" + id, true);
             return;
         }
 
         // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("grid_program_delete_" + id, false);
+        _BaseController.person().cache_permission("grid_program_delete_" + id, false);
         throw new Result_Error_PermissionDenied();
     }
 
@@ -289,21 +290,22 @@ public class Model_GridProgram extends TaggedModel {
     @CacheField(Model_GridProgram.class)
     public static Cache<UUID, Model_GridProgram> cache;
 
-    public static Model_GridProgram getById(String id) {
+    public static Model_GridProgram getById(String id) throws _Base_Result_Exception  {
         return getById(UUID.fromString(id));
     }
     
-    public static Model_GridProgram getById(UUID id) {
+    public static Model_GridProgram getById(UUID id) throws _Base_Result_Exception {
 
         Model_GridProgram m_program = cache.get(id);
         if (m_program == null) {
 
             m_program = Model_GridProgram.find.byId(id);
-            if (m_program == null) return null;
+            if (m_program == null) throw new Result_Error_NotFound(Model_Widget.class);
 
             cache.put(id, m_program);
         }
 
+        m_program.check_read_permission();
         return m_program;
     }
 

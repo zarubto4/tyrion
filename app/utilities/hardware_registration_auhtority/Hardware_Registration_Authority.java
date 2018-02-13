@@ -8,7 +8,7 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.swagger.annotations.*;
 import models.Model_Hardware;
 import models.Model_HardwareType;
@@ -33,7 +33,7 @@ import static com.mongodb.client.model.Sorts.descending;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
-public class Hardware_Registration_Authority extends BaseController {
+public class Hardware_Registration_Authority extends _BaseController {
 
     private static final Logger logger = new Logger(Hardware_Registration_Authority.class);
 

@@ -14,6 +14,8 @@ import utilities.enums.TokenType;
 import utilities.enums.PlatformAccess;
 import utilities.financial.FinancialPermission;
 import utilities.swagger.input.Swagger_EmailAndPassword;
+import utilities.swagger.input.Swagger_Project_New;
+import utilities.swagger.input.Swagger_SocialNetwork_Login;
 import utilities.swagger.output.Swagger_Blocko_Token_validation_result;
 import utilities.swagger.output.Swagger_Login_Token;
 import utilities.swagger.output.Swagger_Person_All_Details;
@@ -30,7 +32,7 @@ import java.util.*;
  * Dále ověřuje validitu tokenů na Homer serveru, na Compilačním serveru, platnost Rest-API reqest tokenů (a jejich počet)
  */
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class Controller_Security extends BaseController {
+public class Controller_Security extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
@@ -38,12 +40,12 @@ public class Controller_Security extends BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private FormFactory formFactory;
+    private _BaseFormFactory baseFormFactory;
     private WSClient ws;
 
     @Inject
-    public Controller_Security(FormFactory formFactory, WSClient ws) {
-        this.formFactory = formFactory;
+    public Controller_Security(_BaseFormFactory formFactory, WSClient ws) {
+        this.baseFormFactory = formFactory;
         this.ws = ws;
     }
 
@@ -76,10 +78,8 @@ public class Controller_Security extends BaseController {
     public Result get_status_request_token() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Blocko_Token_validation_request> form = formFactory.form(Swagger_Blocko_Token_validation_request.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Blocko_Token_validation_request help = form.get();
+            // Get and Validate Object
+            Swagger_Blocko_Token_validation_request help  = baseFormFactory.formFromRequestWithValidation(Swagger_Blocko_Token_validation_request.class);
 
             TokenType token_type = TokenType.getType(help.type_of_token);
             if (token_type == null) return badRequest("Wrong type of token");
@@ -139,10 +139,8 @@ public class Controller_Security extends BaseController {
     public Result login() {
         try {
 
-            // Kontrola JSON
-            final Form<Swagger_EmailAndPassword> form = formFactory.form(Swagger_EmailAndPassword.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_EmailAndPassword help = form.get();
+            // Get and Validate Object
+            Swagger_EmailAndPassword help  = baseFormFactory.formFromRequestWithValidation(Swagger_EmailAndPassword.class);
 
             // Ověření Person - Heslo a email
             Model_Person person = Model_Person.getByEmail(help.email);
@@ -593,12 +591,8 @@ public class Controller_Security extends BaseController {
     public Result GitHub() {
         try {
 
-
-            // Zpracování Json
-            final Form<Swagger_SocialNetwork_Login> form = formFactory.form(Swagger_SocialNetwork_Login.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_SocialNetwork_Login help = form.get();
-
+            // Get and Validate Object
+            Swagger_SocialNetwork_Login help  = baseFormFactory.formFromRequestWithValidation(Swagger_SocialNetwork_Login.class);
 
             System.out.print("Link k přesměrování při přihlášení přes github:: " + help.redirect_url);
 
@@ -669,11 +663,8 @@ public class Controller_Security extends BaseController {
     public Result Facebook() {
         try {
 
-
-            // Zpracování Json
-            final Form<Swagger_SocialNetwork_Login> form = formFactory.form(Swagger_SocialNetwork_Login.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_SocialNetwork_Login help = form.get();
+            // Get and Validate Object
+            Swagger_SocialNetwork_Login help  = baseFormFactory.formFromRequestWithValidation(Swagger_SocialNetwork_Login.class);
             
             System.out.println("Link k přesměrování při přihlášení přes facebook:: " + help.redirect_url);
 

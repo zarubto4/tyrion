@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import controllers.BaseController;
+import controllers._BaseController;
 import models.Model_Product;
 import models.Model_Invoice;
 import models.Model_PaymentDetails;
@@ -39,7 +39,7 @@ import java.util.concurrent.CompletionStage;
  * on demand payment, refund payment etc.
  */
 @Singleton
-public class GoPay extends BaseController {
+public class GoPay extends _BaseController {
 
     // Logger
     private static final Logger logger = new Logger(GoPay.class);

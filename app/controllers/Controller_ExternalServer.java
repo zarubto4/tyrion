@@ -22,17 +22,17 @@ import utilities.enums.CompilationStatus;
 import utilities.enums.HomerType;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.logger.Logger;
+import utilities.swagger.input.Swagger_C_Program_Version_Update;
 import utilities.swagger.input.Swagger_CompilationServer_New;
 import utilities.swagger.input.Swagger_HomerServer_Filter;
 import utilities.swagger.input.Swagger_HomerServer_New;
-import utilities.swagger.output.filter_results.Swagger_C_Program_List;
 import utilities.swagger.output.filter_results.Swagger_HomerServer_List;
 
 import java.util.*;
 
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class Controller_ExternalServer extends BaseController {
+public class Controller_ExternalServer extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
@@ -41,10 +41,10 @@ public class Controller_ExternalServer extends BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private FormFactory formFactory;
+    private _BaseFormFactory baseFormFactory;
 
-    @Inject public Controller_ExternalServer(FormFactory formFactory) {
-        this.formFactory = formFactory;
+    @Inject public Controller_ExternalServer(_BaseFormFactory formFactory) {
+        this.baseFormFactory = formFactory;
     }
 
 
@@ -78,10 +78,8 @@ public class Controller_ExternalServer extends BaseController {
     public Result homer_server_create() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_HomerServer_New> form = formFactory.form(Swagger_HomerServer_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_HomerServer_New help = form.get();
+            // Get and Validate Object
+            Swagger_HomerServer_New help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_New.class);
 
             // Vytvoření objektu
             Model_HomerServer server = new Model_HomerServer();
@@ -211,10 +209,8 @@ public class Controller_ExternalServer extends BaseController {
     public Result homer_server_edit(String unique_identifier ) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_HomerServer_New> form = formFactory.form(Swagger_HomerServer_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_HomerServer_New help = form.get();
+            // Get and Validate Object
+            Swagger_HomerServer_New help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_New.class);
 
             // Kontrola objektu
             Model_HomerServer server = Model_HomerServer.getById(unique_identifier);
@@ -266,10 +262,8 @@ public class Controller_ExternalServer extends BaseController {
     public Result homer_server_by_filter(@ApiParam(value = "page_number is Integer. 1,2,3...n. For first call, use 1 (first page of list)", required = true)  int page_number) {
         try {
 
-            // Získání JSON
-            final Form<Swagger_HomerServer_Filter> form = formFactory.form(Swagger_HomerServer_Filter.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_HomerServer_Filter help = form.get();
+            // Get and Validate Object
+            Swagger_HomerServer_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_Filter.class);
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_HomerServer> query = Ebean.find(Model_HomerServer.class);
@@ -311,10 +305,10 @@ public class Controller_ExternalServer extends BaseController {
     public Result homer_server_get(String server_id) {
         try {
 
-            // Získání seznamu
+            // Kontrola objektu
             Model_HomerServer server = Model_HomerServer.getById(server_id);
 
-            // Vrácení seznamu
+            // Vrácení objektu
             return ok(server.json());
 
         } catch (Exception e) {
@@ -383,10 +377,8 @@ public class Controller_ExternalServer extends BaseController {
     public Result compilation_server_create() {
         try {
 
-            // Zpracování Json
-            Form<Swagger_CompilationServer_New> form = formFactory.form(Swagger_CompilationServer_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_CompilationServer_New help = form.get();
+            // Get and Validate Object
+            Swagger_CompilationServer_New help = baseFormFactory.formFromRequestWithValidation(Swagger_CompilationServer_New.class);
 
             // Vytvářím objekt
             Model_CompilationServer server = new Model_CompilationServer();
@@ -433,10 +425,8 @@ public class Controller_ExternalServer extends BaseController {
     public Result compilation_server_edit(String server_id ) {
         try {
 
-            // Zpracování Json
-            Form<Swagger_CompilationServer_New> form = formFactory.form(Swagger_CompilationServer_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_CompilationServer_New help = form.get();
+            // Get and Validate Object
+            Swagger_CompilationServer_New help = baseFormFactory.formFromRequestWithValidation(Swagger_CompilationServer_New.class);
 
             // Zkontroluji validitu
             Model_CompilationServer server = Model_CompilationServer.getById(server_id);

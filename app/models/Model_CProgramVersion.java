@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.storage.StorageException;
-import controllers.BaseController;
+import controllers._BaseController;
 import controllers.Controller_WebSocket;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
@@ -20,12 +20,10 @@ import responses.*;
 import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
-import utilities.enums.Approval;
 import utilities.enums.CompilationStatus;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
-import utilities.model.BaseModel;
 import utilities.model.VersionModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.swagger.input.*;
@@ -34,7 +32,6 @@ import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
-import javax.validation.Valid;
 import java.net.ConnectException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -257,7 +254,7 @@ public class Model_CProgramVersion extends VersionModel {
             Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("c_programs.id", get_c_program_id()).findOne();
             if (hardwareType == null) {
                 logger.internalServerError(new Exception("compile_program_procedure:: HardwareType not found! Not found way how to compile version."));
-                return BaseController.notFound(Model_HardwareType.class);
+                return _BaseController.notFound(Model_HardwareType.class);
             }
 
             // Něco se kriticky posralo a soubor nebyl vytvořen, kde byl pozanmenán tag kompilace
@@ -290,7 +287,7 @@ public class Model_CProgramVersion extends VersionModel {
                 compilation.update();
 
                 Result_BadRequest result = new Result_BadRequest();
-                return BaseController.badRequest("Server has no content from version");
+                return _BaseController.badRequest("Server has no content from version");
             }
 
             // Zpracování Json
@@ -306,7 +303,7 @@ public class Model_CProgramVersion extends VersionModel {
                 logger.internalServerError(e);
                 compilation.status = CompilationStatus.BROKEN_JSON;
                 compilation.update();
-                return BaseController.internalServerError(e);
+                return _BaseController.internalServerError(e);
             }
 
             List<Swagger_Library_Record> library_files = new ArrayList<>();
@@ -320,7 +317,7 @@ public class Model_CProgramVersion extends VersionModel {
 
                     if (lib_version.get_library() == null) {
                         logger.error("compile_C_Program_code:: library is null ");
-                        return BaseController.badRequest("Error getting libraries - some file is not a library");
+                        return _BaseController.badRequest("Error getting libraries - some file is not a library");
                     }
 
                     if (!lib_version.files.isEmpty()) {
@@ -339,7 +336,7 @@ public class Model_CProgramVersion extends VersionModel {
 
                             } catch (Exception e) {
                                 logger.internalServerError(e);
-                                return BaseController.internalServerError(e);
+                                return _BaseController.internalServerError(e);
                             }
 
                             library_files.addAll(lib_file.files);
@@ -347,7 +344,7 @@ public class Model_CProgramVersion extends VersionModel {
                     }
                 } catch (_Base_Result_Exception exception) {
                     logger.error("compile_C_Program_code:: lib_version is null ");
-                    return BaseController.notFound("Error getting libraries - library version not found");
+                    return _BaseController.notFound("Error getting libraries - library version not found");
                 }
             }
 
@@ -372,7 +369,7 @@ public class Model_CProgramVersion extends VersionModel {
                 compilation.status = CompilationStatus.SERVER_OFFLINE;
                 compilation.update();
 
-                return BaseController.externalServerOffline("Compilation cloud_compilation_server is offline! It will be compiled as soon as possible!");
+                return _BaseController.externalServerOffline("Compilation cloud_compilation_server is offline! It will be compiled as soon as possible!");
             }
 
             WS_Message_Make_compilation compilation = Model_CompilationServer.make_Compilation(new WS_Message_Make_compilation().make_request(hardwareType, this.compilation.firmware_version_lib, this.id, code_file.main, includes));
@@ -387,7 +384,7 @@ public class Model_CProgramVersion extends VersionModel {
 
                 Result_CompilationListError result_compilationListError = new Result_CompilationListError();
                 result_compilationListError.errors = compilation.build_errors;
-                return BaseController.ok(Json.toJson(result_compilationListError));
+                return _BaseController.ok(Json.toJson(result_compilationListError));
             }
 
             // Toto už regulérní zpráva není  - něco se posralo!
@@ -395,7 +392,7 @@ public class Model_CProgramVersion extends VersionModel {
                 this.compilation.status = CompilationStatus.SERVER_ERROR;
                 this.compilation.update();
 
-                return BaseController.badRequest(Json.toJson(compilation));
+                return _BaseController.badRequest(Json.toJson(compilation));
             }
 
             if (compilation.interface_code == null || compilation.build_url == null) {
@@ -405,7 +402,7 @@ public class Model_CProgramVersion extends VersionModel {
                 this.compilation.status = CompilationStatus.BROKEN_JSON;
                 this.compilation.update();
 
-                return BaseController.badRequest("Json code is broken - contact tech support!");
+                return _BaseController.badRequest("Json code is broken - contact tech support!");
             }
 
             if (compilation.error_message != null || !compilation.status.equals("success")) {
@@ -415,7 +412,7 @@ public class Model_CProgramVersion extends VersionModel {
                 this.compilation.status = CompilationStatus.SERVER_ERROR;
                 this.compilation.update();
 
-                return BaseController.externalServerError();
+                return _BaseController.externalServerError();
             }
 
             if (compilation.status.equals("success")) {
@@ -454,7 +451,7 @@ public class Model_CProgramVersion extends VersionModel {
                     this.compilation.firmware_build_datetime = new Date();
                     this.compilation.update();
 
-                    return BaseController.ok();
+                    return _BaseController.ok();
 
                 } catch (StorageException e) {
 
@@ -462,7 +459,7 @@ public class Model_CProgramVersion extends VersionModel {
                     this.compilation.status = CompilationStatus.SERVER_ERROR;
                     this.compilation.update();
 
-                    return BaseController.externalServerError();
+                    return _BaseController.externalServerError();
 
                 } catch (ConnectException e) {
 
@@ -470,7 +467,7 @@ public class Model_CProgramVersion extends VersionModel {
                     this.compilation.status = CompilationStatus.SUCCESS_DOWNLOAD_FAILED;
                     this.compilation.update();
 
-                    return BaseController.externalServerError();
+                    return _BaseController.externalServerError();
 
                 } catch (FileExistsException e) {
 
@@ -479,7 +476,7 @@ public class Model_CProgramVersion extends VersionModel {
                     this.compilation.status = CompilationStatus.SUCCESS_DOWNLOAD_FAILED;
                     this.compilation.update();
 
-                    return BaseController.externalServerError();
+                    return _BaseController.externalServerError();
 
                 } catch (Exception e) {
 
@@ -488,28 +485,28 @@ public class Model_CProgramVersion extends VersionModel {
                     this.compilation.status = CompilationStatus.SERVER_ERROR;
                     this.compilation.update();
 
-                    return BaseController.externalServerError();
+                    return _BaseController.externalServerError();
                 }
             }
 
             this.compilation.status = CompilationStatus.UNDEFINED;
             this.compilation.update();
 
-            return BaseController.externalServerError();
+            return _BaseController.externalServerError();
 
         }catch (_Base_Result_Exception error){
 
             // Result_Error_NotFound
             if(error.getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
                 Result_Error_NotFound not_found = (Result_Error_NotFound) error.getCause();
-                return BaseController.notFound(not_found.getClass_not_found());
+                return _BaseController.notFound(not_found.getClass_not_found());
             }
             logger.internalServerError(error);
-           return BaseController.internalServerError(error);
+           return _BaseController.internalServerError(error);
 
         }catch (Exception error){
             logger.internalServerError(error);
-            return BaseController.internalServerError(error);
+            return _BaseController.internalServerError(error);
         }
     }
 

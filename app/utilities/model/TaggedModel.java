@@ -1,6 +1,6 @@
 package utilities.model;
 
-import controllers.BaseController;
+import controllers._BaseController;
 import models.Model_Tag;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
@@ -34,7 +34,7 @@ public abstract class TaggedModel extends NamedModel {
                 tag.value = value;
 
                 try {
-                    tag.person = BaseController.person();
+                    tag.person = _BaseController.person();
                 } catch (_Base_Result_Exception exception){
                     if(exception.getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
                         logger.error("addTags::Person not found");

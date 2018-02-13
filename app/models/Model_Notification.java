@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -410,17 +410,17 @@ public class Model_Notification extends BaseModel {
         throw new Result_Error_NotSupportedException();
     }
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Notification_read.name())) return;
-        if(this.person.id.equals(BaseController.personId())) return;
+        if(_BaseController.person().has_permission(Permission.Notification_read.name())) return;
+        if(this.person.id.equals(_BaseController.personId())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() {
-        if(BaseController.person().has_permission(Permission.Notification_delete.name())) return;
-        if(this.person.id.equals(BaseController.personId())) return;
+        if(_BaseController.person().has_permission(Permission.Notification_delete.name())) return;
+        if(this.person.id.equals(_BaseController.personId())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient public void check_confirm_permission() {
-        if(this.person.id.equals(BaseController.personId())) return;
+        if(this.person.id.equals(_BaseController.personId())) return;
         throw new Result_Error_PermissionDenied();
     }
 

@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModel;
 import models.Model_Library;
 import models.Model_LibraryVersion;
 
-@ApiModel(description = "Json Model for Pari With Short detail of Library and Version of Library",
+@ApiModel(description = "Json Model for Pair With detail of Library and Version of Library",
         value = "Library_Library_Version_pair")
 public class Swagger_Library_Library_Version_pair{
 

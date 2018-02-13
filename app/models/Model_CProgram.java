@@ -3,26 +3,20 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
-import play.libs.Json;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.ProgramType;
-import utilities.enums.CompilationStatus;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
-import utilities.swagger.input.Swagger_C_Program_Version_New;
-import utilities.swagger.input.Swagger_Library_Library_Version_pair;
-import utilities.swagger.output.Swagger_C_Program_Version;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
@@ -270,24 +264,24 @@ public class Model_CProgram extends TaggedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.CProgram_create.name())) return;
+        if(_BaseController.person().has_permission(Permission.CProgram_create.name())) return;
         if(this.project == null) throw new Result_Error_PermissionDenied();
         this.project.check_update_permission();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("c_program_update_" + id)) BaseController.person().valid_permission("c_program_update_" + id);
-        if (BaseController.person().has_permission(Permission.CProgram_update.name())) return;
+        if (_BaseController.person().has_permission("c_program_update_" + id)) _BaseController.person().valid_permission("c_program_update_" + id);
+        if (_BaseController.person().has_permission(Permission.CProgram_update.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_CProgram.find.query().where().where().eq("project.participants.person.id", BaseController.person().id ).where().eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("c_program_update_" + id, true);
+        if ( Model_CProgram.find.query().where().where().eq("project.participants.person.id", _BaseController.person().id ).where().eq("id", id).findCount() > 0) {
+            _BaseController.person().cache_permission("c_program_update_" + id, true);
             return;
         }
 
         // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("c_program_update_" + id, false);
+        _BaseController.person().cache_permission("c_program_update_" + id, false);
         throw new Result_Error_PermissionDenied();
 
     }
@@ -302,32 +296,32 @@ public class Model_CProgram extends TaggedModel {
 
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("c_program_read_" + id)) BaseController.person().valid_permission("c_program_read_" + id);
-        if (BaseController.person().has_permission(Permission.CProgram_read.name())) return;
+        if (_BaseController.person().has_permission("c_program_read_" + id)) _BaseController.person().valid_permission("c_program_read_" + id);
+        if (_BaseController.person().has_permission(Permission.CProgram_read.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_CProgram.find.query().where().where().eq("project.participants.person.id", BaseController.person().id ).eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("c_program_read_" + id, true);
+        if ( Model_CProgram.find.query().where().where().eq("project.participants.person.id", _BaseController.person().id ).eq("id", id).findCount() > 0) {
+            _BaseController.person().cache_permission("c_program_read_" + id, true);
             return;
         }
 
         // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("read_" + id, false);
+        _BaseController.person().cache_permission("read_" + id, false);
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("c_program_delete_" + id)) BaseController.person().valid_permission("c_program_delete_" + id);
-        if (BaseController.person().has_permission(Permission.CProgram_delete.name())) return;
+        if (_BaseController.person().has_permission("c_program_delete_" + id)) _BaseController.person().valid_permission("c_program_delete_" + id);
+        if (_BaseController.person().has_permission(Permission.CProgram_delete.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_CProgram.find.query().where().where().eq("project.participants.person.id", BaseController.person().id ).where().eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("c_program_delete_" + id, true);
+        if ( Model_CProgram.find.query().where().where().eq("project.participants.person.id", _BaseController.person().id ).where().eq("id", id).findCount() > 0) {
+            _BaseController.person().cache_permission("c_program_delete_" + id, true);
             return;
         }
 
         // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("c_program_delete_" + id, false);
+        _BaseController.person().cache_permission("c_program_delete_" + id, false);
         throw new Result_Error_PermissionDenied();
 
     }
@@ -335,7 +329,7 @@ public class Model_CProgram extends TaggedModel {
     @JsonProperty @Transient @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
         try {
             // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if(BaseController.person().has_permission(Permission.C_Program_community_publishing_permission.name())) return true;
+            if(_BaseController.person().has_permission(Permission.C_Program_community_publishing_permission.name())) return true;
             return null;
         } catch (Exception e){
             return null;

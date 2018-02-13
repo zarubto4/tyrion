@@ -15,6 +15,7 @@ import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationState;
 import utilities.logger.Logger;
 import utilities.notifications.NotificationActionHandler;
+import utilities.swagger.input.Swagger_Library_New;
 import utilities.swagger.input.Swagger_Notification_Confirm;
 import utilities.swagger.input.Swagger_Notification_Read;
 import utilities.swagger.output.filter_results.Swagger_Notification_List;
@@ -22,17 +23,18 @@ import utilities.swagger.output.filter_results.Swagger_Notification_List;
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class Controller_Notification extends BaseController {
+public class Controller_Notification extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
   private static final Logger logger = new Logger(Controller_Notification.class);
 
 // CONTROLLER CONFIGURATION ############################################################################################
-    private FormFactory formFactory;
 
-    @Inject public Controller_Notification(FormFactory formFactory) {
-        this.formFactory = formFactory;
+    private _BaseFormFactory baseFormFactory;
+
+    @Inject public Controller_Notification(_BaseFormFactory formFactory) {
+        this.baseFormFactory = formFactory;
     }
 
 
@@ -56,7 +58,7 @@ public class Controller_Notification extends BaseController {
   public Result notification_getByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2... " + " For first call, use 1", required = false) Integer page_number) {
      try {
 
-        Query<Model_Notification> query =  Model_Notification.find.query().where().eq("person.id", BaseController.personId()).order().desc("created");
+        Query<Model_Notification> query =  Model_Notification.find.query().where().eq("person.id", _BaseController.personId()).order().desc("created");
 
         Swagger_Notification_List result = new Swagger_Notification_List(query, page_number);
 
@@ -123,20 +125,19 @@ public class Controller_Notification extends BaseController {
   public Result notification_read() {
     try {
 
-      final Form<Swagger_Notification_Read> form = formFactory.form(Swagger_Notification_Read.class).bindFromRequest();
-      if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-      Swagger_Notification_Read help = form.get();
+        // Get and Validate Object
+        Swagger_Notification_Read help = baseFormFactory.formFromRequestWithValidation(Swagger_Notification_Read.class);
 
-      List<Model_Notification> notifications = Model_Notification.find.query().where().idIn(help.notification_id).findList();
+        List<Model_Notification> notifications = Model_Notification.find.query().where().idIn(help.notification_id).findList();
 
-      for (Model_Notification notification : notifications) {
+        for (Model_Notification notification : notifications) {
 
-        notification.set_read();
-        notification.state = NotificationState.UPDATED;
-        notification.send();
-      }
+            notification.set_read();
+            notification.state = NotificationState.UPDATED;
+            notification.send();
+        }
 
-      return ok();
+        return ok();
 
     } catch (Exception e) {
       return internalServerError(e);
@@ -159,7 +160,7 @@ public class Controller_Notification extends BaseController {
   public Result notifications_getUnconfirmed() {
     try {
 
-      List<Model_Notification> notifications = Model_Notification.find.query().where().eq("person.id", BaseController.personId()).eq("notification_importance", NotificationImportance.HIGH).eq("confirmed", false).findList();
+      List<Model_Notification> notifications = Model_Notification.find.query().where().eq("person.id", _BaseController.personId()).eq("notification_importance", NotificationImportance.HIGH).eq("confirmed", false).findList();
       if (notifications.isEmpty()) return ok("No new notifications");
 
       for (Model_Notification notification : notifications) {
@@ -205,10 +206,10 @@ public class Controller_Notification extends BaseController {
   public Result notification_confirm( String notification_id) {
       try {
 
-          final Form<Swagger_Notification_Confirm> form = formFactory.form(Swagger_Notification_Confirm.class).bindFromRequest();
-          if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-          Swagger_Notification_Confirm help = form.get();
+          // Get and Validate Object
+          Swagger_Notification_Confirm help = baseFormFactory.formFromRequestWithValidation(Swagger_Notification_Confirm.class);
 
+          // Kontrola objektu
           Model_Notification notification = Model_Notification.getById(notification_id);
 
           notification.check_confirm_permission();
@@ -220,7 +221,7 @@ public class Controller_Notification extends BaseController {
               NotificationActionHandler.perform(help.action, help.payload);
 
           } catch (IllegalArgumentException e) {
-              BaseController.person().notification_error(e.getMessage());
+              _BaseController.person().notification_error(e.getMessage());
           } catch (Exception e) {
               logger.internalServerError(e);
           }

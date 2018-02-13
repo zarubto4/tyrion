@@ -1,8 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
@@ -77,7 +76,7 @@ public class Model_Tag extends BaseModel {
     }
 
     public static Model_Tag getByValue(String value) throws _Base_Result_Exception {
-        return find.query().where().eq("value", value).eq("person.id", BaseController.personId()).findOne();
+        return find.query().where().eq("value", value).eq("person.id", _BaseController.personId()).findOne();
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

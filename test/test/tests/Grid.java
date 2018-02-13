@@ -444,7 +444,7 @@ public class Grid extends TestHelper {
         expected.put("id", v.id);
         expected.put("version_name", body.get("version_name").asText());
         expected.put("version_description", body.get("version_description").asText());
-        expected.set("author", Json.toJson(person.get_short_person()));
+        expected.set("author", person.json());
         expected.putNull("created");
         expected.put("design_json", v.design_json);
         expected.put("logic_json", v.logic_json);

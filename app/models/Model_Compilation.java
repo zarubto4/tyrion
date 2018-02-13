@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudAppendBlob;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import utilities.Server;
@@ -142,7 +142,7 @@ public class Model_Compilation extends BaseModel {
                     .setLevel(NotificationLevel.INFO)
                     .setText(new Notification_Text().setText("Server starts compilation of Version "))
                     .setObject(this)
-                    .send(BaseController.person());
+                    .send(_BaseController.person());
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -159,7 +159,7 @@ public class Model_Compilation extends BaseModel {
                     .setText(new Notification_Text().setText("Compilation of Version "))
                     .setObject(this)
                     .setText(new Notification_Text().setText("was successful."))
-                    .send(BaseController.person());
+                    .send(_BaseController.person());
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -176,7 +176,7 @@ public class Model_Compilation extends BaseModel {
                     .setObject(this)
                     .setText(new Notification_Text().setText("was unsuccessful, for reason:"))
                     .setText(new Notification_Text().setText(reason).setBoldText())
-                    .send(BaseController.person());
+                    .send(_BaseController.person());
         } catch (Exception e) {
             logger.internalServerError(e);
         }
@@ -192,7 +192,7 @@ public class Model_Compilation extends BaseModel {
                     .setObject(this)
                     .setText(new Notification_Text().setText("with critical Error:"))
                     .setText(new Notification_Text().setText(result).setBoldText())
-                    .send(BaseController.person());
+                    .send(_BaseController.person());
         } catch (Exception e) {
             logger.internalServerError(e);
         }
@@ -210,7 +210,7 @@ public class Model_Compilation extends BaseModel {
                         .setObject(this)
                         .setText(new Notification_Text().setText(" from Program "))
                         .setObject(this.version.c_program)
-                        .send(BaseController.person());
+                        .send(_BaseController.person());
             } catch (Exception e) {
                 logger.internalServerError(e);
             }

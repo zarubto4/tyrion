@@ -3,7 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -272,7 +272,7 @@ public class Model_InstanceSnapshot extends BaseModel {
                     .setObject(this.get_b_program_version())
                     .setText( new Notification_Text().setText(" from Blocko program "))
                     .setObject(this.get_b_program_version().get_b_program())
-                    .send(BaseController.person());
+                    .send(_BaseController.person());
 
         } catch (Exception e) {
             logger.internalServerError(e);

@@ -6,7 +6,7 @@ import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Image;
-import controllers.BaseController;
+import controllers._BaseController;
 import models.Model_CProgramVersion;
 import models.Model_Garfield;
 import models.Model_Hardware;
@@ -195,7 +195,7 @@ public class Label_62_mm_package {
                       p_prod_version.add(new Chunk(production_version != null ? production_version.name : "Not Tracked ", regular));
 
             Paragraph p_who_tested = new Paragraph("Who tested it: ", bold);
-                      p_who_tested.add(new Chunk(BaseController.person().full_name(), regular));
+                      p_who_tested.add(new Chunk(_BaseController.person().full_name(), regular));
 
             Paragraph station = new Paragraph("Test Station: ", bold);
                       station.add(new Chunk(garfield.name, regular));

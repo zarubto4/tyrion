@@ -3,14 +3,13 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.libs.Json;
 import play.mvc.Http;
-import responses.Result_NotFound;
 import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.cache.CacheField;
@@ -153,7 +152,7 @@ public class Model_MProgramInstanceParameter extends BaseModel {
                 if (token == null) throw new Result_Error_PermissionDenied();
 
                 // Check Person By Token (who send request)
-                Model_Person person = BaseController.person();
+                Model_Person person = _BaseController.person();
                 if (person == null) throw new Result_Error_PermissionDenied();
 
                 //Chekc Permission

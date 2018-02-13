@@ -6,10 +6,9 @@ import com.microsoft.azure.storage.blob.CloudAppendBlob;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.Server;
 import utilities.cache.CacheField;
@@ -302,7 +301,7 @@ public class Model_BootLoader extends NamedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override @Transient public void check_create_permission() throws _Base_Result_Exception {
-        if(!BaseController.person().has_permission(Permission.BootLoader_create.name())) throw new Result_Error_PermissionDenied();
+        if(!_BaseController.person().has_permission(Permission.BootLoader_create.name())) throw new Result_Error_PermissionDenied();
     }
 
     @JsonIgnore @Override  @Transient public void check_read_permission() throws _Base_Result_Exception  {
@@ -310,11 +309,11 @@ public class Model_BootLoader extends NamedModel {
     }
 
     @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception {
-        if(!BaseController.person().has_permission(Permission.BootLoader_edit.name())) throw new Result_Error_PermissionDenied();
+        if(!_BaseController.person().has_permission(Permission.BootLoader_edit.name())) throw new Result_Error_PermissionDenied();
     }
 
     @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception {
-        if(!BaseController.person().has_permission(Permission.BootLoader_delete.name())) throw new Result_Error_PermissionDenied();
+        if(!_BaseController.person().has_permission(Permission.BootLoader_delete.name())) throw new Result_Error_PermissionDenied();
     }
 
     public enum Permission { BootLoader_create,  BootLoader_update, BootLoader_read, BootLoader_edit, BootLoader_delete }

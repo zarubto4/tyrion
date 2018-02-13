@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -736,22 +736,22 @@ public class Model_Product extends NamedModel {
         return;
     }
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Product_read.name())) return;
-        if(customer.isEmployee(BaseController.person())) return;
+        if(_BaseController.person().has_permission(Permission.Product_read.name())) return;
+        if(customer.isEmployee(_BaseController.person())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception  {
-        if(BaseController.person().has_permission(Permission.Product_update.name())) return;
-        if(customer.isEmployee(BaseController.person())) return;
+        if(_BaseController.person().has_permission(Permission.Product_update.name())) return;
+        if(customer.isEmployee(_BaseController.person())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception  {
-        if(BaseController.person().has_permission(Permission.Product_delete.name())) return;
+        if(_BaseController.person().has_permission(Permission.Product_delete.name())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient public void check_act_deactivate_permission()  throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Product_act_deactivate.name())) return;
-        if(customer.isEmployee(BaseController.person())) return;
+        if(_BaseController.person().has_permission(Permission.Product_act_deactivate.name())) return;
+        if(customer.isEmployee(_BaseController.person())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient public void check_financial_permission(String action)  throws _Base_Result_Exception {

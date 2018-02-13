@@ -3,7 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -300,7 +300,7 @@ public class Model_Widget extends TaggedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Widget_create.name())) return;
+        if(_BaseController.person().has_permission(Permission.Widget_create.name())) return;
         if(this.project == null) throw new Result_Error_PermissionDenied();
         this.project.check_update_permission();
     }
@@ -309,23 +309,23 @@ public class Model_Widget extends TaggedModel {
         get_project().check_read_permission();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Widget_update.name())) return;
+        if(_BaseController.person().has_permission(Permission.Widget_update.name())) return;
         get_project().check_update_permission();
     }
 
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Widget_delete.name())) return;
+        if(_BaseController.person().has_permission(Permission.Widget_delete.name())) return;
         get_project().check_delete_permission();
     }
 
     @JsonIgnore @Transient public void check_community_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return;
+        if(_BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return;
         throw new Result_Error_PermissionDenied();
     }
 
     @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
         try {
-            BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name());
+            _BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name());
             return true;
         }catch (Exception e){
             return false;

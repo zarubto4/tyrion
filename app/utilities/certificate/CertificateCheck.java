@@ -1,14 +1,14 @@
 package utilities.certificate;
 
 import com.google.inject.Inject;
-import controllers.BaseController;
+import controllers._BaseController;
 import play.Environment;
 import play.mvc.Result;
 
 /**
  * Used to verify the ownership of the domain, so application can get a certificate.
  */
-public class CertificateCheck extends BaseController {
+public class CertificateCheck extends _BaseController {
 
     private Environment environment;
 

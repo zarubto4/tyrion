@@ -7,7 +7,6 @@ import io.swagger.annotations.*;
 import models.*;
 import play.data.Form;
 import play.data.FormFactory;
-import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -24,12 +23,11 @@ import utilities.swagger.output.filter_results.Swagger_B_Program_List;
 import utilities.swagger.output.filter_results.Swagger_Block_List;
 import utilities.swagger.output.filter_results.Swagger_Instance_List;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 @Security.Authenticated(Authentication.class)
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class Controller_Blocko extends BaseController {
+public class Controller_Blocko extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
@@ -37,12 +35,12 @@ public class Controller_Blocko extends BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private FormFactory formFactory;
+    private _BaseFormFactory baseFormFactory;
     private SchedulerController scheduler;
 
     @Inject
-    public Controller_Blocko(FormFactory formFactory, SchedulerController scheduler) {
-        this.formFactory = formFactory;
+    public Controller_Blocko(_BaseFormFactory formFactory, SchedulerController scheduler) {
+        this.baseFormFactory = formFactory;
         this.scheduler = scheduler;
     }
 
@@ -81,10 +79,8 @@ public class Controller_Blocko extends BaseController {
     public Result bProgram_create(@ApiParam(value = "project_id String path", required = true) String project_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
@@ -158,14 +154,13 @@ public class Controller_Blocko extends BaseController {
     public Result bProgram_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number) {
         try {
 
-            // Získání JSON
-            final Form<Swagger_B_Program_Filter> form = formFactory.form(Swagger_B_Program_Filter.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_B_Program_Filter help = form.get();
+            // Get and Validate Object
+            Swagger_B_Program_Filter help  = baseFormFactory.formFromRequestWithValidation(Swagger_B_Program_Filter.class);
+
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_BProgram> query = Ebean.find(Model_BProgram.class);
-            query.where().eq("project.participants.person.id", BaseController.personId());
+            query.where().eq("project.participants.person.id", _BaseController.personId());
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
@@ -213,10 +208,8 @@ public class Controller_Blocko extends BaseController {
     public Result bProgram_update(@ApiParam(value = "b_program_id String path", required = true) String b_program_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_BProgram b_program = Model_BProgram.getById(b_program_id);
@@ -266,10 +259,8 @@ public class Controller_Blocko extends BaseController {
     public Result bProgram_addTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help  = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
             Model_BProgram bProgram = Model_BProgram.getById(help.object_id);
 
@@ -313,10 +304,8 @@ public class Controller_Blocko extends BaseController {
     public Result bProgram_removeTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help  = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
             Model_BProgram bProgram = Model_BProgram.getById(help.object_id);
 
@@ -349,7 +338,6 @@ public class Controller_Blocko extends BaseController {
 
             // Kontrola objektu
             Model_BProgram program = Model_BProgram.getById(b_program_id);
-
 
             // Smazání objektu
             program.delete();
@@ -394,10 +382,9 @@ public class Controller_Blocko extends BaseController {
     public Result bProgramVersion_create(@ApiParam(value = "b_program_id String path", required = true) String b_program_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_B_Program_Version_New> form = formFactory.form(Swagger_B_Program_Version_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_B_Program_Version_New help = form.get();
+            // Get and Validate Object
+            Swagger_B_Program_Version_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_B_Program_Version_New.class);
+
 
             // Program který budu ukládat do data Storage v Azure
             String file_content =  help.program;
@@ -512,10 +499,8 @@ public class Controller_Blocko extends BaseController {
     public Result bProgramVersion_update(@ApiParam(value = "version_id String path", required = true) String version_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Získání objektu
             Model_BProgramVersion version = Model_BProgramVersion.getById(version_id);
@@ -598,14 +583,13 @@ public class Controller_Blocko extends BaseController {
     public Result instance_create() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDesc_ProjectIdRequired> form = formFactory.form(Swagger_NameAndDesc_ProjectIdRequired.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_NameAndDesc_ProjectIdRequired help = form.get();
-
-            Model_Project project = Model_Project.getById(help.project_id);
+            // Get and Validate Object
+            Swagger_NameAndDesc_ProjectIdRequired help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDesc_ProjectIdRequired.class);
 
             // Kontrola objektu
+            Model_Project project = Model_Project.getById(help.project_id);
+
+            // Tvorba Objektu
             Model_Instance instance = new Model_Instance();
             instance.name = help.name;
             instance.description = help.description;
@@ -675,10 +659,8 @@ public class Controller_Blocko extends BaseController {
     public Result instance_update(@ApiParam(value = "instance_id String path", required = true) String instance_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_Instance instance = Model_Instance.getById(instance_id);
@@ -686,6 +668,7 @@ public class Controller_Blocko extends BaseController {
             instance.name = help.name;
             instance.description = help.description;
 
+            // Update Objektu
             instance.update();
 
             return ok(instance.json());
@@ -723,13 +706,13 @@ public class Controller_Blocko extends BaseController {
     public Result instance_addTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
+            // Kontrola objektu
             Model_Instance instance = Model_Instance.getById(help.object_id);
 
+            // Přidání Tagu
             instance.addTags(help.tags);
 
             // Vrácení objektu
@@ -768,13 +751,13 @@ public class Controller_Blocko extends BaseController {
     public Result instance_removeTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
+            // Kontrola objektu
             Model_Instance instance = Model_Instance.getById(help.object_id);
 
+            // Odebrání Tagu
             instance.removeTags(help.tags);
 
             // Vrácení objektu
@@ -840,11 +823,10 @@ public class Controller_Blocko extends BaseController {
     public Result instanceSnapshot_create() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_InstanceSnapshot_New> form = formFactory.form(Swagger_InstanceSnapshot_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_InstanceSnapshot_New help = form.get();
+            // Get and Validate Object
+            Swagger_InstanceSnapshot_New help = baseFormFactory.formFromRequestWithValidation(Swagger_InstanceSnapshot_New.class);
 
+            // Kontrola objektu
             Model_Instance instance = Model_Instance.getById(help.instance_id);
 
             Model_BProgramVersion version = Model_BProgramVersion.getById(help.version_id);
@@ -918,27 +900,33 @@ public class Controller_Blocko extends BaseController {
     public Result instanceSnapshot_deploy() {
         try {
 
-            // Získání JSON
-            final Form<Swagger_InstanceSnapshot_Deploy> form = formFactory.form(Swagger_InstanceSnapshot_Deploy.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_InstanceSnapshot_Deploy help = form.get();
+            // Get and Validate Object
+            Swagger_InstanceSnapshot_Deploy help = baseFormFactory.formFromRequestWithValidation(Swagger_InstanceSnapshot_Deploy.class);
 
             // Kontrola objektu: Verze B programu kterou budu nahrávat do cloudu
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(help.snapshot_id);
 
+            // If upload time is "future"
             if (help.upload_time != null) {
 
+                // Genereate Future Time
                 Date future = new Date(help.upload_time);
 
                 // Zkontroluji smysluplnost časové známky
                 if (!future.after(new Date())) return badRequest("time must be set in the future");
+
+                // Deployed is future
                 snapshot.deployed = future;
                 scheduler.scheduleInstanceDeployment(snapshot);
+
             } else {
+
+                // Deploy immediately!
                 snapshot.deployed = new Date();
                 snapshot.deploy();
             }
 
+            // Update
             snapshot.update();
 
             return ok();
@@ -1033,10 +1021,9 @@ public class Controller_Blocko extends BaseController {
     public Result get_b_program_instance_by_filter(Integer page_number) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Instance_Filter> form = formFactory.form(Swagger_Instance_Filter.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Instance_Filter help = form.get();
+            // Get and Validate Object
+            Swagger_Instance_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_Filter.class);
+
 
             // Tvorba parametru dotazu
             Query<Model_Instance> query = Ebean.find(Model_Instance.class);
@@ -1092,10 +1079,9 @@ public class Controller_Blocko extends BaseController {
     public Result instance_change_settings_grid_App() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Instance_GridApp_Settings> form = formFactory.form(Swagger_Instance_GridApp_Settings.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Instance_GridApp_Settings help = form.get();
+            // Get and Validate Object
+            Swagger_Instance_GridApp_Settings help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_GridApp_Settings.class);
+
 
             // Hledám objekt
             Model_MProgramInstanceParameter program_parameter = Model_MProgramInstanceParameter.getById(help.m_program_parameter_id);
@@ -1161,10 +1147,9 @@ public class Controller_Blocko extends BaseController {
     public Result block_create() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDesc_ProjectIdOptional> form = formFactory.form(Swagger_NameAndDesc_ProjectIdOptional.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_NameAndDesc_ProjectIdOptional help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDesc_ProjectIdOptional help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDesc_ProjectIdOptional.class);
+
 
             Model_Project project = null;
 
@@ -1206,7 +1191,7 @@ public class Controller_Blocko extends BaseController {
             blockoBlockVersion.design_json = scheme.design_json;
             blockoBlockVersion.logic_json = scheme.logic_json;
             blockoBlockVersion.block = block;
-            blockoBlockVersion.author = BaseController.person();
+            blockoBlockVersion.author = _BaseController.person();
             blockoBlockVersion.save();
 
             // Vrácení objektu
@@ -1246,10 +1231,8 @@ public class Controller_Blocko extends BaseController {
     public Result block_clone() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Block_Copy> form = formFactory.form(Swagger_Block_Copy.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Block_Copy help = form.get();
+            // Get and Validate Object
+            Swagger_Block_Copy help = baseFormFactory.formFromRequestWithValidation(Swagger_Block_Copy.class);
 
             // Vyhledám Objekt
             Model_Block blockOld = Model_Block.getById(help.block_id);
@@ -1261,10 +1244,8 @@ public class Controller_Blocko extends BaseController {
             blockNew.name = help.name;
             blockNew.description = help.description;
             blockNew.project = project;
-            blockNew.save();
 
-            blockNew.refresh();
-
+            // Duplicate all versions
             for (Model_BlockVersion version : blockOld.getVersions()) {
 
                 Model_BlockVersion copy_object = new Model_BlockVersion();
@@ -1275,11 +1256,9 @@ public class Controller_Blocko extends BaseController {
                 copy_object.logic_json  = version.logic_json;
                 copy_object.block       = blockNew;
 
-                // Zkontroluji oprávnění
-                copy_object.save();
             }
 
-            blockNew.refresh();
+            blockNew.save();
 
             // Vracím Objekt
             return ok(blockNew.json());
@@ -1318,10 +1297,8 @@ public class Controller_Blocko extends BaseController {
     public Result block_update(@ApiParam(value = "block_id String path",   required = true)  String block_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_Block block = Model_Block.getById(block_id);
@@ -1370,13 +1347,13 @@ public class Controller_Blocko extends BaseController {
     public Result block_addTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
+            // Kontrola objektu
             Model_Block block = Model_Block.getById(help.object_id);
 
+            // Add Tags
             block.addTags(help.tags);
 
             // Vrácení objektu
@@ -1415,13 +1392,13 @@ public class Controller_Blocko extends BaseController {
     public Result block_removeTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
+            // Kontrola objektu
             Model_Block block = Model_Block.getById(help.object_id);
-       
+
+            // Remove Tags
             block.removeTags(help.tags);
 
             // Vrácení objektu
@@ -1447,6 +1424,7 @@ public class Controller_Blocko extends BaseController {
     })
     public Result block_get(@ApiParam(value = "block_id String path",   required = true) String block_id) {
         try {
+
             // Kontrola objektu
             Model_Block block = Model_Block.getById(block_id);
          
@@ -1487,14 +1465,12 @@ public class Controller_Blocko extends BaseController {
     public Result block_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number) {
         try {
 
-            // Získání JSON
-            final Form<Swagger_Block_Filter> form = formFactory.form(Swagger_Block_Filter.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Block_Filter help = form.get();
+            // Get and Validate Object
+            Swagger_Block_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Block_Filter.class);
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_Block> query = Ebean.find(Model_Block.class);
-            query.where().eq("author.id", BaseController.personId());
+            query.where().eq("author.id", _BaseController.personId());
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
@@ -1563,8 +1539,10 @@ public class Controller_Blocko extends BaseController {
     public Result block_orderUp(@ApiParam(value = "block_id String path",   required = true) String block_id) {
         try {
 
+            // Kontrola objektu
             Model_Block block = Model_Block.getById(block_id);
-           
+
+            // Shift order up
             block.up();
 
             return ok();
@@ -1591,8 +1569,10 @@ public class Controller_Blocko extends BaseController {
     public Result block_orderDown(@ApiParam(value = "block_id String path",   required = true) String block_id) {
         try {
 
+            // Kontrola objektu
             Model_Block block =  Model_Block.getById(block_id);
-        
+
+            // Shift order down
             block.down();
 
             return ok();
@@ -1653,7 +1633,6 @@ public class Controller_Blocko extends BaseController {
             Model_Block block = Model_Block.getById(block_id);
 
             if (block.active) return badRequest("Block is already activated");
-            
             block.active = true;
 
             block.update();
@@ -1694,17 +1673,14 @@ public class Controller_Blocko extends BaseController {
     public Result block_public_response() { // TODO asi nebude fungovat korektně
         try {
 
-            // Získání JSON
-            final Form<Swagger_Community_Version_Publish_Response> form = formFactory.form(Swagger_Community_Version_Publish_Response.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Community_Version_Publish_Response help = form.get();
+            // Get and Validate Object
+            Swagger_Community_Version_Publish_Response help = baseFormFactory.formFromRequestWithValidation(Swagger_Community_Version_Publish_Response.class);
 
             // Kontrola názvu
             if (help.version_name.equals("version_scheme")) return badRequest("This name is reserved for the system");
 
             // Kontrola objektu
             Model_BlockVersion private_block_version = Model_BlockVersion.getById(help.version_id);
-            if (private_block_version == null) return notFound("grid_widget_version not found");
 
             // Kontrola nadřazeného objektu
             Model_Block block_old = private_block_version.get_block();
@@ -1807,10 +1783,8 @@ public class Controller_Blocko extends BaseController {
     public Result blockVersion_create(@ApiParam(value = "block_id String path",   required = true) String block_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_BlockVersion_New> form = formFactory.form(Swagger_BlockVersion_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_BlockVersion_New help = form.get();
+            // Get and Validate Object
+            Swagger_BlockVersion_New help = baseFormFactory.formFromRequestWithValidation(Swagger_BlockVersion_New.class);
 
             // Kontrola názvu
             if (help.name.equals("version_scheme")) return badRequest("This name is reserved for the system");
@@ -1896,10 +1870,8 @@ public class Controller_Blocko extends BaseController {
     public Result blockVersion_update(@ApiParam(value = "version_id String path", required = true) String version_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola názvu
             if (help.name.equals("version_scheme")) return badRequest("This name is reserved for the system");
@@ -2057,10 +2029,8 @@ public class Controller_Blocko extends BaseController {
     public Result blockoDisapprove() {
         try {
 
-            // Získání JSON
-            final Form<Swagger_BlockoObject_Approval> form = formFactory.form(Swagger_BlockoObject_Approval.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_BlockoObject_Approval help = form.get();
+            // Get and Validate Object
+            Swagger_BlockoObject_Approval help = baseFormFactory.formFromRequestWithValidation(Swagger_BlockoObject_Approval.class);
 
             // Kontrola objektu
             Model_BlockVersion version = Model_BlockVersion.getById(help.object_id);
@@ -2117,10 +2087,8 @@ public class Controller_Blocko extends BaseController {
     public Result blockoApproval() {
         try {
 
-            // Získání JSON
-            final Form<Swagger_BlockoObject_Approve_withChanges> form = formFactory.form(Swagger_BlockoObject_Approve_withChanges.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_BlockoObject_Approve_withChanges help = form.get();
+            // Get and Validate Object
+            Swagger_BlockoObject_Approve_withChanges help = baseFormFactory.formFromRequestWithValidation(Swagger_BlockoObject_Approve_withChanges.class);
 
             // Kontrola názvu
             if (help.version_name.equals("version_scheme")) return badRequest("This name is reserved for the system");

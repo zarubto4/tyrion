@@ -1,7 +1,7 @@
 package utilities.notifications;
 
 import com.google.inject.Inject;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
@@ -27,7 +27,7 @@ import java.util.UUID;
 
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class NotificationTester extends BaseController {
+public class NotificationTester extends _BaseController {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 

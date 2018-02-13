@@ -15,7 +15,6 @@ import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.Approval;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.logger.Logger;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_M_Program_Interface;
@@ -28,7 +27,7 @@ import java.util.*;
 import static play.mvc.Controller.ctx;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class Controller_Grid extends BaseController {
+public class Controller_Grid extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
@@ -36,10 +35,10 @@ public class Controller_Grid extends BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private FormFactory formFactory;
+    private _BaseFormFactory baseFormFactory;
 
-    @Inject public Controller_Grid(FormFactory formFactory) {
-        this.formFactory = formFactory;
+    @Inject public Controller_Grid(_BaseFormFactory formFactory) {
+        this.baseFormFactory = formFactory;
     }
 
 ///###################################################################################################################*/
@@ -76,10 +75,10 @@ public class Controller_Grid extends BaseController {
     public Result gridProject_create(String project_id) {
         try {
 
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
+            // Kontrola objektu
             Model_Project project = Model_Project.getById( project_id );
 
             Model_GridProject gridProject = new Model_GridProject();
@@ -112,8 +111,9 @@ public class Controller_Grid extends BaseController {
     @Security.Authenticated(Authentication.class)
     public Result gridProject_get(String grid_project_id) {
         try {
-
+            // Kontrola objektu
             Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
+
             return ok(gridProject.json());
 
         } catch (Exception e) {
@@ -150,10 +150,10 @@ public class Controller_Grid extends BaseController {
     public Result gridProject_update(String grid_project_id) {
         try {
 
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
+            // Kontrola objektu
             Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
 
             gridProject.name = help.name;
@@ -196,11 +196,10 @@ public class Controller_Grid extends BaseController {
     public Result gridProject_addTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
+            // Kontrola objektu
             Model_GridProject gridProject = Model_GridProject.getById(help.object_id);
 
             gridProject.addTags(help.tags);
@@ -241,11 +240,10 @@ public class Controller_Grid extends BaseController {
     public Result gridProject_removeTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
+            // Kontrola objektu
             Model_GridProject gridProject = Model_GridProject.getById(help.object_id);
 
             gridProject.removeTags(help.tags);
@@ -281,12 +279,13 @@ public class Controller_Grid extends BaseController {
     public Result gridProject_delete(String grid_project_id) {
         try {
 
+            // Kontrola objektu
             Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
-            if (gridProject == null) return notFound("M_project grid_project_id not found");
             
             gridProject.delete();
 
             return ok();
+
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -309,6 +308,7 @@ public class Controller_Grid extends BaseController {
     public Result gridProject_getInterface(String grid_project_id) {
         try {
 
+            // Kontrola objektu
             Model_GridProject m_project = Model_GridProject.getById(grid_project_id);
             
             Swagger_M_Project_Interface m_project_interface = new Swagger_M_Project_Interface();
@@ -366,10 +366,10 @@ public class Controller_Grid extends BaseController {
     public Result gridProgram_create(String grid_project_id) {
         try {
 
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
+            // Kontrola objektu
             Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
 
             Model_GridProgram gridProgram = new Model_GridProgram();
@@ -401,8 +401,10 @@ public class Controller_Grid extends BaseController {
     @Security.Authenticated(Authentication.class)
     public Result gridProgram_get( String grid_program_id) {
         try {
-            
+
+            // Kontrola objektu
             Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
+
             return ok(gridProgram.json());
             
         } catch (Exception e) {
@@ -439,10 +441,10 @@ public class Controller_Grid extends BaseController {
     public Result gridProgram_update(String grid_program_id) {
         try {
 
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
+            // Kontrola objektu
             Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
 
             if (gridProgram.grid_project == null) return badRequest("You cannot change program on version");
@@ -486,13 +488,13 @@ public class Controller_Grid extends BaseController {
     public Result gridProgram_addTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help  = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
+            // Kontrola objektu
             Model_GridProgram gridProgram = Model_GridProgram.getById(help.object_id);
 
+            // Add Tags
             gridProgram.addTags(help.tags);
 
             // Vrácení objektu
@@ -531,13 +533,13 @@ public class Controller_Grid extends BaseController {
     public Result gridProgram_removeTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help  = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
+            // Kontrola objektu
             Model_GridProgram gridProgram = Model_GridProgram.getById(help.object_id);
 
+            // Remove Tags
             gridProgram.removeTags(help.tags);
 
             // Vrácení objektu
@@ -565,7 +567,9 @@ public class Controller_Grid extends BaseController {
     public Result gridProgram_delete(String grid_program_id) {
         try {
 
+            // Kontrola objektu
             Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
+
             gridProgram.delete();
 
             return ok();
@@ -605,17 +609,17 @@ public class Controller_Grid extends BaseController {
     public Result gridProgramVersion_create( String grid_program_id) {
         try {
 
-            final Form<Swagger_M_Program_Version_New> form = formFactory.form(Swagger_M_Program_Version_New.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_M_Program_Version_New help = form.get();
+            // Get and Validate Object
+            Swagger_M_Program_Version_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_M_Program_Version_New.class);
 
+            // Kontrola objektu
             Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
             
             Model_GridProgramVersion version       = new Model_GridProgramVersion();
             version.name                = help.name;
             version.description         = help.description;
             version.grid_program        = gridProgram;
-            version.author              = BaseController.person();
+            version.author              = _BaseController.person();
             version.public_access       = help.public_access;
             version.m_program_virtual_input_output =  help.virtual_input_output;
           
@@ -688,11 +692,10 @@ public class Controller_Grid extends BaseController {
     public Result gridProgramVersion_update( String version_id) {
         try {
 
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
-            // Získání objektu
+            // Kontrola objektu
             Model_GridProgramVersion version = Model_GridProgramVersion.getById(version_id);
 
             // Úprava objektu
@@ -808,12 +811,12 @@ public class Controller_Grid extends BaseController {
     public Result check_identifiactor(String terminal_id) {
         try {
 
-            final Form<Swagger_Grid_Terminal_Identf> form = formFactory.form(Swagger_Grid_Terminal_Identf.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Grid_Terminal_Identf help = form.get();
+            // Get and Validate Object
+            Swagger_Grid_Terminal_Identf help  = baseFormFactory.formFromRequestWithValidation(Swagger_Grid_Terminal_Identf.class);
 
-
+            // Kontrola objektu
             Model_GridTerminal terminal = Model_GridTerminal.getById(terminal_id);
+
             if (terminal == null) {
 
                 terminal = new Model_GridTerminal();
@@ -865,9 +868,9 @@ public class Controller_Grid extends BaseController {
     public Result get_identificator() {
         try {
 
-            final Form<Swagger_Grid_Terminal_Identf> form = formFactory.form(Swagger_Grid_Terminal_Identf.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Grid_Terminal_Identf help = form.get();
+
+            // Get and Validate Object
+            Swagger_Grid_Terminal_Identf help  = baseFormFactory.formFromRequestWithValidation(Swagger_Grid_Terminal_Identf.class);
 
             Model_GridTerminal terminal = new Model_GridTerminal();
             terminal.device_name = help.device_name;
@@ -894,6 +897,7 @@ public class Controller_Grid extends BaseController {
             }
 
             terminal.save();
+
             return created(Json.toJson(terminal));
 
         } catch (Exception e) {
@@ -931,10 +935,8 @@ public class Controller_Grid extends BaseController {
     public Result widget_create() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDesc_ProjectIdOptional> form = formFactory.form(Swagger_NameAndDesc_ProjectIdOptional.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_NameAndDesc_ProjectIdOptional help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDesc_ProjectIdOptional help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDesc_ProjectIdOptional.class);
 
             Model_Project project = null;
 
@@ -1041,10 +1043,8 @@ public class Controller_Grid extends BaseController {
     public Result widget_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number) {
         try {
 
-            // Získání JSON
-            final Form<Swagger_GridWidget_Filter> form = formFactory.form(Swagger_GridWidget_Filter.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_GridWidget_Filter help = form.get();
+            // Get and Validate Object
+            Swagger_GridWidget_Filter help  = baseFormFactory.formFromRequestWithValidation(Swagger_GridWidget_Filter.class);
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_Widget> query = Ebean.find(Model_Widget.class);
@@ -1100,10 +1100,8 @@ public class Controller_Grid extends BaseController {
     public Result widget_update(@ApiParam(value = "widget_id String path",   required = true)  String grid_widget_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDesc_ProjectIdOptional> form = formFactory.form(Swagger_NameAndDesc_ProjectIdOptional.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_NameAndDesc_ProjectIdOptional help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDesc_ProjectIdOptional help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDesc_ProjectIdOptional.class);
 
             // Kontrola objektu
             Model_Widget widget = Model_Widget.getById(grid_widget_id);
@@ -1152,13 +1150,14 @@ public class Controller_Grid extends BaseController {
     public Result widget_addTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
 
+            // Get and Validate Object
+            Swagger_Tags help  = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+
+            // Kontrola objektu
             Model_Widget widget = Model_Widget.getById(help.object_id);
 
+            // Add Tags
             widget.addTags(help.tags);
 
             // Vrácení objektu
@@ -1197,13 +1196,13 @@ public class Controller_Grid extends BaseController {
     public Result widget_removeTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help  = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
+            // Kontrola objektu
             Model_Widget widget = Model_Widget.getById(help.object_id);
 
+            // Remnove Tags
             widget.removeTags(help.tags);
 
             // Vrácení objektu
@@ -1275,15 +1274,13 @@ public class Controller_Grid extends BaseController {
     public Result widget_clone() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Grid_Widget_Copy> form = formFactory.form(Swagger_Grid_Widget_Copy.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Grid_Widget_Copy help = form.get();
+            // Get and Validate Object
+            Swagger_Grid_Widget_Copy help  = baseFormFactory.formFromRequestWithValidation(Swagger_Grid_Widget_Copy.class);
 
-            // Vyhledám Objekt
+            // Kontrola objekt
             Model_Widget grid_widget_old = Model_Widget.getById(help.widget_id);
 
-            // Vyhledám Objekt
+            // Kontrola objekt
             Model_Project project = Model_Project.getById(help.project_id);
 
             // Zkontroluji oprávnění
@@ -1339,13 +1336,10 @@ public class Controller_Grid extends BaseController {
     public Result widget_deactivate(String grid_widget_id) {
         try {
 
+            // Kontrola objekt
             Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
 
-            // Kontrola oprávnění
-            gridWidget.check_update_permission();
-
             if (!gridWidget.active) return badRequest("Tariff is already deactivated");
-
             gridWidget.active = false;
 
             gridWidget.update();
@@ -1375,12 +1369,10 @@ public class Controller_Grid extends BaseController {
     public Result widget_activate(String grid_widget_id) {
         try {
 
+            // Kontrola objekt
             Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
 
-            gridWidget.check_update_permission();
-
             if (gridWidget.active) return badRequest("Tariff is already activated");
-
             gridWidget.active = true;
 
             gridWidget.update();
@@ -1410,8 +1402,10 @@ public class Controller_Grid extends BaseController {
     public Result widget_order_up(@ApiParam(value = "widget_id String path",   required = true) String grid_widget_id) {
         try {
 
+            // Kontrola objekt
             Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
 
+            // Shift Order Up
             gridWidget.up();
 
             return ok();
@@ -1441,6 +1435,7 @@ public class Controller_Grid extends BaseController {
 
             Model_Widget gridWidget =  Model_Widget.getById(grid_widget_id);
 
+            // Shift Order down
             gridWidget.down();
 
             return ok();
@@ -1557,7 +1552,7 @@ public class Controller_Grid extends BaseController {
             Model_WidgetVersion gridWidgetVersion = Model_WidgetVersion.getById(grid_widget_version_id);
             
             if (Model_WidgetVersion.find.query().where().eq("approval_state", Approval.PENDING.name())
-                    .eq("author.id", BaseController.personId())
+                    .eq("author.id", _BaseController.personId())
                     .findList().size() > 3) {
                 // TODO Notifikace uživatelovi
                 return badRequest("You can publish only 3 programs. Wait until the previous ones approved by the administrator. Thanks.");
@@ -1608,10 +1603,8 @@ public class Controller_Grid extends BaseController {
     public Result widgetVersion_create(@ApiParam(value = "widget_id String path",   required = true) String grid_widget_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_GridWidgetVersion_New> form = formFactory.form(Swagger_GridWidgetVersion_New.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_GridWidgetVersion_New help = form.get();
+            // Get and Validate Object
+            Swagger_GridWidgetVersion_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_GridWidgetVersion_New.class);
 
             // Kontrola názvu
             if (help.name.equals("version_scheme")) return badRequest("This name is reserved for the system");
@@ -1626,7 +1619,7 @@ public class Controller_Grid extends BaseController {
             version.design_json = help.design_json;
             version.logic_json = help.logic_json;
             version.widget = gridWidget;
-            version.author = BaseController.person();
+            version.author = _BaseController.person();
             
             // Uložení objektu
             version.save();
@@ -1701,10 +1694,8 @@ public class Controller_Grid extends BaseController {
     public Result widgetVersion_edit(@ApiParam(value = "version_id String path",   required = true) String version_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_WidgetVersion version = Model_WidgetVersion.getById(version_id);
@@ -1798,10 +1789,8 @@ public class Controller_Grid extends BaseController {
     public Result widget_public_response() {
         try {
 
-            // Získání JSON
-            final Form<Swagger_Community_Version_Publish_Response> form = formFactory.form(Swagger_Community_Version_Publish_Response.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Community_Version_Publish_Response help = form.get();
+            // Get and Validate Object
+            Swagger_Community_Version_Publish_Response help  = baseFormFactory.formFromRequestWithValidation(Swagger_Community_Version_Publish_Response.class);
 
             // Kontrola názvu
             if (help.version_name.equals("version_scheme")) return badRequest("This name is reserved for the system");

@@ -18,6 +18,7 @@ import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.lablel_printer_service.printNodeModels.Printer;
 import utilities.logger.Logger;
+import utilities.swagger.input.Swagger_Bug_Description;
 import utilities.swagger.input.Swagger_Garfield_Edit;
 import utilities.swagger.input.Swagger_Garfield_New;
 
@@ -26,17 +27,17 @@ import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
-public class Controller_Garfield extends BaseController {
+public class Controller_Garfield extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
     private static final Logger logger = new Logger(Controller_Garfield.class);
 
 // CONTROLLER CONFIGURATION ############################################################################################
-    private FormFactory formFactory;
+    private _BaseFormFactory baseFormFactory;
 
-    @Inject public Controller_Garfield(FormFactory formFactory) {
-        this.formFactory = formFactory;
+    @Inject public Controller_Garfield(_BaseFormFactory formFactory) {
+        this.baseFormFactory = formFactory;
     }
 
 // REST - API GARFIELD  #################################################################################################
@@ -69,10 +70,8 @@ public class Controller_Garfield extends BaseController {
     public Result edit_Garfield(@ApiParam(required = true) String garfield_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Garfield_Edit> form = formFactory.form(Swagger_Garfield_Edit.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Garfield_Edit help = form.get();
+            // Get and Validate Object
+            Swagger_Garfield_Edit help  = baseFormFactory.formFromRequestWithValidation(Swagger_Garfield_Edit.class);
 
             // Kontrola objektu
             Model_Garfield garfield = Model_Garfield.getById(garfield_id);
@@ -122,10 +121,8 @@ public class Controller_Garfield extends BaseController {
     public Result create_Garfield() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Garfield_New> form = formFactory.form(Swagger_Garfield_New.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Garfield_New help = form.get();
+            // Get and Validate Object
+            Swagger_Garfield_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_Garfield_New.class);
 
             // Kontrola objektu
             Model_Garfield garfield = new Model_Garfield();
@@ -167,6 +164,7 @@ public class Controller_Garfield extends BaseController {
 
             // Kontrola objektu
             Model_Garfield garfield = Model_Garfield.getById(garfield_id);
+
             // Odsranit objekt
             garfield.delete();
 

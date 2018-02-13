@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
-public class Controller_Admin extends BaseController {
+public class Controller_Admin extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
@@ -46,7 +46,7 @@ public class Controller_Admin extends BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private FormFactory formFactory;
+    private _BaseFormFactory baseFormFactory;
     private WSClient ws;
     private Environment environment;
     private YouTrack youTrack;
@@ -54,10 +54,10 @@ public class Controller_Admin extends BaseController {
     private SchedulerController scheduler;
 
     @Inject
-    public Controller_Admin(Environment environment, WSClient ws, FormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+    public Controller_Admin(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
         this.environment = environment;
         this.ws = ws;
-        this.formFactory = formFactory;
+        this.baseFormFactory = formFactory;
         this.youTrack = youTrack;
         this.config = config;
         this.scheduler = scheduler;
@@ -191,10 +191,10 @@ public class Controller_Admin extends BaseController {
     public Result serverError_addDescription(@ApiParam(value = "bug_id String path", required = true) String bug_id) {
         try {
 
-            final Form<Swagger_Bug_Description> form = formFactory.form(Swagger_Bug_Description.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Bug_Description help = form.get();
+            // Get and Validate Object
+            Swagger_Bug_Description help  = baseFormFactory.formFromRequestWithValidation(Swagger_Bug_Description.class);
 
+            // Kontrola objektu
             Model_ServerError error = Model_ServerError.getById(bug_id);
 
             error.description = help.description;
@@ -324,10 +324,8 @@ public class Controller_Admin extends BaseController {
                 return badRequest("This feature is available only in production mode.");
             }
 
-            // Zpracování Json
-            final Form<Swagger_ServerUpdate> form = formFactory.form(Swagger_ServerUpdate.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_ServerUpdate help = form.get();
+            // Get and Validate Object
+            Swagger_ServerUpdate help  = baseFormFactory.formFromRequestWithValidation(Swagger_ServerUpdate.class);
 
             logger.debug("server_scheduleUpdate - requesting releases");
 
@@ -337,9 +335,8 @@ public class Controller_Admin extends BaseController {
                     .toCompletableFuture()
                     .get();
 
-            final Form<GitHub_Release> release_form = formFactory.form(GitHub_Release.class).bind(releases.asJson());
-            if (release_form.hasErrors()) {return externalServerError(release_form.errorsAsJson().toString());}
-            GitHub_Release release = release_form.get();
+            // Get and Validate Object
+            GitHub_Release release = baseFormFactory.formFromJsonWithValidation(GitHub_Release.class, (releases.asJson()));
 
             logger.debug("server_scheduleUpdate - got release");
 

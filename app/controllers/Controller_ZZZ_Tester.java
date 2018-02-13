@@ -14,7 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class Controller_ZZZ_Tester extends BaseController {
+public class Controller_ZZZ_Tester extends _BaseController {
 
 // LOGGER ##############################################################################################################
 

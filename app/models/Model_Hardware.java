@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClientException;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Expr;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
@@ -2426,7 +2426,7 @@ public class Model_Hardware extends NamedModel {
 
     @JsonIgnore @Transient @Override  public void check_create_permission() throws _Base_Result_Exception {
         // Only for Garfield Registration or Manual Registration
-        if (BaseController.person().has_permission(Permission.Hardware_create.name())) return;
+        if (_BaseController.person().has_permission(Permission.Hardware_create.name())) return;
         throw new Result_Error_PermissionDenied();
     }
 
@@ -2434,15 +2434,15 @@ public class Model_Hardware extends NamedModel {
         try {
 
             // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (BaseController.person().has_permission("hardware_read_" + id)) BaseController.person().valid_permission("hardware_read_" + id);
-            if (BaseController.person().has_permission(Permission.Hardware_read.name())) return;
+            if (_BaseController.person().has_permission("hardware_read_" + id)) _BaseController.person().valid_permission("hardware_read_" + id);
+            if (_BaseController.person().has_permission(Permission.Hardware_read.name())) return;
 
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
             get_project().check_read_permission();
-            BaseController.person().cache_permission("hardware_read_" + id, true);
+            _BaseController.person().cache_permission("hardware_read_" + id, true);
 
         } catch (_Base_Result_Exception e){
-            BaseController.person().cache_permission("hardware_read_" + id, false);
+            _BaseController.person().cache_permission("hardware_read_" + id, false);
             throw new Result_Error_PermissionDenied();
         }
     }
@@ -2455,15 +2455,15 @@ public class Model_Hardware extends NamedModel {
         try {
 
             // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (BaseController.person().has_permission("hardware_delete_" + id)) BaseController.person().valid_permission("hardware_delete_" + id);
-            if (BaseController.person().has_permission(Permission.Hardware_delete.name())) return;
+            if (_BaseController.person().has_permission("hardware_delete_" + id)) _BaseController.person().valid_permission("hardware_delete_" + id);
+            if (_BaseController.person().has_permission(Permission.Hardware_delete.name())) return;
 
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
             get_project().check_update_permission();
-            BaseController.person().cache_permission("hardware_delete_" + id, true);
+            _BaseController.person().cache_permission("hardware_delete_" + id, true);
 
         } catch (_Base_Result_Exception e){
-            BaseController.person().cache_permission("hardware_delete_" + id, false);
+            _BaseController.person().cache_permission("hardware_delete_" + id, false);
             throw new Result_Error_PermissionDenied();
         }
     }
@@ -2472,15 +2472,15 @@ public class Model_Hardware extends NamedModel {
         try {
 
             // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (BaseController.person().has_permission("hardware_update_" + id)) BaseController.person().valid_permission("hardware_update_" + id);
-            if (BaseController.person().has_permission(Permission.Hardware_update.name())) return;
+            if (_BaseController.person().has_permission("hardware_update_" + id)) _BaseController.person().valid_permission("hardware_update_" + id);
+            if (_BaseController.person().has_permission(Permission.Hardware_update.name())) return;
 
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
             get_project().check_update_permission();
-            BaseController.person().cache_permission("hardware_update_" + id, true);
+            _BaseController.person().cache_permission("hardware_update_" + id, true);
 
         } catch (_Base_Result_Exception e){
-            BaseController.person().cache_permission("hardware_update_" + id, false);
+            _BaseController.person().cache_permission("hardware_update_" + id, false);
             throw new Result_Error_PermissionDenied();
         }
     }
@@ -2573,6 +2573,7 @@ public class Model_Hardware extends NamedModel {
             cache.put(id, board);
         }
 
+        board.check_read_permission();
         return board;
     }
 

@@ -1,11 +1,9 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
@@ -50,7 +48,7 @@ public class Model_Processor extends NamedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Processor_create.name())) return;
+        if(_BaseController.person().has_permission(Permission.Processor_create.name())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
@@ -59,11 +57,11 @@ public class Model_Processor extends NamedModel {
     }
 
     @JsonIgnore @Transient @Override public void check_update_permission()  throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Processor_update.name())) return;
+        if(_BaseController.person().has_permission(Permission.Processor_update.name())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission()  throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.Processor_delete.name())) return;
+        if(_BaseController.person().has_permission(Permission.Processor_delete.name())) return;
         throw new Result_Error_PermissionDenied();
     }
 

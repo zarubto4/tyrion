@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -319,28 +319,28 @@ public class Model_HardwareType extends NamedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.HardwareType_create.name())) return;
+        if(_BaseController.person().has_permission(Permission.HardwareType_create.name())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {}
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.HardwareType_update.name())) return;
+        if(_BaseController.person().has_permission(Permission.HardwareType_update.name())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.HardwareType_delete.name())) return;
+        if(_BaseController.person().has_permission(Permission.HardwareType_delete.name())) return;
         throw new Result_Error_PermissionDenied();
     }
 
     @JsonIgnore @Transient public void check_register_new_device_permission() throws _Base_Result_Exception  {
-        if(BaseController.person().has_permission(Permission.HardwareType_register_new_device.name())) return;
+        if(_BaseController.person().has_permission(Permission.HardwareType_register_new_device.name())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean bootloader_edit_permission() throws _Base_Result_Exception {
         try {
-            if (BaseController.person().has_permission(Permission.HardwareType_bootloader.name())) return true;
+            if (_BaseController.person().has_permission(Permission.HardwareType_bootloader.name())) return true;
             return null;
         }catch (_Base_Result_Exception e){
             return null;
@@ -351,7 +351,7 @@ public class Model_HardwareType extends NamedModel {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean default_c_program_edit_permission() throws _Base_Result_Exception {
         try {
-            if (BaseController.person().has_permission(Permission.HardwareType_c_program_edit_permission.name())) return true;
+            if (_BaseController.person().has_permission(Permission.HardwareType_c_program_edit_permission.name())) return true;
             return null;
         }catch (_Base_Result_Exception e){
             return null;
@@ -362,7 +362,7 @@ public class Model_HardwareType extends NamedModel {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean test_c_program_edit_permission() {
         try {
-            if (BaseController.person().has_permission(Permission.HardwareType_test_c_program_edit_permission.name())) return true;
+            if (_BaseController.person().has_permission(Permission.HardwareType_test_c_program_edit_permission.name())) return true;
             return null;
         }catch (_Base_Result_Exception e){
             return null;

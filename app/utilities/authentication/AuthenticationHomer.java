@@ -1,6 +1,6 @@
 package utilities.authentication;
 
-import controllers.BaseController;
+import controllers._BaseController;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -34,6 +34,6 @@ public class AuthenticationHomer extends Security.Authenticator {
     @Override
     public Result onUnauthorized(Http.Context ctx) {
         logger.warn("onUnauthorized - authorization failed for request: {} {}", ctx.request().method(), ctx.request().path());
-        return BaseController.unauthorizedEmpty();
+        return _BaseController.unauthorizedEmpty();
     }
 }

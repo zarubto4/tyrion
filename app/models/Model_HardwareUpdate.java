@@ -3,7 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -700,7 +700,7 @@ public class Model_HardwareUpdate extends BaseModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        if(BaseController.person().has_permission(Permission.UpdateProcedure_read.name())) return;
+        if(_BaseController.person().has_permission(Permission.UpdateProcedure_read.name())) return;
         getHardware().get_project().check_read_permission();
     }
 

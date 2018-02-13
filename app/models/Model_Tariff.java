@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -214,19 +214,19 @@ public class Model_Tariff extends NamedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if (BaseController.person().has_permission(Permission.Tariff_create.name())) return;
+        if (_BaseController.person().has_permission(Permission.Tariff_create.name())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        if (BaseController.person().has_permission(Permission.Tariff_read.name())) return;
+        if (_BaseController.person().has_permission(Permission.Tariff_read.name())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if (BaseController.person().has_permission(Permission.Tariff_update.name())) return;
+        if (_BaseController.person().has_permission(Permission.Tariff_update.name())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if (BaseController.person().has_permission(Permission.Tariff_delete.name())) return;
+        if (_BaseController.person().has_permission(Permission.Tariff_delete.name())) return;
         throw new Result_Error_PermissionDenied();
     }
 

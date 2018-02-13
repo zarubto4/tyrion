@@ -21,7 +21,6 @@ import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Logger;
 import utilities.swagger.input.*;
 import utilities.swagger.output.*;
-import utilities.swagger.output.filter_results.Swagger_C_Program_List;
 import utilities.swagger.output.filter_results.Swagger_HardwareGroup_List;
 import utilities.swagger.output.filter_results.Swagger_Hardware_List;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_change_server;
@@ -34,7 +33,7 @@ import java.util.*;
 
 @Api(value = "Not Documented API - InProgress or Stuck")  // Záměrně takto zapsané - Aby ve swaggru nezdokumentované API byly v jedné sekci
 @Security.Authenticated(Authentication.class)
-public class Controller_Hardware extends BaseController {
+public class Controller_Hardware extends _BaseController {
 
 // LOGGER ##############################################################################################################
     
@@ -42,12 +41,11 @@ public class Controller_Hardware extends BaseController {
     
 ///###################################################################################################################*/
 
-
-    private FormFactory formFactory;
+    private _BaseFormFactory baseFormFactory;
 
     @Inject
-    public Controller_Hardware(FormFactory formFactory) {
-        this.formFactory = formFactory;
+    public Controller_Hardware(_BaseFormFactory formFactory) {
+        this.baseFormFactory = formFactory;
     }
 
 
@@ -81,10 +79,8 @@ public class Controller_Hardware extends BaseController {
     public Result processor_create() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Processor_New> form = formFactory.form(Swagger_Processor_New.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Processor_New help = form.get();
+            // Get and Validate Object
+            Swagger_Processor_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Processor_New.class);
 
             // Vytvářím objekt
             Model_Processor processor = new Model_Processor();
@@ -188,10 +184,8 @@ public class Controller_Hardware extends BaseController {
     public Result processor_edit(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
         try {
 
-            // Zpracování Json
-            Form<Swagger_Processor_New> form = formFactory.form(Swagger_Processor_New.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Processor_New help = form.get();
+            // Get and Validate Object
+            Swagger_Processor_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Processor_New.class);
 
             // Kontroluji validitu
             Model_Processor processor = Model_Processor.getById(processor_id);
@@ -342,10 +336,8 @@ public class Controller_Hardware extends BaseController {
     public Result producer_create() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             //Vytvářím objekt
             Model_Producer producer = new Model_Producer();
@@ -392,10 +384,8 @@ public class Controller_Hardware extends BaseController {
     public Result producer_update(String producer_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_Producer producer = Model_Producer.getById(producer_id);
@@ -538,10 +528,8 @@ public class Controller_Hardware extends BaseController {
     public Result hardwareType_create() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_HardwareType_New> form = formFactory.form(Swagger_HardwareType_New.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_HardwareType_New help = form.get();
+            // Get and Validate Object
+            Swagger_HardwareType_New help = baseFormFactory.formFromRequestWithValidation(Swagger_HardwareType_New.class);
 
             // Kontrola objektu
             Model_Producer producer = Model_Producer.getById(help.producer_id);
@@ -622,10 +610,8 @@ public class Controller_Hardware extends BaseController {
     public Result hardwareType_update(String hardware_type_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_HardwareType_New> form = formFactory.form(Swagger_HardwareType_New.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_HardwareType_New help = form.get();
+            // Get and Validate Object
+            Swagger_HardwareType_New help = baseFormFactory.formFromRequestWithValidation(Swagger_HardwareType_New.class);
 
             // Kontrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
@@ -856,10 +842,8 @@ public class Controller_Hardware extends BaseController {
     public Result hardwareBatch_create(String hardware_type_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_HardwareBatch_New> form = formFactory.form(Swagger_HardwareBatch_New.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_HardwareBatch_New help = form.get();
+            // Get and Validate Object
+            Swagger_HardwareBatch_New help = baseFormFactory.formFromRequestWithValidation(Swagger_HardwareBatch_New.class);
 
             // Kontrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
@@ -962,14 +946,11 @@ public class Controller_Hardware extends BaseController {
     public Result hardwareBatch_edit(String batch_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_HardwareBatch_New> form = formFactory.form(Swagger_HardwareBatch_New.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_HardwareBatch_New help = form.get();
+            // Get and Validate Object
+            Swagger_HardwareBatch_New help = baseFormFactory.formFromRequestWithValidation(Swagger_HardwareBatch_New.class);
 
             // Kontrola objektu
             Model_HardwareBatch batch = Model_HardwareBatch.getById(batch_id);
-         
 
             // Tvorba objektu
             batch.revision = help.revision;
@@ -1034,18 +1015,15 @@ public class Controller_Hardware extends BaseController {
     public Result bootLoader_create(@ApiParam(value = "hardware_type_id", required = true) String hardware_type_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_BootLoader_New> form = formFactory.form(Swagger_BootLoader_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_BootLoader_New help = form.get();
+            // Get and Validate Object
+            Swagger_BootLoader_New help = baseFormFactory.formFromRequestWithValidation(Swagger_BootLoader_New.class);
 
+            // Kontrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
-    
 
             String identifier = help.version_identifier.replaceAll("\\s+", "");
 
-            if (Model_BootLoader.find.query().where().eq("version_identifier", identifier).eq("hardware_type.id", hardwareType.id).findOne() != null)
-                return badRequest("Version format is not unique!");
+            if (Model_BootLoader.find.query().where().eq("version_identifier", identifier).eq("hardware_type.id", hardwareType.id).findOne() != null) return badRequest("Version format is not unique!");
 
             Model_BootLoader boot_loader = new Model_BootLoader();
             boot_loader.name = help.name;
@@ -1091,11 +1069,10 @@ public class Controller_Hardware extends BaseController {
     public Result bootLoader_update(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_BootLoader_New> form = formFactory.form(Swagger_BootLoader_New.class).bindFromRequest();
-            if (form.hasErrors())return invalidBody(form.errorsAsJson());
-            Swagger_BootLoader_New help = form.get();
+            // Get and Validate Object
+            Swagger_BootLoader_New help = baseFormFactory.formFromRequestWithValidation(Swagger_BootLoader_New.class);
 
+            // Kontrola objektu
             Model_BootLoader boot_loader = Model_BootLoader.getById(boot_loader_id);
 
             boot_loader.name = help.name;
@@ -1130,6 +1107,7 @@ public class Controller_Hardware extends BaseController {
     public Result bootLoader_delete(String boot_loader_id) {
         try {
 
+            // Kontrola objektu
             Model_BootLoader boot_loader = Model_BootLoader.getById(boot_loader_id);
 
             if (!boot_loader.hardware.isEmpty()) return badRequest("Bootloader is already used on some Board. Cannot be deleted.");
@@ -1170,11 +1148,10 @@ public class Controller_Hardware extends BaseController {
     public Result bootLoader_uploadFile(String boot_loader_id) {
         try {
 
-            // Získání JSON
-            final Form<Swagger_BASE64_FILE> form = formFactory.form(Swagger_BASE64_FILE.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_BASE64_FILE help = form.get();
+            // Get and Validate Object
+            Swagger_BASE64_FILE help = baseFormFactory.formFromRequestWithValidation(Swagger_BASE64_FILE.class);
 
+            // Kontrola objektu
             Model_BootLoader boot_loader = Model_BootLoader.getById(boot_loader_id);
             
             //  data:image/png;base64,
@@ -1235,7 +1212,6 @@ public class Controller_Hardware extends BaseController {
 
             Model_BootLoader boot_loader = Model_BootLoader.getById(boot_loader_id);
             if (boot_loader.file == null) return badRequest("Required bootloader object with file");
-
             if (boot_loader.getMainHardwareType() != null) return badRequest("Bootloader is Already Main");
 
             Model_BootLoader old_main_not_cached = Model_BootLoader.find.query().where().eq("main_hardware_type.id", boot_loader.hardware_type.id).select("id").findOne();
@@ -1297,10 +1273,8 @@ public class Controller_Hardware extends BaseController {
     public Result bootLoader_manualUpdate() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Board_Bootloader_Update > form = formFactory.form(Swagger_Board_Bootloader_Update.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Board_Bootloader_Update help = form.get();
+            // Get and Validate Object
+            Swagger_Board_Bootloader_Update help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_Bootloader_Update.class);
 
             List<Model_Hardware> boards = Model_Hardware.find.query().where().in("id", help.device_ids).findList();
             if (boards.isEmpty()) return notFound("Hardware not found");
@@ -1381,10 +1355,8 @@ public class Controller_Hardware extends BaseController {
     public Result hardware_create_manual() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Board_New_Manual> form = formFactory.form(Swagger_Board_New_Manual.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Board_New_Manual help = form.get();
+            // Get and Validate Object
+            Swagger_Board_New_Manual help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_New_Manual.class);
 
             // Kotrola objektu
             if (Model_Hardware.getByFullId(help.full_id) != null) return badRequest("Hardware is already registered");
@@ -1443,10 +1415,8 @@ public class Controller_Hardware extends BaseController {
     public Result hardware_create_garfield() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Board_New_Garfield> form = formFactory.form(Swagger_Board_New_Garfield.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Board_New_Garfield help = form.get();
+            // Get and Validate Object
+            Swagger_Board_New_Garfield help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_New_Garfield.class);
 
             // Kotrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById(help.hardware_type_id);
@@ -1644,6 +1614,9 @@ public class Controller_Hardware extends BaseController {
             if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
             Swagger_NameAndDescription help = form.get();
 
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+
             // Kotrola objektu
             Model_Hardware hardware = Model_Hardware.getById(hardware_id);
 
@@ -1697,10 +1670,8 @@ public class Controller_Hardware extends BaseController {
     public Result hardware_update_parameters( String hardware_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Board_Developer_parameters> form = formFactory.form(Swagger_Board_Developer_parameters.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Board_Developer_parameters help = form.get();
+            // Get and Validate Object
+            Swagger_Board_Developer_parameters help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_Developer_parameters.class);
 
             // Kotrola objektu
             Model_Hardware board = Model_Hardware.getById(hardware_id);
@@ -1787,10 +1758,8 @@ public class Controller_Hardware extends BaseController {
     public Result hardware_updateFirmware() {
         try {
 
-            // Zpracování Json
-            Form<Swagger_DeployFirmware> form = formFactory.form(Swagger_DeployFirmware.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_DeployFirmware help = form.get();
+            // Get and Validate Object
+            Swagger_DeployFirmware help = baseFormFactory.formFromRequestWithValidation(Swagger_DeployFirmware.class);
 
 
             List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
@@ -1875,10 +1844,8 @@ public class Controller_Hardware extends BaseController {
     public Result hardware_updateBackup() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_HardwareBackupSettings> form = formFactory.form(Swagger_HardwareBackupSettings.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_HardwareBackupSettings help = form.get();
+            // Get and Validate Object
+            Swagger_HardwareBackupSettings help = baseFormFactory.formFromRequestWithValidation(Swagger_HardwareBackupSettings.class);
 
             if (help.hardware_backup_pairs.isEmpty()) return badRequest("List is Empty");
 
@@ -2010,10 +1977,8 @@ public class Controller_Hardware extends BaseController {
     public Result hardware_getByFilter(Integer page_number) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Board_Filter> form = formFactory.form(Swagger_Board_Filter.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Board_Filter help = form.get();
+            // Get and Validate Object
+            Swagger_Board_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_Filter.class);
 
             // Tvorba parametru dotazu
             Query<Model_Hardware> query = Ebean.find(Model_Hardware.class);
@@ -2088,11 +2053,10 @@ public class Controller_Hardware extends BaseController {
     public Result hardware_uploadPicture(String hardware_registration_id) {
         try {
 
-            // Získání JSON
-            final Form<Swagger_BASE64_FILE> form = formFactory.form(Swagger_BASE64_FILE.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_BASE64_FILE help = form.get();
+            // Get and Validate Object
+            Swagger_BASE64_FILE help = baseFormFactory.formFromRequestWithValidation(Swagger_BASE64_FILE.class);
 
+            //Kontrola objektu
             Model_HardwareRegistration hardware = Model_HardwareRegistration.getById(hardware_registration_id);
             if (hardware == null) return notFound("HardwareRegistration not found");
 
@@ -2142,6 +2106,7 @@ public class Controller_Hardware extends BaseController {
     public Result hardware_generate_new_password(String hardware_id) {
         try {
 
+            //Kontrola objektu
             Model_Hardware board = Model_Hardware.getById(hardware_id);
             String mqtt_password_not_hashed = UUID.randomUUID().toString();
             String mqtt_username_not_hashed = UUID.randomUUID().toString();
@@ -2187,10 +2152,8 @@ public class Controller_Hardware extends BaseController {
     public Result hardware_redirect_to_server(String hardware_id) {
         try {
 
-            // Získání JSON
-            final Form<Swagger_Board_Server_Redirect> form = formFactory.form(Swagger_Board_Server_Redirect.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Board_Server_Redirect help = form.get();
+            // Get and Validate Object
+            Swagger_Board_Server_Redirect help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_Server_Redirect.class);
 
             System.out.println("hardware_redirect_to_server:: Příjem zprávy:: " + Json.toJson(help));
 
@@ -2251,12 +2214,10 @@ public class Controller_Hardware extends BaseController {
     public Result hardware_command_execution() {
         try {
 
-            // Získání JSON
-            final Form<Swagger_Board_Command> form = formFactory.form(Swagger_Board_Command.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Board_Command help = form.get();
+            // Get and Validate Object
+            Swagger_Board_Command help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_Command.class);
 
-
+            // Kontrola objektu
             Model_Hardware board = Model_Hardware.getById(help.hardware_id);
 
             if (help.command == null) return notFound("Board command not recognized");
@@ -2510,17 +2471,17 @@ public class Controller_Hardware extends BaseController {
     public Result hardwareRegistration_addTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
+            // Kontrola objektu
             Model_HardwareRegistration registration = Model_HardwareRegistration.getById(help.object_id);
             if (registration == null) return notFound("HardwareRegistration not found");
 
             // Kontrola oprávnění těsně před uložením
             if (!registration.edit_permission()) return forbidden();
 
+            // Add Tags
             registration.addTags(help.tags);
 
             // Vrácení objektu
@@ -2559,17 +2520,17 @@ public class Controller_Hardware extends BaseController {
     public Result hardwareRegistration_removeTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
+            // Kontrola Objektu
             Model_HardwareRegistration registration = Model_HardwareRegistration.getById(help.object_id);
             if (registration == null) return notFound("HardwareRegistration not found");
 
             // Kontrola oprávnění těsně před uložením
             if (!registration.edit_permission()) return forbidden();
 
+            // Remove Tags
             registration.removeTags(help.tags);
 
             // Vrácení objektu
@@ -2610,11 +2571,10 @@ public class Controller_Hardware extends BaseController {
     public Result hardwareGroup_create() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDesc_ProjectIdRequired> form = formFactory.form(Swagger_NameAndDesc_ProjectIdRequired.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_NameAndDesc_ProjectIdRequired help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDesc_ProjectIdRequired help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDesc_ProjectIdRequired.class);
 
+            // Kontrola objektu
             Model_Project project = Model_Project.getById(help.project_id);
 
             if (Model_HardwareGroup.find.query().where().eq("name", help.name).eq("project.id", project.id).findOne() != null) {
@@ -2665,11 +2625,10 @@ public class Controller_Hardware extends BaseController {
     public Result hardwareGroup_update(String hardware_group_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors())return invalidBody(form.errorsAsJson());
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
+            // Kontrola objektu
             Model_HardwareGroup group = Model_HardwareGroup.getById(hardware_group_id);
 
             if (Model_HardwareGroup.find.query().where().eq("name", help.name).eq("project.id", group.get_project_id()).ne("id", group.id).findOne() != null) {
@@ -2715,12 +2674,11 @@ public class Controller_Hardware extends BaseController {
     @BodyParser.Of(BodyParser.Json.class)
     public Result hardwareGroup_addHardware() {
         try {
-            
-            // Zpracování Json
-            final Form<Swagger_HardwareGroup_Edit> form = formFactory.form(Swagger_HardwareGroup_Edit.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_HardwareGroup_Edit help = form.get();
 
+            // Get and Validate Object
+            Swagger_HardwareGroup_Edit help = baseFormFactory.formFromRequestWithValidation(Swagger_HardwareGroup_Edit.class);
+
+            // Kontrola objektu
             Model_HardwareGroup group = Model_HardwareGroup.getById(help.group_id);
 
             List<UUID> inGroup = group.getHardwareIds();
@@ -2776,11 +2734,10 @@ public class Controller_Hardware extends BaseController {
     public Result hardwareGroup_removeHardware() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_HardwareGroup_Edit> form = formFactory.form(Swagger_HardwareGroup_Edit.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_HardwareGroup_Edit help = form.get();
+            // Get and Validate Object
+            Swagger_HardwareGroup_Edit help = baseFormFactory.formFromRequestWithValidation(Swagger_HardwareGroup_Edit.class);
 
+            // Kontrla objektu
             Model_HardwareGroup group = Model_HardwareGroup.getById(help.group_id);
 
             List<UUID> inGroup = group.getHardwareIds();
@@ -2865,11 +2822,8 @@ public class Controller_Hardware extends BaseController {
     @BodyParser.Of(BodyParser.Json.class)
     public Result hardwareGroup_get_filter(@ApiParam(value = "page_number is Integer. 1,2,3...n. For first call, use 1 (first page of list)", required = true)  int page_number) {
         try {
-
-            // Získání JSON
-            final Form<Swagger_HardwareGroup_Filter> form = formFactory.form(Swagger_HardwareGroup_Filter.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_HardwareGroup_Filter help = form.get();
+            // Get and Validate Object
+            Swagger_HardwareGroup_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_HardwareGroup_Filter.class);
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_HardwareGroup> query = Ebean.find(Model_HardwareGroup.class);

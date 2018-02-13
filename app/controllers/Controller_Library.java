@@ -26,7 +26,7 @@ import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
-public class Controller_Library extends BaseController {
+public class Controller_Library extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
@@ -34,10 +34,10 @@ public class Controller_Library extends BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private FormFactory formFactory;
+    private _BaseFormFactory baseFormFactory;
 
-    @Inject public Controller_Library(FormFactory formFactory) {
-        this.formFactory = formFactory;
+    @Inject public Controller_Library(_BaseFormFactory formFactory) {
+        this.baseFormFactory = formFactory;
     }
 
 // LIBRARY #############################################################################################################
@@ -71,10 +71,8 @@ public class Controller_Library extends BaseController {
     public Result library_create() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Library_New> form = formFactory.form(Swagger_Library_New.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Library_New help = form.get();
+            // Get and Validate Object
+            Swagger_Library_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Library_New.class);
 
             // Vytvářím objekt
             Model_Library library = new Model_Library();
@@ -136,10 +134,8 @@ public class Controller_Library extends BaseController {
     public Result library_clone() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Library_Copy> form = formFactory.form(Swagger_Library_Copy.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Library_Copy help = form.get();
+            // Get and Validate Object
+            Swagger_Library_Copy help = baseFormFactory.formFromRequestWithValidation(Swagger_Library_Copy.class);
 
             // Vyhledám Objekt
             Model_Library library_old = Model_Library.getById(help.library_id);
@@ -243,10 +239,8 @@ public class Controller_Library extends BaseController {
     public Result library_getByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2...n. For first call, use 1", required = false)  int page_number) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Library_Filter> form = formFactory.form(Swagger_Library_Filter.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Library_Filter help = form.get();
+            // Get and Validate Object
+            Swagger_Library_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Library_Filter.class);
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_Library> query = Ebean.find(Model_Library.class);
@@ -271,7 +265,7 @@ public class Controller_Library extends BaseController {
             }
 
             if (help.pending_library) {
-                if (!BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return forbidden();
+                if (!_BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return forbidden();
                 query.where().eq("versions.approval_state", Approval.PENDING.name());
             }
 
@@ -315,10 +309,8 @@ public class Controller_Library extends BaseController {
     public Result library_edit(String library_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Library_New> form = formFactory.form(Swagger_Library_New.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Library_New help = form.get();
+            // Get and Validate Object
+            Swagger_Library_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Library_New.class);
 
             // Vyhledání objektu
             Model_Library library = Model_Library.getById(library_id);
@@ -366,11 +358,10 @@ public class Controller_Library extends BaseController {
     public Result library_addTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
+            // Kontrola objektu
             Model_Library library = Model_Library.getById(help.object_id);
 
             library.addTags(help.tags);
@@ -411,13 +402,11 @@ public class Controller_Library extends BaseController {
     public Result library_removeTags() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Tags> form = formFactory.form(Swagger_Tags.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Tags help = form.get();
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
 
+            // Kontrola objektu
             Model_Library library = Model_Library.getById(help.object_id);
-            if (library == null) return notFound("Library not found");
 
             library.removeTags(help.tags);
 
@@ -490,10 +479,8 @@ public class Controller_Library extends BaseController {
     public Result library_version_create(String library_id) {
         try {
 
-            // Zpracování Json
-            Form<Swagger_Library_Version_New> form = formFactory.form(Swagger_Library_Version_New.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Library_Version_New help = form.get();
+            // Get and Validate Object
+            Swagger_Library_Version_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Library_Version_New.class);
 
             // Ověření objektu
             Model_Library library = Model_Library.getById(library_id);
@@ -582,10 +569,8 @@ public class Controller_Library extends BaseController {
     public Result library_version_edit(String version_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_NameAndDescription> form = formFactory.form(Swagger_NameAndDescription.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_NameAndDescription help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Ověření objektu
             Model_LibraryVersion version = Model_LibraryVersion.getById(version_id);
@@ -662,7 +647,7 @@ public class Controller_Library extends BaseController {
             Model_LibraryVersion version = Model_LibraryVersion.getById(version_id);
 
             if (Model_LibraryVersion.find.query().where().eq("approval_state", Approval.PENDING.name())
-                    .eq("library.project.participants.person.id", BaseController.personId())
+                    .eq("library.project.participants.person.id", _BaseController.personId())
                     .findList().size() > 3) {
                 // TODO Notifikace uživatelovi
                 return badRequest("You can publish only 3 Libraries. Wait until the previous ones approved by the administrator. Thanks.");
@@ -713,10 +698,8 @@ public class Controller_Library extends BaseController {
     public Result library_public_response() {
         try {
 
-            // Získání Json
-            final Form<Swagger_Community_Version_Publish_Response> form = formFactory.form(Swagger_Community_Version_Publish_Response.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Community_Version_Publish_Response help = form.get();
+            // Get and Validate Object
+            Swagger_Community_Version_Publish_Response help = baseFormFactory.formFromRequestWithValidation(Swagger_Community_Version_Publish_Response.class);
 
             // Kontrola objektu
             Model_LibraryVersion version_old = Model_LibraryVersion.getById(help.version_id);
@@ -802,7 +785,7 @@ public class Controller_Library extends BaseController {
                                 .divider()
                                 .text("We will publish it as soon as possible. We also had to make some changes to your program or rename something.")
                                 .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
-                                .text(Email.bold("Thanks!") + Email.newLine() + BaseController.person().full_name())
+                                .text(Email.bold("Thanks!") + Email.newLine() + _BaseController.person().full_name())
                                 .send(version_old.get_library().get_project().getProduct().customer, "Publishing your program" );
 
                     } catch (Exception e) {

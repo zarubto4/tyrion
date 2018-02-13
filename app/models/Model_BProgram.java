@@ -2,7 +2,7 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import org.ehcache.Cache;
@@ -251,7 +251,7 @@ public class Model_BProgram extends TaggedModel {
 
     @JsonIgnore @Override @Transient
     public void check_create_permission() throws _Base_Result_Exception {
-        if (BaseController.person().has_permission(Permission.BProgram_create.name())) return;
+        if (_BaseController.person().has_permission(Permission.BProgram_create.name())) return;
         project.check_update_permission();
     }
 
@@ -259,17 +259,17 @@ public class Model_BProgram extends TaggedModel {
     public void check_update_permission() throws _Base_Result_Exception {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("b_program_update_" + id)) BaseController.person().valid_permission("b_program_update_" + id);
-        if (BaseController.person().has_permission(Permission.BProgram_update.name())) return;
+        if (_BaseController.person().has_permission("b_program_update_" + id)) _BaseController.person().valid_permission("b_program_update_" + id);
+        if (_BaseController.person().has_permission(Permission.BProgram_update.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_BProgram.find.query().where().eq("project.participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("b_program_update_" + id, true);
+        if (Model_BProgram.find.query().where().eq("project.participants.person.id", _BaseController.personId()).eq("id", id).findCount() > 0) {
+            _BaseController.person().cache_permission("b_program_update_" + id, true);
             return;
         }
 
         // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("update_" + id, false);
+        _BaseController.person().cache_permission("update_" + id, false);
         throw new Result_Error_PermissionDenied();
     }
 
@@ -277,17 +277,17 @@ public class Model_BProgram extends TaggedModel {
     public void check_read_permission() throws _Base_Result_Exception  {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("b_program_read_" + id)) BaseController.person().valid_permission("b_program_read_" + id);
-        if (BaseController.person().has_permission(Permission.BProgram_read.name())) return;
+        if (_BaseController.person().has_permission("b_program_read_" + id)) _BaseController.person().valid_permission("b_program_read_" + id);
+        if (_BaseController.person().has_permission(Permission.BProgram_read.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_BProgram.find.query().where().eq("project.participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("b_program_read_" + id, true);
+        if (Model_BProgram.find.query().where().eq("project.participants.person.id", _BaseController.personId()).eq("id", id).findCount() > 0) {
+            _BaseController.person().cache_permission("b_program_read_" + id, true);
             return;
         }
 
         // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("read_" + id, false);
+        _BaseController.person().cache_permission("read_" + id, false);
         throw new Result_Error_PermissionDenied();
 
     }
@@ -295,17 +295,17 @@ public class Model_BProgram extends TaggedModel {
     @JsonIgnore @Override @Transient
     public void check_delete_permission() throws _Base_Result_Exception {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("b_program_delete_" + id)) BaseController.person().valid_permission("b_program_delete_" + id);
-        if (BaseController.person().has_permission(Permission.BProgram_delete.name())) return;
+        if (_BaseController.person().has_permission("b_program_delete_" + id)) _BaseController.person().valid_permission("b_program_delete_" + id);
+        if (_BaseController.person().has_permission(Permission.BProgram_delete.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_BProgram.find.query().where().eq("project.participants.person.id", BaseController.personId()).eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("b_program_delete_" + id, true);
+        if (Model_BProgram.find.query().where().eq("project.participants.person.id", _BaseController.personId()).eq("id", id).findCount() > 0) {
+            _BaseController.person().cache_permission("b_program_delete_" + id, true);
             return;
         }
 
         // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("b_program_delete_" + id, false);
+        _BaseController.person().cache_permission("b_program_delete_" + id, false);
         throw new Result_Error_PermissionDenied();
      }
 

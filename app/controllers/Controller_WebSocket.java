@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class Controller_WebSocket extends BaseController {
+public class Controller_WebSocket extends _BaseController {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 

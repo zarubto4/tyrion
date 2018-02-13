@@ -1,21 +1,15 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.Approval;
-import utilities.enums.ProgramType;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
-import utilities.model.NamedModel;
 import utilities.model.VersionModel;
 import utilities.models_update_echo.EchoHandler;
 import websocket.messages.tyrion_with_becki.WSM_Echo;

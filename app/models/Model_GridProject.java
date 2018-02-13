@@ -2,7 +2,7 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.BaseController;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -188,55 +188,55 @@ public class Model_GridProject extends TaggedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if (BaseController.person().has_permission(Permission.GridProject_create.name())) return;
+        if (_BaseController.person().has_permission(Permission.GridProject_create.name())) return;
         project.check_update_permission();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("grid_project_update_" + id)) BaseController.person().valid_permission("grid_project_update_" + id);
-        if (BaseController.person().has_permission(Permission.GridProject_update.name())) return;
+        if (_BaseController.person().has_permission("grid_project_update_" + id)) _BaseController.person().valid_permission("grid_project_update_" + id);
+        if (_BaseController.person().has_permission(Permission.GridProject_update.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_GridProject.find.query().where().where().eq("project.participants.person.id", BaseController.personId()).where().eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("grid_project_update_" + id, true);
+        if ( Model_GridProject.find.query().where().where().eq("project.participants.person.id", _BaseController.personId()).where().eq("id", id).findCount() > 0) {
+            _BaseController.person().cache_permission("grid_project_update_" + id, true);
             return;
         }
 
         // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("grid_project_update_" + id, false);
+        _BaseController.person().cache_permission("grid_project_update_" + id, false);
         throw new Result_Error_PermissionDenied();
 
     }
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("grid_project_read_" + id)) BaseController.person().valid_permission("grid_project_read_" + id);
-        if (BaseController.person().has_permission(Permission.GridProject_read.name())) return;
+        if (_BaseController.person().has_permission("grid_project_read_" + id)) _BaseController.person().valid_permission("grid_project_read_" + id);
+        if (_BaseController.person().has_permission(Permission.GridProject_read.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_GridProject.find.query().where().where().eq("project.participants.person.id", BaseController.personId()).where().eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("grid_project_read_" + id, true);
+        if ( Model_GridProject.find.query().where().where().eq("project.participants.person.id", _BaseController.personId()).where().eq("id", id).findCount() > 0) {
+            _BaseController.person().cache_permission("grid_project_read_" + id, true);
             return;
         }
 
         // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("grid_project_read_" + id, false);
+        _BaseController.person().cache_permission("grid_project_read_" + id, false);
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (BaseController.person().has_permission("grid_project_delete_" + id)) BaseController.person().valid_permission("grid_project_delete_" + id);
-        if (BaseController.person().has_permission(Permission.GridProject_delete.name())) return;
+        if (_BaseController.person().has_permission("grid_project_delete_" + id)) _BaseController.person().valid_permission("grid_project_delete_" + id);
+        if (_BaseController.person().has_permission(Permission.GridProject_delete.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_GridProject.find.query().where().where().eq("project.participants.person.id", BaseController.personId()).where().eq("id", id).findCount() > 0) {
-            BaseController.person().cache_permission("grid_project_delete_" + id, true);
+        if ( Model_GridProject.find.query().where().where().eq("project.participants.person.id", _BaseController.personId()).where().eq("id", id).findCount() > 0) {
+            _BaseController.person().cache_permission("grid_project_delete_" + id, true);
             return;
         }
 
         // Přidávám do listu false a vracím false
-        BaseController.person().cache_permission("grid_project_delete_" + id, false);
+        _BaseController.person().cache_permission("grid_project_delete_" + id, false);
         throw new Result_Error_PermissionDenied();
 
     }
