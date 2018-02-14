@@ -10,7 +10,7 @@ import java.util.List;
 
 @ApiModel(description = "",
     value = "ActualizationProcedure_List")
-public class Swagger_ActualizationProcedure_List extends Filter_Common {
+public class Swagger_ActualizationProcedure_List extends _Swagger_Filter_Common {
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
 

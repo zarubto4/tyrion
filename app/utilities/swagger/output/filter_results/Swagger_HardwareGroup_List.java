@@ -4,14 +4,13 @@ import io.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.Model_HardwareGroup;
-import models.Model_HomerServer;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @ApiModel(description = "Individual Hardware Group List",
         value = "HardwareGroup_List")
-public class Swagger_HardwareGroup_List extends Filter_Common {
+public class Swagger_HardwareGroup_List extends _Swagger_Filter_Common {
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
 

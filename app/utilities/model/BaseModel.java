@@ -61,7 +61,7 @@ public abstract class BaseModel extends Model {
     /**
      * Converts this model to JSON and than stringify
      * @return string from JSON representation
-     */
+     *
     public String string() {
         return json().toString();
     }

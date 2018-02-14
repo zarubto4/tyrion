@@ -10,9 +10,9 @@ import java.util.List;
 
 @ApiModel(description = "List of instances by Filter Query",
         value = "Instance_List")
-public class Swagger_Instance_List extends Filter_Common {
+public class Swagger_Instance_List extends _Swagger_Filter_Common {
 
-    /* Content--------------------------------------------------------------------------------------------------------------*/
+/* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
     public List<Model_Instance> content = new ArrayList<>();

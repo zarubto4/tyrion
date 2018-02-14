@@ -10,26 +10,13 @@ import java.util.List;
 
 @ApiModel(description = "Individual Library List",
         value = "Library_List")
-public class Swagger_Library_List {
+public class Swagger_Library_List extends _Swagger_Filter_Common{
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
     public List<Model_Library> content = new ArrayList<>();
 
-/* Basic Filter Value --------------------------------------------------------------------------------------------------*/
-
-    @ApiModelProperty(required = true, readOnly = true, value = "First value position from all subjects. Minimum is 0.")
-    public int from;
-
-    @ApiModelProperty(required = true, readOnly = true, value = "Minimum is \"from\" Maximum is \"total\"")
-    public int to;
-
-    @ApiModelProperty(required = true, readOnly = true, value = "Total subjects")
-    public int total;
-
-    @ApiModelProperty(required = true, readOnly = true, value = "Numbers of pages, which you can call")
-    public int pages;
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 

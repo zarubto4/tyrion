@@ -10,7 +10,7 @@ import java.util.List;
 
 @ApiModel(description = "Individual B_Program List",
         value = "B_Program_List")
-public class Swagger_B_Program_List extends Filter_Common {
+public class Swagger_B_Program_List extends _Swagger_Filter_Common {
 
 
 /* Content--------------------------------------------------------------------------------------------------------------*/

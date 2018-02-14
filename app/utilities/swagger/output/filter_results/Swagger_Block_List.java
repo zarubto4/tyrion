@@ -11,8 +11,7 @@ import java.util.List;
 
 @ApiModel(description = "Individual Blocko Block List",
         value = "Blocko_Block_List")
-public class Swagger_Block_List extends Filter_Common {
-
+public class Swagger_Block_List extends _Swagger_Filter_Common {
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
 

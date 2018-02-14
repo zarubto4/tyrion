@@ -12,7 +12,7 @@ import java.util.List;
 
 @ApiModel(description = "Individual Notification List",
           value = "Notification_List")
-public class Swagger_Notification_List extends Filter_Common {
+public class Swagger_Notification_List extends _Swagger_Filter_Common {
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
 

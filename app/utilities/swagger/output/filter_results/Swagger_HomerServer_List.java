@@ -4,14 +4,13 @@ import io.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.Model_HomerServer;
-import models.Model_Library;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @ApiModel(description = "Individual Homer Server List",
         value = "HomerServer_List")
-public class Swagger_HomerServer_List extends Filter_Common {
+public class Swagger_HomerServer_List extends _Swagger_Filter_Common {
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
 

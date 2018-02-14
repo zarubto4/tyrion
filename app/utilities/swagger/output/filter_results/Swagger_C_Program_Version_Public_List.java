@@ -3,18 +3,16 @@ package utilities.swagger.output.filter_results;
 import io.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.Model_CProgram;
 import models.Model_CProgramVersion;
-import utilities.swagger.output.Swagger_C_Program_Version;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @ApiModel(description = "Json Model for Public Version of C_program List",
         value = "C_Program_Version_Public_List")
-public class Swagger_C_Program_Version_Public_List extends Filter_Common{
+public class Swagger_C_Program_Version_Public_List extends _Swagger_Filter_Common {
 
-    /* Content--------------------------------------------------------------------------------------------------------------*/
+/* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
     public List<Model_CProgramVersion> content = new ArrayList<>();

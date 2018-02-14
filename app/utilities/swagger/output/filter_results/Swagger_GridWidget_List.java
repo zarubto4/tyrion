@@ -10,8 +10,7 @@ import java.util.List;
 
 @ApiModel(description = "Individual GridWidget List",
         value = "GridWidget_List")
-public class Swagger_GridWidget_List extends Filter_Common{
-
+public class Swagger_GridWidget_List extends _Swagger_Filter_Common {
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
 

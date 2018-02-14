@@ -10,13 +10,12 @@ import java.util.List;
 
 @ApiModel(description = "Individual C_Program List",
         value = "C_Program_List")
-public class Swagger_C_Program_List extends Filter_Common{
+public class Swagger_C_Program_List extends _Swagger_Filter_Common {
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
     public List<Model_CProgram> content = new ArrayList<>();
-
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 

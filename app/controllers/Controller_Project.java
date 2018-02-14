@@ -639,7 +639,9 @@ public class Controller_Project extends _BaseController {
 
             logger.debug("registering new device with hash: {}", help.registration_hash);
 
-            // Kotrola objektu - NAjdu v Databázi
+            // First - We have to find object in central Hardware Registration Atuhority
+            // Second Make a copy to local database for actual Hardware and if hardware is not active in any other project, automatically activated that
+
             Model_Hardware hardware = Model_Hardware.find.query().where().eq("registration_hash", help.registration_hash).findOne();
             if (hardware == null) return notFound("Hardware not found");
             if (hardware.registration != null) return badRequest("Board is already registered");

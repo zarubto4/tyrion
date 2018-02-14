@@ -10,13 +10,12 @@ import java.util.List;
 
 @ApiModel(description = "Individual Hardware List",
           value = "Hardware_List")
-public class Swagger_Hardware_List extends Filter_Common {
+public class Swagger_Hardware_List extends _Swagger_Filter_Common {
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
     public List<Model_Hardware> content = new ArrayList<>();
-
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
