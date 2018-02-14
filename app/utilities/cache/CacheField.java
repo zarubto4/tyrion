@@ -14,10 +14,10 @@ public @interface CacheField {
     /**
      * Shortcuts for TimeToIdle
      */
-    public static Integer DayCacheConstant = 60 * 60 * 24;
-    public static Integer HalfDayCacheConstant = 60 * 60 * 12;
-    public static Integer HourCacheConstant = 60 * 60;
-    public static Integer ThirtyMinutesCacheConstant = 60 * 30;
+    public static final long DayCacheConstant = 60 * 60 * 24;
+    public static final long HalfDayCacheConstant = 60 * 60 * 12;
+    public static final long HourCacheConstant = 60 * 60;
+    public static final long ThirtyMinutesCacheConstant = 60 * 30;
 
 
     /**

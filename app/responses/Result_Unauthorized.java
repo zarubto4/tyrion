@@ -4,15 +4,22 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(value = "Unauthorized")
-public class Result_Unauthorized {
+public class Result_Unauthorized extends _Response_Interface {
 
     @ApiModelProperty(value = "state", allowableValues = "unauthorized", required = true, readOnly = true)
-    public String state = "unauthorized";
+    public String state() {
+        return "unauthorized";
+    }
 
-    @ApiModelProperty(value = "code", allowableValues = "401", required = true, readOnly = true)
-    public Integer code = 401;
+    @ApiModelProperty(value = "code", allowableValues = "403", required = true, readOnly = true)
+    public Integer code() {
+        return 401;
+    }
 
-    @ApiModelProperty(value = "Unauthorized access - please log in", required = true, readOnly = true)
-    public String message = "Unauthorized access - please log in";
+    @ApiModelProperty(value = "Can be null! If not, you can show that to User", required = false, readOnly = true)
+    public String message() {
+        if(message != null) return message;
+        return "Unauthorized access - please log in";
+    }
 
 }

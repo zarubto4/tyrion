@@ -204,7 +204,8 @@ PUT       /project/tags/add                                             controll
 PUT       /project/tags/remove                                          controllers.Controller_Project.project_removeTags
 PUT       /project/hardware/add                                         controllers.Controller_Project.project_addHardware
 PUT       /project/hardware/remove/:registration_id                     controllers.Controller_Project.project_removeHardware(registration_id)
-PUT       /project/hardware/freze/:registration_id                      controllers.Controller_Project.project_frezeHardware(registration_id)
+PUT       /project/hardware/activate/:registration_id                   controllers.Controller_Project.project_deactiveHardware(registration_id)
+PUT       /project/hardware/deactive/:registration_id                   controllers.Controller_Project.project_activeHardware(registration_id)
 
 #Program
 POST      /b_program/version/:b_program_id                              controllers.Controller_Blocko.bProgramVersion_create(b_program_id)
@@ -227,7 +228,6 @@ PUT       /instance/:instance_id                                        controll
 PUT       /instance/tags/add                                            controllers.Controller_Blocko.instance_addTags
 PUT       /instance/tags/remove                                         controllers.Controller_Blocko.instance_removeTags
 
-GET       /instance/project/:project_id                                 controllers.Controller_Blocko.get_b_program_instance_under_project(project_id)
 PUT       /instance/filter/:page_number                                 controllers.Controller_Blocko.get_b_program_instance_by_filter(page_number:Int)
 PUT       /instance/grid_app                                            controllers.Controller_Blocko.instance_change_settings_grid_App()
 
@@ -394,7 +394,7 @@ PUT       /hardware_registration/tags/remove                            controll
 POST      /hardware_group                                               controllers.Controller_Hardware.hardwareGroup_create()
 PUT       /hardware_group/hardware_synnchronize                         controllers.Controller_Hardware.board_group_update_device_list()
 PUT       /hardware_group/:group_id                                     controllers.Controller_Hardware.hardwareGroup_update(group_id)
-GET       /hardware_group/project/:project_id                           controllers.Controller_Hardware.hardwareGroup_get_filter(page_number: Int)
+GET       /hardware_group/filter/:page_number                           controllers.Controller_Hardware.hardwareGroup_get_filter(page_number: Int)
 GET       /hardware_group/individual/:group_id                          controllers.Controller_Hardware.hardwareGroup_get(group_id)
 DELETE    /hardware_group/:group_id                                     controllers.Controller_Hardware.hardwareGroup_delete(group_id)
 

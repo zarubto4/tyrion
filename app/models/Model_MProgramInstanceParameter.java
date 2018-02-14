@@ -17,8 +17,6 @@ import utilities.enums.GridAccess;
 import utilities.enums.ServerMode;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_Unauthorized;
-import utilities.errors.Exceptions.Tyrion_Exp_ForbidenPermission;
-import utilities.errors.Exceptions.Tyrion_Exp_ObjectNotValidAnymore;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -280,25 +278,29 @@ public class Model_MProgramInstanceParameter extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public boolean read_permission() {
 
-        // check permission if program is in instance
-        if (get_instance() != null) {
-            return  get_instance().read_permission();
-        }
-
-        // if not (for programers of blocko versions)
-        grid_program_version.get_grid_program().check_read_permission();
+    @JsonIgnore @Override @Transient public void check_create_permission() throws _Base_Result_Exception  {
+        if(_BaseController.person().has_permission(Permission.MProgramInstance_create.name())) return;
+        get_instance().check_update_permission();
     }
 
-    @JsonProperty @ApiModelProperty(required = true)
-    public boolean edit_permission() {
-        // check permission if program is in instance
-        return get_instance() != null && get_instance().edit_permission();
+    @JsonIgnore @Override  @Transient public void check_read_permission() throws _Base_Result_Exception  {
+        if(_BaseController.person().has_permission(Permission.MProgramInstance_read.name())) return;
+        get_instance().check_update_permission();
+
     }
 
-    public enum Permission { MProgramInstance_create, MProgramInstance_update, MProgramInstance__read, MProgramInstance__delete }
+    @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.MProgramInstance_update.name())) return;
+        get_instance().check_update_permission();
+    }
+
+    @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.MProgramInstance_delete.name())) return;
+        get_instance().check_update_permission();
+    }
+
+    public enum Permission { MProgramInstance_create, MProgramInstance_update, MProgramInstance_read, MProgramInstance_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

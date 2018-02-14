@@ -4,21 +4,28 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(value="Invalid Body", description="Provided body is not valid. Something is missing or some field input is not allowed.")
-public class Result_InvalidBody {
+@ApiModel(value="Result_Invalid_Body", description="Provided body is not valid. Something is missing or some field input is not allowed.")
+public class Result_InvalidBody extends _Response_Interface {
 
     public Result_InvalidBody(JsonNode errors) {
         this.exception = errors;
     }
 
-    @ApiModelProperty(value = "state", required = true, readOnly = true)
-    public String state = "invalid body";
+    @ApiModelProperty(value = "state", allowableValues = "invalid_body", required = true, readOnly = true)
+    public String state() {
+        return "invalid_body";
+    }
 
-    @ApiModelProperty(value = "code", allowableValues = "400", required = true, readOnly = true)
-    public Integer code = 400;
+    @ApiModelProperty(value = "code", allowableValues = "403", required = true, readOnly = true)
+    public Integer code() {
+        return 400;
+    }
 
-    @ApiModelProperty(value = "message", required = true, readOnly = true)
-    public String message = "Provided body is invalid. If it is possible, the reason will be returned in exception field.";
+    @ApiModelProperty(value = "Can be null! If not, you can show that to User", required = false, readOnly = true)
+    public String message() {
+        return "Invalid body. Exception bellow";
+    }
+
 
     @ApiModelProperty(required = true, readOnly = true)
     public JsonNode exception;

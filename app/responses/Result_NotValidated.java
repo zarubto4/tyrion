@@ -4,8 +4,8 @@ package responses;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(value="Not Validated", description="When account is not validated.")
-public class Result_NotValidated {
+@ApiModel(value="Result_Not_Validated", description="When account is not validated.")
+public class Result_NotValidated extends _Response_Interface {
 
     public Result_NotValidated() {}
 
@@ -13,13 +13,20 @@ public class Result_NotValidated {
         this.message = message;
     }
 
-    @ApiModelProperty(value = "state", allowableValues = "error", required = true, readOnly = true)
-    public String state = "error";
+    @ApiModelProperty(value = "state", allowableValues = "error_person_account_is_not_validated", required = true, readOnly = true)
+    public String state() {
+        return "error_person_account_is_not_validated";
+    }
 
-    @ApiModelProperty(value = "code", allowableValues = "400", required = true, readOnly = true)
-    public Integer code = 705;
+    @ApiModelProperty(value = "code", allowableValues = "705", required = true, readOnly = true)
+    public Integer code() {
+        return 705;
+    }
 
-    @ApiModelProperty(value = "message", required = true, readOnly = true)
-    public String message = "Your account is not validated.";
+    @ApiModelProperty(value = "Can be null! If not, you can show that to User", required = false, readOnly = true)
+    public String message() {
+        if(message != null) return message;
+        return "Your account is not validated";
+    }
 
 }

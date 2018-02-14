@@ -623,7 +623,7 @@ public class Controller_Project extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 201, message = "Ok Result",                 response = Model_HardwareRegistration.class),
+            @ApiResponse(code = 201, message = "Ok Result",                 response = Model_Hardware.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
