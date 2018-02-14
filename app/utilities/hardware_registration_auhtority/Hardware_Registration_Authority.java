@@ -17,12 +17,10 @@ import org.bson.Document;
 import play.libs.Json;
 import play.mvc.Result;
 import play.mvc.Security;
-import responses.Result_Forbidden;
-import responses.Result_InternalServerError;
-import responses.Result_Ok;
-import responses.Result_Unauthorized;
+import responses.*;
 import utilities.authentication.Authentication;
 import utilities.enums.Enum_Terminal_Color;
+import utilities.errors.Exceptions.Result_Error_Registration_Fail;
 import utilities.hardware_registration_auhtority.document_objects.DM_Board_Registration_Central_Authority;
 import utilities.logger.Logger;
 
@@ -61,25 +59,62 @@ public class Hardware_Registration_Authority extends _BaseController {
     public Result synchronize_script() {
         try {
 
+            if(!person().is_admin()) return forbidden();
+
             Batch_Registration_Authority.synchronize();
 
             synchronize_mac();
             synchronize_hardware();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
         }
     }
 
-    public static boolean check_if_value_is_registered(String value, String type) {
+    /*
+        Slouží pro Administrátory k získání registračního klíče podle ID uživatele
+     */
+    @ApiOperation(value = "get Board registration hash for Byzance Administrators",
+            tags = { "Garfield"},
+            notes = "",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = DM_Board_Registration_Central_Authority.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result get_registration_hardware_from_central_authority(String full_id) {
+        try {
 
-        // type == "full_id" or "mac_address"
+            if(!person().is_admin()) return forbidden();
+
+            BasicDBObject whereQuery_board_id = new BasicDBObject();
+            whereQuery_board_id.put(Enum_Hardware_Registration_DB_Key.full_id.name(), full_id);
+            Document device = collection.find(whereQuery_board_id).first();
+
+            String string_json = device.toJson();
+            ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
+
+            DM_Board_Registration_Central_Authority help = Json.fromJson(json, DM_Board_Registration_Central_Authority.class);
+
+            return ok(Json.toJson(help));
+
+        } catch (Exception e) {
+            return internalServerError(e);
+        }
+    }
+
+    public static boolean check_if_value_is_registered(String value, Enum_Hardware_Registration_DB_Key type) {
 
         // Kontroluji Device ID
         BasicDBObject whereQuery_board_id = new BasicDBObject();
-        whereQuery_board_id.put( type ,value);
+        whereQuery_board_id.put(type.name() ,value);
         Document device_id_already_registered = collection.find(whereQuery_board_id).first();
 
         if (device_id_already_registered != null) {
@@ -95,7 +130,7 @@ public class Hardware_Registration_Authority extends _BaseController {
         logger.info("Registration new Device " + hardware.id);
 
         // Kontroluji Device ID
-        if (check_if_value_is_registered(hardware.full_id,"full_id")) {
+        if (check_if_value_is_registered(hardware.full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
             logger.error("Hardware_Registration_Authority:: check_if_value_is_registered:: Collection name:: " + DM_Board_Registration_Central_Authority.COLLECTION_NAME);
             logger.error("Hardware_Registration_Authority:: check_if_value_is_registered:: In Database is registered device with Same device ID!");
             synchronize_mac();
@@ -105,7 +140,7 @@ public class Hardware_Registration_Authority extends _BaseController {
 
         // Kontroluji Mac Addresu
         BasicDBObject whereQuery_mac = new BasicDBObject();
-        whereQuery_mac.put("mac_address", hardware.id);
+        whereQuery_mac.put(Enum_Hardware_Registration_DB_Key.mac_address.name(), hardware.id);
         Document mac_address_already_registered = collection.find(whereQuery_mac).first();
 
         if (mac_address_already_registered != null) {
@@ -203,14 +238,69 @@ public class Hardware_Registration_Authority extends _BaseController {
         }
     }
 
+
+    public static Model_Hardware make_copy_of_hardware_to_local_database(String registration_hash) throws java.io.IOException {
+
+        BasicDBObject whereQuery_board_id = new BasicDBObject();
+        whereQuery_board_id.put("registration_hash", registration_hash);
+        Document device = collection.find(whereQuery_board_id).first();
+
+        String string_json = device.toJson();
+        ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
+
+        DM_Board_Registration_Central_Authority help = Json.fromJson(json, DM_Board_Registration_Central_Authority.class);
+
+        // Nejdříve Najdeme jestli existuje typ desky - Ten se porovnává podle Target Name
+        // a revision name. Ty musí!!! být naprosto shodné!!!
+        Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("compiler_target_name", help.hardware_type_compiler_target_name).findOne();
+
+        if (hardwareType == null) {
+            String error_description ="Synchronize_hardware - Something is wrong! System try to register Byzance-hardware to local database, but " +
+                    ". \"compiler_target_name:\" " + help.hardware_type_compiler_target_name +
+                    " not find in Database - Please Create it! Please Contact Technical Support!";
+            logger.error(error_description);
+            logger.error("synchronize_hardware - synchronization is canceled!");
+            throw new Result_Error_Registration_Fail(error_description);
+        }
+
+        Model_HardwareBatch batch = Model_HardwareBatch.find.query().where().eq("hardware_type.id", hardwareType.id).eq("revision", help.revision).eq("production_batch", help.production_batch).findOne();
+        if (batch == null) {
+            String error_description = "Synchronize_hardware - Something is wrong! System try to register Byzance-hardware to local database, but " +
+                    " batch with required parameters \"revision:\" " + help.revision +
+                    " \"production_batch:\"" + help.production_batch +
+                    " for hardware type " + hardwareType.name +
+                    " not find in Database - Please Create it! Before. Mac Address will be synchronize after. Please Contact Technical Support!";
+
+            logger.error(error_description);
+            logger.error("synchronize_hardware - synchronization is canceled!");
+            throw new Result_Error_Registration_Fail(error_description);
+        }
+
+        Model_Hardware hardware = new Model_Hardware();
+        hardware.full_id = help.full_id;
+        hardware.mac_address = help.mac_address;
+        hardware.registration_hash = help.hash_for_adding;
+        hardware.name = help.personal_name;
+        hardware.mqtt_username = help.mqtt_username;
+        hardware.mqtt_password = help.mqtt_password;
+        hardware.is_active = false;
+        hardware.created = new Date(new Long(help.created));
+        hardware.hardware_type = hardwareType;
+        hardware.batch_id = batch.id.toString();
+        hardware.save();
+
+        return hardware;
+    }
+
     /*
         Synchronizace s centrální autoritou je provedena vždy na začátku spuštní serveru a také ji lze aktivovat manuálně
         pomocí URL GET z routru. V rámci časových úspor byla zvolena strategie kdy v každé databázi je nutné vytvořit typ desky a výrobní kolekci, které mají shodné názvy,
         (Tím je zamezeno synchronizaci, když o ní člověk nestojí) - Demodata mohou být snadnou alternativou, jak vytvořit výchozí pozici a synchronizaci.
+        Synchronizace slouží jen ke kontrole zda sedí všechmy Model_HardwareType a Model_HardwareBatch
      */
     public static void synchronize_hardware() {
 
-        logger.warn(Enum_Terminal_Color.ANSI_YELLOW + "synchronize_hardware - synchronize!" + Enum_Terminal_Color.ANSI_RESET);
+        logger.warn(Enum_Terminal_Color.ANSI_YELLOW + "synchronize_hardware: start synchronize" + Enum_Terminal_Color.ANSI_RESET);
 
         MongoCursor<Document> cursor = collection.find().iterator();
         try {
@@ -222,10 +312,7 @@ public class Hardware_Registration_Authority extends _BaseController {
 
                     DM_Board_Registration_Central_Authority help = Json.fromJson(json, DM_Board_Registration_Central_Authority.class);
 
-                    Model_Hardware hardware = Model_Hardware.getByFullId(help.full_id);
-                    if (hardware != null) {
-                        continue;
-                    }
+
 
                     logger.info("synchronize_hardware - there is hardware, which is not registered in local database!" + string_json);
 
@@ -255,27 +342,14 @@ public class Hardware_Registration_Authority extends _BaseController {
                         break;
                     }
 
-                    hardware = new Model_Hardware();
-                    hardware.full_id = help.full_id;
-                    hardware.mac_address = help.mac_address;
-                    hardware.registration_hash = help.hash_for_adding;
-                    hardware.name = help.personal_name;
-                    hardware.mqtt_username = help.mqtt_username;
-                    hardware.mqtt_password = help.mqtt_password;
-                    hardware.is_active = false;
-                    hardware.created = new Date(new Long(help.created));
-                    hardware.hardware_type = hardwareType;
-                    hardware.batch_id = batch.id.toString();
-                    hardware.save();
-
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.internalServerError(e);
                 }
             }
 
             logger.warn(Enum_Terminal_Color.ANSI_YELLOW + "synchronize_hardware -  synchronization is done!" + Enum_Terminal_Color.ANSI_RESET);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.internalServerError(e);
         } finally {
             cursor.close();
         }

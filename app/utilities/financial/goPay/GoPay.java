@@ -660,7 +660,7 @@ public class GoPay extends _BaseController {
             Swagger_Payment_Refund help = form.get();
 
             // Finding in DB
-            Model_Invoice invoice = Model_Invoice.get_byId(invoice_id);
+            Model_Invoice invoice = Model_Invoice.getById(invoice_id);
             if (invoice == null) return notFound("Invoice not found");
 
             invoice.getProduct().archiveEvent("Refund payment", "Request for refund for this reason: " + help.reason, null);
@@ -669,7 +669,7 @@ public class GoPay extends _BaseController {
             else if (help.amount != null) refundPayment(invoice, (long) (help.amount * 1000));
             else return badRequest("Set 'whole' parameter to true or specify amount.");
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);

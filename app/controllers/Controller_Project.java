@@ -14,6 +14,8 @@ import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.errors.Exceptions.Result_Error_InvalidBody;
+import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
+import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
 import utilities.logger.Logger;
 import utilities.swagger.input.*;
 
@@ -642,24 +644,36 @@ public class Controller_Project extends _BaseController {
             // First - We have to find object in central Hardware Registration Atuhority
             // Second Make a copy to local database for actual Hardware and if hardware is not active in any other project, automatically activated that
 
-            Model_Hardware hardware = Model_Hardware.find.query().where().eq("registration_hash", help.registration_hash).findOne();
-            if (hardware == null) return notFound("Hardware not found");
-            if (hardware.registration != null) return badRequest("Board is already registered");
-
-            // Kotrola objektu
             Model_Project project = Model_Project.getById(help.project_id);
+            project.check_update_permission();
 
+            // Hash not exist
+           if(!Hardware_Registration_Authority.check_if_value_is_registered(help.registration_hash, Enum_Hardware_Registration_DB_Key.registration_hash)){
+               return notFound("Hash not found.");
+           }
+
+            // Copy is done - Hardware is saved in database, but without any connections for projec, groups etc..
+            Model_Hardware hardware = Hardware_Registration_Authority.make_copy_of_hardware_to_local_database(help.registration_hash);
             hardware.project = project;
 
+            // Set name if help contains it
+            if(help.name != null && !help.name.equals("")) hardware.name = help.name;
+
+            // Set group if help contains it
             if (help.group_id != null) {
                 Model_HardwareGroup group = Model_HardwareGroup.getById(help.group_id);
+                group.check_update_permission();
+
                 group.hardware.add(hardware);
 
                 hardware.hardware_groups.add(group);
                 hardware.cache_hardware_groups_ids.add(group.id);
             }
 
+            // Update
             hardware.update();
+
+            // Set hardware as Dominant if is not dominant in another project
 
             project.cache_hardware_ids.add(hardware.id);
 

@@ -1,28 +1,32 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.github.scribejava.core.model.*;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.*;
-import play.data.Form;
-import play.data.FormFactory;
+import play.data.DynamicForm;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.*;
 import responses.*;
+import utilities.Server;
 import utilities.authentication.Authentication;
+import utilities.authentication.Social;
 import utilities.enums.TokenType;
 import utilities.enums.PlatformAccess;
 import utilities.financial.FinancialPermission;
 import utilities.swagger.input.Swagger_EmailAndPassword;
-import utilities.swagger.input.Swagger_Project_New;
 import utilities.swagger.input.Swagger_SocialNetwork_Login;
 import utilities.swagger.output.Swagger_Blocko_Token_validation_result;
 import utilities.swagger.output.Swagger_Login_Token;
 import utilities.swagger.output.Swagger_Person_All_Details;
+import utilities.swagger.output.Swagger_SocialNetwork_Result;
 import utilities.threads.Check_Online_Status_after_user_login;
 import utilities.logger.Logger;
 import utilities.swagger.input.Swagger_Blocko_Token_validation_request;
 import websocket.interfaces.WS_Portal;
+import com.github.scribejava.core.oauth.OAuthService;
 
 import java.util.*;
 
@@ -276,6 +280,7 @@ public class Controller_Security extends _BaseController {
 // EXTERNAL LOGIN ######################################################################################################
 
 
+    /**
     // Metoda slouží pro příjem autentifikačních klíču ze sociálních sítí když se přihlásí uživatel.
     // Taktéž spojuje přihlášené účty pod jednu cvirtuální Person - aby v systému bylo jendotné rozpoznávání.
     // V nějaké fázy je nutné mít mail - pokud ho nedostaneme od sociální služby - mělo by někde v kodu být upozornění pro frontEnd
@@ -286,47 +291,51 @@ public class Controller_Security extends _BaseController {
 
             logger.debug("GET_github_oauth:: " + url);
 
-            Map<String, String> map = UtilTools.getMap_From_query(request().queryString().entrySet());
+            DynamicForm requestData = baseFormFactory.form().bindFromRequest();
 
-            if (map.containsKey("error")) {
+            if (requestData.get("error") != null) {
 
-                logger.warn("GET_github_oauth::  contains Error: {} " , map.get("error"));
+                logger.warn("GET_github_oauth::  contains Error: {} " , requestData.get("error"));
 
-                if (map.containsKey("state")) {
+                if (requestData.get("state") != null) {
 
-                    Model_AuthorizationToken floatingPersonToken = Model_AuthorizationToken.find.query().where().eq("provider_key", map.get("state")).findOne();
-                    floatingPersonToken.delete();
+                    Model_AuthorizationToken floatingPersonToken = Model_AuthorizationToken.find.query().where().eq("provider_key", requestData.get("state")).findOne();
 
-                    return redirect(floatingPersonToken.return_url.replace("[_status_]", "fail"));
+                    if(floatingPersonToken != null) {
+                        floatingPersonToken.delete();
+                        return redirect(floatingPersonToken.return_url.replace("[_status_]", "fail"));
+                    }else {
+                        return redirect(Server.becki_mainUrl);
+                    }
 
                 }
             }
 
-            String state = map.get("state").replace("[", "").replace("]", "");
-            String code = map.get("code").replace("[", "").replace("]", "");
+            String state = requestData.get("state").replace("[", "").replace("]", "");
+            String code = requestData.get("code").replace("[", "").replace("]", "");
 
 
             logger.debug("GET_github_oauth:: state" + state);
             logger.debug("GET_github_oauth:: code" + code);
 
+
             Model_AuthorizationToken floatingPersonToken = Model_AuthorizationToken.find.query().where().eq("provider_key", state).findOne();
             if (floatingPersonToken == null) {
-
                logger.internalServerError(new Exception("GET_github_oauth:: Not recognize URL fragment!"));
-
-                return redirect(floatingPersonToken.return_url.replace("[_status_]", "fail")); // TODO TOM musí vyhodit NullPointerException
+               return redirect(Server.becki_mainUrl);
             }
 
             floatingPersonToken.social_token_verified = true;
 
-            OAuth20Service service = Socials.GitHub(state);
-            OAuth2AccessToken accessToken = service.getAccessToken(code);
+            OAuthService service = Social.GitHub(state);
+            Verifier verifier = new Verifier(floatingPersonToken.provider_key);
+            Token accessToken = service.getAccessToken(floatingPersonToken., verifier);
 
 
-            OAuthRequest request = new OAuthRequest(Verb.GET,Server.GitHub_url);
+            OAuthRequest request = new OAuthRequest(Verb.GET, Server.GitHub_url, service);
             service.signRequest(accessToken, request);
 
-            Response response = service.execute(request);
+            Response response = service.(request);
 
 
             if (!response.isSuccessful()) redirect(Server.becki_mainUrl + "/" + Server.becki_redirectFail);
@@ -344,9 +353,9 @@ public class Controller_Security extends _BaseController {
                 System.out.println("Tento uživatel se nepřihlašuje poprvné");
 
                 // Zrevidovat stav??
-                if (json_response_from_github.has("mail"))   person.mail = json_response_from_github.get("mail").asText();
+                if (json_response_from_github.has("mail"))   person.email = json_response_from_github.get("mail").asText();
                 if (json_response_from_github.has("login"))  person.nick_name = json_response_from_github.get("login").asText();
-                if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").equals("") && !json_response_from_github.get("name").equals("null"))   person.full_name = json_response_from_github.get("name").asText();
+                if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").asText().equals("") && !json_response_from_github.get("name").asText().equals("null"))   person.first_name = json_response_from_github.get("name").asText();
                 if (json_response_from_github.has("avatar_url")) person.alternative_picture_link = json_response_from_github.get("avatar_url").asText();
                 person.update();
 
@@ -367,7 +376,7 @@ public class Controller_Security extends _BaseController {
 
                     person = Model_Person.find.query().where().eq("mail", json_response_from_github.get("mail").asText()).findOne();
                     person.github_oauth_id = json_response_from_github.get("id").asText();
-                    if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").equals("") && !json_response_from_github.get("name").equals("null")) person.full_name = json_response_from_github.get("name").asText();
+                    if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").asText().equals("") && !json_response_from_github.get("name").asText().equals("null")) person.first_name = json_response_from_github.get("name").asText();
                     if (person.picture == null && json_response_from_github.has("avatar_url")) person.alternative_picture_link = json_response_from_github.get("avatar_url").asText();
                     person.update();
 
@@ -377,11 +386,11 @@ public class Controller_Security extends _BaseController {
 
                     person = new Model_Person();
                     person.github_oauth_id = json_response_from_github.get("id").asText();
-                    if (json_response_from_github.has("mail"))   person.mail = json_response_from_github.get("mail").asText();
+                    if (json_response_from_github.has("mail"))   person.email = json_response_from_github.get("mail").asText();
 
 
                     if (json_response_from_github.has("login") && Model_Person.find.query().where().eq("nick_name", json_response_from_github.get("login").asText()).findOne() == null) person.nick_name = json_response_from_github.get("login").asText();
-                    if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").equals("") && !json_response_from_github.get("name").equals("null"))  person.full_name = json_response_from_github.get("name").asText();
+                    if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").asText().equals("") && !json_response_from_github.get("name").asText().equals("null"))  person.first_name = json_response_from_github.get("name").asText();
                     if (json_response_from_github.has("avatar_url")) person.alternative_picture_link = json_response_from_github.get("avatar_url").asText();
                     person.save();
                 }
@@ -448,10 +457,11 @@ public class Controller_Security extends _BaseController {
             floatingPersonToken.social_token_verified = true;
             floatingPersonToken.setDate();
 
-            OAuth20Service service = Socials.Facebook(state);
+            OAuthService service = Social.Facebook(state);
 
             System.out.println("0. Trading the Request Token for an Access Token...");
-            OAuth2AccessToken accessToken = service.getAccessToken(code);
+            Token requestToken = new Token(code);
+            Token accessToken = service.getAccessToken(code);
 
             System.out.println("1. Got the Access Token!");
             System.out.println("2. (if your curious it looks like this: " + accessToken + ", 'rawResponse'='" + accessToken.getRawResponse() + "')");
@@ -556,6 +566,7 @@ public class Controller_Security extends _BaseController {
         }
     }
 
+    **/
 
 //###### Socilání sítě - a generátory přístupů ########################################################################
 
@@ -566,7 +577,6 @@ public class Controller_Security extends _BaseController {
                     "just ask via this Api and cloud_blocko_server responds with object where is token and redirection link. After that redirect user " +
                     "to this link and after returning to your success page you have to ask again (api - get Person by token ) for information about logged Person",
             produces = "application/json",
-            response =  Swagger_SocialNetwork_Result.class,
             protocols = "https",
             code = 200
     )
@@ -582,7 +592,7 @@ public class Controller_Security extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Successfully created",      response = Swagger_SocialNetwork_Result.class),
+            @ApiResponse(code = 200, message = "Successfully created",      response = Swagger_SocialNetwork_Login.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Wrong Email or Password",   response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
@@ -614,7 +624,7 @@ public class Controller_Security extends _BaseController {
             System.out.println("GitHub_url ::" + Server.GitHub_url);
 
 
-            OAuth20Service service = Socials.GitHub( floatingPersonToken.provider_key);
+            OAuthService service = Social.GitHub( floatingPersonToken.provider_key);
 
             Swagger_SocialNetwork_Result result = new Swagger_SocialNetwork_Result();
             result.type = "GitHub";
@@ -623,7 +633,7 @@ public class Controller_Security extends _BaseController {
 
             logger.debug("GitHub  request for login:: response:: {}", Json.toJson(result));
 
-            return result_ok(Json.toJson(result));
+            return ok(Json.toJson(result));
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -638,7 +648,6 @@ public class Controller_Security extends _BaseController {
                     "just ask via this Api and cloud_blocko_server responds with object where is token and redirection link. After that redirect user " +
                     "to this link and after returning to your success page you have to ask again (api - get Person by token ) for information about logged Person",
             produces = "application/json",
-            response =  Swagger_SocialNetwork_Result.class,
             protocols = "https",
             code = 200
     )
@@ -673,8 +682,8 @@ public class Controller_Security extends _BaseController {
             Model_AuthorizationToken floatingPersonToken = Model_AuthorizationToken.setProviderKey("Facebook");
 
             if (help.redirect_url.contains("/login-failed")) {
-                help.redirect_url = "https://portal.stage.byzance.cz/dashboard";
-                logger.warn("Na Becki jsou líní to fixnout už měsíc!");
+                logger.error("Facebook: Invalid incoming Link - Na Becki jsou líní to fixnout už měsíc!");
+                help.redirect_url = Server.becki_mainUrl + "/dashboard";
             }
 
             floatingPersonToken.return_url = help.redirect_url;
@@ -684,14 +693,14 @@ public class Controller_Security extends _BaseController {
 
             floatingPersonToken.update();
 
-            OAuth20Service service = Socials.Facebook(floatingPersonToken.provider_key);
+            OAuthService service = Social.Facebook(floatingPersonToken.provider_key);
 
             Swagger_SocialNetwork_Result result = new Swagger_SocialNetwork_Result();
             result.type = "Facebook";
             result.redirect_url = service.getAuthorizationUrl(null);
             result.authToken = floatingPersonToken.token;
 
-            return result_ok(Json.toJson(result));
+            return ok(Json.toJson(result));
 
         } catch (Exception e) {
             return controllerServerError(e);

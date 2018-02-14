@@ -85,6 +85,8 @@ public class Controller_Admin extends _BaseController {
     public Result report_admin_dashboard() {
         try {
 
+            person().is_admin();
+
             Swagger_Report_Admin_Dashboard report = new Swagger_Report_Admin_Dashboard();
 
             report.person_registration = Model_Person.find.query().findCount();
@@ -125,6 +127,8 @@ public class Controller_Admin extends _BaseController {
     public Result serverError_getAll() {
         try {
 
+            person().is_admin();
+
             List<Model_ServerError> errors = Model_ServerError.find.all();
 
             return ok(Json.toJson(errors));
@@ -152,7 +156,6 @@ public class Controller_Admin extends _BaseController {
         try {
 
             Model_ServerError error = Model_ServerError.getById(bug_id);
-            if (error == null) return notFound("Bug not found");
 
             return ok(Json.toJson(error));
 

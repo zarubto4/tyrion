@@ -45,9 +45,7 @@ public class _BaseFormFactory extends FormFactory {
             throw new Result_Error_InvalidBody(form.errorsAsJson());
         }
 
-        T s = bind.get();
-
-        return s;
+        return bind.get();
     }
 
     /**
@@ -67,9 +65,7 @@ public class _BaseFormFactory extends FormFactory {
             throw new Result_Error_InvalidBody(form.errorsAsJson());
         }
 
-        T s = bind.get();
-
-        return s;
+        return bind.get();
     }
 
 }

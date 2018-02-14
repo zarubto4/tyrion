@@ -23,9 +23,7 @@ import utilities.document_db.document_objects.DM_Board_Connect;
 import utilities.document_db.document_objects.DM_Board_Disconnected;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
-import utilities.errors.Exceptions.Result_Error_NotFound;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.model.TaggedModel;
@@ -60,7 +58,16 @@ public class Model_Hardware extends TaggedModel {
         který je Byzance schopna obsluhovat. Rozdílem je Typ desky - který může měnit chování některých metod nebo executiv
         procedur.
 
-        Batch je z Type OfBoards výrobní kolekce, nebo šarže tak aby se dalo trackovat kdo co vyrobil, kdy osadil atd..
+        Batch je z Tykpepe OfBoards výrobní kolekce, nebo šarže tak aby se dalo trackovat kdo co vyrobil, kdy osadil atd..
+     */
+
+    /*
+        Hardware si uživatel registruje pomocí registration_hash. Hardware lze registrovat kolikrát uživatel chce, ale pokaždé do jiného
+        projektu. Jedinou změnou je, že hardware je aktivní jen v jednom projektu. Takže v ostatních lze s ním dělat další operace jako
+        je edit, drátování do blocka atd.. ale HW se nikdy nepřipojí online, tím se nikdy nezpustí žádné operace na jeho fyzickou alterantivu.
+
+        Uživatel ho musí nejdříve deaktivoat (freeznout v jednom projektu) aby ho mohl aktivovat v jiném projektu.
+
      */
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -75,11 +82,18 @@ public class Model_Hardware extends TaggedModel {
      * mít více ID na tutéž full_id. Jde zejmena o to, abychom zachovali historii nad objektem a další návaznosti.
     */
     public String full_id;
+    /**
+     * Kriticky důležitý objekt! Model_Hardware muže být totožných desítky, ale jen jeden se stejným full_id
+     * muže být dominantní! JE nutné na to pamatovat! A možná vymyslet i  způsob jak mechanicky ošetřit,
+     * aby nikdy nedošlo ke změně dominance a existovali dva objekty s dominancí.
+     */
+    public boolean dominant_entity;
+
+
     public String wifi_mac_address;
     public String mac_address;
 
-    @JsonIgnore
-    public String registration_hash;   // Vygenerovaný Hash pro přidávání a párování s Platformou. // Je na QR kodu na hardwaru
+    @JsonIgnore public String registration_hash;   // Vygenerovaný Hash pro přidávání a párování s Platformou. // Je na QR kodu na hardwaru
 
     @JsonIgnore @Column(columnDefinition = "TEXT")
     public String json_bootloader_core_configuration; // DM_Board_Configuration.java Počáteční konfigurace - kde je uložený JSON mapovaný pomocí Objektů konkrétního typu hardwaru  //
@@ -2586,7 +2600,75 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
-    @JsonIgnore   public boolean first_connect_permission() { return project_id() == null;}
+    @JsonIgnore @Transient public void check_deactivate_permission() throws _Base_Result_Exception  {
+        try {
+
+            // Its not possible deactivate deactivated device!!!
+            if(!dominant_entity) throw new Result_Error_PermissionDenied();
+
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (_BaseController.person().has_permission("hardware_update_" + id)) _BaseController.person().valid_permission("hardware_update_" + id);
+            if (_BaseController.person().has_permission(Permission.Hardware_update.name())) return;
+
+            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+            get_project().check_update_permission();
+            _BaseController.person().cache_permission("hardware_update_" + id, true);
+
+        } catch (_Base_Result_Exception e){
+            _BaseController.person().cache_permission("hardware_update_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
+    }
+
+    @JsonIgnore @Transient public void check_activate_permission() throws _Base_Result_Exception  {
+        try {
+
+            // Its not possible activate activated device!!!
+            if(dominant_entity) {
+                throw new Result_Error_Bad_request("Its not possible active device, which is already activated");
+            }
+
+            // Its not possibkle ative device, if another copy of same device is active - user have to deactivate that first!
+            // For safety  - system will try to find all of them
+            List<UUID> ids = Model_Hardware.find.query().where().eq("full_id", full_id).eq("dominant_entity", true).select("id").findIds();
+
+            // Fix Shit situations where we have mote device's with dominance!
+            if(ids.size()>1){
+                for (int i = 1; i < ids.size(); i++) {
+                    Model_Hardware hardware = Model_Hardware.find.byId(ids.get(i));
+                    if(hardware != null) {
+                        Model_Hardware.cache.remove(ids.get(i));
+                        hardware.dominant_entity = false;
+                        hardware.update();
+                    }
+                }
+            }
+
+            if(!ids.isEmpty()) {
+                Model_Hardware hardware = getById(ids.get(0));
+                throw new Result_Error_Bad_request("Its not possible active this device, because its already activated in Project  " + hardware.get_project().name + ". Please, deactivate hardware in project first." );
+            }
+
+
+
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (_BaseController.person().has_permission("hardware_update_" + id)) _BaseController.person().valid_permission("hardware_update_" + id);
+            if (_BaseController.person().has_permission(Permission.Hardware_update.name())) return;
+
+            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+            get_project().check_update_permission();
+            _BaseController.person().cache_permission("hardware_update_" + id, true);
+
+        } catch (_Base_Result_Exception e){
+            _BaseController.person().cache_permission("hardware_update_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
+    }
+
+
+    @JsonIgnore   public boolean first_connect_permission() {
+        return project_id() == null;
+    }
 
     public enum Permission {Hardware_create, Hardware_read, Hardware_update, Hardware_edit, Hardware_delete}
 
@@ -2684,7 +2766,8 @@ public class Model_Hardware extends TaggedModel {
     }
 
     public static Model_Hardware getByFullId(String fullId) {
-        return find.query().where().eq("full_id", fullId).findOne();
+         String id = (String) find.query().where().eq("full_id", fullId).eq("dominant_entity", true).select("id").getId();
+        return  getById(id);
     }
 
     @JsonIgnore

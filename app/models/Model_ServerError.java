@@ -21,6 +21,8 @@ import javax.persistence.Transient;
 import java.util.Optional;
 import java.util.UUID;
 
+import static controllers._BaseController.person;
+
 @Entity
 @ApiModel(value = "ServerError", description = "Model of ServerError")
 @Table(name = "ServerError")
@@ -156,20 +158,21 @@ public class Model_ServerError extends NamedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.ServerError_crate.name())) return;
+        if(person().has_permission(Permission.ServerError_crate.name())) return;
         throw new Result_Error_NotSupportedException();
     }
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.ServerError_read.name())) return;
+        if(person().is_admin()) return;
+        if(person().has_permission(Permission.ServerError_read.name())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.ServerError_update.name())) return;
+        if(person().has_permission(Permission.ServerError_update.name())) return;
         throw new Result_Error_PermissionDenied();
     }
 
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.ServerError_delete.name())) return;
+        if(person().has_permission(Permission.ServerError_delete.name())) return;
         throw new Result_Error_PermissionDenied();
     }
 
@@ -187,6 +190,7 @@ public class Model_ServerError extends NamedModel {
         Model_ServerError error = find.byId(id);
         if(error == null)  throw new Result_Error_NotFound(Model_ServerError.class);
 
+        error.check_read_permission();
         return error;
 
     }

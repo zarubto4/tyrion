@@ -10,10 +10,7 @@ import play.data.FormFactory;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.authentication.Authentication;
-import utilities.enums.NotificationAction;
-import utilities.enums.NotificationImportance;
-import utilities.enums.NotificationLevel;
-import utilities.enums.NotificationType;
+import utilities.enums.*;
 import utilities.logger.Logger;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
@@ -142,7 +139,7 @@ public class NotificationTester extends _BaseController {
 
             notification_test_thread.start();
 
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -163,7 +160,7 @@ public class NotificationTester extends _BaseController {
             if (person == null) return notFound("Person not found");
 
             test_notification(person, help.level, help.importance, help.type, help.buttons);
-            return okEmpty();
+            return ok();
 
         } catch (Exception e) {
             return internalServerError(e);
@@ -212,7 +209,7 @@ public class NotificationTester extends _BaseController {
                     notification.setObject(project);
 
                     if (!project.hardware.isEmpty()) {
-                        Model_Hardware board = project.hardware.get(0).getUnderlayingHardware();
+                        Model_Hardware board = project.hardware.get(0);
                         notification.setObject(board);
                     }
 
@@ -235,22 +232,22 @@ public class NotificationTester extends _BaseController {
 
                     notification.setObject(cProgram);
 
-                    Model_Version version;
-                    if (cProgram.getVersions().isEmpty()) {
+                    Model_CProgramVersion version;
+                    if (cProgram.get_versions().isEmpty()) {
 
-                        version = new Model_Version();
+                        version = new Model_CProgramVersion();
                         version.name        = "Test notification c version";
                         version.description = "random text sd asds dasda";
                         version.author              = person;
                         version.c_program           = cProgram;
-                        version.public_version      = false;
+                        version.publish_type        = ProgramType.PRIVATE;
                         version.save();
                         version.refresh();
 
                         terminal_logger.info("Setting new C Program Version");
 
                     } else {
-                        version = cProgram.getVersions().get(0);
+                        version = cProgram.get_versions().get(0);
                     }
 
                     notification.setObject(version);
@@ -272,21 +269,22 @@ public class NotificationTester extends _BaseController {
 
                     notification.setObject(bProgram);
 
-                    Model_Version b_version;
-                    if (bProgram.getVersions().isEmpty()) {
+                    Model_BProgramVersion b_version;
+                    if (bProgram.get_versions().isEmpty()) {
 
-                        b_version = new Model_Version();
+                        b_version = new Model_BProgramVersion();
                         b_version.name        = "Test notification b version";
                         b_version.description = "random text sd asds dasda";
                         b_version.author              = person;
                         b_version.b_program           = bProgram;
+                        version.publish_type        = ProgramType.PRIVATE;
                         b_version.save();
                         b_version.refresh();
 
                         terminal_logger.info("Setting new B Program Version");
 
                     } else {
-                        b_version = bProgram.getVersions().get(0);
+                        b_version = bProgram.get_versions().get(0);
                     }
 
                     notification.setObject(b_version);

@@ -382,7 +382,6 @@ public class Controller_Person extends _BaseController {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
-            if (person == null)  return notFound("Person person_id not found");
             return ok(Json.toJson(person));
 
         } catch (Exception e) {

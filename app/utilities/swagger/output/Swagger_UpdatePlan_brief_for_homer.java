@@ -1,16 +1,18 @@
 package utilities.swagger.output;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@ApiModel(description = "Private",
+           value = "UpdatePlan_brief_for_homer")
 public class Swagger_UpdatePlan_brief_for_homer {
 
     @JsonProperty(value = "tracking_group_id") public String update_procedure_id;  // Procedure ID
     @JsonProperty(value = "tracking_id")       public String hardware_update_id;    // Task ID
-
 
     // @JsonProperty public Enum_Update_type_of_update type_of_update;
 

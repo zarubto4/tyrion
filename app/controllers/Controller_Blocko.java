@@ -414,8 +414,6 @@ public class Controller_Blocko extends _BaseController {
                     for (Swagger_B_Program_Version_New.M_Program_SnapShot help_m_program_snap : help_m_project_snap.m_program_snapshots) {
                         Model_GridProgramVersion m_program_version = Model_GridProgramVersion.find.query().where().eq("id", help_m_program_snap.version_id).eq("grid_program.id", help_m_program_snap.m_program_id).eq("grid_program.grid_project.id", m_project.id).findOne();
 
-                        if (m_program_version == null) return notFound("Version not found");
-
                         Model_MProgramInstanceParameter snap_shot_parameter = new Model_MProgramInstanceParameter();
 
                         snap_shot_parameter.grid_program_version = m_program_version;
@@ -830,7 +828,6 @@ public class Controller_Blocko extends _BaseController {
             Model_Instance instance = Model_Instance.getById(help.instance_id);
 
             Model_BProgramVersion version = Model_BProgramVersion.getById(help.version_id);
-            if (version == null) return notFound("Version not found");
 
             Model_InstanceSnapshot snapshot = new Model_InstanceSnapshot();
             snapshot.b_program_version = version;
@@ -1085,10 +1082,7 @@ public class Controller_Blocko extends _BaseController {
 
             // Hledám objekt
             Model_MProgramInstanceParameter program_parameter = Model_MProgramInstanceParameter.getById(help.m_program_parameter_id);
-            if (program_parameter == null) return notFound("Object not found");
 
-            //Ohlídám oprávnění
-            if (!program_parameter.edit_permission()) return forbidden();
 
             //PArsuju Enum kdyžtak chyba IllegalArgumentException
             GridAccess settings = GridAccess.valueOf(help.snapshot_settings);

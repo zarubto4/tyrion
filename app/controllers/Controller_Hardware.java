@@ -17,6 +17,7 @@ import utilities.errors.Exceptions.Result_Error_InvalidBody;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions.Result_Error_Unauthorized;
+import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_mm_package;
@@ -1443,11 +1444,11 @@ public class Controller_Hardware extends _BaseController {
                 logger.warn("hardware_create_garfield - device not found in local DB, registering hardware, id: {}", help.full_id);
 
                 // Try to Find it on Registration Authority
-                if (Hardware_Registration_Authority.check_if_value_is_registered(help.full_id, "hardware_id")) {
+                if (Hardware_Registration_Authority.check_if_value_is_registered(help.full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
                     logger.error("Device is already Registred ID: {}", help.full_id);
                     return badRequest("Device is already Registred ID: " + help.full_id);
                 }
-                if (Hardware_Registration_Authority.check_if_value_is_registered(batch.get_nextMacAddress_just_for_check(), "mac_address")) {
+                if (Hardware_Registration_Authority.check_if_value_is_registered(batch.get_nextMacAddress_just_for_check(), Enum_Hardware_Registration_DB_Key.mac_address)) {
                     logger.error("Next Mac Address fot this device is already registered. Check It. Mac Address:: {}", help.full_id);
                     return badRequest("Next Mac Address fot this device is already registered. Check It Mac Address:: " +  help.full_id);
                 }

@@ -16,6 +16,9 @@ public class Swagger_Project_AddHardware {
     @Constraints.Required
     public UUID project_id;
 
+    @ApiModelProperty(required = false, value = "Optional value on Begging")
+    public String name;
+
     @Constraints.Required
     public String registration_hash;
 }

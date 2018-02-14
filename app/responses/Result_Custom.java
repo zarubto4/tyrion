@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(value="Result_Custom_Result", description="Customizable response object")
 public class Result_Custom extends _Response_Interface {
 
-
+    public Result_Custom(){}
     public Result_Custom(String message, Integer code, String state){
         this.message = message;
         this.state = state;
