@@ -390,25 +390,36 @@ public abstract class _BaseController {
         try{
 
             // Result_Error_NotFound
-            if(error.getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
+            if(error.getCause().getClass().getSimpleName().equals(_Base_Result_Exception.class.getSimpleName())){
+                _Base_Result_Exception badRequest = (_Base_Result_Exception) error.getCause();
+                return badRequest(badRequest.getMessage());
+            }
+
+            // Result_Error_NotFound
+            if(error.getCause().getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
                 Result_Error_NotFound not_found = (Result_Error_NotFound) error.getCause();
                 return notFound(not_found.getClass_not_found());
             }
 
             // Result_Error_InvalidBody
-            if(error.getClass().getSimpleName().equals(Result_Error_InvalidBody.class.getSimpleName())){
+            if(error.getCause().getClass().getSimpleName().equals(Result_Error_InvalidBody.class.getSimpleName())){
                 Result_Error_InvalidBody invalid_body = (Result_Error_InvalidBody) error.getCause();
                 return badRequest(invalid_body.getForm_error());
             }
 
-            // Result_Error_InvalidBody
-            if(error.getClass().getSimpleName().equals(Result_Error_Unauthorized.class.getSimpleName())){
+            // Result_Error_Unauthorized
+            if(error.getCause().getClass().getSimpleName().equals(Result_Error_Unauthorized.class.getSimpleName())){
                 return unauthorized();
             }
 
-            // Result_Error_InvalidBody
-            if(error.getClass().getSimpleName().equals(Result_Error_PermissionDenied.class.getSimpleName())){
+            // Result_Error_PermissionDenied
+            if(error.getCause().getClass().getSimpleName().equals(Result_Error_PermissionDenied.class.getSimpleName())){
                 return forbidden();
+            }
+
+            // Result_Error_PermissionDenied
+            if(error.getCause().getClass().getSimpleName().equals(Result_Error_NotSupportedException.class.getSimpleName())){
+                return badRequest("Please contact technical support. Your request required unsupported parts of system.");
             }
 
             logger.error("controllerServerError::There is unExcepted Kind of Error. Now - its Critical!");
