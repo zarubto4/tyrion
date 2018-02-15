@@ -246,31 +246,31 @@ public class Model_Project extends TaggedModel {
     }
 
     @JsonIgnore
-    public List<Model_BProgram> getBPrograms() {
+    public List<Model_BProgram> get_b_programs() {
         try {
 
-            List<Model_BProgram> bPrograms;
+            List<Model_BProgram> b_programs;
 
             if (cache_b_program_ids == null) {
 
-                bPrograms = Model_BProgram.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").findList();
+                b_programs = Model_BProgram.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").findList();
 
                 // Získání seznamu
-                for (Model_BProgram bProgram : bPrograms) {
-                    cache_b_program_ids.add(bProgram.id);
-                    bProgram.cache();
+                for (Model_BProgram b_program : b_programs) {
+                    cache_b_program_ids.add(b_program.id);
+                    b_program.cache();
                 }
 
-                return bPrograms;
+                return b_programs;
             } else {
-                bPrograms = new ArrayList<>();
+                b_programs = new ArrayList<>();
 
                 for (UUID id : cache_b_program_ids) {
-                    bPrograms.add(Model_BProgram.getById(id));
+                    b_programs.add(Model_BProgram.getById(id));
                 }
             }
 
-            return bPrograms;
+            return b_programs;
 
         } catch (Exception e) {
             logger.internalServerError(e);

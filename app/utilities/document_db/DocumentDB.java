@@ -1,17 +1,34 @@
 package utilities.document_db;
 
+import com.google.inject.Inject;
 import com.microsoft.azure.documentdb.DocumentCollection;
 import com.microsoft.azure.documentdb.RequestOptions;
+import com.typesafe.config.Config;
+import controllers._BaseFormFactory;
 import play.Configuration;
+import play.libs.ws.WSClient;
 import utilities.Server;
 import utilities.logger.Logger;
+import utilities.scheduler.SchedulerController;
 
 import java.util.List;
 
 public class DocumentDB {
 
-    // LOGGER
+// LOGGER ##############################################################################################################
+
     private static final Logger logger = new Logger(DocumentDB.class);
+
+// CONTROLLER CONFIGURATION ############################################################################################
+    private static Config config;
+
+
+    @Inject
+    public DocumentDB(Config config) {
+        DocumentDB.config = config;
+    }
+
+///###################################################################################################################*/
 
     // Online status - variables
     private static final String ONLINE_STATUS_COLLECTION = "ONLINE_STATUS";
@@ -54,7 +71,7 @@ public class DocumentDB {
             } else {
 
                 RequestOptions request_options_online_status = new RequestOptions();
-                request_options_online_status.setOfferThroughput(Configuration.root().getInt("documentDB." + Server.mode.name() + ".RUsReserved" + ONLINE_STATUS_COLLECTION));
+                request_options_online_status.setOfferThroughput(config.getInt("documentDB." + Server.mode.name() + ".RUsReserved" + ONLINE_STATUS_COLLECTION));
 
                 DocumentCollection collection = new DocumentCollection();
                 collection.setId(ONLINE_STATUS_COLLECTION);
@@ -90,7 +107,7 @@ public class DocumentDB {
             } else {
 
                 RequestOptions request_options_blocko_request = new RequestOptions();
-                request_options_blocko_request.setOfferThroughput(Configuration.root().getInt("documentDB." + Server.mode.name() + ".RUsReserved" + BLOCKO_REQUEST_COLLECTION));
+                request_options_blocko_request.setOfferThroughput(config.getInt("documentDB." + Server.mode.name() + ".RUsReserved" + BLOCKO_REQUEST_COLLECTION));
 
                 DocumentCollection collection = new DocumentCollection();
                 collection.setId(BLOCKO_REQUEST_COLLECTION);

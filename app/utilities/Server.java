@@ -255,12 +255,21 @@ public class Server {
         // For Developing
         Model_Role role = Model_Role.getByName("SuperAdmin");
         List<Model_Permission> permissions = Model_Permission.find.all();
+
         if(role == null) {
+            logger.warn("setAdministrator - RoleGroup SuperAdmin is missing - its required create it now. Total Permissions for registrations: {}", permissions.size());
+
             role = new Model_Role();
+
+            if(role.permissions == null) role.permissions = new ArrayList<>();
             role.permissions.addAll(permissions);
             role.name = "SuperAdmin";
+
+            logger.warn("setAdministrator - Save Role SuperAdmin now");
             role.save();
+
         } else {
+            logger.warn("setAdministrator - RoleGroup SuperAdmin- already exist - Check all permissions");
             for (Model_Permission permission : permissions) {
                 if (!role.permissions.contains(permission)) {
                     role.permissions.add(permission);
@@ -275,6 +284,8 @@ public class Server {
 
             logger.warn("setAdministrator - Creating first admin account: admin@byzance.cz, password: 123456789");
 
+            Model_Role role_super_admin = Model_Role.getByName("SuperAdmin");
+
             person = new Model_Person();
             person.first_name = "Admin";
             person.last_name = "Byzance";
@@ -282,7 +293,13 @@ public class Server {
             person.nick_name = "Syndibád";
             person.email = "admin@byzance.cz";
             person.setPassword("123456789");
-            person.roles.add(Model_Role.getByName("SuperAdmin"));
+
+            if(person.roles == null){
+                logger.warn("setAdministrator - person.roles is null");
+                person.roles = new ArrayList<>();
+            }
+
+            person.roles.add(role_super_admin);
 
             person.save();
 
@@ -307,7 +324,7 @@ public class Server {
      */
     private static void setWidgetAndBlock() {
 
-        if(Model_Widget.getById("0000000-0000-0000-0000-000000000001") == null) {
+        if(new Model_Widget().check_if_exist("0000000-0000-0000-0000-000000000001")) {
             Model_Widget gridWidget = new Model_Widget();
             gridWidget.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
             gridWidget.description = "Default Widget";
@@ -318,7 +335,7 @@ public class Server {
             gridWidget.save();
         }
 
-        if(Model_Block.getById("0000000-0000-0000-0000-000000000001") == null) {
+        if(new Model_Widget().check_if_exist("0000000-0000-0000-0000-000000000001")) {
             Model_Block block = new Model_Block();
             block.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
             block.description = "Default Block";
@@ -355,13 +372,17 @@ public class Server {
             logger.debug("setPermission - scanning class: {}", cls.getSimpleName());
             Class<?>[] innerClasses = cls.getDeclaredClasses();
             for (Class<?> inner : innerClasses) {
-                if (inner.isEnum() && inner.getSimpleName().equals("Permission")) {
-                    logger.trace("setPermission - found enum Permission in class: {}", cls.getSimpleName());
-                    Enum[] enums = (Enum[]) inner.getEnumConstants();
-                    for (Enum e : enums) {
-                        logger.trace("setPermission - found permission: {}", e.name());
-                        permissions.add(e.name());
+                try {
+                    if (inner.isEnum() && inner.getSimpleName().equals("Permission")) {
+                        // logger.trace("setPermission - found enum Permission in class: {}", cls.getSimpleName());
+                        Enum[] enums = (Enum[]) inner.getEnumConstants();
+                        for (Enum e : enums) {
+                            // logger.trace("setPermission - found permission: {}", e.name());
+                            permissions.add(e.name());
+                        }
                     }
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
             }
         });
@@ -370,20 +391,25 @@ public class Server {
 
         List<Model_Permission> perms = Model_Permission.find.all();
 
+        logger.trace("setPermission - get all permissions from database. Count: {}", perms.size());
+
         for (Model_Permission permission : perms) {
             if (!permissions.contains(permission.name)) {
                 logger.info("setPermission - removing permission: {} from DB", permission.name);
                 permission.delete();
             }
         }
-
-        for (String p : permissions) {
-            if (Model_Permission.find.query().where().eq("name", p) == null) {
-                logger.info("setPermission - saving permission: {} to DB", p);
+        logger.trace("setPermission - time to save all, witch are not in database. Count of read by system {}", permissions.size());
+        for (String permission_name : permissions) {
+            // logger.trace("setPermission - Permission {} try to get from database", permission_name);
+            if (Model_Permission.find.query().where().eq("name", permission_name).findOne() == null) {
+                // logger.trace("setPermission - saving permission: {} to DB", permission_name);
                 Model_Permission permission = new Model_Permission();
-                permission.name = p;
+                permission.name = permission_name;
                 permission.description = "description";
                 permission.save();
+            }else {
+                // logger.trace("setPermission - Permission {} is already in database", permission_name);
             }
         }
     }

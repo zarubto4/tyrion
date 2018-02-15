@@ -27,6 +27,6 @@ public class Logger {
     }
 
     public void internalServerError(Throwable e) {
-        ServerLogger.internalServerError(e);
+         ServerLogger.internalServerError(e);
     }
 }

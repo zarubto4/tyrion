@@ -8,7 +8,6 @@ import play.mvc.Result;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-
 public class ErrorHandler implements HttpErrorHandler {
 
     @Override

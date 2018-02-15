@@ -3,15 +3,19 @@ package utilities.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import controllers._BaseController;
 import io.ebean.Model;
 import io.ebean.annotation.SoftDelete;
 import io.swagger.annotations.ApiModelProperty;
+import models.Model_Person;
 import org.ehcache.Cache;
 import play.libs.Json;
 import scala.xml.Null;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions.Result_Error_Unauthorized;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.models_update_echo.EchoHandler;
@@ -21,6 +25,9 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.transaction.NotSupportedException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.UUID;
 
@@ -79,14 +86,18 @@ public abstract class BaseModel extends Model {
 
     /**
      * Default save method - Permission is checked inside
+     * System will evytime check permission for this operation. But sometime, its done by system without "logged person" token
      */
     @Override
     public void save() {
 
         logger.debug("save::Creating new Object");
 
-        // Check Permission
-        check_create_permission();
+        // Check Permission - only if user is logged!
+        if(its_person_operation()) {
+            System.out.println("save() check_create_permission je vyžadováno!");
+            check_create_permission();
+        }
 
         boolean isNew = this.id == null;
 
@@ -119,7 +130,7 @@ public abstract class BaseModel extends Model {
         logger.debug("update::Update object Id: {}", this.id);
 
         // Check Permission
-        check_update_permission();
+        if(its_person_operation()) check_update_permission();
 
     }
 
@@ -131,7 +142,9 @@ public abstract class BaseModel extends Model {
     public boolean delete() {
         logger.trace("delete:: - deleting '{}' from DB, id: {}", this.getClass().getSimpleName(), this.id);
 
-        this.deleted = true;
+        if(its_person_operation()) check_delete_permission();
+
+            this.deleted = true;
         this.removed = new Date();
         super.update();
 
@@ -144,6 +157,9 @@ public abstract class BaseModel extends Model {
     @Override
     public boolean deletePermanent() {
         logger.trace("deletePermanent - permanently deleting '{}' from DB, id: {}", this.getClass().getSimpleName(), this.id);
+
+        if(its_person_operation()) check_delete_permission();
+
         return super.deletePermanent();
     }
 
@@ -252,6 +268,26 @@ public abstract class BaseModel extends Model {
         }
     }
 
+
+/* Private Support methods  -----------------------------------------------------------------------------------------------*/
+
+    /**
+     * Here we can log who do this operation. User or System.
+     * Just a idea..
+      * @return
+     */
+    @JsonIgnore public boolean its_person_operation() {
+        try {
+            return  _BaseController.isAuthenticated();
+        } catch (_Base_Result_Exception e){
+            return false;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return false;
+        }
+    }
+
+
 /* Permission Contents ----------------------------------------------------------------------------------------------------*/
 
 /* TODO odkomentovat na konci - Volné API pro Swagger [TZ]
@@ -294,5 +330,43 @@ public abstract class BaseModel extends Model {
     @JsonIgnore public abstract void check_delete_permission() throws _Base_Result_Exception;
 
 
+    /**
+     * Special Abstract method for all Model_Xxxx where you can find  public XXXXX getById(UUID id){....}
+     * @param id
+     * @return
+     */
+    @JsonIgnore
+    public boolean check_if_exist(UUID id) {
+        try {
+
+            // Set Arguments of Methods
+            Class[] cArg = new Class[1];
+            cArg[0] = UUID.class;
+
+            Method method = this.getClass().getDeclaredMethod("getById", cArg);
+            Object o = method.invoke(this.getClass(), id);
+
+            return o != null;
+
+        } catch (InvocationTargetException e) {
+
+            if(e.getCause().getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
+                return false;
+            }
+
+            logger.error("check_if_exist:: is not supported on {}, because getById(UUID id) is missing.", this.getClass().getSimpleName());
+            throw new Result_Error_NotSupportedException();
+
+        }catch (Exception e){
+            // Everytime its InvocationTargetException, but compilator required this one also
+            logger.error("check_if_exist:: is not supported on {}, because getById(UUID id) missing.", this.getClass().getSimpleName());
+            throw new Result_Error_NotSupportedException();
+        }
+    }
+
+    @JsonIgnore
+    public boolean check_if_exist(String id) {
+        return check_if_exist(UUID.fromString(id));
+    }
 }
 

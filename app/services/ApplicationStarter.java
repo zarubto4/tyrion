@@ -41,6 +41,7 @@ public class ApplicationStarter {
 
     @Inject
     public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector, SchedulerController scheduler) {
+
         this.clock = clock;
         this.appLifecycle = appLifecycle;
         this.configuration = configuration;

@@ -43,8 +43,7 @@ public class Model_Widget extends TaggedModel {
 
     public ProgramType publish_type;
 
-    @JsonIgnore @OneToMany(mappedBy="widget", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("created desc")
-    public List<Model_WidgetVersion> versions = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="widget", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("created desc") public List<Model_WidgetVersion> versions = new ArrayList<>();
 
     @JsonIgnore public boolean active; // U veřejných Skupin administrátor zveřejňuje skupinu - může připravit něco do budoucna
 
@@ -340,7 +339,7 @@ public class Model_Widget extends TaggedModel {
     public static Cache<UUID, Model_Widget> cache;
 
     public static Model_Widget getById(String id) throws _Base_Result_Exception{
-    return getById(UUID.fromString(id));
+        return getById(UUID.fromString(id));
     }
 
     public static Model_Widget getById(UUID id) throws _Base_Result_Exception {

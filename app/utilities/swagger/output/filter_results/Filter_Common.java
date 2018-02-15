@@ -1,7 +1,6 @@
 package utilities.swagger.output.filter_results;
 
 import io.swagger.annotations.ApiModelProperty;
-import utilities.swagger._Swagger_Abstract_Default;
 
 /**
  * Created by zaruba on 01.12.17.

@@ -46,6 +46,7 @@ public class Model_Permission extends NamedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        System.out.println("Kontrola oprávnění k uložení name:: " + name);
         throw new Result_Error_NotSupportedException();
     }
 

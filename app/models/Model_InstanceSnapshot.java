@@ -51,10 +51,10 @@ public class Model_InstanceSnapshot extends BaseModel {
     @ApiModelProperty(required = true, readOnly = true, dataType = "integer", example = "1466163478925")
     public Date stopped;
 
-    @ManyToOne(fetch = FetchType.LAZY) public Model_Instance instance;
-    @ManyToOne public Model_BProgramVersion b_program_version;
-    @OneToOne  public Model_Blob program;
-    @JsonIgnore @OneToMany(fetch = FetchType.LAZY)  public List<Model_UpdateProcedure> procedures = new ArrayList<>();
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Instance instance;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BProgramVersion b_program_version;
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)  public Model_Blob program;
+    @JsonIgnore @OneToMany(fetch = FetchType.LAZY) public List<Model_UpdateProcedure> procedures = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 

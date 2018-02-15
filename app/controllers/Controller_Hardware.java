@@ -2696,7 +2696,7 @@ public class Controller_Hardware extends _BaseController {
     @ApiImplicitParams(
             @ApiImplicitParam(
                     name = "body",
-                    dataType = "utilities.swagger.documentationClass.Swagger_Hardware_Group_DeviceListEdit",
+                    dataType = "utilities.swagger.input.Swagger_Hardware_Group_DeviceListEdit",
                     required = true,
                     paramType = "body",
                     value = "Contains Json with values"
@@ -2718,7 +2718,7 @@ public class Controller_Hardware extends _BaseController {
 
             if (help.device_synchro != null) {
 
-                Model_Hardware board = Model_Hardware.getById(help.device_synchro.device_id);
+                Model_Hardware board = Model_Hardware.getById(help.device_synchro.hardware_id);
                 
                 logger.debug("board_group_update_device_list - board: {}", board.id);
 
@@ -2728,7 +2728,7 @@ public class Controller_Hardware extends _BaseController {
                 List<UUID> group_hardware_ids = board.get_hardware_group_ids();
 
                 // Cyklus pro přidávání
-                for (UUID board_group_id: help.device_synchro.group_ids) {
+                for (UUID board_group_id: help.device_synchro.hardware_group_ids) {
 
                     // Přidám všechny, které nejsou už součásti cache_hardware_groups_id
                     if (!group_hardware_ids.contains(board_group_id)) {
@@ -2749,7 +2749,7 @@ public class Controller_Hardware extends _BaseController {
                     UUID board_group_id = it.next();
 
                     // Není a tak mažu
-                    if (!help.device_synchro.group_ids.contains(board_group_id)) {
+                    if (!help.device_synchro.hardware_group_ids.contains(board_group_id)) {
 
                         logger.debug("board_group_update_device_list - removing group {}", board_group_id );
 
@@ -2770,10 +2770,10 @@ public class Controller_Hardware extends _BaseController {
                 Model_HardwareGroup group = Model_HardwareGroup.getById(help.group_synchro.group_id);
                 group.check_update_permission();
 
-                for (String board_id: help.group_synchro.device_ids) {
+                for (UUID board_id: help.group_synchro.hardware_ids) {
                     Model_Hardware board = Model_Hardware.getById(board_id);
 
-                    board.cache_hardware_groups_id.add(help.group_synchro.group_id);
+                    board.cache_hardware_groups_ids.add(help.group_synchro.group_id);
                     board.hardware_groups.add(group);
 
                 }

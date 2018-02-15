@@ -80,6 +80,8 @@ public class Model_Hardware extends TaggedModel {
      * Adresa (full_id) zařízení je dána výrobcem čipu. Je to komunikační ID s Homer Serverem.
      * Ale jelikož potřebujeme umožnit uživatelovi odstranit Hardware z projektu a zase ho tam vrátit, bylo nutné
      * mít více ID na tutéž full_id. Jde zejmena o to, abychom zachovali historii nad objektem a další návaznosti.
+     *
+     * Stejné Full_id může být i v několika objektech najednou!
     */
     public String full_id;
     /**
@@ -118,7 +120,7 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BootLoader actual_boot_loader;              // Aktuální bootloader (Cachováno)
 
     // Hardware Groups
-    @JsonIgnore @ManyToMany(mappedBy = "hardware", fetch = FetchType.LAZY)  public List<Model_HardwareGroup> hardware_groups = new ArrayList<>();
+    @JsonIgnore @ManyToMany(fetch = FetchType.LAZY)  public List<Model_HardwareGroup> hardware_groups = new ArrayList<>();
 
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY)  public Model_Blob picture;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Project project;

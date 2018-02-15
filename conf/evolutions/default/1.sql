@@ -42,6 +42,24 @@ create table bprogram_tag (
   constraint pk_bprogram_tag primary key (bprogram_id,tag_id)
 );
 
+create table libraryversion (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  approval_state                varchar(11),
+  publish_type                  varchar(15),
+  blob_version_link             varchar(255),
+  library_id                    uuid,
+  deleted                       boolean default false not null,
+  constraint ck_libraryversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
+  constraint ck_libraryversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint pk_libraryversion primary key (id)
+);
+
 create table blob (
   id                            uuid not null,
   created                       timestamptz,
@@ -51,7 +69,6 @@ create table blob (
   path                          varchar(255),
   container                     varchar(255),
   boot_loader_id                uuid,
-  version_id                    uuid,
   deleted                       boolean default false not null,
   constraint uq_blob_boot_loader_id unique (boot_loader_id),
   constraint pk_blob primary key (id)
@@ -88,11 +105,12 @@ create table blockversion (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
-  design_json                   TEXT,
-  logic_json                    TEXT,
+  author_id                     uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
-  author_id                     uuid,
+  blob_version_link             varchar(255),
+  design_json                   TEXT,
+  logic_json                    TEXT,
   block_id                      uuid,
   deleted                       boolean default false not null,
   constraint ck_blockversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
@@ -142,6 +160,26 @@ create table cprogram_tag (
   cprogram_id                   uuid not null,
   tag_id                        uuid not null,
   constraint pk_cprogram_tag primary key (cprogram_id,tag_id)
+);
+
+create table cprogramversion (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  approval_state                varchar(11),
+  publish_type                  varchar(15),
+  blob_version_link             varchar(255),
+  c_program_id                  uuid,
+  default_program_id            uuid,
+  deleted                       boolean default false not null,
+  constraint ck_cprogramversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
+  constraint ck_cprogramversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint uq_cprogramversion_default_program_id unique (default_program_id),
+  constraint pk_cprogramversion primary key (id)
 );
 
 create table changepropertytoken (
@@ -255,6 +293,26 @@ create table gridprogram_tag (
   constraint pk_gridprogram_tag primary key (grid_program_id,tag_id)
 );
 
+create table gridprogramversion (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  approval_state                varchar(11),
+  publish_type                  varchar(15),
+  blob_version_link             varchar(255),
+  grid_program_id               uuid,
+  m_program_virtual_input_output TEXT,
+  public_access                 boolean default false not null,
+  deleted                       boolean default false not null,
+  constraint ck_gridprogramversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
+  constraint ck_gridprogramversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint pk_gridprogramversion primary key (id)
+);
+
 create table gridproject (
   id                            uuid not null,
   created                       timestamptz,
@@ -299,6 +357,7 @@ create table hardware (
   name                          varchar(255),
   description                   TEXT,
   full_id                       varchar(255),
+  dominant_entity               boolean default false not null,
   wifi_mac_address              varchar(255),
   mac_address                   varchar(255),
   registration_hash             varchar(255),
@@ -314,10 +373,25 @@ create table hardware (
   actual_c_program_version_id   uuid,
   actual_backup_c_program_version_id uuid,
   actual_boot_loader_id         uuid,
+  picture_id                    uuid,
+  project_id                    uuid,
   connected_server_id           uuid,
   connected_instance_id         uuid,
   deleted                       boolean default false not null,
+  constraint uq_hardware_picture_id unique (picture_id),
   constraint pk_hardware primary key (id)
+);
+
+create table hardware_tag (
+  hardware_id                   uuid not null,
+  tag_id                        uuid not null,
+  constraint pk_hardware_tag primary key (hardware_id,tag_id)
+);
+
+create table hardware_hardwaregroup (
+  hardware_id                   uuid not null,
+  hardware_group_id             uuid not null,
+  constraint pk_hardware_hardwaregroup primary key (hardware_id,hardware_group_id)
 );
 
 create table hardwarebatch (
@@ -374,29 +448,6 @@ create table hardwaregroup (
   constraint pk_hardwaregroup primary key (id)
 );
 
-create table hardwareregistration (
-  id                            uuid not null,
-  created                       timestamptz,
-  updated                       timestamptz,
-  removed                       timestamptz,
-  name                          varchar(255),
-  description                   TEXT,
-  hardware_id                   uuid,
-  picture_id                    uuid,
-  project_id                    uuid,
-  group_id                      uuid,
-  deleted                       boolean default false not null,
-  constraint uq_hardwareregistration_hardware_id unique (hardware_id),
-  constraint uq_hardwareregistration_picture_id unique (picture_id),
-  constraint pk_hardwareregistration primary key (id)
-);
-
-create table hardwareregistration_tag (
-  hardware_registration_id      uuid not null,
-  tag_id                        uuid not null,
-  constraint pk_hardwareregistration_tag primary key (hardware_registration_id,tag_id)
-);
-
 create table hardwaretype (
   id                            uuid not null,
   created                       timestamptz,
@@ -449,7 +500,7 @@ create table homerserver (
   mqtt_port                     integer,
   grid_port                     integer,
   web_view_port                 integer,
-  server_remote_port            integer,
+  hardware_logger_port          integer,
   rest_api_port                 integer,
   server_url                    varchar(255),
   server_version                varchar(255),
@@ -494,17 +545,11 @@ create table instancesnapshot (
   deployed                      timestamptz,
   stopped                       timestamptz,
   instance_id                   uuid,
-  b_version_id                  uuid,
+  b_program_version_id          uuid,
   program_id                    uuid,
   deleted                       boolean default false not null,
   constraint uq_instancesnapshot_program_id unique (program_id),
   constraint pk_instancesnapshot primary key (id)
-);
-
-create table instancesnapshot_hardwareregistration (
-  instance_snapshot_id          uuid not null,
-  hardware_registration_id      uuid not null,
-  constraint pk_instancesnapshot_hardwareregistration primary key (instance_snapshot_id,hardware_registration_id)
 );
 
 create table invitation (
@@ -630,8 +675,8 @@ create table mprojectprogramsnapshot (
 
 create table b_program_version_snapshots (
   mproject_program_snap_shot_id uuid not null,
-  version_id                    uuid not null,
-  constraint pk_b_program_version_snapshots primary key (mproject_program_snap_shot_id,version_id)
+  library_version_id            uuid not null,
+  constraint pk_b_program_version_snapshots primary key (mproject_program_snap_shot_id,library_version_id)
 );
 
 create table notification (
@@ -951,30 +996,6 @@ create table validationtoken (
   constraint pk_validationtoken primary key (id)
 );
 
-create table version (
-  id                            uuid not null,
-  created                       timestamptz,
-  updated                       timestamptz,
-  removed                       timestamptz,
-  name                          varchar(255),
-  description                   TEXT,
-  public_version                boolean default false not null,
-  author_id                     uuid,
-  library_id                    uuid,
-  c_program_id                  uuid,
-  approval_state                varchar(11),
-  default_program_id            uuid,
-  b_program_id                  uuid,
-  additional_configuration      varchar(255),
-  grid_program_id               uuid,
-  m_program_virtual_input_output TEXT,
-  blob_version_link             varchar(255),
-  deleted                       boolean default false not null,
-  constraint ck_version_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
-  constraint uq_version_default_program_id unique (default_program_id),
-  constraint pk_version primary key (id)
-);
-
 create table widget (
   id                            uuid not null,
   created                       timestamptz,
@@ -1006,11 +1027,12 @@ create table gridwidgetversion (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
-  design_json                   TEXT,
-  logic_json                    TEXT,
+  author_id                     uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
-  author_id                     uuid,
+  blob_version_link             varchar(255),
+  design_json                   TEXT,
+  logic_json                    TEXT,
   widget_id                     uuid,
   deleted                       boolean default false not null,
   constraint ck_gridwidgetversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
@@ -1030,10 +1052,13 @@ create index ix_bprogram_tag_bprogram on bprogram_tag (bprogram_id);
 alter table bprogram_tag add constraint fk_bprogram_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
 create index ix_bprogram_tag_tag on bprogram_tag (tag_id);
 
-alter table blob add constraint fk_blob_boot_loader_id foreign key (boot_loader_id) references bootloader (id) on delete restrict on update restrict;
+alter table libraryversion add constraint fk_libraryversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
+create index ix_libraryversion_author_id on libraryversion (author_id);
 
-alter table blob add constraint fk_blob_version_id foreign key (version_id) references version (id) on delete restrict on update restrict;
-create index ix_blob_version_id on blob (version_id);
+alter table libraryversion add constraint fk_libraryversion_library_id foreign key (library_id) references library (id) on delete restrict on update restrict;
+create index ix_libraryversion_library_id on libraryversion (library_id);
+
+alter table blob add constraint fk_blob_boot_loader_id foreign key (boot_loader_id) references bootloader (id) on delete restrict on update restrict;
 
 alter table block add constraint fk_block_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
 create index ix_block_author_id on block (author_id);
@@ -1071,7 +1096,7 @@ alter table cprogram add constraint fk_cprogram_hardware_type_default_id foreign
 
 alter table cprogram add constraint fk_cprogram_hardware_type_test_id foreign key (hardware_type_test_id) references hardwaretype (id) on delete restrict on update restrict;
 
-alter table cprogram add constraint fk_cprogram_example_library_id foreign key (example_library_id) references version (id) on delete restrict on update restrict;
+alter table cprogram add constraint fk_cprogram_example_library_id foreign key (example_library_id) references libraryversion (id) on delete restrict on update restrict;
 create index ix_cprogram_example_library_id on cprogram (example_library_id);
 
 alter table cprogram_tag add constraint fk_cprogram_tag_cprogram foreign key (cprogram_id) references cprogram (id) on delete restrict on update restrict;
@@ -1080,9 +1105,17 @@ create index ix_cprogram_tag_cprogram on cprogram_tag (cprogram_id);
 alter table cprogram_tag add constraint fk_cprogram_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
 create index ix_cprogram_tag_tag on cprogram_tag (tag_id);
 
+alter table cprogramversion add constraint fk_cprogramversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
+create index ix_cprogramversion_author_id on cprogramversion (author_id);
+
+alter table cprogramversion add constraint fk_cprogramversion_c_program_id foreign key (c_program_id) references cprogram (id) on delete restrict on update restrict;
+create index ix_cprogramversion_c_program_id on cprogramversion (c_program_id);
+
+alter table cprogramversion add constraint fk_cprogramversion_default_program_id foreign key (default_program_id) references cprogram (id) on delete restrict on update restrict;
+
 alter table changepropertytoken add constraint fk_changepropertytoken_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
 
-alter table compilation add constraint fk_compilation_c_compilation_version foreign key (c_compilation_version) references version (id) on delete restrict on update restrict;
+alter table compilation add constraint fk_compilation_c_compilation_version foreign key (c_compilation_version) references cprogramversion (id) on delete restrict on update restrict;
 
 alter table compilation add constraint fk_compilation_bin_compilation_file_id foreign key (bin_compilation_file_id) references blob (id) on delete restrict on update restrict;
 
@@ -1101,6 +1134,12 @@ create index ix_gridprogram_tag_gridprogram on gridprogram_tag (grid_program_id)
 alter table gridprogram_tag add constraint fk_gridprogram_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
 create index ix_gridprogram_tag_tag on gridprogram_tag (tag_id);
 
+alter table gridprogramversion add constraint fk_gridprogramversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
+create index ix_gridprogramversion_author_id on gridprogramversion (author_id);
+
+alter table gridprogramversion add constraint fk_gridprogramversion_grid_program_id foreign key (grid_program_id) references gridprogram (id) on delete restrict on update restrict;
+create index ix_gridprogramversion_grid_program_id on gridprogramversion (grid_program_id);
+
 alter table gridproject add constraint fk_gridproject_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
 create index ix_gridproject_project_id on gridproject (project_id);
 
@@ -1116,14 +1155,31 @@ create index ix_gridterminal_person_id on gridterminal (person_id);
 alter table hardware add constraint fk_hardware_hardware_type_id foreign key (hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
 create index ix_hardware_hardware_type_id on hardware (hardware_type_id);
 
-alter table hardware add constraint fk_hardware_actual_c_program_version_id foreign key (actual_c_program_version_id) references version (id) on delete restrict on update restrict;
+alter table hardware add constraint fk_hardware_actual_c_program_version_id foreign key (actual_c_program_version_id) references cprogramversion (id) on delete restrict on update restrict;
 create index ix_hardware_actual_c_program_version_id on hardware (actual_c_program_version_id);
 
-alter table hardware add constraint fk_hardware_actual_backup_c_program_version_id foreign key (actual_backup_c_program_version_id) references version (id) on delete restrict on update restrict;
+alter table hardware add constraint fk_hardware_actual_backup_c_program_version_id foreign key (actual_backup_c_program_version_id) references cprogramversion (id) on delete restrict on update restrict;
 create index ix_hardware_actual_backup_c_program_version_id on hardware (actual_backup_c_program_version_id);
 
 alter table hardware add constraint fk_hardware_actual_boot_loader_id foreign key (actual_boot_loader_id) references bootloader (id) on delete restrict on update restrict;
 create index ix_hardware_actual_boot_loader_id on hardware (actual_boot_loader_id);
+
+alter table hardware add constraint fk_hardware_picture_id foreign key (picture_id) references blob (id) on delete restrict on update restrict;
+
+alter table hardware add constraint fk_hardware_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
+create index ix_hardware_project_id on hardware (project_id);
+
+alter table hardware_tag add constraint fk_hardware_tag_hardware foreign key (hardware_id) references hardware (id) on delete restrict on update restrict;
+create index ix_hardware_tag_hardware on hardware_tag (hardware_id);
+
+alter table hardware_tag add constraint fk_hardware_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
+create index ix_hardware_tag_tag on hardware_tag (tag_id);
+
+alter table hardware_hardwaregroup add constraint fk_hardware_hardwaregroup_hardware foreign key (hardware_id) references hardware (id) on delete restrict on update restrict;
+create index ix_hardware_hardwaregroup_hardware on hardware_hardwaregroup (hardware_id);
+
+alter table hardware_hardwaregroup add constraint fk_hardware_hardwaregroup_hardwaregroup foreign key (hardware_group_id) references hardwaregroup (id) on delete restrict on update restrict;
+create index ix_hardware_hardwaregroup_hardwaregroup on hardware_hardwaregroup (hardware_group_id);
 
 alter table hardwarebatch add constraint fk_hardwarebatch_hardware_type_id foreign key (hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
 create index ix_hardwarebatch_hardware_type_id on hardwarebatch (hardware_type_id);
@@ -1137,22 +1193,6 @@ create index ix_hardwarefeature_hardwaretype_hardwaretype on hardwarefeature_har
 alter table hardwaregroup add constraint fk_hardwaregroup_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
 create index ix_hardwaregroup_project_id on hardwaregroup (project_id);
 
-alter table hardwareregistration add constraint fk_hardwareregistration_hardware_id foreign key (hardware_id) references hardware (id) on delete restrict on update restrict;
-
-alter table hardwareregistration add constraint fk_hardwareregistration_picture_id foreign key (picture_id) references blob (id) on delete restrict on update restrict;
-
-alter table hardwareregistration add constraint fk_hardwareregistration_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
-create index ix_hardwareregistration_project_id on hardwareregistration (project_id);
-
-alter table hardwareregistration add constraint fk_hardwareregistration_group_id foreign key (group_id) references hardwaregroup (id) on delete restrict on update restrict;
-create index ix_hardwareregistration_group_id on hardwareregistration (group_id);
-
-alter table hardwareregistration_tag add constraint fk_hardwareregistration_tag_hardwareregistration foreign key (hardware_registration_id) references hardwareregistration (id) on delete restrict on update restrict;
-create index ix_hardwareregistration_tag_hardwareregistration on hardwareregistration_tag (hardware_registration_id);
-
-alter table hardwareregistration_tag add constraint fk_hardwareregistration_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
-create index ix_hardwareregistration_tag_tag on hardwareregistration_tag (tag_id);
-
 alter table hardwaretype add constraint fk_hardwaretype_producer_id foreign key (producer_id) references producer (id) on delete restrict on update restrict;
 create index ix_hardwaretype_producer_id on hardwaretype (producer_id);
 
@@ -1164,10 +1204,10 @@ alter table hardwaretype add constraint fk_hardwaretype_picture_id foreign key (
 alter table hardwareupdate add constraint fk_hardwareupdate_actualization_procedure_id foreign key (actualization_procedure_id) references updateprocedure (id) on delete restrict on update restrict;
 create index ix_hardwareupdate_actualization_procedure_id on hardwareupdate (actualization_procedure_id);
 
-alter table hardwareupdate add constraint fk_hardwareupdate_hardware_id foreign key (hardware_id) references hardwareregistration (id) on delete restrict on update restrict;
+alter table hardwareupdate add constraint fk_hardwareupdate_hardware_id foreign key (hardware_id) references hardware (id) on delete restrict on update restrict;
 create index ix_hardwareupdate_hardware_id on hardwareupdate (hardware_id);
 
-alter table hardwareupdate add constraint fk_hardwareupdate_c_program_version_for_update_id foreign key (c_program_version_for_update_id) references version (id) on delete restrict on update restrict;
+alter table hardwareupdate add constraint fk_hardwareupdate_c_program_version_for_update_id foreign key (c_program_version_for_update_id) references cprogramversion (id) on delete restrict on update restrict;
 create index ix_hardwareupdate_c_program_version_for_update_id on hardwareupdate (c_program_version_for_update_id);
 
 alter table hardwareupdate add constraint fk_hardwareupdate_bootloader_id foreign key (bootloader_id) references bootloader (id) on delete restrict on update restrict;
@@ -1194,16 +1234,10 @@ create index ix_instance_tag_tag on instance_tag (tag_id);
 alter table instancesnapshot add constraint fk_instancesnapshot_instance_id foreign key (instance_id) references instance (id) on delete restrict on update restrict;
 create index ix_instancesnapshot_instance_id on instancesnapshot (instance_id);
 
-alter table instancesnapshot add constraint fk_instancesnapshot_b_version_id foreign key (b_version_id) references version (id) on delete restrict on update restrict;
-create index ix_instancesnapshot_b_version_id on instancesnapshot (b_version_id);
+alter table instancesnapshot add constraint fk_instancesnapshot_b_program_version_id foreign key (b_program_version_id) references libraryversion (id) on delete restrict on update restrict;
+create index ix_instancesnapshot_b_program_version_id on instancesnapshot (b_program_version_id);
 
 alter table instancesnapshot add constraint fk_instancesnapshot_program_id foreign key (program_id) references blob (id) on delete restrict on update restrict;
-
-alter table instancesnapshot_hardwareregistration add constraint fk_instancesnapshot_hardwareregistration_instancesnapshot foreign key (instance_snapshot_id) references instancesnapshot (id) on delete restrict on update restrict;
-create index ix_instancesnapshot_hardwareregistration_instancesnapshot on instancesnapshot_hardwareregistration (instance_snapshot_id);
-
-alter table instancesnapshot_hardwareregistration add constraint fk_instancesnapshot_hardwareregistration_hardwareregistra_2 foreign key (hardware_registration_id) references hardwareregistration (id) on delete restrict on update restrict;
-create index ix_instancesnapshot_hardwareregistration_hardwareregistra_2 on instancesnapshot_hardwareregistration (hardware_registration_id);
 
 alter table invitation add constraint fk_invitation_owner_id foreign key (owner_id) references person (id) on delete restrict on update restrict;
 create index ix_invitation_owner_id on invitation (owner_id);
@@ -1237,7 +1271,7 @@ alter table log add constraint fk_log_file_id foreign key (file_id) references b
 alter table mprograminstanceparameter add constraint fk_mprograminstanceparameter_grid_project_program_snapsho_1 foreign key (grid_project_program_snapshot_id) references mprojectprogramsnapshot (id) on delete restrict on update restrict;
 create index ix_mprograminstanceparameter_grid_project_program_snapsho_1 on mprograminstanceparameter (grid_project_program_snapshot_id);
 
-alter table mprograminstanceparameter add constraint fk_mprograminstanceparameter_grid_program_version_id foreign key (grid_program_version_id) references version (id) on delete restrict on update restrict;
+alter table mprograminstanceparameter add constraint fk_mprograminstanceparameter_grid_program_version_id foreign key (grid_program_version_id) references gridprogramversion (id) on delete restrict on update restrict;
 create index ix_mprograminstanceparameter_grid_program_version_id on mprograminstanceparameter (grid_program_version_id);
 
 alter table mprojectprogramsnapshot add constraint fk_mprojectprogramsnapshot_grid_project_id foreign key (grid_project_id) references gridproject (id) on delete restrict on update restrict;
@@ -1246,8 +1280,8 @@ create index ix_mprojectprogramsnapshot_grid_project_id on mprojectprogramsnapsh
 alter table b_program_version_snapshots add constraint fk_b_program_version_snapshots_mprojectprogramsnapshot foreign key (mproject_program_snap_shot_id) references mprojectprogramsnapshot (id) on delete restrict on update restrict;
 create index ix_b_program_version_snapshots_mprojectprogramsnapshot on b_program_version_snapshots (mproject_program_snap_shot_id);
 
-alter table b_program_version_snapshots add constraint fk_b_program_version_snapshots_version foreign key (version_id) references version (id) on delete restrict on update restrict;
-create index ix_b_program_version_snapshots_version on b_program_version_snapshots (version_id);
+alter table b_program_version_snapshots add constraint fk_b_program_version_snapshots_libraryversion foreign key (library_version_id) references libraryversion (id) on delete restrict on update restrict;
+create index ix_b_program_version_snapshots_libraryversion on b_program_version_snapshots (library_version_id);
 
 alter table notification add constraint fk_notification_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
 create index ix_notification_person_id on notification (person_id);
@@ -1311,23 +1345,6 @@ create index ix_tag_person_id on tag (person_id);
 alter table updateprocedure add constraint fk_updateprocedure_instance_id foreign key (instance_id) references instancesnapshot (id) on delete restrict on update restrict;
 create index ix_updateprocedure_instance_id on updateprocedure (instance_id);
 
-alter table version add constraint fk_version_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
-create index ix_version_author_id on version (author_id);
-
-alter table version add constraint fk_version_library_id foreign key (library_id) references library (id) on delete restrict on update restrict;
-create index ix_version_library_id on version (library_id);
-
-alter table version add constraint fk_version_c_program_id foreign key (c_program_id) references cprogram (id) on delete restrict on update restrict;
-create index ix_version_c_program_id on version (c_program_id);
-
-alter table version add constraint fk_version_default_program_id foreign key (default_program_id) references cprogram (id) on delete restrict on update restrict;
-
-alter table version add constraint fk_version_b_program_id foreign key (b_program_id) references bprogram (id) on delete restrict on update restrict;
-create index ix_version_b_program_id on version (b_program_id);
-
-alter table version add constraint fk_version_grid_program_id foreign key (grid_program_id) references gridprogram (id) on delete restrict on update restrict;
-create index ix_version_grid_program_id on version (grid_program_id);
-
 alter table widget add constraint fk_widget_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
 create index ix_widget_author_id on widget (author_id);
 
@@ -1364,10 +1381,13 @@ drop index if exists ix_bprogram_tag_bprogram;
 alter table if exists bprogram_tag drop constraint if exists fk_bprogram_tag_tag;
 drop index if exists ix_bprogram_tag_tag;
 
-alter table if exists blob drop constraint if exists fk_blob_boot_loader_id;
+alter table if exists libraryversion drop constraint if exists fk_libraryversion_author_id;
+drop index if exists ix_libraryversion_author_id;
 
-alter table if exists blob drop constraint if exists fk_blob_version_id;
-drop index if exists ix_blob_version_id;
+alter table if exists libraryversion drop constraint if exists fk_libraryversion_library_id;
+drop index if exists ix_libraryversion_library_id;
+
+alter table if exists blob drop constraint if exists fk_blob_boot_loader_id;
 
 alter table if exists block drop constraint if exists fk_block_author_id;
 drop index if exists ix_block_author_id;
@@ -1414,6 +1434,14 @@ drop index if exists ix_cprogram_tag_cprogram;
 alter table if exists cprogram_tag drop constraint if exists fk_cprogram_tag_tag;
 drop index if exists ix_cprogram_tag_tag;
 
+alter table if exists cprogramversion drop constraint if exists fk_cprogramversion_author_id;
+drop index if exists ix_cprogramversion_author_id;
+
+alter table if exists cprogramversion drop constraint if exists fk_cprogramversion_c_program_id;
+drop index if exists ix_cprogramversion_c_program_id;
+
+alter table if exists cprogramversion drop constraint if exists fk_cprogramversion_default_program_id;
+
 alter table if exists changepropertytoken drop constraint if exists fk_changepropertytoken_person_id;
 
 alter table if exists compilation drop constraint if exists fk_compilation_c_compilation_version;
@@ -1434,6 +1462,12 @@ drop index if exists ix_gridprogram_tag_gridprogram;
 
 alter table if exists gridprogram_tag drop constraint if exists fk_gridprogram_tag_tag;
 drop index if exists ix_gridprogram_tag_tag;
+
+alter table if exists gridprogramversion drop constraint if exists fk_gridprogramversion_author_id;
+drop index if exists ix_gridprogramversion_author_id;
+
+alter table if exists gridprogramversion drop constraint if exists fk_gridprogramversion_grid_program_id;
+drop index if exists ix_gridprogramversion_grid_program_id;
 
 alter table if exists gridproject drop constraint if exists fk_gridproject_project_id;
 drop index if exists ix_gridproject_project_id;
@@ -1459,6 +1493,23 @@ drop index if exists ix_hardware_actual_backup_c_program_version_id;
 alter table if exists hardware drop constraint if exists fk_hardware_actual_boot_loader_id;
 drop index if exists ix_hardware_actual_boot_loader_id;
 
+alter table if exists hardware drop constraint if exists fk_hardware_picture_id;
+
+alter table if exists hardware drop constraint if exists fk_hardware_project_id;
+drop index if exists ix_hardware_project_id;
+
+alter table if exists hardware_tag drop constraint if exists fk_hardware_tag_hardware;
+drop index if exists ix_hardware_tag_hardware;
+
+alter table if exists hardware_tag drop constraint if exists fk_hardware_tag_tag;
+drop index if exists ix_hardware_tag_tag;
+
+alter table if exists hardware_hardwaregroup drop constraint if exists fk_hardware_hardwaregroup_hardware;
+drop index if exists ix_hardware_hardwaregroup_hardware;
+
+alter table if exists hardware_hardwaregroup drop constraint if exists fk_hardware_hardwaregroup_hardwaregroup;
+drop index if exists ix_hardware_hardwaregroup_hardwaregroup;
+
 alter table if exists hardwarebatch drop constraint if exists fk_hardwarebatch_hardware_type_id;
 drop index if exists ix_hardwarebatch_hardware_type_id;
 
@@ -1470,22 +1521,6 @@ drop index if exists ix_hardwarefeature_hardwaretype_hardwaretype;
 
 alter table if exists hardwaregroup drop constraint if exists fk_hardwaregroup_project_id;
 drop index if exists ix_hardwaregroup_project_id;
-
-alter table if exists hardwareregistration drop constraint if exists fk_hardwareregistration_hardware_id;
-
-alter table if exists hardwareregistration drop constraint if exists fk_hardwareregistration_picture_id;
-
-alter table if exists hardwareregistration drop constraint if exists fk_hardwareregistration_project_id;
-drop index if exists ix_hardwareregistration_project_id;
-
-alter table if exists hardwareregistration drop constraint if exists fk_hardwareregistration_group_id;
-drop index if exists ix_hardwareregistration_group_id;
-
-alter table if exists hardwareregistration_tag drop constraint if exists fk_hardwareregistration_tag_hardwareregistration;
-drop index if exists ix_hardwareregistration_tag_hardwareregistration;
-
-alter table if exists hardwareregistration_tag drop constraint if exists fk_hardwareregistration_tag_tag;
-drop index if exists ix_hardwareregistration_tag_tag;
 
 alter table if exists hardwaretype drop constraint if exists fk_hardwaretype_producer_id;
 drop index if exists ix_hardwaretype_producer_id;
@@ -1528,16 +1563,10 @@ drop index if exists ix_instance_tag_tag;
 alter table if exists instancesnapshot drop constraint if exists fk_instancesnapshot_instance_id;
 drop index if exists ix_instancesnapshot_instance_id;
 
-alter table if exists instancesnapshot drop constraint if exists fk_instancesnapshot_b_version_id;
-drop index if exists ix_instancesnapshot_b_version_id;
+alter table if exists instancesnapshot drop constraint if exists fk_instancesnapshot_b_program_version_id;
+drop index if exists ix_instancesnapshot_b_program_version_id;
 
 alter table if exists instancesnapshot drop constraint if exists fk_instancesnapshot_program_id;
-
-alter table if exists instancesnapshot_hardwareregistration drop constraint if exists fk_instancesnapshot_hardwareregistration_instancesnapshot;
-drop index if exists ix_instancesnapshot_hardwareregistration_instancesnapshot;
-
-alter table if exists instancesnapshot_hardwareregistration drop constraint if exists fk_instancesnapshot_hardwareregistration_hardwareregistra_2;
-drop index if exists ix_instancesnapshot_hardwareregistration_hardwareregistra_2;
 
 alter table if exists invitation drop constraint if exists fk_invitation_owner_id;
 drop index if exists ix_invitation_owner_id;
@@ -1580,8 +1609,8 @@ drop index if exists ix_mprojectprogramsnapshot_grid_project_id;
 alter table if exists b_program_version_snapshots drop constraint if exists fk_b_program_version_snapshots_mprojectprogramsnapshot;
 drop index if exists ix_b_program_version_snapshots_mprojectprogramsnapshot;
 
-alter table if exists b_program_version_snapshots drop constraint if exists fk_b_program_version_snapshots_version;
-drop index if exists ix_b_program_version_snapshots_version;
+alter table if exists b_program_version_snapshots drop constraint if exists fk_b_program_version_snapshots_libraryversion;
+drop index if exists ix_b_program_version_snapshots_libraryversion;
 
 alter table if exists notification drop constraint if exists fk_notification_person_id;
 drop index if exists ix_notification_person_id;
@@ -1645,23 +1674,6 @@ drop index if exists ix_tag_person_id;
 alter table if exists updateprocedure drop constraint if exists fk_updateprocedure_instance_id;
 drop index if exists ix_updateprocedure_instance_id;
 
-alter table if exists version drop constraint if exists fk_version_author_id;
-drop index if exists ix_version_author_id;
-
-alter table if exists version drop constraint if exists fk_version_library_id;
-drop index if exists ix_version_library_id;
-
-alter table if exists version drop constraint if exists fk_version_c_program_id;
-drop index if exists ix_version_c_program_id;
-
-alter table if exists version drop constraint if exists fk_version_default_program_id;
-
-alter table if exists version drop constraint if exists fk_version_b_program_id;
-drop index if exists ix_version_b_program_id;
-
-alter table if exists version drop constraint if exists fk_version_grid_program_id;
-drop index if exists ix_version_grid_program_id;
-
 alter table if exists widget drop constraint if exists fk_widget_author_id;
 drop index if exists ix_widget_author_id;
 
@@ -1689,6 +1701,8 @@ drop table if exists bprogram cascade;
 
 drop table if exists bprogram_tag cascade;
 
+drop table if exists libraryversion cascade;
+
 drop table if exists blob cascade;
 
 drop table if exists block cascade;
@@ -1702,6 +1716,8 @@ drop table if exists bootloader cascade;
 drop table if exists cprogram cascade;
 
 drop table if exists cprogram_tag cascade;
+
+drop table if exists cprogramversion cascade;
 
 drop table if exists changepropertytoken cascade;
 
@@ -1719,6 +1735,8 @@ drop table if exists gridprogram cascade;
 
 drop table if exists gridprogram_tag cascade;
 
+drop table if exists gridprogramversion cascade;
+
 drop table if exists gridproject cascade;
 
 drop table if exists gridproject_tag cascade;
@@ -1727,6 +1745,10 @@ drop table if exists gridterminal cascade;
 
 drop table if exists hardware cascade;
 
+drop table if exists hardware_tag cascade;
+
+drop table if exists hardware_hardwaregroup cascade;
+
 drop table if exists hardwarebatch cascade;
 
 drop table if exists hardwarefeature cascade;
@@ -1734,10 +1756,6 @@ drop table if exists hardwarefeature cascade;
 drop table if exists hardwarefeature_hardwaretype cascade;
 
 drop table if exists hardwaregroup cascade;
-
-drop table if exists hardwareregistration cascade;
-
-drop table if exists hardwareregistration_tag cascade;
 
 drop table if exists hardwaretype cascade;
 
@@ -1750,8 +1768,6 @@ drop table if exists instance cascade;
 drop table if exists instance_tag cascade;
 
 drop table if exists instancesnapshot cascade;
-
-drop table if exists instancesnapshot_hardwareregistration cascade;
 
 drop table if exists invitation cascade;
 
@@ -1814,8 +1830,6 @@ drop table if exists tariff cascade;
 drop table if exists updateprocedure cascade;
 
 drop table if exists validationtoken cascade;
-
-drop table if exists version cascade;
 
 drop table if exists widget cascade;
 

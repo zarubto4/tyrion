@@ -28,7 +28,7 @@ public abstract class VersionModel extends NamedModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @OneToMany(mappedBy = "version", cascade = CascadeType.ALL, fetch = FetchType.EAGER) public List<Model_Blob> files = new ArrayList<>();
+    @JsonIgnore @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER) public List<Model_Blob> files = new ArrayList<>();
     @ManyToOne(fetch = FetchType.LAZY) public Model_Person author;
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only if user make request for publishing") @Enumerated(EnumType.STRING) public Approval approval_state;
@@ -66,6 +66,13 @@ public abstract class VersionModel extends NamedModel {
         }
 
         return Model_Person.getById(cache_author_id);
+    }
+
+
+    @JsonIgnore @Override
+    public void save() {
+        System.out.println("Probublalo to přes VersionModel.save(), zde teoreticky mužu automaticky uložit autora");
+        super.save();
     }
 
 /* BLOB DATA  ---------------------------------------------------------------------------------------------------------*/

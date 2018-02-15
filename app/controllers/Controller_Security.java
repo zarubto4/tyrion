@@ -566,7 +566,7 @@ public class Controller_Security extends _BaseController {
         }
     }
 
-    **/
+
 
 //###### Socilání sítě - a generátory přístupů ########################################################################
 
@@ -706,6 +706,8 @@ public class Controller_Security extends _BaseController {
             return controllerServerError(e);
         }
     }
+
+     **/
 
 
 ///###### Option########################################################################################################

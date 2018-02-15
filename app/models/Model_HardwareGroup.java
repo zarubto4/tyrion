@@ -32,7 +32,7 @@ public class Model_HardwareGroup extends NamedModel {
 
     @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY) public Model_Project project;  // Projekt, pod který Hardware Group spadá
 
-    @JsonIgnore @OneToMany(mappedBy = "group", fetch = FetchType.LAZY) public List<Model_Hardware> hardware = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "hardware_groups", fetch = FetchType.LAZY) public List<Model_Hardware> hardware = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 

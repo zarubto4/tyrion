@@ -78,13 +78,13 @@ public class Model_Person extends BaseModel {
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ProjectParticipant>    projects_participant = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Tag>                   tags                 = new ArrayList<>(); // User made tags
     @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Block>                 blocks               = new ArrayList<>(); // Propojení, které bločky uživatel vytvořil
-    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BlockVersion>          blockVersions        = new ArrayList<>(); // Propojení, které verze bločků uživatel vytvořil
+    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BlockVersion>          blocks_versions        = new ArrayList<>(); // Propojení, které verze bločků uživatel vytvořil
     @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Widget>                widgets              = new ArrayList<>(); // Propojení, které widgety uživatel vytvořil
-    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_WidgetVersion>         widgetVersions       = new ArrayList<>(); // Propojení, které verze widgetů uživatel vytvořil
-    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BProgramVersion>       bprogram_versions    = new ArrayList<>(); // Propojení, které verze uživatel vytvořil
-    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_CProgramVersion>       cprogram_versions    = new ArrayList<>(); // Propojení, které verze uživatel vytvořil
-    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_GridProgramVersion>    gridprogram_versions = new ArrayList<>(); // Propojení, které verze uživatel vytvořil
-    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_AuthorizationToken>    authorizationTokens  = new ArrayList<>(); // Propojení, které uživatel napsal
+    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_WidgetVersion>         widget_cersions       = new ArrayList<>(); // Propojení, které verze widgetů uživatel vytvořil
+    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BProgramVersion>       b_program_versions    = new ArrayList<>(); // Propojení, které verze uživatel vytvořil
+    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_CProgramVersion>       c_program_versions    = new ArrayList<>(); // Propojení, které verze uživatel vytvořil
+    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_GridProgramVersion>    grid_program_versions = new ArrayList<>(); // Propojení, které verze uživatel vytvořil
+    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_AuthorizationToken>    authorization_tokens  = new ArrayList<>(); // Propojení, které uživatel napsal
     @JsonIgnore @OneToMany(mappedBy = "owner",  cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Invitation>            invitations          = new ArrayList<>(); // Pozvánky, které uživatel rozeslal
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Notification>          notifications        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_GridTerminal>          grid_terminals       = new ArrayList<>(); // Přihlášený websocket uživatele
@@ -187,7 +187,10 @@ public class Model_Person extends BaseModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {}
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {}
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
+        System.out.println("Model_Person check_read_permission - nothing to do"); // TODO smazat tento log
+        // Nothing
+    }
     @JsonIgnore @Transient @Override public void check_update_permission()   throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Person_update.name())) return;
         if(!_BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
@@ -284,7 +287,7 @@ public class Model_Person extends BaseModel {
 
             Model_Person person = find.query().where().eq("authorizationTokens.token", token).findOne();
             if (person == null) {
-                return null;
+                throw new Result_Error_NotFound(Model_Person.class);
             }
 
             cache.put(person.id, person);

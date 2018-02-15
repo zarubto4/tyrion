@@ -60,7 +60,7 @@ public class Controller_ExternalServer extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Cloud_Homer_Server_New",
+                            dataType = "utilities.swagger.input.Swagger_HomerServer_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -190,7 +190,7 @@ public class Controller_ExternalServer extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Cloud_Homer_Server_New",
+                            dataType = "utilities.swagger.input.Swagger_HomerServer_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -358,7 +358,7 @@ public class Controller_ExternalServer extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Cloud_Compilation_Server_New",
+                            dataType = "utilities.swagger.input.Swagger_CompilationServer_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -406,7 +406,7 @@ public class Controller_ExternalServer extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Cloud_Compilation_Server_New",
+                            dataType = "utilities.swagger.input.Swagger_CompilationServer_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"

@@ -13,6 +13,7 @@ import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 import utilities.swagger.input.Swagger_Project_New;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.UUID;
 
@@ -36,15 +37,15 @@ public abstract class _BaseController {
      */
     public static Model_Person person() throws _Base_Result_Exception {
         try {
+
             Model_Person person = (Model_Person) Controller.ctx().args.get("person");
 
-            if(person != null) {
+            if (person != null) {
                 return person;
             } else {
                 throw new Result_Error_Unauthorized();
             }
         } catch (Exception e) {
-            logger.internalServerError(e);
             throw new Result_Error_Unauthorized();
         }
     }
@@ -78,7 +79,6 @@ public abstract class _BaseController {
         try {
             return Controller.ctx().args.containsKey("person");
         } catch (Exception e) {
-            logger.internalServerError(e);
             return false;
         }
     }
@@ -161,6 +161,15 @@ public abstract class _BaseController {
      */
     public static Result ok(String message) {
         return Controller.ok(Json.toJson(new Result_Ok(message)));
+    }
+
+    /**
+     * Creates an ok result with given File.
+     * @param file
+     * @return
+     */
+    public static Result ok(File file) {
+        return Controller.ok(file);
     }
 
 // FILES - 200 #########################################################################################################
@@ -377,7 +386,7 @@ public abstract class _BaseController {
      * @param error
      * @return
      */
-    public static Result controllerServerError(Exception error) {
+    public static Result controllerServerError(Throwable error) {
         try{
 
             // Result_Error_NotFound
@@ -416,7 +425,7 @@ public abstract class _BaseController {
      * @param error that was thrown
      * @return 500 result
      */
-    public static Result internalServerError(Exception error) {
+    public static Result internalServerError(Throwable error) {
         StackTraceElement current_stack = Thread.currentThread().getStackTrace()[2]; // Find the caller origin
         ServerLogger.error(error, current_stack.getClassName() + "::" + current_stack.getMethodName(), Controller.request());
         return Controller.internalServerError(Json.toJson(new Result_InternalServerError()));
