@@ -619,7 +619,6 @@ public class Controller_Grid extends _BaseController {
             version.name                = help.name;
             version.description         = help.description;
             version.grid_program        = gridProgram;
-            version.author              = _BaseController.person();
             version.public_access       = help.public_access;
             version.m_program_virtual_input_output =  help.virtual_input_output;
           
@@ -1619,7 +1618,6 @@ public class Controller_Grid extends _BaseController {
             version.design_json = help.design_json;
             version.logic_json = help.logic_json;
             version.widget = gridWidget;
-            version.author = _BaseController.person();
             
             // Uložení objektu
             version.save();

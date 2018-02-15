@@ -95,8 +95,8 @@ public abstract class BaseModel extends Model {
 
         // Check Permission - only if user is logged!
         if(its_person_operation()) {
-            System.out.println("save() check_create_permission je vyžadováno!");
             check_create_permission();
+            save_author();
         }
 
         boolean isNew = this.id == null;
@@ -276,7 +276,7 @@ public abstract class BaseModel extends Model {
      * Just a idea..
       * @return
      */
-    @JsonIgnore public boolean its_person_operation() {
+    @JsonIgnore private boolean its_person_operation() {
         try {
             return  _BaseController.isAuthenticated();
         } catch (_Base_Result_Exception e){
@@ -284,6 +284,28 @@ public abstract class BaseModel extends Model {
         }catch (Exception e){
             logger.internalServerError(e);
             return false;
+        }
+    }
+
+    /**
+     * Here we can log who do this operation. User or System.
+     * Just a idea..
+     * @return
+     */
+    @JsonIgnore private void save_author() {
+        try {
+
+            Field field = this.getClass().getDeclaredField("author");
+            if (field != null) {
+                // Set only if its not set before by some special logic (For example, when we create copies of objects
+                if(field.get(Model_Person.class) == null) {
+                    field.set(_BaseController.person(), Model_Person.class);
+                }
+            }
+
+        }catch (Exception e) {
+            // Don't log anything!
+            return;
         }
     }
 

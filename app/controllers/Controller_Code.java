@@ -375,7 +375,6 @@ public class Controller_Code extends _BaseController {
                 Model_CProgramVersion version = new Model_CProgramVersion();
                 version.name = "1.0.1";
                 version.description = hardwareType.get_main_c_program().description;
-                version.author = person();
                 version.c_program = c_program;
                 version.publish_type = help.c_program_public_admin_create ? ProgramType.PUBLIC : ProgramType.PRIVATE;
 
@@ -460,7 +459,6 @@ public class Controller_Code extends _BaseController {
                 copy_object.description     = version.description;
                 copy_object.c_program       = c_program_new;
                 copy_object.publish_type    = ProgramType.PRIVATE;
-                copy_object.author          = version.author;
 
                 // Zkontroluji oprávnění
                 copy_object.save();
@@ -791,7 +789,6 @@ public class Controller_Code extends _BaseController {
             Model_CProgramVersion version = new Model_CProgramVersion();
             version.name            = help.name;
             version.description     = help.description;
-            version.author          = person();
             version.c_program       = c_program;
             version.publish_type    = ProgramType.PRIVATE;
 

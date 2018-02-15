@@ -398,7 +398,6 @@ public class Controller_Blocko extends _BaseController {
             version.name        = help.name;
             version.description = help.description;
             version.b_program   = bProgram;
-            version.author      = person();
 
             // Vytvořím Snapshoty Verze M_Programu
             if (help.m_project_snapshots != null) {
@@ -1185,7 +1184,6 @@ public class Controller_Blocko extends _BaseController {
             blockoBlockVersion.design_json = scheme.design_json;
             blockoBlockVersion.logic_json = scheme.logic_json;
             blockoBlockVersion.block = block;
-            blockoBlockVersion.author = _BaseController.person();
             blockoBlockVersion.save();
 
             // Vrácení objektu
@@ -1245,7 +1243,7 @@ public class Controller_Blocko extends _BaseController {
                 Model_BlockVersion copy_object = new Model_BlockVersion();
                 copy_object.name        = version.name;
                 copy_object.description = version.description;
-                copy_object.author      = version.author;
+                copy_object.design_json = version.design_json;
                 copy_object.design_json = version.design_json;
                 copy_object.logic_json  = version.logic_json;
                 copy_object.block       = blockNew;
@@ -1793,8 +1791,7 @@ public class Controller_Blocko extends _BaseController {
             version.design_json = help.design_json;
             version.logic_json = help.logic_json;
             version.block = block;
-            version.author = person();
-            
+
             // Uložení objektu
             version.save();
 

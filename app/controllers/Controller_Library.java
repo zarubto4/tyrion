@@ -488,7 +488,6 @@ public class Controller_Library extends _BaseController {
             Model_LibraryVersion version = new Model_LibraryVersion();
             version.name             = help.name;
             version.description      = help.description;
-            version.author           = person();
             version.library          = library;
             version.publish_type     = ProgramType.PRIVATE;
 
