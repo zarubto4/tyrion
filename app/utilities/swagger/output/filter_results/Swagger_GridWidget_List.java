@@ -7,6 +7,7 @@ import models.Model_Widget;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @ApiModel(description = "Individual GridWidget List",
         value = "GridWidget_List")
@@ -22,10 +23,10 @@ public class Swagger_GridWidget_List extends _Swagger_Filter_Common {
     public Swagger_GridWidget_List(Query<Model_Widget> query, int page_number) {
 
         if (page_number < 1) page_number = 1;
-        List<Model_Widget> grid_widgets =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).select("id").findList();
+        List<UUID> ids =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findIds();
 
-        for (Model_Widget gridWidget_not_cached : grid_widgets) {
-            Model_Widget gridWidget = Model_Widget.getById(gridWidget_not_cached.id);
+        for (UUID id : ids) {
+            Model_Widget gridWidget = Model_Widget.getById(id);
             if (gridWidget == null) continue;
 
             this.content.add(gridWidget);

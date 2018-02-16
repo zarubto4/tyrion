@@ -17,7 +17,7 @@ public class Result_NotFound extends _Response_Interface {
     }
 
     @ApiModelProperty(value = "code", allowableValues = "404", required = true, readOnly = true)
-    public Integer code() {
+    public int code() {
         return 404;
     }
 

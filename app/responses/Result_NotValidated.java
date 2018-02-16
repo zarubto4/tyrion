@@ -19,7 +19,7 @@ public class Result_NotValidated extends _Response_Interface {
     }
 
     @ApiModelProperty(value = "code", allowableValues = "705", required = true, readOnly = true)
-    public Integer code() {
+    public int code() {
         return 705;
     }
 

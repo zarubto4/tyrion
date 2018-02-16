@@ -45,7 +45,8 @@ public class Controller_Library extends _BaseController {
             tags = {"Library"},
             notes = "Create Library for C programs ",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -453,7 +454,8 @@ public class Controller_Library extends _BaseController {
             tags = {"Library"},
             notes = "If you want add new code to Library",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {

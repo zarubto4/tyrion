@@ -55,11 +55,11 @@ public class Model_GridProject extends TaggedModel {
 
             if (grid_programs_ids.isEmpty()) {
 
-                List<Model_GridProgram> gridPrograms =  Model_GridProgram.find.query().where().eq("grid_project.id", id).orderBy("UPPER(name) ASC").select("id").findList();
+                List<UUID> uuids =  Model_GridProgram.find.query().where().eq("grid_project.id", id).orderBy("UPPER(name) ASC").findIds();
 
                 // Získání seznamu
-                for (Model_GridProgram gridProgram : gridPrograms) {
-                    grid_programs_ids.add(gridProgram.id);
+                for (UUID uuid : uuids) {
+                    grid_programs_ids.add(uuid);
                 }
             }
 

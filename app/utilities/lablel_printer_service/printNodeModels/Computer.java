@@ -17,7 +17,6 @@ public class Computer {
     public String hostname = null;
     public String version = null;
     public String jre = null;
-    public String createTimestamp = null;
     public String state = null;
 
 }

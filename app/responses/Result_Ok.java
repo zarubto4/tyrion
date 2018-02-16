@@ -18,7 +18,7 @@ public class Result_Ok extends _Response_Interface {
     }
 
     @ApiModelProperty(value = "code", allowableValues = "200", required = true, readOnly = true)
-    public Integer code() {
+    public int code() {
         return 200;
     }
 

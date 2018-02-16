@@ -324,7 +324,8 @@ public class Controller_Code extends _BaseController {
             tags = {"C_Program"},
             notes = "If you want create new C_Program in project.id = {project_id}. Send required json values and cloud_compilation_server respond with new object",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -750,7 +751,8 @@ public class Controller_Code extends _BaseController {
             tags = {"C_Program"},
             notes = "If you want add new code to C_Program by query = c_program_id. Send required json values and cloud_compilation_server respond with new object",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {

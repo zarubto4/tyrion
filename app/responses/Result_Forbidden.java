@@ -1,10 +1,17 @@
 package responses;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(value="Result_Forbidden", description="Permission is needed for this action.")
-public class Result_Forbidden  extends _Response_Interface {
+@ApiModel(value="Result_Forbidden",
+          description="Permission is needed for this action.")
+public class Result_Forbidden extends _Response_Interface {
+
+    @JsonIgnore public String message;
+    @JsonIgnore public String state;
+    @JsonIgnore public Integer code;
 
     public Result_Forbidden() {}
 
@@ -12,18 +19,18 @@ public class Result_Forbidden  extends _Response_Interface {
         this.message = message;
     }
 
-
-    @ApiModelProperty(value = "state", allowableValues = "forbidden", required = true, readOnly = true)
+    @JsonProperty @ApiModelProperty(allowableValues = "forbidden", required = true, readOnly = true)
     public String state() {
         return "forbidden";
     }
 
-    @ApiModelProperty(value = "code", allowableValues = "403", required = true, readOnly = true)
-    public Integer code() {
+    @JsonProperty @ApiModelProperty(allowableValues = "403", required = true, readOnly = true)
+    public int code() {
+
         return 403;
     }
 
-    @ApiModelProperty(value = "Can be null! If not, you can show that to User", required = false, readOnly = true)
+    @JsonProperty @ApiModelProperty(value = "Can be null! If not, you can show that to User", required = false, readOnly = true)
     public String message() {
         if(message != null) return message;
         return "For this operation you have to be object owner, or you need special permission for that.";

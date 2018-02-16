@@ -49,7 +49,8 @@ public class Controller_Grid extends _BaseController {
                     "Different screens for family members, for employee etc.. But of course - you can used that for only one GridProgram",
             produces = "application/json",
             consumes = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -342,7 +343,8 @@ public class Controller_Grid extends _BaseController {
             notes = "creating new GridProgram",
             produces = "application/json",
             consumes = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams({
             @ApiImplicitParam(
@@ -585,7 +587,8 @@ public class Controller_Grid extends _BaseController {
             tags = {"Grid"},
             notes = "creating new GridProgramVersion",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams({
             @ApiImplicitParam(
@@ -787,8 +790,7 @@ public class Controller_Grid extends _BaseController {
             tags = {"APP-Api"},
             notes = "For every app (terminal) opening you have to valid your terminal_id.",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
@@ -823,7 +825,7 @@ public class Controller_Grid extends _BaseController {
                 terminal.device_type = help.device_type;
                 terminal.save();
 
-                return created(Json.toJson(terminal));
+                return ok(Json.toJson(terminal));
 
             } else {
 
@@ -844,7 +846,8 @@ public class Controller_Grid extends _BaseController {
                     "You need unique identification key. If Person loggs to you application Tyrion connects this device with Person. Try to " +
                     "save this key to cookies or on mobile device, or you have to ask every time again",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -910,7 +913,8 @@ public class Controller_Grid extends _BaseController {
             tags = {"Widget"},
             notes = "creating new independent Widget object for Grid tools",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams({
             @ApiImplicitParam(
@@ -1577,7 +1581,8 @@ public class Controller_Grid extends _BaseController {
             tags = {"Grid-Widget"},
             notes = "new GridWidget version",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {

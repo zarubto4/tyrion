@@ -156,12 +156,12 @@ public class Job_SpendingCredit implements Job {
                     }
                     case INTEGRATOR:{
 
-                        logger.debug("spend: integrator model - TODO"); // TODO
+                        logger.debug("spend: integrator model - TODO"); // TODO [LEXA]
                         break;
                     }
                     case INTEGRATION:{
 
-                        logger.debug("spend: integration model - TODO"); // TODO
+                        logger.debug("spend: integration model - TODO"); // TODO [LEXA]
                         break;
                     }
                     default: {

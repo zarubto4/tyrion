@@ -165,7 +165,8 @@ public class Controller_Update extends _BaseController {
             tags = {"Actualization"},
             notes = "make procedure",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -245,10 +246,10 @@ public class Controller_Update extends _BaseController {
                     if (!bootLoader.hardware_type.id.equals(hardwareType.id)) badRequest("Invalid type of Bootloader for HardwareType");
                 }
 
-                List<Model_Hardware> hw = Model_Hardware.find.query().where().eq("group.id", group.id).eq("hardware.hardware_type.id", hardwareType.id).select("id").findList();
+                List<UUID> uuid_ids = Model_Hardware.find.query().where().eq("group.id", group.id).eq("hardware.hardware_type.id", hardwareType.id).findIds();
 
-                for (Model_Hardware hardware_not_cached : hw) {
-                    Model_Hardware hardware = Model_Hardware.getById(hardware_not_cached.id);
+                for (UUID uuid_id : uuid_ids) {
+                    Model_Hardware hardware = Model_Hardware.getById(uuid_id);
 
                     if (!hardware.get_project_id().equals(project.id))
                     return notFound("hardware_id is not from same project");

@@ -182,7 +182,7 @@ public class Controller_Security extends _BaseController {
 
             // Vytvářím objekt, který zasílám zpět frontendu
             Swagger_Login_Token swagger_login_token = new Swagger_Login_Token();
-            swagger_login_token.authToken = token.token;
+            swagger_login_token.auth_token = token.token;
 
             // Odesílám odpověď
             return ok(Json.toJson(swagger_login_token));

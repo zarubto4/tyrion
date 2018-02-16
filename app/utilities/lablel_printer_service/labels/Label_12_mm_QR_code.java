@@ -33,14 +33,6 @@ public class Label_12_mm_QR_code {
 
         ByteArrayOutputStream out = make_label();
 
-        // Zkusím prototypově uložit
-        /* TODO smazat protože to nebude potřeba
-        try(OutputStream outputStream = new FileOutputStream(System.getProperty("user.dir") + "/label_printers/" + "generate_12_mm_qr_code_" + new Date().getTime()  + ".pdf")) {
-            out.writeTo(outputStream);
-        } catch (Exception e) {
-
-        }*/
-
         return out;
     }
 

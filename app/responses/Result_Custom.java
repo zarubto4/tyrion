@@ -19,7 +19,7 @@ public class Result_Custom extends _Response_Interface {
     }
 
     @ApiModelProperty(value = "code", allowableValues = "XXX", required = true, readOnly = true)
-    public Integer code() {
+    public int code() {
         return code;
     }
 

@@ -109,12 +109,12 @@ public class Job_CheckCompilationLibraries implements Job {
                 // Seznam Release z GitHubu v upravené podobě
                 List<Swagger_GitHubReleases> releases = form.get().list;
 
-                List<Model_HardwareType> hardwareTypes = Model_HardwareType.find.query().where().select("id").findList();
+                List<UUID> hardwareTypes_id = Model_HardwareType.find.query().where().findIds();
                 // Do každého typu desky - který má Tyrion v DB doplní podporované knihovny
 
-                for (Model_HardwareType hwType : hardwareTypes) {
+                for (UUID hwType_id : hardwareTypes_id) {
 
-                    Model_HardwareType hardwareType = Model_HardwareType.getById(hwType.id);
+                    Model_HardwareType hardwareType = Model_HardwareType.getById(hwType_id);
 
                     // Pokud není pole, vytvořím ho
                     if (hardwareType.cache_library_list == null) {
@@ -202,9 +202,9 @@ public class Job_CheckCompilationLibraries implements Job {
 
                 logger.trace("check_version_thread:: all Library type of Board synchronized");
 
-                for (Model_HardwareType hwType : hardwareTypes) {
+                for (UUID uuid : hardwareTypes_id) {
 
-                    Model_HardwareType hardwareType = Model_HardwareType.getById(hwType.id);
+                    Model_HardwareType hardwareType = Model_HardwareType.getById(uuid);
 
                     //System.out.println("Získávám z databáze všechny bootloadery");
                     List<Model_BootLoader> bootLoaders = hardwareType.boot_loaders_get_for_github_include_removed();

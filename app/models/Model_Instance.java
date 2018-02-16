@@ -638,7 +638,7 @@ public class Model_Instance extends TaggedModel {
 
 
             // Kontola operávnění ke konkrétní instanci??
-            if (Model_Instance.find.query().where().eq("id", help.instance_id).eq("b_program.project.participants.person.id", floatingPersonToken.person.id).findCount() > 0) {
+            if (Model_Instance.find.query().where().eq("id", help.instance_id).eq("b_program.project.participants.person.id", floatingPersonToken.get_person_id()).findCount() > 0) {
                 homer.send(help.get_result(true));
             } else {
                 homer.send(help.get_result(false));

@@ -146,10 +146,10 @@ public class Controller_Person extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result person_emailAuthentication(String authToken) {
+    public Result person_emailAuthentication(String auth_token) {
         try {
 
-            Model_ValidationToken validationToken = Model_ValidationToken.find.query().where().eq("token", UUID.fromString(authToken)).findOne();
+            Model_ValidationToken validationToken = Model_ValidationToken.find.query().where().eq("token", UUID.fromString(auth_token)).findOne();
 
             if (validationToken == null) return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectOk  );
 

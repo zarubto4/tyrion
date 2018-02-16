@@ -11,7 +11,7 @@ public class Swagger_Compilation_Build_Error {
     public String state = "build_error";
 
     @ApiModelProperty(required = true, readOnly = true)
-    public String filename;
+    public String file_name;
 
     @ApiModelProperty(required = true, readOnly = true)
     public Integer line;
@@ -26,18 +26,18 @@ public class Swagger_Compilation_Build_Error {
     public String text;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public String codeWhitespace;
+    public String code_white_space;
 
     @ApiModelProperty(required = true, readOnly = true)
     public String code;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public Integer adjustedColumn;
+    public Integer adjusted_column;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public Integer startIndex;
+    public Integer start_index;
 
     @ApiModelProperty(required = true, readOnly = true)
-    public Integer endIndex;
+    public Integer end_index;
 
 }

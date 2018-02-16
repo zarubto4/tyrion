@@ -13,6 +13,8 @@ import responses.*;
 import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
+import utilities.enums.BoardCommand;
+import utilities.enums.NetworkStatus;
 import utilities.errors.Exceptions.Result_Error_InvalidBody;
 import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
@@ -45,7 +47,8 @@ public class Controller_Project extends _BaseController {
             tags = {"Project"},
             notes = "create new Project",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -611,7 +614,8 @@ public class Controller_Project extends _BaseController {
             notes = "add new HW to Project, creates HardwareRegistration",
             produces = "application/json",
             consumes = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -732,13 +736,24 @@ public class Controller_Project extends _BaseController {
     public Result project_deactiveHardware(String registration_id) {
         try {
 
-            Model_Hardware registration = Model_Hardware.getById(registration_id);
+            Model_Hardware hardware = Model_Hardware.getById(registration_id);
 
-            // TODO
+            hardware.check_deactivate_permission();
 
-            registration.save();
+            hardware.dominant_entity = false;
+            hardware.update();
 
-            return ok(registration.json());
+            // log Hard disconection
+            if(hardware.online_state() == NetworkStatus.ONLINE) {
+                hardware.make_log_disconnect();
+                // If device is online, restart it. So Device will connect immediately and it will find probably a new activated alternative of Device
+                hardware.execute_command(BoardCommand.RESTART, true);
+            }
+
+            Model_Hardware.cache_status.remove(hardware.id);
+
+
+            return ok(hardware.json());
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -764,13 +779,16 @@ public class Controller_Project extends _BaseController {
     public Result project_activeHardware(String registration_id) {
         try {
 
-            Model_Hardware registration = Model_Hardware.getById(registration_id);
+            Model_Hardware hardware = Model_Hardware.getById(registration_id);
 
-            // TODO
+            hardware.check_activate_permission();
+            hardware.dominant_entity = true;
+            hardware.update();
 
-            registration.save();
+            hardware.is_online_get_from_cache();
 
-            return ok(registration.json());
+
+            return ok(hardware.json());
 
         } catch (Exception e) {
             return controllerServerError(e);

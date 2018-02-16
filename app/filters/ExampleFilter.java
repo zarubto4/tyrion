@@ -21,6 +21,7 @@ public class ExampleFilter extends EssentialFilter {
      */
     @Inject
     public ExampleFilter(Executor exec) {
+
         this.exec = exec;
     }
 

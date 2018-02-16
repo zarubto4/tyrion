@@ -19,7 +19,7 @@ public class Result_InternalServerError extends  _Response_Interface {
     }
 
     @ApiModelProperty(value = "code", allowableValues = "500", required = true, readOnly = true)
-    public Integer code() {
+    public int code() {
         return 500;
     }
 

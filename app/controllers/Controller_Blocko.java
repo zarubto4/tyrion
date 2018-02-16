@@ -555,7 +555,8 @@ public class Controller_Blocko extends _BaseController {
             notes = "",
             produces = "application/json",
             consumes = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -795,7 +796,8 @@ public class Controller_Blocko extends _BaseController {
             notes = "",
             produces = "application/json",
             consumes = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -1749,7 +1751,8 @@ public class Controller_Blocko extends _BaseController {
             tags = {"Block"},
             notes = "new Block version",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {

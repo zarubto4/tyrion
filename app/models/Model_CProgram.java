@@ -132,11 +132,11 @@ public class Model_CProgram extends TaggedModel {
 
             if (cache_version_ids.isEmpty()) {
 
-                List<Model_CProgramVersion> versions =  Model_CProgramVersion.find.query().where().eq("c_program.id", id).eq("deleted", false).order().desc("created").select("id").findList();
+                List<UUID> ids =  Model_CProgramVersion.find.query().where().eq("c_program.id", id).eq("deleted", false).order().desc("created").findIds();
 
                 // Získání seznamu
-                for (Model_CProgramVersion version : versions) {
-                    cache_version_ids.add(version.id);
+                for (UUID id : ids) {
+                    cache_version_ids.add(id);
                 }
             }
 

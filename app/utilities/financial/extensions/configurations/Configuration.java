@@ -11,7 +11,7 @@ public interface Configuration {
 
     static Object getConfiguration(ExtensionType type, String configuration) {
 
-        /*Form<?> form; TODO
+        /*Form<?> form; TODO [LEXA]
 
         switch (type) {
 

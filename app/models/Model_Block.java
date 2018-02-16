@@ -49,7 +49,7 @@ public class Model_Block extends TaggedModel {
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Cached private UUID cache_project_id;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_versions_id;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_version_ids = new ArrayList<>();
     @JsonIgnore @Transient @Cached private UUID cache_author_id;
     @JsonIgnore @Transient @Cached private UUID cache_producer_id;
 
@@ -137,19 +137,19 @@ public class Model_Block extends TaggedModel {
     public List<Model_BlockVersion> getVersions() {
         try {
 
-            if (cache_versions_id.isEmpty()) {
+            if (cache_version_ids.isEmpty()) {
 
-                List<Model_BlockVersion> blocko_versions =  Model_BlockVersion.find.query().where().eq("block.id", id).eq("deleted", false).order().desc("created").select("id").findList();
+                List<UUID> uuid_ids  =  Model_BlockVersion.find.query().where().eq("block.id", id).eq("deleted", false).order().desc("created").findIds();
 
                 // Získání seznamu
-                for (Model_BlockVersion blocko_version : blocko_versions) {
-                    cache_versions_id.add(blocko_version.id);
+                for (UUID uuid_id : uuid_ids) {
+                    cache_version_ids.add(uuid_id);
                 }
             }
 
             List<Model_BlockVersion> blocko_versions  = new ArrayList<>();
 
-            for (UUID version_id : cache_versions_id) {
+            for (UUID version_id : cache_version_ids) {
                 blocko_versions.add(Model_BlockVersion.getById(version_id));
             }
 

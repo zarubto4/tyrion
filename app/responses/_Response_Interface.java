@@ -1,6 +1,7 @@
 package responses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public abstract class _Response_Interface {
 
@@ -8,11 +9,13 @@ public abstract class _Response_Interface {
     @JsonIgnore public String state;
     @JsonIgnore public Integer code;
 
-
+    @JsonProperty
     abstract String state();
 
-    abstract Integer code();
+    @JsonProperty
+    abstract int code();
 
+    @JsonProperty
     abstract String message();
 
 }

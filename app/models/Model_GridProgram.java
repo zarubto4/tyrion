@@ -81,11 +81,11 @@ public class Model_GridProgram extends TaggedModel {
 
             if (cache_version_ids.isEmpty()) {
 
-                List<Model_GridProgramVersion> versions =  Model_GridProgramVersion.find.query().where().eq("grid_program.id", this.id).order().desc("created").select("id").findList();
+                List<UUID> uuid_ids =  Model_GridProgramVersion.find.query().where().eq("grid_program.id", this.id).order().desc("created").findIds();
 
                 // Získání seznamu
-                for (Model_GridProgramVersion version : versions) {
-                    cache_version_ids.add(version.id);
+                for (UUID uuid_id : uuid_ids) {
+                    cache_version_ids.add(uuid_id);
                 }
             }
 

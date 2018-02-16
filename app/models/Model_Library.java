@@ -96,11 +96,11 @@ public class Model_Library extends TaggedModel {
 
             if (cache_version_ids.isEmpty()) {
 
-                List<Model_LibraryVersion> versions =  Model_LibraryVersion.find.query().where().eq("library.id", id).eq("deleted", false).order().desc("created").select("id").findList();
+                List<UUID> ids =  Model_LibraryVersion.find.query().where().eq("library.id", id).eq("deleted", false).order().desc("created").findIds();
 
                 // Získání seznamu
-                for (Model_LibraryVersion version : versions) {
-                    cache_version_ids.add(version.id);
+                for (UUID id : ids) {
+                    cache_version_ids.add(id);
                 }
             }
 
@@ -127,11 +127,11 @@ public class Model_Library extends TaggedModel {
 
                 cache_hardware_type_ids = new ArrayList<>();
 
-                List<Model_HardwareType> hardwareTypes =  Model_HardwareType.find.query().where().eq("libraries.id", id).orderBy("UPPER(name) ASC").select("id").findList();
+                List<UUID> hardwareTypes_id =  Model_HardwareType.find.query().where().eq("libraries.id", id).orderBy("UPPER(name) ASC").findIds();
 
                 // Získání seznamu
-                for (Model_HardwareType hardwareType : hardwareTypes) {
-                    cache_hardware_type_ids.add(hardwareType.id);
+                for (UUID id : hardwareTypes_id) {
+                    cache_hardware_type_ids.add(id);
                 }
 
             }

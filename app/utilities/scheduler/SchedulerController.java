@@ -87,7 +87,7 @@ public class SchedulerController {
                 }
             });
 
-/*
+             /*
                 // TODO - je nutné zajistit i kontrolu toho co se neudělalo v historii - třeba když spadne server, tak tu hodinu zpětně je třeba odstartovat
                 try {
 
@@ -116,7 +116,8 @@ public class SchedulerController {
 
             } else {
                 logger.warn("start: CRON (Every-Day) is in RAM yet. Be careful with that!");
-            }*/
+            }
+            */
 
             // Nastartování scheduleru
             this.scheduler.start();

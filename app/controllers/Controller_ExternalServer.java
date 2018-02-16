@@ -54,7 +54,8 @@ public class Controller_ExternalServer extends _BaseController {
             tags = {"External-Server"},
             notes = "Create new Homer_Server - private or public",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -352,7 +353,8 @@ public class Controller_ExternalServer extends _BaseController {
             tags = {"Admin-External-Server"},
             notes = "Create new Gate for Compilation_Server",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -538,10 +540,11 @@ public class Controller_ExternalServer extends _BaseController {
             notes = "Required secure Token changed throw websocket",
             produces = "multipart/form-data",
             consumes = "text/html",
-            protocols = "https"
+            protocols = "https",
+            code = 303
     )
     @ApiResponses({
-            @ApiResponse(code = 303, message = "Ok Result"),
+            @ApiResponse(code = 303, message = "Automatic Redirect To another URL"),
             @ApiResponse(code = 404, message = "File by ID not found",response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
@@ -588,10 +591,11 @@ public class Controller_ExternalServer extends _BaseController {
             notes = "Required secure Token changed throw websocket",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https"
+            protocols = "https",
+            code = 303
     )
     @ApiResponses({
-            @ApiResponse(code = 303, message = "Ok Result"),
+            @ApiResponse(code = 303, message = "Automatic Redirect To another URL"),
             @ApiResponse(code = 404, message = "File by ID not found", response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
@@ -628,10 +632,11 @@ public class Controller_ExternalServer extends _BaseController {
             notes = "Required secure Token changed throw websocket",
             produces = "multipart/form-data",
             consumes = "text/html",
-            protocols = "https"
+            protocols = "https",
+            code = 303
     )
     @ApiResponses({
-            @ApiResponse(code = 303, message = "Ok Result"),
+            @ApiResponse(code = 303, message = "Automatic Redirect To another URL"),
             @ApiResponse(code = 404, message = "File by ID not found",response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
@@ -682,10 +687,11 @@ public class Controller_ExternalServer extends _BaseController {
             notes = "Required secure Token changed throw websocket",
             produces = "multipart/form-data",
             consumes = "text/html",
-            protocols = "https"
+            protocols = "https",
+            code = 303
     )
     @ApiResponses({
-            @ApiResponse(code = 303, message = "Ok Result"),
+            @ApiResponse(code = 303, message = "Automatic Redirect To another URL"),
             @ApiResponse(code = 404, message = "File by ID not found",response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)

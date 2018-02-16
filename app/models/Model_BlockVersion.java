@@ -84,7 +84,7 @@ public class Model_BlockVersion extends VersionModel {
             }
         }).start();
 
-        block.cache_versions_id.add(0, id);
+        block.cache_version_ids.add(0, id);
 
     }
 
@@ -117,7 +117,7 @@ public class Model_BlockVersion extends VersionModel {
 
 
         if (get_block() != null) {
-            get_block().cache_versions_id.remove(id);
+            get_block().cache_version_ids.remove(id);
         }
 
         return super.delete();

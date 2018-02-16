@@ -47,7 +47,7 @@ public class Job_UploadBlockoToCloud implements Job {
 
                 logger.trace("upload_blocko_thread: uploading the record");
 
-                // record.put_record_into_cloud(); TODO
+                // record.put_record_into_cloud(); TODO [TOM]
 
             } catch (Exception e) {
                 logger.internalServerError(e);

@@ -14,7 +14,6 @@ public class Printer {
     public String description;
     private Capabilities capabilities;
     private String defaults;
-    private String createTimestamp;
     public String state;
 
     @Valid public Computer computer;

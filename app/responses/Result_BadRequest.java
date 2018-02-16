@@ -19,7 +19,7 @@ public class Result_BadRequest extends _Response_Interface {
     }
 
     @ApiModelProperty(value = "code", allowableValues = "400", required = true, readOnly = true)
-    public Integer code() {
+    public int code() {
         return 400;
     }
 

@@ -7,6 +7,7 @@ import models.Model_HardwareUpdate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @ApiModel(description = "", value = "ActualizationProcedureTask_List")
 public class Swagger_ActualizationProcedureTask_List extends _Swagger_Filter_Common {
@@ -21,10 +22,10 @@ public class Swagger_ActualizationProcedureTask_List extends _Swagger_Filter_Com
     public Swagger_ActualizationProcedureTask_List(Query<Model_HardwareUpdate> query , int page_number) {
 
         if (page_number < 1) page_number = 1;
-        List<Model_HardwareUpdate> list =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).select("id").findList();
+        List<UUID> ids =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findIds();
 
-        for (Model_HardwareUpdate task_not_cached : list) {
-            Model_HardwareUpdate task = Model_HardwareUpdate.getById(task_not_cached.id.toString());
+        for (UUID id : ids) {
+            Model_HardwareUpdate task = Model_HardwareUpdate.getById(id);
             if (task == null) continue;
             this.content.add(task);
         }

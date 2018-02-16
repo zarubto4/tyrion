@@ -66,11 +66,11 @@ public class Model_HardwareGroup extends NamedModel {
             // Cache
             if (cache_hardware_type_ids.isEmpty()) {
 
-                List<Model_HardwareType> hardwareTypes = Model_HardwareType.find.query().where().eq("hardware.registration.group.id", id).orderBy("UPPER(name) ASC").select("id").findList();
+                List<UUID> uuids = Model_HardwareType.find.query().where().eq("hardware.registration.group.id", id).orderBy("UPPER(name) ASC").findIds();
 
                 // Získání seznamu
-                for (Model_HardwareType hardwareType : hardwareTypes) {
-                    cache_hardware_type_ids.add(hardwareType.id);
+                for (UUID uuid : uuids) {
+                    cache_hardware_type_ids.add(uuid);
                 }
             }
 

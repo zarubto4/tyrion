@@ -23,6 +23,6 @@ public class Swagger_ActualizationProcedure_Make {
     @ApiModelProperty(required = true,  readOnly = true) public List<Swagger_ActualizationProcedure_Make_HardwareType> hardware_type_settings = new ArrayList<>();
 
     @ApiModelProperty(required = false,  readOnly = true, value = "If  value is null - its a command for immediately update ") public Long time;
-    @ApiModelProperty(required = false,  readOnly = true, value = "If  value is null - its a command for immediately update - Default Value 0") public Integer timeOffset = 0;
+    @ApiModelProperty(required = false,  readOnly = true, value = "If  value is null - its a command for immediately update - Default Value 0") public Integer timeoffset = 0;
 
 }

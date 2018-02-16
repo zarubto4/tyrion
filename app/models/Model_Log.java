@@ -24,7 +24,6 @@ public class Model_Log extends NamedModel {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                             public String type; // "tyrion", "homer"
-
       @JsonIgnore @OneToOne public Model_Blob file;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/

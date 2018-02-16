@@ -26,7 +26,6 @@ public class Result_InvalidBody extends _Response_Interface {
         return "Invalid body. Exception bellow";
     }
 
-
-    @ApiModelProperty(required = true, readOnly = true)
+    @ApiModelProperty(required = true, readOnly = true, hidden = true)
     public JsonNode exception;
 }

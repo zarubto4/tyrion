@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -147,6 +148,7 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_version_id;             // C Program - version
     @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_backup_id;              // Backup
     @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_backup_version_id;      // Backup - version
+    @JsonIgnore @Transient @Cached public UUID cache_harware_update_update_in_progress_bootloader_id;      // HardwareUpdate for bootloade
     @JsonIgnore @Transient @Cached public String cache_latest_know_ip_address;
     @Transient @JsonIgnore @Cached public List<UUID> cache_hardware_groups_ids;
     @JsonIgnore @Transient @Cached public UUID cache_picture_id;
@@ -159,44 +161,62 @@ public class Model_Hardware extends TaggedModel {
     @JsonProperty public UUID producer_id()                          { try { return cache_producer_id != null ? cache_producer_id : get_producer().id;} catch (NullPointerException e) {return  null;}}
     @JsonProperty public String producer_name()                      { try { return get_producer().name; } catch (NullPointerException e) {return  null;}}
     @JsonProperty public UUID project_id()                           { try { return cache_project_id != null ? cache_project_id : get_project().id; } catch (NullPointerException e) {return  null;}}
-    @JsonProperty public String actual_bootloader_version_name()     { try { return get_actual_bootloader().name; } catch (NullPointerException e) {return  null;}}
-    @JsonProperty public UUID actual_bootloader_id()                 { try { return cache_actual_boot_loader_id != null ? cache_actual_boot_loader_id : get_actual_bootloader().id; } catch (NullPointerException e) {return  null;}}
-    @JsonProperty public UUID bootloader_update_in_progress_bootloader_id()       {
+    @JsonProperty public Model_BootLoader actual_bootloader()                 {
         try {
-            // TODO Tohle by šlo ukládat do kešky [TZ]
-           Model_HardwareUpdate plan_not_cached = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id).eq("firmware_type", FirmwareType.BOOTLOADER.name())
-                     .disjunction()
-                         .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
-                         .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
-                         .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
-                         .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
-                         .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
-                         .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
-                     .endJunction()
-                     .eq("firmware_type", FirmwareType.BOOTLOADER)
-                     .le("actualization_procedure.date_of_planing", new Date())
-                     .order().desc("actualization_procedure.date_of_planing")
-                     .select("id")
-                     .setMaxRows(1)
-                     .findOne();
+            return get_actual_bootloader();
+        } catch (NullPointerException e) {
+            return  null;
+        }
+    }
 
-           if (plan_not_cached != null) {
-               Model_HardwareUpdate plan = Model_HardwareUpdate.getById(plan_not_cached.id.toString());
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Model_BootLoader bootloader_update_in_progress() {
+        try {
 
-               if (plan != null) {
-                   return plan.getBootloader().id;
+           if(cache_harware_update_update_in_progress_bootloader_id != null) {
+
+               Model_HardwareUpdate plan_not_cached = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id).eq("firmware_type", FirmwareType.BOOTLOADER.name())
+                       .disjunction()
+                       .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
+                       .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
+                       .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
+                       .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
+                       .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
+                       .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
+                       .endJunction()
+                       .eq("firmware_type", FirmwareType.BOOTLOADER)
+                       .le("actualization_procedure.date_of_planing", new Date())
+                       .order().desc("actualization_procedure.date_of_planing")
+                       .select("id")
+                       .setMaxRows(1)
+                       .findOne();
+
+
+               if (plan_not_cached != null) {
+                   cache_harware_update_update_in_progress_bootloader_id = plan_not_cached.getBootloader().id;
                }
+
            }
 
-           return null;
+           if(cache_harware_update_update_in_progress_bootloader_id == null) return null;
+
+           return Model_BootLoader.getById(cache_harware_update_update_in_progress_bootloader_id);
 
         } catch (Exception e) {
             logger.internalServerError(e);
             return null; // Raději true než false aby to uživatel neodpálil další update
         }
     }
-    @JsonProperty public String available_bootloader_version_name()  { return getHardwareType().main_boot_loader() == null ? null :  getHardwareType().main_boot_loader().name;}
-    @JsonProperty public UUID available_bootloader_id()              { return getHardwareType().main_boot_loader() == null ? null :  getHardwareType().main_boot_loader().id;}
+    @JsonProperty public Model_BootLoader available_latest_bootloader()  {
+        try {
+            return getHardwareType().main_boot_loader();
+        }catch (Exception e) {
+            logger.internalServerError(e);
+            return null; // Raději true než false aby to uživatel neodpálil další update
+        }
+    }
+
+
     @JsonProperty public String ip_address() {
         try {
 
@@ -219,7 +239,7 @@ public class Model_Hardware extends TaggedModel {
 
             List<BoardAlert> list = new ArrayList<>();
 
-            if (( available_bootloader_id() != null &&  actual_bootloader_id() == null) || ( available_bootloader_id() != null  && !actual_bootloader_id().equals(available_bootloader_id()) )) list.add(BoardAlert.BOOTLOADER_REQUIRED);
+            if (( available_latest_bootloader() != null && actual_bootloader() == null) || ( available_latest_bootloader() != null  && !actual_bootloader().id.equals(available_latest_bootloader().id) )) list.add(BoardAlert.BOOTLOADER_REQUIRED);
 
             return list;
         } catch (Exception e) {
@@ -364,8 +384,13 @@ public class Model_Hardware extends TaggedModel {
     @JsonProperty
     @ApiModelProperty(value = "Value is cached with asynchronous refresh")
     public NetworkStatus online_state() {
-
         try {
+
+            if(!dominant_entity) {
+                return NetworkStatus.FREEZED;
+                // Pokud FREEZED tak bych měl vrátit i kde je Hardware Aktivní pro Becki!
+            }
+
             // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
             // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
             if (connected_server_id == null) {
@@ -384,9 +409,7 @@ public class Model_Hardware extends TaggedModel {
                     // Začnu zjišťovat stav - v separátním vlákně!
                     new Thread(() -> {
                         try {
-
                             write_without_confirmation(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(id)));
-
                         } catch (Exception e) {
                             logger.internalServerError(e);
                         }

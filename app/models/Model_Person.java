@@ -118,9 +118,9 @@ public class Model_Person extends BaseModel {
         if (cache_project_ids.isEmpty()) {
 
             // Získání seznamu
-            List<Model_Project> projects = Model_Project.find.query().where().eq("participants.person.id", id).order().asc("name").select("id").findList();
-            for (Model_Project project : projects) {
-                cache_project_ids.add(project.id);
+            List<UUID> ids = Model_Project.find.query().where().eq("participants.person.id", id).order().asc("name").findIds();
+            for (UUID id : ids) {
+                cache_project_ids.add(id);
             }
         }
 
@@ -188,7 +188,6 @@ public class Model_Person extends BaseModel {
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {}
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        System.out.println("Model_Person check_read_permission - nothing to do"); // TODO smazat tento log
         // Nothing
     }
     @JsonIgnore @Transient @Override public void check_update_permission()   throws _Base_Result_Exception {

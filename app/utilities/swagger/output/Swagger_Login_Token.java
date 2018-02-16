@@ -10,6 +10,6 @@ import java.util.UUID;
 public class Swagger_Login_Token {
 
     @ApiModelProperty(value = "X-AUTH-TOKEN - used this token in HTML head for verifying the identities", readOnly = true, required = true)
-    public UUID authToken;
+    public UUID auth_token;
 
 }

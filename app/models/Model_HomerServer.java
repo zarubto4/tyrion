@@ -423,9 +423,10 @@ public class Model_HomerServer extends BaseModel {
                        return;
                    }
 
-                   if (model_token.person != null) {
-                       Model_Person.token_cache.put(UUID.fromString(message.client_token), model_token.person.id);
-                   } else {
+                   try {
+                       model_token.get_person();
+                       Model_Person.token_cache.put(UUID.fromString(message.client_token), model_token.get_person_id());
+                   } catch (Exception e){
                        logger.warn("getUsername:: Model_FloatingPersonToken not contains Person!");
                    }
                }

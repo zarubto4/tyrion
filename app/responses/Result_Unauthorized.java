@@ -12,7 +12,7 @@ public class Result_Unauthorized extends _Response_Interface {
     }
 
     @ApiModelProperty(value = "code", allowableValues = "403", required = true, readOnly = true)
-    public Integer code() {
+    public int code() {
         return 401;
     }
 

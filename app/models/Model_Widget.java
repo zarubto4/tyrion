@@ -50,7 +50,7 @@ public class Model_Widget extends TaggedModel {
  /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Cached private UUID cache_project_id;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_version_ids;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_version_ids = new ArrayList<>();
     @JsonIgnore @Transient @Cached private UUID cache_author_id;
     @JsonIgnore @Transient @Cached private UUID cache_producer_id;
 
@@ -143,11 +143,11 @@ public class Model_Widget extends TaggedModel {
 
             if (cache_version_ids.isEmpty()) {
 
-                List<Model_WidgetVersion> grid_versions =   Model_WidgetVersion.find.query().where().eq("widget.id", id).eq("deleted", false).order().desc("created").select("id").findList();
+                List<UUID> uuids =   Model_WidgetVersion.find.query().where().eq("widget.id", id).eq("deleted", false).order().desc("created").findIds();
 
                 // Získání seznamu
-                for (Model_WidgetVersion grid_version : grid_versions) {
-                    cache_version_ids.add(grid_version.id);
+                for (UUID uuid : uuids) {
+                    cache_version_ids.add(uuid);
                 }
 
             }

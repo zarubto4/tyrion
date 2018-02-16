@@ -15,5 +15,5 @@ public class Swagger_SocialNetwork_Result {
     public String redirect_url;
 
     @ApiModelProperty(value = "token, that you have to used in HTML head for verifying the identities", readOnly = true)
-    public UUID authToken;
+    public UUID auth_token;
 }

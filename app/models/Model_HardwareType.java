@@ -12,6 +12,7 @@ import org.ehcache.Cache;
 import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -128,12 +129,12 @@ public class Model_HardwareType extends NamedModel {
 
             if (cache_bootloaders_id == null) {
 
-                List<Model_BootLoader> bootLoaders = Model_BootLoader.find.query().where().eq("hardware_type.id", id).order().desc("name").select("id").findList();
+                List<UUID> uuid_ids = Model_BootLoader.find.query().where().eq("hardware_type.id", id).order().desc("name").findIds();
                 cache_bootloaders_id = new ArrayList<>();
 
                 // Získání seznamu
-                for (Model_BootLoader bootLoader : bootLoaders) {
-                    cache_bootloaders_id.add(bootLoader.id);
+                for (UUID uuid_id : uuid_ids) {
+                    cache_bootloaders_id.add(uuid_id);
                 }
             }
 
@@ -376,17 +377,17 @@ public class Model_HardwareType extends NamedModel {
     @CacheField(Model_HardwareType.class)
     public static Cache<UUID, Model_HardwareType> cache;
 
-    public static Model_HardwareType getById(String id) {
+    public static Model_HardwareType getById(String id) throws _Base_Result_Exception {
         return getById(UUID.fromString(id));
     }
     
-    public static Model_HardwareType getById(UUID id) {
+    public static Model_HardwareType getById(UUID id) throws _Base_Result_Exception {
 
         Model_HardwareType hardwareType = cache.get(id);
         if (hardwareType == null) {
 
             hardwareType = Model_HardwareType.find.byId(id);
-            if (hardwareType == null) return null;
+            if (hardwareType == null) throw new Result_Error_NotFound(Model_HardwareType.class);
 
             cache.put(id, hardwareType);
         }

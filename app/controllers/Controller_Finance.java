@@ -52,7 +52,8 @@ public class Controller_Finance extends _BaseController {
             tags = {"Admin-Tariff"},
             notes = "create new Tariff",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
 
     )
     @ApiImplicitParams(
@@ -350,7 +351,8 @@ public class Controller_Finance extends _BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "Extension is used to somehow(based on configuration and type) extend product capabilities. (e.g. how many projects can user have)",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -610,7 +612,8 @@ public class Controller_Finance extends _BaseController {
             tags = {"Admin-Extension"},
             notes = "",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -1481,7 +1484,8 @@ public class Controller_Finance extends _BaseController {
             tags = {"Price & Invoice & Tariffs"},
             notes = "create payments details in Product",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {

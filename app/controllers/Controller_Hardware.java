@@ -61,7 +61,8 @@ public class Controller_Hardware extends _BaseController {
             tags = {"Admin-Processor"},
             notes = "If you want create new Processor. Send required json values and server respond with new object",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -318,7 +319,8 @@ public class Controller_Hardware extends _BaseController {
             tags = {"Admin-Producer"},
             notes = "if you want create new Producer. Its company owned physical hardware and we used that for filtering",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -354,7 +356,7 @@ public class Controller_Hardware extends _BaseController {
             producer.save();
 
             // Vracím objekt
-            return ok(producer.json());
+            return created(producer.json());
             
         } catch (Exception e) {
             return controllerServerError(e);
@@ -509,7 +511,8 @@ public class Controller_Hardware extends _BaseController {
             notes = "The HardwareType is category for IoT. Like Raspberry2, Arduino-Uno etc. \n\n" +
                     "We using that for compilation, sorting libraries, filters and more..",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -577,8 +580,6 @@ public class Controller_Hardware extends _BaseController {
             c_program_test.save();
 
             hardwareType.refresh();
-
-            // TODO přidat do cache
 
             return created(hardwareType.json());
 
@@ -701,12 +702,12 @@ public class Controller_Hardware extends _BaseController {
             // Získání seznamu
             // To co jsem tady napsal jen filtruje tahá ručně desky z cache pojendom - možná by šlo někde mít statické pole ID třeba
             // přímo v objektu Model_HardwareType DB ignor a to používat a aktualizovat a statické pole nechat na samotné jave, aby si ji uchavaala v pam,ěti
-            List<Model_HardwareType> hardwareTypes_not_cached = Model_HardwareType.find.query().where().orderBy("UPPER(name) ASC").select("id").findList();
+            List<UUID> hardwareTypes_not_cached = Model_HardwareType.find.query().where().orderBy("UPPER(name) ASC").findIds();
 
             List<Model_HardwareType> hardwareTypes = new ArrayList<>();
 
-            for (Model_HardwareType hardwareType : hardwareTypes_not_cached) {
-                hardwareTypes.add(Model_HardwareType.getById(hardwareType.id));
+            for (UUID id : hardwareTypes_not_cached) {
+                hardwareTypes.add(Model_HardwareType.getById(id));
             }
 
             // Vrácení seznamu
@@ -822,7 +823,8 @@ public class Controller_Hardware extends _BaseController {
             tags = { "HardwareType"},
             notes = "Create new Production Batch for Hardware Type",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -1149,7 +1151,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @BodyParser.Of(value = BodyParser.Json.class) // TODO , maxLength = 1024 * 1024 * 5)
+    @BodyParser.Of(value = BodyParser.Json.class)
     public Result bootLoader_uploadFile(String boot_loader_id) {
         try {
 
@@ -1335,7 +1337,8 @@ public class Controller_Hardware extends _BaseController {
                     "hardware themselves with \"registration procedure\". Hardware is not allowed to delete! Only deactivate. Classic User can only register that to own " +
                     "project or own to account",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
@@ -1395,7 +1398,8 @@ public class Controller_Hardware extends _BaseController {
             notes = "This Api is using for Board automatic registration adn Testing. Hardware is not allowed to delete! Only deactivate. Classic User can only register that to own " +
                     "project or own to account",
             produces = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {
