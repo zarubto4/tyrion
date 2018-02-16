@@ -312,8 +312,10 @@ public abstract class BaseModel extends Model {
 
 /* Permission Contents ----------------------------------------------------------------------------------------------------*/
 
-/* TODO odkomentovat na konci - Volné API pro Swagger [TZ]
-    @ApiModelProperty(readOnly = true, value = "can be hidden", required = false) public boolean update_permission(){
+
+    @ApiModelProperty(readOnly = true, value = "can be hidden", required = true)
+    @JsonProperty
+    public boolean update_permission(){
         try{
             check_update_permission();
             return true;
@@ -325,7 +327,9 @@ public abstract class BaseModel extends Model {
         }
     }
 
-    @ApiModelProperty(readOnly = true, value = "can be hidden", required = false) public boolean delete_permission(){
+    @ApiModelProperty(readOnly = true, value = "can be hidden", required = true)
+    @JsonProperty
+    public boolean delete_permission(){
         try{
             check_delete_permission();
             return true;
@@ -336,8 +340,6 @@ public abstract class BaseModel extends Model {
             return false;
         }
     }
-
-*/
 
 /* ABSTRACT METHODS ----------------------------------------------------------------------------------------------------*/
 

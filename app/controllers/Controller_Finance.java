@@ -25,6 +25,7 @@ import utilities.swagger.output.Swagger_Product_Active;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
@@ -1332,6 +1333,10 @@ public class Controller_Finance extends _BaseController {
             // Deaktivování (vyřazení všech funkcionalit produktu
             product.active = false;
             product.update();
+
+            for(UUID id : product.get_projects_ids()){
+                Model_Project.cache.remove(id);
+            }
 
             product.notificationDeactivation();
 

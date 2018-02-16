@@ -17,9 +17,13 @@ import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.swagger.output.Swagger_Short_Reference;
+import websocket.messages.tyrion_with_becki.WSM_Echo;
+
 import javax.persistence.*;
 import javax.persistence.OrderBy;
 import java.util.ArrayList;
@@ -47,9 +51,10 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Widget>                widgets         = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Hardware>              hardware        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareGroup>         hardware_groups = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("created desc") public List<Model_Invitation>            invitations     = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("id asc")       public List<Model_ProjectParticipant>    participants    = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("name asc")     public List<Model_Instance>    instancies    = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Invitation>            invitations     = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_ProjectParticipant>    participants    = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Instance>              instancies      = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HomerServer>           servers         = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -62,22 +67,44 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore @Transient @Cached public List<UUID> cache_widget_ids;
     @JsonIgnore @Transient @Cached public List<UUID> cache_block_ids;
     @JsonIgnore @Transient @Cached public List<UUID> cache_instance_ids;
-    @JsonIgnore @Transient @Cached private UUID cache_product_id;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_homer_server_ids;    // TODO není zapracováno zatím [TZ]
+    @JsonIgnore @Transient @Cached public UUID cache_product_id;
+    @JsonIgnore @Transient @Cached public ProjectStats project_stats;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true) public Model_Product product() { return getProduct();}
+    @JsonProperty @ApiModelProperty(required = true)
+    public Swagger_Short_Reference product(){
+        try {
+            Model_Product product = getProduct();
+            return new Swagger_Short_Reference(product.id, product.name, product.description);
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 
-    /*
-        @JsonProperty @ApiModelProperty(required = true) public List<Model_HardwareRegistration>    hardware()      { return active() ? getHardware()       : new ArrayList<>(); }
-        @JsonProperty @ApiModelProperty(required = true) public List<Model_BProgram>                b_programs()    { return active() ? getBPrograms()      : new ArrayList<>(); }
-        @JsonProperty @ApiModelProperty(required = true) public List<Model_CProgram>                c_programs()    { return active() ? getCPrograms()      : new ArrayList<>(); }
-        @JsonProperty @ApiModelProperty(required = true) public List<Model_Library>                 libraries()     { return active() ? getLibraries()      : new ArrayList<>(); }
-        @JsonProperty @ApiModelProperty(required = true) public List<Model_GridProject>             grid_projects() { return active() ? getGridProjects()   : new ArrayList<>(); }
-        @JsonProperty @ApiModelProperty(required = true) public List<Model_Widget>                  widgets()       { return active() ? getWidgets()        : new ArrayList<>(); }
-        @JsonProperty @ApiModelProperty(required = true) public List<Model_Block>                   blocks()        { return active() ? getBlocks()         : new ArrayList<>(); }
-        @JsonProperty @ApiModelProperty(required = true) public List<Model_Instance>                instances()     { return active() ? getInstances()      : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true)
+    public boolean active(){
+        try {
+            return getProduct().active;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return false;
+        }
+    }
+
+    /* Zatím Toto nepožíváme!!!!
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_Hardware>                hardware()      { return active() ? getHardware()       : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_BProgram>                b_programs()    { return active() ? getBPrograms()      : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_CProgram>                c_programs()    { return active() ? getCPrograms()      : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_Library>                 libraries()     { return active() ? getLibraries()      : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_GridProject>             grid_projects() { return active() ? getGridProjects()   : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_Widget>                  widgets()       { return active() ? getWidgets()        : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_Block>                   blocks()        { return active() ? getBlocks()         : new ArrayList<>(); }
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_Instance>                instances()     { return active() ? getInstances()      : new ArrayList<>(); }
     */
+
 
     /**
      * Making List of Model_ProjectParticipant from Model_ProjectParticipant and also from all invitations!
@@ -110,46 +137,8 @@ public class Model_Project extends TaggedModel {
         return project_participants;
     }
 
-/* JSON IGNORE METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public boolean isParticipant(Model_Person person) {
 
-        return participants.stream().anyMatch(participant -> participant.person.id.equals(person.id));
-    }
-
-    @JsonIgnore @Override public void save() {
-
-        financial_permission();
-
-        this.blob_project_link = product.get_path() + "/projects/" + UUID.randomUUID();
-        super.save();
-    }
-
-    @JsonIgnore @Override public void update() {
-
-        logger.debug("update - updating in database, id: {}",  this.id);
-
-        try {
-
-            if (cache.containsKey(this.id)) cache.replace(this.id, this);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-
-        super.update();
-    }
-
-    @JsonIgnore @Override public boolean delete() {
-
-        logger.debug("delete - deleting from database, id: {} ", this.id);
-        deleted = true;
-        cache.remove(this.id);
-
-        this.update();
-        return false;
-    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -244,7 +233,7 @@ public class Model_Project extends TaggedModel {
     }
 
     @JsonIgnore
-    public List<Model_BProgram> get_b_programs() {
+    public List<Model_BProgram> getBPrograms() {
         try {
 
             List<Model_BProgram> b_programs;
@@ -457,6 +446,14 @@ public class Model_Project extends TaggedModel {
         return Model_Product.getById(cache_product_id);
     }
 
+/* JSON IGNORE METHOD && VALUES --------------------------------------------------------------------------------------*/
+
+
+    @JsonIgnore  @Transient  public boolean isParticipant(Model_Person person) {
+
+        return participants.stream().anyMatch(participant -> participant.person.id.equals(person.id));
+    }
+
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
@@ -540,6 +537,62 @@ public class Model_Project extends TaggedModel {
         }
     }
 
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+
+
+    @ApiModel(value = "ProjectStats", description = "Model of Project Statistic - Its Asynchronous Object created after all values in project are cached.")
+    private class ProjectStats {
+        @ApiModelProperty(required = true) @JsonProperty() public int hardware;
+        @ApiModelProperty(required = true) @JsonProperty() public int b_programs;
+        @ApiModelProperty(required = true) @JsonProperty() public int c_programs;
+        @ApiModelProperty(required = true) @JsonProperty() public int libraries;
+        @ApiModelProperty(required = true) @JsonProperty() public int grid_projects;
+        @ApiModelProperty(required = true) @JsonProperty() public int hardware_groups;
+        @ApiModelProperty(required = true) @JsonProperty() public int widgets;
+        @ApiModelProperty(required = true) @JsonProperty() public int blocks;
+        @ApiModelProperty(required = true) @JsonProperty() public int instances;
+    }
+
+    @JsonProperty @ApiModelProperty(required = false, value = "Its Asynchronous Cached Value and it visible only, when system has cached everything. " +
+            "If not, the system automatically searches for all data in a special thread, and when it gets it, it sends them to the client via Websocket. ")
+    public ProjectStats project_stats(){
+
+        if(getProduct().active){
+            return null;
+        }
+
+        if(project_stats != null) {
+            return project_stats;
+        }
+
+        new Thread(() -> {
+            try {
+
+                ProjectStats project_stats = new ProjectStats();
+                project_stats.hardware = getHardware().size();
+                project_stats.b_programs = getBPrograms().size();
+                project_stats.c_programs = getCPrograms().size();
+                project_stats.libraries = getLibraries().size();
+                project_stats.grid_projects = getGridProjects().size();
+                project_stats.hardware_groups = getHardwareGroups().size();
+                project_stats.widgets = getWidgets().size();
+                project_stats.blocks = getBlocks().size();
+                project_stats.instances = getInstances().size();
+
+                EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, this.id, this.id));
+
+            } catch (_Base_Result_Exception e) {
+                // Nothing
+            }
+        }).start();
+
+        return null;
+
+    }
+
+
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore private String blob_project_link;
@@ -549,9 +602,42 @@ public class Model_Project extends TaggedModel {
         return  blob_project_link;
     }
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public static final String read_permission_docs   = "read: For all project: User can read project on API: {GET /project) - get Project by logged Person ";
+    @JsonIgnore @Override public void save() {
+
+        financial_permission();
+
+        this.blob_project_link = product.get_path() + "/projects/" + UUID.randomUUID();
+        super.save();
+    }
+
+    @JsonIgnore @Override public void update() {
+
+        logger.debug("update - updating in database, id: {}",  this.id);
+
+        try {
+
+            if (cache.containsKey(this.id)) cache.replace(this.id, this);
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+        }
+
+        super.update();
+    }
+
+    @JsonIgnore @Override public boolean delete() {
+
+        logger.debug("delete - deleting from database, id: {} ", this.id);
+        deleted = true;
+        cache.remove(this.id);
+
+        this.update();
+        return false;
+    }
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

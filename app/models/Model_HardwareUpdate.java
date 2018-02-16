@@ -51,7 +51,7 @@ public class Model_HardwareUpdate extends BaseModel {
 
                                             @ApiModelProperty(required = true, 
                                                     value = "UNIX time in ms",
-                                                    example = "1466163478925")  public Date finished;
+                                                    example = "1466163478925")  public Date date_of_finish;
 
               @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Model_Hardware hardware; // Deska k aktualizaci
               @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public FirmwareType firmware_type;          // Typ Firmwaru
@@ -588,7 +588,7 @@ public class Model_HardwareUpdate extends BaseModel {
                         }
 
                         plan.state = HardwareUpdateState.COMPLETE;
-                        plan.finished = new Date();
+                        plan.date_of_finish = new Date();
                         plan.update();
 
                         return;
@@ -620,7 +620,7 @@ public class Model_HardwareUpdate extends BaseModel {
                         plan.state = HardwareUpdateState.NOT_UPDATED;
                         plan.error_code = ErrorCode.NEW_VERSION_DOESNT_MATCH.error_code();
                         plan.error = ErrorCode.NEW_VERSION_DOESNT_MATCH.error_message();
-                        plan.finished = new Date();
+                        plan.date_of_finish = new Date();
                         plan.update();
                         Model_UpdateProcedure.getById(report.tracking_group_id).change_state(plan, plan.state);
 

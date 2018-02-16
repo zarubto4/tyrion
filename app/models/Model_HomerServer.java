@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.libs.Json;
+import responses.Result_BadRequest;
 import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.document_db.document_objects.DM_HomerServer_Connect;
@@ -22,6 +23,7 @@ import utilities.enums.LogLevel;
 import utilities.enums.NetworkStatus;
 import utilities.enums.ServerMode;
 import utilities.errors.ErrorCode;
+import utilities.errors.Exceptions.Result_Error_Bad_request;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
@@ -68,6 +70,8 @@ public class Model_HomerServer extends BaseModel {
 
     @ApiModelProperty(required = true, readOnly = true) public String server_url;  // Může být i IP adresa
     @ApiModelProperty(required = true, readOnly = true) public String server_version;  // Může být i IP adresa
+
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Project project;
 
     public HomerType server_type;  // Určující typ serveru
     public Date time_stamp_configuration;            // Čas konfigurace
@@ -621,8 +625,11 @@ public class Model_HomerServer extends BaseModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(project != null && server_type != HomerType.PRIVATE){
+            throw new Result_Error_Bad_request("Server must be PRIVATE if its registered with Project");
+        }
         if(_BaseController.person().has_permission(Permission.Homer_create.name())) return;
-        throw new Result_Error_PermissionDenied();
+        project.check_update_permission();
     }
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Homer_read.name())) return;

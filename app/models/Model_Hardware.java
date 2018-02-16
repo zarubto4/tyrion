@@ -26,7 +26,6 @@ import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
-import utilities.model.NamedModel;
 import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
@@ -1889,7 +1888,7 @@ public class Model_Hardware extends TaggedModel {
 
                         logger.debug("check_firmware - up to date, procedure is done");
                         plan.state = HardwareUpdateState.COMPLETE;
-                        plan.finished = new Date();
+                        plan.date_of_finish = new Date();
                         plan.update();
                         return;
 
@@ -2146,7 +2145,7 @@ public class Model_Hardware extends TaggedModel {
 
                         logger.debug("check_backup - up to date, procedure is done");
                         plan.state = HardwareUpdateState.COMPLETE;
-                        plan.finished = new Date();
+                        plan.date_of_finish = new Date();
                         plan.update();
 
                     } else {
@@ -2232,7 +2231,7 @@ public class Model_Hardware extends TaggedModel {
 
                     logger.debug("check_bootloader - up to date, procedure is done");
                     plan.state = HardwareUpdateState.COMPLETE;
-                    plan.finished = new Date();
+                    plan.date_of_finish = new Date();
                     plan.update();
 
                     this.actual_boot_loader = plan.getBootloader();
@@ -2329,7 +2328,7 @@ public class Model_Hardware extends TaggedModel {
 
             for (Model_HardwareUpdate update : obsolete) {
                 update.state = HardwareUpdateState.OBSOLETE;
-                update.finished = new Date();
+                update.date_of_finish = new Date();
                 update.update();
             }
 

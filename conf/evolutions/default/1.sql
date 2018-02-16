@@ -472,7 +472,7 @@ create table hardwareupdate (
   updated                       timestamptz,
   removed                       timestamptz,
   actualization_procedure_id    uuid,
-  finished                      timestamptz,
+  date_of_finish                timestamptz,
   hardware_id                   uuid,
   firmware_type                 varchar(10),
   c_program_version_for_update_id uuid,
@@ -504,6 +504,7 @@ create table homerserver (
   rest_api_port                 integer,
   server_url                    varchar(255),
   server_version                varchar(255),
+  project_id                    uuid,
   server_type                   varchar(7),
   time_stamp_configuration      timestamptz,
   days_in_archive               integer,
@@ -1216,6 +1217,9 @@ create index ix_hardwareupdate_bootloader_id on hardwareupdate (bootloader_id);
 alter table hardwareupdate add constraint fk_hardwareupdate_binary_file_id foreign key (binary_file_id) references blob (id) on delete restrict on update restrict;
 create index ix_hardwareupdate_binary_file_id on hardwareupdate (binary_file_id);
 
+alter table homerserver add constraint fk_homerserver_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
+create index ix_homerserver_project_id on homerserver (project_id);
+
 alter table instance add constraint fk_instance_server_main_id foreign key (server_main_id) references homerserver (id) on delete restrict on update restrict;
 create index ix_instance_server_main_id on instance (server_main_id);
 
@@ -1544,6 +1548,9 @@ drop index if exists ix_hardwareupdate_bootloader_id;
 
 alter table if exists hardwareupdate drop constraint if exists fk_hardwareupdate_binary_file_id;
 drop index if exists ix_hardwareupdate_binary_file_id;
+
+alter table if exists homerserver drop constraint if exists fk_homerserver_project_id;
+drop index if exists ix_homerserver_project_id;
 
 alter table if exists instance drop constraint if exists fk_instance_server_main_id;
 drop index if exists ix_instance_server_main_id;

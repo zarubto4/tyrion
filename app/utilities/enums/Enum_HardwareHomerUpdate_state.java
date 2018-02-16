@@ -4,7 +4,6 @@ import io.ebean.annotation.EnumValue;
 
 public enum Enum_HardwareHomerUpdate_state {
 
-
     // events
     @EnumValue("UPDATE_STARTED")                    UPDATE_STARTED,
     @EnumValue("UPLOAD_STARTED")                    UPLOAD_STARTED,

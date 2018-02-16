@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
 import io.ebean.Expr;
@@ -17,6 +18,8 @@ import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.swagger.output.Swagger_Bootloader_Update_program;
+import utilities.swagger.output.Swagger_C_Program_Update_program;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
@@ -37,10 +40,10 @@ public class Model_UpdateProcedure extends BaseModel {
 
                                                     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_InstanceSnapshot instance; // For updates under instance snapshot records
 
-    @JsonIgnore @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("finished DESC") public List<Model_HardwareUpdate> updates = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("finished DESC") public List<Model_HardwareUpdate> updates = new ArrayList<>(); // TODO Cache !!!!
     
-    @ApiModelProperty(required = true, value = "UNIX time in ms")  public Date date_of_planing;
-    @ApiModelProperty(required = true, value = "UNIX time in ms")  public Date date_of_finish;
+    @ApiModelProperty(required = true, value = "UNIX time in ms", dataType = "number")  public Date date_of_planing;
+    @ApiModelProperty(required = true, value = "UNIX time in ms", dataType = "number")  public Date date_of_finish;
 
     @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public UpdateType type_of_update;
 
@@ -52,7 +55,59 @@ public class Model_UpdateProcedure extends BaseModel {
     @Transient @JsonIgnore @Cached  public Integer cache_procedure_size_all;
     @Transient @JsonIgnore @Cached  public UUID cache_instance_snapshot_id;
 
-/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+ /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+
+    @JsonProperty @ApiModelProperty(required = true, value = "Only if type_of_update constant is MANUALLY_RELEASE_MANAGER")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public FirmwareType firmware_type(){
+        try {
+
+            if (type_of_update == UpdateType.MANUALLY_RELEASE_MANAGER) {
+                return updates.get(0).firmware_type;
+            }
+
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonProperty @ApiModelProperty(required = true, value = "Only if type_of_update constant is MANUALLY_RELEASE_MANAGER && firmware_type is FIRMWARE or BACKUP")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Swagger_C_Program_Update_program program(){
+        try {
+
+            if(firmware_type() != null && ( firmware_type() == FirmwareType.FIRMWARE || firmware_type() == FirmwareType.BACKUP)) {
+                return updates.get(0).c_program_detail();
+            }
+
+            return null;
+
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+    @JsonProperty @ApiModelProperty(required = true, value = "Only of type_of_update constant is MANUALLY_RELEASE_MANAGER && firmware_type is BOOTLOADER")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Swagger_Bootloader_Update_program bootloader(){
+        try {
+
+            if(firmware_type() != null && firmware_type() == FirmwareType.BOOTLOADER) {
+                return updates.get(0).bootloader_detail();
+            }
+            return null;
+
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+
+
+
 
     @JsonProperty @ApiModelProperty(required = true )
     public Enum_Update_group_procedure_state state () {
@@ -60,7 +115,7 @@ public class Model_UpdateProcedure extends BaseModel {
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public Integer procedure_size_all() {
+    public int procedure_size_all() {
 
         if (cache_procedure_size_all == null) {
             cache_procedure_size_all = Model_HardwareUpdate.find.query().where()
@@ -72,7 +127,7 @@ public class Model_UpdateProcedure extends BaseModel {
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public Integer procedure_size_complete () {
+    public int procedure_size_complete () {
         return  Model_HardwareUpdate.find.query().where()
                 .eq("actualization_procedure.id", id).where()
                 .eq("state", HardwareUpdateState.COMPLETE)

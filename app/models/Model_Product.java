@@ -14,6 +14,7 @@ import play.data.Form;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheField;
+import utilities.cache.Cached;
 import utilities.enums.*;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
@@ -71,6 +72,13 @@ public class Model_Product extends NamedModel {
     @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_Project>          projects    = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_Invoice>          invoices    = new ArrayList<>();
                 @OneToMany(mappedBy="product", cascade = CascadeType.ALL)                           public List<Model_ProductExtension> extensions  = new ArrayList<>();
+
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @Cached public List<UUID> cache_project_ids;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_invoices_ids;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_extensions_ids;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -438,12 +446,24 @@ public class Model_Product extends NamedModel {
     }
 
     @JsonIgnore
-    public List<Model_Project> projects() {
+    public List<Model_Project> get_projects() {
 
-        if (projects == null)
-            projects = Model_Project.find.query().where().eq("product.id", this.id).findList();
+        List<Model_Project>  projects = new ArrayList<>();
+
+        for (UUID id : get_projects_ids()) {
+            projects.add(Model_Project.getById(id));
+        }
 
         return projects;
+    }
+
+    @JsonIgnore
+    public List<UUID> get_projects_ids() {
+        if (cache_project_ids == null) {
+            cache_project_ids = Model_Project.find.query().where().eq("product.id", this.id).findIds();
+        }
+
+        return cache_project_ids;
     }
 
     @JsonIgnore
