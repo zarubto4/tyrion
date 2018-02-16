@@ -376,7 +376,7 @@ PUT       /hardware/parameters/:hardware_id                             controll
 PUT       /hardware/backup                                              controllers.Controller_Hardware.hardware_updateBackup()
 
 PUT       /hardware/filter/:page_number                                 controllers.Controller_Hardware.hardware_getByFilter(page_number: Int)
-GET       /hardware/check/:hash_for_adding                              controllers.Controller_Hardware.hardware_check(hash_for_adding)
+GET       /hardware/check/:registration_hash                            controllers.Controller_Hardware.hardware_check(registration_hash)
 GET       /hardware/:hardware_id                                        controllers.Controller_Hardware.hardware_get(hardware_id)
 DELETE    /hardware/deactivate/:hardware_id                             controllers.Controller_Hardware.hardware_deactivate(hardware_id)
 

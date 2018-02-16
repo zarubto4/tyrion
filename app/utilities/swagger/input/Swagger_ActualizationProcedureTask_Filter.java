@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @ApiModel(description = "Json Model for ActualizationProcedureTask Filter",
-        value = "Swagger_ActualizationProcedureTask_Filter")
+        value = "ActualizationProcedureTask_Filter")
 public class Swagger_ActualizationProcedureTask_Filter {
 
 

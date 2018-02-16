@@ -2346,13 +2346,13 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardware_check(String hash_for_adding) {
+    public Result hardware_check(String registration_hash) {
         try {
 
             Swagger_Board_Registration_Status status = new Swagger_Board_Registration_Status();
 
             // Kotrola objektu
-            Model_Hardware hardware_not_cached = Model_Hardware.find.query().where().eq("registration_hash", hash_for_adding).select("id").findOne();
+            Model_Hardware hardware_not_cached = Model_Hardware.find.query().where().eq("registration_hash", registration_hash).select("id").findOne();
             if (hardware_not_cached == null) {
                 status.status = BoardRegistrationStatus.NOT_EXIST;
                 return ok(Json.toJson(status));

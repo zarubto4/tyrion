@@ -14,4 +14,5 @@ public enum CompilationStatus {
     @EnumValue("SUCCESS")                   SUCCESS,                    // úspěšně zkompilováno a Tyrion stáhl a uložil Bin file soubor!!
     @EnumValue("UNSTABLE")                  UNSTABLE,                   // úspěšně zkompilováno, ale hardware s touto verzí selhal -označena jako nestabilní!!!
     @EnumValue("UNDEFINED")                 UNDEFINED                   // Pro stavy kdy je compilation == null a musím dát něco do JSonu.
+
 }
