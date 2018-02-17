@@ -78,6 +78,15 @@ public class Model_CProgramVersion extends VersionModel {
         return compilation.virtual_input_output;
     }
 
+    @JsonProperty @ApiModelProperty(required = false, readOnly = true, value = "Link for download file in Binary (Not in Base64). Its ready to manual Upload. Only if \"status\" == \"SUCCESS\"")
+    public String download_link_bin_file(){
+        if(status() == CompilationStatus.SUCCESS) {
+            return compilation.file_path();
+        }else {
+            return null;
+        }
+    }
+
     @JsonProperty @ApiModelProperty(value = "Visible only for Administrator with Special Permission", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean main_mark(){
         if(default_program != null){

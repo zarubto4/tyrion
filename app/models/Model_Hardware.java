@@ -160,7 +160,7 @@ public class Model_Hardware extends TaggedModel {
     @JsonProperty public UUID producer_id()                          { try { return cache_producer_id != null ? cache_producer_id : get_producer().id;} catch (NullPointerException e) {return  null;}}
     @JsonProperty public String producer_name()                      { try { return get_producer().name; } catch (NullPointerException e) {return  null;}}
     @JsonProperty public UUID project_id()                           { try { return cache_project_id != null ? cache_project_id : get_project().id; } catch (NullPointerException e) {return  null;}}
-    @JsonProperty public Model_BootLoader actual_bootloader()                 {
+    @JsonProperty public Model_BootLoader actual_bootloader()        {
         try {
             return get_actual_bootloader();
         } catch (NullPointerException e) {
@@ -168,7 +168,8 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public Model_BootLoader bootloader_update_in_progress() {
         try {
 
@@ -206,7 +207,9 @@ public class Model_Hardware extends TaggedModel {
             return null; // Raději true než false aby to uživatel neodpálil další update
         }
     }
-    @JsonProperty public Model_BootLoader available_latest_bootloader()  {
+
+    @JsonProperty
+    public Model_BootLoader available_latest_bootloader()  {
         try {
             return getHardwareType().main_boot_loader();
         }catch (Exception e) {
@@ -215,8 +218,8 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
-
-    @JsonProperty public String ip_address() {
+    @JsonProperty
+    public String ip_address() {
         try {
 
             if (cache_latest_know_ip_address != null) {
@@ -233,6 +236,7 @@ public class Model_Hardware extends TaggedModel {
     }
 
     @JsonProperty
+    @ApiModelProperty(required = false, readOnly = true)
     public List<BoardAlert> alert_list() {
         try {
 
@@ -244,6 +248,16 @@ public class Model_Hardware extends TaggedModel {
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
+        }
+    }
+
+    @JsonProperty
+    @ApiModelProperty(required = false, readOnly = true, value = "Basic alerts for potential collisions when deploying or updating new programs")
+    public BoardUpdateCollision collision(){
+        if (connected_instance_id == null) {
+            return BoardUpdateCollision.NO_COLLISION;
+        } else {
+            return BoardUpdateCollision.ALREADY_IN_INSTANCE;
         }
     }
 

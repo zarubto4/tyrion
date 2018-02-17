@@ -2,6 +2,7 @@ package controllers;
 
 import akka.actor.ActorSystem;
 import akka.stream.Materializer;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -33,6 +34,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+@Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_WebSocket extends _BaseController {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
@@ -99,8 +101,7 @@ public class Controller_WebSocket extends _BaseController {
                     "lost is token deactivated also. ",
             produces = "application/json",
             consumes = "text/plain",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Token successfully generated",  response = Swagger_Websocket_Token.class),
@@ -124,6 +125,7 @@ public class Controller_WebSocket extends _BaseController {
         }
     }
 
+    @ApiOperation(value = "Homer Server Connection", hidden = true, tags = {"WebSocket"})
     public WebSocket homer(String token) {
         return WebSocket.Json.acceptOrResult(request -> {
             try {
@@ -161,6 +163,7 @@ public class Controller_WebSocket extends _BaseController {
         });
     }
 
+    @ApiOperation(value = "Compiler Server Connection", hidden = true, tags = {"WebSocket"})
     public WebSocket compiler(String token) {
         return WebSocket.Json.acceptOrResult(request -> {
             try {
@@ -198,6 +201,7 @@ public class Controller_WebSocket extends _BaseController {
         });
     }
 
+    @ApiOperation(value = "Portal Server Connection", hidden = true, tags = {"WebSocket"})
     public WebSocket portal(String token) {
         return WebSocket.Json.acceptOrResult(request -> {
             try {
