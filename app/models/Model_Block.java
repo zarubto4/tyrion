@@ -294,6 +294,7 @@ public class Model_Block extends TaggedModel {
         if(_BaseController.person().has_permission(Permission.Block_delete.name())) return;
         get_project().check_update_permission();
     }
+
     @JsonProperty @ApiModelProperty("Visible only for Administrator with permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
         try {
             // Cache už Obsahuje Klíč a tak vracím hodnotu

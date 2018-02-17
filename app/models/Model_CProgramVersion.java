@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -77,8 +78,16 @@ public class Model_CProgramVersion extends VersionModel {
         return compilation.virtual_input_output;
     }
 
+    @JsonProperty @ApiModelProperty(value = "Visible only for Administrator with Special Permission", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Boolean main_mark(){
+        if(default_program != null){
+            return true;
+        }
+        return null;
+    }
 
-    @JsonIgnore @Transient @ApiModelProperty(required = true, readOnly = true) public Swagger_C_Program_Version program(Model_CProgramVersion version) {
+    @JsonIgnore @Transient @ApiModelProperty(required = true, readOnly = true)
+    public Swagger_C_Program_Version program(Model_CProgramVersion version) {
         try {
 
             Swagger_C_Program_Version c_program_versions = new Swagger_C_Program_Version();

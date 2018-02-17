@@ -28,8 +28,8 @@ public class Model_HardwareBatch extends BaseModel {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     public String revision;                     // Kod HW revize
-    public String production_batch;             // Kod HW revizedate_of_assembly
-    public String assembled;                    // Den kdy došlo k sestavení
+    public String production_batch;             // Kod HW revize
+    public String assembled;                    // Den kdy došlo k sestavení původně date_of_assembly
     public String pcb_manufacture_name;         // Jméno výrobce desky
     public String pcb_manufacture_id;           // Kod výrobce desky
     public String assembly_manufacture_name;    // Jméno firmy co osazovala DPS

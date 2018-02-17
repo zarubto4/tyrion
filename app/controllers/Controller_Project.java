@@ -24,6 +24,7 @@ import utilities.swagger.input.*;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
@@ -664,14 +665,18 @@ public class Controller_Project extends _BaseController {
             if(help.name != null && !help.name.equals("")) hardware.name = help.name;
 
             // Set group if help contains it
-            if (help.group_id != null) {
-                Model_HardwareGroup group = Model_HardwareGroup.getById(help.group_id);
-                group.check_update_permission();
+            if (help.group_ids != null && !help.group_ids.isEmpty()) {
 
-                group.hardware.add(hardware);
+                for(UUID group_id : help.group_ids) {
 
-                hardware.hardware_groups.add(group);
-                hardware.cache_hardware_groups_ids.add(group.id);
+                    Model_HardwareGroup group = Model_HardwareGroup.getById(group_id);
+                    group.check_update_permission();
+
+                    group.hardware.add(hardware);
+
+                    hardware.hardware_groups.add(group);
+                    hardware.cache_hardware_groups_ids.add(group.id);
+                }
             }
 
             // Update

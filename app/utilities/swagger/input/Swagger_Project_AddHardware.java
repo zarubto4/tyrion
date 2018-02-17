@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
+import java.util.List;
 import java.util.UUID;
 
 @ApiModel(description = "",
@@ -11,7 +12,7 @@ import java.util.UUID;
 public class Swagger_Project_AddHardware {
 
     @ApiModelProperty(required = false)
-    public UUID group_id;
+    public List<UUID> group_ids;
 
     @Constraints.Required
     public UUID project_id;

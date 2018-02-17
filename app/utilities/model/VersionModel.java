@@ -3,8 +3,10 @@ package utilities.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers._BaseController;
 import io.swagger.annotations.ApiModelProperty;
 import models.Model_Blob;
+import models.Model_CProgram;
 import models.Model_Person;
 import models.Model_WidgetVersion;
 import utilities.cache.Cached;
@@ -80,6 +82,17 @@ public abstract class VersionModel extends NamedModel {
     @JsonIgnore public String blob_version_link;
     @JsonIgnore @Transient public String get_path() {
         return  blob_version_link;
+    }
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonProperty @ApiModelProperty("Visible only for Administrator with permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
+        try {
+            if(_BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return true;
+            return null;
+        }catch (Exception e){
+            return null;
+        }
     }
 
 
