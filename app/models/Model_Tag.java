@@ -3,6 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers._BaseController;
 import io.ebean.Finder;
+import io.ebean.Model;
 import io.swagger.annotations.ApiModel;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions._Base_Result_Exception;
@@ -18,7 +19,7 @@ import java.util.UUID;
 @Entity
 @ApiModel(value = "Tag", description = "Model of Tag")
 @Table(name = "Tag")
-public class Model_Tag extends BaseModel {
+public class Model_Tag extends Model {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -26,10 +27,8 @@ public class Model_Tag extends BaseModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Column(unique = true)
-    public String value;
-
-    @ManyToOne public Model_Person person;
+    @Id public UUID id;
+    @Column(unique = true) public String value;
 
     @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_Project> projects = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_Block> blocks = new ArrayList<>();
@@ -59,11 +58,6 @@ public class Model_Tag extends BaseModel {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

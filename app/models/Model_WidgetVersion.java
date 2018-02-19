@@ -17,8 +17,8 @@ import javax.persistence.*;
 import java.util.UUID;
 
 @Entity
-@ApiModel( value = "GridWidgetVersion", description = "Model of GridWidgetVersion")
-@Table(name="GridWidgetVersion")
+@ApiModel( value = "WidgetVersion", description = "Model of WidgetVersion")
+@Table(name="WidgetVersion")
 public class Model_WidgetVersion extends VersionModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

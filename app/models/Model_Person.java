@@ -76,7 +76,6 @@ public class Model_Person extends BaseModel {
 
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Employee>              employees            = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ProjectParticipant>    projects_participant = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Tag>                   tags                 = new ArrayList<>(); // User made tags
     @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Block>                 blocks               = new ArrayList<>(); // Propojení, které bločky uživatel vytvořil
     @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BlockVersion>          blocks_versions        = new ArrayList<>(); // Propojení, které verze bločků uživatel vytvořil
     @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Widget>                widgets              = new ArrayList<>(); // Propojení, které widgety uživatel vytvořil

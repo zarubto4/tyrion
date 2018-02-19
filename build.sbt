@@ -19,7 +19,7 @@ libraryDependencies ++= Seq(
   "org.reflections" % "reflections" % "0.9.11",
   "io.swagger" %% "swagger-play2" % "1.6.0",
   "org.quartz-scheduler" % "quartz" % "2.3.0",
-  "com.github.scribejava" % "scribejava-apis" % "2.1.0",
+  "com.github.scribejava" % "scribejava-apis" % "5.0.0",
   "org.assertj" % "assertj-core" % "3.6.2" % Test,
   "org.awaitility" % "awaitility" % "2.0.0" % Test,
   guice,

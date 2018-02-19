@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@ApiModel( value = "LibraryVersion ", description = "Model of LibraryVersion ")
-@Table(name="LibraryVersion ")
+@ApiModel( value = "BProgramVersion", description = "Model of BProgram Version")
+@Table(name="BProgramVersion")
 public class Model_BProgramVersion extends VersionModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

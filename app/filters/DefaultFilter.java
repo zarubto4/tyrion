@@ -12,7 +12,7 @@ import java.util.concurrent.Executor;
  * This is a simple filter that adds a header to all requests.
  */
 @Singleton
-public class ExampleFilter extends EssentialFilter {
+public class DefaultFilter extends EssentialFilter {
 
     private final Executor exec;
 
@@ -20,7 +20,7 @@ public class ExampleFilter extends EssentialFilter {
      * @param exec This class is needed to execute code asynchronously.
      */
     @Inject
-    public ExampleFilter(Executor exec) {
+    public DefaultFilter(Executor exec) {
 
         this.exec = exec;
     }

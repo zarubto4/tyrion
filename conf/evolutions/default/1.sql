@@ -42,7 +42,7 @@ create table bprogram_tag (
   constraint pk_bprogram_tag primary key (bprogram_id,tag_id)
 );
 
-create table libraryversion (
+create table bprogramversion (
   id                            uuid not null,
   created                       timestamptz,
   updated                       timestamptz,
@@ -54,10 +54,12 @@ create table libraryversion (
   publish_type                  varchar(15),
   blob_version_link             varchar(255),
   library_id                    uuid,
+  b_program_id                  uuid,
+  additional_configuration      varchar(255),
   deleted                       boolean default false not null,
-  constraint ck_libraryversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
-  constraint ck_libraryversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
-  constraint pk_libraryversion primary key (id)
+  constraint ck_bprogramversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
+  constraint ck_bprogramversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint pk_bprogramversion primary key (id)
 );
 
 create table blob (
@@ -636,6 +638,24 @@ create table library_hardwaretype (
   constraint pk_library_hardwaretype primary key (library_id,hardware_type_id)
 );
 
+create table libraryversion (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  approval_state                varchar(11),
+  publish_type                  varchar(15),
+  blob_version_link             varchar(255),
+  library_id                    uuid,
+  deleted                       boolean default false not null,
+  constraint ck_libraryversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
+  constraint ck_libraryversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint pk_libraryversion primary key (id)
+);
+
 create table log (
   id                            uuid not null,
   created                       timestamptz,
@@ -676,8 +696,8 @@ create table mprojectprogramsnapshot (
 
 create table b_program_version_snapshots (
   mproject_program_snap_shot_id uuid not null,
-  library_version_id            uuid not null,
-  constraint pk_b_program_version_snapshots primary key (mproject_program_snap_shot_id,library_version_id)
+  bprogram_version_id           uuid not null,
+  constraint pk_b_program_version_snapshots primary key (mproject_program_snap_shot_id,bprogram_version_id)
 );
 
 create table notification (
@@ -935,12 +955,7 @@ create table servererror (
 
 create table tag (
   id                            uuid not null,
-  created                       timestamptz,
-  updated                       timestamptz,
-  removed                       timestamptz,
   value                         varchar(255),
-  person_id                     uuid,
-  deleted                       boolean default false not null,
   constraint uq_tag_value unique (value),
   constraint pk_tag primary key (id)
 );
@@ -1021,7 +1036,7 @@ create table widget_tag (
   constraint pk_widget_tag primary key (widget_id,tag_id)
 );
 
-create table gridwidgetversion (
+create table widgetversion (
   id                            uuid not null,
   created                       timestamptz,
   updated                       timestamptz,
@@ -1036,9 +1051,9 @@ create table gridwidgetversion (
   logic_json                    TEXT,
   widget_id                     uuid,
   deleted                       boolean default false not null,
-  constraint ck_gridwidgetversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
-  constraint ck_gridwidgetversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
-  constraint pk_gridwidgetversion primary key (id)
+  constraint ck_widgetversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
+  constraint ck_widgetversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint pk_widgetversion primary key (id)
 );
 
 alter table authorizationtoken add constraint fk_authorizationtoken_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
@@ -1053,11 +1068,14 @@ create index ix_bprogram_tag_bprogram on bprogram_tag (bprogram_id);
 alter table bprogram_tag add constraint fk_bprogram_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
 create index ix_bprogram_tag_tag on bprogram_tag (tag_id);
 
-alter table libraryversion add constraint fk_libraryversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
-create index ix_libraryversion_author_id on libraryversion (author_id);
+alter table bprogramversion add constraint fk_bprogramversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
+create index ix_bprogramversion_author_id on bprogramversion (author_id);
 
-alter table libraryversion add constraint fk_libraryversion_library_id foreign key (library_id) references library (id) on delete restrict on update restrict;
-create index ix_libraryversion_library_id on libraryversion (library_id);
+alter table bprogramversion add constraint fk_bprogramversion_library_id foreign key (library_id) references library (id) on delete restrict on update restrict;
+create index ix_bprogramversion_library_id on bprogramversion (library_id);
+
+alter table bprogramversion add constraint fk_bprogramversion_b_program_id foreign key (b_program_id) references bprogram (id) on delete restrict on update restrict;
+create index ix_bprogramversion_b_program_id on bprogramversion (b_program_id);
 
 alter table blob add constraint fk_blob_boot_loader_id foreign key (boot_loader_id) references bootloader (id) on delete restrict on update restrict;
 
@@ -1238,7 +1256,7 @@ create index ix_instance_tag_tag on instance_tag (tag_id);
 alter table instancesnapshot add constraint fk_instancesnapshot_instance_id foreign key (instance_id) references instance (id) on delete restrict on update restrict;
 create index ix_instancesnapshot_instance_id on instancesnapshot (instance_id);
 
-alter table instancesnapshot add constraint fk_instancesnapshot_b_program_version_id foreign key (b_program_version_id) references libraryversion (id) on delete restrict on update restrict;
+alter table instancesnapshot add constraint fk_instancesnapshot_b_program_version_id foreign key (b_program_version_id) references bprogramversion (id) on delete restrict on update restrict;
 create index ix_instancesnapshot_b_program_version_id on instancesnapshot (b_program_version_id);
 
 alter table instancesnapshot add constraint fk_instancesnapshot_program_id foreign key (program_id) references blob (id) on delete restrict on update restrict;
@@ -1270,6 +1288,12 @@ create index ix_library_hardwaretype_library on library_hardwaretype (library_id
 alter table library_hardwaretype add constraint fk_library_hardwaretype_hardwaretype foreign key (hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
 create index ix_library_hardwaretype_hardwaretype on library_hardwaretype (hardware_type_id);
 
+alter table libraryversion add constraint fk_libraryversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
+create index ix_libraryversion_author_id on libraryversion (author_id);
+
+alter table libraryversion add constraint fk_libraryversion_library_id foreign key (library_id) references library (id) on delete restrict on update restrict;
+create index ix_libraryversion_library_id on libraryversion (library_id);
+
 alter table log add constraint fk_log_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
 
 alter table mprograminstanceparameter add constraint fk_mprograminstanceparameter_grid_project_program_snapsho_1 foreign key (grid_project_program_snapshot_id) references mprojectprogramsnapshot (id) on delete restrict on update restrict;
@@ -1284,8 +1308,8 @@ create index ix_mprojectprogramsnapshot_grid_project_id on mprojectprogramsnapsh
 alter table b_program_version_snapshots add constraint fk_b_program_version_snapshots_mprojectprogramsnapshot foreign key (mproject_program_snap_shot_id) references mprojectprogramsnapshot (id) on delete restrict on update restrict;
 create index ix_b_program_version_snapshots_mprojectprogramsnapshot on b_program_version_snapshots (mproject_program_snap_shot_id);
 
-alter table b_program_version_snapshots add constraint fk_b_program_version_snapshots_libraryversion foreign key (library_version_id) references libraryversion (id) on delete restrict on update restrict;
-create index ix_b_program_version_snapshots_libraryversion on b_program_version_snapshots (library_version_id);
+alter table b_program_version_snapshots add constraint fk_b_program_version_snapshots_bprogramversion foreign key (bprogram_version_id) references bprogramversion (id) on delete restrict on update restrict;
+create index ix_b_program_version_snapshots_bprogramversion on b_program_version_snapshots (bprogram_version_id);
 
 alter table notification add constraint fk_notification_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
 create index ix_notification_person_id on notification (person_id);
@@ -1343,9 +1367,6 @@ create index ix_role_permission_role on role_permission (role_id);
 alter table role_permission add constraint fk_role_permission_permission foreign key (permission_id) references permission (id) on delete restrict on update restrict;
 create index ix_role_permission_permission on role_permission (permission_id);
 
-alter table tag add constraint fk_tag_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
-create index ix_tag_person_id on tag (person_id);
-
 alter table updateprocedure add constraint fk_updateprocedure_instance_id foreign key (instance_id) references instancesnapshot (id) on delete restrict on update restrict;
 create index ix_updateprocedure_instance_id on updateprocedure (instance_id);
 
@@ -1364,11 +1385,11 @@ create index ix_widget_tag_widget on widget_tag (widget_id);
 alter table widget_tag add constraint fk_widget_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
 create index ix_widget_tag_tag on widget_tag (tag_id);
 
-alter table gridwidgetversion add constraint fk_gridwidgetversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
-create index ix_gridwidgetversion_author_id on gridwidgetversion (author_id);
+alter table widgetversion add constraint fk_widgetversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
+create index ix_widgetversion_author_id on widgetversion (author_id);
 
-alter table gridwidgetversion add constraint fk_gridwidgetversion_widget_id foreign key (widget_id) references widget (id) on delete restrict on update restrict;
-create index ix_gridwidgetversion_widget_id on gridwidgetversion (widget_id);
+alter table widgetversion add constraint fk_widgetversion_widget_id foreign key (widget_id) references widget (id) on delete restrict on update restrict;
+create index ix_widgetversion_widget_id on widgetversion (widget_id);
 
 
 # --- !Downs
@@ -1385,11 +1406,14 @@ drop index if exists ix_bprogram_tag_bprogram;
 alter table if exists bprogram_tag drop constraint if exists fk_bprogram_tag_tag;
 drop index if exists ix_bprogram_tag_tag;
 
-alter table if exists libraryversion drop constraint if exists fk_libraryversion_author_id;
-drop index if exists ix_libraryversion_author_id;
+alter table if exists bprogramversion drop constraint if exists fk_bprogramversion_author_id;
+drop index if exists ix_bprogramversion_author_id;
 
-alter table if exists libraryversion drop constraint if exists fk_libraryversion_library_id;
-drop index if exists ix_libraryversion_library_id;
+alter table if exists bprogramversion drop constraint if exists fk_bprogramversion_library_id;
+drop index if exists ix_bprogramversion_library_id;
+
+alter table if exists bprogramversion drop constraint if exists fk_bprogramversion_b_program_id;
+drop index if exists ix_bprogramversion_b_program_id;
 
 alter table if exists blob drop constraint if exists fk_blob_boot_loader_id;
 
@@ -1602,6 +1626,12 @@ drop index if exists ix_library_hardwaretype_library;
 alter table if exists library_hardwaretype drop constraint if exists fk_library_hardwaretype_hardwaretype;
 drop index if exists ix_library_hardwaretype_hardwaretype;
 
+alter table if exists libraryversion drop constraint if exists fk_libraryversion_author_id;
+drop index if exists ix_libraryversion_author_id;
+
+alter table if exists libraryversion drop constraint if exists fk_libraryversion_library_id;
+drop index if exists ix_libraryversion_library_id;
+
 alter table if exists log drop constraint if exists fk_log_file_id;
 
 alter table if exists mprograminstanceparameter drop constraint if exists fk_mprograminstanceparameter_grid_project_program_snapsho_1;
@@ -1616,8 +1646,8 @@ drop index if exists ix_mprojectprogramsnapshot_grid_project_id;
 alter table if exists b_program_version_snapshots drop constraint if exists fk_b_program_version_snapshots_mprojectprogramsnapshot;
 drop index if exists ix_b_program_version_snapshots_mprojectprogramsnapshot;
 
-alter table if exists b_program_version_snapshots drop constraint if exists fk_b_program_version_snapshots_libraryversion;
-drop index if exists ix_b_program_version_snapshots_libraryversion;
+alter table if exists b_program_version_snapshots drop constraint if exists fk_b_program_version_snapshots_bprogramversion;
+drop index if exists ix_b_program_version_snapshots_bprogramversion;
 
 alter table if exists notification drop constraint if exists fk_notification_person_id;
 drop index if exists ix_notification_person_id;
@@ -1675,9 +1705,6 @@ drop index if exists ix_role_permission_role;
 alter table if exists role_permission drop constraint if exists fk_role_permission_permission;
 drop index if exists ix_role_permission_permission;
 
-alter table if exists tag drop constraint if exists fk_tag_person_id;
-drop index if exists ix_tag_person_id;
-
 alter table if exists updateprocedure drop constraint if exists fk_updateprocedure_instance_id;
 drop index if exists ix_updateprocedure_instance_id;
 
@@ -1696,11 +1723,11 @@ drop index if exists ix_widget_tag_widget;
 alter table if exists widget_tag drop constraint if exists fk_widget_tag_tag;
 drop index if exists ix_widget_tag_tag;
 
-alter table if exists gridwidgetversion drop constraint if exists fk_gridwidgetversion_author_id;
-drop index if exists ix_gridwidgetversion_author_id;
+alter table if exists widgetversion drop constraint if exists fk_widgetversion_author_id;
+drop index if exists ix_widgetversion_author_id;
 
-alter table if exists gridwidgetversion drop constraint if exists fk_gridwidgetversion_widget_id;
-drop index if exists ix_gridwidgetversion_widget_id;
+alter table if exists widgetversion drop constraint if exists fk_widgetversion_widget_id;
+drop index if exists ix_widgetversion_widget_id;
 
 drop table if exists authorizationtoken cascade;
 
@@ -1708,7 +1735,7 @@ drop table if exists bprogram cascade;
 
 drop table if exists bprogram_tag cascade;
 
-drop table if exists libraryversion cascade;
+drop table if exists bprogramversion cascade;
 
 drop table if exists blob cascade;
 
@@ -1788,6 +1815,8 @@ drop table if exists library_tag cascade;
 
 drop table if exists library_hardwaretype cascade;
 
+drop table if exists libraryversion cascade;
+
 drop table if exists log cascade;
 
 drop table if exists mprograminstanceparameter cascade;
@@ -1842,5 +1871,5 @@ drop table if exists widget cascade;
 
 drop table if exists widget_tag cascade;
 
-drop table if exists gridwidgetversion cascade;
+drop table if exists widgetversion cascade;
 

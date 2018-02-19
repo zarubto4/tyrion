@@ -19,7 +19,7 @@
   
   - Install *Java* and *JCE - Unlimited Strength* policy files (only replace files in your_java/lib/security folder)
   - (You might have to add location of java.exe and javac.exe to JAVA_HOME or PATH variable)
-  - Install PostgreSQL and create password "admin" for superuser "postgres" and create DB "ByzanceERP"
+  - Install PostgreSQL and create password "admin" for superuser "postgres" and create DB "byzance"
   - In root of the application run terminal command "activator run" (might have to add path of your activator/bin to PATH variable)
   
   #### Tips ####
@@ -33,10 +33,9 @@
   
   public class Model_HomerInstanceRecord {
   /* TODO to remove
-       @JsonIgnore @OneToMany(mappedBy="homer_instance_record", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ActualizationProcedure> procedures = new ArrayList<>();
   
-  
-  
+      @JsonIgnore @OneToMany(mappedBy="homer_instance_record", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ActualizationProcedure> procedures = new ArrayList<>();
+
       @JsonProperty  public  String b_program_version_id()          {  return cache_version_object_id != null ? cache_version_object_id : get_b_program_version().id;}
       @JsonProperty  public  String b_program_version_name()        {  return get_b_program_version().version_name;}
       @JsonProperty  public  String b_program_version_description() {  return get_b_program_version().version_description;}

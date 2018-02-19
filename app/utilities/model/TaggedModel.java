@@ -33,6 +33,7 @@ public abstract class TaggedModel extends NamedModel {
                 tag = new Model_Tag();
                 tag.value = value;
 
+                /*
                 try {
                     tag.person = _BaseController.person();
                 } catch (_Base_Result_Exception exception){
@@ -42,6 +43,7 @@ public abstract class TaggedModel extends NamedModel {
                         logger.internalServerError(exception);
                     }
                 }
+                */
 
                 tag.save();
             }

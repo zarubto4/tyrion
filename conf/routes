@@ -29,11 +29,11 @@ GET       /websocket/access_token                                       controll
 POST      /login                                                        controllers.Controller_Security.login()
 POST      /logout                                                       controllers.Controller_Security.logout()
 
-#GET       /login/facebook/*url                                          controllers.Controller_Security.facebook_oauth_get(url)
-#GET       /login/github/*url                                            controllers.Controller_Security.github_oauth_get(url)
+GET       /login/facebook/*url                                          controllers.Controller_Security.facebook_oauth_get(url)
+GET       /login/github/*url                                            controllers.Controller_Security.github_oauth_get(url)
 
-#POST      /facebook                                                     controllers.Controller_Security.Facebook()
-#POST      /github                                                       controllers.Controller_Security.GitHub()
+POST      /facebook                                                     controllers.Controller_Security.Facebook()
+POST      /github                                                       controllers.Controller_Security.GitHub()
 
 GET       /login/person                                                 controllers.Controller_Security.person_get_by_token()
 
