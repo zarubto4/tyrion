@@ -174,7 +174,7 @@ public class Model_Instance extends TaggedModel {
     }
 
     @JsonProperty @ApiModelProperty(required = true)
-    public NetworkStatus server_online_state() {
+    public NetworkStatus server_online_state() throws _Base_Result_Exception  {
         return Model_HomerServer.getById(server_id()).online_state();
     }
 
@@ -230,7 +230,7 @@ public class Model_Instance extends TaggedModel {
 
 
     @JsonIgnore
-    public Model_InstanceSnapshot getCurrentSnapshot() {
+    public Model_InstanceSnapshot getCurrentSnapshot() throws _Base_Result_Exception  {
 
         if (this.current_snapshot_id != null) {
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(this.current_snapshot_id);
@@ -242,7 +242,7 @@ public class Model_Instance extends TaggedModel {
     }
 
     @JsonIgnore
-    public List<UUID> getHardwareIds() {
+    public List<UUID> getHardwareIds() throws _Base_Result_Exception  {
         return getCurrentSnapshot().getHardwareIds();
     }
 
@@ -256,7 +256,11 @@ public class Model_Instance extends TaggedModel {
         super.save();
 
         if (project != null) {
-            Model_Project.getById(this.project_id()).cache_instance_ids.add(id);
+            try {
+                Model_Project.getById(this.project_id()).cache_instance_ids.add(id);
+            }catch (Exception e) {
+                // Nothing
+            }
         }
 
         cache.put(this.id, this);
@@ -285,7 +289,11 @@ public class Model_Instance extends TaggedModel {
         super.update();
 
         if (project_id() != null) {
-            Model_Project.getById(project_id()).cache_instance_ids.remove(id);
+            try {
+                Model_Project.getById(project_id()).cache_instance_ids.remove(id);
+            } catch (Exception e) {
+                // Nothing
+            }
         }
 
         if (cache.containsKey(this.id)) {

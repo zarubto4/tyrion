@@ -750,12 +750,11 @@ public class Controller_Security extends _BaseController {
 
     @ApiOperation( value = "option", hidden = true)
     public Result option() {
-
         return ok();
     }
 
     @ApiOperation( value = "optionLink", hidden = true)
     public Result optionLink(String url) {
-        return ok();
+        return Controller.ok();
     }
 }

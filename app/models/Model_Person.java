@@ -251,7 +251,7 @@ public class Model_Person extends BaseModel {
         return getById(UUID.fromString(id));
     }
 
-    public static Model_Person getById(UUID id) {
+    public static Model_Person getById(UUID id) throws _Base_Result_Exception {
 
         Model_Person person = cache.get(id);
         if (person == null) {

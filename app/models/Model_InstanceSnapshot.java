@@ -66,7 +66,7 @@ public class Model_InstanceSnapshot extends BaseModel {
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public Model_BProgramVersion get_b_program_version() {
+    public Model_BProgramVersion get_b_program_version() throws _Base_Result_Exception {
 
 
         if (cache_version_id == null) {
@@ -77,7 +77,7 @@ public class Model_InstanceSnapshot extends BaseModel {
     }
 
     @JsonIgnore
-    public UUID get_b_program_version_id() {
+    public UUID get_b_program_version_id() throws _Base_Result_Exception {
 
         if (cache_version_id == null) {
             Model_BProgramVersion version = Model_BProgramVersion.find.query().where().eq("instances.id", id).select("id").findOne();
@@ -89,7 +89,7 @@ public class Model_InstanceSnapshot extends BaseModel {
     }
 
     @JsonIgnore
-    public Model_Instance get_instance() {
+    public Model_Instance get_instance() throws _Base_Result_Exception  {
         if (cache_instance_id == null) {
             return Model_Instance.getById(get_instance_id());
         }else {
@@ -98,7 +98,7 @@ public class Model_InstanceSnapshot extends BaseModel {
     }
 
     @JsonIgnore
-    public UUID get_instance_id() {
+    public UUID get_instance_id() throws _Base_Result_Exception {
 
         if (cache_instance_id == null) {
             Model_Instance instance = Model_Instance.find.query().where().eq("snapshots.id", id).select("id").findOne();
@@ -112,71 +112,75 @@ public class Model_InstanceSnapshot extends BaseModel {
     public void deploy() {
         new Thread(() -> {
 
-            // Step 1
-            logger.debug("deploy - begin");
-            if (this.get_instance().current_snapshot_id != null && !this.get_instance().current_snapshot_id.equals(this.id)) {
-                logger.debug("deploy - stop previous running snapshot");
-                Model_InstanceSnapshot previous = getById(this.get_instance().current_snapshot_id);
-                if (previous != null) {
-                    previous.stop();
+            try {
+                // Step 1
+                logger.debug("deploy - begin");
+                if (this.get_instance().current_snapshot_id != null && !this.get_instance().current_snapshot_id.equals(this.id)) {
+                    logger.debug("deploy - stop previous running snapshot");
+                    Model_InstanceSnapshot previous = getById(this.get_instance().current_snapshot_id);
+                    if (previous != null) {
+                        previous.stop();
+                    }
                 }
-            }
 
-            if (get_instance().server_online_state() != NetworkStatus.ONLINE) {
-                logger.debug("deploy - server is offline, it is not possible to continue");
-                return;
-            }
-
-            WS_Message_Instance_status status = get_instance().get_instance_status();
-
-            WS_Message_Instance_status.InstanceStatus instanceStatus = status.get_status(get_instance_id());
-
-            if (instanceStatus.error_code != null ) {
-                logger.warn("deploy - instance {} is not set in Homer Server ", get_instance_id());
-            }
-
-            // Instance status
-            if (!instanceStatus.status) {
-                // Vytvořím Instanci
-                WS_Message_Homer_Instance_add result_instance   = get_instance().server_main.add_instance(instance);
-                if (!result_instance.status.equals("success")) {
-                    logger.internalServerError(new Exception("Failed to add Instance. ErrorCode: " + result_instance.error_code + ". Error: " + result_instance.error));
+                if (get_instance().server_online_state() != NetworkStatus.ONLINE) {
+                    logger.debug("deploy - server is offline, it is not possible to continue");
                     return;
                 }
+
+                WS_Message_Instance_status status = get_instance().get_instance_status();
+
+                WS_Message_Instance_status.InstanceStatus instanceStatus = status.get_status(get_instance_id());
+
+                if (instanceStatus.error_code != null) {
+                    logger.warn("deploy - instance {} is not set in Homer Server ", get_instance_id());
+                }
+
+                // Instance status
+                if (!instanceStatus.status) {
+                    // Vytvořím Instanci
+                    WS_Message_Homer_Instance_add result_instance = get_instance().server_main.add_instance(instance);
+                    if (!result_instance.status.equals("success")) {
+                        logger.internalServerError(new Exception("Failed to add Instance. ErrorCode: " + result_instance.error_code + ". Error: " + result_instance.error));
+                        return;
+                    }
+                }
+
+                // Step 2
+                WS_Message_Instance_set_program result_step_2 = this.setProgram();
+                if (!result_step_2.status.equals("success")) {
+                    logger.warn("deploy - instance {}, step 2 failed: {}", get_instance_id(), result_step_2.error_code);
+                    return;
+                }
+
+                // Step 3
+                WS_Message_Instance_set_hardware result_step_3 = this.setHardware();
+                if (!result_step_3.status.equals("success")) {
+                    logger.warn("deploy - instance {}, step 3 failed: {}", get_instance_id(), result_step_3.error_code);
+                    return;
+                }
+
+                // Step 4
+                WS_Message_Instance_set_terminals result_step_4 = this.setTerminals();
+                if (!result_step_4.status.equals("success")) {
+                    logger.warn("deploy - instance {}, step 4 failed: {}", get_instance_id(), result_step_4.error_code);
+                    return;
+                }
+
+                Model_Instance.cache_status.put(get_instance_id(), true);
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, get_instance_id(), true, this.get_instance().project_id());
+
+                // Step 4
+                // TODO this.create_actualization_hardware_request();
+
+            }catch (Exception e) {
+                logger.internalServerError(e);
             }
-
-            // Step 2
-            WS_Message_Instance_set_program result_step_2 = this.setProgram();
-            if (!result_step_2.status.equals("success")) {
-                logger.warn("deploy - instance {}, step 2 failed: {}", get_instance_id(), result_step_2.error_code);
-                return;
-            }
-
-            // Step 3
-            WS_Message_Instance_set_hardware result_step_3 = this.setHardware();
-            if (!result_step_3.status.equals("success")) {
-                logger.warn("deploy - instance {}, step 3 failed: {}", get_instance_id(), result_step_3.error_code);
-                return;
-            }
-
-            // Step 4
-            WS_Message_Instance_set_terminals result_step_4 = this.setTerminals();
-            if (!result_step_4.status.equals("success")) {
-                logger.warn("deploy - instance {}, step 4 failed: {}", get_instance_id(), result_step_4.error_code);
-                return;
-            }
-
-            Model_Instance.cache_status.put(get_instance_id(), true);
-            WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, get_instance_id(), true, this.get_instance().project_id());
-
-            // Step 4
-            // TODO this.create_actualization_hardware_request();
-
 
         }).start();
     }
 
-    public void stop() {
+    public void stop() throws _Base_Result_Exception {
         check_update_permission();
 
         // TODO notifikace
@@ -244,19 +248,19 @@ public class Model_InstanceSnapshot extends BaseModel {
     }
 
     @JsonIgnore
-    public List<UUID> getHardwareIds() {
+    public List<UUID> getHardwareIds() throws _Base_Result_Exception {
         // TODO - Vylouskat z Jsonu Snapshotu instance
         throw new Result_Error_NotSupportedException();
     }
 
     @JsonIgnore
-    public List<UUID> getHardwareGroupseIds() {
+    public List<UUID> getHardwareGroupseIds() throws _Base_Result_Exception {
         // TODO - Vylouskat z Jsonu Snapshotu instance
         throw new Result_Error_NotSupportedException();
     }
 
     @JsonIgnore
-    public Model_Product getProduct() {
+    public Model_Product getProduct() throws _Base_Result_Exception {
         return this.get_instance().get_project().getProduct();
 
     }

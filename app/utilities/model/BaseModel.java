@@ -89,7 +89,7 @@ public abstract class BaseModel extends Model {
      * System will evytime check permission for this operation. But sometime, its done by system without "logged person" token
      */
     @Override
-    public void save() {
+    public void save() throws _Base_Result_Exception {
 
         logger.debug("save::Creating new Object");
 
@@ -125,7 +125,7 @@ public abstract class BaseModel extends Model {
      * Default update method - Permission is checked inside
      */
     @JsonIgnore @Override
-    public void update() {
+    public void update() throws _Base_Result_Exception {
 
         logger.debug("update::Update object Id: {}", this.id);
 
@@ -139,7 +139,7 @@ public abstract class BaseModel extends Model {
      * Its not removed permanently!
      */
     @Override
-    public boolean delete() {
+    public boolean delete() throws _Base_Result_Exception {
         logger.trace("delete:: - deleting '{}' from DB, id: {}", this.getClass().getSimpleName(), this.id);
 
         if(its_person_operation()) check_delete_permission();
@@ -279,8 +279,6 @@ public abstract class BaseModel extends Model {
     @JsonIgnore private boolean its_person_operation() {
         try {
             return  _BaseController.isAuthenticated();
-        } catch (_Base_Result_Exception e){
-            return false;
         }catch (Exception e){
             logger.internalServerError(e);
             return false;
@@ -298,14 +296,15 @@ public abstract class BaseModel extends Model {
             Field field = this.getClass().getDeclaredField("author");
             if (field != null) {
                 // Set only if its not set before by some special logic (For example, when we create copies of objects
-                if(field.get(Model_Person.class) == null) {
+                if (field.get(Model_Person.class) == null) {
                     field.set(_BaseController.person(), Model_Person.class);
                 }
             }
 
+        }catch (_Base_Result_Exception e){
+            // Don't log anything!
         }catch (Exception e) {
             // Don't log anything!
-            return;
         }
     }
 

@@ -689,8 +689,8 @@ public class Controller_Person extends _BaseController {
 
             switch (help.key) {
 
-                case "mail":{
-                    if (Model_Person.find.query().where().ieq("mail", help.value).findOne() == null) {
+                case "wmail":{
+                    if (Model_Person.getByEmail(help.value) == null) {
 
                         validation.valid = true;
                         return ok(Json.toJson(validation));

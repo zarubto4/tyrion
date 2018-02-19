@@ -35,7 +35,7 @@ public abstract class _BaseController {
      *
      * @return current person {@link Model_Person}
      */
-    public static Model_Person person() throws _Base_Result_Exception {
+    public static Model_Person person() throws Result_Error_Unauthorized {
         try {
 
             Model_Person person = (Model_Person) Controller.ctx().args.get("person");
@@ -139,6 +139,7 @@ public abstract class _BaseController {
      *
      * @return 200 result
      */
+
     public static Result ok() {
         return Controller.ok(Json.toJson(new Result_Ok()));
     }
@@ -390,35 +391,38 @@ public abstract class _BaseController {
         try{
 
             // Result_Error_NotFound
-            if(error.getCause().getClass().getSimpleName().equals(_Base_Result_Exception.class.getSimpleName())){
-                _Base_Result_Exception badRequest = (_Base_Result_Exception) error.getCause();
+            if(error.getClass().getSimpleName().equals(_Base_Result_Exception.class.getSimpleName())){
+                logger.debug("controllerServerError:: _Base_Result_Exception");
+                _Base_Result_Exception badRequest = (_Base_Result_Exception) error;
                 return badRequest(badRequest.getMessage());
             }
 
             // Result_Error_NotFound
-            if(error.getCause().getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
-                Result_Error_NotFound not_found = (Result_Error_NotFound) error.getCause();
+            if(error.getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
+                logger.debug("controllerServerError:: Result_Error_NotFound");
+                Result_Error_NotFound not_found = (Result_Error_NotFound) error;
                 return notFound(not_found.getClass_not_found());
             }
 
             // Result_Error_InvalidBody
-            if(error.getCause().getClass().getSimpleName().equals(Result_Error_InvalidBody.class.getSimpleName())){
-                Result_Error_InvalidBody invalid_body = (Result_Error_InvalidBody) error.getCause();
+            if(error.getClass().getSimpleName().equals(Result_Error_InvalidBody.class.getSimpleName())){
+                logger.debug("controllerServerError:: Result_Error_InvalidBody");
+                Result_Error_InvalidBody invalid_body = (Result_Error_InvalidBody) error;
                 return badRequest(invalid_body.getForm_error());
             }
 
             // Result_Error_Unauthorized
-            if(error.getCause().getClass().getSimpleName().equals(Result_Error_Unauthorized.class.getSimpleName())){
+            if(error.getClass().getSimpleName().equals(Result_Error_Unauthorized.class.getSimpleName())){
                 return unauthorized();
             }
 
             // Result_Error_PermissionDenied
-            if(error.getCause().getClass().getSimpleName().equals(Result_Error_PermissionDenied.class.getSimpleName())){
+            if(error.getClass().getSimpleName().equals(Result_Error_PermissionDenied.class.getSimpleName())){
                 return forbidden();
             }
 
             // Result_Error_PermissionDenied
-            if(error.getCause().getClass().getSimpleName().equals(Result_Error_NotSupportedException.class.getSimpleName())){
+            if(error.getClass().getSimpleName().equals(Result_Error_NotSupportedException.class.getSimpleName())){
                 return badRequest("Please contact technical support. Your request required unsupported parts of system.");
             }
 

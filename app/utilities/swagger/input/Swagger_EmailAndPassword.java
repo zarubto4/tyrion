@@ -5,8 +5,12 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
 @ApiModel(description = "Json Model with email and password",
-        value = "EmailAndPassword")
-public class Swagger_EmailAndPassword extends Swagger_EmailRequired {
+          value = "EmailAndPassword")
+public class Swagger_EmailAndPassword {
+
+    @Constraints.Email
+    @Constraints.Required
+    public String email;
 
     @Constraints.Required
     @Constraints.MinLength(value = 8, message = "The password must have at least 8 characters")

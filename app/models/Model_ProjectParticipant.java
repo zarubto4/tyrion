@@ -32,7 +32,7 @@ public class Model_ProjectParticipant extends BaseModel {
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true) public UUID id()            { if (person == null) return null; return person.id;}
-    @JsonProperty @ApiModelProperty(required = true) public String mail()        { if (person == null) return this.user_email; return person.email;}
+    @JsonProperty @ApiModelProperty(required = true) public String email()        { if (person == null) return this.user_email; return person.email;}
     @JsonProperty @ApiModelProperty(required = true) public String full_name()   { if (person == null) return "Unregistered user"; return person.full_name();}
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/

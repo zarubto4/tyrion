@@ -7,7 +7,7 @@ public class Result_Error_InvalidBody extends _Base_Result_Exception {
     private JsonNode form_error;
 
     public Result_Error_InvalidBody(JsonNode form_error) {
-        super();
+        super(form_error.toString());
         this.form_error = form_error;
     }
 

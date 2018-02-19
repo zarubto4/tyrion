@@ -95,10 +95,7 @@ public class Model_GridProject extends TaggedModel {
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
-    public void save() throws _Base_Result_Exception {
-
-        // Check Permission for Creating new Object
-        this.check_create_permission();
+    public void save() {
 
         // Create Link for Path for File - Like folder structures
         this.blob_link = project.getPath()  + "/grid-projects/"  + UUID.randomUUID().toString();
@@ -143,10 +140,9 @@ public class Model_GridProject extends TaggedModel {
     }
 
     @JsonIgnore @Override
-    public boolean delete() throws _Base_Result_Exception {
+    public boolean delete() {
 
         logger.debug("update :: Delete object Id: {} ", this.id);
-        check_delete_permission();
 
         super.delete();
         cache.remove(id);
@@ -224,7 +220,7 @@ public class Model_GridProject extends TaggedModel {
         _BaseController.person().cache_permission("grid_project_read_" + id, false);
         throw new Result_Error_PermissionDenied();
     }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+    @JsonIgnore @Transient @Override public void check_delete_permission()  throws _Base_Result_Exception {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if (_BaseController.person().has_permission("grid_project_delete_" + id)) _BaseController.person().valid_permission("grid_project_delete_" + id);
         if (_BaseController.person().has_permission(Permission.GridProject_delete.name())) return;

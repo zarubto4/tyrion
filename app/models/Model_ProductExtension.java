@@ -145,7 +145,7 @@ public class Model_ProductExtension extends NamedModel {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public void up() {
+    public void up() throws _Base_Result_Exception {
 
         check_update_permission();
 
@@ -165,7 +165,7 @@ public class Model_ProductExtension extends NamedModel {
     }
 
     @JsonIgnore
-    public void down() {
+    public void down() throws _Base_Result_Exception {
 
         check_update_permission();
 

@@ -446,7 +446,7 @@ public class Model_Product extends NamedModel {
     }
 
     @JsonIgnore
-    public List<Model_Project> get_projects() {
+    public List<Model_Project> get_projects() throws _Base_Result_Exception {
 
         List<Model_Project>  projects = new ArrayList<>();
 
