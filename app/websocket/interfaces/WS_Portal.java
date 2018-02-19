@@ -1,7 +1,5 @@
 package websocket.interfaces;
 
-import akka.actor.ActorRef;
-import akka.actor.Props;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
 import utilities.logger.Logger;
@@ -11,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class WS_Portal extends WS_Interface {
+public class WS_Portal {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
@@ -20,51 +18,47 @@ public class WS_Portal extends WS_Interface {
 /* STATIC  -------------------------------------------------------------------------------------------------------------*/
 
     public static final String CHANNEL = "becki";
+    public UUID person_id;
 
-    public static Props props(ActorRef out) {
-        return Props.create(WS_Portal.class, out);
-    }
-
-    public WS_Portal(UUID id) {
-        super(null);
-        this.id = id;
-        Controller_WebSocket.portals.put(this.id, this);
+    public WS_Portal(UUID person_id) {
+        this.person_id = person_id;
+        Controller_WebSocket.portals.put(person_id, this);
     }
 
     /**
-     * Holds all connections of Becki portals
+     * Holds all connections of Becki portals (Same user with multiple connection!)
      */
-    public Map<UUID, WS_PortalSingle> singles = new HashMap<>();
+    public Map<UUID, WS_PortalSingle> all_person_connections = new HashMap<>();
 
-    @Override
+
     public void send(ObjectNode message) {
-        singles.forEach((id, single) -> single.send(message));
+        all_person_connections.forEach((id, single) -> single.send(message));
     }
 
-    @Override
+
     public boolean isOnline() {
         return true;
     }
 
-    @Override
+
     public void onMessage(ObjectNode json) {
-        // TODO
+        // Nothing
+        logger.error("onMessage:: illegal And not supported request from Becki:: ", json.toString());
     }
 
-    @Override
+
     public void close() {
-        this.singles.forEach((id, single) -> single.close());
+        this.all_person_connections.forEach((id, single) -> single.close());
     }
 
     public void close(UUID token) {
-        if (this.singles.containsKey(token)) {
-            this.singles.get(token).close();
-            this.singles.remove(token);
+        if (this.all_person_connections.containsKey(token)) {
+            this.all_person_connections.get(token).close();
+            this.all_person_connections.remove(token);
         }
     }
 
-    @Override
     public void onClose() {
-        Controller_WebSocket.portals.remove(this.id);
+        Controller_WebSocket.portals.remove(this.person_id);
     }
 }

@@ -283,7 +283,7 @@ public class Model_Person extends BaseModel {
         UUID id = token_cache.get(token);
         if (id == null) {
 
-            Model_Person person = find.query().where().eq("authorizationTokens.token", token).findOne();
+            Model_Person person = find.query().where().eq("authorization_tokens.token", token).findOne();
             if (person == null) {
                 throw new Result_Error_NotFound(Model_Person.class);
             }

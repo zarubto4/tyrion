@@ -1,7 +1,9 @@
 package controllers;
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.stream.Materializer;
+import com.typesafe.config.Config;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -13,9 +15,7 @@ import org.ehcache.Cache;
 import play.libs.F;
 import play.libs.Json;
 import play.libs.streams.ActorFlow;
-import play.mvc.Result;
-import play.mvc.Security;
-import play.mvc.WebSocket;
+import play.mvc.*;
 import responses.Result_InternalServerError;
 import responses.Result_Unauthorized;
 import utilities.authentication.Authentication;
@@ -29,10 +29,12 @@ import websocket.messages.compilator_with_tyrion.WS_Message_Ping_compilation_ser
 import websocket.messages.homer_with_tyrion.WS_Message_Homer_ping;
 
 import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+
+import javax.inject.Named;
+
+import static akka.pattern.PatternsCS.ask;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_WebSocket extends _BaseController {
@@ -66,7 +68,7 @@ public class Controller_WebSocket extends _BaseController {
     /**
      * Holds person connection tokens and ids
      */
-    public static Cache<String, UUID> tokenCache;
+    public static Cache<UUID, UUID> tokenCache;
 
     /**
      * Closes all WebSocket connections
@@ -85,11 +87,16 @@ public class Controller_WebSocket extends _BaseController {
 
     private final ActorSystem actorSystem;
     private final Materializer materializer;
+    private Config config;
+    private static List<String> list_of_portal_alowed_url_connection = null;
+
+
 
     @Inject
-    public Controller_WebSocket(ActorSystem actorSystem, Materializer materializer) {
+    public Controller_WebSocket(ActorSystem actorSystem, Materializer materializer, Config config) {
         this.actorSystem = actorSystem;
         this.materializer = materializer;
+        this.config = config;
     }
 
     /* PUBLIC API ----------------------------------------------------------------------------------------------------------*/
@@ -112,7 +119,7 @@ public class Controller_WebSocket extends _BaseController {
     public Result get_Websocket_token() {
         try {
 
-            String token = UUID.randomUUID().toString();
+            UUID token = UUID.randomUUID();
 
             tokenCache.put(token, personId());
 
@@ -202,38 +209,88 @@ public class Controller_WebSocket extends _BaseController {
     }
 
     @ApiOperation(value = "Portal Server Connection", hidden = true, tags = {"WebSocket"})
-    public WebSocket portal(String token) {
+    public WebSocket portal(String token_in_string) {
         return WebSocket.Json.acceptOrResult(request -> {
             try {
+                UUID token = UUID.fromString(token_in_string);
+
                 logger.info("portal - incoming connection: {}", token);
 
                 Model_Person person;
 
-                if (tokenCache.containsKey(token) && (person = Model_Person.getById(tokenCache.get(token))) != null) {
+                if (sameOriginCheck(request)) {
 
-                    WS_Portal portal;
+                    if (tokenCache.containsKey(token) && (person = Model_Person.getById(tokenCache.get(token))) != null) {
 
-                    if (portals.containsKey(person.id)) {
-                        portal = portals.get(person.id);
+                        WS_Portal portal;
+
+                        if (portals.containsKey(person.id)) {
+                            portal = portals.get(person.id);
+                        } else {
+                            portal =  new WS_Portal(person.id);
+                        }
+
+                        tokenCache.remove(token);
+
+                        if (!portal.all_person_connections.containsKey(token)) {
+
+                            return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_PortalSingle.props(actorRef, portal, token), actorSystem, materializer)));
+
+                        } else {
+                            logger.info("portal - rejecting connection: {}, already established", token);
+                        }
                     } else {
-                        portal = new WS_Portal(person.id);
-                    }
-
-                    tokenCache.remove(token);
-
-                    if (!portal.singles.containsKey(UUID.fromString(token))) {
-                        return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_PortalSingle.props(actorRef, portal, UUID.fromString(token)), actorSystem, materializer)));
-                    } else {
-                        logger.info("portal - rejecting connection: {}, already established", token);
+                        logger.info("portal - rejecting connection: {}, token is expired or person not found", token);
                     }
                 } else {
-                    logger.info("portal - rejecting connection: {}, token is expired or person not found", token);
+                    logger.info("Error! - Origins not Allowed!");
                 }
+
             } catch (Exception e) {
                 logger.internalServerError(e);
             }
 
             return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
         });
+
     }
+
+
+
+    /**
+     * Checks that the WebSocket comes from the same origin.  This is necessary to protect
+     * against Cross-Site WebSocket Hijacking as WebSocket does not implement Same Origin Policy.
+     * <p>
+     * See https://tools.ietf.org/html/rfc6455#section-1.3 and
+     * http://blog.dewhurstsecurity.com/2013/08/30/security-testing-html5-websockets.html
+     */
+    private boolean sameOriginCheck(Http.RequestHeader rh) {
+        final Optional<String> origin = rh.header("Origin");
+
+        if (! origin.isPresent()) {
+            logger.error("originCheck: rejecting request because no Origin header found");
+            return false;
+        } else if (originMatches(origin.get())) {
+            logger.debug("originCheck: originValue = " + origin);
+            return true;
+        } else {
+            logger.error("originCheck: rejecting request because Origin header value " + origin + " is not in the same origin");
+            return false;
+        }
+    }
+
+    private boolean originMatches(String origin) {
+        try {
+
+            if (list_of_portal_alowed_url_connection == null) {
+                list_of_portal_alowed_url_connection = (List<String>) config.getAnyRefList("play.filters.hosts.allowed");
+            }
+
+            return list_of_portal_alowed_url_connection.contains(origin);
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return false;
+        }
+    }
+
 }

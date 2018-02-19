@@ -26,7 +26,7 @@ public class WS_PortalSingle extends WS_Interface {
         super(out);
         this.id = id;
         this.portal = portal;
-        this.portal.singles.put(this.id, this);
+        this.portal.all_person_connections.put(this.id, this);
     }
 
     @Override
@@ -42,6 +42,6 @@ public class WS_PortalSingle extends WS_Interface {
     @Override
     public void onClose() {
         logger.trace("onClose - single portal connection: {} was closed", this.id);
-        this.portal.singles.remove(this.id);
+        this.portal.all_person_connections.remove(this.id);
     }
 }

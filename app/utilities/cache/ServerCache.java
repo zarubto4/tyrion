@@ -70,7 +70,7 @@ public class ServerCache {
 
         // Sets token cache for web socket connections
         Controller_WebSocket.tokenCache = cacheManager.createCache("WS_TokenCache",
-                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, UUID.class,
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(UUID.class, UUID.class,
                         ResourcePoolsBuilder.heap(1000))
                         .withExpiry(Expirations.timeToLiveExpiration(Duration.of(25, TimeUnit.SECONDS))).build());
     }

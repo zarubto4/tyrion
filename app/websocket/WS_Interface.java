@@ -3,9 +3,11 @@ package websocket;
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.PoisonPill;
+import akka.actor.Props;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import utilities.logger.Logger;
+import websocket.interfaces.WS_Portal;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +22,10 @@ public abstract class WS_Interface extends AbstractActor {
 
 /* PUBLIC API ----------------------------------------------------------------------------------------------------------*/
 
+    public static Props props(ActorRef out) {
+        return Props.create(WS_Interface.class, out);
+    }
+
     public UUID id;
 
     public WS_Interface(ActorRef out) {
@@ -28,6 +34,7 @@ public abstract class WS_Interface extends AbstractActor {
 
     @Override
     public Receive createReceive() {
+        logger.trace("createReceive");
         return receiveBuilder().match(JsonNode.class, this::onMessage).build();
     }
 
