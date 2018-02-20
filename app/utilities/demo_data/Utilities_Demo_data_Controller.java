@@ -342,7 +342,6 @@ public class Utilities_Demo_data_Controller extends _BaseController {
             tariff_1.payment_details_required = false;
 
             tariff_1.save();
-            tariff_1.refresh();
 
             Model_ProductExtension extensions_1 = new Model_ProductExtension();
             extensions_1.name = "Extension 1";

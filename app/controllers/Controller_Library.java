@@ -166,7 +166,7 @@ public class Controller_Library extends _BaseController {
                 copy_object.save();
 
                 // Překopíruji veškerý obsah
-                Model_Blob fileRecord = version.files.get(0);
+                Model_Blob fileRecord = version.file;
 
                 Model_Blob.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "library.json" , library_new.get_path() ,  copy_object);
                 copy_object.update();
@@ -745,7 +745,7 @@ public class Controller_Library extends _BaseController {
                 library.refresh();
 
                 // Překopíruji veškerý obsah
-                Model_Blob fileRecord = version_old.files.get(0);
+                Model_Blob fileRecord = version_old.file;
 
 
                 Model_Blob.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , library.get_path() ,  version);

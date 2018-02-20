@@ -47,12 +47,12 @@ public class Model_Blob extends BaseModel {
     @JsonIgnore @OneToMany(mappedBy="binary_file",fetch = FetchType.LAZY)   public List<Model_HardwareUpdate> updates = new ArrayList<>();
     @JsonIgnore @OneToOne(mappedBy="blob")                                  public Model_Compilation c_compilations_binary_file;
 
-    @JsonIgnore @OneToMany(mappedBy="version", fetch = FetchType.LAZY)                          public Model_CProgramVersion    c_program_version;
-    @JsonIgnore @OneToMany(mappedBy="version", fetch = FetchType.LAZY)                          public Model_LibraryVersion     library_version;
-    @JsonIgnore @OneToMany(mappedBy="version", fetch = FetchType.LAZY)                          public Model_BProgramVersion    b_program_version;
-    @JsonIgnore @OneToMany(mappedBy="version", fetch = FetchType.LAZY)                          public Model_GridProgramVersion grid_program_version;
-    @JsonIgnore @OneToMany(mappedBy="version", fetch = FetchType.LAZY)                          public Model_WidgetVersion      widget_version;
-    @JsonIgnore @OneToMany(mappedBy="version", fetch = FetchType.LAZY)                          public Model_BlockVersion       block_version;
+    @JsonIgnore @OneToOne(mappedBy = "file", fetch = FetchType.LAZY)    public Model_CProgramVersion    c_program_version;
+    @JsonIgnore @OneToOne(mappedBy = "file", fetch = FetchType.LAZY)    public Model_LibraryVersion     library_version;
+    @JsonIgnore @OneToOne(mappedBy = "file", fetch = FetchType.LAZY)    public Model_BProgramVersion    b_program_version;
+    @JsonIgnore @OneToOne(mappedBy = "file", fetch = FetchType.LAZY)    public Model_GridProgramVersion grid_program_version;
+    @JsonIgnore @OneToOne(mappedBy = "file", fetch = FetchType.LAZY)    public Model_WidgetVersion      widget_version;
+    @JsonIgnore @OneToOne(mappedBy = "file", fetch = FetchType.LAZY)    public Model_BlockVersion       block_version;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -185,7 +185,7 @@ public class Model_Blob extends BaseModel {
 
             fileRecord.save();
 
-            version.files.add(fileRecord);
+            version.file = fileRecord;
             version.update();
 
             return fileRecord;
@@ -228,7 +228,7 @@ public class Model_Blob extends BaseModel {
 
             fileRecord.save();
 
-            version.files.add(fileRecord);
+            version.file = fileRecord;
             version.update();
 
             // Sobor smažu z adresáře

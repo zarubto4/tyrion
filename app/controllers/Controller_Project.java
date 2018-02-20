@@ -148,7 +148,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result project_get(@ApiParam(value = "project_id String path", required = true) String project_id) {
+    public Result project_get(@ApiParam(value = "project_id String path", required = true) UUID project_id) {
         try {
 
             // Kontrola objektu
@@ -184,7 +184,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result project_delete(@ApiParam(value = "project_id String path", required = true) String project_id) {
+    public Result project_delete(@ApiParam(value = "project_id String path", required = true) UUID project_id) {
         try {
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
@@ -231,7 +231,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_update(@ApiParam(value = "project_id String path", required = true) String project_id) {
+    public Result project_update(@ApiParam(value = "project_id String path", required = true) UUID project_id) {
         try {
 
             // Get and Validate Object
@@ -282,7 +282,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_invite(@ApiParam(value = "project_id String path", required = true) String project_id) {
+    public Result project_invite(@ApiParam(value = "project_id String path", required = true) UUID project_id) {
         try {
 
             // Get and Validate Object
@@ -407,7 +407,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_changeParticipantStatus(@ApiParam(value = "project_id String path", required = true) String project_id) {
+    public Result project_changeParticipantStatus(@ApiParam(value = "project_id String path", required = true) UUID project_id) {
         try {
 
             // Get and Validate Object
@@ -462,7 +462,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_removeParticipant(@ApiParam(value = "project_id String path", required = true) String project_id) {
+    public Result project_removeParticipant(@ApiParam(value = "project_id String path", required = true) UUID project_id) {
         try {
 
             // Get and Validate Object

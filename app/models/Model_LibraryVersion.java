@@ -73,13 +73,10 @@ public class Model_LibraryVersion extends VersionModel {
 
          List<Swagger_Library_Record> file_list = new ArrayList<>();
 
-        for (Model_Blob file : files) {
+         JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
 
-            JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
-
-            Swagger_Library_File_Load form = Json.fromJson(json, Swagger_Library_File_Load.class);
-            file_list.addAll(form.files);
-        }
+         Swagger_Library_File_Load form = Json.fromJson(json, Swagger_Library_File_Load.class);
+         file_list.addAll(form.files);
 
         return file_list;
     }

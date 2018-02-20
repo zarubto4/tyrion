@@ -139,7 +139,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result tariff_edit(String tariff_id) {
+    public Result tariff_edit(UUID tariff_id) {
         try {
 
             // Get and Validate Object
@@ -147,7 +147,9 @@ public class Controller_Finance extends _BaseController {
 
             Model_Tariff tariff = Model_Tariff.getById(tariff_id);
             
-            if (Model_Tariff.find.query().where().ne("id", tariff_id).eq("identifier", help.identifier).findOne() != null) return badRequest("Identifier must be unique!");
+            if (Model_Tariff.find.query().where().ne("id", tariff_id).eq("identifier", help.identifier).findOne() != null) {
+                return badRequest("Identifier must be unique!");
+            }
             
             tariff.name                     = help.name;
             tariff.identifier               = help.identifier;
@@ -187,7 +189,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result tariff_deactivate(String tariff_id) {
+    public Result tariff_deactivate(UUID tariff_id) {
         try {
 
             Model_Tariff tariff = Model_Tariff.getById(tariff_id);
@@ -218,7 +220,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result tariff_activate(String tariff_id) {
+    public Result tariff_activate(UUID tariff_id) {
         try {
 
             Model_Tariff tariff = Model_Tariff.getById(tariff_id);
@@ -250,7 +252,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result tariff_up(String tariff_id) {
+    public Result tariff_up(UUID tariff_id) {
         try {
 
             Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
@@ -278,7 +280,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result tariff_down(String tariff_id) {
+    public Result tariff_down(UUID tariff_id) {
         try {
 
             Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
@@ -306,7 +308,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result tariff_delete(String tariff_id) {
+    public Result tariff_delete(UUID tariff_id) {
         try {
 
             Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
@@ -334,7 +336,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result tariff_get(String tariff_id) {
+    public Result tariff_get(UUID tariff_id) {
         try {
 
             Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
@@ -375,7 +377,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result productExtension_create(String product_id) {
+    public Result productExtension_create(UUID product_id) {
         try {
 
             // Get and Validate Object
@@ -427,7 +429,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
-    public Result productExtension_get(String extension_id) {
+    public Result productExtension_get(UUID extension_id) {
         try {
 
             // Kontrola objektu
@@ -487,7 +489,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result productExtension_update(String extension_id) {
+    public Result productExtension_update(UUID extension_id) {
         try {
 
             // Get and Validate Object
@@ -523,7 +525,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
-    public Result productExtension_activate(String extension_id) {
+    public Result productExtension_activate(UUID extension_id) {
         try {
 
             // Kontrola objektu
@@ -558,7 +560,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
-    public Result productExtension_deactivate(String extension_id) {
+    public Result productExtension_deactivate(UUID extension_id) {
         try {
 
             // Kontrola objektu
@@ -592,7 +594,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
-    public Result productExtension_delete(String extension_id) {
+    public Result productExtension_delete(UUID extension_id) {
         try {
 
             // Kontrola objektu
@@ -636,7 +638,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result tariffExtension_create(String tariff_id) {
+    public Result tariffExtension_create(UUID tariff_id) {
         try {
 
             // Get and Validate Object
@@ -715,7 +717,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result tariffExtension_update(String extension_id) {
+    public Result tariffExtension_update(UUID extension_id) {
         try {
 
             // Get and Validate Object
@@ -773,7 +775,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result tariffExtension_up(String extension_id) {
+    public Result tariffExtension_up(UUID extension_id) {
         try {
 
             // Kontrola objektu
@@ -805,7 +807,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result tariffExtension_down(String extension_id) {
+    public Result tariffExtension_down(UUID extension_id) {
         try {
 
             // Kontrola objektu
@@ -837,7 +839,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result tariffExtension_deactivate(String extension_id) {
+    public Result tariffExtension_deactivate(UUID extension_id) {
         try {
 
             // Kontrola objektu
@@ -871,7 +873,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result tariffExtension_activate(String extension_id) {
+    public Result tariffExtension_activate(UUID extension_id) {
         try {
 
             // Kontrola objektu
@@ -905,7 +907,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result tariffExtension_delete(String extension_id) {
+    public Result tariffExtension_delete(UUID extension_id) {
         try {
 
             // Kontrola objektu
@@ -1241,7 +1243,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result product_get(String product_id) {
+    public Result product_get(UUID product_id) {
         try {
 
             // Kontrola Objektu
@@ -1280,7 +1282,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result product_update(String product_id) {
+    public Result product_update(UUID product_id) {
         try {
 
             // Get and Validate Object
@@ -1319,7 +1321,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Not found object",              response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",             response = Result_InternalServerError.class)
     })
-    public Result product_deactivate(String product_id) {
+    public Result product_deactivate(UUID product_id) {
         try {
 
             // Kontrola objektu
@@ -1362,7 +1364,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result product_activate(String product_id) {
+    public Result product_activate(UUID product_id) {
         try {
 
             // Kontrola objektu
@@ -1412,7 +1414,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result product_credit(String product_id) {
+    public Result product_credit(UUID product_id) {
         try {
 
             // Get and Validate Object
@@ -1466,7 +1468,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result product_delete(String product_id) {
+    public Result product_delete(UUID product_id) {
         try {
 
             // URČENO POUZE PRO ADMINISTRÁTORY S OPRÁVNĚNÍM MAZAT!
@@ -1511,7 +1513,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result paymentDetails_create(String product_id) {
+    public Result paymentDetails_create(UUID product_id) {
         try {
 
             // Get and Validate Object
@@ -1589,7 +1591,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result paymentDetails_update(String payment_details_id) {
+    public Result paymentDetails_update(UUID payment_details_id) {
         try {
 
             // Get and Validate Object
@@ -1710,7 +1712,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result product_terminateOnDemand(String product_id) {
+    public Result product_terminateOnDemand(UUID product_id) {
         try {
 
             // Kontrola objektu
@@ -1755,7 +1757,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result invoice_get(String invoice_id) {
+    public Result invoice_get(UUID invoice_id) {
         try {
 
             // Kontrola objektu
@@ -1796,7 +1798,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result invoice_resend(String invoice_id) {
+    public Result invoice_resend(UUID invoice_id) {
         try {
 
             // Get and Validate Object
@@ -1828,7 +1830,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })  /**  Uživatel může zaplatit neúspěšně zaplacenou fakturu (službu) */
-    public Result invoice_reimbursement(String invoice_id) {
+    public Result invoice_reimbursement(UUID invoice_id) {
         try {
 
             Model_Invoice invoice = Model_Invoice.getById(invoice_id);
@@ -1859,7 +1861,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result invoice_getPdf(String kind, String invoice_id) {
+    public Result invoice_getPdf(String kind, UUID invoice_id) {
         try {
 
             if (!kind.equals("proforma") && !kind.equals("invoice")) return badRequest("kind should be 'proforma' or 'invoice'");
@@ -1892,7 +1894,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result invoice_reminder(String invoice_id) {
+    public Result invoice_reminder(UUID invoice_id) {
         try {
 
             // Kontrola objektu
@@ -1920,7 +1922,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result invoice_delete(String invoice_id) {
+    public Result invoice_delete(UUID invoice_id) {
         try {
 
             // Kontrola objektu
@@ -1950,7 +1952,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result invoice_synchronizeFakturoid(String invoice_id) {
+    public Result invoice_synchronizeFakturoid(UUID invoice_id) {
 
         try {
             // TODO invoice_synchronizeFakturoid
@@ -1975,7 +1977,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result invoice_set_as_paid(String invoice_id) {
+    public Result invoice_set_as_paid(UUID invoice_id) {
         try {
 
             // TODO invoice_set_as_paid
@@ -2113,7 +2115,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result customer_update_company(String customer_id) {
+    public Result customer_update_company(UUID customer_id) {
         try {
 
             // Get and Validate Object
@@ -2217,7 +2219,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result customer_remove_employee(String employee_id) {
+    public Result customer_remove_employee(UUID employee_id) {
         try {
             
             Model_Employee employee = Model_Employee.getById(employee_id);
@@ -2245,7 +2247,7 @@ public class Controller_Finance extends _BaseController {
             @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result customer_delete_company(String customer_id) {
+    public Result customer_delete_company(UUID customer_id) {
         try {
 
             Model_Customer customer = Model_Customer.getById(customer_id);

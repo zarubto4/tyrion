@@ -119,73 +119,73 @@ GET       /secure/person/system_acces/:person_id                        controll
 
 POST      /company                                                      controllers.Controller_Finance.customer_create_company()
 GET       /company                                                      controllers.Controller_Finance.customer_get_all()
-PUT       /company/:customer_id                                         controllers.Controller_Finance.customer_update_company(customer_id)
+PUT       /company/:customer_id                                         controllers.Controller_Finance.customer_update_company(customer_id: java.util.UUID)
 
 POST      /employee                                                     controllers.Controller_Finance.customer_add_employee()
-DELETE    /employee/:employee_id                                        controllers.Controller_Finance.customer_remove_employee(employee_id)
+DELETE    /employee/:employee_id                                        controllers.Controller_Finance.customer_remove_employee(employee_id: java.util.UUID)
 
 #CRUD Tarrifs
 POST      /product                                                      controllers.Controller_Finance.product_create()
 GET       /product/all                                                  controllers.Controller_Finance.product_getAll()
-GET       /product/:product_id                                          controllers.Controller_Finance.product_get(product_id)
-PUT       /product/deactivate/:product_id                               controllers.Controller_Finance.product_deactivate(product_id)
-PUT       /product/activate/:product_id                                 controllers.Controller_Finance.product_activate(product_id)
-PUT       /product/credit/:product_id                                   controllers.Controller_Finance.product_credit(product_id)
-PUT       /product/terminate_ondemand/:product_id                       controllers.Controller_Finance.product_terminateOnDemand(product_id)
-DELETE    /product/:product_id                                          controllers.Controller_Finance.product_delete(product_id)
+GET       /product/:product_id                                          controllers.Controller_Finance.product_get(product_id: java.util.UUID)
+PUT       /product/deactivate/:product_id                               controllers.Controller_Finance.product_deactivate(product_id: java.util.UUID)
+PUT       /product/activate/:product_id                                 controllers.Controller_Finance.product_activate(product_id: java.util.UUID)
+PUT       /product/credit/:product_id                                   controllers.Controller_Finance.product_credit(product_id: java.util.UUID)
+PUT       /product/terminate_ondemand/:product_id                       controllers.Controller_Finance.product_terminateOnDemand(product_id: java.util.UUID)
+DELETE    /product/:product_id                                          controllers.Controller_Finance.product_delete(product_id: java.util.UUID)
 
-POST      /product_extension/:product_id                                controllers.Controller_Finance.productExtension_create(product_id)
+POST      /product_extension/:product_id                                controllers.Controller_Finance.productExtension_create(product_id: java.util.UUID)
 GET       /product_extension                                            controllers.Controller_Finance.productExtension_getAll()
 
-GET       /product_extension/:extension_id                              controllers.Controller_Finance.productExtension_get(extension_id)
-PUT       /product_extension/:extension_id                              controllers.Controller_Finance.productExtension_update(extension_id)
-PUT       /product_extension/activate/:extension_id                     controllers.Controller_Finance.productExtension_activate(extension_id)
-PUT       /product_extension/deactivate/:extension_id                   controllers.Controller_Finance.productExtension_deactivate(extension_id)
-DELETE    /product_extension/:extension_id                              controllers.Controller_Finance.productExtension_delete(extension_id)
+GET       /product_extension/:extension_id                              controllers.Controller_Finance.productExtension_get(extension_id: java.util.UUID)
+PUT       /product_extension/:extension_id                              controllers.Controller_Finance.productExtension_update(extension_id: java.util.UUID)
+PUT       /product_extension/activate/:extension_id                     controllers.Controller_Finance.productExtension_activate(extension_id: java.util.UUID)
+PUT       /product_extension/deactivate/:extension_id                   controllers.Controller_Finance.productExtension_deactivate(extension_id: java.util.UUID)
+DELETE    /product_extension/:extension_id                              controllers.Controller_Finance.productExtension_delete(extension_id: java.util.UUID)
 
 
 
 GET       /product/list/user_applicable                                 controllers.Controller_Finance.product_getActive()
-POST      /product/details/:product_id                                  controllers.Controller_Finance.paymentDetails_create(product_id)
-PUT       /product/details/:payment_details_id                          controllers.Controller_Finance.paymentDetails_update(payment_details_id)
-PUT       /product/general/:product_id                                  controllers.Controller_Finance.product_update(product_id)
+POST      /product/details/:product_id                                  controllers.Controller_Finance.paymentDetails_create(product_id: java.util.UUID)
+PUT       /product/details/:payment_details_id                          controllers.Controller_Finance.paymentDetails_update(payment_details_id: java.util.UUID)
+PUT       /product/general/:product_id                                  controllers.Controller_Finance.product_update(product_id: java.util.UUID)
 
 #GoPay
 GET       /go_pay/notification                                          utilities.financial.goPay.GoPay.payment_notification(id: Long)
 GET       /go_pay/return                                                utilities.financial.goPay.GoPay.payment_return(id: Long)
 
 #Fakturoid
-GET       /invoice/:invoice_id                                          controllers.Controller_Finance.invoice_get(invoice_id)
-GET       /invoice/pdf/:kind/:invoice_id                                controllers.Controller_Finance.invoice_getPdf(kind, invoice_id)
-POST      /invoice/reimbursement/:invoice_id                            controllers.Controller_Finance.invoice_reimbursement(invoice_id)
-POST      /invoice/resend/:invoice_id                                   controllers.Controller_Finance.invoice_resend(invoice_id)
+GET       /invoice/:invoice_id                                          controllers.Controller_Finance.invoice_get(invoice_id: java.util.UUID)
+GET       /invoice/pdf/:kind/:invoice_id                                controllers.Controller_Finance.invoice_getPdf(kind, invoice_id: java.util.UUID)
+POST      /invoice/reimbursement/:invoice_id                            controllers.Controller_Finance.invoice_reimbursement(invoice_id: java.util.UUID)
+POST      /invoice/resend/:invoice_id                                   controllers.Controller_Finance.invoice_resend(invoice_id: java.util.UUID)
 POST      /fakturoid/callback                                           utilities.financial.fakturoid.Fakturoid.fakturoid_callback()
 
 #Obsluha pouze pro Byzance zaměstnance
-PUT       /invoice/set_pay/:invoice_id                                  controllers.Controller_Finance.invoice_set_as_paid(invoice_id)
-PUT       /invoice/send_remainder/:invoice_id                           controllers.Controller_Finance.invoice_reminder(invoice_id)
-DELETE    /invoice/:invoice_id                                          controllers.Controller_Finance.invoice_delete(invoice_id)
-PUT       /invoice/refund/:invoice_id                                   utilities.financial.goPay.GoPay.payment_refund(invoice_id)
+PUT       /invoice/set_pay/:invoice_id                                  controllers.Controller_Finance.invoice_set_as_paid(invoice_id: java.util.UUID)
+PUT       /invoice/send_remainder/:invoice_id                           controllers.Controller_Finance.invoice_reminder(invoice_id: java.util.UUID)
+DELETE    /invoice/:invoice_id                                          controllers.Controller_Finance.invoice_delete(invoice_id: java.util.UUID)
+PUT       /invoice/refund/:invoice_id                                   utilities.financial.goPay.GoPay.payment_refund(invoice_id: java.util.UUID)
 
 #Tarrifs (Tvorba startovacích balíčků služeb)
 GET       /tariff                                                       controllers.Controller_Finance.tariff_getAll()
 POST      /admin/tariff                                                 controllers.Controller_Finance.tariff_create()
-PUT       /admin/tariff/edit/:tariff_id                                 controllers.Controller_Finance.tariff_edit(tariff_id)
-GET       /admin/tariff/get/:tariff_id                                  controllers.Controller_Finance.tariff_get(tariff_id)
-PUT       /admin/tariff/deactive/:tariff_id                             controllers.Controller_Finance.tariff_deactivate(tariff_id)
-PUT       /admin/tariff/active/:tariff_id                               controllers.Controller_Finance.tariff_activate(tariff_id)
-PUT       /admin/tariff/up/:tariff_id                                   controllers.Controller_Finance.tariff_up(tariff_id)
-PUT       /admin/tariff/down/:tariff_id                                 controllers.Controller_Finance.tariff_down(tariff_id)
-DELETE    /admin/tariff/:tariff_id                                      controllers.Controller_Finance.tariff_delete(tariff_id)
+PUT       /admin/tariff/edit/:tariff_id                                 controllers.Controller_Finance.tariff_edit(tariff_id: java.util.UUID)
+GET       /admin/tariff/get/:tariff_id                                  controllers.Controller_Finance.tariff_get(tariff_id: java.util.UUID)
+PUT       /admin/tariff/deactive/:tariff_id                             controllers.Controller_Finance.tariff_deactivate(tariff_id: java.util.UUID)
+PUT       /admin/tariff/active/:tariff_id                               controllers.Controller_Finance.tariff_activate(tariff_id: java.util.UUID)
+PUT       /admin/tariff/up/:tariff_id                                   controllers.Controller_Finance.tariff_up(tariff_id: java.util.UUID)
+PUT       /admin/tariff/down/:tariff_id                                 controllers.Controller_Finance.tariff_down(tariff_id: java.util.UUID)
+DELETE    /admin/tariff/:tariff_id                                      controllers.Controller_Finance.tariff_delete(tariff_id: java.util.UUID)
 GET       /admin/tariff/types                                           controllers.Controller_Finance.tariff_getAllTypes()
 
-POST      /admin/tariff_extension/:tariff_id                            controllers.Controller_Finance.tariffExtension_create(tariff_id)
-PUT       /admin/tariff_extension/:extension_id                         controllers.Controller_Finance.tariffExtension_update(extension_id)
-PUT       /admin/tariff_extension/up/:extension_id                      controllers.Controller_Finance.tariffExtension_up(extension_id)
-PUT       /admin/tariff_extension/down/:extension_id                    controllers.Controller_Finance.tariffExtension_down(extension_id)
-PUT       /admin/tariff_extension/deactive/:extension_id                controllers.Controller_Finance.tariffExtension_deactivate(extension_id)
-PUT       /admin/tariff_extension/active/:extension_id                  controllers.Controller_Finance.tariffExtension_activate(extension_id)
-DELETE    /admin/tariff_extension/:extension_id                         controllers.Controller_Finance.tariffExtension_delete(extension_id)
+POST      /admin/tariff_extension/:tariff_id                            controllers.Controller_Finance.tariffExtension_create(tariff_id: java.util.UUID)
+PUT       /admin/tariff_extension/:extension_id                         controllers.Controller_Finance.tariffExtension_update(extension_id: java.util.UUID)
+PUT       /admin/tariff_extension/up/:extension_id                      controllers.Controller_Finance.tariffExtension_up(extension_id: java.util.UUID)
+PUT       /admin/tariff_extension/down/:extension_id                    controllers.Controller_Finance.tariffExtension_down(extension_id: java.util.UUID)
+PUT       /admin/tariff_extension/deactive/:extension_id                controllers.Controller_Finance.tariffExtension_deactivate(extension_id: java.util.UUID)
+PUT       /admin/tariff_extension/active/:extension_id                  controllers.Controller_Finance.tariffExtension_activate(extension_id: java.util.UUID)
+DELETE    /admin/tariff_extension/:extension_id                         controllers.Controller_Finance.tariffExtension_delete(extension_id: java.util.UUID)
 
 
 ### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
@@ -193,13 +193,13 @@ DELETE    /admin/tariff_extension/:extension_id                         controll
 
 #Project
 POST      /project                                                      controllers.Controller_Project.project_create()
-PUT       /project/:project_id                                          controllers.Controller_Project.project_update(project_id)
-GET       /project/:project_id                                          controllers.Controller_Project.project_get(project_id)
+PUT       /project/:project_id                                          controllers.Controller_Project.project_update(project_id: java.util.UUID)
+GET       /project/:project_id                                          controllers.Controller_Project.project_get(project_id: java.util.UUID)
 GET       /project                                                      controllers.Controller_Project.project_getByUser
-DELETE    /project/:project_id                                          controllers.Controller_Project.project_delete(project_id)
-PUT       /project/invite/:project_id                                   controllers.Controller_Project.project_invite(project_id)
-PUT       /project/remove_participant/:project_id                       controllers.Controller_Project.project_removeParticipant(project_id)
-PUT       /project/change_participant_state/:project_id                 controllers.Controller_Project.project_changeParticipantStatus(project_id)
+DELETE    /project/:project_id                                          controllers.Controller_Project.project_delete(project_id: java.util.UUID)
+PUT       /project/invite/:project_id                                   controllers.Controller_Project.project_invite(project_id: java.util.UUID)
+PUT       /project/remove_participant/:project_id                       controllers.Controller_Project.project_removeParticipant(project_id: java.util.UUID)
+PUT       /project/change_participant_state/:project_id                 controllers.Controller_Project.project_changeParticipantStatus(project_id: java.util.UUID)
 PUT       /project/tags/add                                             controllers.Controller_Project.project_addTags
 PUT       /project/tags/remove                                          controllers.Controller_Project.project_removeTags
 PUT       /project/hardware/add                                         controllers.Controller_Project.project_addHardware

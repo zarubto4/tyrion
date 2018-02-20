@@ -30,7 +30,8 @@ public abstract class VersionModel extends NamedModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER) public List<Model_Blob> files = new ArrayList<>();
+    @JsonIgnore @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER) public Model_Blob file; // TODO Cache 
+
     @ManyToOne(fetch = FetchType.LAZY) public Model_Person author;
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only if user make request for publishing") @Enumerated(EnumType.STRING) public Approval approval_state;

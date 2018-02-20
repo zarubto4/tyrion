@@ -77,8 +77,13 @@ public class Model_ProductExtension extends NamedModel {
         try {
 
             check_update_permission();
+            if(configuration== null){
+                throw new NullPointerException();
+            }
             return Json.toJson(Configuration.getConfiguration(type, configuration)).toString();
 
+        } catch (NullPointerException e) {
+            return "{\"error\":\"configuration is not set yet\"}";
         } catch (Exception e) {
             logger.internalServerError(e);
             return "{\"error\":\"config file error, or required permission\"}";

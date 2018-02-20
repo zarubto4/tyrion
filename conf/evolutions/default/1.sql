@@ -49,6 +49,7 @@ create table bprogramversion (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  file_id                       uuid,
   author_id                     uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
@@ -59,6 +60,7 @@ create table bprogramversion (
   deleted                       boolean default false not null,
   constraint ck_bprogramversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
   constraint ck_bprogramversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint uq_bprogramversion_file_id unique (file_id),
   constraint pk_bprogramversion primary key (id)
 );
 
@@ -107,6 +109,7 @@ create table blockversion (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  file_id                       uuid,
   author_id                     uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
@@ -117,6 +120,7 @@ create table blockversion (
   deleted                       boolean default false not null,
   constraint ck_blockversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
   constraint ck_blockversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint uq_blockversion_file_id unique (file_id),
   constraint pk_blockversion primary key (id)
 );
 
@@ -171,6 +175,7 @@ create table cprogramversion (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  file_id                       uuid,
   author_id                     uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
@@ -180,6 +185,7 @@ create table cprogramversion (
   deleted                       boolean default false not null,
   constraint ck_cprogramversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
   constraint ck_cprogramversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint uq_cprogramversion_file_id unique (file_id),
   constraint uq_cprogramversion_default_program_id unique (default_program_id),
   constraint pk_cprogramversion primary key (id)
 );
@@ -302,6 +308,7 @@ create table gridprogramversion (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  file_id                       uuid,
   author_id                     uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
@@ -312,6 +319,7 @@ create table gridprogramversion (
   deleted                       boolean default false not null,
   constraint ck_gridprogramversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
   constraint ck_gridprogramversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint uq_gridprogramversion_file_id unique (file_id),
   constraint pk_gridprogramversion primary key (id)
 );
 
@@ -645,6 +653,7 @@ create table libraryversion (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  file_id                       uuid,
   author_id                     uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
@@ -653,6 +662,7 @@ create table libraryversion (
   deleted                       boolean default false not null,
   constraint ck_libraryversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
   constraint ck_libraryversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint uq_libraryversion_file_id unique (file_id),
   constraint pk_libraryversion primary key (id)
 );
 
@@ -1043,6 +1053,7 @@ create table widgetversion (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  file_id                       uuid,
   author_id                     uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
@@ -1053,6 +1064,7 @@ create table widgetversion (
   deleted                       boolean default false not null,
   constraint ck_widgetversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
   constraint ck_widgetversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint uq_widgetversion_file_id unique (file_id),
   constraint pk_widgetversion primary key (id)
 );
 
@@ -1067,6 +1079,8 @@ create index ix_bprogram_tag_bprogram on bprogram_tag (bprogram_id);
 
 alter table bprogram_tag add constraint fk_bprogram_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
 create index ix_bprogram_tag_tag on bprogram_tag (tag_id);
+
+alter table bprogramversion add constraint fk_bprogramversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
 
 alter table bprogramversion add constraint fk_bprogramversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
 create index ix_bprogramversion_author_id on bprogramversion (author_id);
@@ -1093,6 +1107,8 @@ create index ix_block_tag_block on block_tag (block_id);
 
 alter table block_tag add constraint fk_block_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
 create index ix_block_tag_tag on block_tag (tag_id);
+
+alter table blockversion add constraint fk_blockversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
 
 alter table blockversion add constraint fk_blockversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
 create index ix_blockversion_author_id on blockversion (author_id);
@@ -1124,6 +1140,8 @@ create index ix_cprogram_tag_cprogram on cprogram_tag (cprogram_id);
 alter table cprogram_tag add constraint fk_cprogram_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
 create index ix_cprogram_tag_tag on cprogram_tag (tag_id);
 
+alter table cprogramversion add constraint fk_cprogramversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
+
 alter table cprogramversion add constraint fk_cprogramversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
 create index ix_cprogramversion_author_id on cprogramversion (author_id);
 
@@ -1152,6 +1170,8 @@ create index ix_gridprogram_tag_gridprogram on gridprogram_tag (grid_program_id)
 
 alter table gridprogram_tag add constraint fk_gridprogram_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
 create index ix_gridprogram_tag_tag on gridprogram_tag (tag_id);
+
+alter table gridprogramversion add constraint fk_gridprogramversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
 
 alter table gridprogramversion add constraint fk_gridprogramversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
 create index ix_gridprogramversion_author_id on gridprogramversion (author_id);
@@ -1288,6 +1308,8 @@ create index ix_library_hardwaretype_library on library_hardwaretype (library_id
 alter table library_hardwaretype add constraint fk_library_hardwaretype_hardwaretype foreign key (hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
 create index ix_library_hardwaretype_hardwaretype on library_hardwaretype (hardware_type_id);
 
+alter table libraryversion add constraint fk_libraryversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
+
 alter table libraryversion add constraint fk_libraryversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
 create index ix_libraryversion_author_id on libraryversion (author_id);
 
@@ -1385,6 +1407,8 @@ create index ix_widget_tag_widget on widget_tag (widget_id);
 alter table widget_tag add constraint fk_widget_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
 create index ix_widget_tag_tag on widget_tag (tag_id);
 
+alter table widgetversion add constraint fk_widgetversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
+
 alter table widgetversion add constraint fk_widgetversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
 create index ix_widgetversion_author_id on widgetversion (author_id);
 
@@ -1405,6 +1429,8 @@ drop index if exists ix_bprogram_tag_bprogram;
 
 alter table if exists bprogram_tag drop constraint if exists fk_bprogram_tag_tag;
 drop index if exists ix_bprogram_tag_tag;
+
+alter table if exists bprogramversion drop constraint if exists fk_bprogramversion_file_id;
 
 alter table if exists bprogramversion drop constraint if exists fk_bprogramversion_author_id;
 drop index if exists ix_bprogramversion_author_id;
@@ -1431,6 +1457,8 @@ drop index if exists ix_block_tag_block;
 
 alter table if exists block_tag drop constraint if exists fk_block_tag_tag;
 drop index if exists ix_block_tag_tag;
+
+alter table if exists blockversion drop constraint if exists fk_blockversion_file_id;
 
 alter table if exists blockversion drop constraint if exists fk_blockversion_author_id;
 drop index if exists ix_blockversion_author_id;
@@ -1462,6 +1490,8 @@ drop index if exists ix_cprogram_tag_cprogram;
 alter table if exists cprogram_tag drop constraint if exists fk_cprogram_tag_tag;
 drop index if exists ix_cprogram_tag_tag;
 
+alter table if exists cprogramversion drop constraint if exists fk_cprogramversion_file_id;
+
 alter table if exists cprogramversion drop constraint if exists fk_cprogramversion_author_id;
 drop index if exists ix_cprogramversion_author_id;
 
@@ -1490,6 +1520,8 @@ drop index if exists ix_gridprogram_tag_gridprogram;
 
 alter table if exists gridprogram_tag drop constraint if exists fk_gridprogram_tag_tag;
 drop index if exists ix_gridprogram_tag_tag;
+
+alter table if exists gridprogramversion drop constraint if exists fk_gridprogramversion_file_id;
 
 alter table if exists gridprogramversion drop constraint if exists fk_gridprogramversion_author_id;
 drop index if exists ix_gridprogramversion_author_id;
@@ -1626,6 +1658,8 @@ drop index if exists ix_library_hardwaretype_library;
 alter table if exists library_hardwaretype drop constraint if exists fk_library_hardwaretype_hardwaretype;
 drop index if exists ix_library_hardwaretype_hardwaretype;
 
+alter table if exists libraryversion drop constraint if exists fk_libraryversion_file_id;
+
 alter table if exists libraryversion drop constraint if exists fk_libraryversion_author_id;
 drop index if exists ix_libraryversion_author_id;
 
@@ -1722,6 +1756,8 @@ drop index if exists ix_widget_tag_widget;
 
 alter table if exists widget_tag drop constraint if exists fk_widget_tag_tag;
 drop index if exists ix_widget_tag_tag;
+
+alter table if exists widgetversion drop constraint if exists fk_widgetversion_file_id;
 
 alter table if exists widgetversion drop constraint if exists fk_widgetversion_author_id;
 drop index if exists ix_widgetversion_author_id;

@@ -31,6 +31,7 @@ import javax.validation.ValidationException;
 import java.time.Duration;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 
 /**
@@ -651,7 +652,7 @@ public class GoPay extends _BaseController {
      */
     @Security.Authenticated(Authentication.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result payment_refund(String invoice_id) {
+    public Result payment_refund(UUID invoice_id) {
         try {
 
             // Binding Json with help object

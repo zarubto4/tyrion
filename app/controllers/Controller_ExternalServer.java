@@ -557,9 +557,9 @@ public class Controller_ExternalServer extends _BaseController {
             Model_BProgramVersion version = Model_BProgramVersion.getById(b_program_version_id);
 
             // Separace na Container a Blob
-            int slash = version.files.get(0).path.indexOf("/");
-            String container_name = version.files.get(0).path.substring(0,slash);
-            String real_file_path = version.files.get(0).path.substring(slash+1);
+            int slash = version.file.path.indexOf("/");
+            String container_name = version.file.path.substring(0,slash);
+            String real_file_path = version.file.path.substring(slash+1);
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 

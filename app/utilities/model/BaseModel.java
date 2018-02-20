@@ -13,10 +13,7 @@ import play.libs.Json;
 import scala.xml.Null;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
-import utilities.errors.Exceptions.Result_Error_NotFound;
-import utilities.errors.Exceptions.Result_Error_NotSupportedException;
-import utilities.errors.Exceptions.Result_Error_Unauthorized;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.models_update_echo.EchoHandler;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
@@ -126,12 +123,18 @@ public abstract class BaseModel extends Model {
      */
     @JsonIgnore @Override
     public void update() throws _Base_Result_Exception {
+        try {
+            logger.debug("update::Update object Id: {}", this.id);
 
-        logger.debug("update::Update object Id: {}", this.id);
+            // Check Permission
+            if (its_person_operation()) {
+                check_update_permission();
+            }
 
-        // Check Permission
-        if(its_person_operation()) check_update_permission();
-
+        } catch (Exception e){
+            logger.warn("Unauthorized UPDATE operation, its required remove everything from Cache");
+            throw new Result_Error_PermissionDenied();
+        }
     }
 
     /**

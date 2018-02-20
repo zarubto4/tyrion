@@ -115,12 +115,8 @@ public class Model_Person extends BaseModel {
 
         // Chache Add Projects
         if (cache_project_ids.isEmpty()) {
-
             // Získání seznamu
-            List<UUID> ids = Model_Project.find.query().where().eq("participants.person.id", id).order().asc("name").findIds();
-            for (UUID id : ids) {
-                cache_project_ids.add(id);
-            }
+            cache_project_ids = Model_Project.find.query().where().eq("participants.person.id", id).findIds();
         }
 
         List<Model_Project> projects = new ArrayList<>();

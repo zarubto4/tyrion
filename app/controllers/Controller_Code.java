@@ -191,14 +191,13 @@ public class Controller_Code extends _BaseController {
 
                 logger.trace("compile_C_Program_code:: Looking for library Version Id " + lib_id);
                 Model_LibraryVersion lib_version = Model_LibraryVersion.getById(lib_id);
-                if (!lib_version.files.isEmpty()) {
+                if (lib_version.file != null) {
 
                     logger.trace("compile_C_Program_code:: Library contains files");
 
-                    for (Model_Blob f : lib_version.files) {
-                        Swagger_Library_File_Load lib_file = baseFormFactory.formFromJsonWithValidation(Swagger_Library_File_Load.class, Json.parse(f.get_fileRecord_from_Azure_inString()));
-                        library_files.addAll(lib_file.files);
-                    }
+                    Swagger_Library_File_Load lib_file = baseFormFactory.formFromJsonWithValidation(Swagger_Library_File_Load.class, Json.parse(lib_version.file.get_fileRecord_from_Azure_inString()));
+                    library_files.addAll(lib_file.files);
+
                 }
             }
 
@@ -381,21 +380,19 @@ public class Controller_Code extends _BaseController {
 
                 version.save();
 
-                for (Model_Blob file : hardwareType.get_main_c_program().default_main_version.files) {
+                // Get and Validate Object
+                Swagger_C_Program_Version_Update scheme_load_form  = baseFormFactory.formFromJsonWithValidation(Swagger_C_Program_Version_Update.class, Json.parse(version.file.get_fileRecord_from_Azure_inString()));
 
-                    // Get and Validate Object
-                    Swagger_C_Program_Version_Update scheme_load_form  = baseFormFactory.formFromJsonWithValidation(Swagger_C_Program_Version_Update.class, Json.parse(file.get_fileRecord_from_Azure_inString()));
+                // Nahraje do Azure a připojí do verze soubor
+                ObjectNode content = Json.newObject();
+                content.put("main", scheme_load_form.main);
+                content.set("files", Json.toJson(scheme_load_form.files));
+                content.set("imported_libraries", Json.toJson(scheme_load_form.imported_libraries));
 
-                    // Nahraje do Azure a připojí do verze soubor
-                    ObjectNode content = Json.newObject();
-                    content.put("main", scheme_load_form.main);
-                    content.set("files", Json.toJson(scheme_load_form.files));
-                    content.set("imported_libraries", Json.toJson(scheme_load_form.imported_libraries));
+                // Content se nahraje na Azure
+                Model_Blob.uploadAzure_Version(content.toString(), "code.json", c_program.get_path(), version);
+                version.update();
 
-                    // Content se nahraje na Azure
-                    Model_Blob.uploadAzure_Version(content.toString(), "code.json", c_program.get_path(), version);
-                    version.update();
-                }
 
                 version.compile_program_thread(hardwareType.get_main_c_program().default_main_version.compilation.firmware_version_lib);
             }
@@ -465,7 +462,7 @@ public class Controller_Code extends _BaseController {
                 copy_object.save();
 
                 // Překopíruji veškerý obsah
-                Model_Blob fileRecord = version.files.get(0);
+                Model_Blob fileRecord = version.file;
 
                 Model_Blob.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program_new.get_path() ,  copy_object);
                 copy_object.update();
@@ -1042,7 +1039,7 @@ public class Controller_Code extends _BaseController {
                 c_program.refresh();
 
                 // Překopíruji veškerý obsah
-                Model_Blob fileRecord = version_old.files.get(0);
+                Model_Blob fileRecord = version_old.file;
 
                 Model_Blob.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program.get_path() ,  version);
                 version.update();

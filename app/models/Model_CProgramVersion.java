@@ -61,7 +61,6 @@ public class Model_CProgramVersion extends VersionModel {
 
     @OneToOne @JsonIgnore  public Model_CProgram default_program;
 
-
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Cached private UUID cache_c_program_id;
@@ -338,27 +337,25 @@ public class Model_CProgramVersion extends VersionModel {
                         return _BaseController.badRequest("Error getting libraries - some file is not a library");
                     }
 
-                    if (!lib_version.files.isEmpty()) {
+                    if (lib_version.file != null) {
 
                         logger.trace("compile_program_procedure:: Library contains files");
 
-                        for (Model_Blob f : lib_version.files) {
+                        JsonNode j = Json.parse(lib_version.file.get_fileRecord_from_Azure_inString());
 
-                            JsonNode j = Json.parse(f.get_fileRecord_from_Azure_inString());
+                        Swagger_Library_File_Load lib_file;
 
-                            Swagger_Library_File_Load lib_file;
+                        try {
 
-                            try {
+                            lib_file = Json.fromJson(j, Swagger_Library_File_Load.class);
 
-                                lib_file = Json.fromJson(j, Swagger_Library_File_Load.class);
-
-                            } catch (Exception e) {
-                                logger.internalServerError(e);
-                                return _BaseController.internalServerError(e);
-                            }
-
-                            library_files.addAll(lib_file.files);
+                        } catch (Exception e) {
+                            logger.internalServerError(e);
+                            return _BaseController.internalServerError(e);
                         }
+
+                        library_files.addAll(lib_file.files);
+
                     }
                 } catch (_Base_Result_Exception exception) {
                     logger.error("compile_C_Program_code:: lib_version is null ");
