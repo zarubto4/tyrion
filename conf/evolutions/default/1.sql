@@ -598,7 +598,7 @@ create table invoice (
   warning                       varchar(12),
   deleted                       boolean default false not null,
   constraint ck_invoice_status check ( status in ('CANCELED','PAID','PENDING','OVERDUE')),
-  constraint ck_invoice_method check ( method in ('BANK_TRANSFER','CREDIT_CARD','FREE')),
+  constraint ck_invoice_method check ( method in ('CREDIT','BANK_TRANSFER','CREDIT_CARD','FREE')),
   constraint ck_invoice_warning check ( warning in ('ZERO_BALANCE','SECOND','NONE','FIRST','DEACTIVATION')),
   constraint pk_invoice primary key (id)
 );
@@ -867,7 +867,7 @@ create table product (
   customer_id                   uuid,
   azure_product_link            varchar(255),
   deleted                       boolean default false not null,
-  constraint ck_product_method check ( method in ('BANK_TRANSFER','CREDIT_CARD','FREE')),
+  constraint ck_product_method check ( method in ('CREDIT','BANK_TRANSFER','CREDIT_CARD','FREE')),
   constraint ck_product_business_model check ( business_model in ('INTEGRATOR','INTEGRATION','SAAS','FEE','ALPHA','CAL')),
   constraint pk_product primary key (id)
 );
