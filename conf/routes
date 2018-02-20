@@ -394,7 +394,7 @@ PUT       /hardware_registration/tags/remove                            controll
 POST      /hardware_group                                               controllers.Controller_Hardware.hardwareGroup_create()
 PUT       /hardware_group/hardware_synnchronize                         controllers.Controller_Hardware.board_group_update_device_list()
 PUT       /hardware_group/:group_id                                     controllers.Controller_Hardware.hardwareGroup_update(group_id)
-GET       /hardware_group/filter/:page_number                           controllers.Controller_Hardware.hardwareGroup_get_filter(page_number: Int)
+PUT       /hardware_group/filter/:page_number                           controllers.Controller_Hardware.hardwareGroup_get_filter(page_number: Int)
 GET       /hardware_group/individual/:group_id                          controllers.Controller_Hardware.hardwareGroup_get(group_id)
 DELETE    /hardware_group/:group_id                                     controllers.Controller_Hardware.hardwareGroup_delete(group_id)
 

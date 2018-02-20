@@ -121,7 +121,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result processor_get(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
+    public Result processor_get( String processor_id) {
         try {
 
             //Zkontroluji validitu
@@ -188,7 +188,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result processor_edit(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
+    public Result processor_edit(String processor_id) {
         try {
 
             // Get and Validate Object
@@ -228,7 +228,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result processor_delete(@ApiParam(value = "processor_id String query", required = true) String processor_id) {
+    public Result processor_delete(String processor_id) {
         try {
 
             // Kontroluji validitu
@@ -263,7 +263,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result fileRecord_get_bootLoader(@ApiParam(value = "file_record_id String query", required = true)  String bootloader_id) {
+    public Result fileRecord_get_bootLoader(String bootloader_id) {
         try {
 
             Model_BootLoader boot_loader = Model_BootLoader.getById(bootloader_id);
@@ -295,7 +295,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result fileRecord_get_firmware(@ApiParam(value = "file_record_id String query", required = true)  String version_id) {
+    public Result fileRecord_get_firmware(String version_id) {
         try {
 
             // Kontrola validity objektu
@@ -1019,7 +1019,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bootLoader_create(@ApiParam(value = "hardware_type_id", required = true) String hardware_type_id) {
+    public Result bootLoader_create(String hardware_type_id) {
         try {
 
             // Get and Validate Object
@@ -1073,7 +1073,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bootLoader_update(@ApiParam(value = "boot_loader_id", required = true) String boot_loader_id) {
+    public Result bootLoader_update(String boot_loader_id) {
         try {
 
             // Get and Validate Object
@@ -1573,7 +1573,7 @@ public class Controller_Hardware extends _BaseController {
             Model_Project project = Model_Project.getById(project_id);
             
             // Vyhledání seznamu desek na které lze nahrát firmware - okamžitě
-            List<Model_Hardware> hw = Model_Hardware.find.query().where().eq("hardware_type.connectible_to_internet", true).eq("registration.project.id", project_id).findList();
+            List<Model_Hardware> hw = Model_Hardware.find.query().where().eq("hardware_type.connectible_to_internet", true).eq("project.id", project_id).findList();
 
             List<Swagger_Board_for_fast_upload_detail> list = new ArrayList<>();
 
@@ -1978,7 +1978,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardware_getByFilter(Integer page_number) {
+    public Result hardware_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n. For first call, use 1 (first page of list)", required = true) Integer page_number) {
         try {
 
             // Get and Validate Object
@@ -1997,7 +1997,7 @@ public class Controller_Hardware extends _BaseController {
             }
 
             if (help.projects != null && !help.projects.isEmpty()) {
-                query.where().in("registration.project.id", help.projects);
+                query.where().in("project.id", help.projects);
             }
 
             if (help.producers != null) {
@@ -2811,7 +2811,7 @@ public class Controller_Hardware extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareGroup.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_HardwareGroup_List.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
@@ -2825,8 +2825,6 @@ public class Controller_Hardware extends _BaseController {
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_HardwareGroup> query = Ebean.find(Model_HardwareGroup.class);
-
-            query.orderBy("UPPER(name) ASC");
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {

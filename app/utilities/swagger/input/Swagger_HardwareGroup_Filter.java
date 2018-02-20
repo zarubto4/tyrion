@@ -13,8 +13,8 @@ import java.util.UUID;
           value = "HardwareGroup_Filter")
 public class Swagger_HardwareGroup_Filter {
 
-    @ApiModelProperty(required = false)
-    public String project_id;
+    @ApiModelProperty(required = true)
+    public UUID project_id;
 
 }
 

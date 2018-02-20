@@ -18,13 +18,13 @@ public class Swagger_Board_Filter {
     public String active;
 
     @ApiModelProperty(value = "List of project.id", required = false)
-    public List<String> projects;
+    public List<UUID> projects;
 
     @ApiModelProperty(value = "List of producer.id", required = false)
-    public List<String> producers;
+    public List<UUID> producers;
 
     @ApiModelProperty(value = "List of processor.id", required = false)
-    public List<String> processors;
+    public List<UUID> processors;
 
     @ApiModelProperty(value = "Unix in millis - created - start_time", required = false)
     public Date start_time;
