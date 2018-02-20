@@ -101,10 +101,12 @@ public abstract class BaseModel extends Model {
         if (this.created == null) {
             this.created = new Date();
         }
-
-        this.updated = new Date();
+        if (this.updated == null) {
+            this.updated = new Date();
+        }
 
         super.save();
+        this.cache();
 
         new Thread(this::cache).start(); // Caches the object
 
@@ -124,15 +126,21 @@ public abstract class BaseModel extends Model {
     @JsonIgnore @Override
     public void update() throws _Base_Result_Exception {
         try {
+
             logger.debug("update::Update object Id: {}", this.id);
 
             // Check Permission
             if (its_person_operation()) {
                 check_update_permission();
+                logger.debug("Permission is ok");
             }
+
+            super.update();
+            this.cache();
 
         } catch (Exception e){
             logger.warn("Unauthorized UPDATE operation, its required remove everything from Cache");
+            this.evict();
             throw new Result_Error_PermissionDenied();
         }
     }
@@ -143,11 +151,13 @@ public abstract class BaseModel extends Model {
      */
     @Override
     public boolean delete() throws _Base_Result_Exception {
-        logger.trace("delete:: - deleting '{}' from DB, id: {}", this.getClass().getSimpleName(), this.id);
+        logger.debug("delete:: - deleting '{}' from DB, id: {}", this.getClass().getSimpleName(), this.id);
 
-        if(its_person_operation()) check_delete_permission();
+        if(its_person_operation()) {
+            check_delete_permission();
+        }
 
-            this.deleted = true;
+        this.deleted = true;
         this.removed = new Date();
         super.update();
 
@@ -159,7 +169,7 @@ public abstract class BaseModel extends Model {
 
     @Override
     public boolean deletePermanent() {
-        logger.trace("deletePermanent - permanently deleting '{}' from DB, id: {}", this.getClass().getSimpleName(), this.id);
+        logger.debug("deletePermanent - permanently deleting '{}' from DB, id: {}", this.getClass().getSimpleName(), this.id);
 
         if(its_person_operation()) check_delete_permission();
 

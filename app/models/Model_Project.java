@@ -628,12 +628,8 @@ public class Model_Project extends TaggedModel {
     }
 
     @JsonIgnore @Override public boolean delete() {
-
         logger.debug("delete - deleting from database, id: {} ", this.id);
-        deleted = true;
-        cache.remove(this.id);
-
-        this.update();
+        this.delete();
         return false;
     }
 

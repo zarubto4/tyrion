@@ -1047,7 +1047,9 @@ public class Controller_Finance extends _BaseController {
 
             } else {
 
-                if (help.integrator_registration) return badRequest("Create Integrator Company First");
+                if (help.integrator_registration) {
+                    return badRequest("Create Integrator Company First");
+                }
 
                 customer = new Model_Customer();
 

@@ -25,7 +25,7 @@ public class Result_BadRequest extends _Response_Interface {
 
     @ApiModelProperty(value = "Can be null! If not, you can show that to User", required = false, readOnly = true)
     public String message() {
-        return null;
+        return this.message;
     }
 
 }

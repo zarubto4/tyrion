@@ -137,7 +137,7 @@ public class Controller_WebSocket extends _BaseController {
         return WebSocket.Json.acceptOrResult(request -> {
             try {
 
-                logger.info("homer - incoming connection: " + token);
+                logger.trace("homer - incoming connection: " + token);
 
                 //Find object (only ID)
                 Model_HomerServer homer = Model_HomerServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
@@ -175,7 +175,7 @@ public class Controller_WebSocket extends _BaseController {
         return WebSocket.Json.acceptOrResult(request -> {
             try {
 
-                logger.info("compiler - incoming connection: {}", token);
+                logger.debug("compiler - incoming connection: {}", token);
 
                 //Find object (only ID)
                 Model_CompilationServer compiler = Model_CompilationServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
@@ -214,7 +214,7 @@ public class Controller_WebSocket extends _BaseController {
             try {
                 UUID token = UUID.fromString(token_in_string);
 
-                logger.info("portal - incoming connection: {}", token);
+                logger.trace("portal - incoming connection: {}", token);
 
                 Model_Person person;
 
@@ -271,7 +271,6 @@ public class Controller_WebSocket extends _BaseController {
             logger.error("originCheck: rejecting request because no Origin header found");
             return false;
         } else if (originMatches(origin.get())) {
-            logger.debug("originCheck: originValue = " + origin);
             return true;
         } else {
             logger.error("originCheck: rejecting request because Origin header value " + origin + " is not in the same origin");

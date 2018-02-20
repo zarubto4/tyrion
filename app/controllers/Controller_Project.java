@@ -189,11 +189,6 @@ public class Controller_Project extends _BaseController {
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
 
-            // Kvuli bezpečnosti abych nesmazal něco co nechceme
-            for (Model_CProgram c : project.getCPrograms()) {
-                c.delete();
-            }
-
             // Smazání objektu
             project.delete();
 

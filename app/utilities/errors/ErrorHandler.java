@@ -15,7 +15,7 @@ public class ErrorHandler implements HttpErrorHandler {
         switch (statusCode) {
             case 400 : return CompletableFuture.completedFuture(_BaseController.badRequest(message));
             case 404 : return CompletableFuture.completedFuture(_BaseController.notFound(message));
-            default: return CompletableFuture.completedFuture(_BaseController.customResult(statusCode, message));
+            default  : return CompletableFuture.completedFuture(_BaseController.customResult(statusCode, message));
         }
     }
 

@@ -398,7 +398,7 @@ public class Controller_Admin extends _BaseController {
             if (status != 200) {
                 String body = response.getBody();
                 logger.internalServerError(new Exception("Error response from GitHub. Status was " + status + " and body: " + body));
-                return customResult(status, body);
+                return customResult(status, "GitHub_Error", body);
             }
 
             ObjectMapper mapper = new ObjectMapper();

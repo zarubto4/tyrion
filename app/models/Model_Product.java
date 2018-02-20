@@ -45,7 +45,7 @@ public class Model_Product extends NamedModel {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
 
-                                       @JsonIgnore @Enumerated(EnumType.STRING) public PaymentMethod method;
+                                                   @Enumerated(EnumType.STRING) public PaymentMethod method;
                                        @JsonIgnore @Enumerated(EnumType.STRING) public BusinessModel business_model;
 
                                              @ApiModelProperty(required = true) public String subscription_id;
@@ -98,19 +98,6 @@ public class Model_Product extends NamedModel {
         return null;
     }
 
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public String payment_method() {
-        try {
-            switch (method) {
-                case BANK_TRANSFER  : return  "bank_transfer";
-                case CREDIT_CARD: return  "credit_card";
-                case FREE: return  "free";
-                default             : return  "Undefined state";
-            }
-        } catch (NullPointerException e) {
-            return "Not set yet";
-        }
-    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

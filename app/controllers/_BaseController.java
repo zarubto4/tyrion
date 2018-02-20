@@ -113,9 +113,18 @@ public abstract class _BaseController {
      * @param message    string to send in result
      * @return result with status code and message
      */
+    public static Result customResult(int statusCode, String status, String message) {
+        Result_Custom result = new Result_Custom();
+        result.code = statusCode;
+        result.state = status;
+        result.message = message;
+        return Controller.status(statusCode, Json.toJson(result));
+    }
+
     public static Result customResult(int statusCode, String message) {
         Result_Custom result = new Result_Custom();
         result.code = statusCode;
+        result.state = "Unknown";
         result.message = message;
         return Controller.status(statusCode, Json.toJson(result));
     }
@@ -390,46 +399,54 @@ public abstract class _BaseController {
     public static Result controllerServerError(Throwable error) {
         try{
 
+            System.out.println("controllerServerError:: " + error.getClass().getSimpleName());
+
             // Result_Error_NotFound
             if(error.getClass().getSimpleName().equals(_Base_Result_Exception.class.getSimpleName())){
-                logger.debug("controllerServerError:: _Base_Result_Exception");
+                logger.error("controllerServerError:: _Base_Result_Exception");
                 _Base_Result_Exception badRequest = (_Base_Result_Exception) error;
                 return badRequest(badRequest.getMessage());
             }
 
             // Result_Error_NotFound
             if(error.getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
-                logger.debug("controllerServerError:: Result_Error_NotFound");
+                logger.error("controllerServerError:: Result_Error_NotFound");
                 Result_Error_NotFound not_found = (Result_Error_NotFound) error;
                 return notFound(not_found.getClass_not_found());
             }
 
             // Result_Error_InvalidBody
             if(error.getClass().getSimpleName().equals(Result_Error_InvalidBody.class.getSimpleName())){
-                logger.debug("controllerServerError:: Result_Error_InvalidBody");
+                logger.error("controllerServerError:: Result_Error_InvalidBody");
                 Result_Error_InvalidBody invalid_body = (Result_Error_InvalidBody) error;
                 return badRequest(invalid_body.getForm_error());
             }
 
             // Result_Error_Unauthorized
             if(error.getClass().getSimpleName().equals(Result_Error_Unauthorized.class.getSimpleName())){
+                logger.error("controllerServerError:: Result_Error_Unauthorized");
                 return unauthorized();
             }
 
             // Result_Error_PermissionDenied
             if(error.getClass().getSimpleName().equals(Result_Error_PermissionDenied.class.getSimpleName())){
+                logger.error("controllerServerError:: Result_Error_PermissionDenied");
                 return forbidden();
             }
 
-            // Result_Error_PermissionDenied
+            // Result_Error_NotSupportedException
             if(error.getClass().getSimpleName().equals(Result_Error_NotSupportedException.class.getSimpleName())){
-                return badRequest("Please contact technical support. Your request required unsupported parts of system.");
+                error.printStackTrace();
+                return badRequest( Json.toJson(new Result_UnsupportedException()));
             }
 
             logger.error("controllerServerError::There is unExcepted Kind of Error. Now - its Critical!");
             return internalServerError(error);
 
         } catch (Exception e) {
+            logger.error("controllerServerError:: Exception in Exception");
+            e.printStackTrace();
+            logger.error("controllerServerError:: Exception in Exception");
             return internalServerError(e);
         }
     }

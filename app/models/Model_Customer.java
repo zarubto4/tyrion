@@ -72,11 +72,19 @@ public class Model_Customer extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    // TODO Oprávnění
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    // TODO Oprávnění - Poměrně složité na řešení - odloženo na neurčito - Řešitel bude lexa - Financial je jeho.
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
+        //
+    }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        //
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        //
+    }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        //
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
