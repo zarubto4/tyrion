@@ -399,8 +399,6 @@ public abstract class _BaseController {
     public static Result controllerServerError(Throwable error) {
         try{
 
-            System.out.println("controllerServerError:: " + error.getClass().getSimpleName());
-
             // Result_Error_NotFound
             if(error.getClass().getSimpleName().equals(_Base_Result_Exception.class.getSimpleName())){
                 logger.error("controllerServerError:: _Base_Result_Exception");

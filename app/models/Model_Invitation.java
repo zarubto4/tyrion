@@ -40,7 +40,7 @@ public class Model_Invitation extends BaseModel {
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true)
-    public Model_Person invited_person() {return Model_Person.find.query().where().eq("mail", this.email).findOne();}
+    public Model_Person invited_person() {return Model_Person.find.query().where().eq("email", this.email).findOne();}
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

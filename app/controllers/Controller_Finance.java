@@ -2187,7 +2187,7 @@ public class Controller_Finance extends _BaseController {
 
             Model_Customer customer = Model_Customer.getById(help.customer_id);
          
-            for (Model_Person person : Model_Person.find.query().where().in("mail", help.mails).findList()) {
+            for (Model_Person person : Model_Person.find.query().where().in("email", help.mails).findList()) {
 
                 // Abych nepřidával ty co už tam jsou
                 if (customer.employees.stream().anyMatch(employee -> employee.person.id.equals(person.id))) continue;

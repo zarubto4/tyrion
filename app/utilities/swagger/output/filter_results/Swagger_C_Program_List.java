@@ -4,9 +4,11 @@ import io.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.Model_CProgram;
+import models.Model_Library;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @ApiModel(description = "Individual C_Program List",
         value = "C_Program_List")
@@ -22,11 +24,10 @@ public class Swagger_C_Program_List extends _Swagger_Filter_Common {
     public Swagger_C_Program_List(Query<Model_CProgram> query , int page_number) {
 
         if (page_number < 1) page_number = 1;
+        List<UUID> uuids =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findIds();
 
-        for (Model_CProgram c_program_not_cached : query.setFirstRow((page_number - 1) * 25).setMaxRows(25).select("id").findList()) {
-            Model_CProgram c_program = Model_CProgram.getById(c_program_not_cached.id);
-            if (c_program == null) continue;
-            this.content.add(c_program);
+        for (UUID uuid : uuids) {
+            this.content.add(Model_CProgram.getById(uuid));
         }
 
         this.total   = query.findCount();

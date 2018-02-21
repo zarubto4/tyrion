@@ -26,10 +26,7 @@ public class Swagger_GridWidget_List extends _Swagger_Filter_Common {
         List<UUID> ids =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findIds();
 
         for (UUID id : ids) {
-            Model_Widget gridWidget = Model_Widget.getById(id);
-            if (gridWidget == null) continue;
-
-            this.content.add(gridWidget);
+            this.content.add( Model_Widget.getById(id));
         }
 
         this.total  = query.findCount();

@@ -331,10 +331,10 @@ public class TestHelper extends Controller{
     public static Model_Invitation project_share(Model_Project project, Model_Person owner, Model_Person invited_person) {
         try {
 
-            Model_Invitation invitation = Model_Invitation.find.where().eq("mail", invited_person.mail).findOne();
+            Model_Invitation invitation = Model_Invitation.find.query().where().eq("email", invited_person.email).findOne();
             if (invitation == null) {
                 invitation = new Model_Invitation();
-                invitation.email = invited_person.mail;
+                invitation.email = invited_person.email;
                 invitation.created = new Date();
                 invitation.owner = owner;
                 invitation.project = project;

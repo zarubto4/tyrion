@@ -365,7 +365,6 @@ public class Controller_Garfield extends _BaseController {
                 Model_Hardware board = new Model_Hardware();
                 board.id = UUID.randomUUID();
                 board.full_id = "123456789123456789123456";
-                board.registration_hash = Model_Hardware.generate_hash();
 
                 Model_HardwareBatch info = new Model_HardwareBatch();
                 info.revision = "1.9.9";

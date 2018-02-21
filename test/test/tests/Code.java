@@ -44,7 +44,7 @@ public class Code extends TestHelper {
     @BeforeClass
     public static void startApp() throws Exception{
 
-        adminToken = person_login(Model_Person.find.where().eq("mail", "admin@byzance.cz").findOne());
+        adminToken = person_login(Model_Person.find.query().where().eq("email", "admin@byzance.cz").findOne());
 
         person = person_create();
         person_authenticate(person);

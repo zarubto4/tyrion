@@ -377,6 +377,7 @@ PUT       /hardware/backup                                              controll
 
 PUT       /hardware/filter/:page_number                                 controllers.Controller_Hardware.hardware_getByFilter(page_number: Int)
 GET       /hardware/check/:registration_hash                            controllers.Controller_Hardware.hardware_check(registration_hash)
+GET       /hardware/hash/:full_id                                       controllers.Controller_Hardware.hardware_get_registration_hash(full_id)
 GET       /hardware/:hardware_id                                        controllers.Controller_Hardware.hardware_get(hardware_id)
 DELETE    /hardware/deactivate/:hardware_id                             controllers.Controller_Hardware.hardware_deactivate(hardware_id)
 
@@ -487,7 +488,6 @@ PUT       /garfiled/:garfield_id                                        controll
 DELETE    /garfiled/:garfield_id                                        controllers.Controller_Garfield.remove_Garfield(garfield_id)
 GET       /garfiled/:garfield_id                                        controllers.Controller_Garfield.get_Garfield(garfield_id)
 GET       /admin/garfiled_synchronize                                   utilities.hardware_registration_auhtority.Hardware_Registration_Authority.synchronize_script()
-GET       /admin/garfiled_get_hardware_hash/:full_id                    utilities.hardware_registration_auhtority.Hardware_Registration_Authority.get_registration_hardware_from_central_authority(full_id)
 GET       /admin/garfiled-print-labes/:hardware_id                      controllers.Controller_Garfield.print_label(hardware_id)
 
 GET       /printer/printer/:garfield_id/:printer_id                     controllers.Controller_Garfield.online_state_Printer(garfield_id, printer_id: Integer)

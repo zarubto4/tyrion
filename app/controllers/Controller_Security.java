@@ -374,7 +374,7 @@ public class Controller_Security extends _BaseController {
                 logger.debug("GET_github_oauthThis User is not a new one! But Person nickname: {}", person.nick_name);
 
                 // Zrevidovat stav??
-                if (json_response_from_github.has("mail"))   person.email = json_response_from_github.get("mail").asText();
+                if (json_response_from_github.has("mail"))   person.email = json_response_from_github.get("email").asText();
                 if (json_response_from_github.has("login"))  person.nick_name = json_response_from_github.get("login").asText();
                 if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").asText().equals("") && !json_response_from_github.get("name").asText().equals("null"))   person.first_name = json_response_from_github.get("name").asText();
                 if (json_response_from_github.has("avatar_url")) person.alternative_picture_link = json_response_from_github.get("avatar_url").asText();
@@ -388,10 +388,10 @@ public class Controller_Security extends _BaseController {
                 logger.debug("GET_github_oauth:: This user is a new One! ");
                 logger.debug("GET_github_oauth:: All Information from Github::" + json_response_from_github.toString());
 
-                if (json_response_from_github.has("mail")) {
+                if (json_response_from_github.has("email")) {
                     logger.debug("GET_github_oauth:: We have email from Github, so we will try to find person by email again!");
                     // Try to find person by Email Again!!!
-                    person = Model_Person.find.query().where().eq("mail", json_response_from_github.get("mail").asText()).findOne();
+                    person = Model_Person.find.query().where().eq("email", json_response_from_github.get("mail").asText()).findOne();
                 }
 
                 // Its important also connect two same persons - If user is registered before with normal registration and now with social network
@@ -399,7 +399,7 @@ public class Controller_Security extends _BaseController {
 
                     logger.debug("GET_github_oauth:: User already exist (email)  but without Github Token");
 
-                    person = Model_Person.find.query().where().eq("mail", json_response_from_github.get("mail").asText()).findOne();
+                    person = Model_Person.find.query().where().eq("email", json_response_from_github.get("mail").asText()).findOne();
                     person.github_oauth_id = json_response_from_github.get("id").asText();
                     if (json_response_from_github.has("name") && json_response_from_github.get("name") != null &&  !json_response_from_github.get("name").asText().equals("") && !json_response_from_github.get("name").asText().equals("null")) person.first_name = json_response_from_github.get("name").asText();
                     if (person.picture == null && json_response_from_github.has("avatar_url")) person.alternative_picture_link = json_response_from_github.get("avatar_url").asText();
@@ -563,13 +563,13 @@ public class Controller_Security extends _BaseController {
 
                 System.out.println("13. Uživatel neexistuje s tímto id tvořím nového ale ještě před tím zkontroluji zda už nění registrovaný klasicky přes email");
 
-                if (json_response_from_facebook.has("email")) person = Model_Person.find.query().where().eq("mail", json_response_from_facebook.get("email").asText()).findOne();
+                if (json_response_from_facebook.has("email")) person = Model_Person.find.query().where().eq("email", json_response_from_facebook.get("email").asText()).findOne();
 
                 if (person != null) {
 
                     System.out.println("13. Uživatel existuje s emailem ale bez facebook tokenu - a tak jen doplním token");
 
-                    person = Model_Person.find.query().where().eq("mail", json_response_from_facebook.get("email").asText()).findOne();
+                    person = Model_Person.find.query().where().eq("email", json_response_from_facebook.get("email").asText()).findOne();
                     person.facebook_oauth_id = jsonNode.get("id").asText();
                     if (json_response_from_facebook.has("name")) person.first_name = json_response_from_facebook.get("name").asText();
                     person.update();

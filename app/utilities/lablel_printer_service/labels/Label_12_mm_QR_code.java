@@ -4,9 +4,14 @@ package utilities.lablel_printer_service.labels;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import models.Model_Hardware;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
+import utilities.hardware_registration_auhtority.document_objects.DM_Board_Registration_Central_Authority;
 import utilities.logger.Logger;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 public class Label_12_mm_QR_code {
 
@@ -70,7 +75,7 @@ public class Label_12_mm_QR_code {
     }
 
 
-    private PdfPTable device_hash_for_Add() throws DocumentException {
+    private PdfPTable device_hash_for_Add() throws DocumentException, _Base_Result_Exception, IOException {
 
         PdfPTable table = new PdfPTable(1);
                 table.setTotalWidth(Label_12_mm.getWidth());
@@ -80,9 +85,15 @@ public class Label_12_mm_QR_code {
                 table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER);
                 table.getDefaultCell().setVerticalAlignment(Element.ALIGN_MIDDLE);
 
+        // Mac Address ID
+        DM_Board_Registration_Central_Authority hw = Hardware_Registration_Authority.get_registration_hardware_from_central_authority(hardware.full_id);
+        if(hw == null) {
+            throw new Result_Error_NotFound(Model_Hardware.class);
+        }
+
         // QR Code for ADD
         // QR Code for ADD
-        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(this.hardware.registration_hash, 1000, 1000, null);
+        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(hw.hash_for_adding, 1000, 1000, null);
         Image codeQrImage = barcodeQRCode.getImage();
         codeQrImage.scaleToFit(Label_12_mm.getWidth(), Label_12_mm.getWidth());
 

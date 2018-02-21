@@ -91,7 +91,7 @@ public class Controller_Person extends _BaseController {
             person.setPassword(help.password);
             person.save();
 
-            Model_Invitation invitation = Model_Invitation.find.query().where().eq("mail", person.email).findOne();
+            Model_Invitation invitation = Model_Invitation.find.query().where().eq("email", person.email).findOne();
 
             if (invitation == null) {
 
@@ -153,7 +153,7 @@ public class Controller_Person extends _BaseController {
 
             if (validationToken == null) return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectOk  );
 
-            Model_Person person = Model_Person.find.query().where().eq("mail", validationToken.email).findOne();
+            Model_Person person = Model_Person.find.query().where().eq("email", validationToken.email).findOne();
             if (person == null) return redirect( Server.becki_mainUrl + "/" + Server.becki_redirectFail  );
 
             person.validated = true;

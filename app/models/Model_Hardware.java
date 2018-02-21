@@ -95,7 +95,7 @@ public class Model_Hardware extends TaggedModel {
     public String wifi_mac_address;
     public String mac_address;
 
-    @JsonIgnore public String registration_hash;   // Vygenerovaný Hash pro přidávání a párování s Platformou. // Je na QR kodu na hardwaru
+    // @JsonIgnore public String registration_hash;   // Vygenerovaný Hash pro přidávání a párování s Platformou. // Je na QR kodu na hardwaru
 
     @JsonIgnore @Column(columnDefinition = "TEXT")
     public String json_bootloader_core_configuration; // DM_Board_Configuration.java Počáteční konfigurace - kde je uložený JSON mapovaný pomocí Objektů konkrétního typu hardwaru  //

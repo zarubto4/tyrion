@@ -295,7 +295,7 @@ public class Controller_Project extends _BaseController {
 
             // Roztřídění seznamů
             for (String mail : help.persons_mail) {
-                Model_Person person =  Model_Person.find.query().where().eq("mail",mail).findOne();
+                Model_Person person =  Model_Person.find.query().where().eq("email",mail).findOne();
                 if (person != null) {
                     listIn.add(person);
                     toRemove.add(person.email);
@@ -313,7 +313,7 @@ public class Controller_Project extends _BaseController {
 
                 logger.debug("project_invite - creating invitation for {}", mail);
 
-                Model_Invitation invitation = Model_Invitation.find.query().where().eq("mail", mail).eq("project.id", project.id).findOne();
+                Model_Invitation invitation = Model_Invitation.find.query().where().eq("email", mail).eq("project.id", project.id).findOne();
                 if (invitation == null) {
                     invitation = new Model_Invitation();
                     invitation.email = mail;
@@ -344,7 +344,7 @@ public class Controller_Project extends _BaseController {
 
                 logger.debug("project_invite - creating invitation for {}", person.email);
 
-                Model_Invitation invitation = Model_Invitation.find.query().where().eq("mail", person.email).eq("project.id", project.id).findOne();
+                Model_Invitation invitation = Model_Invitation.find.query().where().eq("email", person.email).eq("project.id", project.id).findOne();
                 if (invitation == null) {
                     invitation = new Model_Invitation();
                     invitation.email = person.email;
@@ -474,7 +474,7 @@ public class Controller_Project extends _BaseController {
             // Získání seznamu
             for (String mail : help.persons_mail) {
 
-                Model_Person person = Model_Person.find.query().where().eq("mail",mail).findOne();
+                Model_Person person = Model_Person.find.query().where().eq("email",mail).findOne();
                 if (person != null)
                     list.add(person);
             }
@@ -483,7 +483,7 @@ public class Controller_Project extends _BaseController {
 
             for (String mail : help.persons_mail) {
 
-                Model_Invitation invitation = Model_Invitation.find.query().where().eq("mail",mail).eq("project.id", project_id).findOne();
+                Model_Invitation invitation = Model_Invitation.find.query().where().eq("email",mail).eq("project.id", project_id).findOne();
                 if (invitation != null)
                     invitations.add(invitation);
             }

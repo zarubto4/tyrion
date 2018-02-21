@@ -20,10 +20,13 @@ import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.enums.Enum_Terminal_Color;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions.Result_Error_Registration_Fail;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.hardware_registration_auhtority.document_objects.DM_Board_Registration_Central_Authority;
 import utilities.logger.Logger;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -73,42 +76,27 @@ public class Hardware_Registration_Authority extends _BaseController {
         }
     }
 
-    /*
-        Slouží pro Administrátory k získání registračního klíče podle ID uživatele
-     */
-    @ApiOperation(value = "get Board registration hash for Byzance Administrators",
-            tags = { "Garfield"},
-            notes = "",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = DM_Board_Registration_Central_Authority.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result get_registration_hardware_from_central_authority(String full_id) {
-        try {
 
-            if(!person().is_admin()) return forbidden();
+    public static DM_Board_Registration_Central_Authority get_registration_hardware_from_central_authority(String full_id) throws _Base_Result_Exception, IOException {
 
-            BasicDBObject whereQuery_board_id = new BasicDBObject();
-            whereQuery_board_id.put(Enum_Hardware_Registration_DB_Key.full_id.name(), full_id);
-            Document device = collection.find(whereQuery_board_id).first();
-
-            String string_json = device.toJson();
-            ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
-
-            DM_Board_Registration_Central_Authority help = Json.fromJson(json, DM_Board_Registration_Central_Authority.class);
-
-            return ok(Json.toJson(help));
-
-        } catch (Exception e) {
-            return internalServerError(e);
+        // If its person operation
+        if(_BaseController.isAuthenticated()) {
+            if (!person().is_admin()) {
+                throw new Result_Error_PermissionDenied();
+            }
         }
+
+        BasicDBObject whereQuery_board_id = new BasicDBObject();
+        whereQuery_board_id.put(Enum_Hardware_Registration_DB_Key.full_id.name(), full_id);
+        Document device = collection.find(whereQuery_board_id).first();
+
+        String string_json = device.toJson();
+        ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
+
+        return Json.fromJson(json, DM_Board_Registration_Central_Authority.class);
     }
+
+
 
     public static boolean check_if_value_is_registered(String value, Enum_Hardware_Registration_DB_Key type) {
 
@@ -154,7 +142,7 @@ public class Hardware_Registration_Authority extends _BaseController {
         DM_Board_Registration_Central_Authority board_registration_central_authority = new DM_Board_Registration_Central_Authority();
         board_registration_central_authority.full_id = hardware.full_id;
         board_registration_central_authority.mac_address = hardware.mac_address;
-        board_registration_central_authority.hash_for_adding = hardware.registration_hash;
+        board_registration_central_authority.hash_for_adding = Model_Hardware.generate_hash();
         board_registration_central_authority.personal_name = hardware.name;
         board_registration_central_authority.hardware_type_compiler_target_name =  hardwareType.compiler_target_name;
         board_registration_central_authority.created = ((Long)hardware.created.getTime()).toString();
@@ -279,7 +267,6 @@ public class Hardware_Registration_Authority extends _BaseController {
         Model_Hardware hardware = new Model_Hardware();
         hardware.full_id = help.full_id;
         hardware.mac_address = help.mac_address;
-        hardware.registration_hash = help.hash_for_adding;
         hardware.name = help.personal_name;
         hardware.mqtt_username = help.mqtt_username;
         hardware.mqtt_password = help.mqtt_password;

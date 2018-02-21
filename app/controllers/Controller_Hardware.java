@@ -19,6 +19,7 @@ import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions.Result_Error_Unauthorized;
 import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
+import utilities.hardware_registration_auhtority.document_objects.DM_Board_Registration_Central_Authority;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
@@ -1367,6 +1368,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_Board_New_Manual help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_New_Manual.class);
 
             // Kotrola objektu
+            // TODO Kontrola vůči Globální autoritě!
             if (Model_Hardware.getByFullId(help.full_id) != null) return badRequest("Hardware is already registered");
 
             // Kotrola objektu
@@ -1380,7 +1382,6 @@ public class Controller_Hardware extends _BaseController {
             hardware.full_id = help.full_id;
             hardware.is_active = false;
             hardware.hardware_type = hardwareType;
-            hardware.registration_hash = Model_Hardware.generate_hash();
 
             // Uložení desky do DB
             hardware.save();
@@ -1392,6 +1393,46 @@ public class Controller_Hardware extends _BaseController {
             return controllerServerError(e);
         }
     }
+
+    @ApiOperation(value = "get Hardware hash admin only",
+            tags = { "Admin-Board"},
+            notes = "This Api is using only with special Admin Permission",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Successfully created",      response = Swagger_Hardware_Registration_Hash.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result hardware_get_registration_hash(String full_id) {
+        try {
+
+
+            if(!person().is_admin()) {
+                throw new Result_Error_PermissionDenied();
+            }
+
+            if(!Hardware_Registration_Authority.check_if_value_is_registered(full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
+                return notFound(Model_Hardware.class);
+            }
+
+            DM_Board_Registration_Central_Authority hw = Hardware_Registration_Authority.get_registration_hardware_from_central_authority(full_id);
+
+            Swagger_Hardware_Registration_Hash hash = new Swagger_Hardware_Registration_Hash();
+            hash.hash = hw.hash_for_adding;
+
+            // Vracím seznam zařízení k registraci
+            return created(Json.toJson(hash));
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
 
     @ApiOperation(value = "create Board automatic Garfield",
             tags = { "Admin-Board"},
@@ -1465,7 +1506,6 @@ public class Controller_Hardware extends _BaseController {
                 hardware.mac_address = batch.get_new_MacAddress();
                 hardware.mqtt_username = BCrypt.hashpw(mqtt_username_not_hashed, BCrypt.gensalt());
                 hardware.mqtt_password = BCrypt.hashpw(mqtt_password_not_hashed, BCrypt.gensalt());
-                hardware.registration_hash = Model_Hardware.generate_hash();
 
                 if (Hardware_Registration_Authority.register_device(hardware, hardwareType, batch)) {
                     hardware.save();

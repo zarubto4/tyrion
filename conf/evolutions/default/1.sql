@@ -370,7 +370,6 @@ create table hardware (
   dominant_entity               boolean default false not null,
   wifi_mac_address              varchar(255),
   mac_address                   varchar(255),
-  registration_hash             varchar(255),
   json_bootloader_core_configuration TEXT,
   batch_id                      varchar(255),
   is_active                     boolean default false not null,
