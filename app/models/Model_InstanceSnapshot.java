@@ -21,6 +21,8 @@ import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.swagger.input.Swagger_Library_File_Load;
+import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_autobackup_made;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_hardware;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_status;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_program;
@@ -239,7 +241,7 @@ public class Model_InstanceSnapshot extends BaseModel {
 
             JsonNode node = get_instance().write_with_confirmation(new WS_Message_Instance_set_program().make_request(this), 1000 * 6, 0, 2);
 
-            return Json.fromJson(node, WS_Message_Instance_set_program.class);
+            return baseFormFactory.formFromJsonWithValidation(WS_Message_Instance_set_program.class, node);
 
         } catch (Exception e) {
             logger.internalServerError(e);

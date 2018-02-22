@@ -10,6 +10,7 @@ import utilities.enums.HomerType;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 
@@ -153,6 +154,8 @@ public class Utilities_Demo_data_Controller extends _BaseController {
             hardwareType.processor = processor_1;
             hardwareType.producer = producer;
             hardwareType.connectible_to_internet = true;
+
+            if(hardwareType.features == null) hardwareType.features = new ArrayList<>();
             hardwareType.features.add(ethernet);
             hardwareType.features.add(wifi);
             hardwareType.save();

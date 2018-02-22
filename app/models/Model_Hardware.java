@@ -37,6 +37,7 @@ import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
+import websocket.messages.homer_with_tyrion.WS_Message_Homer_Instance_list;
 import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
@@ -271,7 +272,7 @@ public class Model_Hardware extends TaggedModel {
             }
 
             JsonNode node = Json.parse(json_bootloader_core_configuration);
-            DM_Board_Bootloader_DefaultConfig config = Json.fromJson(node, DM_Board_Bootloader_DefaultConfig.class);
+            DM_Board_Bootloader_DefaultConfig config = baseFormFactory.formFromJsonWithValidation(DM_Board_Bootloader_DefaultConfig.class, node);
 
             // Manuálně doplněné hodnoty - ty které nejsou ve statickém Json
             config.autobackup = backup_mode;
@@ -696,7 +697,7 @@ public class Model_Hardware extends TaggedModel {
     public static final String CHANNEL = "hardware";
 
     // Messenger
-    public static void Messages(WS_Homer homer, ObjectNode json) {
+    public static void Messages(WS_Homer homer, ObjectNode json) throws _Base_Result_Exception {
         new Thread(() -> {
             try {
 
@@ -704,49 +705,49 @@ public class Model_Hardware extends TaggedModel {
 
                     case WS_Message_Hardware_connected.message_type: {
 
-                        Model_Hardware.device_Connected(Json.fromJson(json, WS_Message_Hardware_connected.class));
+                        Model_Hardware.device_Connected(baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_connected.class, json));
                         return;
                     }
 
                     case WS_Message_Hardware_disconnected.message_type: {
 
-                        Model_Hardware.device_Disconnected(Json.fromJson(json, WS_Message_Hardware_disconnected.class));
+                        Model_Hardware.device_Disconnected(baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_disconnected.class, json));
                         return;
                     }
 
                     case WS_Message_Hardware_online_status.message_type: {
 
-                        Model_Hardware.device_online_synchronization(Json.fromJson(json, WS_Message_Hardware_online_status.class));
+                        Model_Hardware.device_online_synchronization(baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_online_status.class, json));
                         return;
                     }
 
                     case WS_Message_Hardware_autobackup_made.message_type: {
 
-                        Model_Hardware.device_auto_backup_done_echo(Json.fromJson(json, WS_Message_Hardware_autobackup_made.class));
+                        Model_Hardware.device_auto_backup_done_echo(baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_autobackup_made.class, json));
                         return;
                     }
 
                     case WS_Message_Hardware_autobackup_making.message_type: {
 
-                        Model_Hardware.device_auto_backup_start_echo(Json.fromJson(json, WS_Message_Hardware_autobackup_making.class));
+                        Model_Hardware.device_auto_backup_start_echo(baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_autobackup_making.class, json));
                         return;
                     }
 
                     case WS_Message_Hardware_UpdateProcedure_Progress.message_type: {
 
-                        Model_HardwareUpdate.update_procedure_progress(Json.fromJson(json, WS_Message_Hardware_UpdateProcedure_Progress.class));
+                        Model_HardwareUpdate.update_procedure_progress(baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_UpdateProcedure_Progress.class, json));
                         return;
                     }
 
                     case WS_Message_Hardware_validation_request.message_type: {
 
-                        Model_Hardware.check_mqtt_hardware_connection_validation(homer, Json.fromJson(json, WS_Message_Hardware_validation_request.class));
+                        Model_Hardware.check_mqtt_hardware_connection_validation(homer, baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_validation_request.class, json));
                         return;
                     }
 
                     case WS_Message_Hardware_terminal_logger_validation_request.message_type: {
 
-                        Model_Hardware.check_hardware_logger_access_terminal_validation(homer, Json.fromJson(json, WS_Message_Hardware_terminal_logger_validation_request.class));
+                        Model_Hardware.check_hardware_logger_access_terminal_validation(homer, baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_terminal_logger_validation_request.class, json));
                         return;
                     }
 
@@ -1073,7 +1074,7 @@ public class Model_Hardware extends TaggedModel {
 
     // Odesílání zprávy harwaru jde skrze serve, zde je metoda, která pokud to nejde odeslat naplní objekt a vrácí ho
     @JsonIgnore
-    private ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries) {
+    public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries) {
 
         // Response with Error Message
         if (this.connected_server_id == null) {
@@ -1112,7 +1113,7 @@ public class Model_Hardware extends TaggedModel {
 
     // Metoda překontroluje odeslání a pak předává objektu - zpráva plave skrze program
     @JsonIgnore
-    private void write_without_confirmation(ObjectNode json) {
+    public void write_without_confirmation(ObjectNode json) {
 
         if (this.connected_server_id == null) {
             return;
@@ -1179,7 +1180,7 @@ public class Model_Hardware extends TaggedModel {
 
         for (JsonNode json_result : results ) {
             try {
-                result.hardware_list.addAll(Json.fromJson(json_result, WS_Message_Hardware_online_status.class).hardware_list);
+                result.hardware_list.addAll(baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_online_status.class, json_result).hardware_list);
 
             } catch (Exception e) {
                 logger.internalServerError(e);
@@ -1222,7 +1223,7 @@ public class Model_Hardware extends TaggedModel {
         for (JsonNode json_result : results) {
             try {
 
-                WS_Message_Hardware_overview overview = Json.fromJson(json_result, WS_Message_Hardware_overview.class);
+                WS_Message_Hardware_overview overview = baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_overview.class, json_result);
 
                 // TODO should the exception be really thrown here? [AT]
                 if (!overview.status.equals("success") && overview.hardware_list.isEmpty()) {
@@ -1253,7 +1254,7 @@ public class Model_Hardware extends TaggedModel {
             }
 
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), "alias", alias), 1000 * 5, 0, 2);
-            return Json.fromJson(node, WS_Message_Hardware_set_settings.class);
+            return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, node);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -1272,7 +1273,7 @@ public class Model_Hardware extends TaggedModel {
 
             // Homer by měl přestat do odvolání posílat všechny sračky co se dějí na hardwaru - ale asi to ještě není implementováno // TODO??
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this),"DATABASE_SYNCHRONIZE", settings), 1000 * 5, 0, 2);
-            return Json.fromJson(node, WS_Message_Hardware_set_settings.class);
+            return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, node);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -1287,7 +1288,7 @@ public class Model_Hardware extends TaggedModel {
 
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_hardware_groups().make_request(Collections.singletonList(this), hardware_groups_ids, command), 1000 * 5, 0, 2);
 
-            return Json.fromJson(node, WS_Message_Hardware_set_hardware_groups.class);
+            return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_hardware_groups.class, node);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -1318,7 +1319,7 @@ public class Model_Hardware extends TaggedModel {
                         this.update_bootloader_configuration(configuration);
 
                         JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.boolean_value), 1000 * 5, 0, 2);
-                        return Json.fromJson(node, WS_Message_Hardware_set_settings.class);
+                        return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, node);
                     }
 
                     if (field.getType().getSimpleName().toLowerCase().equals(String.class.getSimpleName().toLowerCase())) {
@@ -1327,7 +1328,7 @@ public class Model_Hardware extends TaggedModel {
                         this.update_bootloader_configuration(configuration);
 
                         JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.string_value), 1000 * 5, 0, 2);
-                        return Json.fromJson(node, WS_Message_Hardware_set_settings.class);
+                        return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, node);
                     }
 
                     if (field.getType().getSimpleName().toLowerCase().equals(Integer.class.getSimpleName().toLowerCase())) {
@@ -1338,7 +1339,7 @@ public class Model_Hardware extends TaggedModel {
                             this.update_bootloader_configuration(configuration);
 
                             JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.integer_value), 1000 * 5, 0, 2);
-                            return Json.fromJson(node, WS_Message_Hardware_set_settings.class);
+                            return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, node);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -1361,7 +1362,7 @@ public class Model_Hardware extends TaggedModel {
     public WS_Message_Hardware_change_server device_relocate_server(String mqtt_host, String mqtt_port) {
         try {
             JsonNode node = write_with_confirmation( new WS_Message_Hardware_change_server().make_request(mqtt_host, mqtt_port, Collections.singletonList(this.id)), 1000 * 5, 0, 2);
-            return Json.fromJson(node, WS_Message_Hardware_change_server.class);
+            return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_change_server.class, node);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -1427,7 +1428,7 @@ public class Model_Hardware extends TaggedModel {
 
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), "autobackup", true), 1000*5, 0, 2);
 
-            return Json.fromJson(node, WS_Message_Hardware_set_settings.class);
+            return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, node);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -1634,7 +1635,8 @@ public class Model_Hardware extends TaggedModel {
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_command_execute().make_request(this.id, command, priority), 1000 * 5, 0, 2);
 
             // Execute Command
-            Json.fromJson(node, WS_Message_Hardware_command_execute.class);
+            baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_command_execute.class, node);
+
         } catch (Exception e) {
             logger.internalServerError(e);
         }

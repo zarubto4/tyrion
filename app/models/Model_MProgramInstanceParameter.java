@@ -23,6 +23,7 @@ import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.swagger.input.Swagger_GridWidgetVersion_GridApp_source;
 import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
+import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_autobackup_made;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -222,7 +223,7 @@ public class Model_MProgramInstanceParameter extends BaseModel {
             List<Swagger_GridWidgetVersion_GridApp_source> list = new ArrayList<>();
 
             // Create object
-            M_Program_Parser program_parser = Json.fromJson(m_program, M_Program_Parser.class);
+            M_Program_Parser program_parser = baseFormFactory.formFromJsonWithValidation(M_Program_Parser.class, m_program);
 
             // Loking for objects
             for (Widget_Parser widget_parser : program_parser.screens.main.get(0).widgets) {

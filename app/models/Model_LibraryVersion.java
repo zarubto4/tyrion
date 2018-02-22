@@ -28,6 +28,7 @@ import utilities.swagger.input.Swagger_C_Program_Version_Update;
 import utilities.swagger.input.Swagger_Library_File_Load;
 import utilities.swagger.input.Swagger_Library_Record;
 import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
+import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_autobackup_made;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
@@ -70,15 +71,16 @@ public class Model_LibraryVersion extends VersionModel {
     // TODO Cache - Performeance [TZ]!
     @ApiModelProperty(required = true, readOnly = true)
     public List<Swagger_Library_Record> files(){
+        try {
 
-         List<Swagger_Library_Record> file_list = new ArrayList<>();
+            JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
+            return baseFormFactory.formFromJsonWithValidation(Swagger_Library_File_Load.class, json).files;
 
-         JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
 
-         Swagger_Library_File_Load form = Json.fromJson(json, Swagger_Library_File_Load.class);
-         file_list.addAll(form.files);
-
-        return file_list;
+        } catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

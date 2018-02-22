@@ -24,6 +24,7 @@ import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_instance_with_tyrion.verification.WS_Message_Grid_token_verification;
 import websocket.messages.homer_instance_with_tyrion.verification.WS_Message_WebView_token_verification;
+import websocket.messages.homer_with_tyrion.verification.WS_Message_Check_homer_server_permission;
 import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 import websocket.messages.homer_instance_with_tyrion.*;
 
@@ -330,14 +331,14 @@ public class Model_Instance extends TaggedModel {
 
                     case WS_Message_Grid_token_verification.message_type: {
 
-                        WS_Message_Grid_token_verification help = Json.fromJson(json, WS_Message_Grid_token_verification.class);
+                        WS_Message_Grid_token_verification help = baseFormFactory.formFromJsonWithValidation(WS_Message_Grid_token_verification.class, json);
                         help.get_instance().cloud_verification_token_GRID(homer, help);
                         return;
                     }
 
                     case WS_Message_WebView_token_verification.messageType: {
 
-                        WS_Message_WebView_token_verification help = Json.fromJson(json, WS_Message_WebView_token_verification.class);
+                        WS_Message_WebView_token_verification help = baseFormFactory.formFromJsonWithValidation(WS_Message_WebView_token_verification.class, json);
                         help.get_instance().cloud_verification_token_WEBVIEW(homer, help);
                         return;
                     }
@@ -454,7 +455,7 @@ public class Model_Instance extends TaggedModel {
 
             JsonNode json = write_with_confirmation(new WS_Message_Instance_status().make_request(Collections.singletonList(id.toString())), 1000 * 3, 0, 2);
 
-           return Json.fromJson(json, WS_Message_Instance_status.class);
+           return baseFormFactory.formFromJsonWithValidation(WS_Message_Instance_status.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -469,7 +470,7 @@ public class Model_Instance extends TaggedModel {
 
             JsonNode json = this.write_with_confirmation(new WS_Message_Instance_set_hardware().make_request(device_ids), 1000*3, 0, 4);
 
-            return Json.fromJson(json, WS_Message_Instance_set_hardware.class);
+            return baseFormFactory.formFromJsonWithValidation(WS_Message_Instance_set_hardware.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -484,7 +485,7 @@ public class Model_Instance extends TaggedModel {
 
             JsonNode json = this.write_with_confirmation(new WS_Message_Instance_set_terminals().make_request(terminalIds), 1000*3, 0, 4);
 
-            return Json.fromJson(json, WS_Message_Instance_set_terminals.class);
+            return baseFormFactory.formFromJsonWithValidation(WS_Message_Instance_set_terminals.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -499,7 +500,7 @@ public class Model_Instance extends TaggedModel {
 
             ObjectNode json = this.write_with_confirmation( new WS_Message_Hardware_overview().make_request(this.getHardwareIds()), 1000*5, 0, 1);
 
-            return Json.fromJson(json, WS_Message_Hardware_overview.class);
+            return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_overview.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);

@@ -25,6 +25,10 @@ public class Model_HardwareFeature extends NamedModel {
     @ManyToMany(fetch = FetchType.LAZY) @JsonIgnore public List<Model_HardwareType> hardware_types = new ArrayList<>();
 
 
+    // Here we can probably add Icons?
+    // Wait for more than one YODA type of board...
+
+
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 

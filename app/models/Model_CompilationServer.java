@@ -14,6 +14,7 @@ import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheField;
+import utilities.document_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.document_db.document_objects.DM_CompilationServer_Connect;
 import utilities.document_db.document_objects.DM_CompilationServer_Disconnect;
 import utilities.enums.CompilationStatus;
@@ -104,7 +105,7 @@ public class Model_CompilationServer extends BaseModel {
 
             logger.debug("make_Compilation:: Start of compilation was successful - waiting for result");
 
-            WS_Message_Make_compilation compilation = Json.fromJson(compilation_request, WS_Message_Make_compilation.class);
+            WS_Message_Make_compilation compilation = baseFormFactory.formFromJsonWithValidation(WS_Message_Make_compilation.class, compilation_request);
 
             if (compilation.build_url != null) {
                 logger.trace("make_Compilation:: Build URL is not null: {} ", compilation.build_url);
@@ -125,7 +126,7 @@ public class Model_CompilationServer extends BaseModel {
 
             JsonNode json = Controller_WebSocket.compilers.get(this.id).sendWithResponse(new WS_Message(new WS_Message_Ping_compilation_server().make_request(), 0, 1000 * 3, 3));
 
-            return Json.fromJson(json, WS_Message_Ping_compilation_server.class);
+            return baseFormFactory.formFromJsonWithValidation(WS_Message_Ping_compilation_server.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);

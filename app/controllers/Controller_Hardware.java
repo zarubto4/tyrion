@@ -1411,7 +1411,6 @@ public class Controller_Hardware extends _BaseController {
     public Result hardware_get_registration_hash(String full_id) {
         try {
 
-
             if(!person().is_admin()) {
                 throw new Result_Error_PermissionDenied();
             }

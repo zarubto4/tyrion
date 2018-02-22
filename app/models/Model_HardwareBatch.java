@@ -140,6 +140,14 @@ public class Model_HardwareBatch extends BaseModel {
         super.save();
     }
 
+    @JsonIgnore @Override
+    public void update() {
+
+
+        super.update();
+    }
+
+
     @JsonIgnore
     public void save_from_central_authority() {
         super.save();
@@ -161,10 +169,11 @@ public class Model_HardwareBatch extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {  hardware_type.check_update_permission(); }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {  hardware_type.check_read_permission(); }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { hardware_type.check_update_permission(); }
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { hardware_type.check_read_permission(); }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { hardware_type.check_update_permission(); }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {  hardware_type.check_delete_permission(); }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { hardware_type.check_delete_permission(); }
+
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

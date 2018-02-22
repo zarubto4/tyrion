@@ -3,11 +3,14 @@ package websocket.interfaces;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.inject.Inject;
 import controllers.Controller_WebSocket;
+import controllers._BaseFormFactory;
 import models.Model_Hardware;
 import models.Model_HomerServer;
 import models.Model_Instance;
 import play.libs.Json;
+import utilities.hardware_registration_auhtority.document_objects.DM_Batch_Registration_Central_Authority;
 import utilities.logger.Logger;
 import utilities.threads.homer_server.Synchronize_Homer_Hardware_after_connection;
 import utilities.threads.homer_server.Synchronize_Homer_Instance_after_connection;
@@ -25,6 +28,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class WS_Homer extends WS_Interface {
+
+    @Inject public static _BaseFormFactory baseFormFactory;
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
@@ -138,7 +143,7 @@ public class WS_Homer extends WS_Interface {
                     return;
                 }*/// TODO
 
-                Model_HomerServer.approve_validation_for_homer_server(this, Json.fromJson(json, WS_Message_Check_homer_server_permission.class));
+                Model_HomerServer.approve_validation_for_homer_server(this, baseFormFactory.formFromJsonWithValidation(WS_Message_Check_homer_server_permission.class, json));
 
             } else {
 

@@ -2,12 +2,14 @@ package utilities.hardware_registration_auhtority;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import controllers._BaseFormFactory;
 import io.swagger.annotations.Api;
 import models.Model_HardwareType;
 import models.Model_HardwareBatch;
@@ -19,12 +21,17 @@ import utilities.authentication.Authentication;
 import utilities.hardware_registration_auhtority.document_objects.DM_Batch_Registration_Central_Authority;
 import utilities.hardware_registration_auhtority.document_objects.DM_Board_Registration_Central_Authority;
 import utilities.logger.Logger;
+import websocket.messages.homer_instance_with_tyrion.verification.WS_Message_WebView_token_verification;
 
 import java.util.List;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
 public class Batch_Registration_Authority extends Controller {
+
+    @Inject public static _BaseFormFactory baseFormFactory;
+
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
     private static final Logger logger = new Logger(Batch_Registration_Authority.class);
 
@@ -86,10 +93,11 @@ public class Batch_Registration_Authority extends Controller {
 
 
         try {
+
             String string_json = Json.toJson(batch_registration_central_authority).toString();
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
 
-            Json.fromJson(json, DM_Batch_Registration_Central_Authority.class);
+            baseFormFactory.formFromJsonWithValidation(DM_Batch_Registration_Central_Authority.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -120,7 +128,11 @@ public class Batch_Registration_Authority extends Controller {
                     String string_json = cursor.next().toJson();
                     ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
 
-                    DM_Batch_Registration_Central_Authority help = Json.fromJson(json, DM_Batch_Registration_Central_Authority.class);
+                    DM_Batch_Registration_Central_Authority help =  baseFormFactory.formFromJsonWithValidation(DM_Batch_Registration_Central_Authority.class, json);
+
+                    System.out.println("Co přišlo za HW Type??");
+                    System.out.println(Json.toJson(help));
+                    System.out.println();
 
                     Model_HardwareBatch batch_database = Model_HardwareBatch.find.query().where().eq("revision", help.revision).eq("production_batch", help.production_batch).findOne();
                     if (batch_database != null) {
@@ -133,7 +145,7 @@ public class Batch_Registration_Authority extends Controller {
 
                     Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("compiler_target_name", help.hardware_type_compiler_target_name).findOne();
                     if (hardwareType == null) {
-                        logger.error("Batch_Registration_Authority:: Required Type Of Board Read {} is missing!", help.hardware_type_compiler_target_name);
+                        logger.error("Batch_Registration_Authority:: Required Hardware type Read {} is missing!", help.hardware_type_compiler_target_name);
                         continue;
                     }
 

@@ -25,6 +25,7 @@ import utilities.financial.history.HistoryEvent;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.notifications.helps_objects.Notification_Text;
+import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -231,7 +232,7 @@ public class Model_Product extends NamedModel {
 
             if (this.financial_history == null || this.financial_history.equals("")) return new History();
 
-            History help = Json.fromJson(Json.parse(this.financial_history), History.class);
+            History help = baseFormFactory.formFromJsonWithValidation(History.class, Json.parse(this.financial_history));
 
             // Sorting the list
             help.history = help.history.stream().sorted((element1, element2) -> element2.date.compareTo(element1.date)).collect(Collectors.toList());

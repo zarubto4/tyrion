@@ -1,14 +1,19 @@
 package utilities.threads.homer_server;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.inject.Inject;
+import controllers._BaseFormFactory;
 import models.Model_HomerServer;
 import play.libs.Json;
 import utilities.logger.Logger;
 import websocket.WS_Message;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_with_tyrion.configuration.WS_Message_Homer_Get_homer_server_configuration;
+import websocket.messages.homer_with_tyrion.verification.WS_Message_Check_homer_server_permission;
 
 public class Synchronize_Homer_Synchronize_Settings extends Thread {
+
+    @Inject public static _BaseFormFactory baseFormFactory;
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -45,7 +50,7 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
                 return;
             }*/
 
-            WS_Message_Homer_Get_homer_server_configuration help = Json.fromJson(ask_for_configuration, WS_Message_Homer_Get_homer_server_configuration.class);
+            WS_Message_Homer_Get_homer_server_configuration help = baseFormFactory.formFromJsonWithValidation(WS_Message_Homer_Get_homer_server_configuration.class, ask_for_configuration);
 
             // Homer server má novější novou konfiguraci
             terminal_logger.debug("synchronize_configuration: Homer server {} has new configuration", homer_server.id);

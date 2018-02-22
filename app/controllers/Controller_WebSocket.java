@@ -128,7 +128,7 @@ public class Controller_WebSocket extends _BaseController {
 
             return ok(Json.toJson(swagger_websocket_token));
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 

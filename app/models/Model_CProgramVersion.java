@@ -30,6 +30,7 @@ import utilities.models_update_echo.EchoHandler;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_C_Program_Version;
 import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
+import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
@@ -106,7 +107,7 @@ public class Model_CProgramVersion extends VersionModel {
 
                 JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
 
-                Swagger_C_Program_Version_New version_new = Json.fromJson(json, Swagger_C_Program_Version_New.class);
+                Swagger_C_Program_Version_New version_new = baseFormFactory.formFromJsonWithValidation(Swagger_C_Program_Version_New.class, json);
 
                 c_program_versions.main = version_new.main;
                 c_program_versions.files = version_new.files;
@@ -314,7 +315,7 @@ public class Model_CProgramVersion extends VersionModel {
 
             try {
 
-                code_file = Json.fromJson(json, Swagger_C_Program_Version_Update.class);
+                code_file = baseFormFactory.formFromJsonWithValidation(Swagger_C_Program_Version_Update.class, json);
 
             } catch (Exception e) {
                 logger.internalServerError(e);
@@ -347,7 +348,7 @@ public class Model_CProgramVersion extends VersionModel {
 
                         try {
 
-                            lib_file = Json.fromJson(j, Swagger_Library_File_Load.class);
+                            lib_file = baseFormFactory.formFromJsonWithValidation(Swagger_Library_File_Load.class, j);
 
                         } catch (Exception e) {
                             logger.internalServerError(e);

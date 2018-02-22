@@ -3,19 +3,26 @@ package utilities.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import controllers._BaseController;
+import controllers._BaseFormFactory;
 import io.ebean.Model;
 import io.ebean.annotation.SoftDelete;
 import io.swagger.annotations.ApiModelProperty;
 import models.Model_Person;
 import org.ehcache.Cache;
+import play.Environment;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import scala.xml.Null;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
 import utilities.models_update_echo.EchoHandler;
+import utilities.scheduler.SchedulerController;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.Id;
@@ -30,6 +37,8 @@ import java.util.UUID;
 
 @MappedSuperclass
 public abstract class BaseModel extends Model {
+
+    @Inject public static _BaseFormFactory baseFormFactory;
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 

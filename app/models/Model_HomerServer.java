@@ -13,7 +13,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.libs.Json;
-import responses.Result_BadRequest;
 import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.document_db.document_objects.DM_HomerServer_Connect;
@@ -32,6 +31,7 @@ import utilities.model.BaseModel;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
 import websocket.WS_Message;
 import websocket.interfaces.WS_Homer;
+import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_autobackup_made;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Command;
 import websocket.messages.homer_with_tyrion.*;
 import websocket.messages.homer_with_tyrion.WS_Message_Homer_Instance_add;
@@ -279,13 +279,13 @@ public class Model_HomerServer extends BaseModel {
 
                     case WS_Message_Check_homer_server_permission.message_type: {
 
-                        approve_validation_for_homer_server(homer, Json.fromJson(json, WS_Message_Check_homer_server_permission.class));
+                        approve_validation_for_homer_server(homer, baseFormFactory.formFromJsonWithValidation(WS_Message_Check_homer_server_permission.class, json));
                         return;
                     }
 
                     case WS_Message_Homer_Token_validation_request.message_type: {
 
-                        validate_incoming_user_connection_to_hardware_logger(homer, Json.fromJson(json, WS_Message_Homer_Token_validation_request.class));
+                        validate_incoming_user_connection_to_hardware_logger(homer, baseFormFactory.formFromJsonWithValidation(WS_Message_Homer_Token_validation_request.class, json));
                         return;
                     }
 
@@ -470,12 +470,10 @@ public class Model_HomerServer extends BaseModel {
         try {
 
             JsonNode node = write_with_confirmation(new WS_Message_Homer_Instance_list().make_request(), 1000 * 15, 0, 2);
-
-            return Json.fromJson(node, WS_Message_Homer_Instance_list.class);
+            return baseFormFactory.formFromJsonWithValidation(this, WS_Message_Homer_Instance_list.class, node);
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            // TODO write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Instance_list.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
             return new WS_Message_Homer_Instance_list();
         }
     }
@@ -486,11 +484,10 @@ public class Model_HomerServer extends BaseModel {
 
             JsonNode node = write_with_confirmation(new WS_Message_Homer_Hardware_list().make_request(), 1000 * 15, 0, 2);
 
-            return Json.fromJson(node, WS_Message_Homer_Hardware_list.class);
+            return baseFormFactory.formFromJsonWithValidation(this, WS_Message_Homer_Hardware_list.class, node);
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            // TODO write_without_confirmation(node.get("message_id").asText(), WS_Message_Invalid_Message.make_request(WS_Message_Homer_Hardware_list.message_type, form.errorsAsJson(Lang.forCode("en-US")).toString()));
             return new WS_Message_Homer_Hardware_list();
         }
     }
@@ -501,8 +498,7 @@ public class Model_HomerServer extends BaseModel {
         try {
 
             JsonNode node = write_with_confirmation(new WS_Message_Homer_Instance_number().make_request(), 1000 * 5, 0, 2);
-
-            return Json.fromJson(node, WS_Message_Homer_Instance_number.class);
+            return baseFormFactory.formFromJsonWithValidation(this, WS_Message_Homer_Instance_number.class, node);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -520,7 +516,7 @@ public class Model_HomerServer extends BaseModel {
 
             JsonNode node = write_with_confirmation(new WS_Message_Homer_Instance_add().make_request(instance.id), 1000 * 5, 0, 2);
 
-            return Json.fromJson(node, WS_Message_Homer_Instance_add.class);
+            return baseFormFactory.formFromJsonWithValidation(this, WS_Message_Homer_Instance_add.class, node);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -538,7 +534,7 @@ public class Model_HomerServer extends BaseModel {
 
             JsonNode node = write_with_confirmation(new WS_Message_Homer_Instance_destroy().make_request(instance_ids), 1000 * 5, 0, 2);
 
-            return Json.fromJson(node, WS_Message_Homer_Instance_destroy.class);
+            return baseFormFactory.formFromJsonWithValidation(this, WS_Message_Homer_Instance_destroy.class, node);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -556,7 +552,7 @@ public class Model_HomerServer extends BaseModel {
 
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_UpdateProcedure_Command().make_request(tasks), 1000 * 60, 0, 2);
 
-            return Json.fromJson(node, WS_Message_Hardware_UpdateProcedure_Command.class);
+            return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_UpdateProcedure_Command.class, node);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -586,7 +582,7 @@ public class Model_HomerServer extends BaseModel {
 
             JsonNode node = write_with_confirmation(new WS_Message_Homer_ping().make_request(), 1000 * 2, 0, 2);
 
-            return Json.fromJson(node, WS_Message_Homer_ping.class);
+            return baseFormFactory.formFromJsonWithValidation(WS_Message_Homer_ping.class, node);
 
         } catch (Exception e) {
             logger.warn("Cloud Homer server {} Id {} is offline!", personal_server_name, id);

@@ -58,7 +58,7 @@ public class Model_HardwareType extends NamedModel {
     @JsonIgnore @OneToOne(mappedBy="hardware_type_test",    cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Model_CProgram test_program;
 
 
-    @JsonIgnore @ManyToMany(mappedBy = "hardware_types", fetch = FetchType.LAZY)  public List<Model_HardwareFeature> features = new ArrayList<>();
+     @ManyToMany(mappedBy = "hardware_types", fetch = FetchType.LAZY)  public List<Model_HardwareFeature> features = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "hardware_types", fetch = FetchType.LAZY)  public List<Model_Library> libraries = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
@@ -337,6 +337,7 @@ public class Model_HardwareType extends NamedModel {
         if(_BaseController.person().has_permission(Permission.HardwareType_register_new_device.name())) return;
         throw new Result_Error_PermissionDenied();
     }
+
     @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean bootloader_edit_permission() throws _Base_Result_Exception {
@@ -369,6 +370,20 @@ public class Model_HardwareType extends NamedModel {
             return null;
         }
     }
+
+    @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Boolean batch_register_permission() {
+        try {
+            if (_BaseController.person().has_permission(Permission.HardwareType_test_c_program_edit_permission.name())) return true;
+            return null;
+        }catch (_Base_Result_Exception e){
+            return null;
+        }
+    }
+
+
+
 
     public enum Permission { HardwareType_create, HardwareType_edit, HardwareType_update, HardwareType_delete, HardwareType_register_new_device, HardwareType_bootloader,  HardwareType_c_program_edit_permission, HardwareType_test_c_program_edit_permission }
 

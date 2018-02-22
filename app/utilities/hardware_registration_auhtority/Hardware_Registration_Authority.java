@@ -2,6 +2,7 @@ package utilities.hardware_registration_auhtority;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -9,6 +10,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import controllers._BaseController;
+import controllers._BaseFormFactory;
 import io.swagger.annotations.*;
 import models.Model_Hardware;
 import models.Model_HardwareType;
@@ -19,12 +21,14 @@ import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
+import utilities.document_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.enums.Enum_Terminal_Color;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions.Result_Error_Registration_Fail;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.hardware_registration_auhtority.document_objects.DM_Board_Registration_Central_Authority;
 import utilities.logger.Logger;
+import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 
 import java.io.IOException;
 import java.util.Date;
@@ -36,7 +40,13 @@ import static com.mongodb.client.model.Sorts.descending;
 @Security.Authenticated(Authentication.class)
 public class Hardware_Registration_Authority extends _BaseController {
 
+    @Inject
+    public static _BaseFormFactory baseFormFactory;
+
+/* LOGGER --------------------------------------------------------------------------------------------------------------*/
     private static final Logger logger = new Logger(Hardware_Registration_Authority.class);
+
+/* COMMON VALUES -------------------------------------------------------------------------------------------------------*/
 
     /**
      * Tohle rozhodně nemazat!!!!!! A ani neměnit - naprosto klíčová konfigurace záměrně zahrabaná v kodu!
@@ -45,7 +55,7 @@ public class Hardware_Registration_Authority extends _BaseController {
     private static MongoDatabase database = mongoClient.getDatabase("hardware-registration-authority-database");
     private static MongoCollection<Document> collection = database.getCollection(DM_Board_Registration_Central_Authority.COLLECTION_NAME);
 
-
+/* CONTENT -------------------------------------------------------------------------------------------------------------*/
     @ApiOperation(value = "synchronize Board all with central registration authority",
             tags = { "Garfield"},
             notes = "",
@@ -93,7 +103,7 @@ public class Hardware_Registration_Authority extends _BaseController {
         String string_json = device.toJson();
         ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
 
-        return Json.fromJson(json, DM_Board_Registration_Central_Authority.class);
+        return baseFormFactory.formFromJsonWithValidation(DM_Board_Registration_Central_Authority.class, json);
     }
 
 
@@ -101,9 +111,9 @@ public class Hardware_Registration_Authority extends _BaseController {
     public static boolean check_if_value_is_registered(String value, Enum_Hardware_Registration_DB_Key type) {
 
         // Kontroluji Device ID
-        BasicDBObject whereQuery_board_id = new BasicDBObject();
-        whereQuery_board_id.put(type.name() ,value);
-        Document device_id_already_registered = collection.find(whereQuery_board_id).first();
+        BasicDBObject whereQuery = new BasicDBObject();
+        whereQuery.put(type.name() ,value);
+        Document device_id_already_registered = collection.find(whereQuery).first();
 
         if (device_id_already_registered != null) {
             return true;
@@ -162,7 +172,7 @@ public class Hardware_Registration_Authority extends _BaseController {
             String string_json = Json.toJson(board_registration_central_authority).toString();
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
 
-            Json.fromJson(json, DM_Board_Registration_Central_Authority.class);
+            baseFormFactory.formFromJsonWithValidation(DM_Board_Registration_Central_Authority.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -236,7 +246,7 @@ public class Hardware_Registration_Authority extends _BaseController {
         String string_json = device.toJson();
         ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
 
-        DM_Board_Registration_Central_Authority help = Json.fromJson(json, DM_Board_Registration_Central_Authority.class);
+        DM_Board_Registration_Central_Authority help = baseFormFactory.formFromJsonWithValidation(DM_Board_Registration_Central_Authority.class, json);
 
         // Nejdříve Najdeme jestli existuje typ desky - Ten se porovnává podle Target Name
         // a revision name. Ty musí!!! být naprosto shodné!!!
@@ -297,9 +307,7 @@ public class Hardware_Registration_Authority extends _BaseController {
                     String string_json = cursor.next().toJson();
                     ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
 
-                    DM_Board_Registration_Central_Authority help = Json.fromJson(json, DM_Board_Registration_Central_Authority.class);
-
-
+                    DM_Board_Registration_Central_Authority help = baseFormFactory.formFromJsonWithValidation(DM_Board_Registration_Central_Authority.class, json);
 
                     logger.info("synchronize_hardware - there is hardware, which is not registered in local database!" + string_json);
 

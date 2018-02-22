@@ -98,7 +98,7 @@ public class Model_Tariff extends NamedModel {
             ObjectNode request_list = Json.newObject();
             request_list.set("labels", Json.parse(labels_json));
 
-            return Json.fromJson(request_list, Swagger_TariffLabelList.class).labels;
+            return baseFormFactory.formFromJsonWithValidation(Swagger_TariffLabelList.class, request_list).labels;
 
         } catch (Exception e) {
             logger.internalServerError(e);

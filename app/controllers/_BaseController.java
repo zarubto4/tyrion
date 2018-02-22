@@ -14,7 +14,9 @@ import utilities.logger.ServerLogger;
 import utilities.swagger.input.Swagger_Project_New;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.UUID;
 
 /**
@@ -247,18 +249,31 @@ public abstract class _BaseController {
      * @return 404 result with message
      */
     public static Result notFound(Class class_type) {
+        try {
+            logger.error("notFound:: Call:: Class Name:: {}", class_type.getSimpleName());
+            // Get Swagger Name from Annotation and return ii with name and description
 
-        // Get Swagger Name from Annotation and return ii with name and description
-        for (Field f: class_type.getFields()) {
-            ApiModel apiModel = f.getAnnotation(ApiModel.class);
-            if (apiModel != null) {
-                return Controller.notFound(Json.toJson(new Result_NotFound("Object not Found. Probably from " + apiModel.value() + " model type. Object Swagger APi Description: " + apiModel.description())));
+            for (Annotation annotation : class_type.getAnnotations()) {
+                Class<? extends Annotation> type = annotation.annotationType();
+                if(type.getSimpleName().equals(ApiModel.class.getSimpleName())) {
+                    for (Method method : type.getDeclaredMethods()) {
+                        Object value = method.invoke(annotation, (Object[]) null);
+
+                        if(method.getName().equals("value")) {
+                            return Controller.notFound(Json.toJson(new Result_NotFound("Object  notFound. Probably from " + value + " model type.")));
+                        }
+                    }
+                }
             }
-        }
 
-        // Return name of object if Anotations is missing
-        logger.error("Returning result notFound for incoming request, but class in constructor not contain ApiModel annotation");
-        return Controller.notFound(Json.toJson(new Result_NotFound("Not Found Object. Probably from " + class_type.getSimpleName().replace("Model_","") + " model type.")));
+
+            // Return name of object if Anotations is missing
+            logger.error("Returning result notFound for incoming request, but class in constructor not contain ApiModel annotation");
+            return Controller.notFound(Json.toJson(new Result_NotFound("Not Found Object. Probably from " + class_type.getSimpleName().replace("Model_", "") + " model type.")));
+
+        } catch (Exception e){
+            return Controller.notFound(Json.toJson(new Result_NotFound("Not Found Object. Probably from " + class_type.getSimpleName().replace("Model_", "") + " model type.")));
+        }
     }
 
     /**
@@ -399,6 +414,8 @@ public abstract class _BaseController {
     public static Result controllerServerError(Throwable error) {
         try{
 
+            logger.warn("controllerServerError:: Incoming Error: {} ", error.getClass().getSimpleName());
+
             // Result_Error_NotFound
             if(error.getClass().getSimpleName().equals(_Base_Result_Exception.class.getSimpleName())){
                 logger.error("controllerServerError:: _Base_Result_Exception");
@@ -417,7 +434,13 @@ public abstract class _BaseController {
             if(error.getClass().getSimpleName().equals(Result_Error_InvalidBody.class.getSimpleName())){
                 logger.error("controllerServerError:: Result_Error_InvalidBody");
                 Result_Error_InvalidBody invalid_body = (Result_Error_InvalidBody) error;
-                return badRequest(invalid_body.getForm_error());
+                try {
+                    Result_InvalidBody invalidBody = new Result_InvalidBody(invalid_body.getForm_error());
+                    return badRequest(Json.toJson(invalidBody));
+                } catch (Exception e){
+                    logger.error("controllerServerError:: Fatal Error when controllerServerError try to get Form Error Json for response");
+                    return internalServerError(e);
+                }
             }
 
             // Result_Error_Unauthorized
@@ -443,7 +466,6 @@ public abstract class _BaseController {
 
         } catch (Exception e) {
             logger.error("controllerServerError:: Exception in Exception");
-            e.printStackTrace();
             logger.error("controllerServerError:: Exception in Exception");
             return internalServerError(e);
         }
