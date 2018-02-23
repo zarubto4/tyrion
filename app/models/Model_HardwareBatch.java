@@ -2,24 +2,50 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.ebean.Finder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import controllers._BaseFormFactory;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.bson.Document;
+import play.data.validation.Constraints;
+import play.libs.Json;
+import responses.Result_NotFound;
+import utilities.errors.Exceptions.Result_Error_Bad_request;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
-import utilities.hardware_registration_auhtority.Batch_Registration_Authority;
-import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
 import utilities.logger.Logger;
-import utilities.model.BaseModel;
 
 import javax.persistence.*;
+import java.io.IOException;
 import java.nio.charset.IllegalCharsetNameException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-@Entity
+import static com.mongodb.client.model.Filters.eq;
+
 @ApiModel(description = "Model of Production Batch  ", value = "HardwareBatch")
-@Table(name="HardwareBatch")
-public class Model_HardwareBatch extends BaseModel {
+public class Model_HardwareBatch {
+
+    /**
+     * _BaseFormFactory
+     */
+    public static _BaseFormFactory baseFormFactory; // Its Required to set this in Server.class Component
+
+    /**
+     *  Static Constant - Here qe are not used classic Database Model, but External Mongo DB
+     */
+    public static final String COLLECTION_NAME = "batch-registration-authority";
+    private static MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://production-byzance-cosmos:PbimpRkWXhUrGBwRtLaR19B6NbffCgzklSfSVtHThFzMn6keUENJ9Hm50TZZgtqVOGesgbtCWLaC3yd6ENhoew==@production-byzance-cosmos.documents.azure.com:10255/?ssl=true&replicaSet=globaldb"));
+    private static MongoDatabase database = mongoClient.getDatabase("hardware-registration-authority-database");
+    private static MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -27,72 +53,71 @@ public class Model_HardwareBatch extends BaseModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    public String revision;                     // Kod HW revize
-    public String production_batch;             // Kod HW revize
-    public String assembled;                    // Den kdy došlo k sestavení původně date_of_assembly
-    public String pcb_manufacture_name;         // Jméno výrobce desky
-    public String pcb_manufacture_id;           // Kod výrobce desky
-    public String assembly_manufacture_name;    // Jméno firmy co osazovala DPS
-    public String assembly_manufacture_id;      // Kod firmy co osazovala DPS
+    @ApiModelProperty(required = true) @Constraints.Required public String batch_id;
+    @ApiModelProperty(required = true) @Constraints.Required public String revision;                     // Kod HW revize
+    @ApiModelProperty(required = true) @Constraints.Required public String production_batch;             // Kod HW revizedate_of_assembly
+    @ApiModelProperty(required = true) @Constraints.Required public String date_of_assembly;             // Den kdy došlo k sestavení
+    @ApiModelProperty(required = true) @Constraints.Required public String pcb_manufacture_name;         // Jméno výrobce desky
+    @ApiModelProperty(required = true) @Constraints.Required public String pcb_manufacture_id;           // Kod výrobce desky
+    @ApiModelProperty(required = true) @Constraints.Required public String assembly_manufacture_name;    // Jméno firmy co osazovala DPS
+    @ApiModelProperty(required = true) @Constraints.Required public String assembly_manufacture_id;      // Kod firmy co osazovala DPS
 
-    public String customer_product_name;        // Jméno HW co bude na štítku
-    public String customer_company_name;        // Jméno várobce co bude na štítku
-    public String customer_company_made_description;      // Made in Czech Republic (co bude na štítku)
+    @ApiModelProperty(required = true) @Constraints.Required public String customer_product_name;        // Jméno HW co bude na štítku
+    @ApiModelProperty(required = true) @Constraints.Required public String customer_company_name;        // Jméno várobce co bude na štítku
+    @ApiModelProperty(required = true) @Constraints.Required public String customer_company_made_description;      // Made in Czech Republic (co bude na štítku)
 
-    public Long mac_address_start;
-    public Long mac_address_end;
-    @JsonIgnore  public Long latest_used_mac_address;  // Pro přiřazení je vždy nutné zvednout novou verzi - tato hodnota se dosynchronizovává se serverem
+    @ApiModelProperty(required = true) @Constraints.Required  public String mac_address_start;
+    @ApiModelProperty(required = true) @Constraints.Required  public String mac_address_end;
+    @ApiModelProperty(required = true) @Constraints.Required  public String latest_used_mac_address;     // Pro přiřazení je vždy nutné zvednout novou verzi - tato hodnota se dosynchronizovává se serverem
 
-    public Long ean_number;
+    @ApiModelProperty(required = true) @Constraints.Required  public String ean_number;
+    @ApiModelProperty(required = true)                        public String description;
+    @ApiModelProperty(required = true) @Constraints.Required  public String compiler_target_name;
+    @ApiModelProperty(required = true) @Constraints.Required  public boolean deleted;
 
-    @JsonIgnore @ManyToOne public Model_HardwareType hardware_type;
+    /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @Column(columnDefinition = "TEXT")  public String description;
-
-/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
-
-    @JsonProperty
+    @JsonIgnore
     public Long latest_used_mac_address() {
-
-        if (latest_used_mac_address == null) {
-            Hardware_Registration_Authority.synchronize_mac();
-            this.refresh();
-        }
-
-        return latest_used_mac_address;
+        return Long.parseLong(latest_used_mac_address, 10);
     }
 
-/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+    @JsonIgnore
+    public Long mac_address_start() {
+        return Long.parseLong(mac_address_start, 10);
+    }
+
+    @JsonIgnore
+    public Long mac_address_end() {
+        return Long.parseLong(mac_address_end, 10);
+    }
+
+    @JsonIgnore
+    public Long ean_number() {
+        return Long.parseLong(ean_number, 10);
+    }
+
+
+    /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
 
     @JsonIgnore
     public String get_nextMacAddress_just_for_check() throws IllegalCharsetNameException{
 
-        if (latest_used_mac_address == null) {
-            Hardware_Registration_Authority.synchronize_mac();
-            this.refresh();
-        }
-
-
         // Its used only for check - if some other server dont use this mac address and if its not registred in central hardware registration authority
         if (latest_used_mac_address == null) {
-            return convert_to_MAC_ISO(mac_address_start);
+            return convert_to_MAC_ISO(mac_address_start());
         }
 
-        if (latest_used_mac_address >= mac_address_end) {
+        if (latest_used_mac_address() >= mac_address_end()) {
             throw new IllegalCharsetNameException("All Mac Address used");
         }
 
-        return convert_to_MAC_ISO(this.latest_used_mac_address + 1);
+        return convert_to_MAC_ISO(this.latest_used_mac_address() + 1);
     }
 
     @JsonIgnore
     public String get_new_MacAddress() throws IllegalCharsetNameException{
-
-        if (latest_used_mac_address == null) {
-            Hardware_Registration_Authority.synchronize_mac();
-            this.refresh();
-        }
 
         if (latest_used_mac_address == null) {
             latest_used_mac_address = mac_address_start;
@@ -100,16 +125,18 @@ public class Model_HardwareBatch extends BaseModel {
             return get_new_MacAddress();
         }
 
-        if (latest_used_mac_address >= mac_address_end) {
+        if (latest_used_mac_address() >= mac_address_end()) {
             throw new IllegalCharsetNameException("All Mac Address used");
         }
 
-        this.latest_used_mac_address = latest_used_mac_address + 1;
+        Long help = this.latest_used_mac_address() + 1;
+        this.latest_used_mac_address = help.toString();
         update();
 
-        return convert_to_MAC_ISO(this.latest_used_mac_address);
+        return convert_to_MAC_ISO(this.latest_used_mac_address());
 
     }
+
 
     //Konvertor Long na ISO normu Mac addressy
     @JsonIgnore
@@ -131,35 +158,56 @@ public class Model_HardwareBatch extends BaseModel {
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
-    public void save() {
-        this.id = UUID.randomUUID();
+    public void save() throws _Base_Result_Exception {
+        try {
 
-        if (latest_used_mac_address == null) latest_used_mac_address = mac_address_start;
-        Batch_Registration_Authority.register_batch(hardware_type, this);
-        super.save();
+            // Set ID
+            this.batch_id = UUID.randomUUID().toString();
+
+            // Set latest latest_used_mac_address if its empty
+            if (latest_used_mac_address == null) latest_used_mac_address = mac_address_start;
+
+            // Try To make a Json and check validation properties of object  baseFormFactory.formFromJsonWithValidation
+            String string_json = Json.toJson(this).toString();
+            ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
+            baseFormFactory.formFromJsonWithValidation(Model_HardwareBatch.class, json);
+
+            // Create Document - Save Document
+            Document document = Document.parse(Json.toJson(this).toString());
+            collection.insertOne(document);
+
+
+
+        } catch (Exception e){
+            logger.internalServerError(e);
+            throw new Result_Error_Bad_request("Save To Mongo DB faild");
+        }
     }
 
-    @JsonIgnore @Override
     public void update() {
+        try {
+
+            // Try To make a Json and check validation properties of object  baseFormFactory.formFromJsonWithValidation
+            String string_json = Json.toJson(this).toString();
+            ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
+            baseFormFactory.formFromJsonWithValidation(Model_HardwareBatch.class, json);
+
+            Document document = Document.parse(Json.toJson(this).toString());
+            collection.updateOne( eq("batch_id", batch_id), new Document("$set", document));
 
 
-        super.update();
+        } catch (Exception e){
+            logger.internalServerError(e);
+            throw new Result_Error_Bad_request("Save To Mongo DB faild");
+        }
     }
 
 
-    @JsonIgnore
-    public void save_from_central_authority() {
-        super.save();
+    public void delete() {
+        collection.deleteOne(eq("batch_id", batch_id));
     }
 
-    @JsonIgnore @Override public boolean delete() {
-        this.deleted = true;
-        super.update();
-        return false;
-    }
-
-/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+/* HELP Methods --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -169,30 +217,99 @@ public class Model_HardwareBatch extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { hardware_type.check_update_permission(); }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { hardware_type.check_read_permission(); }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { hardware_type.check_update_permission(); }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { hardware_type.check_delete_permission(); }
+    @JsonIgnore @Transient public void check_create_permission() throws _Base_Result_Exception {
+        Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("compiler_target_name", compiler_target_name).findOne();
+        if(hardwareType == null){
+            logger.error("check_update_permission - Model_HardwareType not found!");
+            throw new Result_Error_NotFound(Model_HardwareType.class);
+        }
 
+        hardwareType.check_update_permission();
+    }
+
+    @JsonIgnore @Transient public void check_read_permission()   throws _Base_Result_Exception {
+        Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("compiler_target_name", compiler_target_name).findOne();
+        if(hardwareType == null){
+            logger.error("check_update_permission - Model_HardwareType not found!");
+            throw new Result_Error_NotFound(Model_HardwareType.class);
+        }
+
+        hardwareType.check_read_permission();
+    }
+
+    @JsonIgnore @Transient public void check_update_permission() throws _Base_Result_Exception {
+        Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("compiler_target_name", compiler_target_name).findOne();
+        if(hardwareType == null){
+            logger.error("check_update_permission - Model_HardwareType not found!");
+            throw new Result_Error_NotFound(Model_HardwareType.class);
+        }
+
+        hardwareType.check_update_permission();
+    }
+
+    @JsonIgnore @Transient public void check_delete_permission() throws _Base_Result_Exception {
+        Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("compiler_target_name", compiler_target_name).findOne();
+        if(hardwareType == null){
+            logger.error("check_update_permission - Model_HardwareType not found!");
+            throw new Result_Error_NotFound(Model_HardwareType.class);
+        }
+
+        hardwareType.check_update_permission();
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_HardwareBatch getById(String id) {
-        return getById(UUID.fromString(id));
+    public static Model_HardwareBatch getById(UUID id) throws _Base_Result_Exception, IOException {
+        return getById(id.toString());
     }
 
-    public static Model_HardwareBatch getById(UUID id) {
+    public static Model_HardwareBatch getById(String id) throws _Base_Result_Exception, IOException {
 
-        Model_HardwareBatch batch = find.byId(id);
-        if (batch == null) throw new Result_Error_NotFound(Model_HardwareBatch.class);
+        BasicDBObject query = new BasicDBObject();
+        query.put("batch_id", id);
+        query.put("deleted", false);
 
-        batch.check_read_permission();
+        Document document = collection.find(query).first();
+
+        if(document == null) {
+            throw new Result_Error_NotFound(Model_HardwareBatch.class);
+        }
+
+        String string_json = document.toJson();
+        ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
+
+        Model_HardwareBatch batch = baseFormFactory.formFromJsonWithValidation(Model_HardwareBatch.class, json);
+
         return batch;
 
     }
 
-/* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<UUID, Model_HardwareBatch> find = new Finder<>(Model_HardwareBatch.class);
+    public static List<Model_HardwareBatch> getByTypeOfBoardId(String compiler_target_name) {
+        try {
+
+            BasicDBObject query = new BasicDBObject();
+            query.put("compiler_target_name", compiler_target_name);
+            query.put("deleted", false);
+
+            MongoCursor<Document> cursor = collection.find(query).iterator();
+
+            List<Model_HardwareBatch> batches = new ArrayList<>();
+            while (cursor.hasNext()) {
+
+                String string_json = cursor.next().toJson();
+                ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
+                System.out.println("Model_HardwareBatch: Json \n" + string_json +" \n");
+                Model_HardwareBatch batch = baseFormFactory.formFromJsonWithValidation(Model_HardwareBatch.class, json);
+                batches.add(batch);
+            }
+
+            return batches;
+
+        } catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 
 
 }

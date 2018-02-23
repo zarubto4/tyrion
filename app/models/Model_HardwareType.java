@@ -44,7 +44,6 @@ public class Model_HardwareType extends NamedModel {
 
     @JsonIgnore @OneToOne  public Model_Blob picture;
 
-    @JsonIgnore @OneToMany(mappedBy="hardware_type", cascade = CascadeType.ALL,  fetch = FetchType.LAZY) public List<Model_HardwareBatch> batches = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy="hardware_type", cascade = CascadeType.ALL,        fetch = FetchType.LAZY)  public List<Model_Hardware> hardware = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="hardware_type",                                   fetch = FetchType.LAZY)  public List<Model_CProgram> c_programs = new ArrayList<>();
@@ -201,7 +200,7 @@ public class Model_HardwareType extends NamedModel {
         try {
 
             if (!test_c_program_edit_permission()) return null;
-            return Model_HardwareBatch.find.query().where().eq("hardware_type.id", this.id).eq("deleted", false).findList();
+            return Model_HardwareBatch.getByTypeOfBoardId(this.compiler_target_name);
 
         } catch (Exception e) {
             logger.internalServerError(e);

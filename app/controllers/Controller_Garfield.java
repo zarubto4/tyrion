@@ -369,7 +369,7 @@ public class Controller_Garfield extends _BaseController {
                 Model_HardwareBatch info = new Model_HardwareBatch();
                 info.revision = "1.9.9";
                 info.production_batch = "1.9.9";
-                info.assembled = "1.9.9";
+                info.date_of_assembly = "12.11.2017";
                 info.pcb_manufacture_name = "1.9.9";
                 info.pcb_manufacture_id = "1.9.9";
                 info.assembly_manufacture_name = "1.9.9";

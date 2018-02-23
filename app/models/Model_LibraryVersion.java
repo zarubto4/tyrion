@@ -1,44 +1,27 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.microsoft.azure.storage.StorageException;
-import controllers.Controller_WebSocket;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.apache.commons.io.FileExistsException;
 import org.ehcache.Cache;
 import play.libs.Json;
-import play.libs.ws.WSClient;
-import play.libs.ws.WSResponse;
-import responses.*;
-import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
-import utilities.enums.CompilationStatus;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.VersionModel;
 import utilities.models_update_echo.EchoHandler;
-import utilities.swagger.input.Swagger_C_Program_Version_Update;
 import utilities.swagger.input.Swagger_Library_File_Load;
 import utilities.swagger.input.Swagger_Library_Record;
-import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
-import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_autobackup_made;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
-import java.net.ConnectException;
-import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletionStage;
 
 @Entity
 @ApiModel( value = "LibraryVersion", description = "Model of LibraryVersion")
@@ -190,7 +173,7 @@ public class Model_LibraryVersion extends VersionModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_LibraryVersion.class, timeToIdle = 600)
+    @CacheField(value = Model_LibraryVersion.class, duration = 600)
     public static Cache<UUID, Model_LibraryVersion> cache;
 
     public static Model_LibraryVersion getById(String id) throws _Base_Result_Exception {

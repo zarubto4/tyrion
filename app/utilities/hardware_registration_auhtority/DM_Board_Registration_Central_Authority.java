@@ -1,10 +1,13 @@
-package utilities.hardware_registration_auhtority.document_objects;
+package utilities.hardware_registration_auhtority;
 
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
 import java.util.Date;
 
+/**
+ * This Object is used to save "Virtual Hardware" to central registration authority
+ */
 public class DM_Board_Registration_Central_Authority {
 
     public static final String COLLECTION_NAME = "hardware-registration-authority";
@@ -21,7 +24,7 @@ public class DM_Board_Registration_Central_Authority {
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String created;
 
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String revision;                               // Kod HW revize
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String production_batch;                       // Kod HW revizedate_of_assembly
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String production_batch_id;                    // Kod HW revizedate_of_assembly
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String date_of_assembly;                       // Den kdy došlo k sestavení
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String pcb_manufacture_name;                   // Jméno výrobce desky
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String pcb_manufacture_id;                     // Kod výrobce desky

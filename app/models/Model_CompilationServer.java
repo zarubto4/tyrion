@@ -11,10 +11,8 @@ import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
-import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheField;
-import utilities.document_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.document_db.document_objects.DM_CompilationServer_Connect;
 import utilities.document_db.document_objects.DM_CompilationServer_Disconnect;
 import utilities.enums.CompilationStatus;
@@ -203,7 +201,7 @@ public class Model_CompilationServer extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_CompilationServer.class, timeToIdle = CacheField.DayCacheConstant)
+    @CacheField(value = Model_CompilationServer.class, duration = CacheField.DayCacheConstant)
     @JsonIgnore public static Cache<UUID, Model_CompilationServer> cache;
 
     public static Model_CompilationServer getById(String id) throws _Base_Result_Exception {

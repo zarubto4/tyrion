@@ -47,7 +47,7 @@ public class Model_BootLoader extends NamedModel {
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY)                                                  public Model_HardwareType main_hardware_type;
 
     @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader", fetch = FetchType.LAZY)                 public List<Model_Hardware> hardware = new ArrayList<>();
-                 @OneToOne(mappedBy = "boot_loader", cascade = CascadeType.ALL)                    public Model_Blob file;                // TODO Cachovat - a opravit kde je nevhodná návaznost
+                 @OneToOne(mappedBy = "boot_loader", cascade = CascadeType.ALL)                    public Model_Blob file;                        // TODO Cachovat - a opravit kde je nevhodná návaznost
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -63,37 +63,21 @@ public class Model_BootLoader extends NamedModel {
 
             if (cache_file_id != null ) {
                 String link = Model_Blob.cache_public_link.get(cache_file_id);
-                if (link != null) return link;
+                if (link != null) {
+                    return link;
+                }
             }
 
-            if (file == null) { // TODO Cachovat - a opravit kde je nevhodná návaznost
+            if (file == null) {
+                System.out.println("File neexistuje v bootloaderu!!!!");
                 return null;
             }
 
+            String total_link = file.cache_public_link();
             this.cache_file_id = file.id;
 
-            // Separace na Container a Blob
-            int slash = file.path.indexOf("/");
-            String container_name = file.path.substring(0, slash);
-            String real_file_path = file.path.substring(slash + 1);
-
-            CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
-
-            // Create Policy
-            Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-            cal.setTime(new Date());
-            cal.add(Calendar.HOUR, 5);
-
-            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
-            policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
-            policy.setSharedAccessExpiryTime(cal.getTime());
-
-            String sas = blob.generateSharedAccessSignature(policy, null);
-
-            String total_link = blob.getUri().toString() + "?" + sas;
 
             logger.debug("path - total link: {}", total_link);
-
             Model_Blob.cache_public_link.put(cache_file_id, total_link);
 
             // Přesměruji na link

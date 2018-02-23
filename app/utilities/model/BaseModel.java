@@ -38,7 +38,7 @@ import java.util.UUID;
 @MappedSuperclass
 public abstract class BaseModel extends Model {
 
-    @Inject public static _BaseFormFactory baseFormFactory;
+    @Inject public static _BaseFormFactory baseFormFactory; // Its Required to set this in Server.class Component
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 

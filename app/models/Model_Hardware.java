@@ -31,13 +31,13 @@ import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.input.Swagger_Board_Developer_parameters;
 import utilities.swagger.output.Swagger_Board_for_fast_upload_detail;
+import utilities.swagger.output.Swagger_Short_Reference;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
 import websocket.ParallelTask;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
-import websocket.messages.homer_with_tyrion.WS_Message_Homer_Instance_list;
 import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
@@ -234,6 +234,18 @@ public class Model_Hardware extends TaggedModel {
             logger.internalServerError(e);
             return null;
         }
+    }
+
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Swagger_Short_Reference dominant_project_active(){
+        if(dominant_entity) return null;
+        UUID uuid = Model_Project.find.query().where().eq("hardware.id", id).eq("dominant_entity", true).select("id").findSingleAttribute();
+        if(uuid == null) return null;
+
+        Model_Project project = Model_Project.getById(uuid);
+        Swagger_Short_Reference reference = new Swagger_Short_Reference(project.id, project.name, project.description);
+        return reference;
     }
 
     @JsonProperty
@@ -2783,7 +2795,7 @@ public class Model_Hardware extends TaggedModel {
     @CacheField(Model_Hardware.class)
     public static Cache<UUID, Model_Hardware> cache;
 
-    @CacheField(value = Boolean.class, timeToIdle = 300, name ="Model_Hardware_Status")
+    @CacheField(value = Boolean.class, duration = 300, name ="Model_Hardware_Status")
     public static Cache<UUID, Boolean> cache_status;
 
     public static Model_Hardware getById(String id) throws _Base_Result_Exception {

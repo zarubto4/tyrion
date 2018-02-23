@@ -6,6 +6,7 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.typesafe.config.Config;
 import controllers.Controller_WebSocket;
+import controllers._BaseFormFactory;
 import models.*;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
@@ -16,9 +17,12 @@ import utilities.document_db.DocumentDB;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
 import utilities.grid_support.utils.IP_Founder;
+import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 import utilities.model.BaseModel;
+import utilities.threads.homer_server.Synchronize_Homer_Synchronize_Settings;
+import websocket.interfaces.WS_Homer;
 
 import javax.persistence.PersistenceException;
 import java.net.InetAddress;
@@ -123,6 +127,9 @@ public class Server {
         }
 
         DocumentDB.init();
+
+
+        setBaseForm();
 
         // TODO Batch_Registration_Authority.synchronize();
 
@@ -412,6 +419,17 @@ public class Server {
                 // logger.trace("setPermission - Permission {} is already in database", permission_name);
             }
         }
+    }
+
+    /**
+     * Set BaseForm for Json Control
+     */
+    private static void setBaseForm() {
+        Hardware_Registration_Authority.baseFormFactory = Server.injector.getInstance(_BaseFormFactory.class);
+        WS_Homer.baseFormFactory                        = Server.injector.getInstance(_BaseFormFactory.class);
+        Synchronize_Homer_Synchronize_Settings.baseFormFactory = Server.injector.getInstance(_BaseFormFactory.class);
+        Model_HardwareBatch.baseFormFactory             = Server.injector.getInstance(_BaseFormFactory.class);
+        BaseModel.baseFormFactory                       = Server.injector.getInstance(_BaseFormFactory.class);
     }
 
     /**

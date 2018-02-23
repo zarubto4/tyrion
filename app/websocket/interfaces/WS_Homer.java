@@ -10,7 +10,6 @@ import models.Model_Hardware;
 import models.Model_HomerServer;
 import models.Model_Instance;
 import play.libs.Json;
-import utilities.hardware_registration_auhtority.document_objects.DM_Batch_Registration_Central_Authority;
 import utilities.logger.Logger;
 import utilities.threads.homer_server.Synchronize_Homer_Hardware_after_connection;
 import utilities.threads.homer_server.Synchronize_Homer_Instance_after_connection;
@@ -29,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 public class WS_Homer extends WS_Interface {
 
-    @Inject public static _BaseFormFactory baseFormFactory;
+    public static _BaseFormFactory baseFormFactory; // Its Required to set this in Server.class Component
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 

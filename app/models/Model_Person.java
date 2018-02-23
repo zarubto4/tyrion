@@ -237,10 +237,10 @@ public class Model_Person extends BaseModel {
 
     /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_Person.class, timeToIdle = 3600, maxElements = 200)
+    @CacheField(value = Model_Person.class, duration = 3600, maxElements = 200)
     public static Cache<UUID, Model_Person> cache;
 
-    @CacheField(value = UUID.class, timeToIdle = 3600, maxElements = 200, name = "Model_Person_Token")
+    @CacheField(value = UUID.class, duration = 3600, maxElements = 200, name = "Model_Person_Token")
     public static Cache<UUID, UUID> token_cache;
 
     public static Model_Person getById(String id) throws _Base_Result_Exception {

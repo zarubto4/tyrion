@@ -3,7 +3,6 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
@@ -162,7 +161,7 @@ public class Model_BProgramVersion extends VersionModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_BProgramVersion.class, timeToIdle = 600)
+    @CacheField(value = Model_BProgramVersion.class, duration = 600)
     public static Cache<UUID, Model_BProgramVersion> cache;
 
     public static Model_BProgramVersion getById(String id) throws _Base_Result_Exception {

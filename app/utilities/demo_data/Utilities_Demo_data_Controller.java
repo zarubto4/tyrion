@@ -184,62 +184,6 @@ public class Utilities_Demo_data_Controller extends _BaseController {
             hardwareType.refresh();
 
 
-            // Prototype Collection from Pragoboard
-            Model_HardwareBatch batch_proto = new Model_HardwareBatch();
-            batch_proto.hardware_type = hardwareType;
-            batch_proto.revision = "Test Private Collection";
-            batch_proto.production_batch = "First Try";
-            batch_proto.assembled = "12.6.2017";
-            batch_proto.pcb_manufacture_name = "PragoBoard s.r.o.";
-            batch_proto.pcb_manufacture_id = "25615149";
-            batch_proto.assembly_manufacture_name = "Byzance IoT Solution s.r.o";
-            batch_proto.assembly_manufacture_id = "Not Know";
-            batch_proto.customer_product_name = "YODA G3 - Ethernet";
-            batch_proto.customer_company_name = "Byzance LTD";
-            batch_proto.customer_company_made_description = "Best Company in World!";
-            batch_proto.mac_address_start = 210006720901120L;
-            batch_proto.mac_address_end = 210006720901129L;
-            batch_proto.ean_number = 210006720901124L;
-            batch_proto.save();
-
-            // Prototype Collection from PCB Benešov
-            Model_HardwareBatch batch_test = new Model_HardwareBatch();
-            batch_test.hardware_type = hardwareType;
-            batch_test.revision = "VF250717";
-            batch_test.production_batch = "1000001 - Test Collection";
-            batch_test.assembled = "27.9.2017";
-            batch_test.pcb_manufacture_name = "PCB Benešov a.s";
-            batch_test.pcb_manufacture_id = "45147698";
-            batch_test.assembly_manufacture_name = "TTC TELEKOMUNIKACE, s.r.o.";
-            batch_test.assembly_manufacture_id = "41194403";
-            batch_test.customer_product_name = "YODA G3 - Ethernet";
-            batch_test.customer_company_name = "Byzance LTD";
-            batch_test.customer_company_made_description = "Best Company in World!";
-            batch_test.mac_address_start = 210006720901136L;
-            batch_test.mac_address_end   = 210006720901155L;
-            batch_test.ean_number        = 210006720901139L;
-            batch_test.save();
-
-            // Prototype Collection from PCB Benešov
-            // Prototype Collection from PCB Benešov
-            Model_HardwareBatch batch_final_first = new Model_HardwareBatch();
-            batch_final_first.hardware_type = hardwareType;
-            batch_final_first.revision = "VF250717";
-            batch_final_first.production_batch = "1000001 - Test Collection";
-            batch_final_first.assembled = "27.9.2017";
-            batch_final_first.pcb_manufacture_name = "PCB Benešov a.s";
-            batch_final_first.pcb_manufacture_id = "45147698";
-            batch_final_first.assembly_manufacture_name = "TTC TELEKOMUNIKACE, s.r.o.";
-            batch_final_first.assembly_manufacture_id = "41194403";
-            batch_final_first.customer_product_name = "YODA G3 - Ethernet";
-            batch_final_first.customer_company_name = "Byzance LTD";
-            batch_final_first.customer_company_made_description = "Best Company in World!";
-            batch_final_first.mac_address_start = 210006720901136L;
-            batch_final_first.mac_address_end   = 210006720901155L;
-            batch_final_first.ean_number        = 210006720901139L;
-            // batch_final_first.save(); Odkomentovat s finální produkcí
-
-
             return ok();
         } catch (Exception e) {
             return internalServerError(e);

@@ -8,7 +8,7 @@ import models.Model_Hardware;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
-import utilities.hardware_registration_auhtority.document_objects.DM_Board_Registration_Central_Authority;
+import utilities.hardware_registration_auhtority.DM_Board_Registration_Central_Authority;
 import utilities.logger.Logger;
 
 import java.io.ByteArrayOutputStream;

@@ -6,26 +6,21 @@ import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
 import org.mindrot.jbcrypt.BCrypt;
-import play.data.Form;
-import play.data.FormFactory;
 import play.libs.Json;
 import play.mvc.*;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.document_db.document_objects.DM_Board_Bootloader_DefaultConfig;
-import utilities.errors.Exceptions.Result_Error_InvalidBody;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions.Result_Error_Unauthorized;
 import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
-import utilities.hardware_registration_auhtority.document_objects.DM_Board_Registration_Central_Authority;
+import utilities.hardware_registration_auhtority.DM_Board_Registration_Central_Authority;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Logger;
-import utilities.logger.ServerLogger;
 import utilities.swagger.input.*;
 import utilities.swagger.output.*;
 import utilities.swagger.output.filter_results.Swagger_HardwareGroup_List;
@@ -805,6 +800,7 @@ public class Controller_Hardware extends _BaseController {
             String file_name =  UUID.randomUUID().toString() + ".png";
             String file_path =  hardwareType.get_Container().getName() + "/" + file_name;
 
+
             logger.debug("hardwareType_uploadPicture - File Name:: " + file_name );
             logger.debug("hardwareType_uploadPicture - File Path:: " + file_path );
 
@@ -858,12 +854,12 @@ public class Controller_Hardware extends _BaseController {
            
             // Tvorba objektu
             Model_HardwareBatch batch = new Model_HardwareBatch();
-            batch.hardware_type = hardwareType;
+            batch.compiler_target_name = hardwareType.compiler_target_name;
 
             batch.revision = help.revision;
             batch.production_batch = help.production_batch;
 
-            batch.assembled = help.date_of_assembly;
+            batch.date_of_assembly = help.date_of_assembly;
 
             batch.pcb_manufacture_name = help.pcb_manufacture_name;
             batch.pcb_manufacture_id = help.pcb_manufacture_id;
@@ -876,10 +872,10 @@ public class Controller_Hardware extends _BaseController {
             batch.customer_company_name = help.customer_company_name;
             batch.customer_company_made_description = help.customer_company_made_description;
 
-            batch.mac_address_start = help.mac_address_start;
-            batch.mac_address_end = help.mac_address_end;
+            batch.mac_address_start = help.mac_address_start.toString();
+            batch.mac_address_end = help.mac_address_end.toString();
 
-            batch.ean_number = help.ean_number;
+            batch.ean_number = help.ean_number.toString();
 
             batch.description = help.description;
 
@@ -908,7 +904,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardwareBatch_delete( String batch_id) {
+    public Result hardwareBatch_delete(String batch_id) {
         try {
 
             // Kontrola objektu
@@ -964,7 +960,7 @@ public class Controller_Hardware extends _BaseController {
             batch.revision = help.revision;
             batch.production_batch = help.production_batch;
 
-            batch.assembled = help.date_of_assembly;
+            batch.date_of_assembly = help.date_of_assembly;
 
             batch.pcb_manufacture_name = help.pcb_manufacture_name;
             batch.pcb_manufacture_id = help.pcb_manufacture_id;
@@ -977,17 +973,17 @@ public class Controller_Hardware extends _BaseController {
             batch.customer_company_name = help.customer_company_name;
             batch.customer_company_made_description = help.customer_company_made_description;
 
-            batch.mac_address_start = help.mac_address_start;
-            batch.mac_address_end = help.mac_address_end;
+            batch.mac_address_start = help.mac_address_start.toString();
+            batch.mac_address_end = help.mac_address_end.toString();
 
-            batch.ean_number = help.ean_number;
+            batch.ean_number = help.ean_number.toString();
 
             batch.description = help.description;
             
             // Uložení objektu do DB
             batch.update();
 
-            return ok(batch.json());
+            return ok(Json.toJson(batch));
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1489,8 +1485,8 @@ public class Controller_Hardware extends _BaseController {
 
                 // Try to Find it on Registration Authority
                 if (Hardware_Registration_Authority.check_if_value_is_registered(help.full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
-                    logger.error("Device is already Registred ID: {}", help.full_id);
-                    return badRequest("Device is already Registred ID: " + help.full_id);
+                    logger.error("Device is already Registered ID: {}", help.full_id);
+                    return badRequest("Device is already Registered ID: " + help.full_id);
                 }
                 if (Hardware_Registration_Authority.check_if_value_is_registered(batch.get_nextMacAddress_just_for_check(), Enum_Hardware_Registration_DB_Key.mac_address)) {
                     logger.error("Next Mac Address fot this device is already registered. Check It. Mac Address:: {}", help.full_id);
@@ -1501,7 +1497,7 @@ public class Controller_Hardware extends _BaseController {
                 hardware.full_id = help.full_id;
                 hardware.is_active = false;
                 hardware.hardware_type = hardwareType;
-                hardware.batch_id = batch.id.toString();
+                hardware.batch_id = batch.batch_id;
                 hardware.mac_address = batch.get_new_MacAddress();
                 hardware.mqtt_username = BCrypt.hashpw(mqtt_username_not_hashed, BCrypt.gensalt());
                 hardware.mqtt_password = BCrypt.hashpw(mqtt_password_not_hashed, BCrypt.gensalt());

@@ -71,7 +71,7 @@ public class Model_Processor extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_Processor.class, timeToIdle = CacheField.DayCacheConstant)
+    @CacheField(value = Model_Processor.class, duration = CacheField.DayCacheConstant)
     public static Cache<UUID, Model_Processor> cache;
 
     public static Model_Processor getById(String id) throws _Base_Result_Exception {

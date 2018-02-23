@@ -487,7 +487,6 @@ GET       /garfield                                                     controll
 PUT       /garfiled/:garfield_id                                        controllers.Controller_Garfield.edit_Garfield(garfield_id)
 DELETE    /garfiled/:garfield_id                                        controllers.Controller_Garfield.remove_Garfield(garfield_id)
 GET       /garfiled/:garfield_id                                        controllers.Controller_Garfield.get_Garfield(garfield_id)
-GET       /admin/garfiled_synchronize                                   utilities.hardware_registration_auhtority.Hardware_Registration_Authority.synchronize_script()
 GET       /admin/garfiled-print-labes/:hardware_id                      controllers.Controller_Garfield.print_label(hardware_id)
 
 GET       /printer/printer/:garfield_id/:printer_id                     controllers.Controller_Garfield.online_state_Printer(garfield_id, printer_id: Integer)

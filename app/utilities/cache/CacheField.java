@@ -38,7 +38,7 @@ public @interface CacheField {
      * If the entity is not touched for the given time, it will be evicted.
      * @return time to idle in seconds
      */
-    long timeToIdle() default 600;
+    long duration() default 600;  // 10 minutes
 
     /**
      * Maximal count of elements held in cache.
@@ -51,4 +51,10 @@ public @interface CacheField {
      * @return name
      */
     String name() default "";
+
+    /**
+     * Automatic prolonging of storage time.
+     * @return name
+     */
+    boolean automaticProlonging() default true;
 }

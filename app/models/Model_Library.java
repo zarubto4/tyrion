@@ -3,13 +3,11 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
-import play.libs.Json;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.ProgramType;
@@ -248,7 +246,7 @@ public class Model_Library extends TaggedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_Library.class, timeToIdle = 600)
+    @CacheField(value = Model_Library.class, duration = 600)
     public static Cache<UUID, Model_Library> cache;
 
     public static Model_Library getById(String id) throws _Base_Result_Exception {

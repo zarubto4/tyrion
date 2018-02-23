@@ -69,7 +69,7 @@ public class Model_Producer extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_Producer.class, timeToIdle = CacheField.DayCacheConstant)
+    @CacheField(value = Model_Producer.class, duration = CacheField.DayCacheConstant)
     public static Cache<UUID, Model_Producer> cache;
 
     public static Model_Producer getById(String id) throws _Base_Result_Exception {

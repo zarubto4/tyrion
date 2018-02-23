@@ -1,7 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.*;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
@@ -17,6 +17,8 @@ import utilities.model.VersionModel;
 import javax.persistence.*;
 import java.beans.Transient;
 import java.io.*;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
 import java.util.*;
 
 @Entity
@@ -33,10 +35,7 @@ public class Model_Blob extends BaseModel {
     public String name;
 
     @JsonIgnore
-    public String path; // TODO rozdělit path na container a real file path
-
-    @JsonIgnore
-    public String container; // TODO
+    public String path;
 
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_Person person;
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "program")     public Model_InstanceSnapshot snapshot;  // personal_picture
@@ -393,6 +392,32 @@ public class Model_Blob extends BaseModel {
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
+    public String cache_public_link() throws StorageException, URISyntaxException, InvalidKeyException {
+
+        // Separace na Container a Blob
+        int slash = path.indexOf("/");
+        String container_name = path.substring(0, slash);
+        String real_file_path = path.substring(slash + 1);
+
+        CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
+
+        // Create Policy
+        Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        cal.setTime(new Date());
+        cal.add(Calendar.HOUR, 24);
+
+        SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
+        policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
+        policy.setSharedAccessExpiryTime(cal.getTime());
+
+        String sas = blob.generateSharedAccessSignature(policy, null);
+
+        String total_link = blob.getUri().toString() + "?" + sas;
+
+        Model_Blob.cache_public_link.put(id, total_link);
+
+        return total_link;
+    }
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
@@ -420,7 +445,7 @@ public class Model_Blob extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = String.class, timeToIdle = 1800, maxElements = 500)
+    @CacheField(value = String.class, duration = CacheField.HalfDayCacheConstant, maxElements = 500, automaticProlonging = false)
     public static Cache<UUID, String> cache_public_link;
 
     public static Model_Blob getById(String id) throws _Base_Result_Exception  {

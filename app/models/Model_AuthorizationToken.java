@@ -175,10 +175,10 @@ public class Model_AuthorizationToken extends BaseModel {
      * For this case, we have Model_AuthorizationToken objects in storage, but ID is not a TOKEN name!
      * So, thets why we have two cache storage one for Model, one for connection from Token to Model (M:N)!
      */
-    @CacheField(value = Model_AuthorizationToken.class, timeToIdle = CacheField.TwoDayCacheConstant, maxElements = 100000)
+    @CacheField(value = Model_AuthorizationToken.class, duration = CacheField.TwoDayCacheConstant, maxElements = 100000)
     public static Cache<UUID, Model_AuthorizationToken> cache;
 
-    @CacheField(value = UUID.class, timeToIdle = CacheField.TwoDayCacheConstant, maxElements = 100000, name = "Model_AuthorizationToken_Token<->UUID")
+    @CacheField(value = UUID.class, duration = CacheField.TwoDayCacheConstant, maxElements = 100000, name = "Model_AuthorizationToken_Token<->UUID")
     public static Cache<UUID, UUID> cache_token_name; // < TOKEN in UUID; UUID id of Model_AuthorizationToken>
 
     public static Model_AuthorizationToken getById(String id) throws _Base_Result_Exception {

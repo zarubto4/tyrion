@@ -174,7 +174,7 @@ public class Model_PaymentDetails extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_PaymentDetails.class, timeToIdle = CacheField.DayCacheConstant)
+    @CacheField(value = Model_PaymentDetails.class, duration = CacheField.DayCacheConstant)
     public static Cache<UUID, Model_PaymentDetails> cache;
 
     public static Model_PaymentDetails getById(String id) throws _Base_Result_Exception {

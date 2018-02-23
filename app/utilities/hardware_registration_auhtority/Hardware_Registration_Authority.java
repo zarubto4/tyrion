@@ -2,7 +2,6 @@ package utilities.hardware_registration_auhtority;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -17,18 +16,13 @@ import models.Model_HardwareType;
 import models.Model_HardwareBatch;
 import org.bson.Document;
 import play.libs.Json;
-import play.mvc.Result;
 import play.mvc.Security;
-import responses.*;
 import utilities.authentication.Authentication;
-import utilities.document_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.enums.Enum_Terminal_Color;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions.Result_Error_Registration_Fail;
 import utilities.errors.Exceptions._Base_Result_Exception;
-import utilities.hardware_registration_auhtority.document_objects.DM_Board_Registration_Central_Authority;
 import utilities.logger.Logger;
-import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 
 import java.io.IOException;
 import java.util.Date;
@@ -40,8 +34,7 @@ import static com.mongodb.client.model.Sorts.descending;
 @Security.Authenticated(Authentication.class)
 public class Hardware_Registration_Authority extends _BaseController {
 
-    @Inject
-    public static _BaseFormFactory baseFormFactory;
+    public static _BaseFormFactory baseFormFactory; // Its Required to set this in Server.class Component
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
     private static final Logger logger = new Logger(Hardware_Registration_Authority.class);
@@ -56,36 +49,6 @@ public class Hardware_Registration_Authority extends _BaseController {
     private static MongoCollection<Document> collection = database.getCollection(DM_Board_Registration_Central_Authority.COLLECTION_NAME);
 
 /* CONTENT -------------------------------------------------------------------------------------------------------------*/
-    @ApiOperation(value = "synchronize Board all with central registration authority",
-            tags = { "Garfield"},
-            notes = "",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result synchronize_script() {
-        try {
-
-            if(!person().is_admin()) return forbidden();
-
-            Batch_Registration_Authority.synchronize();
-
-            synchronize_mac();
-            synchronize_hardware();
-
-            return ok();
-
-        } catch (Exception e) {
-            return internalServerError(e);
-        }
-    }
-
 
     public static DM_Board_Registration_Central_Authority get_registration_hardware_from_central_authority(String full_id) throws _Base_Result_Exception, IOException {
 
@@ -131,8 +94,6 @@ public class Hardware_Registration_Authority extends _BaseController {
         if (check_if_value_is_registered(hardware.full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
             logger.error("Hardware_Registration_Authority:: check_if_value_is_registered:: Collection name:: " + DM_Board_Registration_Central_Authority.COLLECTION_NAME);
             logger.error("Hardware_Registration_Authority:: check_if_value_is_registered:: In Database is registered device with Same device ID!");
-            synchronize_mac();
-            synchronize_hardware();
             return false;
         }
 
@@ -144,8 +105,6 @@ public class Hardware_Registration_Authority extends _BaseController {
         if (mac_address_already_registered != null) {
             logger.error("Collection name:: " + DM_Board_Registration_Central_Authority.COLLECTION_NAME);
             logger.error("Hardware_Registration_Authority:: register_device:: ");
-            synchronize_mac();
-            synchronize_hardware();
             return false;
         }
 
@@ -157,8 +116,8 @@ public class Hardware_Registration_Authority extends _BaseController {
         board_registration_central_authority.hardware_type_compiler_target_name =  hardwareType.compiler_target_name;
         board_registration_central_authority.created = ((Long)hardware.created.getTime()).toString();
         board_registration_central_authority.revision = batch.revision;
-        board_registration_central_authority.production_batch = batch.production_batch;
-        board_registration_central_authority.date_of_assembly = batch.assembled;
+        board_registration_central_authority.production_batch_id = batch.batch_id;
+        board_registration_central_authority.date_of_assembly = batch.date_of_assembly;
         board_registration_central_authority.pcb_manufacture_name = batch.pcb_manufacture_name;
         board_registration_central_authority.pcb_manufacture_id = batch.pcb_manufacture_id;
         board_registration_central_authority.assembly_manufacture_name = batch.assembly_manufacture_name;
@@ -185,6 +144,7 @@ public class Hardware_Registration_Authority extends _BaseController {
         return true;
     }
 
+    /*
     public static void synchronize_mac() {
 
         logger.info("Hardware_Registration_Authority:: synchronize_mac");
@@ -235,8 +195,7 @@ public class Hardware_Registration_Authority extends _BaseController {
             }
         }
     }
-
-
+    */
     public static Model_Hardware make_copy_of_hardware_to_local_database(String registration_hash) throws java.io.IOException {
 
         BasicDBObject whereQuery_board_id = new BasicDBObject();
@@ -261,19 +220,6 @@ public class Hardware_Registration_Authority extends _BaseController {
             throw new Result_Error_Registration_Fail(error_description);
         }
 
-        Model_HardwareBatch batch = Model_HardwareBatch.find.query().where().eq("hardware_type.id", hardwareType.id).eq("revision", help.revision).eq("production_batch", help.production_batch).findOne();
-        if (batch == null) {
-            String error_description = "Synchronize_hardware - Something is wrong! System try to register Byzance-hardware to local database, but " +
-                    " batch with required parameters \"revision:\" " + help.revision +
-                    " \"production_batch:\"" + help.production_batch +
-                    " for hardware type " + hardwareType.name +
-                    " not find in Database - Please Create it! Before. Mac Address will be synchronize after. Please Contact Technical Support!";
-
-            logger.error(error_description);
-            logger.error("synchronize_hardware - synchronization is canceled!");
-            throw new Result_Error_Registration_Fail(error_description);
-        }
-
         Model_Hardware hardware = new Model_Hardware();
         hardware.full_id = help.full_id;
         hardware.mac_address = help.mac_address;
@@ -283,70 +229,10 @@ public class Hardware_Registration_Authority extends _BaseController {
         hardware.is_active = false;
         hardware.created = new Date(new Long(help.created));
         hardware.hardware_type = hardwareType;
-        hardware.batch_id = batch.id.toString();
+        hardware.batch_id = help.production_batch_id;
         hardware.save();
 
         return hardware;
     }
 
-    /*
-        Synchronizace s centrální autoritou je provedena vždy na začátku spuštní serveru a také ji lze aktivovat manuálně
-        pomocí URL GET z routru. V rámci časových úspor byla zvolena strategie kdy v každé databázi je nutné vytvořit typ desky a výrobní kolekci, které mají shodné názvy,
-        (Tím je zamezeno synchronizaci, když o ní člověk nestojí) - Demodata mohou být snadnou alternativou, jak vytvořit výchozí pozici a synchronizaci.
-        Synchronizace slouží jen ke kontrole zda sedí všechmy Model_HardwareType a Model_HardwareBatch
-     */
-    public static void synchronize_hardware() {
-
-        logger.warn(Enum_Terminal_Color.ANSI_YELLOW + "synchronize_hardware: start synchronize" + Enum_Terminal_Color.ANSI_RESET);
-
-        MongoCursor<Document> cursor = collection.find().iterator();
-        try {
-            while (cursor.hasNext()) {
-                try {
-
-                    String string_json = cursor.next().toJson();
-                    ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
-
-                    DM_Board_Registration_Central_Authority help = baseFormFactory.formFromJsonWithValidation(DM_Board_Registration_Central_Authority.class, json);
-
-                    logger.info("synchronize_hardware - there is hardware, which is not registered in local database!" + string_json);
-
-                    // Nejdříve Najdeme jestli existuje typ desky - Ten se porovnává podle Target Name
-                    // a revision name. Ty musí!!! být naprosto shodné!!!
-                    Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("compiler_target_name", help.hardware_type_compiler_target_name).findOne();
-
-                    if (hardwareType == null) {
-                        logger.error("synchronize_hardware - Something is wrong! System try to register Byzance-hardware to local database, but " +
-                                ". \"compiler_target_name:\" " + help.hardware_type_compiler_target_name +
-                                " not find in Database - Please Create it!"
-                        );
-
-                        logger.error("synchronize_hardware - synchronization is canceled!");
-                        break;
-                    }
-
-                    Model_HardwareBatch batch = Model_HardwareBatch.find.query().where().eq("hardware_type.id", hardwareType.id).eq("revision", help.revision).eq("production_batch", help.production_batch).findOne();
-                    if (batch == null) {
-                        logger.error("synchronize_hardware - Something is wrong! System try to register Byzance-hardware to local database, but " +
-                                " batch with required parameters \"revision:\" " + help.revision +
-                                " \"production_batch:\"" + help.production_batch +
-                                " for hardware type " + hardwareType.name +
-                                " not find in Database - Please Create it! Before. Mac Address will be synchronize after."
-                        );
-                        logger.error("synchronize_hardware - synchronization is canceled!");
-                        break;
-                    }
-
-                } catch (Exception e) {
-                    logger.internalServerError(e);
-                }
-            }
-
-            logger.warn(Enum_Terminal_Color.ANSI_YELLOW + "synchronize_hardware -  synchronization is done!" + Enum_Terminal_Color.ANSI_RESET);
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        } finally {
-            cursor.close();
-        }
-    }
 }

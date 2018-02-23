@@ -71,7 +71,6 @@ create table blob (
   removed                       timestamptz,
   name                          varchar(255),
   path                          varchar(255),
-  container                     varchar(255),
   boot_loader_id                uuid,
   deleted                       boolean default false not null,
   constraint uq_blob_boot_loader_id unique (boot_loader_id),
@@ -401,31 +400,6 @@ create table hardware_hardwaregroup (
   hardware_id                   uuid not null,
   hardware_group_id             uuid not null,
   constraint pk_hardware_hardwaregroup primary key (hardware_id,hardware_group_id)
-);
-
-create table hardwarebatch (
-  id                            uuid not null,
-  created                       timestamptz,
-  updated                       timestamptz,
-  removed                       timestamptz,
-  revision                      varchar(255),
-  production_batch              varchar(255),
-  assembled                     varchar(255),
-  pcb_manufacture_name          varchar(255),
-  pcb_manufacture_id            varchar(255),
-  assembly_manufacture_name     varchar(255),
-  assembly_manufacture_id       varchar(255),
-  customer_product_name         varchar(255),
-  customer_company_name         varchar(255),
-  customer_company_made_description varchar(255),
-  mac_address_start             bigint,
-  mac_address_end               bigint,
-  latest_used_mac_address       bigint,
-  ean_number                    bigint,
-  hardware_type_id              uuid,
-  description                   TEXT,
-  deleted                       boolean default false not null,
-  constraint pk_hardwarebatch primary key (id)
 );
 
 create table hardwarefeature (
@@ -1219,9 +1193,6 @@ create index ix_hardware_hardwaregroup_hardware on hardware_hardwaregroup (hardw
 alter table hardware_hardwaregroup add constraint fk_hardware_hardwaregroup_hardwaregroup foreign key (hardware_group_id) references hardwaregroup (id) on delete restrict on update restrict;
 create index ix_hardware_hardwaregroup_hardwaregroup on hardware_hardwaregroup (hardware_group_id);
 
-alter table hardwarebatch add constraint fk_hardwarebatch_hardware_type_id foreign key (hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
-create index ix_hardwarebatch_hardware_type_id on hardwarebatch (hardware_type_id);
-
 alter table hardwarefeature_hardwaretype add constraint fk_hardwarefeature_hardwaretype_hardwarefeature foreign key (hardware_feature_id) references hardwarefeature (id) on delete restrict on update restrict;
 create index ix_hardwarefeature_hardwaretype_hardwarefeature on hardwarefeature_hardwaretype (hardware_feature_id);
 
@@ -1569,9 +1540,6 @@ drop index if exists ix_hardware_hardwaregroup_hardware;
 alter table if exists hardware_hardwaregroup drop constraint if exists fk_hardware_hardwaregroup_hardwaregroup;
 drop index if exists ix_hardware_hardwaregroup_hardwaregroup;
 
-alter table if exists hardwarebatch drop constraint if exists fk_hardwarebatch_hardware_type_id;
-drop index if exists ix_hardwarebatch_hardware_type_id;
-
 alter table if exists hardwarefeature_hardwaretype drop constraint if exists fk_hardwarefeature_hardwaretype_hardwarefeature;
 drop index if exists ix_hardwarefeature_hardwaretype_hardwarefeature;
 
@@ -1817,8 +1785,6 @@ drop table if exists hardware cascade;
 drop table if exists hardware_tag cascade;
 
 drop table if exists hardware_hardwaregroup cascade;
-
-drop table if exists hardwarebatch cascade;
 
 drop table if exists hardwarefeature cascade;
 

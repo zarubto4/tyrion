@@ -31,7 +31,6 @@ import utilities.model.BaseModel;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
 import websocket.WS_Message;
 import websocket.interfaces.WS_Homer;
-import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_autobackup_made;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Command;
 import websocket.messages.homer_with_tyrion.*;
 import websocket.messages.homer_with_tyrion.WS_Message_Homer_Instance_add;
@@ -646,7 +645,7 @@ public class Model_HomerServer extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_HomerServer.class, timeToIdle = 600)
+    @CacheField(value = Model_HomerServer.class, duration = 600)
     public static Cache<UUID, Model_HomerServer> cache;
 
     public static Model_HomerServer getById(String id) throws _Base_Result_Exception {

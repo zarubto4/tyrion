@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.cache.CacheField;
@@ -173,7 +172,7 @@ public class Model_GridProgramVersion extends VersionModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_GridProgramVersion.class, timeToIdle = 600)
+    @CacheField(value = Model_GridProgramVersion.class, duration = 600)
     public static Cache<UUID, Model_GridProgramVersion> cache;
 
     public static Model_GridProgramVersion getById(String id) throws _Base_Result_Exception {

@@ -30,7 +30,6 @@ import utilities.models_update_echo.EchoHandler;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_C_Program_Version;
 import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
-import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
@@ -541,7 +540,7 @@ public class Model_CProgramVersion extends VersionModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_CProgramVersion.class, timeToIdle = 600)
+    @CacheField(value = Model_CProgramVersion.class, duration = 600)
     public static Cache<UUID, Model_CProgramVersion> cache;
 
     public static Model_CProgramVersion getById(String id) throws _Base_Result_Exception {

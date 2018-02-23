@@ -57,10 +57,17 @@ public class ServerCache {
 
             try {
 
-                field.set(null, cacheManager.createCache(name,
-                        CacheConfigurationBuilder.newCacheConfigurationBuilder(annotation.keyType(), annotation.value(),
-                                ResourcePoolsBuilder.heap(annotation.maxElements()))
-                                .withExpiry(Expirations.timeToIdleExpiration(Duration.of(annotation.timeToIdle(), TimeUnit.MINUTES))).build()));
+                if(annotation.automaticProlonging()) {
+                    field.set(null, cacheManager.createCache(name,
+                            CacheConfigurationBuilder.newCacheConfigurationBuilder(annotation.keyType(), annotation.value(),
+                                    ResourcePoolsBuilder.heap(annotation.maxElements()))
+                                    .withExpiry(Expirations.timeToIdleExpiration(Duration.of(annotation.duration(), TimeUnit.SECONDS))).build()));
+                }else {
+                    field.set(null, cacheManager.createCache(name,
+                            CacheConfigurationBuilder.newCacheConfigurationBuilder(annotation.keyType(), annotation.value(),
+                                    ResourcePoolsBuilder.heap(annotation.maxElements()))
+                                    .withExpiry(Expirations.timeToLiveExpiration(Duration.of(annotation.duration(), TimeUnit.SECONDS))).build()));
+                }
 
             } catch (Exception e) {
                 logger.error("init - cache init failed:", e);
