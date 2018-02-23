@@ -694,6 +694,10 @@ public class Controller_Project extends _BaseController {
 
             // Set hardware as Dominant if is not dominant in another project
 
+            if(project.cache_hardware_ids == null) {
+               project.cache_hardware_ids = new ArrayList<>();
+            }
+
             project.cache_hardware_ids.add(hardware.id);
 
             return created(hardware.json());

@@ -22,17 +22,10 @@ public class DM_Board_Registration_Central_Authority {
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String hardware_type_compiler_target_name;
 
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String created;
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String production_batch_id;    // Kod HW revizedate_of_assembly
 
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String revision;                               // Kod HW revize
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String production_batch_id;                    // Kod HW revizedate_of_assembly
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String date_of_assembly;                       // Den kdy došlo k sestavení
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String pcb_manufacture_name;                   // Jméno výrobce desky
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String pcb_manufacture_id;                     // Kod výrobce desky
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String assembly_manufacture_name;              // Jméno firmy co osazovala DPS
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String assembly_manufacture_id;                // Kod firmy co osazovala DPS
-
-    @ApiModelProperty(required = true, readOnly = true) public String mqtt_password;                                                 // Kod firmy co osazovala DPS
-    @ApiModelProperty(required = true, readOnly = true) public String mqtt_username;                                                 // Kod firmy co osazovala DPS
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String mqtt_password;        // Kod firmy co osazovala DPS
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String mqtt_username;        // Kod firmy co osazovala DPS
 
     /** Optional ! - Not supported now
         CAN_REGISTER,

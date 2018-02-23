@@ -6,6 +6,6 @@ public enum Enum_Hardware_Registration_DB_Key {
 
     @EnumValue("full_id")             full_id,
     @EnumValue("mac_address")         mac_address,
-    @EnumValue("registration_hash")   registration_hash,
+    @EnumValue("hash_for_adding")     registration_hash,
 
 }

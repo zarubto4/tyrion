@@ -2383,7 +2383,17 @@ public class Controller_Hardware extends _BaseController {
     public Result hardware_check(String registration_hash, UUID project_id) {
         try {
 
+            System.out.println("registration_hash: "+  registration_hash);
+            System.out.println("project_id: " + project_id.toString());
+
+
             Swagger_Board_Registration_Status status = new Swagger_Board_Registration_Status();
+
+            // It better to calid only full id (26 chars)
+            if(registration_hash.length() != 26){
+                status.status = BoardRegistrationStatus.NOT_EXIST;
+                return ok(Json.toJson(status));
+            }
 
             // Kontrola projektu
             Model_Project.getById(project_id);

@@ -85,6 +85,7 @@ public class Model_Hardware extends TaggedModel {
      * Stejné Full_id může být i v několika objektech najednou!
     */
     public String full_id;
+
     /**
      * Kriticky důležitý objekt! Model_Hardware muže být totožných desítky, ale jen jeden se stejným full_id
      * muže být dominantní! JE nutné na to pamatovat! A možná vymyslet i  způsob jak mechanicky ošetřit,
@@ -455,10 +456,15 @@ public class Model_Hardware extends TaggedModel {
 
     @JsonProperty @ApiModelProperty(required = true)
     public List<Model_HardwareGroup> hardware_groups() {
-        List<Model_HardwareGroup> l = new ArrayList<>();
-        for (Model_HardwareGroup m : get_hardware_groups())
-            l.add(m);
-        return l;
+        try {
+            List<Model_HardwareGroup> l = new ArrayList<>();
+            for (Model_HardwareGroup m : get_hardware_groups())
+                l.add(m);
+            return l;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty @ApiModelProperty(required = true)
@@ -680,9 +686,10 @@ public class Model_Hardware extends TaggedModel {
 
     @JsonIgnore
     public List<UUID> get_hardware_group_ids() {
+
         if (cache_hardware_groups_ids == null) {
 
-            List<UUID> group_ids = Model_HardwareGroup.find.query().where().eq("boards.id", id).select("id").findIds();
+            List<UUID> group_ids = Model_HardwareGroup.find.query().where().eq("hardware.id", id).select("id").findIds();
             this.cache_hardware_groups_ids = group_ids;
             return cache_hardware_groups_ids;
         } else {

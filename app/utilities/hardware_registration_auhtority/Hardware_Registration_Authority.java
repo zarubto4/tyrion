@@ -71,9 +71,14 @@ public class Hardware_Registration_Authority extends _BaseController {
 
     public static DM_Board_Registration_Central_Authority get_registration_hardware_from_central_authority_by_hash(String hash) throws _Base_Result_Exception, IOException {
         try {
+
             BasicDBObject whereQuery_board_id = new BasicDBObject();
-            whereQuery_board_id.put(Enum_Hardware_Registration_DB_Key.registration_hash.name(), hash);
+            whereQuery_board_id.put("hash_for_adding", hash);
             Document device = collection.find(whereQuery_board_id).first();
+
+            if(device == null) {
+                return null;
+            }
 
             String string_json = device.toJson();
             ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
@@ -131,13 +136,7 @@ public class Hardware_Registration_Authority extends _BaseController {
         board_registration_central_authority.personal_name = hardware.name;
         board_registration_central_authority.hardware_type_compiler_target_name =  hardwareType.compiler_target_name;
         board_registration_central_authority.created = ((Long)hardware.created.getTime()).toString();
-        board_registration_central_authority.revision = batch.revision;
         board_registration_central_authority.production_batch_id = batch.batch_id;
-        board_registration_central_authority.date_of_assembly = batch.date_of_assembly;
-        board_registration_central_authority.pcb_manufacture_name = batch.pcb_manufacture_name;
-        board_registration_central_authority.pcb_manufacture_id = batch.pcb_manufacture_id;
-        board_registration_central_authority.assembly_manufacture_name = batch.assembly_manufacture_name;
-        board_registration_central_authority.assembly_manufacture_id = batch.assembly_manufacture_id;
         board_registration_central_authority.mqtt_username = hardware.mqtt_username;
         board_registration_central_authority.mqtt_password = hardware.mqtt_password;
 
@@ -160,68 +159,10 @@ public class Hardware_Registration_Authority extends _BaseController {
         return true;
     }
 
-    /*
-    public static void synchronize_mac() {
-
-        logger.info("Hardware_Registration_Authority:: synchronize_mac");
-
-        List<Model_HardwareBatch> batches = Model_HardwareBatch.find.all();
-
-        logger.info("Hardware_Registration_Authority:: Batches for Check: " + batches.size());
-
-        for (Model_HardwareBatch batch : batches) {
-            try {
-
-                BasicDBObject whereQuery_mac = new BasicDBObject();
-                whereQuery_mac.put("revision", batch.revision);
-                whereQuery_mac.put("production_batch", batch.production_batch);
-
-
-                if (batch.latest_used_mac_address == null) {
-                    batch.latest_used_mac_address = batch.mac_address_start;
-                    batch.update();
-                }
-
-                Document mac_address_already_registered = collection.find(whereQuery_mac).sort(descending("mac_address")).first();
-
-                if (mac_address_already_registered != null) {
-
-                    String latest_used_mac_address = (String) mac_address_already_registered.get("mac_address");
-                    Long latest_from_mongo = Long.parseLong(latest_used_mac_address.replace(":",""),16);
-
-                    logger.info("Hardware_Registration_Authority::  Latest Used Mac Address Mongo: " + mac_address_already_registered.get("mac_address"));
-                    logger.info("Hardware_Registration_Authority::  Latest Used Mac Address Mongo: in Long:  " + latest_from_mongo);
-
-                    logger.info("Hardware_Registration_Authority::  Latest Used Mac Address Local: " + Model_HardwareBatch.convert_to_MAC_ISO(batch.latest_used_mac_address));
-                    logger.info("Hardware_Registration_Authority::  Latest Used Mac Address Local Database in Long:  " + batch.latest_used_mac_address);
-
-
-                     if (!batch.latest_used_mac_address.equals( latest_from_mongo)) {
-                         logger.warn("Hardware_Registration_Authority::  Its Required shift Mac Address UP ");
-                         batch.latest_used_mac_address = latest_from_mongo;
-                         batch.update();
-                     }
-
-                } else {
-                    logger.error("Hardware_Registration_Authority:: mac_address_already_registered not find by Filter parameters from local database!");
-                }
-
-            } catch (Exception e) {
-                logger.internalServerError(e);
-            }
-        }
-    }
-    */
     public static Model_Hardware make_copy_of_hardware_to_local_database(String registration_hash) throws java.io.IOException {
 
-        BasicDBObject whereQuery_board_id = new BasicDBObject();
-        whereQuery_board_id.put("registration_hash", registration_hash);
-        Document device = collection.find(whereQuery_board_id).first();
 
-        String string_json = device.toJson();
-        ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
-
-        DM_Board_Registration_Central_Authority help = baseFormFactory.formFromJsonWithValidation(DM_Board_Registration_Central_Authority.class, json);
+        DM_Board_Registration_Central_Authority help = get_registration_hardware_from_central_authority_by_hash(registration_hash);
 
         // Nejdříve Najdeme jestli existuje typ desky - Ten se porovnává podle Target Name
         // a revision name. Ty musí!!! být naprosto shodné!!!

@@ -44,12 +44,16 @@ public class Model_HardwareGroup extends NamedModel {
 
     @JsonProperty @ApiModelProperty(required = true)
     public int size() {
+        try {
+            if (cache_group_size == null) {
+                cache_group_size = Model_Hardware.find.query().where().eq("hardware_groups.id", this.id).findCount();
+            }
 
-        if (cache_group_size == null) {
-            cache_group_size = Model_Hardware.find.query().where().eq("group.id", this.id).findCount();
+            return cache_group_size;
+        }catch (Exception e) {
+            logger.internalServerError(e);
+            return -1;
         }
-
-        return cache_group_size;
     }
 
     @JsonProperty @ApiModelProperty(required = true)
@@ -64,9 +68,9 @@ public class Model_HardwareGroup extends NamedModel {
         try {
 
             // Cache
-            if (cache_hardware_type_ids.isEmpty()) {
-
-                List<UUID> uuids = Model_HardwareType.find.query().where().eq("hardware.registration.group.id", id).orderBy("UPPER(name) ASC").findIds();
+            if (cache_hardware_type_ids == null) {
+                cache_hardware_type_ids = new ArrayList<>();
+                List<UUID> uuids = Model_HardwareType.find.query().where().eq("hardware.hardware_groups.id", id).orderBy("UPPER(name) ASC").findIds();
 
                 // Získání seznamu
                 for (UUID uuid : uuids) {
@@ -117,6 +121,7 @@ public class Model_HardwareGroup extends NamedModel {
 
         super.save();
 
+        if(project.cache_hardware_group_ids == null) project.cache_hardware_group_ids = new ArrayList<>();
         project.cache_hardware_group_ids.add(id);
 
         //  if create something under project

@@ -66,37 +66,17 @@ public class Model_HardwareBatch {
     @ApiModelProperty(required = true) @Constraints.Required public String customer_company_name;        // Jméno várobce co bude na štítku
     @ApiModelProperty(required = true) @Constraints.Required public String customer_company_made_description;      // Made in Czech Republic (co bude na štítku)
 
-    @ApiModelProperty(required = true) @Constraints.Required  public String mac_address_start;
-    @ApiModelProperty(required = true) @Constraints.Required  public String mac_address_end;
-    @ApiModelProperty(required = true) @Constraints.Required  public String latest_used_mac_address;     // Pro přiřazení je vždy nutné zvednout novou verzi - tato hodnota se dosynchronizovává se serverem
+    @ApiModelProperty(required = true) @Constraints.Required public String mac_address_start;
+    @ApiModelProperty(required = true) @Constraints.Required public String mac_address_end;
+    @ApiModelProperty(required = true) @Constraints.Required public String latest_used_mac_address;     // Pro přiřazení je vždy nutné zvednout novou verzi - tato hodnota se dosynchronizovává se serverem
 
-    @ApiModelProperty(required = true) @Constraints.Required  public String ean_number;
-    @ApiModelProperty(required = true)                        public String description;
-    @ApiModelProperty(required = true) @Constraints.Required  public String compiler_target_name;
-    @ApiModelProperty(required = true) @Constraints.Required  public boolean deleted;
+    @ApiModelProperty(required = true) @Constraints.Required public String ean_number;
+    @ApiModelProperty(required = true)                       public String description;
+    @ApiModelProperty(required = true) @Constraints.Required public String compiler_target_name;
+    @ApiModelProperty(required = true) @Constraints.Required public boolean deleted;
 
     /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
-
-    @JsonIgnore
-    public Long latest_used_mac_address() {
-        return Long.parseLong(latest_used_mac_address, 10);
-    }
-
-    @JsonIgnore
-    public Long mac_address_start() {
-        return Long.parseLong(mac_address_start, 10);
-    }
-
-    @JsonIgnore
-    public Long mac_address_end() {
-        return Long.parseLong(mac_address_end, 10);
-    }
-
-    @JsonIgnore
-    public Long ean_number() {
-        return Long.parseLong(ean_number, 10);
-    }
-
+    
 
     /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
@@ -106,14 +86,14 @@ public class Model_HardwareBatch {
 
         // Its used only for check - if some other server dont use this mac address and if its not registred in central hardware registration authority
         if (latest_used_mac_address == null) {
-            return convert_to_MAC_ISO(mac_address_start());
+            return convert_to_MAC_ISO(Long.parseLong(mac_address_start, 10));
         }
 
-        if (latest_used_mac_address() >= mac_address_end()) {
+        if (Long.parseLong(latest_used_mac_address, 10) >= Long.parseLong(mac_address_end, 10)) {
             throw new IllegalCharsetNameException("All Mac Address used");
         }
 
-        return convert_to_MAC_ISO(this.latest_used_mac_address() + 1);
+        return convert_to_MAC_ISO(Long.parseLong(latest_used_mac_address, 10)+ 1);
     }
 
     @JsonIgnore
@@ -125,15 +105,15 @@ public class Model_HardwareBatch {
             return get_new_MacAddress();
         }
 
-        if (latest_used_mac_address() >= mac_address_end()) {
+        if (Long.parseLong(latest_used_mac_address, 10)>= Long.parseLong(mac_address_end, 10)) {
             throw new IllegalCharsetNameException("All Mac Address used");
         }
 
-        Long help = this.latest_used_mac_address() + 1;
+        Long help = Long.parseLong(latest_used_mac_address, 10)+ 1;
         this.latest_used_mac_address = help.toString();
         update();
 
-        return convert_to_MAC_ISO(this.latest_used_mac_address());
+        return convert_to_MAC_ISO(Long.parseLong(latest_used_mac_address, 10));
 
     }
 
