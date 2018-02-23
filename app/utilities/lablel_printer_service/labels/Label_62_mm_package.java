@@ -244,7 +244,7 @@ public class Label_62_mm_package {
         add_description.setAlignment(Element.ALIGN_MIDDLE);
 
         // Mac Address ID
-        DM_Board_Registration_Central_Authority hw = Hardware_Registration_Authority.get_registration_hardware_from_central_authority(board.full_id);
+        DM_Board_Registration_Central_Authority hw = Hardware_Registration_Authority.get_registration_hardware_from_central_authority_by_full_id(board.full_id);
         if(hw == null) {
             throw new Result_Error_NotFound(Model_Hardware.class);
         }

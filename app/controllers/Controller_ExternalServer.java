@@ -120,7 +120,7 @@ public class Controller_ExternalServer extends _BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result homer_server_set_main_server(String homer_server_id) {
+    public Result homer_server_set_main_server(UUID homer_server_id) {
         try {
 
             Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
@@ -158,7 +158,7 @@ public class Controller_ExternalServer extends _BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result homer_server_set_backup_server(String homer_server_id) {
+    public Result homer_server_set_backup_server(UUID homer_server_id) {
         try {
 
             Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
@@ -207,14 +207,14 @@ public class Controller_ExternalServer extends _BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result homer_server_edit(String unique_identifier ) {
+    public Result homer_server_edit(UUID homer_server_id) {
         try {
 
             // Get and Validate Object
             Swagger_HomerServer_New help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_New.class);
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.getById(unique_identifier);
+            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
 
             // Úprava objektu
             server.personal_server_name = help.personal_server_name;
@@ -269,7 +269,7 @@ public class Controller_ExternalServer extends _BaseController {
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_HomerServer> query = Ebean.find(Model_HomerServer.class);
 
-            query.orderBy("UPPER(name) ASC");
+            query.orderBy("UPPER(personal_server_name) ASC");
 
             if (!help.server_types.isEmpty()) {
                 query.where().in("server_type", help.server_types);
@@ -303,11 +303,11 @@ public class Controller_ExternalServer extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result homer_server_get(String server_id) {
+    public Result homer_server_get(UUID homer_server_id) {
         try {
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.getById(server_id);
+            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
 
             // Vrácení objektu
             return ok(server.json());
@@ -330,11 +330,11 @@ public class Controller_ExternalServer extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result homer_server_delete(String server_id) {
+    public Result homer_server_delete(UUID homer_server_id) {
         try {
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.getById(server_id);
+            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
 
             // Smzání objektu
             server.delete();
@@ -424,14 +424,14 @@ public class Controller_ExternalServer extends _BaseController {
     })
     @Security.Authenticated(Authentication.class)
     @BodyParser.Of(BodyParser.Json.class)
-    public Result compilation_server_edit(String server_id ) {
+    public Result compilation_server_edit(UUID compilation_server_id) {
         try {
 
             // Get and Validate Object
             Swagger_CompilationServer_New help = baseFormFactory.formFromRequestWithValidation(Swagger_CompilationServer_New.class);
 
             // Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.getById(server_id);
+            Model_CompilationServer server = Model_CompilationServer.getById(compilation_server_id);
 
             // Upravím objekt
             server.personal_server_name = help.personal_server_name;
@@ -486,11 +486,11 @@ public class Controller_ExternalServer extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result compilation_server_get(String server_id ) {
+    public Result compilation_server_get(UUID compilation_server_id) {
         try {
 
             //Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.getById(server_id);
+            Model_CompilationServer server = Model_CompilationServer.getById(compilation_server_id);
       
             // Vracím odpověď
             return ok(server.json());
@@ -515,11 +515,11 @@ public class Controller_ExternalServer extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result compilation_server_delete(String server_id ) {
+    public Result compilation_server_delete(UUID compilation_server_id) {
         try {
 
             //Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.getById(server_id);
+            Model_CompilationServer server = Model_CompilationServer.getById(compilation_server_id);
 
             // Smažu objekt
             server.delete();
@@ -550,7 +550,7 @@ public class Controller_ExternalServer extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(AuthenticationHomer.class)
-    public Result cloud_file_get_b_program_version(String b_program_version_id) {
+    public Result cloud_file_get_b_program_version(UUID b_program_version_id) {
         try {
 
             // Získám soubor
@@ -600,7 +600,7 @@ public class Controller_ExternalServer extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result cloud_file_bin_get_c_program_version(String version_id) {
+    public Result cloud_file_bin_get_c_program_version(UUID version_id) {
         try {
 
             // Ověření objektu
@@ -642,7 +642,7 @@ public class Controller_ExternalServer extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(AuthenticationHomer.class)
-    public Result cloud_file_get_c_program_compilation(String compilation_id) {
+    public Result cloud_file_get_c_program_compilation(UUID compilation_id) {
         try {
 
             // Získám soubor
@@ -697,7 +697,7 @@ public class Controller_ExternalServer extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(AuthenticationHomer.class)
-    public Result cloud_file_get_bootloader(String bootloader_id) {
+    public Result cloud_file_get_bootloader(UUID bootloader_id) {
         try {
 
             // Získám soubor

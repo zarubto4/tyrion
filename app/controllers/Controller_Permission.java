@@ -20,6 +20,7 @@ import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_System_Access;
 
 import java.util.List;
+import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
@@ -53,7 +54,7 @@ public class Controller_Permission extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result permission_person_add(@ApiParam(required = true) String person_id, @ApiParam(required = true) String permission_id) {
+    public Result permission_person_add(UUID person_id, UUID permission_id) {
         try {
 
             // Kontrola objektu
@@ -87,7 +88,7 @@ public class Controller_Permission extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result permission_person_remove(@ApiParam(required = true) String person_id, @ApiParam(required = true) String permission_id) {
+    public Result permission_person_remove(UUID person_id, UUID permission_id) {
         try {
 
             // Kontrola objektu
@@ -155,7 +156,7 @@ public class Controller_Permission extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result permission_edit(String permission_id) {
+    public Result permission_edit(UUID permission_id) {
         try {
 
             // Get and Validate Object
@@ -202,7 +203,7 @@ public class Controller_Permission extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result permission_add_to_role(@ApiParam(required = true) String role_id) {
+    public Result permission_add_to_role(UUID role_id) {
         try {
 
             // Get and Validate Object
@@ -243,7 +244,7 @@ public class Controller_Permission extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result permission_remove_from_role(@ApiParam(required = true) String permission_id, @ApiParam(required = true) String role_id) {
+    public Result permission_remove_from_role(UUID permission_id, UUID role_id) {
         try {
 
             // Kontrola objektu
@@ -325,7 +326,7 @@ public class Controller_Permission extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result role_delete(@ApiParam(required = true) String role_id) {
+    public Result role_delete(UUID role_id) {
         try {
 
             // Kontrola objektu
@@ -365,7 +366,7 @@ public class Controller_Permission extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result role_edit(@ApiParam(required = true) String role_id) {
+    public Result role_edit(UUID role_id) {
         try {
 
             // Get and Validate Object
@@ -400,7 +401,7 @@ public class Controller_Permission extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result role_get(@ApiParam(required = true) String role_id) {
+    public Result role_get(UUID role_id) {
         try {
 
             // Kontrola objektu
@@ -437,7 +438,7 @@ public class Controller_Permission extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result role_add_person(@ApiParam(required = true) String role_id) {
+    public Result role_add_person(UUID role_id) {
         try {
 
             // Get and Validate Object
@@ -489,7 +490,7 @@ public class Controller_Permission extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result role_remove_person(@ApiParam(required = true) String role_id, @ApiParam(required = true) String person_id) {
+    public Result role_remove_person(UUID role_id, UUID person_id) {
         try {
 
             // Kontrola objektu
@@ -549,7 +550,7 @@ public class Controller_Permission extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result system_access_get_everything(@ApiParam(required = true) String person_id) {
+    public Result system_access_get_everything(UUID person_id) {
         try {
 
             Model_Person person = Model_Person.getById(person_id);

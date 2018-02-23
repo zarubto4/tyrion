@@ -33,4 +33,14 @@ public class DM_Board_Registration_Central_Authority {
 
     @ApiModelProperty(required = true, readOnly = true) public String mqtt_password;                                                 // Kod firmy co osazovala DPS
     @ApiModelProperty(required = true, readOnly = true) public String mqtt_username;                                                 // Kod firmy co osazovala DPS
+
+    /** Optional ! - Not supported now
+        CAN_REGISTER,
+        NOT_EXIST,
+        ALREADY_REGISTERED_IN_YOUR_ACCOUNT,
+        ALREADY_REGISTERED,
+        PERMANENTLY_DISABLED,
+        BROKEN_DEVICE;
+     */
+    public String state;
 }

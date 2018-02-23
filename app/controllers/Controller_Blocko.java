@@ -76,7 +76,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bProgram_create(@ApiParam(value = "project_id String path", required = true) String project_id) {
+    public Result bProgram_create(UUID project_id) {
         try {
 
             // Get and Validate Object
@@ -115,7 +115,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result bProgram_get(@ApiParam(value = "b_program_id String path", required = true) String b_program_id) {
+    public Result bProgram_get(UUID b_program_id) {
         try {
 
             // Kontrola objektu
@@ -205,7 +205,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bProgram_update(@ApiParam(value = "b_program_id String path", required = true) String b_program_id) {
+    public Result bProgram_update(UUID b_program_id) {
         try {
 
             // Get and Validate Object
@@ -333,7 +333,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result bProgram_delete(@ApiParam(value = "b_program_id String path", required = true) String b_program_id) {
+    public Result bProgram_delete(UUID b_program_id) {
         try {
 
             // Kontrola objektu
@@ -379,7 +379,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bProgramVersion_create(@ApiParam(value = "b_program_id String path", required = true) String b_program_id) {
+    public Result bProgramVersion_create(UUID b_program_id) {
         try {
 
             // Get and Validate Object
@@ -452,7 +452,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result bProgramVersion_get(@ApiParam(value = "version_id String path", required = true) String version_id) {
+    public Result bProgramVersion_get(UUID version_id) {
         try {
 
             // Kontrola objektu
@@ -493,7 +493,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bProgramVersion_update(@ApiParam(value = "version_id String path", required = true) String version_id) {
+    public Result bProgramVersion_update(UUID version_id) {
         try {
 
             // Get and Validate Object
@@ -531,7 +531,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result bProgramVersion_delete(@ApiParam(value = "version_id String path", required = true) String version_id) {
+    public Result bProgramVersion_delete(UUID version_id) {
         try {
 
             // Získání objektu
@@ -615,7 +615,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result instance_get(@ApiParam(value = "instance_id String path", required = true) String instance_id) {
+    public Result instance_get(UUID instance_id) {
         try {
 
             Model_Instance instance = Model_Instance.getById(instance_id);
@@ -654,7 +654,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result instance_update(@ApiParam(value = "instance_id String path", required = true) String instance_id) {
+    public Result instance_update(UUID instance_id) {
         try {
 
             // Get and Validate Object
@@ -778,7 +778,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result instance_delete(@ApiParam(value = "instance_id String path", required = true) String instance_id) {
+    public Result instance_delete(UUID instance_id) {
         try {
 
             Model_Instance instance = Model_Instance.getById(instance_id);
@@ -855,7 +855,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result instanceSnapshot_get(@ApiParam(value = "snapshot_id String path", required = true) String snapshot_id) {
+    public Result instanceSnapshot_get(UUID snapshot_id) {
         try {
 
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
@@ -947,7 +947,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result instanceSnapshot_shutdown(@ApiParam(value = "snapshot_id String path", required = true) String snapshot_id) {
+    public Result instanceSnapshot_shutdown(UUID snapshot_id) {
         try {
 
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
@@ -976,7 +976,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result instanceSnapshot_delete(@ApiParam(value = "snapshot_id String path", required = true) String snapshot_id) {
+    public Result instanceSnapshot_delete(UUID snapshot_id) {
         try {
 
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
@@ -1288,7 +1288,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result block_update(@ApiParam(value = "block_id String path",   required = true)  String block_id) {
+    public Result block_update(UUID block_id) {
         try {
 
             // Get and Validate Object
@@ -1416,7 +1416,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result block_get(@ApiParam(value = "block_id String path",   required = true) String block_id) {
+    public Result block_get( UUID block_id) {
         try {
 
             // Kontrola objektu
@@ -1498,7 +1498,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result block_delete(@ApiParam(value = "block_id String path",   required = true)  String block_id) {
+    public Result block_delete(UUID block_id) {
         try {
 
             // Kontrola objektu
@@ -1530,7 +1530,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result block_orderUp(@ApiParam(value = "block_id String path",   required = true) String block_id) {
+    public Result block_orderUp(UUID block_id) {
         try {
 
             // Kontrola objektu
@@ -1560,7 +1560,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result block_orderDown(@ApiParam(value = "block_id String path",   required = true) String block_id) {
+    public Result block_orderDown(UUID block_id) {
         try {
 
             // Kontrola objektu
@@ -1590,7 +1590,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result block_deactivate(String block_id) {
+    public Result block_deactivate(UUID block_id) {
         try {
 
             Model_Block block = Model_Block.getById(block_id);
@@ -1621,7 +1621,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result block_activate(String block_id) {
+    public Result block_activate(UUID block_id) {
         try {
 
             Model_Block block = Model_Block.getById(block_id);
@@ -1775,7 +1775,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result blockVersion_create(@ApiParam(value = "block_id String path",   required = true) String block_id) {
+    public Result blockVersion_create(UUID block_id) {
         try {
 
             // Get and Validate Object
@@ -1820,7 +1820,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockVersion_get(@ApiParam(value = "version_id String path",   required = true) String version_id) {
+    public Result blockVersion_get(UUID version_id) {
         try {
             
             // Kontrola objektu
@@ -1861,7 +1861,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result blockVersion_update(@ApiParam(value = "version_id String path", required = true) String version_id) {
+    public Result blockVersion_update(UUID version_id) {
         try {
 
             // Get and Validate Object
@@ -1901,7 +1901,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockVersion_delete(@ApiParam(value = "version_id String path", required = true) String version_id) {
+    public Result blockVersion_delete(UUID version_id) {
         try {
 
             // Kontrola objektu
@@ -1932,7 +1932,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockVersion_makePublic(@ApiParam(value = "version_id String path", required = true) String version_id) {
+    public Result blockVersion_makePublic(UUID version_id) {
         try {
 
             // Kontrola objektu
@@ -1966,7 +1966,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 403, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockVersion_setMain(String version_id) {
+    public Result blockVersion_setMain(UUID version_id) {
         try {
 
             // Kontrola objektu

@@ -88,7 +88,7 @@ public class Label_62_split_mm_Details {
     private PdfPCell device_hash_for_Add() throws DocumentException, _Base_Result_Exception, IOException {
 
         // Mac Address ID
-        DM_Board_Registration_Central_Authority hw = Hardware_Registration_Authority.get_registration_hardware_from_central_authority(hardware.full_id);
+        DM_Board_Registration_Central_Authority hw = Hardware_Registration_Authority.get_registration_hardware_from_central_authority_by_full_id(hardware.full_id);
         if(hw == null) {
             throw new Result_Error_NotFound(Model_Hardware.class);
         }
@@ -143,7 +143,7 @@ public class Label_62_split_mm_Details {
         Font font_space = new Font(Font.FontFamily.COURIER, 1.3F, Font.NORMAL, BaseColor.WHITE);
 
         // Mac Address ID
-        DM_Board_Registration_Central_Authority hw = Hardware_Registration_Authority.get_registration_hardware_from_central_authority(hardware.full_id);
+        DM_Board_Registration_Central_Authority hw = Hardware_Registration_Authority.get_registration_hardware_from_central_authority_by_full_id(hardware.full_id);
         if(hw == null) {
             throw new Result_Error_NotFound(Model_Hardware.class);
         }

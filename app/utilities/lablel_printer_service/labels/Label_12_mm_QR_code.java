@@ -86,7 +86,7 @@ public class Label_12_mm_QR_code {
                 table.getDefaultCell().setVerticalAlignment(Element.ALIGN_MIDDLE);
 
         // Mac Address ID
-        DM_Board_Registration_Central_Authority hw = Hardware_Registration_Authority.get_registration_hardware_from_central_authority(hardware.full_id);
+        DM_Board_Registration_Central_Authority hw = Hardware_Registration_Authority.get_registration_hardware_from_central_authority_by_full_id(hardware.full_id);
         if(hw == null) {
             throw new Result_Error_NotFound(Model_Hardware.class);
         }

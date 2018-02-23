@@ -16,6 +16,7 @@ import utilities.emails.Email;
 import utilities.enums.BoardCommand;
 import utilities.enums.NetworkStatus;
 import utilities.errors.Exceptions.Result_Error_InvalidBody;
+import utilities.hardware_registration_auhtority.DM_Board_Registration_Central_Authority;
 import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
 import utilities.logger.Logger;
@@ -148,7 +149,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result project_get(@ApiParam(value = "project_id String path", required = true) UUID project_id) {
+    public Result project_get(UUID project_id) {
         try {
 
             // Kontrola objektu
@@ -184,7 +185,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result project_delete(@ApiParam(value = "project_id String path", required = true) UUID project_id) {
+    public Result project_delete(UUID project_id) {
         try {
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
@@ -226,7 +227,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_update(@ApiParam(value = "project_id String path", required = true) UUID project_id) {
+    public Result project_update(UUID project_id) {
         try {
 
             // Get and Validate Object
@@ -277,7 +278,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_invite(@ApiParam(value = "project_id String path", required = true) UUID project_id) {
+    public Result project_invite(UUID project_id) {
         try {
 
             // Get and Validate Object
@@ -402,7 +403,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_changeParticipantStatus(@ApiParam(value = "project_id String path", required = true) UUID project_id) {
+    public Result project_changeParticipantStatus(UUID project_id) {
         try {
 
             // Get and Validate Object
@@ -457,7 +458,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_removeParticipant(@ApiParam(value = "project_id String path", required = true) UUID project_id) {
+    public Result project_removeParticipant(UUID project_id) {
         try {
 
             // Get and Validate Object
@@ -647,17 +648,26 @@ public class Controller_Project extends _BaseController {
             Model_Project project = Model_Project.getById(help.project_id);
             project.check_update_permission();
 
+            DM_Board_Registration_Central_Authority registration_authority = Hardware_Registration_Authority.get_registration_hardware_from_central_authority_by_hash(help.registration_hash);
+
             // Hash not exist
-           if(!Hardware_Registration_Authority.check_if_value_is_registered(help.registration_hash, Enum_Hardware_Registration_DB_Key.registration_hash)){
+            if(registration_authority == null){
                return notFound("Hash not found.");
-           }
+            }
+
+            // Already not registred under project!
+            if (Model_Hardware.find.query().where().eq("full_id", registration_authority.full_id).eq("project.id", help.project_id).findCount() > 0) {
+                return badRequest("Already registred under this project");
+            }
 
             // Copy is done - Hardware is saved in database, but without any connections for projec, groups etc..
             Model_Hardware hardware = Hardware_Registration_Authority.make_copy_of_hardware_to_local_database(help.registration_hash);
             hardware.project = project;
 
             // Set name if help contains it
-            if(help.name != null && !help.name.equals("")) hardware.name = help.name;
+            if(help.name != null && !help.name.equals("")) {
+                hardware.name = help.name;
+            }
 
             // Set group if help contains it
             if (help.group_ids != null && !help.group_ids.isEmpty()) {
@@ -672,6 +682,11 @@ public class Controller_Project extends _BaseController {
                     hardware.hardware_groups.add(group);
                     hardware.cache_hardware_groups_ids.add(group.id);
                 }
+            }
+
+            // Set Dominance if its possible (Not dominant in diferent project!
+            if (Model_Hardware.find.query().where().eq("full_id", hardware.full_id).eq("dominant_entity", true).findCount() == 0) {
+                hardware.dominant_entity = true;
             }
 
             // Update

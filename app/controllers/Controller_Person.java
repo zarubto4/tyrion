@@ -146,10 +146,10 @@ public class Controller_Person extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result person_emailAuthentication(String auth_token) {
+    public Result person_emailAuthentication(UUID auth_token) {
         try {
 
-            Model_ValidationToken validationToken = Model_ValidationToken.find.query().where().eq("token", UUID.fromString(auth_token)).findOne();
+            Model_ValidationToken validationToken = Model_ValidationToken.find.query().where().eq("token", auth_token).findOne();
 
             if (validationToken == null) return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectOk  );
 
@@ -378,7 +378,7 @@ public class Controller_Person extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public  Result person_get(@ApiParam(value = "person_id String query", required = true)  String person_id) {
+    public  Result person_get(UUID person_id) {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
@@ -404,7 +404,7 @@ public class Controller_Person extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public  Result person_delete(@ApiParam(value = "person_id String query", required = true) String person_id) {
+    public  Result person_delete(UUID person_id) {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
@@ -433,7 +433,7 @@ public class Controller_Person extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result person_removeAllConnections(@ApiParam(value = "person_id String query", required = true) String person_id) {
+    public Result person_removeAllConnections(UUID person_id) {
         try {
 
             for(Model_AuthorizationToken token : Model_AuthorizationToken.find.query().where().eq("person.id",  person().id).findList()) {
@@ -463,7 +463,7 @@ public class Controller_Person extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result person_activate(@ApiParam(value = "person_id String query", required = true) String person_id) {
+    public Result person_activate(UUID person_id) {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
@@ -498,7 +498,7 @@ public class Controller_Person extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result person_deactivate(@ApiParam(value = "person_id String query", required = true) String person_id) {
+    public Result person_deactivate(UUID person_id) {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
@@ -537,7 +537,7 @@ public class Controller_Person extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result person_validEmail(@ApiParam(value = "person_id String query", required = true) String person_id) {
+    public Result person_validEmail(UUID person_id) {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
@@ -579,7 +579,7 @@ public class Controller_Person extends _BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public  Result person_update(@ApiParam(value = "person_id String query", required = true) String person_id) {
+    public  Result person_update(UUID person_id) {
         try {
 
             // Get and Validate Object
@@ -643,7 +643,7 @@ public class Controller_Person extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public  Result remove_Person_Connection(@ApiParam(value = "connection_id String query", required = true) String connection_id) {
+    public  Result remove_Person_Connection(UUID connection_id) {
         try {
 
             Model_AuthorizationToken token = Model_AuthorizationToken.getById(connection_id);
@@ -891,7 +891,7 @@ public class Controller_Person extends _BaseController {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result person_authorizePropertyChange(String token) {
+    public Result person_authorizePropertyChange(UUID token) {
         try {
             Model_ChangePropertyToken changePropertyToken = Model_ChangePropertyToken.getById(token);
             if (changePropertyToken == null) return redirect(Server.becki_mainUrl + "/" + Server.becki_propertyChangeFailed);

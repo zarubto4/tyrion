@@ -50,7 +50,7 @@ public class Hardware_Registration_Authority extends _BaseController {
 
 /* CONTENT -------------------------------------------------------------------------------------------------------------*/
 
-    public static DM_Board_Registration_Central_Authority get_registration_hardware_from_central_authority(String full_id) throws _Base_Result_Exception, IOException {
+    public static DM_Board_Registration_Central_Authority get_registration_hardware_from_central_authority_by_full_id(String full_id) throws _Base_Result_Exception, IOException {
 
         // If its person operation
         if(_BaseController.isAuthenticated()) {
@@ -67,6 +67,22 @@ public class Hardware_Registration_Authority extends _BaseController {
         ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
 
         return baseFormFactory.formFromJsonWithValidation(DM_Board_Registration_Central_Authority.class, json);
+    }
+
+    public static DM_Board_Registration_Central_Authority get_registration_hardware_from_central_authority_by_hash(String hash) throws _Base_Result_Exception, IOException {
+        try {
+            BasicDBObject whereQuery_board_id = new BasicDBObject();
+            whereQuery_board_id.put(Enum_Hardware_Registration_DB_Key.registration_hash.name(), hash);
+            Document device = collection.find(whereQuery_board_id).first();
+
+            String string_json = device.toJson();
+            ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
+
+            return baseFormFactory.formFromJsonWithValidation(DM_Board_Registration_Central_Authority.class, json);
+        }catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
 

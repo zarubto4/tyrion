@@ -1415,7 +1415,7 @@ public class Controller_Hardware extends _BaseController {
                 return notFound(Model_Hardware.class);
             }
 
-            DM_Board_Registration_Central_Authority hw = Hardware_Registration_Authority.get_registration_hardware_from_central_authority(full_id);
+            DM_Board_Registration_Central_Authority hw = Hardware_Registration_Authority.get_registration_hardware_from_central_authority_by_full_id(full_id);
 
             Swagger_Hardware_Registration_Hash hash = new Swagger_Hardware_Registration_Hash();
             hash.hash = hw.hash_for_adding;
@@ -1427,7 +1427,6 @@ public class Controller_Hardware extends _BaseController {
             return controllerServerError(e);
         }
     }
-
 
     @ApiOperation(value = "create Board automatic Garfield",
             tags = { "Admin-Board"},
@@ -2381,54 +2380,34 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardware_check(String registration_hash) {
+    public Result hardware_check(String registration_hash, UUID project_id) {
         try {
 
             Swagger_Board_Registration_Status status = new Swagger_Board_Registration_Status();
 
+            // Kontrola projektu
+            Model_Project.getById(project_id);
+
             // Kotrola objektu
-            Model_Hardware hardware_not_cached = Model_Hardware.find.query().where().eq("registration_hash", registration_hash).select("id").findOne();
-            if (hardware_not_cached == null) {
+            DM_Board_Registration_Central_Authority hardware = Hardware_Registration_Authority.get_registration_hardware_from_central_authority_by_hash(registration_hash);
+
+            if (hardware == null) {
                 status.status = BoardRegistrationStatus.NOT_EXIST;
                 return ok(Json.toJson(status));
             }
 
-            try {
-
-                Model_Hardware board = Model_Hardware.getById(hardware_not_cached.id);
-
-            } catch (Exception error){
-
-                // Result_Error_NotFound
-                if(error.getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
-                    status.status = BoardRegistrationStatus.NOT_EXIST;
-                    return ok(Json.toJson(status));
-                }
-
-                // Result_Error_PermissionDenied
-                if(error.getClass().getSimpleName().equals(Result_Error_PermissionDenied.class.getSimpleName())){
-                    return forbidden();
-                }
-
-            }
-
-            Model_Hardware board = Model_Hardware.getById(hardware_not_cached.id);
-            if (board.project == null) {
-                status.status = BoardRegistrationStatus.CAN_REGISTER;
+            if(hardware.state != null && hardware.state.equals("PERMANENTLY_DISABLED")) {
+                status.status = BoardRegistrationStatus.PERMANENTLY_DISABLED;
                 return ok(Json.toJson(status));
             }
 
-            /*
-                } else if (board.project_id() == null) {
-                    status.status = BoardRegistrationStatus.CAN_REGISTER;
-                } else if (board.project_id() != null && board.read_permission()) {
-                    status.status = BoardRegistrationStatus.ALREADY_REGISTERED_IN_YOUR_ACCOUNT;
-                } else {
-                    status.status = BoardRegistrationStatus.ALREADY_REGISTERED;
-                }
-            */
-
-            return ok(Json.toJson(status));
+            if(Model_Hardware.find.query().where().eq("full_id", hardware.full_id).eq("project.id", project_id).findCount() < 1) {
+                status.status = BoardRegistrationStatus.CAN_REGISTER;
+                return ok(Json.toJson(status));
+            }else {
+                status.status = BoardRegistrationStatus.ALREADY_REGISTERED_IN_YOUR_ACCOUNT;
+                return ok(Json.toJson(status));
+            }
 
         } catch (Exception e) {
             return controllerServerError(e);

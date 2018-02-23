@@ -59,24 +59,24 @@ POST      /validate_entity                                              controll
 
 #Peron CRUD
 POST      /person                                                       controllers.Controller_Person.person_create()
-PUT       /person/:person_id                                            controllers.Controller_Person.person_update(person_id)
-GET       /person/:person_id                                            controllers.Controller_Person.person_get(person_id)
-DELETE    /person/:person_id                                            controllers.Controller_Person.person_delete(person_id)
+PUT       /person/:person_id                                            controllers.Controller_Person.person_update(person_id: java.util.UUID)
+GET       /person/:person_id                                            controllers.Controller_Person.person_get(person_id: java.util.UUID)
+DELETE    /person/:person_id                                            controllers.Controller_Person.person_delete(person_id: java.util.UUID)
 
 POST      /person/authentication_email                                  controllers.Controller_Person.person_authenticationSendEmail()
 
 GET       /person/connection/all                                        controllers.Controller_Person.person_getAllConnections()
-DELETE    /person/connection/:connection_id                             controllers.Controller_Person.remove_Person_Connection(connection_id)
+DELETE    /person/connection/:connection_id                             controllers.Controller_Person.remove_Person_Connection(connection_id: java.util.UUID)
 
-PUT       /person/deactivate/:person_id                                 controllers.Controller_Person.person_deactivate(person_id)
-PUT       /person/activate/:person_id                                   controllers.Controller_Person.person_activate(person_id)
-DELETE    /person/connections/:person_id                                controllers.Controller_Person.person_removeAllConnections(person_id)
-PUT       /person/valid_email/:person_id                                controllers.Controller_Person.person_validEmail(person_id)
+PUT       /person/deactivate/:person_id                                 controllers.Controller_Person.person_deactivate(person_id: java.util.UUID)
+PUT       /person/activate/:person_id                                   controllers.Controller_Person.person_activate(person_id: java.util.UUID)
+DELETE    /person/connections/:person_id                                controllers.Controller_Person.person_removeAllConnections(person_id: java.util.UUID)
+PUT       /person/valid_email/:person_id                                controllers.Controller_Person.person_validEmail(person_id: java.util.UUID)
 
-GET       /person/mail_authentication/:token                            controllers.Controller_Person.person_emailAuthentication(token)
+GET       /person/mail_authentication/:token                            controllers.Controller_Person.person_emailAuthentication(token: java.util.UUID)
 
 POST      /person/change_property                                       controllers.Controller_Person.person_changeLoginProperty()
-GET       /person/authorize_change/:token                               controllers.Controller_Person.person_authorizePropertyChange(token)
+GET       /person/authorize_change/:token                               controllers.Controller_Person.person_authorizePropertyChange(token: java.util.UUID)
 
 #Password recovery
 POST      /person/password/recovery_mail                                controllers.Controller_Person.person_passwordRecoverySendEmail()
@@ -91,26 +91,26 @@ PUT       /person/picture/remove                                        controll
 
 POST      /secure/rest_api_token_validation                             controllers.Controller_Security.get_status_request_token()
 
-PUT       /secure/permission/person/:person_id/:permission_id           controllers.Controller_Permission.permission_person_add(person_id,permission_id)
-DELETE    /secure/permission/person/:person_id/:permission_id           controllers.Controller_Permission.permission_person_remove(person_id,permission_id)
-PUT       /secure/permission/:permission_id                             controllers.Controller_Permission.permission_edit(permission_id)
+PUT       /secure/permission/person/:person_id/:permission_id           controllers.Controller_Permission.permission_person_add(person_id: java.util.UUID, permission_id: java.util.UUID)
+DELETE    /secure/permission/person/:person_id/:permission_id           controllers.Controller_Permission.permission_person_remove(person_id: java.util.UUID, permission_id: java.util.UUID)
+PUT       /secure/permission/:permission_id                             controllers.Controller_Permission.permission_edit(permission_id: java.util.UUID)
 
 GET       /secure/permission/all                                        controllers.Controller_Permission.permission_get_all()
 
 
-PUT       /secure/role/permission/:role_id                               controllers.Controller_Permission.permission_add_to_role(role_id)
-DELETE    /secure/role/permission/:permission_id/:role_id               controllers.Controller_Permission.permission_remove_from_role(permission_id,role_id)
+PUT       /secure/role/permission/:role_id                               controllers.Controller_Permission.permission_add_to_role(role_id: java.util.UUID)
+DELETE    /secure/role/permission/:permission_id/:role_id               controllers.Controller_Permission.permission_remove_from_role(permission_id: java.util.UUID,role_id: java.util.UUID)
 
-PUT       /secure/role/person/:role_id                                  controllers.Controller_Permission.role_add_person(role_id)
-DELETE    /secure/role/person/:role_id/:person_id                       controllers.Controller_Permission.role_remove_person(role_id, person_id)
+PUT       /secure/role/person/:role_id                                  controllers.Controller_Permission.role_add_person(role_id: java.util.UUID)
+DELETE    /secure/role/person/:role_id/:person_id                       controllers.Controller_Permission.role_remove_person(role_id: java.util.UUID, person_id: java.util.UUID)
 
 POST      /secure/role                                                  controllers.Controller_Permission.role_create()
-DELETE    /secure/role/:role_id                                         controllers.Controller_Permission.role_delete(role_id)
-PUT       /secure/role/:role_id                                         controllers.Controller_Permission.role_edit(role_id)
-GET       /secure/role/:role_id                                         controllers.Controller_Permission.role_get(role_id)
+DELETE    /secure/role/:role_id                                         controllers.Controller_Permission.role_delete(role_id: java.util.UUID)
+PUT       /secure/role/:role_id                                         controllers.Controller_Permission.role_edit(role_id: java.util.UUID)
+GET       /secure/role/:role_id                                         controllers.Controller_Permission.role_get(role_id: java.util.UUID)
 GET       /secure/roles                                                 controllers.Controller_Permission.role_get_all()
 
-GET       /secure/person/system_acces/:person_id                        controllers.Controller_Permission.system_access_get_everything(person_id)
+GET       /secure/person/system_acces/:person_id                        controllers.Controller_Permission.system_access_get_everything(person_id: java.util.UUID)
 
 ### FINANCIAL ############ FINANCIAL ############### FINANCIAL ################ FINANCIAL ################# FINANCIAL ##########################################################
 ################################################################################################################################################################################
@@ -208,23 +208,23 @@ PUT       /project/hardware/activate/:registration_id                   controll
 PUT       /project/hardware/deactive/:registration_id                   controllers.Controller_Project.project_activeHardware(registration_id)
 
 #Program
-POST      /b_program/version/:b_program_id                              controllers.Controller_Blocko.bProgramVersion_create(b_program_id)
-PUT       /b_program/version/:version_id                                controllers.Controller_Blocko.bProgramVersion_update(version_id)
-GET       /b_program/version/:version_id                                controllers.Controller_Blocko.bProgramVersion_get(version_id)
-DELETE    /b_program/version/:version_id                                controllers.Controller_Blocko.bProgramVersion_delete(version_id)
+POST      /b_program/version/:b_program_id                              controllers.Controller_Blocko.bProgramVersion_create(b_program_id: java.util.UUID)
+PUT       /b_program/version/:version_id                                controllers.Controller_Blocko.bProgramVersion_update(version_id: java.util.UUID)
+GET       /b_program/version/:version_id                                controllers.Controller_Blocko.bProgramVersion_get(version_id: java.util.UUID)
+DELETE    /b_program/version/:version_id                                controllers.Controller_Blocko.bProgramVersion_delete(version_id: java.util.UUID)
 
-POST      /b_program/:project_id                                        controllers.Controller_Blocko.bProgram_create(project_id)
-GET       /b_program/:b_program_id                                      controllers.Controller_Blocko.bProgram_get(b_program_id)
-PUT       /b_program/:b_program_id                                      controllers.Controller_Blocko.bProgram_update(b_program_id)
-DELETE    /b_program/:b_program_id                                      controllers.Controller_Blocko.bProgram_delete(b_program_id)
+POST      /b_program/:project_id                                        controllers.Controller_Blocko.bProgram_create(project_id: java.util.UUID)
+GET       /b_program/:b_program_id                                      controllers.Controller_Blocko.bProgram_get(b_program_id: java.util.UUID)
+PUT       /b_program/:b_program_id                                      controllers.Controller_Blocko.bProgram_update(b_program_id: java.util.UUID)
+DELETE    /b_program/:b_program_id                                      controllers.Controller_Blocko.bProgram_delete(b_program_id: java.util.UUID)
 PUT       /b_program/list/:page_number                                  controllers.Controller_Blocko.bProgram_getByFilter(page_number:Int)
 PUT       /b_program/tags/add                                           controllers.Controller_Blocko.bProgram_addTags
 PUT       /b_program/tags/remove                                        controllers.Controller_Blocko.bProgram_removeTags
 
 #Instance
 POST      /instance                                                     controllers.Controller_Blocko.instance_create
-GET       /instance/:instance_id                                        controllers.Controller_Blocko.instance_get(instance_id)
-PUT       /instance/:instance_id                                        controllers.Controller_Blocko.instance_update(instance_id)
+GET       /instance/:instance_id                                        controllers.Controller_Blocko.instance_get(instance_id: java.util.UUID)
+PUT       /instance/:instance_id                                        controllers.Controller_Blocko.instance_update(instance_id: java.util.UUID)
 PUT       /instance/tags/add                                            controllers.Controller_Blocko.instance_addTags
 PUT       /instance/tags/remove                                         controllers.Controller_Blocko.instance_removeTags
 
@@ -233,32 +233,32 @@ PUT       /instance/grid_app                                            controll
 
 #InstanceSnapshot
 POST      /instance/snapshot                                            controllers.Controller_Blocko.instanceSnapshot_create
-GET       /instance/snapshot/:snapshot_id                               controllers.Controller_Blocko.instanceSnapshot_get(snapshot_id)
+GET       /instance/snapshot/:snapshot_id                               controllers.Controller_Blocko.instanceSnapshot_get(snapshot_id: java.util.UUID)
 PUT       /instance/snapshot/deploy                                     controllers.Controller_Blocko.instanceSnapshot_deploy()
-PUT       /instance/snapshot/shutdown/:snapshot_id                      controllers.Controller_Blocko.instanceSnapshot_shutdown(snapshot_id)
-DELETE    /instance/snapshot/:snapshot_id                               controllers.Controller_Blocko.instanceSnapshot_delete(snapshot_id)
+PUT       /instance/snapshot/shutdown/:snapshot_id                      controllers.Controller_Blocko.instanceSnapshot_shutdown(snapshot_id: java.util.UUID)
+DELETE    /instance/snapshot/:snapshot_id                               controllers.Controller_Blocko.instanceSnapshot_delete(snapshot_id: java.util.UUID)
 
 #Blocks
 POST      /block                                                        controllers.Controller_Blocko.block_create()
 POST      /block/clone                                                  controllers.Controller_Blocko.block_clone()
-PUT       /block/order/up/:block_id                                     controllers.Controller_Blocko.block_orderUp(block_id)
-PUT       /block/order/down/:block_id                                   controllers.Controller_Blocko.block_orderDown(block_id)
-PUT       /block/:block_id                                              controllers.Controller_Blocko.block_update(block_id)
-GET       /block/:block_id                                              controllers.Controller_Blocko.block_get(block_id)
-DELETE    /block/:block_id                                              controllers.Controller_Blocko.block_delete(block_id)
+PUT       /block/order/up/:block_id                                     controllers.Controller_Blocko.block_orderUp(block_id: java.util.UUID)
+PUT       /block/order/down/:block_id                                   controllers.Controller_Blocko.block_orderDown(block_id: java.util.UUID)
+PUT       /block/:block_id                                              controllers.Controller_Blocko.block_update(block_id: java.util.UUID)
+GET       /block/:block_id                                              controllers.Controller_Blocko.block_get(block_id: java.util.UUID)
+DELETE    /block/:block_id                                              controllers.Controller_Blocko.block_delete(block_id: java.util.UUID)
 PUT       /block/list/:page_number                                      controllers.Controller_Blocko.block_getByFilter(page_number:Int )
-PUT       /admin/block/deactive/:block_id                               controllers.Controller_Blocko.block_deactivate(block_id)
-PUT       /admin/block/active/:block_id                                 controllers.Controller_Blocko.block_activate(block_id)
+PUT       /admin/block/deactive/:block_id                               controllers.Controller_Blocko.block_deactivate(block_id: java.util.UUID)
+PUT       /admin/block/active/:block_id                                 controllers.Controller_Blocko.block_activate(block_id: java.util.UUID)
 PUT       /admin/block/approval                                         controllers.Controller_Blocko.block_public_response()
 PUT       /block/tags/add                                               controllers.Controller_Blocko.block_addTags
 PUT       /block/tags/remove                                            controllers.Controller_Blocko.block_removeTags
 
-POST      /block/version/:block_id                                      controllers.Controller_Blocko.blockVersion_create(block_id)
-PUT       /block/version/:version_id                                    controllers.Controller_Blocko.blockVersion_update(version_id)
-PUT       /block/version/make_public/:version_id                        controllers.Controller_Blocko.blockVersion_makePublic(version_id)
-GET       /block/version/:version_id                                    controllers.Controller_Blocko.blockVersion_get(version_id)
-DELETE    /block/version/:version_id                                    controllers.Controller_Blocko.blockVersion_delete(version_id)
-PUT       /admin/block/version/set_main/:version_id                     controllers.Controller_Blocko.blockVersion_setMain(version_id)
+POST      /block/version/:block_id                                      controllers.Controller_Blocko.blockVersion_create(block_id: java.util.UUID)
+PUT       /block/version/:version_id                                    controllers.Controller_Blocko.blockVersion_update(version_id: java.util.UUID)
+PUT       /block/version/make_public/:version_id                        controllers.Controller_Blocko.blockVersion_makePublic(version_id: java.util.UUID)
+GET       /block/version/:version_id                                    controllers.Controller_Blocko.blockVersion_get(version_id: java.util.UUID)
+DELETE    /block/version/:version_id                                    controllers.Controller_Blocko.blockVersion_delete(version_id: java.util.UUID)
+PUT       /admin/block/version/set_main/:version_id                     controllers.Controller_Blocko.blockVersion_setMain(version_id: java.util.UUID)
 
 #Blocko General
 PUT       /blocko/disapprove                                            controllers.Controller_Blocko.blockoDisapprove()
@@ -271,25 +271,25 @@ PUT       /blocko/approval                                              controll
 
 POST      /homer_server                                                 controllers.Controller_ExternalServer.homer_server_create()
 
-PUT       /homer_server/set_backup/:server_id                           controllers.Controller_ExternalServer.homer_server_set_backup_server(server_id)
-PUT       /homer_server/set_main/:server_id                             controllers.Controller_ExternalServer.homer_server_set_main_server(server_id)
+PUT       /homer_server/set_backup/:server_id                           controllers.Controller_ExternalServer.homer_server_set_backup_server(server_id: java.util.UUID)
+PUT       /homer_server/set_main/:server_id                             controllers.Controller_ExternalServer.homer_server_set_main_server(server_id: java.util.UUID)
 
-GET       /homer_server/:page_number                                    controllers.Controller_ExternalServer.homer_server_by_filter(page_number: Int)
-DELETE    /homer_server/server/:server_id                               controllers.Controller_ExternalServer.homer_server_delete(server_id)
-PUT       /homer_server/server/edit/:server_id                          controllers.Controller_ExternalServer.homer_server_edit(server_id)
-GET       /homer_server/server/:server_id                               controllers.Controller_ExternalServer.homer_server_get(server_id)
+PUT       /homer_server/:page_number                                    controllers.Controller_ExternalServer.homer_server_by_filter(page_number: Int)
+DELETE    /homer_server/server/:server_id                               controllers.Controller_ExternalServer.homer_server_delete(server_id: java.util.UUID)
+PUT       /homer_server/server/edit/:server_id                          controllers.Controller_ExternalServer.homer_server_edit(server_id: java.util.UUID)
+GET       /homer_server/server/:server_id                               controllers.Controller_ExternalServer.homer_server_get(server_id: java.util.UUID)
 
 #Super Private API (Secured by Server Hash-token)
-GET       /cloud/homer_server/file/b_program/:b_program_version_id      controllers.Controller_ExternalServer.cloud_file_get_b_program_version(b_program_version_id)
-GET       /cloud/homer_server/file/c_program/:compilation_id            controllers.Controller_ExternalServer.cloud_file_get_c_program_compilation(compilation_id)
-GET       /cloud/homer_server/file/bootloader/:bootloader_version_id    controllers.Controller_ExternalServer.cloud_file_get_bootloader(bootloader_version_id)
+GET       /cloud/homer_server/file/b_program/:b_program_version_id      controllers.Controller_ExternalServer.cloud_file_get_b_program_version(b_program_version_id: java.util.UUID)
+GET       /cloud/homer_server/file/c_program/:compilation_id            controllers.Controller_ExternalServer.cloud_file_get_c_program_compilation(compilation_id: java.util.UUID)
+GET       /cloud/homer_server/file/bootloader/:bootloader_version_id    controllers.Controller_ExternalServer.cloud_file_get_bootloader(bootloader_version_id: java.util.UUID)
 
 #Compilation Server
 POST      /compilation_server                                           controllers.Controller_ExternalServer.compilation_server_create()
-PUT       /compilation_server/:server_id                                controllers.Controller_ExternalServer.compilation_server_edit(server_id)
+PUT       /compilation_server/:server_id                                controllers.Controller_ExternalServer.compilation_server_edit(server_id: java.util.UUID)
 GET       /compilation_server                                           controllers.Controller_ExternalServer.compilation_server_get_all()
-GET       /compilation_server/:server_id                                controllers.Controller_ExternalServer.compilation_server_get(server_id)
-DELETE    /compilation_server/:server_id                                controllers.Controller_ExternalServer.compilation_server_delete(server_id)
+GET       /compilation_server/:server_id                                controllers.Controller_ExternalServer.compilation_server_get(server_id: java.util.UUID)
+DELETE    /compilation_server/:server_id                                controllers.Controller_ExternalServer.compilation_server_delete(server_id: java.util.UUID)
 
 
 ### ACTUALIZATION PROCEDURE ############ ACTUALIZATION PROCEDURE ############### ACTUALIZATION PROCEDURE ################ ACTUALIZATION PROCEDURE ##############################
@@ -376,7 +376,7 @@ PUT       /hardware/parameters/:hardware_id                             controll
 PUT       /hardware/backup                                              controllers.Controller_Hardware.hardware_updateBackup()
 
 PUT       /hardware/filter/:page_number                                 controllers.Controller_Hardware.hardware_getByFilter(page_number: Int)
-GET       /hardware/check/:registration_hash                            controllers.Controller_Hardware.hardware_check(registration_hash)
+GET       /hardware/check/:registration_hash/:project_id                controllers.Controller_Hardware.hardware_check(registration_hash, project_id: java.util.UUID)
 GET       /hardware/hash/:full_id                                       controllers.Controller_Hardware.hardware_get_registration_hash(full_id)
 GET       /hardware/:hardware_id                                        controllers.Controller_Hardware.hardware_get(hardware_id)
 DELETE    /hardware/deactivate/:hardware_id                             controllers.Controller_Hardware.hardware_deactivate(hardware_id)
