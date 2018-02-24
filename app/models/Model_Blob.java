@@ -3,9 +3,11 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.*;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import org.ehcache.Cache;
+import responses.Result_UnsupportedException;
 import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
@@ -426,24 +428,136 @@ public class Model_Blob extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    // Create Permission is always JsonIgnore
+
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        throw new Result_Error_NotSupportedException();
+        //true
     }
 
+    // Create Permission is always JsonIgnore
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        // Nothing
+        //true
     }
+
 
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        throw new Result_Error_NotSupportedException();
+        if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+        if (_BaseController.person().has_permission(Model_BProgram.Permission.BProgram_delete.name())) return;
+        check_delete_permission();
     }
 
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+
+        if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+        if (_BaseController.person().has_permission(Model_BProgram.Permission.BProgram_delete.name())) return;
+
+
+        UUID id = null;
+
+        id = Model_Person.find.query().where().eq("picture.id", this.id).select("id").findSingleAttribute();
+
+        if(id != null) {
+            Model_Person.getById(id).check_update_permission();
+            return;
+        }
+
+        id = Model_InstanceSnapshot.find.query().where().eq("program.id", this.id).select("id").findSingleAttribute();
+
+        if(id != null) {
+            Model_InstanceSnapshot.getById(id).check_update_permission();
+            return;
+        }
+
+        id = Model_HardwareType.find.query().where().eq("picture.id", this.id).select("id").findSingleAttribute();
+
+        if(id != null) {
+            Model_HardwareType.getById(id).check_update_permission();
+            return;
+        }
+
+        id = Model_Hardware.find.query().where().eq("picture.id", this.id).select("id").findSingleAttribute();
+
+        if(id != null) {
+            Model_Hardware.getById(id).check_update_permission();
+            return;
+        }
+
+        id = Model_Log.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
+
+        if(id != null) {
+            Model_Log.getById(id).check_update_permission();
+            return;
+        }
+
+        id = Model_BootLoader.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
+
+        if(id != null) {
+            Model_BootLoader.getById(id).check_update_permission();
+            return;
+        }
+
+        id = Model_HardwareUpdate.find.query().where().eq("binary_file.id", this.id).select("id").findSingleAttribute();
+
+        if(id != null) {
+            Model_HardwareUpdate.getById(id).check_update_permission();
+            return;
+        }
+
+        id = Model_Compilation.find.query().where().eq("blob.id", this.id).select("id").findSingleAttribute();
+
+        if(id != null) {
+            Model_Compilation.getById(id).check_update_permission();
+            return;
+        }
+
+        id = Model_CProgramVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
+
+        if(id != null) {
+            Model_CProgramVersion.getById(id).check_update_permission();
+            return;
+        }
+
+        id = Model_LibraryVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
+
+        if(id != null) {
+            Model_LibraryVersion.getById(id).check_update_permission();
+            return;
+        }
+
+        id = Model_BProgramVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
+
+        if(id != null) {
+            Model_BProgramVersion.getById(id).check_update_permission();
+            return;
+        }
+
+        id = Model_GridProgramVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
+
+        if(id != null) {
+            Model_GridProgramVersion.getById(id).check_update_permission();
+            return;
+        }
+
+        id = Model_WidgetVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
+
+        if(id != null) {
+            Model_WidgetVersion.getById(id).check_update_permission();
+            return;
+        }
+
+        id = Model_BlockVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
+
+        if(id != null) {
+            Model_BlockVersion.getById(id).check_update_permission();
+            return;
+        }
+
+        logger.error("Unsupported object in Model Blob when system tried to remove this object!");
         throw new Result_Error_NotSupportedException();
     }
 
-/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+    public enum Permission { Blob_create, Blob_read, Blob_update, Blob_edit, Blob_delete }
+
+    /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     @CacheField(value = String.class, duration = CacheField.HalfDayCacheConstant, maxElements = 500, automaticProlonging = false)
     public static Cache<UUID, String> cache_public_link;

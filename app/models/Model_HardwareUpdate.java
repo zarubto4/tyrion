@@ -13,6 +13,7 @@ import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -725,7 +726,7 @@ public class Model_HardwareUpdate extends BaseModel {
 
             plan = find.byId(id);
 
-            if (plan == null) return null;
+            if (plan == null) throw new Result_Error_NotFound(Model_HardwareUpdate.class);
 
             cache.put(id, plan);
         }

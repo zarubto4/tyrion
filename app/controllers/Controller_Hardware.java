@@ -872,10 +872,9 @@ public class Controller_Hardware extends _BaseController {
             batch.customer_company_name = help.customer_company_name;
             batch.customer_company_made_description = help.customer_company_made_description;
 
-            batch.mac_address_start = help.mac_address_start.toString();
-            batch.mac_address_end = help.mac_address_end.toString();
-
-            batch.ean_number = help.ean_number.toString();
+            batch.mac_address_start = help.mac_address_start;
+            batch.mac_address_end = help.mac_address_end;
+            batch.ean_number = help.ean_number;
 
             batch.description = help.description;
 
@@ -973,10 +972,9 @@ public class Controller_Hardware extends _BaseController {
             batch.customer_company_name = help.customer_company_name;
             batch.customer_company_made_description = help.customer_company_made_description;
 
-            batch.mac_address_start = help.mac_address_start.toString();
-            batch.mac_address_end = help.mac_address_end.toString();
-
-            batch.ean_number = help.ean_number.toString();
+            batch.mac_address_start = help.mac_address_start;
+            batch.mac_address_end = help.mac_address_end;
+            batch.ean_number = help.ean_number;
 
             batch.description = help.description;
             
@@ -2756,18 +2754,26 @@ public class Controller_Hardware extends _BaseController {
                 List<UUID> group_hardware_ids = board.get_hardware_group_ids();
 
                 // Cyklus pro přidávání
-                for (UUID board_group_id: help.device_synchro.hardware_group_ids) {
+                if(help.device_synchro.hardware_group_ids != null) {
+                    for (UUID board_group_id : help.device_synchro.hardware_group_ids) {
 
-                    // Přidám všechny, které nejsou už součásti cache_hardware_groups_id
-                    if (!group_hardware_ids.contains(board_group_id)) {
+                        // Přidám všechny, které nejsou už součásti cache_hardware_groups_id
+                        if (!group_hardware_ids.contains(board_group_id)) {
 
-                        logger.debug("board_group_update_device_list - adding group {}", board_group_id );
+                            logger.debug("board_group_update_device_list - adding group {}", board_group_id);
 
-                        Model_HardwareGroup group = Model_HardwareGroup.getById(board_group_id);
+                            Model_HardwareGroup group = Model_HardwareGroup.getById(board_group_id);
 
-                        board.get_hardware_group_ids().add(group.id);
-                        board.hardware_groups.add(group);
-                        group.cache_group_size +=1;
+                            board.get_hardware_group_ids().add(group.id);
+                            board.hardware_groups.add(group);
+                            group.cache_group_size += 1;
+                            if (group.cache_hardware_type_ids == null) {
+                                group.cache_hardware_type_ids = new ArrayList<>();
+                            }
+                            if(!group.cache_hardware_type_ids.contains(board.hardware_type_id())){
+                                group.cache_hardware_type_ids.add(board.hardware_type_id());
+                            }
+                        }
                     }
                 }
 
@@ -2776,16 +2782,28 @@ public class Controller_Hardware extends _BaseController {
 
                     UUID board_group_id = it.next();
 
-                    // Není a tak mažu
-                    if (!help.device_synchro.hardware_group_ids.contains(board_group_id)) {
-
-                        logger.debug("board_group_update_device_list - removing group {}", board_group_id );
-
+                    // NEní žádná, tak odstraním všechny
+                    if(help.device_synchro.hardware_group_ids == null) {
                         Model_HardwareGroup group = Model_HardwareGroup.getById(board_group_id);
-
                         board.hardware_groups.remove(group);
-                        group.cache_group_size -=1;
+                        group.cache_group_size -= 1;
+                        group.cache_hardware_type_ids = null; // Clean cache
                         it.remove();
+                    }
+
+                    if(help.device_synchro.hardware_group_ids != null) {
+                        // Není a tak mažu
+                        if (!help.device_synchro.hardware_group_ids.contains(board_group_id)) {
+
+                            logger.debug("board_group_update_device_list - removing group {}", board_group_id);
+
+                            Model_HardwareGroup group = Model_HardwareGroup.getById(board_group_id);
+
+                            board.hardware_groups.remove(group);
+                            group.cache_group_size -= 1;
+                            group.cache_hardware_type_ids = null;// Clean cache
+                            it.remove();
+                        }
                     }
                 }
 

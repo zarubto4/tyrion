@@ -22,10 +22,10 @@ public class Swagger_HardwareBatch_New {
     @Constraints.Required @ApiModelProperty(required = true) public String customer_company_name;
     @Constraints.Required @ApiModelProperty(required = true) public String customer_company_made_description;
 
-    @Constraints.Required @ApiModelProperty(required = true) public Long mac_address_start;
-    @Constraints.Required @ApiModelProperty(required = true) public Long mac_address_end;
+    @Constraints.Required @ApiModelProperty(required = true) public String mac_address_start;
+    @Constraints.Required @ApiModelProperty(required = true) public String mac_address_end;
 
-    @Constraints.Required @ApiModelProperty(required = true) public Long ean_number;
+    @Constraints.Required @ApiModelProperty(required = true) public String ean_number;
                           @ApiModelProperty(required = false) public String description;
 
 }

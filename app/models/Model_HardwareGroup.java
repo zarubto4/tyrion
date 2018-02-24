@@ -70,12 +70,7 @@ public class Model_HardwareGroup extends NamedModel {
             // Cache
             if (cache_hardware_type_ids == null) {
                 cache_hardware_type_ids = new ArrayList<>();
-                List<UUID> uuids = Model_HardwareType.find.query().where().eq("hardware.hardware_groups.id", id).orderBy("UPPER(name) ASC").findIds();
-
-                // Získání seznamu
-                for (UUID uuid : uuids) {
-                    cache_hardware_type_ids.add(uuid);
-                }
+                cache_hardware_type_ids = Model_HardwareType.find.query().where().eq("hardware.hardware_groups.id", id).findIds();
             }
 
             List<Model_HardwareType> hardwareTypes = new ArrayList<>();

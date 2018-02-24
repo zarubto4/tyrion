@@ -1,8 +1,10 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.model.NamedModel;
@@ -55,10 +57,33 @@ public class Model_Log extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
+        if (_BaseController.person().has_permission(Permission.Log_delete.name())) return;
+        throw new Result_Error_NotSupportedException();
+    }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if (_BaseController.person().has_permission(Permission.Log_delete.name())) return;
+        throw new Result_Error_NotSupportedException();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        if (_BaseController.person().has_permission(Permission.Log_delete.name())) return;
+        throw new Result_Error_NotSupportedException();
+    }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        if (_BaseController.person().has_permission(Permission.Log_delete.name())) return;
+        throw new Result_Error_NotSupportedException();
+    }
+
+    public enum Permission {Log_create, Log_read, Log_update, Log_edit, Log_delete}
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    public static Model_Log getById(UUID id) throws _Base_Result_Exception {
+        Model_Log board = find.byId(id);
+        if (board == null) throw new Result_Error_NotFound(Model_Log.class);
+        board.check_read_permission();
+        return board;
+    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<UUID, Model_Log> find = new Finder<>(Model_Log.class);

@@ -4,14 +4,10 @@ import play.Application;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.logger.ServerLogger;
-import utilities.response.GlobalResult;
 
-import javax.inject.Inject;
-import java.io.File;
-import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Paths;
+
 
 public class TestLog extends Controller {
 
@@ -34,6 +30,17 @@ public class TestLog extends Controller {
     public Result clear_test_log() {
 
         try {
+
+
+                Result result = new HomeController().index();
+                assertEquals(OK, result.status());
+                assertEquals("text/html", result.contentType().get());
+                assertEquals("utf-8", result.charset().get());
+                assertTrue(contentAsString(result).contains("Welcome"));
+
+
+
+
 
             PrintWriter writer = new PrintWriter(new File(application.path() + "/logs/test.log"));
             writer.close();

@@ -341,8 +341,10 @@ public abstract class BaseModel extends Model {
     public boolean update_permission(){
         try{
             check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
             return true;
         }catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
             return false;
         }catch (Exception e){
             logger.internalServerError(e);
@@ -355,8 +357,10 @@ public abstract class BaseModel extends Model {
     public boolean delete_permission(){
         try{
             check_delete_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
             return true;
         }catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
             return false;
         }catch (Exception e){
             logger.internalServerError(e);

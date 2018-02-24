@@ -66,7 +66,7 @@ public class Model_HardwareBatch {
     @ApiModelProperty(required = true) @Constraints.Required public String customer_company_name;        // Jméno várobce co bude na štítku
     @ApiModelProperty(required = true) @Constraints.Required public String customer_company_made_description;      // Made in Czech Republic (co bude na štítku)
 
-    @ApiModelProperty(required = true) @Constraints.Required public String mac_address_start;
+    @ApiModelProperty(required = true) @Constraints.Required public String mac_address_start;            // Je v HExa decimálním režimu!!!! Long.parseLong(help.ean_number,16)!!!
     @ApiModelProperty(required = true) @Constraints.Required public String mac_address_end;
     @ApiModelProperty(required = true) @Constraints.Required public String latest_used_mac_address;     // Pro přiřazení je vždy nutné zvednout novou verzi - tato hodnota se dosynchronizovává se serverem
 
@@ -86,14 +86,14 @@ public class Model_HardwareBatch {
 
         // Its used only for check - if some other server dont use this mac address and if its not registred in central hardware registration authority
         if (latest_used_mac_address == null) {
-            return convert_to_MAC_ISO(Long.parseLong(mac_address_start, 10));
+            return convert_to_MAC_ISO(Long.parseLong(mac_address_start, 16));
         }
 
-        if (Long.parseLong(latest_used_mac_address, 10) >= Long.parseLong(mac_address_end, 10)) {
+        if (Long.parseLong(latest_used_mac_address, 16) >= Long.parseLong(mac_address_end, 16)) {
             throw new IllegalCharsetNameException("All Mac Address used");
         }
 
-        return convert_to_MAC_ISO(Long.parseLong(latest_used_mac_address, 10)+ 1);
+        return convert_to_MAC_ISO(Long.parseLong(latest_used_mac_address, 16)+ 1);
     }
 
     @JsonIgnore
@@ -105,15 +105,15 @@ public class Model_HardwareBatch {
             return get_new_MacAddress();
         }
 
-        if (Long.parseLong(latest_used_mac_address, 10)>= Long.parseLong(mac_address_end, 10)) {
+        if (Long.parseLong(latest_used_mac_address, 16)>= Long.parseLong(mac_address_end, 16)) {
             throw new IllegalCharsetNameException("All Mac Address used");
         }
 
-        Long help = Long.parseLong(latest_used_mac_address, 10)+ 1;
+        Long help = Long.parseLong(latest_used_mac_address, 16)+ 1;
         this.latest_used_mac_address = help.toString();
         update();
 
-        return convert_to_MAC_ISO(Long.parseLong(latest_used_mac_address, 10));
+        return convert_to_MAC_ISO(Long.parseLong(latest_used_mac_address, 16));
 
     }
 
@@ -278,7 +278,6 @@ public class Model_HardwareBatch {
 
                 String string_json = cursor.next().toJson();
                 ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
-                System.out.println("Model_HardwareBatch: Json \n" + string_json +" \n");
                 Model_HardwareBatch batch = baseFormFactory.formFromJsonWithValidation(Model_HardwareBatch.class, json);
                 batches.add(batch);
             }
