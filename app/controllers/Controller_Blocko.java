@@ -562,7 +562,7 @@ public class Controller_Blocko extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_NameAndDesc_ProjectIdRequired",
+                            dataType = "utilities.swagger.input.Swagger_Instance_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -582,16 +582,25 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDesc_ProjectIdRequired help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDesc_ProjectIdRequired.class);
+            Swagger_Instance_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_New.class);
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(help.project_id);
+            Model_HomerServer main_server = Model_HomerServer.getById(help.main_server_id);
+
+            Model_HomerServer backup_server = null;
+            if(help.backup_server_id != null) backup_server = Model_HomerServer.getById(help.backup_server_id);
+
+            Model_BProgram b_program = Model_BProgram.getById(help.b_program_id);
 
             // Tvorba Objektu
             Model_Instance instance = new Model_Instance();
             instance.name = help.name;
             instance.description = help.description;
             instance.project = project;
+            instance.server_main = main_server;
+            instance.server_backup = backup_server;
+            instance.b_program = b_program;
 
             instance.save();
 

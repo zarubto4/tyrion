@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -20,6 +21,7 @@ import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_instance_with_tyrion.verification.WS_Message_Grid_token_verification;
@@ -48,6 +50,8 @@ public class Model_Instance extends TaggedModel {
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_HomerServer server_backup;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Project project;
 
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BProgram b_program; // Only first reference!
+
     @OneToMany(mappedBy = "instance", cascade = CascadeType.ALL)
     public List<Model_InstanceSnapshot> snapshots = new ArrayList<>();
 
@@ -57,6 +61,7 @@ public class Model_Instance extends TaggedModel {
     @JsonIgnore @Transient @Cached private UUID cache_server_main_id;
     @JsonIgnore @Transient @Cached private UUID cache_server_backup_id;
     @JsonIgnore @Transient @Cached private UUID cache_project_id;
+    @JsonIgnore @Transient @Cached private UUID cache_b_program_id;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -69,6 +74,18 @@ public class Model_Instance extends TaggedModel {
         }
 
         return cache_project_id;
+    }
+
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Swagger_Short_Reference b_program(){
+        if(cache_b_program_id == null) {
+            cache_b_program_id = Model_BProgram.find.query().where().eq("instances.id", id).select("id").findSingleAttribute();
+        }
+        if(cache_b_program_id == null) return null;
+
+        Model_BProgram b_rpogram = Model_BProgram.getById(cache_b_program_id);
+        return new Swagger_Short_Reference(project.id, b_rpogram.name, b_rpogram.description);
     }
 
     @JsonProperty @ApiModelProperty(required = true)

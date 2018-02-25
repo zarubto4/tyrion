@@ -28,8 +28,5 @@ public class Swagger_HomerServer_New {
     public String server_url;
 
     @ApiModelProperty(value = "Optiona value - only for private server")
-    public UUID tarriff_id;
-
-    @ApiModelProperty(value = "Optiona value - only for private server")
-    public List<UUID> projects_id;
+    public UUID project_id;
 }

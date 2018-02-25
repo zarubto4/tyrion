@@ -17,6 +17,6 @@ public class Swagger_HomerServer_Filter {
     public List<HomerType> server_types = new ArrayList<>();
 
     @ApiModelProperty(required = false)
-    public String project_id;
+    public UUID project_id;
 
 }

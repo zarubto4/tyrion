@@ -623,8 +623,14 @@ public class Model_HomerServer extends BaseModel {
         if(project != null && server_type != HomerType.PRIVATE){
             throw new Result_Error_Bad_request("Server must be PRIVATE if its registered with Project");
         }
+
+        if(project != null) {
+            project.check_update_permission();
+            return;
+        }
+
         if(_BaseController.person().has_permission(Permission.Homer_create.name())) return;
-        project.check_update_permission();
+
     }
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Homer_read.name())) return;

@@ -85,7 +85,7 @@ public class Controller_ExternalServer extends _BaseController {
             // Vytvoření objektu
             Model_HomerServer server = new Model_HomerServer();
             server.personal_server_name = help.personal_server_name;
-            server.server_type = HomerType.PUBLIC;
+
 
             server.mqtt_port = help.mqtt_port;
             server.grid_port = help.grid_port;
@@ -93,6 +93,19 @@ public class Controller_ExternalServer extends _BaseController {
             server.hardware_logger_port = help.hardware_logger_port;
 
             server.server_url = help.server_url;
+
+            server.server_type = HomerType.PUBLIC;
+
+            if(help.project_id == null) {
+                server.server_type = HomerType.PUBLIC;
+            }else {
+
+                server.server_type = HomerType.PRIVATE;
+
+                Model_Project project = Model_Project.getById(help.project_id);
+                server.project = project;
+
+            }
 
             // Uložení objektu
             server.save();
@@ -275,7 +288,7 @@ public class Controller_ExternalServer extends _BaseController {
                 query.where().in("server_type", help.server_types);
             }
             if (help.project_id != null) {
-                throw new Result_Error_NotSupportedException();
+                query.where().eq("project.id", help.project_id);
             }
 
             // Vyvoření odchozího JSON
