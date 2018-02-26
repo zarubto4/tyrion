@@ -39,7 +39,7 @@ public class Model_BProgram extends TaggedModel {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-
+    @JsonIgnore @Transient @Cached public List<UUID> cache_version_ids;
     @JsonIgnore @Transient @Cached private UUID cache_project_id;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
