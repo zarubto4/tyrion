@@ -22,6 +22,7 @@ public class Swagger_HomerServer_New {
     @Constraints.Required public int grid_port;
     @Constraints.Required public int web_view_port;
     @Constraints.Required public int hardware_logger_port;
+    @Constraints.Required public int rest_api_port;
 
     @Constraints.MinLength(value = 6, message = "The name must have at least 4 characters")
     @Constraints.MaxLength(value = 60, message = "The name must have at least 60 characters")

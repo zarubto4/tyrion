@@ -18,7 +18,7 @@ import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
 import utilities.grid_support.utils.IP_Founder;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
-import utilities.homer_auto_update.DigitalOceanTyrionService;
+import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 import utilities.model.BaseModel;

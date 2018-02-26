@@ -163,10 +163,6 @@ public class Model_HomerServer extends BaseModel {
     public boolean delete() {
 
         logger.debug("delete::Delete object Id: {}",  this.id);
-
-        //Cache Update
-        cache.remove(this.id);
-
         return super.delete();
     }
 

@@ -91,6 +91,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.grid_port = help.grid_port;
             server.web_view_port = help.web_view_port;
             server.hardware_logger_port = help.hardware_logger_port;
+            server.rest_api_port = help.rest_api_port;
 
             server.server_url = help.server_url;
 
@@ -235,6 +236,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.grid_port = help.grid_port;
             server.web_view_port = help.web_view_port;
             server.hardware_logger_port = help.hardware_logger_port;
+            server.rest_api_port = help.rest_api_port;
             server.server_url = help.server_url;
 
             // Uložení objektu
@@ -283,6 +285,7 @@ public class Controller_ExternalServer extends _BaseController {
             Query<Model_HomerServer> query = Ebean.find(Model_HomerServer.class);
 
             query.orderBy("UPPER(personal_server_name) ASC");
+            query.where().eq("deleted", false);
 
             if (!help.server_types.isEmpty()) {
                 query.where().in("server_type", help.server_types);
