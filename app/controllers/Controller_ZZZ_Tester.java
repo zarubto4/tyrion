@@ -20,6 +20,7 @@ import play.libs.Json;
 import play.mvc.Result;
 import utilities.hardware_registration_auhtority.DM_Board_Registration_Central_Authority;
 import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
+import utilities.homer_auto_update.DigitalOceanTyrionService;
 import utilities.logger.Logger;
 import utilities.scheduler.jobs.Job_CheckCompilationLibraries;
 import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
@@ -193,6 +194,13 @@ public class Controller_ZZZ_Tester extends _BaseController {
     @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test3() {
         try {
+
+            DigitalOceanTyrionService oceanTyrionService = new DigitalOceanTyrionService();
+
+            Model_HomerServer server = new Model_HomerServer();
+            server.id = UUID.randomUUID();
+            DigitalOceanTyrionService.create_server(server);
+
 
             return ok();
         } catch (Exception e) {

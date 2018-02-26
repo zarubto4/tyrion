@@ -160,7 +160,12 @@ public class Model_BProgram extends TaggedModel {
         
         this.azure_b_program_link = project.getPath() + "/b-programs/"  + UUID.randomUUID().toString();
 
-        project.cache_b_program_ids.add(this.id);
+        if(project != null) {
+            if (project.cache_b_program_ids == null) {
+                project.cache_b_program_ids = new ArrayList<>();
+            }
+            project.cache_b_program_ids.add(this.id);
+        }
 
         super.save();
 

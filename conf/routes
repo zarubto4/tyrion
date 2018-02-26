@@ -7,8 +7,8 @@ OPTIONS   /*all                                                         controll
 
 ### DEVELOPERS TEST ############ DEVELOPERS TEST ############### DEVELOPERS TEST ################ DEVELOPERS TEST ###################################################
 POST      /test1                                                        controllers.Controller_ZZZ_Tester.test1()
-POST      /test2                                                        controllers.Controller_ZZZ_Tester.test2()
-GET       /test3                                                        controllers.Controller_ZZZ_Tester.test2()
+GET       /test2                                                        controllers.Controller_ZZZ_Tester.test2()
+GET       /test3                                                        controllers.Controller_ZZZ_Tester.test3()
 GET       /test4                                                        controllers.Controller_ZZZ_Tester.test4()
 
                                                                         #Allowed only in Developer Mode!

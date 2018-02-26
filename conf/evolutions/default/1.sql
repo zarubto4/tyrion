@@ -511,6 +511,7 @@ create table instance (
   server_main_id                uuid,
   server_backup_id              uuid,
   project_id                    uuid,
+  b_program_id                  uuid,
   deleted                       boolean default false not null,
   constraint pk_instance primary key (id)
 );
@@ -1237,6 +1238,9 @@ create index ix_instance_server_backup_id on instance (server_backup_id);
 alter table instance add constraint fk_instance_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
 create index ix_instance_project_id on instance (project_id);
 
+alter table instance add constraint fk_instance_b_program_id foreign key (b_program_id) references bprogram (id) on delete restrict on update restrict;
+create index ix_instance_b_program_id on instance (b_program_id);
+
 alter table instance_tag add constraint fk_instance_tag_instance foreign key (instance_id) references instance (id) on delete restrict on update restrict;
 create index ix_instance_tag_instance on instance_tag (instance_id);
 
@@ -1583,6 +1587,9 @@ drop index if exists ix_instance_server_backup_id;
 
 alter table if exists instance drop constraint if exists fk_instance_project_id;
 drop index if exists ix_instance_project_id;
+
+alter table if exists instance drop constraint if exists fk_instance_b_program_id;
+drop index if exists ix_instance_b_program_id;
 
 alter table if exists instance_tag drop constraint if exists fk_instance_tag_instance;
 drop index if exists ix_instance_tag_instance;

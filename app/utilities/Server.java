@@ -16,9 +16,9 @@ import utilities.cache.ServerCache;
 import utilities.document_db.DocumentDB;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
-import utilities.financial.extensions.configurations.Configuration;
 import utilities.grid_support.utils.IP_Founder;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
+import utilities.homer_auto_update.DigitalOceanTyrionService;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 import utilities.model.BaseModel;
@@ -431,6 +431,7 @@ public class Server {
         Synchronize_Homer_Synchronize_Settings.baseFormFactory = Server.injector.getInstance(_BaseFormFactory.class);
         Model_HardwareBatch.baseFormFactory             = Server.injector.getInstance(_BaseFormFactory.class);
         BaseModel.baseFormFactory                       = Server.injector.getInstance(_BaseFormFactory.class);
+        DigitalOceanTyrionService.baseFormFactory                    = Server.injector.getInstance(_BaseFormFactory.class);
     }
 
     /**

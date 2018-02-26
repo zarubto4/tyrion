@@ -75,6 +75,7 @@ public class Model_HomerServer extends BaseModel {
     public HomerType server_type;  // Určující typ serveru
     public Date time_stamp_configuration;            // Čas konfigurace
 
+    // Stav Deploy
     public Integer days_in_archive;
     public boolean logging;
     public boolean interactive;
