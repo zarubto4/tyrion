@@ -19,7 +19,7 @@ GET       /demodata                                                     utilitie
 
 GET       /websocket/portal/:token                                      controllers.Controller_WebSocket.portal(token)
 GET       /websocket/homer/:token                                       controllers.Controller_WebSocket.homer(token)
-GET       /websocket/compiler/:token                                    controllers.Controller_WebSocket.compiler(token)
+GET       /websocket/compilation_server/:token                                    controllers.Controller_WebSocket.compiler(token)
 GET       /websocket/access_token                                       controllers.Controller_WebSocket.get_Websocket_token()
 
 #API - CoreClient ####################################################################################################################################################

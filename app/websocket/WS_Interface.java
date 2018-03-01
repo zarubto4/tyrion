@@ -6,6 +6,7 @@ import akka.actor.PoisonPill;
 import akka.actor.Props;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import play.libs.Json;
 import utilities.logger.Logger;
 import websocket.interfaces.WS_Portal;
 
@@ -34,7 +35,6 @@ public abstract class WS_Interface extends AbstractActor {
 
     @Override
     public Receive createReceive() {
-        logger.trace("createReceive");
         return receiveBuilder().match(JsonNode.class, this::onMessage).build();
     }
 
@@ -46,7 +46,8 @@ public abstract class WS_Interface extends AbstractActor {
         if (!message.has("message_id")) {
             message.put("message_id", UUID.randomUUID().toString());
         }
-        this.out.tell(message.toString(), self());
+        logger.trace("send:: {}", message.toString());
+        this.out.tell(Json.toJson(message), self());
     }
 
     /**
@@ -56,7 +57,9 @@ public abstract class WS_Interface extends AbstractActor {
      * @return response
      */
     public ObjectNode sendWithResponse(WS_Message message) {
+        logger.trace("sendWithResponse:: Set Sender {} ", message.toString());
         message.setSender(this);
+        logger.trace("sendWithResponse:: Message Buffer ID: {} ", message.getId());
         messageBuffer.put(message.getId(), message);
         return message.send();
     }
@@ -90,22 +93,49 @@ public abstract class WS_Interface extends AbstractActor {
 
 /* PRIVATE API ---------------------------------------------------------------------------------------------------------*/
 
-    private Map<UUID, WS_Message> messageBuffer = new HashMap<>();
+
+    /**
+     * Odesílání zpráv: Zprávy lze odesílat s vyžadovanou odpovědí, nebo bez ní. Pokud vyžaduji odpověď (jako potvrzení
+     * že se akce povedla, nebo co se událo v reakci na zprávu), spustí se vlákno v metodě write_with_confirmation. Odeslaná
+     * zpráva má unikátní číslo, které se uloží do zásobníku odeslaných odpovědí.
+     * Vlákno se na chvíli uspí..  metoda onMessage, kam chodí odpovědi zjistí-li, že bylo uloženo do zásobníku odeslaných
+     * zpráv nějaké ID, zprávu dále nepřeposílá a pouze danou zprávu uloží do zásobníku příchozích zpráv,
+     * kde jí vlákno v intervalech hledá. Tam si jí vlákno taktéž vyzvedne. Pokud
+     * nedojde k během určitého intervalu k odovědi, vláknu vyprší životnost a zavolá vyjímku TimeoutException.
+     */
+    public Map<UUID, WS_Message> messageBuffer = new HashMap<>();
     private final ActorRef out;
 
     private void onMessage(JsonNode message) {
         try {
 
-            logger.debug("onMessage - incoming message: {}", message);
-
+            logger.trace("onMessage - incoming message: {}", message);
             ObjectNode json = (ObjectNode) message;
 
+            logger.trace("onMessage - Object node: {}", json.toString());
+
+            if(!json.has("websocket_identificator")){
+                json.put("websocket_identificator", this.id.toString());
+            }
+
             if (json.has("message_id")) {
+                logger.trace("onMessage - message contains message ID: {}", json.get("message_id"));
+
                 UUID id = UUID.fromString(json.get("message_id").asText());
+
+                logger.trace("onMessage - message UUID: {}", id.toString());
+
                 if (messageBuffer.containsKey(id)) {
+                    logger.trace("onMessage - its message from buffer");
                     messageBuffer.get(id).resolve(json);
+                }else {
+
+                    logger.trace("onMessage - its not message from Buffer - set to onMessage in some WS_Interface");
+                    this.onMessage(json);
                 }
+
             } else {
+
                 this.onMessage(json);
             }
 

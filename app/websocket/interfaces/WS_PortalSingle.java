@@ -16,6 +16,9 @@ public class WS_PortalSingle extends WS_Interface {
 
 /* STATIC  -------------------------------------------------------------------------------------------------------------*/
 
+    public boolean notification_subscriber;
+
+
     public static Props props(ActorRef out, WS_Portal portal, UUID id) {
         return Props.create(WS_PortalSingle.class, out, portal, id);
     }
@@ -35,8 +38,10 @@ public class WS_PortalSingle extends WS_Interface {
     }
 
     @Override
-    public void onMessage(ObjectNode json) {
-        this.portal.onMessage(json);
+    public void onMessage(ObjectNode json)
+    {
+        json.put("single_connection_token", this.id.toString());
+        this.portal.onMessage(this, json);
     }
 
     @Override

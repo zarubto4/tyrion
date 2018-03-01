@@ -7,6 +7,8 @@ import play.libs.Json;
 import websocket.interfaces.WS_Portal;
 import websocket.messages.common.abstract_class.WS_AbstractMessage;
 
+import java.util.UUID;
+
 public class WS_Message_Subscribe_Notifications extends WS_AbstractMessage {
 
     // MessageType
@@ -15,17 +17,18 @@ public class WS_Message_Subscribe_Notifications extends WS_AbstractMessage {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Constraints.Required  public String single_connection_token;
+    @Constraints.Required  public UUID single_connection_token;
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public static ObjectNode approve_result() {
+    public static ObjectNode approve_result(String message_id) {
 
         ObjectNode request = Json.newObject();
         request.put("message_type", messageType);
         request.put("message_channel", WS_Portal.CHANNEL);
         request.put("status", "success");
+        request.put("message_id", message_id);
         return request;
 
     }

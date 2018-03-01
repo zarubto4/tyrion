@@ -12,12 +12,14 @@ import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
+import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.document_db.document_objects.DM_CompilationServer_Connect;
 import utilities.document_db.document_objects.DM_CompilationServer_Disconnect;
 import utilities.enums.CompilationStatus;
 import utilities.enums.NetworkStatus;
+import utilities.errors.ErrorCode;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
@@ -100,6 +102,41 @@ public class Model_CompilationServer extends BaseModel {
     public static String CHANNEL = "compilation_server";
 
     @JsonIgnore
+    public ObjectNode write_with_confirmation(ObjectNode json,  Integer time, Integer delay, Integer number_of_retries) {
+
+        try {
+
+            if (!Controller_WebSocket.compilers.containsKey(this.id)) {
+
+                ObjectNode request = Json.newObject();
+                request.put("message_type", json.get("message_type").asText());
+                request.put("message_channel", Model_CompilationServer.CHANNEL);
+                request.put("error_code", ErrorCode.HOMER_IS_OFFLINE.error_code());
+                request.put("error_message", ErrorCode.HOMER_IS_OFFLINE.error_message());
+                request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
+                request.put("websocket_identificator", this.id.toString());
+
+                return request;
+            }
+
+            return Controller_WebSocket.compilers.get(this.id).sendWithResponse(new WS_Message(json, delay, time, number_of_retries));
+
+        } catch (Exception e) {
+            logger.error("write_with_confirmation - exception", e);
+
+            ObjectNode request = Json.newObject();
+            request.put("message_type", json.get("message_type").asText());
+            request.put("message_channel", Model_CompilationServer.CHANNEL);
+            request.put("error_code", ErrorCode.COMPILATION_SERVER_IS_OFFLINE.error_code());
+            request.put("error_message", ErrorCode.COMPILATION_SERVER_IS_OFFLINE.error_message());
+            request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
+            request.put("websocket_identificator", this.id.toString());
+            return request;
+
+        }
+    }
+
+    @JsonIgnore
     public static boolean is_online() {
         return  !Controller_WebSocket.compilers.isEmpty();
     }
@@ -108,31 +145,27 @@ public class Model_CompilationServer extends BaseModel {
     public static WS_Message_Make_compilation make_Compilation(ObjectNode request) {
         try {
 
+            // Vyberu náhodný kompilační server
             List<UUID> keys = new ArrayList<>(Controller_WebSocket.compilers.keySet());
-            WS_Compiler server = Controller_WebSocket.compilers.get(keys.get(new Random().nextInt(keys.size())));
+            Model_CompilationServer server = Model_CompilationServer.getById( Controller_WebSocket.compilers.get(keys.get(new Random().nextInt(keys.size()))).id );
 
-            ObjectNode compilation_request = server.sendWithResponse(new WS_Message(request, 0, 5000, 3));
 
-            if (!compilation_request.get("status").asText().equals("success")) {
+            System.out.println("Co jsem dostal za objekt ke kompilaci?? " + request.toString());
+            System.out.println("Co jsem vybral za server?? " + server.id);
+            logger.trace("make_Compilation:: Time send request:: {}:{} ", new Date().getMinutes(), new Date().getSeconds());
 
-                logger.debug("make_Compilation:: Incoming message has not contains state = success");
 
-                WS_Message_Make_compilation make_compilation = new WS_Message_Make_compilation();
-
-                make_compilation.status = "error";
-                make_compilation.error_message = "Something was wrong";
-                return  make_compilation;
-            }
-
-            logger.debug("make_Compilation:: Start of compilation was successful - waiting for result");
-
+            ObjectNode compilation_request = server.write_with_confirmation(request, 5*1000, 0, 3);
             WS_Message_Make_compilation compilation = baseFormFactory.formFromJsonWithValidation(WS_Message_Make_compilation.class, compilation_request);
+
+
 
             if (compilation.build_url != null) {
                 logger.trace("make_Compilation:: Build URL is not null: {} ", compilation.build_url);
                 compilation.status = "success";
             }
 
+            logger.trace("make_Compilation:: TOTAL RESPONSE " + compilation.toString());
             return compilation;
 
         } catch (Exception e) {
@@ -145,7 +178,7 @@ public class Model_CompilationServer extends BaseModel {
     public WS_Message_Ping_compilation_server ping() {
         try {
 
-            JsonNode json = Controller_WebSocket.compilers.get(this.id).sendWithResponse(new WS_Message(new WS_Message_Ping_compilation_server().make_request(), 0, 1000 * 3, 3));
+            JsonNode json = write_with_confirmation(new WS_Message_Ping_compilation_server().make_request(),  1000 * 30, 0, 3);
 
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Ping_compilation_server.class, json);
 

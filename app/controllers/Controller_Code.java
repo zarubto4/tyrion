@@ -791,9 +791,6 @@ public class Controller_Code extends _BaseController {
             version.c_program       = c_program;
             version.publish_type    = ProgramType.PRIVATE;
 
-            // Zkontroluji oprávnění
-            version.check_create_permission();
-
             version.save();
 
             // Content se nahraje na Azure

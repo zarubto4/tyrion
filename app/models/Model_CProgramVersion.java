@@ -539,7 +539,7 @@ public class Model_CProgramVersion extends VersionModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { get_c_program().check_update_permission();}
+    @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { c_program.check_update_permission();}
     @JsonIgnore @Override public void check_read_permission()   throws _Base_Result_Exception { get_c_program().check_read_permission();}
     @JsonIgnore @Override public void check_update_permission() throws _Base_Result_Exception { get_c_program().check_update_permission();}
     @JsonIgnore @Override public void check_delete_permission() throws _Base_Result_Exception { get_c_program().check_update_permission();}

@@ -8,10 +8,13 @@ import models.Model_HomerServer;
 import play.data.Form;
 import play.data.FormFactory;
 import play.data.format.Formatters;
+import play.i18n.Lang;
 import play.i18n.MessagesApi;
 import utilities.errors.Exceptions.Result_Error_InvalidBody;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
+import websocket.WS_Interface;
+import websocket.WS_Message;
 import websocket.interfaces.WS_Homer;
 
 import javax.inject.Inject;
@@ -69,7 +72,7 @@ public class _BaseFormFactory extends FormFactory {
         Form<T> bind =  form.bind(jsonNode);
 
         if (bind.hasErrors()){
-            logger.error("formFromJsonWithValidation::InvalidBody::ErrorList::{}", bind.errorsAsJson());
+            logger.error("formFromJsonWithValidation::InvalidBody::ErrorList::{}", bind.errorsAsJson(Lang.forCode("en-US")).toString());
             throw new Result_Error_InvalidBody(bind.errorsAsJson());
         }
 
@@ -92,7 +95,7 @@ public class _BaseFormFactory extends FormFactory {
 
         if (bind.hasErrors()){
 
-            logger.error("formFromJsonWithValidation::InvalidBody::ErrorList::{}", bind.errorsAsJson());
+            logger.error("formFromJsonWithValidation::InvalidBody::ErrorList::{}", bind.errorsAsJson(Lang.forCode("en-US")).toString());
             ObjectNode error = (ObjectNode) new ObjectMapper().readTree(jsonNode.asText());
 
             if (jsonNode.has("message_id")) {
@@ -108,6 +111,8 @@ public class _BaseFormFactory extends FormFactory {
         return bind.get();
     }
 
+
+
     /**
      * Binds Json data to this form - that is, handles form submission.
      * Special Method with Response to Websocket
@@ -116,21 +121,21 @@ public class _BaseFormFactory extends FormFactory {
      * @param <T>
      * @return a copy of this form filled with the new data
      */
-    public <T> T formFromJsonWithValidation(WS_Homer homer, Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception, IOException {
+    public <T> T formFromJsonWithValidation(WS_Interface ws_interface, Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception, IOException {
 
         Form<T> form =  super.form(clazz);
         Form<T> bind =  form.bind(jsonNode);
 
         if (bind.hasErrors()){
 
-            logger.error("formFromJsonWithValidation::InvalidBody::ErrorList::{}", bind.errorsAsJson());
+            logger.error("formFromJsonWithValidation::InvalidBody::ErrorList::{}", bind.errorsAsJson(Lang.forCode("en-US")).toString());
             ObjectNode error = (ObjectNode) new ObjectMapper().readTree(jsonNode.asText());
 
             if (jsonNode.has("message_id")) {
                 error.put("message_id", jsonNode.get("message_id").asText());
-                homer.send(error);
+                ws_interface.send(error);
             } else {
-                homer.send(error);
+                ws_interface.send(error);
             }
 
             throw new Result_Error_InvalidBody(bind.errorsAsJson());

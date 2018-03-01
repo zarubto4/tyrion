@@ -24,6 +24,7 @@ import utilities.logger.ServerLogger;
 import utilities.model.BaseModel;
 import utilities.threads.homer_server.Synchronize_Homer_Synchronize_Settings;
 import websocket.interfaces.WS_Homer;
+import websocket.interfaces.WS_Portal;
 
 import javax.persistence.PersistenceException;
 import java.net.InetAddress;
@@ -431,7 +432,8 @@ public class Server {
         Synchronize_Homer_Synchronize_Settings.baseFormFactory = Server.injector.getInstance(_BaseFormFactory.class);
         Model_HardwareBatch.baseFormFactory             = Server.injector.getInstance(_BaseFormFactory.class);
         BaseModel.baseFormFactory                       = Server.injector.getInstance(_BaseFormFactory.class);
-        DigitalOceanTyrionService.baseFormFactory                    = Server.injector.getInstance(_BaseFormFactory.class);
+        DigitalOceanTyrionService.baseFormFactory       = Server.injector.getInstance(_BaseFormFactory.class);
+        WS_Portal.baseFormFactory                       = Server.injector.getInstance(_BaseFormFactory.class);
     }
 
     /**
