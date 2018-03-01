@@ -228,12 +228,14 @@ public class Model_Compilation extends BaseModel {
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient public final static String virtual_input_output_docu = "dsafsdfsdf"; // TODO https://youtrack.byzance.cz/youtrack/issue/TYRION-304
+
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
@@ -249,7 +251,5 @@ public class Model_Compilation extends BaseModel {
 
     public static Finder<UUID, Model_Compilation> find = new Finder<>(Model_Compilation.class);
 
-/* DESCRIPTION - DOCUMENTATION ---------------------------------------------------------------------------------------------------------*/
-    @JsonIgnore @Transient public final static String virtual_input_output_docu = "dsafsdfsdf"; // TODO https://youtrack.byzance.cz/youtrack/issue/TYRION-304
 
 }
