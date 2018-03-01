@@ -11,11 +11,6 @@ public class Swagger_Board_CProgram_Pair {
 
     public Swagger_Board_CProgram_Pair() {}
 
-    @Constraints.Required @ApiModelProperty(required = true)
-    public UUID hardware_id;
-
-    @Constraints.Required @ApiModelProperty(required = true)
-    public UUID c_program_version_id;
 
     //@Constraints.Required @ApiModelProperty(required = true)
     //public String c_program_id;

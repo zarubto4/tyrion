@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
@@ -15,7 +16,9 @@ import utilities.logger.Logger;
 import utilities.model.VersionModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.swagger.input.Swagger_Library_File_Load;
+import utilities.swagger.input.Swagger_Library_Library_Version_pair;
 import utilities.swagger.input.Swagger_Library_Record;
+import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
@@ -46,13 +49,22 @@ public class Model_LibraryVersion extends VersionModel {
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
     // TODO Cache - Performeance [TZ]!
-    @ApiModelProperty(required = true, readOnly = true)
-    public List<Model_CProgram> examples(){
-        return  examples;
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
+    public List<Swagger_Short_Reference> c_rpogram_examples(){
+        try {
+            List<Swagger_Short_Reference> pairs = new ArrayList<>();
+            for (Model_CProgram cProgram : examples) {
+                pairs.add(new Swagger_Short_Reference(cProgram.id, cProgram.name, cProgram.description));
+            }
+            return pairs;
+        } catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     // TODO Cache - Performeance [TZ]!
-    @ApiModelProperty(required = true, readOnly = true)
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public List<Swagger_Library_Record> files(){
         try {
 

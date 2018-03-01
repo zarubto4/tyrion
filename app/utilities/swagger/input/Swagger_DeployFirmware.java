@@ -2,17 +2,21 @@ package utilities.swagger.input;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import play.data.validation.Constraints;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @ApiModel(description = "Json Model with List of Board ID",
         value = "DeployFirmware")
 public class Swagger_DeployFirmware {
 
-    @Valid
-    @ApiModelProperty(value = "List of Pairs for settings of Backup C_Program Version on hardware", required = true)
-    public List<Swagger_Board_CProgram_Pair> hardware_pairs = new ArrayList<>();
+    @Constraints.Required @ApiModelProperty(required = true)
+    public List<UUID> hardware_ids;
+
+    @Constraints.Required @ApiModelProperty(required = true)
+    public UUID c_program_version_id;
 
 }

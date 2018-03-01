@@ -30,7 +30,6 @@ import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.input.Swagger_Board_Developer_parameters;
-import utilities.swagger.output.Swagger_Board_for_fast_upload_detail;
 import utilities.swagger.output.Swagger_Short_Reference;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
 import websocket.ParallelTask;
@@ -494,32 +493,6 @@ public class Model_Hardware extends TaggedModel {
     }
 
     /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
-
-    @JsonIgnore
-    public Swagger_Board_for_fast_upload_detail getHardwareForUpdate() {
-        try {
-
-            Swagger_Board_for_fast_upload_detail board_for_fast_upload_detail = new Swagger_Board_for_fast_upload_detail();
-            board_for_fast_upload_detail.id = id;
-            board_for_fast_upload_detail.name = name;
-            board_for_fast_upload_detail.description = description;
-
-            if (this.get_instance() == null) {
-                 board_for_fast_upload_detail.collision = BoardUpdateCollision.NO_COLLISION;
-            } else {
-                 board_for_fast_upload_detail.collision = BoardUpdateCollision.ALREADY_IN_INSTANCE;
-            }
-
-            board_for_fast_upload_detail.hardware_type_id = hardware_type_id();
-            board_for_fast_upload_detail.hardware_type_name = hardware_type_name();
-
-            return board_for_fast_upload_detail;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
 
     @JsonIgnore
     public Model_HomerServer get_connected_server() { return Model_HomerServer.getById(this.connected_server_id);}

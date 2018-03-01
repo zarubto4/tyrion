@@ -351,7 +351,6 @@ PUT       /library/version_for_aprove/approve_decision                  controll
 PUT       /library/version/make_public/:version_id                      controllers.Controller_Library.library_version_make_public(version_id)
 
 #Actualization
-GET       /board/ide_upload_hardware/:project_id                        controllers.Controller_Hardware.hardware_getForFastUpload(project_id)
 PUT       /c_program/version/upload                                     controllers.Controller_Hardware.hardware_updateFirmware()
 
 #Producer

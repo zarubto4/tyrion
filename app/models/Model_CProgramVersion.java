@@ -29,6 +29,7 @@ import utilities.model.VersionModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_C_Program_Version;
+import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
@@ -56,7 +57,7 @@ public class Model_CProgramVersion extends VersionModel {
     @JsonIgnore @OneToOne(mappedBy="version", cascade = CascadeType.ALL)                                             public Model_Compilation compilation; // TODO dá se cachovat
 
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version", fetch = FetchType.LAZY)                              public List<Model_Hardware> c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
-    @JsonIgnore @OneToMany(mappedBy="actual_backup_c_program_version", fetch = FetchType.LAZY)                       public List<Model_Hardware>  c_program_version_backup_boards  = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="actual_backup_c_program_version", fetch = FetchType.LAZY)                       public List<Model_Hardware>  c_program_version_backup_boards  = new ArrayList<>(); // Nikdy z této ztrany nepoužívat!
     @JsonIgnore @OneToMany(mappedBy="c_program_version_for_update",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareUpdate> updates = new ArrayList<>();
 
     @OneToOne @JsonIgnore  public Model_CProgram default_program;
@@ -70,6 +71,11 @@ public class Model_CProgramVersion extends VersionModel {
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public CompilationStatus status(){
         return  compilation != null ? compilation.status : CompilationStatus.UNDEFINED;
+    }
+
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
+    public String compilation_version(){
+        return  compilation != null ? compilation.firmware_version_lib : CompilationStatus.UNDEFINED.name();
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true, value = "Value can be empty, Server cannot guarantee that. External documentation: " + Model_Compilation.virtual_input_output_docu)
@@ -94,13 +100,15 @@ public class Model_CProgramVersion extends VersionModel {
         return null;
     }
 
-    @JsonIgnore @Transient @ApiModelProperty(required = true, readOnly = true)
-    public Swagger_C_Program_Version program(Model_CProgramVersion version) {
+
+
+    @JsonProperty @ApiModelProperty(value = "Program", required = false)
+    public Swagger_C_Program_Version program() {
         try {
 
             Swagger_C_Program_Version c_program_versions = new Swagger_C_Program_Version();
 
-            Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version.id).eq("name", "code.json").findOne();
+            Model_Blob fileRecord = file;
 
             if (fileRecord != null) {
 
@@ -118,8 +126,8 @@ public class Model_CProgramVersion extends VersionModel {
                     if (library_version == null) continue;
 
                     Swagger_Library_Library_Version_pair pair = new Swagger_Library_Library_Version_pair();
-                    pair.library         = library_version.library;
-                    pair.library_version = library_version;
+                    pair.library         =  new Swagger_Short_Reference(library_version.library.id, library_version.library.name, library_version.library.description);
+                    pair.library_version = new Swagger_Short_Reference(library_version.id, library_version.name, library_version.description);
 
                     c_program_versions.imported_libraries.add(pair);
                 }

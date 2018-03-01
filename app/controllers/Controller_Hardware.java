@@ -1583,44 +1583,6 @@ public class Controller_Hardware extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "get Boards for Ide Operation",
-            tags = { "Hardware"},
-            notes = "List of hardware under Project for fast upload of Firmware to Board from Web IDE",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Board_for_fast_upload_detail.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result hardware_getForFastUpload( String project_id) {
-        try {
-
-            // Kotrola objektu
-            Model_Project project = Model_Project.getById(project_id);
-            
-            // Vyhledání seznamu desek na které lze nahrát firmware - okamžitě
-            List<Model_Hardware> hw = Model_Hardware.find.query().where().eq("hardware_type.connectible_to_internet", true).eq("project.id", project_id).findList();
-
-            List<Swagger_Board_for_fast_upload_detail> list = new ArrayList<>();
-
-            for (Model_Hardware hardware : hw ) {
-                list.add(hardware.getHardwareForUpdate());
-            }
-
-            // Vrácení upravenéh objektu
-            return ok(Json.toJson(list));
-
-        } catch (Exception e) {
-            return controllerServerError(e);
-        }
-    }
-
     @ApiOperation(value = "edit Board personal description",
             tags = { "Hardware"},
             notes = "Used for add descriptions by owners. \"Persons\" who registred \"Board\" to own \"Project\" ",
@@ -1800,12 +1762,12 @@ public class Controller_Hardware extends _BaseController {
 
             List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
 
-            if (help.hardware_pairs.isEmpty()) return badRequest("List is Empty");
+            // Ověření objektu
+            Model_CProgramVersion c_program_version = Model_CProgramVersion.getById(help.c_program_version_id);
 
-            for (Swagger_Board_CProgram_Pair hardware_update_pair : help.hardware_pairs) {
 
-                // Ověření objektu
-                Model_CProgramVersion c_program_version = Model_CProgramVersion.getById(hardware_update_pair.c_program_version_id);
+            for (UUID hardware_id : help.hardware_ids) {
+
 
                 //Zkontroluji validitu Verze zda sedí k C_Programu
                 if (c_program_version.compilation == null) return badRequest("Version is not version of C_Program - Missing compilation File");
@@ -1817,7 +1779,7 @@ public class Controller_Hardware extends _BaseController {
                 if (!c_program_version.compilation.status.name().equals(CompilationStatus.SUCCESS.name())) return badRequest("The program is not yet compiled & Restored");
 
                 // Kotrola objektu
-                Model_Hardware hardware = Model_Hardware.getById(hardware_update_pair.hardware_id);
+                Model_Hardware hardware = Model_Hardware.getById(hardware_id);
 
                 WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
                 b_pair.hardware = hardware;

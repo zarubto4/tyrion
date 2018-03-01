@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -56,6 +57,28 @@ public class Model_CompilationServer extends BaseModel {
     @ApiModelProperty(required = true, readOnly = true) @JsonProperty
     public NetworkStatus online_state() {
         return Controller_WebSocket.compilers.containsKey(this.id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
+    }
+
+    @ApiModelProperty(required = false, readOnly = true)
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String connection_identificator() {
+        try {
+            check_update_permission();
+            return connection_identifier;
+        }catch (Exception e){
+            return null;
+        }
+    }
+
+    @ApiModelProperty(required = false, readOnly = true)
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String hash_certificate() {
+        try {
+            check_update_permission();
+            return hash_certificate;
+        }catch (Exception e){
+            return null;
+        }
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
