@@ -1086,9 +1086,6 @@ create index ix_bprogramversion_b_program_id on bprogramversion (b_program_id);
 
 alter table blob add constraint fk_blob_boot_loader_id foreign key (boot_loader_id) references bootloader (id) on delete restrict on update restrict;
 
-alter table block add constraint fk_block_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
-create index ix_block_author_id on block (author_id);
-
 alter table block add constraint fk_block_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
 create index ix_block_project_id on block (project_id);
 
@@ -1373,9 +1370,6 @@ create index ix_role_permission_permission on role_permission (permission_id);
 alter table updateprocedure add constraint fk_updateprocedure_instance_id foreign key (instance_id) references instancesnapshot (id) on delete restrict on update restrict;
 create index ix_updateprocedure_instance_id on updateprocedure (instance_id);
 
-alter table widget add constraint fk_widget_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
-create index ix_widget_author_id on widget (author_id);
-
 alter table widget add constraint fk_widget_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
 create index ix_widget_project_id on widget (project_id);
 
@@ -1417,9 +1411,6 @@ alter table if exists bprogramversion drop constraint if exists fk_bprogramversi
 drop index if exists ix_bprogramversion_b_program_id;
 
 alter table if exists blob drop constraint if exists fk_blob_boot_loader_id;
-
-alter table if exists block drop constraint if exists fk_block_author_id;
-drop index if exists ix_block_author_id;
 
 alter table if exists block drop constraint if exists fk_block_project_id;
 drop index if exists ix_block_project_id;
@@ -1704,9 +1695,6 @@ drop index if exists ix_role_permission_permission;
 
 alter table if exists updateprocedure drop constraint if exists fk_updateprocedure_instance_id;
 drop index if exists ix_updateprocedure_instance_id;
-
-alter table if exists widget drop constraint if exists fk_widget_author_id;
-drop index if exists ix_widget_author_id;
 
 alter table if exists widget drop constraint if exists fk_widget_project_id;
 drop index if exists ix_widget_project_id;

@@ -1169,7 +1169,7 @@ public class Controller_Blocko extends _BaseController {
             Model_Block block = new Model_Block();
             block.name = help.name;
             block.description = help.description;
-            block.author = person();
+            block.author_id = person().id;
 
             if (project != null) {
                 block.project = project;
@@ -1705,7 +1705,7 @@ public class Controller_Blocko extends _BaseController {
                     block = new Model_Block();
                     block.name = help.program_name;
                     block.description = help.program_description;
-                    block.author = private_block_version.get_block().get_author();
+                    block.author_id = private_block_version.get_block().get_author().id;
                     block.publish_type = ProgramType.PUBLIC;
                     block.save();
                 }
@@ -2103,7 +2103,7 @@ public class Controller_Blocko extends _BaseController {
             Model_Block block = new Model_Block();
             block.name = help.name;
             block.description = help.description;
-            block.author = privateVersion.get_block().get_author();
+            block.author_id = privateVersion.get_block().get_author().id;
             block.save();
 
             // Vytvoření objektu

@@ -187,10 +187,6 @@ public class Model_CProgram extends TaggedModel {
         // Call notification about project update
         if (project != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, project.id, project.id))).start();
 
-        if (project != null) {
-            project.cache_c_program_ids.add(id);
-        }
-
         cache.put(id, this);
     }
 

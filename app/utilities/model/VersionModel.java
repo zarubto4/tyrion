@@ -42,7 +42,7 @@ public abstract class VersionModel extends NamedModel {
 
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
+    @JsonProperty @ApiModelProperty(value = "Visible only if user has permission to know it", required = false)
     public Model_Person author() throws _Base_Result_Exception {
         try {
 
@@ -62,7 +62,6 @@ public abstract class VersionModel extends NamedModel {
 
     @JsonIgnore @Override
     public void save() {
-        System.out.println("Probublalo to přes VersionModel.save(), zde teoreticky mužu automaticky uložit autora");
         super.save();
     }
 

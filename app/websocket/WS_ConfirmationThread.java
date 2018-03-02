@@ -47,6 +47,12 @@ public class WS_ConfirmationThread implements Supplier<ObjectNode> {
 
                 logger.trace("get - sending message with response, message_id: {}, message_type: {}, retries: {}, timeout: {} ", id, message.get("message_type").asText(), retries, timeout);
 
+                // Sender is not set -so message was add to buffer for a second response
+                if(sender == null) {
+                    logger.trace("Sending Thread After delay:: {} time", this.delay);
+                    return time_out_exception_error_response();
+                }
+
                 this.sender.send(this.message);
 
                 --this.retries;

@@ -109,18 +109,21 @@ public class WS_Compiler extends WS_Interface {
             }
         }
 
-        logger.trace("make_Compilation:: Add Message to Buffer!");
+
 
         UUID build_id = UUID.fromString(response_one.get("build_id").asText());
         response_one.put("message_id", build_id.toString());
 
         WS_Message get_compilation = new WS_Message(response_one, 1000 * 60, 0, 0);
+        logger.trace("make_Compilation:: Add Message id {} to Buffer!", build_id.toString());
         messageBuffer.put(build_id, get_compilation);
 
-        logger.trace("make_Compilation:: Message is registered in Buffer under {} build_id", build_id);
+        logger.trace("make_Compilation:: IDENTIFICATOR:: {} Message is registered in Buffer under build_id:: {} ", id, build_id);
         ObjectNode response_two = get_compilation.send();
+        response_two.put("interface_code", response_one.get("interface_code").asText());
+        response_two.put("build_id", build_id.toString());
 
-        logger.trace("make_Compilation:: Message about build is done {} ", response_two);
+        logger.debug("make_Compilation:: MESSAGE ABOUT BUILD IS DONE:: {} ", response_two);
         return response_two;
     }
 
@@ -128,19 +131,26 @@ public class WS_Compiler extends WS_Interface {
     public void onMessage(ObjectNode json) {
         try{
 
-            logger.trace("WS_CompilerServer:: onMessage:: Incoming message:: {} ",  json.toString());
+            logger.trace("WS_CompilerServer:: ID: {} onMessage:: Incoming message:: {} ", id, json.toString());
 
             if (json.has("build_id")) {
+                logger.trace("WS_CompilerServer:: ID: {} onMessage:: Message has build ID", id);
 
-               UUID build_id = UUID.fromString(json.get("build_id").asText());
+                 UUID build_id = UUID.fromString(json.get("build_id").asText());
+
+                logger.trace("WS_CompilerServer:: ID: {} onMessage:: Message build ID {} ", id, build_id);
 
                 if(messageBuffer.containsKey(build_id)) {
-                    logger.trace("WS_CompilerServer:: onMessage:: Message with compiled build");
+                    logger.trace("WS_CompilerServer:: ID: {} onMessage:: Message with compiled build", id);
 
                     super.messageBuffer.get(build_id).resolve(json);
                     super.messageBuffer.remove(build_id);
                     return;
+                }else {
+                    logger.warn("WS_CompilerServer:: ID: {} onMessage:: Message with build_id: {} compiled build but message not found in Buffer! Buffer Size:: {} ", id, build_id, messageBuffer.size());
                 }
+
+
             }
 
 

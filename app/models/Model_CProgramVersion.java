@@ -396,6 +396,7 @@ public class Model_CProgramVersion extends VersionModel {
             }
 
             WS_Message_Make_compilation compilation = Model_CompilationServer.make_Compilation(new WS_Message_Make_compilation().make_request(hardwareType, this.compilation.firmware_version_lib, this.id, code_file.main, includes));
+            logger.trace("compile_program_procedure:: compilation is Done! - what i Have? {}", Json.toJson(compilation).toString());
 
             // Když obsahuje chyby - vrátím rovnou Becki - Toto je regulérní správná odpověd - chyby způsobil v c++ kodu uživatel
             if (!compilation.build_errors.isEmpty()) {

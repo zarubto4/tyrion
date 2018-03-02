@@ -69,7 +69,7 @@ public class Model_BootLoader extends NamedModel {
             }
 
             if (file == null) {
-                System.out.println("File neexistuje v bootloaderu!!!!");
+                logger.error("File nto exist inside bootloader!");
                 return null;
             }
 

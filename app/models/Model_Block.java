@@ -36,7 +36,6 @@ public class Model_Block extends TaggedModel {
 
     @JsonIgnore public boolean active; // U veřejných Skupin administrátor zveřejňuje skupinu - může připravit něco do budoucna
 
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Person author;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Project project;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Producer producer;
 
@@ -50,31 +49,23 @@ public class Model_Block extends TaggedModel {
 
     @JsonIgnore @Transient @Cached private UUID cache_project_id;
     @JsonIgnore @Transient @Cached public List<UUID> cache_version_ids = new ArrayList<>();
-    @JsonIgnore @Transient @Cached private UUID cache_author_id;
     @JsonIgnore @Transient @Cached private UUID cache_producer_id;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
-    public UUID author_id() {
+    @JsonProperty @ApiModelProperty(value = "Visible only if user has permission to know it", required = false)
+    public Model_Person author() throws _Base_Result_Exception {
+        try {
 
-        if (cache_author_id != null) return cache_author_id;
+            if (author_id != null) {
+                return Model_Person.getById(author_id);
+            }
 
-        Model_Person person = get_author();
-        if (person == null) return null;
-
-        return person.id;
-    }
-
-    @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by Byzance or Other Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
-    public String author_nick_name() {
-
-        Model_Person person = get_author();
-        if (person == null) return null;
-
-        return person.nick_name;
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
@@ -164,15 +155,7 @@ public class Model_Block extends TaggedModel {
 
     @JsonIgnore
     public Model_Person get_author() {
-
-        if (cache_author_id == null) {
-            Model_Person person = Model_Person.find.query().where().eq("blocksAuthor.id", id).select("id").findOne();
-            if (person == null) return null;
-
-            cache_author_id = person.id;
-        }
-
-        return Model_Person.getById(cache_author_id);
+        return Model_Person.getById(author_id);
     }
 
     @JsonIgnore

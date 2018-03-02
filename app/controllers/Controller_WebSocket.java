@@ -118,8 +118,6 @@ public class Controller_WebSocket extends _BaseController {
     @Security.Authenticated(Authentication.class)
     public Result get_Websocket_token() {
         try {
-
-                System.out.println("get_Websocket_token");
                 UUID token = UUID.randomUUID();
 
                 tokenCache.put(token, personId());
@@ -130,7 +128,6 @@ public class Controller_WebSocket extends _BaseController {
                 return ok(Json.toJson(swagger_websocket_token));
 
         } catch (Exception e) {
-            logger.error("Došlo k piča chybě!");
             return controllerServerError(e);
         }
     }
@@ -183,8 +180,9 @@ public class Controller_WebSocket extends _BaseController {
                 //Find object (only ID)
                 Model_CompilationServer compiler = Model_CompilationServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
                 if(compiler != null){
+
                     if (compilers.containsKey(compiler.id)) {
-                        logger.warn("compiler - server is already connected, trying to ping previous connection");
+                        logger.error("compiler - server is already connected, trying to ping previous connection");
 
                         WS_Message_Ping_compilation_server result = compiler.ping();
 

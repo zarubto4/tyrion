@@ -339,7 +339,7 @@ public class Server {
             gridWidget.description = "Default Widget";
             gridWidget.name = "Default Widget";
             gridWidget.project = null;
-            gridWidget.author = null;
+            gridWidget.author_id = null;
             gridWidget.publish_type = ProgramType.DEFAULT_MAIN;
             gridWidget.save();
         }
@@ -349,7 +349,7 @@ public class Server {
             block.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
             block.description = "Default Block";
             block.name = "Default Block";
-            block.author = null;
+            block.author_id = null;
             block.project = null;
             block.publish_type = ProgramType.DEFAULT_MAIN;
             block.save();
@@ -374,11 +374,11 @@ public class Server {
         // Get classes that extends _BaseModel.class
         Set<Class<? extends BaseModel>> classes = reflections.getSubTypesOf(BaseModel.class);
 
-        logger.info("setPermission - found {} classes", classes.size());
+        logger.trace("setPermission - found {} classes", classes.size());
 
         // Find inner enum called 'Permission'
         classes.forEach(cls -> {
-            logger.debug("setPermission - scanning class: {}", cls.getSimpleName());
+            logger.trace("setPermission - scanning class: {}", cls.getSimpleName());
             Class<?>[] innerClasses = cls.getDeclaredClasses();
             for (Class<?> inner : innerClasses) {
                 try {

@@ -149,23 +149,15 @@ public class Model_CompilationServer extends BaseModel {
             List<UUID> keys = new ArrayList<>(Controller_WebSocket.compilers.keySet());
             Model_CompilationServer server = Model_CompilationServer.getById( Controller_WebSocket.compilers.get(keys.get(new Random().nextInt(keys.size()))).id );
 
-
-            System.out.println("Co jsem dostal za objekt ke kompilaci?? " + request.toString());
-            System.out.println("Co jsem vybral za server?? " + server.id);
-            logger.trace("make_Compilation:: Time send request:: {}:{} ", new Date().getMinutes(), new Date().getSeconds());
-
-
             ObjectNode compilation_request = server.write_with_confirmation(request, 5*1000, 0, 3);
             WS_Message_Make_compilation compilation = baseFormFactory.formFromJsonWithValidation(WS_Message_Make_compilation.class, compilation_request);
-
-
 
             if (compilation.build_url != null) {
                 logger.trace("make_Compilation:: Build URL is not null: {} ", compilation.build_url);
                 compilation.status = "success";
             }
 
-            logger.trace("make_Compilation:: TOTAL RESPONSE " + compilation.toString());
+            logger.trace("make_Compilation:: TOTAL RESPONSE {}",  Json.toJson(compilation).toString());
             return compilation;
 
         } catch (Exception e) {

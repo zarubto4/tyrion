@@ -32,8 +32,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 @MappedSuperclass
 public abstract class BaseModel extends Model {
@@ -317,19 +316,45 @@ public abstract class BaseModel extends Model {
     @JsonIgnore private void save_author() {
         try {
 
-            Field field = this.getClass().getDeclaredField("author_id");
-            if (field != null) {
-                // Set only if its not set before by some special logic (For example, when we create copies of objects
-                if (field.get(Model_Person.class) == null) {
-                    field.set(_BaseController.person().id, UUID.class);
+            List<Field> fields = new ArrayList<>();
+            getAllFields(fields, this.getClass(), 0);
+
+
+            for(Field field : fields) {
+
+                if(field.getName().equals("author_id")) {
+
+                    System.out.println("Našel jsem field author_id");
+                    System.out.println("Co je to za Typ??? "+ field.getType().getSimpleName() );
+
+                    UUID uuid = _BaseController.person().id;
+
+                    field.setAccessible(true);
+
+                    if (field.get(uuid) == null) {
+                        System.out.println("Obsah je prázdný a tak je vhodne uživatele přiřadit");
+                        field.set(uuid, _BaseController.person().id);
+                        return;
+                    }
                 }
+
             }
 
-        }catch (_Base_Result_Exception e){
-            // Don't log anything!
         }catch (Exception e) {
+            System.out.println("Error save_author");
+            e.printStackTrace();
             // Don't log anything!
         }
+    }
+
+    public static List<Field> getAllFields(List<Field> fields, Class<?> type, int iteration) {
+        if(iteration > 4) return fields;
+        fields.addAll(Arrays.asList(type.getDeclaredFields()));
+        if (type.getSuperclass() != null) {
+            getAllFields(fields, type.getSuperclass(), ++iteration);
+        }
+
+        return fields;
     }
 
 

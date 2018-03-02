@@ -955,7 +955,7 @@ public class Controller_Grid extends _BaseController {
             Model_Widget widget = new Model_Widget();
             widget.name = help.name;
             widget.description = help.description;
-            widget.author = person();
+            widget.author_id = person().id;
 
             if (project != null) {
                 widget.project = project;
@@ -1820,7 +1820,7 @@ public class Controller_Grid extends _BaseController {
                     widget = new Model_Widget();
                     widget.name = help.program_name;
                     widget.description = help.program_description;
-                    widget.author = privateGridWidgetVersion.get_grid_widget().get_author();
+                    widget.author_id = privateGridWidgetVersion.get_grid_widget().get_author().id;
                     widget.publish_type = ProgramType.PUBLIC;
                     widget.save();
                 }
