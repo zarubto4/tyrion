@@ -1,26 +1,31 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import controllers.Controller_Security;
+import controllers._BaseController;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.ehcache.Cache;
 import play.data.Form;
-import play.i18n.Lang;
 import play.libs.Json;
 import utilities.Server;
+import utilities.cache.CacheField;
+import utilities.cache.Cached;
 import utilities.enums.*;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.FinancialPermission;
 import utilities.financial.history.History;
 import utilities.financial.history.HistoryEvent;
-import utilities.financial.goPay.GoPay;
-import utilities.financial.products.*;
-import utilities.logger.Class_Logger;
+import utilities.logger.Logger;
+import utilities.model.NamedModel;
 import utilities.notifications.helps_objects.Notification_Text;
+import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -32,19 +37,17 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel(value = "Product", description = "Model of Product")
 @Table(name="Product")
-public class Model_Product extends Model {
+public class Model_Product extends NamedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_Product.class);
+    private static final Logger logger = new Logger(Model_Product.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                         @Id @ApiModelProperty(required = true) public String id;
-                                             @ApiModelProperty(required = true) public String name;
 
-                                       @JsonIgnore @Enumerated(EnumType.STRING) public Enum_Payment_method method;
-                                       @JsonIgnore @Enumerated(EnumType.STRING) public Enum_BusinessModel business_model;
+                                                   @Enumerated(EnumType.STRING) public PaymentMethod method;
+                                       @JsonIgnore @Enumerated(EnumType.STRING) public BusinessModel business_model;
 
                                              @ApiModelProperty(required = true) public String subscription_id;
                                                                     @JsonIgnore public String fakturoid_subject_id; // ID účtu ve fakturoidu
@@ -52,7 +55,6 @@ public class Model_Product extends Model {
 
                                              @ApiModelProperty(required = true) public boolean active;              // Jestli je projekt aktivní (může být zmražený, nebo třeba ještě neuhrazený platbou)
 
-                                             @ApiModelProperty(required = true) public Date created;
                                                                     @JsonIgnore public boolean on_demand;           // Jestli je povoleno a zaregistrováno, že Tyrion muže žádat o provedení platby
 
                                                                     @JsonIgnore public Long credit;                 // Zbývající kredit pokud je typl platby per_credit - jako na Azure
@@ -72,80 +74,74 @@ public class Model_Product extends Model {
     @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_Invoice>          invoices    = new ArrayList<>();
                 @OneToMany(mappedBy="product", cascade = CascadeType.ALL)                           public List<Model_ProductExtension> extensions  = new ArrayList<>();
 
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @Cached public List<UUID> cache_project_ids;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_invoices_ids;
+    @JsonIgnore @Transient @Cached public List<UUID> cache_extensions_ids;
+
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true) @JsonProperty
-    public List<Model_Invoice> invoices(){
+    public List<Model_Invoice> invoices() {
 
-        if(this.invoices == null || this.invoices.isEmpty()) this.invoices =  Model_Invoice.find.where().eq("product.id", this.id).order().desc("created").findList();
+        if (this.invoices == null || this.invoices.isEmpty()) this.invoices =  Model_Invoice.find.query().where().eq("product.id", this.id).order().desc("created").findList();
         return invoices;
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @ApiModelProperty(required = false)
-    public Double remaining_credit(){
+    public Double remaining_credit() {
 
-        if (this.business_model == Enum_BusinessModel.saas && this.method != Enum_Payment_method.free)
+        if (this.business_model == BusinessModel.SAAS && this.method != PaymentMethod.FREE)
             return ((double) this.credit);
 
         return null;
     }
 
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public String payment_method(){
-        try{
-            switch (method) {
-                case bank_transfer  : return  "bank_transfer";
-                case credit_card    : return  "credit_card";
-                case free           : return  "free";
-                default             : return  "Undefined state";
-            }
-        }catch (NullPointerException e) {
-            return "Not set yet";
-        }
-    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public Long price(){
+    public Long price() {
 
-        terminal_logger.debug("price: Beginning to count product price");
+        logger.debug("price: Beginning to count product price");
 
         Long total = 0L;
-        for(Model_ProductExtension extension : this.extensions){
+        for (Model_ProductExtension extension : this.extensions) {
             Long price = extension.getActualPrice();
 
-            terminal_logger.trace("price: Returned value: {}", price);
+            logger.trace("price: Returned value: {}", price);
 
-            if(price != null)
+            if (price != null)
                 total += price;
         }
 
-        terminal_logger.debug("price: Summarized = {}", total);
+        logger.debug("price: Summarized = {}", total);
 
         return total;
     }
 
     @JsonIgnore
-    public Model_Invoice pending_invoice(){
+    public Model_Invoice pending_invoice() {
 
-        return Model_Invoice.find.where().eq("product.id", this.id).eq("status", Enum_Payment_status.pending).findUnique();
+        return Model_Invoice.find.query().where().eq("product.id", this.id).eq("status", PaymentStatus.PENDING).findOne();
     }
 
     @JsonIgnore
-    public Double double_credit(){
+    public Double double_credit() {
         return ((double) this.credit);
     }
 
     @JsonIgnore
-    public void credit_upload(Long credit){
+    public void credit_upload(Long credit) {
         try {
 
             Long credit_before = this.credit;
 
             try {
 
-                terminal_logger.debug("credit_upload: {} credit", credit);
+                logger.debug("credit_upload: {} credit", credit);
 
                 this.credit += credit;
 
@@ -163,7 +159,7 @@ public class Model_Product extends Model {
 
             } catch (Exception e) {
 
-                terminal_logger.internalServerError(e);
+                logger.internalServerError(e);
 
             } finally {
 
@@ -182,19 +178,19 @@ public class Model_Product extends Model {
             }
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 
     @JsonIgnore
-    public void credit_remove(Long credit){
+    public void credit_remove(Long credit) {
         try {
 
             Long credit_before = this.credit;
 
             try {
 
-                terminal_logger.debug("credit_remove: {} credit", credit);
+                logger.debug("credit_remove: {} credit", credit);
 
                 this.credit -= credit;
 
@@ -208,7 +204,7 @@ public class Model_Product extends Model {
 
             } catch (Exception e) {
 
-                terminal_logger.internalServerError(e);
+                logger.internalServerError(e);
 
             } finally {
 
@@ -226,50 +222,30 @@ public class Model_Product extends Model {
             }
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 
     @JsonIgnore
-    public boolean terminateOnDemand(){
-        try {
-
-            GoPay.terminateOnDemand(this);
-
-            this.gopay_id = null;
-            this.on_demand = false;
-            this.update();
-
-            return true;
-
-        } catch (Exception e) {
-            terminal_logger.internalServerError(e);
-            return false;
-        }
-    }
-
-    @JsonIgnore
-    public History getFinancialHistory(){
+    public History getFinancialHistory() {
         try {
 
             if (this.financial_history == null || this.financial_history.equals("")) return new History();
 
-            Form<History> form = Form.form(History.class).bind(Json.parse(this.financial_history));
-            if(form.hasErrors()) throw new Exception("Error parsing product financial history. Errors: " + form.errorsAsJson(Lang.forCode("en-US")));
-            History help = form.get();
+            History help = baseFormFactory.formFromJsonWithValidation(History.class, Json.parse(this.financial_history));
 
             // Sorting the list
             help.history = help.history.stream().sorted((element1, element2) -> element2.date.compareTo(element1.date)).collect(Collectors.toList());
             return help;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
 
     @JsonIgnore
-    public void archiveEvent(String event_name, String description, String invoice_id){
+    public void archiveEvent(String event_name, String description, UUID invoice_id) {
         try {
 
             History history = getFinancialHistory();
@@ -288,40 +264,40 @@ public class Model_Product extends Model {
 
             history.history.add(event);
 
-            terminal_logger.debug("archiveEvent: {}", Json.toJson(event));
+            logger.debug("archiveEvent: {}", Json.toJson(event));
 
             this.financial_history = Json.toJson(history).toString();
             this.update();
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 
     @JsonIgnore
-    public Double getLastSpending(){
+    public Double getLastSpending() {
         try {
 
             return ((double) getFinancialHistory().last_spending) ;
-        } catch (Exception e){
-            terminal_logger.internalServerError(e);
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
 
     @JsonIgnore
-    public Double getAverageSpending(){
+    public Double getAverageSpending() {
         try {
 
             return ((double) getFinancialHistory().average_spending) ;
-        } catch (Exception e){
-            terminal_logger.internalServerError(e);
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
 
     @JsonIgnore
-    public Long getRemainingDays(){
+    public Long getRemainingDays() {
         try {
 
             History history = getFinancialHistory();
@@ -329,14 +305,14 @@ public class Model_Product extends Model {
             if (history.average_spending == 0) return null;
 
             return credit / history.average_spending;
-        } catch (Exception e){
-            terminal_logger.internalServerError(e);
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
 
     @JsonIgnore
-    public void credit_spend(Long credit){
+    public void credit_spend(Long credit) {
 
         this.credit -= credit;
 
@@ -352,46 +328,46 @@ public class Model_Product extends Model {
             this.financial_history = Json.toJson(history).toString();
 
 
-        } catch (Exception e){
-            terminal_logger.internalServerError(e);
+        } catch (Exception e) {
+            logger.internalServerError(e);
         }
 
         this.update();
     }
 
     @JsonIgnore
-    public JsonNode setConfiguration(){ // TODO
+    public JsonNode setConfiguration() { // TODO
 
-        Form<?> form;
+        /*Form<?> form;
 
         switch (business_model) {
 
-            case alpha:{
+            case ALPHA:{
                 form = Form.form(Configuration_Alpha.class).bindFromRequest();
                 break;
             }
 
-            case saas:{
+            case SAAS:{
                 form = Form.form(Configuration_Saas.class).bindFromRequest();
                 break;
             }
 
-            case fee:{
+            case FEE:{
                 form = Form.form(Configuration_Fee.class).bindFromRequest();
                 break;
             }
 
-            case cal:{
+            case CAL:{
                 form = Form.form(Configuration_Cal.class).bindFromRequest();
                 break;
             }
 
-            case integrator:{
+            case INTEGRATOR:{
                 form = Form.form(Configuration_Integrator.class).bindFromRequest();
                 break;
             }
 
-            case integration:{
+            case INTEGRATION:{
                 form = Form.form(Configuration_Integration.class).bindFromRequest();
                 break;
             }
@@ -399,46 +375,46 @@ public class Model_Product extends Model {
             default: form = Form.form(Configuration_Saas.class).bindFromRequest(); break;
         }
 
-        if(form.hasErrors()) return form.errorsAsJson();
+        if (form.hasErrors()) return form.errorsAsJson();
 
-        this.configuration = Json.toJson(form.get()).toString();
+        this.configuration = Json.toJson(form.get()).toString();*/
         return null;
     }
 
     @JsonIgnore
-    public Object getConfiguration(){
+    public Object getConfiguration() {
         try {
 
             Form<?> form;
 
-            switch (business_model) {
+            /*switch (business_model) { TODO
 
-                case alpha:{
+                case ALPHA:{
                     form = Form.form(Configuration_Alpha.class).bind(Json.parse(configuration));
                     break;
                 }
 
-                case saas:{
+                case SAAS:{
                     form = Form.form(Configuration_Saas.class).bind(Json.parse(configuration));
                     break;
                 }
 
-                case fee:{
+                case FEE:{
                     form = Form.form(Configuration_Fee.class).bind(Json.parse(configuration));
                     break;
                 }
 
-                case cal:{
+                case CAL:{
                     form = Form.form(Configuration_Cal.class).bind(Json.parse(configuration));
                     break;
                 }
 
-                case integrator:{
+                case INTEGRATOR:{
                     form = Form.form(Configuration_Integrator.class).bind(Json.parse(configuration));
                     break;
                 }
 
-                case integration:{
+                case INTEGRATION:{
                     form = Form.form(Configuration_Integration.class).bind(Json.parse(configuration));
                     break;
                 }
@@ -446,26 +422,40 @@ public class Model_Product extends Model {
                 default: throw new Exception("Business model is unknown.");
             }
 
-            if(form.hasErrors()) throw new Exception("Error parsing product configuration. Errors: " + form.errorsAsJson());
-            return form.get();
+            if (form.hasErrors()) throw new Exception("Error parsing product configuration. Errors: " + form.errorsAsJson());
+            return form.get();*/
+
+            return null;
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
 
     @JsonIgnore
-    public List<Model_Project> projects(){
+    public List<Model_Project> get_projects() throws _Base_Result_Exception {
 
-        if (projects == null)
-            projects = Model_Project.find.where().eq("product.id", this.id).findList();
+        List<Model_Project>  projects = new ArrayList<>();
+
+        for (UUID id : get_projects_ids()) {
+            projects.add(Model_Project.getById(id));
+        }
 
         return projects;
     }
 
     @JsonIgnore
-    public List<Model_Person> notificationReceivers(){
+    public List<UUID> get_projects_ids() {
+        if (cache_project_ids == null) {
+            cache_project_ids = Model_Project.find.query().where().eq("product.id", this.id).findIds();
+        }
+
+        return cache_project_ids;
+    }
+
+    @JsonIgnore
+    public List<Model_Person> notificationReceivers() {
 
         List<Model_Person> receivers = new ArrayList<>();
         try {
@@ -473,14 +463,14 @@ public class Model_Product extends Model {
             this.customer.getEmployees().forEach(employee -> receivers.add(employee.get_person()));
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
 
         return receivers;
     }
 
     @JsonIgnore
-    public boolean isBillingReady(){
+    public boolean isBillingReady() {
 
         if (payment_details == null) {
 
@@ -507,38 +497,26 @@ public class Model_Product extends Model {
 
     @JsonIgnore @Override public void save() {
 
-        created = new Date();
-
-        while(true){ // I need Unique Value
+        while(true) { // I need Unique Value
             this.azure_product_link = get_Container().getName() + "/" + UUID.randomUUID().toString();
-            if (Model_Product.find.where().eq("azure_product_link", azure_product_link ).findUnique() == null) break;
+            if (Model_Product.find.query().where().eq("azure_product_link", azure_product_link ).findOne() == null) break;
         }
 
-        while(true){ // I need Unique Value
+        while(true) { // I need Unique Value
             this.subscription_id =  UUID.randomUUID().toString().substring(0, 12);
-            if (Model_Product.find.where().eq("subscription_id", subscription_id ).findUnique() == null) break;
+            if (Model_Product.find.query().where().eq("subscription_id", subscription_id ).findOne() == null) break;
         }
 
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (get_byId(this.id) == null) break;
-        }
-
+        //Save Object
         super.save();
     }
 
     @JsonIgnore @Override public void update() {
 
-        terminal_logger.debug("update: Update object value: {}",  this.id);
+        logger.debug("update::Update object Id: {}",  this.id);
 
+        // Update Object
         super.update();
-    }
-
-    @JsonIgnore @Override public void delete() {
-
-        terminal_logger.debug("delete: Delete object value: {}",  this.id);
-
-        super.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -546,29 +524,29 @@ public class Model_Product extends Model {
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public void notificationActivation(){
+    public void notificationActivation() {
         try {
 
             new Model_Notification()
-                    .setImportance(Enum_Notification_importance.normal)
-                    .setLevel(Enum_Notification_level.success)
+                    .setImportance(NotificationImportance.NORMAL)
+                    .setLevel(NotificationLevel.SUCCESS)
                     .setText(new Notification_Text().setText("Your product "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" was activated."))
                     .send(notificationReceivers());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 
     @JsonIgnore
-    public void notificationDeactivation(String... args){
+    public void notificationDeactivation(String... args) {
         try {
 
             Model_Notification notification = new Model_Notification()
-                    .setImportance(Enum_Notification_importance.normal)
-                    .setLevel(Enum_Notification_level.warning)
+                    .setImportance(NotificationImportance.NORMAL)
+                    .setLevel(NotificationLevel.WARNING)
                     .setText(new Notification_Text().setText("Your product "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" was deactivated."));
@@ -580,114 +558,114 @@ public class Model_Product extends Model {
             notification.send(notificationReceivers());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 
     @JsonIgnore
-    public void notificationPaymentNeeded(String message){
+    public void notificationPaymentNeeded(String message) {
         try {
 
             new Model_Notification()
-                    .setImportance(Enum_Notification_importance.high)
-                    .setLevel(Enum_Notification_level.warning)
+                    .setImportance(NotificationImportance.HIGH)
+                    .setLevel(NotificationLevel.WARNING)
                     .setText(new Notification_Text().setText("Payment is needed for your product "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(". " + message))
                     .send(notificationReceivers());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 
     @JsonIgnore
-    private void notificationCreditSuccess(Long credit){
+    private void notificationCreditSuccess(Long credit) {
         try {
 
             Double amount = ((double) credit) ;
 
             new Model_Notification()
-                    .setImportance(Enum_Notification_importance.normal)
-                    .setLevel(Enum_Notification_level.success)
+                    .setImportance(NotificationImportance.NORMAL)
+                    .setLevel(NotificationLevel.SUCCESS)
                     .setText(new Notification_Text().setText("Credit was uploaded. ").setBoldText())
                     .setText(new Notification_Text().setText(" " + amount + " of credit was added to your product "))
                     .setObject(this)
                     .send(notificationReceivers());
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 
     @JsonIgnore
-    private void notificationCreditFail(Long credit){
+    private void notificationCreditFail(Long credit) {
         try {
 
             Double amount = ((double) credit) ;
 
             new Model_Notification()
-                    .setImportance(Enum_Notification_importance.high)
-                    .setLevel(Enum_Notification_level.error)
+                    .setImportance(NotificationImportance.HIGH)
+                    .setLevel(NotificationLevel.ERROR)
                     .setText(new Notification_Text().setText("Failed to upload credit. ").setBoldText())
                     .setText(new Notification_Text().setText(" Adding" + amount + " of credit to your product "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" was unsuccessful."))
                     .send(notificationReceivers());
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 
     @JsonIgnore
-    private void notificationCreditRemove(Long credit){
+    private void notificationCreditRemove(Long credit) {
         try {
 
             Double amount = ((double) credit);
 
             new Model_Notification()
-                    .setImportance(Enum_Notification_importance.normal)
-                    .setLevel(Enum_Notification_level.info)
+                    .setImportance(NotificationImportance.NORMAL)
+                    .setLevel(NotificationLevel.INFO)
                     .setText(new Notification_Text().setText("Credit was removed. ").setBoldText())
                     .setText(new Notification_Text().setText(" " + amount + " of credit was removed from your product "))
                     .setObject(this)
                     .send(notificationReceivers());
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 
     @JsonIgnore
-    public void notificationCreditInsufficient(){
+    public void notificationCreditInsufficient() {
         try {
 
             new Model_Notification()
-                    .setImportance(Enum_Notification_importance.normal)
-                    .setLevel(Enum_Notification_level.warning)
+                    .setImportance(NotificationImportance.NORMAL)
+                    .setLevel(NotificationLevel.WARNING)
                     .setText(new Notification_Text().setText("Amount of credit is insufficient. Your credit balance is " + this.credit + ". Credit must be positive, so your product "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" could be activated."))
                     .send(notificationReceivers());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 
     @JsonIgnore
-    public void notificationTerminateOnDemand(boolean success){
+    public void notificationTerminateOnDemand(boolean success) {
         try {
 
             Model_Notification notification = new Model_Notification();
 
             if (success) {
                 notification
-                        .setImportance(Enum_Notification_importance.normal)
-                        .setLevel(Enum_Notification_level.success)
+                        .setImportance(NotificationImportance.NORMAL)
+                        .setLevel(NotificationLevel.SUCCESS)
                         .setText(new Notification_Text().setText("On demand payments were canceled on your product "));
             } else {
                 notification
-                        .setImportance(Enum_Notification_importance.high)
-                        .setLevel(Enum_Notification_level.error)
+                        .setImportance(NotificationImportance.HIGH)
+                        .setLevel(NotificationLevel.ERROR)
                         .setText(new Notification_Text().setText("Failed to cancel on demand payments on your product "));
             }
 
@@ -697,41 +675,41 @@ public class Model_Product extends Model {
                     .send(notificationReceivers());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 
     @JsonIgnore
-    public void notificationRefundPaymentSuccess(double amount){
+    public void notificationRefundPaymentSuccess(double amount) {
         try {
 
             new Model_Notification()
-                    .setImportance(Enum_Notification_importance.normal)
-                    .setLevel(Enum_Notification_level.success)
+                    .setImportance(NotificationImportance.NORMAL)
+                    .setLevel(NotificationLevel.SUCCESS)
                     .setText(new Notification_Text().setText("Refund payment of $" + amount + " for your product "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" was successfully refunded."))
                     .send(notificationReceivers());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 
     @JsonIgnore
-    public void notificationPaymentSuccess(double amount){
+    public void notificationPaymentSuccess(double amount) {
         try {
 
             new Model_Notification()
-                    .setImportance(Enum_Notification_importance.normal)
-                    .setLevel(Enum_Notification_level.success)
+                    .setImportance(NotificationImportance.NORMAL)
+                    .setLevel(NotificationLevel.SUCCESS)
                     .setText(new Notification_Text().setText("Payment $" + amount + " for your product "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" was successful."))
                     .send(notificationReceivers());
 
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 
@@ -740,17 +718,17 @@ public class Model_Product extends Model {
     @JsonIgnore private String azure_product_link;
 
     @JsonIgnore @Transient
-    public CloudBlobContainer get_Container(){
+    public CloudBlobContainer get_Container() {
         try {
             return Server.blobClient.getContainerReference("product");
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
+        } catch (Exception e) {
+            logger.internalServerError(e);
             throw new NullPointerException();
         }
     }
 
     @JsonIgnore @Transient
-    public String get_path(){
+    public String get_path() {
         return azure_product_link;
     }
 
@@ -761,38 +739,74 @@ public class Model_Product extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore  public boolean create_permission()                                                  {  return true;  }
-    @JsonIgnore  public boolean read_permission()                                                    {  return customer.isEmployee(Controller_Security.get_person()) || Controller_Security.get_person().has_permission("Product_read");  }
-    @JsonProperty @ApiModelProperty(required = true) public boolean edit_permission()                {  return customer.isEmployee(Controller_Security.get_person()) || Controller_Security.get_person().has_permission("Product_edit");  }
-    @JsonProperty @ApiModelProperty(required = true) public boolean act_deactivate_permission()      {  return customer.isEmployee(Controller_Security.get_person()) || Controller_Security.get_person().has_permission("Product_act_deactivate"); }
-    @JsonIgnore  public boolean delete_permission()                                                  {  return Controller_Security.get_person().has_permission("Product_delete");}
-    @JsonIgnore  public boolean financial_permission(String action)                                  {  return FinancialPermission.check(this, action);}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        // Not Limited now, Maybe max per user?
+        return;
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.Product_read.name())) return;
+        if(customer.isEmployee(_BaseController.person())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception  {
+        if(_BaseController.person().has_permission(Permission.Product_update.name())) return;
+        if(customer.isEmployee(_BaseController.person())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception  {
+        if(_BaseController.person().has_permission(Permission.Product_delete.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient public void check_act_deactivate_permission()  throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.Product_act_deactivate.name())) return;
+        if(customer.isEmployee(_BaseController.person())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient public void check_financial_permission(String action)  throws _Base_Result_Exception {
+        FinancialPermission.check_permission(this, action);
+    }
 
-    public enum permissions{Product_update, Product_read, Product_edit,Product_act_deactivate, Product_delete}
+    public enum Permission {Product_crete, Product_update, Product_read, Product_act_deactivate, Product_delete}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public static Model_Product get_byId(String id) {
-        return find.byId(id);
+    @CacheField(value = Model_Product.class)
+    public static Cache<UUID, Model_Product> cache;
+
+    public static Model_Product getById(String id) throws _Base_Result_Exception {
+        return getById(UUID.fromString(id));
     }
 
-    @JsonIgnore
-    public static Model_Product get_byInvoice(String invoice_id) {
-        return find.where().eq("invoices.id", invoice_id).findUnique();
+    public static Model_Product getById(UUID id) throws _Base_Result_Exception  {
+
+        Model_Product product = cache.get(id);
+
+        if (product == null) {
+
+            product = Model_Product.find.byId(id);
+            if (product == null) throw new Result_Error_NotFound(Model_Product.class);
+
+            cache.put(id, product);
+        }
+
+        // Check Permission
+        product.check_read_permission();
+        return product;
     }
 
-    @JsonIgnore
-    public static List<Model_Product> get_byOwner(String owner_id) {
-        return find.where().disjunction().eq("customer.employees.person.id", owner_id).findList();
+    public static Model_Product getByInvoice(UUID invoice_id) throws _Base_Result_Exception  {
+        return find.query().where().eq("invoices.id", invoice_id).findOne();
     }
 
-    @JsonIgnore
-    public static List<Model_Product> get_applicableByOwner(String owner_id) {
-        return find.where().eq("active",true).eq("customer.employees.person.id", owner_id).select("id").select("name").findList();
+    public static List<Model_Product> getByOwner(UUID owner_id) throws _Base_Result_Exception  {
+        return find.query().where().disjunction().eq("customer.employees.person.id", owner_id).findList();
+    }
+
+    public static List<Model_Product> getApplicableByOwner(UUID owner_id) throws _Base_Result_Exception {
+        return find.query().where().eq("active",true).eq("customer.employees.person.id", owner_id).select("id").select("name").findList();
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Model.Finder<String,Model_Product> find = new Finder<>(Model_Product.class);
+    public static Finder<UUID, Model_Product> find = new Finder<>(Model_Product.class);
 }

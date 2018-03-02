@@ -2,32 +2,30 @@ package utilities.lablel_printer_service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import play.api.Play;
-import play.data.Form;
-import play.i18n.Lang;
-import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
 import utilities.lablel_printer_service.printNodeModels.*;
-import utilities.logger.Class_Logger;
+import utilities.logger.Logger;
 
 import java.io.ByteArrayOutputStream;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
-
+import java.util.concurrent.CompletionStage;
+// TODO zkontrolovat jestli funguje korektně [TOM]
 public class Printer_Api {
 
     // Logger
-    private static final Class_Logger terminal_logger = new Class_Logger(Printer_Api.class);
+    private static final Logger logger = new Logger(Printer_Api.class);
 
     private String apiKey = "6aa35f3ae351e4664417ac894d99dbd4c35a0b95";
 
 
 // - Object API  --------------------------------------------------------------------------------------------------------------------
 
-    public JsonNode printFile(Integer printId, int quantity, String title, ByteArrayOutputStream file, PrinterOption option){
+    public JsonNode printFile(Integer printId, int quantity, String title, ByteArrayOutputStream file, PrinterOption option) {
 
         PrintTask printTask = new PrintTask();
         printTask.printerId = printId;
@@ -41,52 +39,36 @@ public class Printer_Api {
     }
 
 
-    public List<Computer> get_computers(){
+    public List<Computer> get_computers() {
 
         JsonNode request = get("/computers");
 
         ObjectNode request_list = Json.newObject();
         request_list.set("computer_list", request);
 
-        final Form<ComputerList> form = Form.form(ComputerList.class).bind(request_list);
-        if (form.hasErrors()) {
-            terminal_logger.internalServerError( new Exception("ComputerList: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString()));
-        }
-
-        return form.get().computer_list;
+        return Json.fromJson(request_list, ComputerList.class).computer_list;
     }
 
 
-    public static List<Printer> get_printers(){
+    public static List<Printer> get_printers() {
 
         JsonNode request = get("/printers");
 
         ObjectNode request_list = Json.newObject();
         request_list.set("printer_list", request);
 
-        final Form<PrinterList> form = Form.form(PrinterList.class).bind(request_list);
-        if (form.hasErrors()) {
-            terminal_logger.internalServerError( new Exception("PrinterList: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString()));
-        }
-
-        return form.get().printer_list;
+        return Json.fromJson(request_list, PrinterList.class).printer_list;
     }
 
-    public static Printer get_printer(Integer printer_id){
+    public static Printer get_printer(Integer printer_id) {
 
         JsonNode request = get("/printers/" + printer_id);
 
         ObjectNode request_list = Json.newObject();
         request_list.set("printer_list", request);
 
-        final Form<PrinterList> form = Form.form(PrinterList.class).bind(request_list);
-        if (form.hasErrors()) {
-            terminal_logger.internalServerError( new Exception("PrinterList: Incoming Json from Homer server has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString()));
-        }
-
-
-        List<Printer> printers = form.get().printer_list;
-        if(printers == null) return null;
+        List<Printer> printers = Json.fromJson(request_list, PrinterList.class).printer_list;
+        if (printers == null) return null;
         return printers.isEmpty() ? null : printers.get(0);
     }
 
@@ -96,50 +78,62 @@ public class Printer_Api {
 // - REST API HELP METHOD --------------------------------------------------------------------------------------------------------------
 
     private static JsonNode put(String url, JsonNode node) {
+        try {
+            logger.debug("Printer_Api_put:: PUT: URL: " + Server.PrintNode_url + url + "  Json: " + node.toString());
+            CompletionStage<WSResponse> responsePromise = Server.injector.getInstance(WSClient.class).url(Server.PrintNode_url + url)
+                    .setContentType("application/json")
+                    .setAuth(Server.PrintNode_apiKey)
+                    .setRequestTimeout(Duration.ofSeconds(5))
+                    .put(node);
 
-        terminal_logger.debug("Printer_Api_put:: PUT: URL: " + Server.PrintNode_url + url + "  Json: " + node.toString());
-        F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(Server.PrintNode_url + url)
-                .setContentType("application/json")
-                .setAuth(Server.PrintNode_apiKey)
-                .setRequestTimeout(5000)
-                .put(node);
+            JsonNode response = responsePromise.toCompletableFuture().get().asJson();
 
-        JsonNode response = responsePromise.get(5000).asJson();
+            logger.debug("Printer_Api_put:: Result: " + response.toString());
+            return response;
 
-        terminal_logger.debug("Printer_Api_put:: Result: " + response.toString());
-        return response;
-
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     private static JsonNode post(String url, JsonNode node) {
+        try {
+            logger.debug("Printer_Api_put:: POST: URL: " + Server.PrintNode_url + url + "  Json: " + node.toString());
+            CompletionStage<WSResponse> responsePromise = Server.injector.getInstance(WSClient.class).url(Server.PrintNode_url + url)
+                    .setContentType("application/json")
+                    .setAuth(Server.PrintNode_apiKey)
+                    .setRequestTimeout(Duration.ofSeconds(5))
+                    .post(node);
 
-        terminal_logger.debug("Printer_Api_put:: POST: URL: " + Server.PrintNode_url + url + "  Json: " + node.toString());
-        F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(Server.PrintNode_url + url)
-                .setContentType("application/json")
-                .setAuth(Server.PrintNode_apiKey)
-                .setRequestTimeout(5000)
-                .post(node);
+            JsonNode response = responsePromise.toCompletableFuture().get().asJson();
 
-        JsonNode response = responsePromise.get(5000).asJson();
+            logger.debug("Printer_Api_post:: Result: " + response.toString());
+            return response;
 
-        terminal_logger.debug("Printer_Api_post:: Result: " + response.toString());
-        return response;
-
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     private static JsonNode get(String url) {
+        try {
+            logger.debug("Printer_Api_put:: GET: URL: " + Server.PrintNode_url + url);
+            CompletionStage<WSResponse> responsePromise = Server.injector.getInstance(WSClient.class).url(Server.PrintNode_url + url)
+                    .setContentType("application/json")
+                    .setRequestTimeout(Duration.ofSeconds(5))
+                    .setAuth(Server.PrintNode_apiKey)
+                    .get();
 
-        terminal_logger.debug("Printer_Api_put:: GET: URL: " + Server.PrintNode_url + url);
-        F.Promise<WSResponse> responsePromise = Play.current().injector().instanceOf(WSClient.class).url(Server.PrintNode_url + url)
-                .setContentType("application/json")
-                .setRequestTimeout(5000)
-                .setAuth(Server.PrintNode_apiKey)
-                .get();
+            JsonNode response = responsePromise.toCompletableFuture().get().asJson();
 
-        JsonNode response = responsePromise.get(5000).asJson();
+            logger.debug("Printer_Api_put:: Result: " + response.toString());
+            return response;
 
-        terminal_logger.debug("Printer_Api_put:: Result: " + response.toString());
-        return response;
-
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 }

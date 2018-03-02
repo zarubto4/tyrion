@@ -1,28 +1,33 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers._BaseController;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.logger.Class_Logger;
+import org.ehcache.Cache;
+import utilities.cache.CacheField;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.logger.Logger;
+import utilities.model.BaseModel;
 
 import javax.persistence.*;
+import java.util.UUID;
 
 @Entity
 @ApiModel(description = "Model of Payment_Details",
         value = "Payment_Details")
 @Table(name="PaymentDetails")
-public class Model_PaymentDetails extends Model {
+public class Model_PaymentDetails extends BaseModel {
 
     // Logger
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_PaymentDetails.class);
+    private static final Logger logger = new Logger(Model_PaymentDetails.class);
 
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-
-                                           @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)  public Long id;
 
     @JsonIgnore @OneToOne                                                                           public Model_Customer customer;
     @JsonIgnore @OneToOne() @JoinColumn(name="productidpaymentdetails")                             public Model_Product product;
@@ -52,10 +57,10 @@ public class Model_PaymentDetails extends Model {
 /* JSON IGNORE ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public static boolean control_vat_number(String vat_number){
+    public static boolean control_vat_number(String vat_number) {
 
             // Jestli je přítomné VAT number - musí dojít ke kontrole validity Vat number!
-            switch (vat_number.substring(0,2)){
+            switch (vat_number.substring(0,2)) {
                 case "BE" : {return true;}
                 case "BG" : {return true;}
                 case "CZ" : {return true;}
@@ -87,7 +92,7 @@ public class Model_PaymentDetails extends Model {
     }
 
     @JsonIgnore
-    public Model_PaymentDetails copy(){
+    public Model_PaymentDetails copy() {
 
         Model_PaymentDetails details = new Model_PaymentDetails();
         details.full_name       = this.full_name;
@@ -113,7 +118,7 @@ public class Model_PaymentDetails extends Model {
     }
 
     @JsonIgnore
-    public boolean isComplete(){
+    public boolean isComplete() {
         return full_name != null  && !full_name.equals("")
                 && street != null  && !street.equals("")
                 && street_number != null  && !street_number.equals("")
@@ -124,7 +129,7 @@ public class Model_PaymentDetails extends Model {
     }
 
     @JsonIgnore
-    public boolean isCompleteCompany(){
+    public boolean isCompleteCompany() {
         return street != null
                 && street_number != null && !street_number.equals("")
                 && city != null && !city.equals("")
@@ -147,22 +152,55 @@ public class Model_PaymentDetails extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore     public boolean create_permission()  { return true; }
-    @JsonProperty   public boolean edit_permission()    { return true; }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.PaymentDetail_crete.name())) return;
+        customer.check_update_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.PaymentDetail_read.name())) return;
+        customer.check_update_permission();
+    }
+
+    @JsonIgnore @Transient @Override public void check_update_permission()  throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.PaymentDetail_update.name())) return;
+        customer.check_update_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_delete_permission()  throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.PaymentDetail_delete.name())) return;
+        customer.check_update_permission();
+    }
+
+    public enum Permission {PaymentDetail_crete, PaymentDetail_update, PaymentDetail_read, PaymentDetail_delete}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public static Model_PaymentDetails get_byId(Long id) {
+    @CacheField(value = Model_PaymentDetails.class, duration = CacheField.DayCacheConstant)
+    public static Cache<UUID, Model_PaymentDetails> cache;
 
-        terminal_logger.warn("CACHE is not implemented - TODO");
-        return find.byId(id);
+    public static Model_PaymentDetails getById(String id) throws _Base_Result_Exception {
+        return getById(UUID.fromString(id));
+    }
 
+    public static Model_PaymentDetails getById(UUID id) throws _Base_Result_Exception {
+
+        Model_PaymentDetails paymentDetails = cache.get(id);
+
+        if (paymentDetails == null) {
+
+            paymentDetails = Model_PaymentDetails.find.byId(id);
+            if (paymentDetails == null) throw new Result_Error_NotFound(Model_PaymentDetails.class);
+
+            cache.put(id, paymentDetails);
+        }
+
+        // Check Permission
+        paymentDetails.check_read_permission();
+        return paymentDetails;
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Model.Finder<Long,Model_PaymentDetails> find = new Finder<>(Model_PaymentDetails.class);
+    public static Finder<UUID, Model_PaymentDetails> find = new Finder<>(Model_PaymentDetails.class);
 
 
 }

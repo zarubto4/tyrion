@@ -1,72 +1,73 @@
 package controllers;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.Expr;
-import com.avaje.ebean.Query;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.inject.Inject;
+import io.ebean.Ebean;
+import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
 import play.data.Form;
-import play.libs.Json;
+import play.data.FormFactory;
 import play.mvc.BodyParser;
-import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import responses.*;
+import utilities.authentication.Authentication;
 import utilities.emails.Email;
-import utilities.enums.Enum_Approval_state;
-import utilities.enums.Enum_MProgram_SnapShot_settings;
-import utilities.enums.Enum_Publishing_type;
-import utilities.logger.Class_Logger;
-import utilities.logger.ServerLogger;
-import utilities.login_entities.Secured_API;
-import utilities.response.GlobalResult;
-import utilities.response.response_objects.*;
-import utilities.swagger.documentationClass.*;
-import utilities.swagger.outboundClass.Filter_List.Swagger_B_Program_List;
-import utilities.swagger.outboundClass.Filter_List.Swagger_Blocko_Block_List;
-import utilities.swagger.outboundClass.Filter_List.Swagger_Instance_List;
-import utilities.swagger.outboundClass.Filter_List.Swagger_Type_Of_Block_List;
-import utilities.swagger.outboundClass.Swagger_B_Program_Version;
-import utilities.swagger.outboundClass.Swagger_Instance_Short_Detail;
-
-import java.util.ArrayList;
+import utilities.enums.Approval;
+import utilities.enums.GridAccess;
+import utilities.enums.ProgramType;
+import utilities.logger.Logger;
+import utilities.scheduler.SchedulerController;
+import utilities.swagger.input.*;
+import utilities.swagger.output.filter_results.Swagger_B_Program_List;
+import utilities.swagger.output.filter_results.Swagger_Block_List;
+import utilities.swagger.output.filter_results.Swagger_Instance_List;
 import java.util.Date;
-import java.util.List;
+import java.util.UUID;
 
-@Security.Authenticated(Secured_API.class)
+@Security.Authenticated(Authentication.class)
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class Controller_Blocko extends Controller{
+public class Controller_Blocko extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Blocko.class);
-    
+    private static final Logger logger = new Logger(Controller_Blocko.class);
+
+// CONTROLLER CONFIGURATION ############################################################################################
+
+    private _BaseFormFactory baseFormFactory;
+    private SchedulerController scheduler;
+
+    @Inject
+    public Controller_Blocko(_BaseFormFactory formFactory, SchedulerController scheduler) {
+        this.baseFormFactory = formFactory;
+        this.scheduler = scheduler;
+    }
+
+// CONTROLLER CONTENT ##################################################################################################
+
 // B PROGRAM ###########################################################################################################
 
     @ApiOperation(value = "create B_Program",
             tags = {"B_Program"},
             notes = "create new B_Program",
             produces = "application/json",
+            consumes = "application/json",
             protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.update_permission", value = "true"),
-                    })
-            }
+            code = 201
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_New",
+                            dataType = "utilities.swagger.input.Swagger_NameAndDescription",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Successfully created",      response = Model_BProgram.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -75,39 +76,29 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bProgram_create(@ApiParam(value = "project_id String path", required = true) String project_id) {
+    public Result bProgram_create(UUID project_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_B_Program_New> form = Form.form(Swagger_B_Program_New.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_B_Program_New help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_Project project = Model_Project.get_byId(project_id);
-            if (project == null) return GlobalResult.result_notFound("Project project_id not found");
-
-            // Kontrola oprávnění
-            if (!project.update_permission() ) return GlobalResult.result_forbidden();
+            Model_Project project = Model_Project.getById(project_id);
 
             // Tvorba programu
-            Model_BProgram b_program        = new Model_BProgram();
-            b_program.date_of_create        = new Date();
-            b_program.description           = help.description;
-            b_program.name                  = help.name;
-            b_program.project               = project;
-
-            // Kontrola oprávnění těsně před uložením
-            if (!b_program.create_permission() ) return GlobalResult.result_forbidden();
+            Model_BProgram bProgram        = new Model_BProgram();
+            bProgram.description           = help.description;
+            bProgram.name                  = help.name;
+            bProgram.project               = project;
 
             // Uložení objektu
-            b_program.save();
+            bProgram.save();
 
             // Vrácení objektu
-            return GlobalResult.result_created(Json.toJson(b_program));
+            return created(bProgram.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -115,36 +106,25 @@ public class Controller_Blocko extends Controller{
             tags = {"B_Program"},
             notes = "get B_Program object",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BProgram.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result bProgram_get(@ApiParam(value = "b_program_id String path", required = true) String b_program_id) {
+    public Result bProgram_get(UUID b_program_id) {
         try {
 
             // Kontrola objektu
-            Model_BProgram b_program = Model_BProgram.get_byId(b_program_id);
-            if (b_program == null) return GlobalResult.result_notFound("B_Program id not found");
+            Model_BProgram bProgram = Model_BProgram.getById(b_program_id);
 
-            // Kontrola oprávnění
-            if (!b_program.read_permission() ) return GlobalResult.result_forbidden();
-
-            // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(b_program));
+            return ok(bProgram.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -152,26 +132,20 @@ public class Controller_Blocko extends Controller{
             tags = {"B_Program"},
             notes = "get B_Program List",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "B_Program_read_permission", value = "No need to check permission, because Tyrion returns only those results which user owns"),
-                    }),
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_Filter",
+                            dataType = "utilities.swagger.input.Swagger_B_Program_Filter",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",             response = Swagger_B_Program_List.class),
             @ApiResponse(code = 400, message = "Invalid body",          response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",  response = Result_Unauthorized.class),
@@ -180,18 +154,16 @@ public class Controller_Blocko extends Controller{
     public Result bProgram_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number) {
         try {
 
-            // Získání JSON
-            final Form<Swagger_B_Program_Filter> form = Form.form(Swagger_B_Program_Filter.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_B_Program_Filter help = form.get();
+            // Get and Validate Object
+            Swagger_B_Program_Filter help  = baseFormFactory.formFromRequestWithValidation(Swagger_B_Program_Filter.class);
+
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_BProgram> query = Ebean.find(Model_BProgram.class);
-            query.where().eq("project.participants.person.id", Controller_Security.get_person_id());
+            query.where().eq("project.participants.person.id", _BaseController.personId());
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
-
                 query.where().eq("project.id", help.project_id);
             }
 
@@ -199,10 +171,10 @@ public class Controller_Blocko extends Controller{
             Swagger_B_Program_List result = new Swagger_B_Program_List(query, page_number);
 
             // Vrácení výsledku
-            return GlobalResult.result_ok(Json.toJson(result));
+            return ok(result.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -211,25 +183,20 @@ public class Controller_Blocko extends Controller{
             notes = "edit basic information in B_Program object",
             produces = "application/json",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.edit_permission", value = "true"),
-                    })
-            }
+            code = 200
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_New",
+                            dataType = "utilities.swagger.input.Swagger_NameAndDescription",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BProgram.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -238,20 +205,14 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bProgram_update(@ApiParam(value = "b_program_id String path", required = true) String b_program_id) {
+    public Result bProgram_update(UUID b_program_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_B_Program_New> form = Form.form(Swagger_B_Program_New.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_B_Program_New help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_BProgram b_program = Model_BProgram.get_byId(b_program_id);
-            if (b_program == null) return GlobalResult.result_notFound("B_Program id not found");
-
-            // Kontrola oprávěnní
-            if (!b_program.edit_permission()) return GlobalResult.result_forbidden();
+            Model_BProgram b_program = Model_BProgram.getById(b_program_id);
 
             // Úprava objektu
             b_program.description = help.description;
@@ -261,10 +222,100 @@ public class Controller_Blocko extends Controller{
             b_program.update();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(b_program));
+            return ok(b_program.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "tag B_Program",
+            tags = {"B_Program"},
+            notes = "",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_Tags",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BProgram.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result bProgram_addTags() {
+        try {
+
+            // Get and Validate Object
+            Swagger_Tags help  = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+
+            Model_BProgram bProgram = Model_BProgram.getById(help.object_id);
+
+            bProgram.addTags(help.tags);
+
+            // Vrácení objektu
+            return ok(bProgram.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "untag B_Program",
+            tags = {"B_Program"},
+            notes = "",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_Tags",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BProgram.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result bProgram_removeTags() {
+        try {
+
+            // Get and Validate Object
+            Swagger_Tags help  = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+
+            Model_BProgram bProgram = Model_BProgram.getById(help.object_id);
+
+            bProgram.removeTags(help.tags);
+
+            // Vrácení objektu
+            return ok(bProgram.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
         }
     }
 
@@ -273,39 +324,29 @@ public class Controller_Blocko extends Controller{
             notes = "remove B_Program object",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.delete_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result bProgram_delete(@ApiParam(value = "b_program_id String path", required = true) String b_program_id) {
+    public Result bProgram_delete(UUID b_program_id) {
         try {
 
             // Kontrola objektu
-            Model_BProgram program = Model_BProgram.get_byId(b_program_id);
-            if (program == null) return GlobalResult.result_notFound("B_Program id not found");
-
-            // Kontrola oprávění
-            if (! program.delete_permission() ) return GlobalResult.result_forbidden();
+            Model_BProgram program = Model_BProgram.getById(b_program_id);
 
             // Smazání objektu
             program.delete();
 
             // Vrácení potvrzení
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -315,27 +356,21 @@ public class Controller_Blocko extends Controller{
             tags = {"B_Program"},
             notes = "create new vesion in Blocko program",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.update_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_Version_New",
+                            dataType = "utilities.swagger.input.Swagger_B_Program_Version_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_B_Program_Version.class),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BProgramVersion.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -344,131 +379,63 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bProgramVersion_create(@ApiParam(value = "b_program_id String path", required = true) String b_program_id) {
+    public Result bProgramVersion_create(UUID b_program_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_B_Program_Version_New> form = Form.form(Swagger_B_Program_Version_New.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_B_Program_Version_New help = form.get();
+            // Get and Validate Object
+            Swagger_B_Program_Version_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_B_Program_Version_New.class);
+
 
             // Program který budu ukládat do data Storage v Azure
             String file_content =  help.program;
 
             // Ověření programu
-            Model_BProgram b_program = Model_BProgram.get_byId(b_program_id);
-            if (b_program == null) return GlobalResult.result_notFound("B_Program id not found");
+            Model_BProgram bProgram = Model_BProgram.getById(b_program_id);
 
-            // Kontrola oprávnění
-            if (! b_program.update_permission() ) return GlobalResult.result_forbidden();
 
             // První nová Verze
-            Model_VersionObject version_object     = new Model_VersionObject();
-            version_object.version_name            = help.version_name;
-            version_object.version_description     = help.version_description;
-            version_object.date_of_create          = new Date();
-            version_object.b_program               = b_program;
-            version_object.author                  = Controller_Security.get_person();
+            Model_BProgramVersion version = new Model_BProgramVersion();
+            version.name        = help.name;
+            version.description = help.description;
+            version.b_program   = bProgram;
 
             // Vytvořím Snapshoty Verze M_Programu
             if (help.m_project_snapshots != null) {
 
                 for (Swagger_B_Program_Version_New.M_Project_SnapShot help_m_project_snap : help.m_project_snapshots) {
 
-                    Model_MProject m_project = Model_MProject.get_byId(help_m_project_snap.m_project_id);
-                    if (m_project == null) return GlobalResult.result_notFound("M_Project not found");
-                    if (!m_project.update_permission()) return GlobalResult.result_forbidden();
+                    Model_GridProject m_project = Model_GridProject.getById(help_m_project_snap.m_project_id);
+
 
                     Model_MProjectProgramSnapShot snap = new Model_MProjectProgramSnapShot();
-                    snap.m_project = m_project;
+                    snap.grid_project = m_project;
 
                     for (Swagger_B_Program_Version_New.M_Program_SnapShot help_m_program_snap : help_m_project_snap.m_program_snapshots) {
-                        Model_VersionObject m_program_version = Model_VersionObject.find.where().eq("id", help_m_program_snap.version_object_id).eq("m_program.id", help_m_program_snap.m_program_id).eq("m_program.m_project.id", m_project.id).findUnique();
-
-                        if (m_program_version == null) return GlobalResult.result_notFound("M_Program Version id not found");
+                        Model_GridProgramVersion m_program_version = Model_GridProgramVersion.find.query().where().eq("id", help_m_program_snap.version_id).eq("grid_program.id", help_m_program_snap.m_program_id).eq("grid_program.grid_project.id", m_project.id).findOne();
 
                         Model_MProgramInstanceParameter snap_shot_parameter = new Model_MProgramInstanceParameter();
 
-                        snap_shot_parameter.m_program_version = m_program_version;
-                        snap_shot_parameter.m_project_program_snapshot = snap;
+                        snap_shot_parameter.grid_program_version = m_program_version;
+                        snap_shot_parameter.grid_project_program_snapshot = snap;
 
                         snap.m_program_snapshots.add(snap_shot_parameter);
                     }
 
-                    version_object.b_program_version_snapshots.add(snap);
+                    version.b_program_version_snapshots.add(snap);
                 }
-            }
-
-            version_object.additional_configuration = Json.toJson(Json.newObject().set("group_pairs", Json.toJson(help.group_pairs))).toString();
-
-            // Definování main Board
-            for (Swagger_B_Program_Version_New.Hardware_group group : help.hardware_group) {
-
-                Model_BProgramHwGroup b_program_hw_group = new Model_BProgramHwGroup();
-
-                // Definuji Main Board - Tedy yodu pokud v Json přišel (není podmínkou)
-                if (group.main_board_pair != null) {
-
-                    Model_BPair b_pair = new Model_BPair();
-
-                    b_pair.board = Model_Board.get_byId(group.main_board_pair.board_id);
-                    if (b_pair.board == null) return GlobalResult.result_notFound("Board board_id not found");
-                    if (!b_pair.board.get_type_of_board().connectible_to_internet)  return GlobalResult.result_badRequest("Main Board must be internet connectible!");
-                    if (!b_pair.board.update_permission()) return GlobalResult.result_forbidden();
-
-                    b_pair.c_program_version = Model_VersionObject.get_byId(group.main_board_pair.c_program_version_id);
-                    if (b_pair.c_program_version == null) return GlobalResult.result_notFound("C_Program Version_Object c_program_version_id not found");
-                    if (b_pair.c_program_version.get_c_program() == null)  return GlobalResult.result_badRequest("Version is not from C_Program");
-
-
-                    if (Model_TypeOfBoard.find.where().eq("c_programs.id", b_pair.c_program_version.get_c_program().id).where().eq("boards.id", b_pair.board.id).findRowCount() < 1) {
-                        return GlobalResult.result_badRequest("You want upload C++ program version id: " +  b_pair.c_program_version.id + " thats not compatible with hardware " + b_pair.board.id);
-                    }
-
-                    b_program_hw_group.main_board_pair = b_pair;
-
-                } else {
-                    return GlobalResult.result_badRequest("Hardware Group hasn't Main Board!");
-                }
-
-                // Definuji Devices - Tedy yodu pokud v Json přišly (není podmínkou)
-
-                if (group.device_board_pairs != null && !group.device_board_pairs.isEmpty() ) {
-
-                    for (Swagger_Board_CProgram_Pair connected_board : group.device_board_pairs ) {
-
-                        Model_BPair b_pair = new Model_BPair();
-
-                        b_pair.board = Model_Board.get_byId(connected_board.board_id);
-                        if ( b_pair.board == null) return GlobalResult.result_notFound("Board board_id not found");
-                        if (!b_pair.board.update_permission()) return GlobalResult.result_forbidden();
-
-
-                        b_pair.c_program_version = Model_VersionObject.get_byId(connected_board.c_program_version_id);
-                        if ( b_pair.c_program_version == null) return GlobalResult.result_notFound("C_Program Version_Object c_program_version_id not found");
-                        if ( b_pair.c_program_version.c_program == null)  return GlobalResult.result_badRequest("Version is not from C_Program");
-
-                        if ( Model_TypeOfBoard.find.where().eq("c_programs.id",  b_pair.c_program_version.get_c_program().id ).where().eq("boards.id",  b_pair.board.id).findRowCount() < 1) {
-                            return GlobalResult.result_badRequest("You want upload C++ program version id: " +  b_pair.c_program_version.id + " thats not compatible with hardware " + b_pair.board.id);
-                        }
-
-                        b_program_hw_group.device_board_pairs.add(b_pair);
-                    }
-                }
-                version_object.b_program_hw_groups.add(b_program_hw_group);
             }
 
             // Uložení objektu
-            version_object.save();
+            version.save();
 
             // Nahrání na Azure
-            Model_FileRecord.uploadAzure_Version(file_content, "program.js", b_program.get_path() , version_object);
+            Model_Blob.uploadAzure_Version(file_content, "blocko.json", bProgram.get_path() , version);
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson( version_object.get_b_program().program_version(version_object) ));
+            return ok(version.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -476,39 +443,26 @@ public class Controller_Blocko extends Controller{
             tags = {"B_Program"},
             notes = "get B_Program version object",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.read_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_B_Program_Version.class),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BProgramVersion.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result bProgramVersion_get(@ApiParam(value = "version_id String path", required = true) String version_id) {
+    public Result bProgramVersion_get(UUID version_id) {
         try {
 
             // Kontrola objektu
-            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
-            if (version_object == null) return GlobalResult.result_notFound("Version_Object version_id not found");
-
-            // Kontrola oprávnění
-            if (version_object.get_b_program() == null) return GlobalResult.result_notFound("Version_Object is not version of B_Program");
-
-            // Kontrola oprávnění
-            if (!version_object.get_b_program().read_permission()) return GlobalResult.result_forbidden();
+            Model_BProgramVersion version = Model_BProgramVersion.getById(version_id);
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(version_object.get_b_program().program_version(version_object)));
+            return ok(version.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -517,26 +471,20 @@ public class Controller_Blocko extends Controller{
             notes = "edit Version object",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.delete_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_Version_Edit",
+                            dataType = "utilities.swagger.input.Swagger_NameAndDescription",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -545,32 +493,26 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bProgramVersion_update(@ApiParam(value = "version_id String path", required = true) String version_id) {
+    public Result bProgramVersion_update(UUID version_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_B_Program_Version_Edit> form = Form.form(Swagger_B_Program_Version_Edit.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_B_Program_Version_Edit help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Získání objektu
-            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
-            if (version_object == null) return GlobalResult.result_notFound("Version not found");
+            Model_BProgramVersion version = Model_BProgramVersion.getById(version_id);
 
-            version_object.version_name = help.version_name;
-            version_object.version_description = help.version_description;
-
-            // Kontrola oprávnění
-            if (!version_object.get_b_program().edit_permission()) return GlobalResult.result_forbidden();
+            version.name = help.name;
+            version.description = help.description;
 
             // Smazání objektu
-            version_object.update();
+            version.update();
 
             // Vrácení potvrzení
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -579,15 +521,9 @@ public class Controller_Blocko extends Controller{
             notes = "remove B_Program version object",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.delete_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -595,55 +531,370 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result bProgramVersion_delete(@ApiParam(value = "version_id String path", required = true) String version_id) {
+    public Result bProgramVersion_delete(UUID version_id) {
         try {
 
             // Získání objektu
-            Model_VersionObject version_object  = Model_VersionObject.get_byId(version_id);
-
-            // Kontrola objektu
-            if (version_object == null) return GlobalResult.result_notFound("Version not found");
-            if (version_object.get_b_program() == null) return GlobalResult.result_badRequest("BProgram not found");
-
-            // Kontrola oprávnění
-            if (!version_object.get_b_program().delete_permission()) return GlobalResult.result_forbidden();
+            Model_BProgramVersion version  = Model_BProgramVersion.getById(version_id);
 
             // Smazání objektu
-            version_object.delete();
+            version.delete();
 
             // Vrácení potvrzení
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "upload B_Program_Version to cloud",
-            tags = {"B_Program"},
-            notes = "upload version of B_Program to cloud. Its possible have only one version from B program in cloud. If you uploud new one - old one will be replaced",
+// INSTANCE ############################################################################################################
+
+    @ApiOperation(value = "create Instance",
+            tags = {"Instance"},
+            notes = "",
             produces = "application/json",
-            consumes = "text/html",
+            consumes = "application/json",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.update_permission", value = "true"),
-                    })
-            }
+            code = 201
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_B_Program_Upload_Instance",
+                            dataType = "utilities.swagger.input.Swagger_Instance_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Successfully updated",      response = Model_Instance.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result instance_create() {
+        try {
+
+            // Get and Validate Object
+            Swagger_Instance_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_New.class);
+
+            // Kontrola objektu
+            Model_Project project = Model_Project.getById(help.project_id);
+            Model_HomerServer main_server = Model_HomerServer.getById(help.main_server_id);
+
+            Model_HomerServer backup_server = null;
+            if(help.backup_server_id != null) backup_server = Model_HomerServer.getById(help.backup_server_id);
+
+            Model_BProgram b_program = Model_BProgram.getById(help.b_program_id);
+
+            // Tvorba Objektu
+            Model_Instance instance = new Model_Instance();
+            instance.name = help.name;
+            instance.description = help.description;
+            instance.project = project;
+            instance.server_main = main_server;
+            instance.server_backup = backup_server;
+            instance.b_program = b_program;
+
+            instance.save();
+
+            return created(instance.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "get Instance",
+            tags = {"Instance"},
+            notes = "",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Instance.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result instance_get(UUID instance_id) {
+        try {
+
+            Model_Instance instance = Model_Instance.getById(instance_id);
+
+            return ok(instance.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "edit Instance",
+            tags = {"Instance"},
+            notes = "",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_NameAndDescription",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Successfully updated",      response = Model_Instance.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result instance_update(UUID instance_id) {
+        try {
+
+            // Get and Validate Object
+            Swagger_NameAndDescription help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+
+            // Kontrola objektu
+            Model_Instance instance = Model_Instance.getById(instance_id);
+
+            instance.name = help.name;
+            instance.description = help.description;
+
+            // Update Objektu
+            instance.update();
+
+            return ok(instance.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "tag Instance",
+            tags = {"Instance"},
+            notes = "",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Tags",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Instance.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result instance_addTags() {
+        try {
+
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+
+            // Kontrola objektu
+            Model_Instance instance = Model_Instance.getById(help.object_id);
+
+            // Přidání Tagu
+            instance.addTags(help.tags);
+
+            // Vrácení objektu
+            return ok(instance.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "untag Instance",
+            tags = {"Instance"},
+            notes = "",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Tags",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Instance.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result instance_removeTags() {
+        try {
+
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+
+            // Kontrola objektu
+            Model_Instance instance = Model_Instance.getById(help.object_id);
+
+            // Odebrání Tagu
+            instance.removeTags(help.tags);
+
+            // Vrácení objektu
+            return ok(instance.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "delete Instance",
+            tags = {"Instance"},
+            notes = "",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result instance_delete(UUID instance_id) {
+        try {
+
+            Model_Instance instance = Model_Instance.getById(instance_id);
+            instance.delete();
+
+            return ok();
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "create InstanceSnapshot",
+            tags = {"Instance"},
+            notes = "",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_InstanceSnapshot_New",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Successfully updated",      response = Model_InstanceSnapshot.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result instanceSnapshot_create() {
+        try {
+
+            // Get and Validate Object
+            Swagger_InstanceSnapshot_New help = baseFormFactory.formFromRequestWithValidation(Swagger_InstanceSnapshot_New.class);
+
+            // Kontrola objektu
+            Model_Instance instance = Model_Instance.getById(help.instance_id);
+
+            Model_BProgramVersion version = Model_BProgramVersion.getById(help.version_id);
+
+            Model_InstanceSnapshot snapshot = new Model_InstanceSnapshot();
+            snapshot.b_program_version = version;
+            snapshot.instance = instance;
+            snapshot.program = Model_Blob.upload(help.snapshot, "snapshot.json", "TODO" ); // PATH TODO
+
+            return created(snapshot.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "get InstanceSnapshot",
+            tags = {"Instance"},
+            notes = "",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_InstanceSnapshot.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result instanceSnapshot_get(UUID snapshot_id) {
+        try {
+
+            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
+
+            return ok(snapshot.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "deploy InstanceSnapshot",
+            tags = {"Instance"},
+            notes = "deploy instance of blocko to cloud.",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_InstanceSnapshot_Deploy",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Successfully uploaded",     response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
@@ -653,236 +904,101 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bProgramVersion_deploy(@ApiParam(value = "version_id String path", required = true) String version_id) {
+    public Result instanceSnapshot_deploy() {
         try {
 
-            // Získání JSON
-            final Form<Swagger_B_Program_Upload_Instance> form = Form.form(Swagger_B_Program_Upload_Instance.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_B_Program_Upload_Instance help = form.get();
+            // Get and Validate Object
+            Swagger_InstanceSnapshot_Deploy help = baseFormFactory.formFromRequestWithValidation(Swagger_InstanceSnapshot_Deploy.class);
 
             // Kontrola objektu: Verze B programu kterou budu nahrávat do cloudu
-            Model_VersionObject version_object = Model_VersionObject.get_byId(version_id);
-            if (version_object == null) return GlobalResult.result_notFound("Version not found");
+            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(help.snapshot_id);
 
-            // Kontrola objektu: B program, který chci nahrát do Cloudu na Blocko cloud_blocko_server
-            if (version_object.get_b_program() == null) return GlobalResult.result_badRequest("Version is not version of BProgram");
-            Model_BProgram b_program = version_object.get_b_program();
-
-            // Kontrola oprávnění
-            if (!b_program.update_permission()) return GlobalResult.result_forbidden();
-
-            Model_HomerInstanceRecord record = new Model_HomerInstanceRecord();
-            record.main_instance_history = b_program.instance();
-            record.version_object = version_object;
-            record.date_of_created = new Date();
-
+            // If upload time is "future"
             if (help.upload_time != null) {
 
-                Date upload_time = new Date(help.upload_time);
+                // Genereate Future Time
+                Date future = new Date(help.upload_time);
 
                 // Zkontroluji smysluplnost časové známky
-                if (!upload_time.after(new Date())) return GlobalResult.result_badRequest("time must be set in the future");
-                record.planed_when = upload_time;
+                if (!future.after(new Date())) return badRequest("time must be set in the future");
+
+                // Deployed is future
+                snapshot.deployed = future;
+                scheduler.scheduleInstanceDeployment(snapshot);
 
             } else {
-                Date date_from = new Date();
-                record.running_from = date_from;
-                record.planed_when = date_from;
+
+                // Deploy immediately!
+                snapshot.deployed = new Date();
+                snapshot.deploy();
             }
-            record.save();
 
+            // Update
+            snapshot.update();
 
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-// INSTANCE ############################################################################################################
-
-    @ApiOperation(value = "edit Instance",
+    @ApiOperation(value = "shutdown InstanceSnapshot",
             tags = {"Instance"},
-            notes = "",
+            notes = "stop instance of blocko and remove from cloud.",
             produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Instance_Edit",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully updated",      response = Model_HomerInstance.class),
-            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result instance_edit(@ApiParam(value = "instance_id String path", required = true) String instance_id) {
+    public Result instanceSnapshot_shutdown(UUID snapshot_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Instance_Edit> form = Form.form(Swagger_Instance_Edit.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_Instance_Edit help = form.get();
+            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
+          
+            snapshot.stop();
 
-            // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.find.where().eq("id", instance_id).findUnique();
-            if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
-
-            if (!homer_instance.getB_program().update_permission() ) return GlobalResult.result_forbidden();
-
-            if (help.name != null && !help.name.equals("")) homer_instance.name = help.name;
-            if (help.description != null && !help.description.equals("")) homer_instance.description = help.description;
-
-            homer_instance.update();
-
-            return GlobalResult.result_ok(Json.toJson(homer_instance));
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "set Instance start or shutDown",
+    @ApiOperation(value = "delete InstanceSnapshot",
             tags = {"Instance"},
-            notes = "If instance is not running this Command uploud instance to cloud and starter all procedures. " +
-                    "If instance is online, stis Command shutdown instance immidietly with all procedures.",
+            notes = "delete Instance",
             produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200
+            consumes = "application/json",
+            protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully removed",      response = Result_Ok.class),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Successfully deleted",      response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result instance_start_or_shut_down(String instance_name) {
+    public Result instanceSnapshot_delete(UUID snapshot_id) {
         try {
 
-            // Kontrola objektu
-            Model_HomerInstance homer_instance = Model_HomerInstance.get_byId(instance_name);
-            if (homer_instance == null) return GlobalResult.result_notFound("Homer_Instance id not found");
+            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
 
-            if (!homer_instance.getB_program().update_permission() ) return GlobalResult.result_forbidden();
+            snapshot.delete();
 
-            // Pokud má aktuální instance "Actual Instance record - znaemná to, že má běžet v cloudu"
-            // Proto tento záznam odstraním
-            if(homer_instance.get_actual_instance() != null) {
-
-                homer_instance.remove_from_cloud();
-                return GlobalResult.result_ok();
-
-            } else {
-
-                if (homer_instance.instance_history.isEmpty()) {
-                     return GlobalResult.result_badRequest("We did not find any previous version running in the cloud. Please first select version in Blocko editor run.");
-                }
-
-                homer_instance.actual_instance = homer_instance.instance_history.get(0);
-                homer_instance.update();
-
-                homer_instance.get_actual_instance().put_record_into_cloud();
-
-                return GlobalResult.result_ok();
-            }
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
-
-    @ApiOperation(value = "get Instances List by Project",
-            tags = {"Instance"},
-            notes = "get list of instance_ids details under project id",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.update_permission", value = "true"),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully uploaded",     response = Swagger_Instance_Short_Detail.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result get_b_program_instance_under_project(String project_id) {
-        try {
-
-            List<Model_HomerInstance> instances = Model_HomerInstance.find.where()
-                    .isNotNull("actual_instance")
-                    .eq("b_program.project.id", project_id)
-                    .findList();
-
-            List<Swagger_Instance_Short_Detail> list = new ArrayList<>();
-
-            for (Model_HomerInstance instance : instances) {
-                list.add(instance.get_instance_short_detail());
-            }
-
-            return GlobalResult.result_ok(Json.toJson(list));
-
-        } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get Instance",
-            tags = {"Instance"},
-            notes = "get unique instance under Blocko program (now its 1:1) we are not supporting multi-instance schema yet",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "B_program.update_permission", value = "true"),
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully uploaded",     response = Model_HomerInstance.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result get_b_program_instance(String instance_id) {
-        try {
-
-            Model_HomerInstance instance = Model_HomerInstance.get_byId(instance_id);
-            if (instance == null) return GlobalResult.result_notFound("Homer_Instance instance_id not found");
-            if (instance.getB_program() == null ) return GlobalResult.result_notFound("Homer_Instance is virtual!!");
-
-            if (!instance.getB_program().read_permission()) return GlobalResult.result_forbidden();
-
-            return GlobalResult.result_ok(Json.toJson(instance));
-
-        } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
-        }
-    }
-
+    
     @ApiOperation(value = "get Instance by Filter",
             tags = { "Instance"},
             notes = "Get List of Instances. According to permission - system return only Instance from project, where is user owner or" +
@@ -895,14 +1011,14 @@ public class Controller_Blocko extends Controller{
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Instance_Filter",
+                            dataType = "utilities.swagger.input.Swagger_Instance_Filter",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Instance_List.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -912,15 +1028,13 @@ public class Controller_Blocko extends Controller{
     public Result get_b_program_instance_by_filter(Integer page_number) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Instance_Filter> form = Form.form(Swagger_Instance_Filter.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_Instance_Filter help = form.get();
+            // Get and Validate Object
+            Swagger_Instance_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_Filter.class);
+
 
             // Tvorba parametru dotazu
-            Query<Model_HomerInstance> query = Ebean.find(Model_HomerInstance.class);
+            Query<Model_Instance> query = Ebean.find(Model_Instance.class);
 
-            // If Json contains TypeOfBoards list of id's
             if (!help.instance_types.isEmpty() ) {
                 query.where().in("instance_type", help.instance_types);
             }
@@ -937,10 +1051,10 @@ public class Controller_Blocko extends Controller{
             Swagger_Instance_List result = new Swagger_Instance_List(query, page_number);
 
             // Vracím seznam
-            return GlobalResult.result_ok(Json.toJson(result));
+            return ok(result.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -955,14 +1069,14 @@ public class Controller_Blocko extends Controller{
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Instance_GridApp_Settings",
+                            dataType = "utilities.swagger.input.Swagger_Instance_GridApp_Settings",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_MProgramInstanceParameter.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -972,20 +1086,16 @@ public class Controller_Blocko extends Controller{
     public Result instance_change_settings_grid_App() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Instance_GridApp_Settings> form = Form.form(Swagger_Instance_GridApp_Settings.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_Instance_GridApp_Settings help = form.get();
+            // Get and Validate Object
+            Swagger_Instance_GridApp_Settings help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_GridApp_Settings.class);
+
 
             // Hledám objekt
-            Model_MProgramInstanceParameter program_parameter = Model_MProgramInstanceParameter.get_byId(help.m_program_parameter_id);
-            if (program_parameter == null) return GlobalResult.result_notFound("Object not found");
+            Model_MProgramInstanceParameter program_parameter = Model_MProgramInstanceParameter.getById(help.m_program_parameter_id);
 
-            //Ohlídám oprávnění
-            if (!program_parameter.edit_permission()) return GlobalResult.result_forbidden();
 
             //PArsuju Enum kdyžtak chyba IllegalArgumentException
-            Enum_MProgram_SnapShot_settings settings = Enum_MProgram_SnapShot_settings.valueOf(help.snapshot_settings);
+            GridAccess settings = GridAccess.valueOf(help.snapshot_settings);
 
             // Měním parameter
             program_parameter.snapshot_settings = settings;
@@ -994,546 +1104,42 @@ public class Controller_Blocko extends Controller{
             program_parameter.update();
 
             // Vracím Objekt
-            return GlobalResult.result_ok(Json.toJson(program_parameter));
+            return ok(program_parameter.json());
 
         } catch (IllegalArgumentException e) {
 
-            terminal_logger.internalServerError(new Exception("Incoming snapshot_settings is invalid."));
-            return GlobalResult.result_badRequest("snapshot_settings is not valid");
+            logger.internalServerError(new Exception("Incoming snapshot_settings is invalid."));
+            return badRequest("snapshot_settings is not valid");
 
         } catch (Exception e) {
 
-            return ServerLogger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get Instance_Record",
-            tags = {"Instance"},
-            notes = "get unique instance under Blocko program (now its 1:1) we are not supporting multi-instance schema yet",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HomerInstanceRecord.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result get_b_program_instance_record(String instance_record_id) {
-        try {
-
-            Model_HomerInstanceRecord instance = Model_HomerInstanceRecord.get_byId(instance_record_id);
-            if (instance == null) return GlobalResult.result_notFound("Homer_Instance instance_id not found");
-
-            if (!instance.main_instance_history.getB_program().read_permission()) return GlobalResult.result_forbidden();
-
-            return GlobalResult.result_ok(Json.toJson(instance));
-
-        } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
-        }
-    }
-
-// TYPE OF BLOCK #######################################################################################################
-
-    @ApiOperation(value = "create TypeOfBlock",
-            tags = {"Type-of-Block"},
-            notes = "creating group for BlockoBlocks -> Type of block",
-            produces = "application/json",
-            protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "TypeOfBlock_create_permission", value = Model_TypeOfBlock.create_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfBlock_create_permission" )
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfBlock_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",      response = Model_TypeOfBlock.class),
-            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result typeOfBlock_create() {
-        try {
-
-            // Zpracování Json
-            final Form<Swagger_TypeOfBlock_New> form = Form.form(Swagger_TypeOfBlock_New.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_TypeOfBlock_New help = form.get();
-
-            // Vytvoření objektu
-            Model_TypeOfBlock typeOfBlock = new Model_TypeOfBlock();
-            typeOfBlock.description = help.description;
-            typeOfBlock.name        = help.name;
-
-            // Nejedná se o privátní Typ Bločku
-            if (help.project_id != null) {
-
-                // Kontrola objektu
-                Model_Project project = Model_Project.get_byId(help.project_id);
-                if (project == null) return GlobalResult.result_notFound("Project project_id not found");
-                if (! project.update_permission()) return GlobalResult.result_forbidden();
-
-                // Úprava objektu
-                typeOfBlock.project = project;
-                typeOfBlock.publish_type = Enum_Publishing_type.private_program;
-
-            } else {
-                if (Model_TypeOfBlock.get_publicByName(help.name) != null)
-                    return GlobalResult.result_badRequest("TypeOfBlock with this name already exists, type a new one.");
-
-                typeOfBlock.publish_type = Enum_Publishing_type.public_program;
-            }
-
-            // Kontrola oprávnění těsně před uložením podle standardu
-            if (! typeOfBlock.create_permission() ) return GlobalResult.result_forbidden();
-
-            // Uložení objektu
-            typeOfBlock.save();
-
-            // Vrácení objektu
-            return GlobalResult.result_created( Json.toJson(typeOfBlock));
-
-        } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get TypeOfBlock",
-            tags = {"Type-of-Block"},
-            notes = "get BlockoBlock ",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "TypeOfBlock_read_permission", value = Model_TypeOfBlock.read_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project == null - Public TypeOfBlock", value = "Permission not Required!"),
-                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfBlock_create_permission" )
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_TypeOfBlock.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result typeOfBlock_get(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id) {
-        try {
-
-            // Kontrola objektu
-            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
-            if (typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock not found");
-
-            // Kontrola oprávnění
-            if (!typeOfBlock.read_permission()) return GlobalResult.result_forbidden();
-
-            // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(typeOfBlock));
-
-        } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "edit TypeOfBlock",
-            tags = {"Type-of-Block"},
-            notes = "edit Type of block object",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "TypeOfBlock.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfBlock_edit_permission" )
-                    })
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfBlock_New",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_TypeOfBlock.class),
-            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result typeOfBlock_edit(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id) {
-        try {
-
-            // Zpracování Json
-            final Form<Swagger_TypeOfBlock_New> form = Form.form(Swagger_TypeOfBlock_New.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_TypeOfBlock_New help = form.get();
-
-            // Kontrola objektu
-            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
-            if (typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock not found");
-
-            // Kontrola oprávnění
-            if (!typeOfBlock.edit_permission()) return GlobalResult.result_forbidden();
-
-            // Úprava objektu
-            typeOfBlock.description = help.description;
-            typeOfBlock.name        = help.name;
-
-            if (help.project_id != null) {
-
-                // Kontrola objektu
-                Model_Project project = Model_Project.get_byId(help.project_id);
-                if (project == null) return GlobalResult.result_notFound("Project project_id not found");
-
-                // Úprava objektu
-                typeOfBlock.project = project;
-            }
-
-            // Uložení objektu
-            typeOfBlock.update();
-
-            // Vrácení objektu
-            return GlobalResult.result_ok( Json.toJson(typeOfBlock));
-
-        } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "delete TypeOfBlock",
-            tags = {"Type-of-Block"},
-            notes = "delete group for BlockoBlocks -> Type of block",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "TypeOfBlock.delete_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "TypeOfBlock_delete_permission")
-                    })
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result typeOfBlock_delete(@ApiParam(value = "type_of_block_id String path",   required = true)  String type_of_block_id) {
-        try {
-
-            // Kontrola objektu
-            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
-            if (typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock type_of_block_id not found");
-
-            // Kontrola oprávnění
-            if (! typeOfBlock.delete_permission()) return GlobalResult.result_forbidden();
-
-            // Smazání objektu
-            typeOfBlock.delete();
-
-            // Vrácení objektu
-            return GlobalResult.result_ok();
-
-        } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "get TypeOfBlocks by Filter",
-            tags = {"Type-of-Block"},
-            notes = "get TypeOfBlock List",
-            produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "TypeOfBlock_read_permission", value = "No need to check permission, because Tyrion returns only those results which user owns"),
-                    }),
-            }
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_TypeOfBlock_Filter",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",             response = Swagger_Type_Of_Block_List.class),
-            @ApiResponse(code = 400, message = "Invalid body",          response = Result_InvalidBody.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",  response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result typeOfBlock_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number) {
-        try {
-
-            // Získání JSON
-            final Form<Swagger_TypeOfBlock_Filter> form = Form.form(Swagger_TypeOfBlock_Filter.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_TypeOfBlock_Filter help = form.get();
-
-            // Získání všech objektů a následné odfiltrování soukormých TypeOfBlock
-            Query<Model_TypeOfBlock> query = Ebean.find(Model_TypeOfBlock.class);
-
-            // Order
-            query.order().asc("order_position");
-
-            query.where()
-                    .eq("removed_by_user", false)
-                    .or(Expr.eq("project.participants.person.id", Controller_Security.get_person_id()), Expr.and(Expr.isNull("project"), Expr.eq("publish_type", Enum_Publishing_type.public_program.name())));
-
-            // Pokud JSON obsahuje project_id filtruji podle projektu
-            if (help.project_id != null) {
-
-                terminal_logger.debug("typeOfBlock_getByFilter - filtering by project");
-
-                Model_Project project = Model_Project.get_byId(help.project_id);
-                if (project == null) return GlobalResult.result_notFound("Project not found");
-                if (!project.read_permission()) return GlobalResult.result_forbidden();
-
-                if (help.public_programs) {
-                    query.where().or(Expr.eq("project.id", help.project_id), Expr.isNull("project"));
-                } else {
-                    query.where().eq("project.id", help.project_id);
-                }
-            }
-
-            if (!Controller_Security.get_person().has_permission(Model_CProgram.permissions.C_Program_community_publishing_permission.name())) {
-                query.where().or(Expr.isNotNull("project"), Expr.and(Expr.isNull("project"), Expr.eq("active", true)));
-            }
-
-            // Vytvoření odchozího JSON
-            Swagger_Type_Of_Block_List result = new Swagger_Type_Of_Block_List(query, page_number);
-
-            // Vrácení výsledku
-            return GlobalResult.result_ok(Json.toJson(result));
-
-        } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "deactivate TypeOfBlocks",
-            tags = {"Admin-Type-of-Block"},
-            notes = "deactivate Type of Widget",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result typeOfBlock_deactivate(String type_of_block_id) {
-        try {
-
-            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
-            if (typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock not found");
-
-            // Kontrola oprávnění
-            if (!typeOfBlock.edit_permission()) return GlobalResult.result_forbidden();
-
-            if (typeOfBlock.project_id() != null) return GlobalResult.result_forbidden();
-
-
-            if (!typeOfBlock.active) return GlobalResult.result_badRequest("TypeOfBlock is already deactivated");
-
-            if (!typeOfBlock.update_permission()) return GlobalResult.result_forbidden();
-
-            typeOfBlock.active = false;
-
-            typeOfBlock.update();
-
-            return GlobalResult.result_ok();
-
-        } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "activate TypeOfBlocks",
-            tags = {"Admin-Type-of-Block"},
-            notes = "activate Type of Widget",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class),
-            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result typeOfBlock_activate(String type_of_block_id) {
-        try {
-
-            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(type_of_block_id);
-            if (typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock not found");
-
-            if (typeOfBlock.project_id() != null ) return GlobalResult.result_forbidden();
-
-            if (!typeOfBlock.update_permission()) return GlobalResult.result_forbidden();
-
-            if (typeOfBlock.active) return GlobalResult.result_badRequest("TypeOfBlock is already activated");
-
-            typeOfBlock.active = true;
-
-            typeOfBlock.update();
-
-            return GlobalResult.result_ok();
-
-        } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "order_Up TypeOfBlock",
-            tags = {"Type-of-Block"},
-            notes = "Set order in list one position up",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result typeOfBlock_orderUp(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id) {
-        try {
-
-            Model_TypeOfBlock typeOfBlocks =  Model_TypeOfBlock.get_byId(blocko_block_id);
-            if (typeOfBlocks == null) return GlobalResult.result_notFound("TypeOfBlock not found");
-
-            // Kontrola oprávnění
-            if (!typeOfBlocks.edit_permission()) return GlobalResult.result_forbidden();
-
-            typeOfBlocks.up();
-
-            return GlobalResult.result_ok();
-
-        } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "order_Down TypeOfBlock",
-            tags = {"Type-of-Block"},
-            notes = "Set order in list one position down",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result typeOfBlock_orderDown(@ApiParam(value = "type_of_block_id String path",   required = true) String type_of_block_id) {
-        try {
-
-            Model_TypeOfBlock typeOfBlocks =  Model_TypeOfBlock.get_byId(type_of_block_id);
-            if (typeOfBlocks == null) return GlobalResult.result_notFound("TypeOfBlock not found");
-
-            // Kontrola oprávnění
-            if (!typeOfBlocks.edit_permission()) return GlobalResult.result_forbidden();
-
-            typeOfBlocks.down();
-
-            return GlobalResult.result_ok();
-
-        } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
 // BLOCK ###############################################################################################################
 
-    @ApiOperation(value = "create BlockoBlock",
-            tags = {"Blocko-Block"},
+    @ApiOperation(value = "create Block",
+            tags = {"Block"},
             notes = "creating new independent Block object for Blocko tools",
             produces = "application/json",
+            consumes = "application/json",
             protocols = "https",
-            code = 201,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "BlockoBlock_create_permission", value = Model_BlockoBlock.create_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "TypeOfBlocko.update_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlock_create_permission" )
-                    })
-            }
+            code = 201
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_New",
+                            dataType = "utilities.swagger.input.Swagger_NameAndDesc_ProjectIdOptional",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",      response = Model_BlockoBlock.class),
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_Block.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something went wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -1542,190 +1148,148 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result blockoBlock_create() {
+    public Result block_create() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_BlockoBlock_New> form = Form.form(Swagger_BlockoBlock_New.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_BlockoBlock_New help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDesc_ProjectIdOptional help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDesc_ProjectIdOptional.class);
 
-            // Kontrola objektu
-            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId( help.type_of_block_id);
-            if (typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock type_of_block_id not found");
 
-            if (typeOfBlock.project == null && Model_BlockoBlock.get_publicByName(help.name) != null) {
-                return GlobalResult.result_badRequest("BlockoBlock with this name already exists, type a new one.");
+            Model_Project project = null;
+
+            if (help.project_id == null) {
+                if (Model_Block.getPublicByName(help.name) != null) {
+                    return badRequest("Block with this name already exists, type a new one.");
+                }
+            } else {
+                project = Model_Project.getById(help.project_id);
             }
 
             // Vytvoření objektu
-            Model_BlockoBlock blockoBlock = new Model_BlockoBlock();
+            Model_Block block = new Model_Block();
+            block.name = help.name;
+            block.description = help.description;
+            block.author_id = person().id;
 
-            blockoBlock.description = help.general_description;
-            blockoBlock.name                = help.name;
-            blockoBlock.author              = Controller_Security.get_person();
-            blockoBlock.type_of_block       = typeOfBlock;
-            blockoBlock.publish_type        = typeOfBlock.publish_type;
-
-            // Kontrola oprávnění těsně před uložením
-            if (!blockoBlock.create_permission()) return GlobalResult.result_forbidden();
-
+            if (project != null) {
+                block.project = project;
+                block.publish_type = ProgramType.PRIVATE;
+            } else {
+                block.publish_type = ProgramType.PUBLIC;
+            }
+            
             // Uložení objektu
-            blockoBlock.save();
+            block.save();
 
             // Získání šablony
-            Model_BlockoBlockVersion scheme = Model_BlockoBlockVersion.get_scheme();
+            Model_BlockVersion scheme = Model_BlockVersion.get_scheme();
 
             // Kontrola objektu
-            if (scheme == null) return GlobalResult.result_created(Json.toJson(blockoBlock));
+            if (scheme == null) return created(block.json());
 
             // Vytvoření objektu první verze
-            Model_BlockoBlockVersion blockoBlockVersion = new Model_BlockoBlockVersion();
-            blockoBlockVersion.version_name = "0.0.0";
-            blockoBlockVersion.version_description = "This is a first version of block.";
-            blockoBlockVersion.approval_state = Enum_Approval_state.approved;
+            Model_BlockVersion blockoBlockVersion = new Model_BlockVersion();
+            blockoBlockVersion.name = "0.0.0";
+            blockoBlockVersion.description = "This is a first version of block.";
+            blockoBlockVersion.approval_state = Approval.APPROVED;
             blockoBlockVersion.design_json = scheme.design_json;
             blockoBlockVersion.logic_json = scheme.logic_json;
-            blockoBlockVersion.date_of_create = new Date();
-            blockoBlockVersion.blocko_block = blockoBlock;
-            blockoBlockVersion.author = Controller_Security.get_person();
+            blockoBlockVersion.block = block;
             blockoBlockVersion.save();
 
             // Vrácení objektu
-            return GlobalResult.result_created(Json.toJson(blockoBlock));
+            return created(block.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "make_Clone BlockoBlock",
-            tags = {"Blocko-Block"},
-            notes = "clone Blocko Block for private",
+    @ApiOperation(value = "clone Block",
+            tags = {"Block"},
+            notes = "clone Block for private",
             produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200
+            consumes = "application/json",
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Blocko_Block_Copy",
+                            dataType = "utilities.swagger.input.Swagger_Block_Copy",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlock.class),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Block.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_API.class)
-    public Result blockoBlock_clone() {
+    @Security.Authenticated(Authentication.class)
+    public Result block_clone() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Blocko_Block_Copy> form = Form.form(Swagger_Blocko_Block_Copy.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_Blocko_Block_Copy help = form.get();
+            // Get and Validate Object
+            Swagger_Block_Copy help = baseFormFactory.formFromRequestWithValidation(Swagger_Block_Copy.class);
 
             // Vyhledám Objekt
-            Model_BlockoBlock blocko_block_old = Model_BlockoBlock.get_byId(help.blocko_block_id);
-            if (blocko_block_old == null) return GlobalResult.result_notFound("Model_GridWidget blocko_block_id not found");
-
-            // Zkontroluji oprávnění
-            if (!blocko_block_old.read_permission())  return GlobalResult.result_forbidden();
-
+            Model_Block blockOld = Model_Block.getById(help.block_id);
+        
             // Vyhledám Objekt
-            Model_Project project = Model_Project.get_byId(help.project_id);
-            if (project == null) return GlobalResult.result_notFound("Project project_id not found");
+            Model_Project project = Model_Project.getById(help.project_id);
 
-            // Zkontroluji oprávnění
-            if (!project.update_permission())  return GlobalResult.result_forbidden();
+            Model_Block blockNew = new Model_Block();
+            blockNew.name = help.name;
+            blockNew.description = help.description;
+            blockNew.project = project;
 
-            // Kontrola objektu
-            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(help.type_of_blocks_id);
-            if (typeOfBlock != null) {
-                if (!Model_Project.get_byId(typeOfBlock.project_id()).update_permission()) {
-                    return GlobalResult.result_forbidden();
-                }
+            // Duplicate all versions
+            for (Model_BlockVersion version : blockOld.getVersions()) {
+
+                Model_BlockVersion copy_object = new Model_BlockVersion();
+                copy_object.name        = version.name;
+                copy_object.description = version.description;
+                copy_object.design_json = version.design_json;
+                copy_object.design_json = version.design_json;
+                copy_object.logic_json  = version.logic_json;
+                copy_object.block       = blockNew;
+
             }
 
-            if (typeOfBlock == null) {
-                typeOfBlock = new Model_TypeOfBlock();
-                typeOfBlock.description = "Yea! My First Blocko Group with Community Widget";
-                typeOfBlock.name        = "Private Widget Group";
-                typeOfBlock.project     = project;
-                typeOfBlock.save();
-
-                typeOfBlock.refresh();
-            }
-
-            Model_BlockoBlock blocko_block_new =  new Model_BlockoBlock();
-            blocko_block_new.name = help.name;
-            blocko_block_new.description = help.description;
-            blocko_block_new.type_of_block = typeOfBlock;
-            blocko_block_new.save();
-
-            blocko_block_new.refresh();
-
-            for (Model_BlockoBlockVersion version : blocko_block_old.get_blocko_block_versions()) {
-
-                Model_BlockoBlockVersion copy_object = new Model_BlockoBlockVersion();
-                copy_object.version_name        = version.version_name;
-                copy_object.date_of_create      = version.date_of_create;
-                copy_object.version_description = version.version_description;
-                copy_object.date_of_create      = new Date();
-                copy_object.author              = version.author;
-                copy_object.design_json         = version.design_json;
-                copy_object.logic_json          = version.logic_json;
-                copy_object.blocko_block        = blocko_block_new;
-
-                // Zkontroluji oprávnění
-                copy_object.save();
-            }
-
-            blocko_block_new.refresh();
+            blockNew.save();
 
             // Vracím Objekt
-            return GlobalResult.result_ok(Json.toJson(blocko_block_new));
+            return ok(blockNew.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "edit BlockoBlock",
-            tags = {"Blocko-Block"},
-            notes = "update basic information (name, and description) of the independent BlockoBlock",
+    @ApiOperation(value = "edit Block",
+            tags = {"Block"},
+            notes = "update basic information (name, and description) of the independent Block",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "BlockoBlock.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlock_edit_permission" )
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_New",
+                            dataType = "utilities.swagger.input.Swagger_NameAndDescription",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlock.class),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Block.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -1733,259 +1297,301 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result blockoBlock_update(@ApiParam(value = "blocko_block_id String path",   required = true)  String blocko_block_id) {
+    public Result block_update(UUID block_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_BlockoBlock_New> form = Form.form(Swagger_BlockoBlock_New.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_BlockoBlock_New help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
-            if (blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
-
-            // Kontrola oprávnění
-            if (! blockoBlock.edit_permission() ) return GlobalResult.result_forbidden("You have no permission to edit");
-
+            Model_Block block = Model_Block.getById(block_id);
+            
             // Úprava objektu
-            blockoBlock.description = help.general_description;
-            blockoBlock.name        = help.name;
-
-            // Kontrola objektu
-            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(  help.type_of_block_id);
-            if (typeOfBlock == null) return GlobalResult.result_notFound("TypeOfBlock type_of_block_id not found");
-
-            // Úprava objektu
-            blockoBlock.type_of_block = typeOfBlock;
+            block.description = help.description;
+            block.name        = help.name;
 
             // Uložení objektu
-            blockoBlock.update();
+            block.update();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(blockoBlock));
+            return ok(block.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
 
     }
 
-    @ApiOperation(value = "get BlockoBlock",
-            tags = {"Blocko-Block"},
-            notes = "get independent BlockoBlock object",
+    @ApiOperation(value = "tag Block",
+            tags = {"Block"},
+            notes = "",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "BlockoBlock_read_permission", value = Model_BlockoBlock.read_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "BlockoBlock.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlock_read_permission")
-                    })
-            }
+            consumes = "application/json",
+            protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlock.class),
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Tags",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Block.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlock_get(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id) {
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result block_addTags() {
         try {
-            // Kontrola objektu
-            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
-            if (blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock not found");
 
-            // Kontrola oprávnění
-            if (! blockoBlock.read_permission() ) return GlobalResult.result_forbidden();
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+
+            // Kontrola objektu
+            Model_Block block = Model_Block.getById(help.object_id);
+
+            // Add Tags
+            block.addTags(help.tags);
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(blockoBlock));
+            return ok(block.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "untag Block",
+            tags = {"Block"},
+            notes = "",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Tags",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Block.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result block_removeTags() {
+        try {
+
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+
+            // Kontrola objektu
+            Model_Block block = Model_Block.getById(help.object_id);
+
+            // Remove Tags
+            block.removeTags(help.tags);
+
+            // Vrácení objektu
+            return ok(block.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "get Block",
+            tags = {"Block"},
+            notes = "get independent Block object",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Block.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result block_get( UUID block_id) {
+        try {
+
+            // Kontrola objektu
+            Model_Block block = Model_Block.getById(block_id);
+         
+            // Vrácení objektu
+            return ok(block.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
         }
 
     }
 
-    @ApiOperation(value = "get BlockoBlock by Filter",
-            tags = {"Blocko-Block"},
-            notes = "get BlockoBlock List",
+    @ApiOperation(value = "getByFilter Block",
+            tags = {"Block"},
+            notes = "get Block List",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "BlockoBlock_read_permission", value = "No need to check permission, because Tyrion returns only those results which user owns"),
-                    }),
-            }
+            consumes = "application/json",
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Blocko_Block_Filter",
+                            dataType = "utilities.swagger.input.Swagger_Block_Filter",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",             response = Swagger_Blocko_Block_List.class),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",             response = Swagger_Block_List.class),
             @ApiResponse(code = 400, message = "Invalid body",          response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",  response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result blockoBlock_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number) {
+    public Result block_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number) {
         try {
 
-            // Získání JSON
-            final Form<Swagger_Blocko_Block_Filter> form = Form.form(Swagger_Blocko_Block_Filter.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_Blocko_Block_Filter help = form.get();
+            // Get and Validate Object
+            Swagger_Block_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Block_Filter.class);
 
             // Získání všech objektů a následné filtrování podle vlastníka
-            Query<Model_BlockoBlock> query = Ebean.find(Model_BlockoBlock.class);
-            query.where().eq("author.id", Controller_Security.get_person_id());
+            Query<Model_Block> query = Ebean.find(Model_Block.class);
+            query.where().eq("author.id", _BaseController.personId());
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
-
+                Model_Project.getById(help.project_id);
                 query.where().eq("type_of_block.project.id", help.project_id);
             }
 
             // Vytvoření odchozího JSON
-            Swagger_Blocko_Block_List result = new Swagger_Blocko_Block_List(query, page_number);
+            Swagger_Block_List result = new Swagger_Block_List(query, page_number);
 
             // Vrácení výsledku
-            return GlobalResult.result_ok(Json.toJson(result));
+            return ok(result.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "delete BlockoBlock",
-            tags = {"Blocko-Block"},
-            notes = "delete BlockoBlock",
+    @ApiOperation(value = "delete Block",
+            tags = {"Block"},
+            notes = "delete Block",
             produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "BlockoBlock.delete_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlock_delete_permission")
-                    })
-            }
+            consumes = "application/json",
+            protocols = "https"
+            
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlock_delete(@ApiParam(value = "blocko_block_id String path",   required = true)  String blocko_block_id) {
+    public Result block_delete(UUID block_id) {
         try {
 
             // Kontrola objektu
-            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
-            if (blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
-
-            // Kontrola oprávnění
-            if (!blockoBlock.delete_permission()) return GlobalResult.result_forbidden();
-
+            Model_Block blockoBlock = Model_Block.getById(block_id);
+       
             // Smazání objektu
             blockoBlock.delete();
 
             // Vrácení potvrzení
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "order BlockoBlock Up",
-            tags = {"Blocko-Block"},
+    @ApiOperation(value = "orderUp Block",
+            tags = {"Block"},
             notes = "set up order",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlock_orderUp(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_id) {
+    public Result block_orderUp(UUID block_id) {
         try {
 
-            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
-            if (blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock not found");
+            // Kontrola objektu
+            Model_Block block = Model_Block.getById(block_id);
 
-            // Kontrola oprávnění
-            if (!blockoBlock.edit_permission()) return GlobalResult.result_forbidden();
+            // Shift order up
+            block.up();
 
-            blockoBlock.up();
-
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "order BlockoBlock Down",
-            tags = {"Blocko-Block"},
+    @ApiOperation(value = "orderDown Block",
+            tags = {"Block"},
             notes = "set up order",
             produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200
+            consumes = "application/json",
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlock_orderDown(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_id) {
+    public Result block_orderDown(UUID block_id) {
         try {
 
-            Model_BlockoBlock blockoBlock =  Model_BlockoBlock.get_byId(blocko_block_id);
-            if (blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock not found");
+            // Kontrola objektu
+            Model_Block block =  Model_Block.getById(block_id);
 
-            // Kontrola oprávnění
-            if (!blockoBlock.edit_permission()) return GlobalResult.result_forbidden();
+            // Shift order down
+            block.down();
 
-            blockoBlock.down();
-
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "deactivate BlockoBlock",
-            tags = {"Admin-Blocko-Block"},
-            notes = "deactivate BlockoBlock",
+    @ApiOperation(value = "deactivate Block",
+            tags = {"Admin-Block"},
+            notes = "deactivate Block",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -1993,39 +1599,30 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlock_deactivate(String blocko_block_id) {
+    public Result block_deactivate(UUID block_id) {
         try {
 
-            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
-            if (blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
+            Model_Block block = Model_Block.getById(block_id);
+            if (!block.active) return badRequest("Block is already deactivated");
+            
+            block.active = false;
 
-            // Kontrola oprávnění
-            if (!blockoBlock.edit_permission()) return GlobalResult.result_forbidden();
+            block.update();
 
-
-            if (!blockoBlock.active) return GlobalResult.result_badRequest("BlockoBlock is already deactivated");
-
-            if (!blockoBlock.update_permission()) return GlobalResult.result_forbidden();
-
-            blockoBlock.active = false;
-
-            blockoBlock.update();
-
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "activate BlockoBlock",
-            tags = {"Admin-Blocko-Block"},
-            notes = "activate Blocko Block",
+    @ApiOperation(value = "activate Block",
+            tags = {"Admin-Block"},
+            notes = "activate Block",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Tariff.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -2033,46 +1630,42 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlock_activate(String blocko_block_id) {
+    public Result block_activate(UUID block_id) {
         try {
 
-            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
-            if (blockoBlock == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
+            Model_Block block = Model_Block.getById(block_id);
 
-            if (blockoBlock.active) return GlobalResult.result_badRequest("BlockoBlock is already activated");
+            if (block.active) return badRequest("Block is already activated");
+            block.active = true;
 
-            if (!blockoBlock.update_permission()) return GlobalResult.result_forbidden();
+            block.update();
 
-            blockoBlock.active = true;
-
-            blockoBlock.update();
-
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "edit BlockoBlock_Version Response publication",
-            tags = {"Admin-Blocko-Block"},
+    @ApiOperation(value = "edit BlockVersion Response publication",
+            tags = {"Admin-Block"},
             notes = "sets Approval_state to pending",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            consumes = "application/json",
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_Publish_Response",
+                            dataType = "utilities.swagger.input.Swagger_Community_Version_Publish_Response",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -2080,108 +1673,92 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result blockoBlock_public_response() {
-
+    public Result block_public_response() { // TODO asi nebude fungovat korektně
         try {
 
-            // Získání JSON
-            final Form<Swagger_BlockoBlock_Publish_Response> form = Form.form(Swagger_BlockoBlock_Publish_Response.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_BlockoBlock_Publish_Response help = form.get();
+            // Get and Validate Object
+            Swagger_Community_Version_Publish_Response help = baseFormFactory.formFromRequestWithValidation(Swagger_Community_Version_Publish_Response.class);
 
             // Kontrola názvu
-            if (help.version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
+            if (help.version_name.equals("version_scheme")) return badRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_BlockoBlockVersion private_blocko_block_version = Model_BlockoBlockVersion.get_byId(help.version_id);
-            if (private_blocko_block_version == null) return GlobalResult.result_notFound("grid_widget_version not found");
+            Model_BlockVersion private_block_version = Model_BlockVersion.getById(help.version_id);
 
             // Kontrola nadřazeného objektu
-            Model_BlockoBlock block_old = private_blocko_block_version.get_blocko_block();
+            Model_Block block_old = private_block_version.get_block();
 
             // Zkontroluji oprávnění
             if (!block_old.community_publishing_permission()) {
-                return GlobalResult.result_forbidden();
+                return forbidden();
             }
 
             if (help.decision) {
 
-                // Kontrola skupiny kam se widget zařadí
-                Model_TypeOfBlock type_of_block_public = Model_TypeOfBlock.find.byId(help.blocko_block_type_of_block_id);
-                if (type_of_block_public == null) {
-                    return GlobalResult.result_notFound("Model_TypeOfBlock not found");
-                }
+                private_block_version.approval_state = Approval.APPROVED;
+                private_block_version.update();
 
-                if (type_of_block_public.publish_type != Enum_Publishing_type.public_program) {
-                    return GlobalResult.result_badRequest("You cannot register Widget to non-public group");
-                }
+                Model_Block block = Model_Block.find.query().where().eq("id",block_old.id.toString() + "_public_copy").findOne(); // TODO won't work
 
-                private_blocko_block_version.approval_state = Enum_Approval_state.approved;
-                private_blocko_block_version.update();
-
-                Model_BlockoBlock blocko_block = Model_BlockoBlock.find.where().eq("id",block_old.id.toString() + "_public_copy").findUnique();
-
-                if (blocko_block == null) {
+                if (block == null) {
                     // Vytvoření objektu
-                    blocko_block = new Model_BlockoBlock();
-                    blocko_block.name = help.program_name;
-                    blocko_block.description = help.program_description;
-                    blocko_block.type_of_block = type_of_block_public;
-                    blocko_block.author = private_blocko_block_version.get_blocko_block().get_author();
-                    blocko_block.publish_type = Enum_Publishing_type.public_program;
-                    blocko_block.save();
+                    block = new Model_Block();
+                    block.name = help.program_name;
+                    block.description = help.program_description;
+                    block.author_id = private_block_version.get_block().get_author().id;
+                    block.publish_type = ProgramType.PUBLIC;
+                    block.save();
                 }
 
                 // Vytvoření objektu
-                Model_BlockoBlockVersion blocko_blockVersion = new Model_BlockoBlockVersion();
-                blocko_blockVersion.version_name = help.version_name;
-                blocko_blockVersion.version_description = help.version_description;
-                blocko_blockVersion.design_json = private_blocko_block_version.design_json;
-                blocko_blockVersion.logic_json = private_blocko_block_version.logic_json;
-                blocko_blockVersion.approval_state = Enum_Approval_state.approved;
-                blocko_blockVersion.blocko_block = blocko_block;
-                blocko_blockVersion.date_of_create = new Date();
-                blocko_blockVersion.save();
+                Model_BlockVersion version = new Model_BlockVersion();
+                version.name = help.version_name;
+                version.description = help.version_description;
+                version.design_json = private_block_version.design_json;
+                version.logic_json = private_block_version.logic_json;
+                version.approval_state = Approval.APPROVED;
+                version.block = block;
+                version.save();
 
-                blocko_block.refresh();
+                block.refresh();
 
                 // TODO notifikace a emaily
 
-                return GlobalResult.result_ok();
+                return ok();
 
             } else {
                 // Změna stavu schválení
-                private_blocko_block_version.approval_state = Enum_Approval_state.disapproved;
+                private_block_version.approval_state = Approval.DISAPPROVED;
 
                 // Odeslání emailu s důvodem
                 try {
 
                     new Email()
-                            .text("Version of Widget " + private_blocko_block_version.get_blocko_block().name + ": " + Email.bold(private_blocko_block_version.version_name) + " was not approved for this reason: ")
+                            .text("Version of Widget " + private_block_version.get_block().name + ": " + Email.bold(private_block_version.name) + " was not approved for this reason: ")
                             .text(help.reason)
-                            .send(private_blocko_block_version.get_blocko_block().get_author().mail, "Version of Widget disapproved");
+                            .send(private_block_version.get_block().get_author().email, "Version of Widget disapproved");
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError (e);
+                    logger.internalServerError (e);
                 }
 
                 // Uložení změn
-                private_blocko_block_version.update();
+                private_block_version.update();
 
                 // Vrácení výsledku
-                return GlobalResult.result_ok();
+                return ok();
             }
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
 // BLOCK VERSION #######################################################################################################
 
-    @ApiOperation(value = "create BlockoBlock_Version",
-            tags = {"Blocko-Block"},
-            notes = "new BlockoBlock version",
+    @ApiOperation(value = "create BlockVersion",
+            tags = {"Block"},
+            notes = "new Block version",
             produces = "application/json",
             protocols = "https",
             code = 201
@@ -2190,15 +1767,15 @@ public class Controller_Blocko extends Controller{
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_BlockoVersion_New",
+                            dataType = "utilities.swagger.input.Swagger_BlockVersion_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created",      response = Model_BlockoBlockVersion.class),
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_BlockVersion.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something went wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -2207,114 +1784,84 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result blockoBlockVersion_create(@ApiParam(value = "blocko_block_id String path",   required = true) String blocko_block_id) {
+    public Result blockVersion_create(UUID block_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_BlockoBlock_BlockoVersion_New> form = Form.form(Swagger_BlockoBlock_BlockoVersion_New.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_BlockoBlock_BlockoVersion_New help = form.get();
+            // Get and Validate Object
+            Swagger_BlockVersion_New help = baseFormFactory.formFromRequestWithValidation(Swagger_BlockVersion_New.class);
 
             // Kontrola názvu
-            if (help.version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
+            if (help.name.equals("version_scheme")) return badRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_BlockoBlock blockoBlock = Model_BlockoBlock.get_byId(blocko_block_id);
-            if (blockoBlock == null) return GlobalResult.result_notFound("blockoBlock not found");
+            Model_Block block = Model_Block.getById(block_id);
 
             // Vytvoření objektu
-            Model_BlockoBlockVersion version = new Model_BlockoBlockVersion();
-            version.date_of_create = new Date();
-
-            version.version_name = help.version_name;
-            version.version_description = help.version_description;
+            Model_BlockVersion version = new Model_BlockVersion();
+            version.name = help.name;
+            version.description = help.description;
             version.design_json = help.design_json;
             version.logic_json = help.logic_json;
-            version.blocko_block = blockoBlock;
-            version.author = Controller_Security.get_person();
-
-            // Kontrola oprávnění
-            if (!version.create_permission()) return GlobalResult.result_forbidden();
+            version.block = block;
 
             // Uložení objektu
             version.save();
 
             // Vrácení objektu
-            return GlobalResult.result_created(Json.toJson(blockoBlock));
+            return created(block.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "get BlockoBlock_Version",
-            tags = {"Blocko-Block"},
-            notes = "get version (content) from independent BlockoBlock",
+    @ApiOperation(value = "get BlockVersion",
+            tags = {"Block"},
+            notes = "get version (content) from independent Block",
             produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "BlockoBlockVersion_read_permission", value = Model_BlockoBlockVersion.read_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "BlockoBlock.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_read_permission")
-                    })
-            }
+            consumes = "application/json",
+            protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlockVersion.class),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockVersion.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlockVersion_get(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id) {
+    public Result blockVersion_get(UUID version_id) {
         try {
+            
             // Kontrola objektu
-            Model_BlockoBlockVersion blocko_version = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
-            if (blocko_version == null) return GlobalResult.result_notFound("BlockoBlock blocko_block_id not found");
-
-            // Kontrola oprávnění
-            if (! blocko_version.read_permission() ) return GlobalResult.result_forbidden("You have no permission to get that");
-
+            Model_BlockVersion version = Model_BlockVersion.getById(version_id);
+          
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(blocko_version));
+            return ok(version.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "edit BlockoBlock_Version",
-            tags = {"Blocko-Block"},
+    @ApiOperation(value = "edit BlockVersion",
+            tags = {"Block"},
             notes = "You can edit only basic information of the version. If you want to update the code, " +
                     "you have to create a new version!",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "BlockoBlockVersion.edit_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_edit_permission" )
-                    })
-            }
+            consumes = "application/json",
+            protocols = "https"
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_BlockoBlock_BlockoVersion_Edit",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlockVersion.class),
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_NameAndDescription",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockVersion.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something went wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -2323,177 +1870,158 @@ public class Controller_Blocko extends Controller{
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result blockoBlockVersion_update(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id) {
+    public Result blockVersion_update(UUID version_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_BlockoBlock_BlockoVersion_Edit> form = Form.form(Swagger_BlockoBlock_BlockoVersion_Edit.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_BlockoBlock_BlockoVersion_Edit help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola názvu
-            if (help.version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
+            if (help.name.equals("version_scheme")) return badRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_BlockoBlockVersion version = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
-            if (version == null) return GlobalResult.result_notFound("blocko_block_version_id not found");
-
+            Model_BlockVersion version = Model_BlockVersion.getById(version_id);
+  
             // Úprava objektu
-            version.version_name = help.version_name;
-            version.version_description = help.version_description;
+            version.name = help.name;
+            version.description = help.description;
 
             // Uložení objektu
             version.update();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(version));
+            return ok(version.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "delete BlockoBlock_Version",
-            tags = {"Blocko-Block"},
-            notes = "delete BlockoBlock version",
+    @ApiOperation(value = "delete BlockVersion",
+            tags = {"Block"},
+            notes = "delete Block version",
             produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "BlockoBlockVersion.delete_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "BlockoBlockVersion_delete_permission")
-                    })
-            }
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlockVersion_delete(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id) {
+    public Result blockVersion_delete(UUID version_id) {
         try {
 
             // Kontrola objektu
-            Model_BlockoBlockVersion version = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
-            if (version == null) return GlobalResult.result_notFound("BlockoBlockVersion blocko_block_version_id not found");
-
-            // Kontrola oprávnění
-            if (!version.delete_permission()) return GlobalResult.result_forbidden();
+            Model_BlockVersion version = Model_BlockVersion.getById(version_id);
 
             // Smazání objektu
             version.delete();
 
             // Vrácení potvrzení
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "make BlockoBlock_Version public",
-            tags = {"Blocko-Block"},
+    @ApiOperation(value = "publish BlockVersion",
+            tags = {"Block"},
             notes = "sets Approval_state to pending",
             produces = "application/json",
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlockVersion.class),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockVersion.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlockVersion_makePublic(@ApiParam(value = "blocko_block_version_id String path",   required = true) String blocko_block_version_id) {
+    public Result blockVersion_makePublic(UUID version_id) {
         try {
 
             // Kontrola objektu
-            Model_BlockoBlockVersion blockoBlockVersion = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
-            if (blockoBlockVersion == null) return GlobalResult.result_notFound("BlockoBlockVersion blocko_block_version_id not found");
-
-            // Kontrola orávnění
-            if (!(blockoBlockVersion.edit_permission())) return GlobalResult.result_forbidden();
-
+            Model_BlockVersion version = Model_BlockVersion.getById(version_id);
+        
             // Úprava objektu
-            blockoBlockVersion.approval_state = Enum_Approval_state.pending;
+            version.approval_state = Approval.PENDING;
 
             // Uložení změn
-            blockoBlockVersion.update();
+            version.update();
 
             // Vrácení výsledku
-            return GlobalResult.result_ok(Json.toJson(blockoBlockVersion));
+            return ok(version.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "set_As_Main BlockoBlock_Version",
-            tags = {"Admin-Blocko-Block"},
+    @ApiOperation(value = "setMain BlockVersion",
+            tags = {"Admin-Block"},
             notes = "",
             produces = "application/json",
-            consumes = "text/html",
-            protocols = "https",
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "GridWidgetVersion.delete_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "GridWidgetVersion_delete_permission")
-                    })
-            }
+            protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 403, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockoBlockVersion_set_main(String blocko_block_version_id) {
+    public Result blockVersion_setMain(UUID version_id) {
         try {
 
             // Kontrola objektu
-            Model_BlockoBlockVersion version = Model_BlockoBlockVersion.get_byId(blocko_block_version_id);
-            if (version == null) return GlobalResult.result_notFound("BlockoBlockVersion blocko_block_version_id not found");
+            Model_BlockVersion version = Model_BlockVersion.getById(version_id);
 
-            // Kontrola oprávnění
-            if (!version.edit_permission()) return GlobalResult.result_forbidden();
-
-            if (!version.get_blocko_block_id().equals("00000000-0000-0000-0000-000000000001")) {
-                return GlobalResult.result_notFound("BlockoBlockVersion blocko_block_version_id not from default program");
+            if (!version.get_block_id().equals(UUID.fromString("00000000-0000-0000-0000-000000000001"))) {
+                return notFound("BlockVersion not from default program");
             }
 
-            Model_BlockoBlockVersion old_version = Model_BlockoBlockVersion.find.where().eq("publish_type", Enum_Publishing_type.default_version.name()).select("id").findUnique();
+            Model_BlockVersion old_version = Model_BlockVersion.find.query().where().eq("publish_type", ProgramType.DEFAULT_VERSION.name()).select("id").findOne();
             if (old_version != null) {
-                old_version = Model_BlockoBlockVersion.get_byId(old_version.id);
+                old_version = Model_BlockVersion.getById(old_version.id);
                 old_version.publish_type = null;
                 old_version.update();
             }
 
-            version.publish_type = Enum_Publishing_type.default_version;
+            version.publish_type = ProgramType.DEFAULT_VERSION;
             version.update();
 
             // Vrácení potvrzení
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
 // BLOCKO ADMIN ########################################################################################################*/
 
-    @ApiOperation(value = "edit BlockoBlock_Version refuse publication",
-            tags = {"Admin-Blocko-Block"},
+    @ApiOperation(value = "edit BlockVersion refuse publication",
+            tags = {"Admin-Block"},
             notes = "sets disapproved from pending",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            consumes = "application/json",
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_BlockoObject_Approval",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -2504,49 +2032,55 @@ public class Controller_Blocko extends Controller{
     public Result blockoDisapprove() {
         try {
 
-            // Získání JSON
-            final Form<Swagger_BlockoObject_Approval> form = Form.form(Swagger_BlockoObject_Approval.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_BlockoObject_Approval help = form.get();
+            // Get and Validate Object
+            Swagger_BlockoObject_Approval help = baseFormFactory.formFromRequestWithValidation(Swagger_BlockoObject_Approval.class);
 
             // Kontrola objektu
-            Model_BlockoBlockVersion blockoBlockVersion = Model_BlockoBlockVersion.get_byId(help.object_id);
-            if (blockoBlockVersion == null) return GlobalResult.result_notFound("blocko_block_version not found");
-
+            Model_BlockVersion version = Model_BlockVersion.getById(help.object_id);
+          
             // Změna stavu schválení
-            blockoBlockVersion.approval_state = Enum_Approval_state.disapproved;
+            version.approval_state = Approval.DISAPPROVED;
 
             // Odeslání emailu s důvodem
             try {
                 new Email()
-                        .text("Version of Block " + blockoBlockVersion.get_blocko_block().name + ": " + Email.bold(blockoBlockVersion.version_name) + " was not approved for this reason: ")
+                        .text("Version of Block " + version.get_block().name + ": " + Email.bold(version.name) + " was not approved for this reason: ")
                         .text(help.reason)
-                        .send(blockoBlockVersion.get_blocko_block().get_author().mail, "Version of Block disapproved" );
+                        .send(version.get_block().get_author().email, "Version of Block disapproved" );
 
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
+                logger.internalServerError(e);
             }
 
             // Uložení změn
-            blockoBlockVersion.update();
+            version.update();
 
             // Vrácení potvrzení
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "edit BlockoBlock_Version accept publication",
-            tags = {"Admin-Blocko-Block"},
+    @ApiOperation(value = "edit BlockVersion accept publication",
+            tags = {"Admin-Block"},
             notes = "sets Approval_state to pending",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            consumes = "application/json",
+            protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockoBlockVersion.class),
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_BlockoObject_Approve_withChanges",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_BlockVersion.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
@@ -2556,127 +2090,56 @@ public class Controller_Blocko extends Controller{
     public Result blockoApproval() {
         try {
 
-            // Získání JSON
-            final Form<Swagger_BlockoObject_Approve_withChanges> form = Form.form(Swagger_BlockoObject_Approve_withChanges.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_BlockoObject_Approve_withChanges help = form.get();
+            // Get and Validate Object
+            Swagger_BlockoObject_Approve_withChanges help = baseFormFactory.formFromRequestWithValidation(Swagger_BlockoObject_Approve_withChanges.class);
 
             // Kontrola názvu
-            if (help.blocko_block_version_name.equals("version_scheme")) return GlobalResult.result_badRequest("This name is reserved for the system");
+            if (help.version_name.equals("version_scheme")) return badRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_BlockoBlockVersion privateBlockoBlockVersion = Model_BlockoBlockVersion.get_byId(help.object_id);
-            if (privateBlockoBlockVersion == null) return GlobalResult.result_notFound("blocko_block_version not found");
-
-            // Kontrola objektu
-            Model_TypeOfBlock typeOfBlock = Model_TypeOfBlock.get_byId(help.blocko_block_type_of_block_id);
-            if (typeOfBlock == null) return GlobalResult.result_notFound("type_of_block not found");
+            Model_BlockVersion privateVersion = Model_BlockVersion.getById(help.object_id);
 
             // Vytvoření objektu
-            Model_BlockoBlock blockoBlock = new Model_BlockoBlock();
-            blockoBlock.name = help.blocko_block_name;
-            blockoBlock.description = help.blocko_block_general_description;
-            blockoBlock.type_of_block = typeOfBlock;
-            blockoBlock.author = privateBlockoBlockVersion.get_blocko_block().get_author();
-            blockoBlock.save();
+            Model_Block block = new Model_Block();
+            block.name = help.name;
+            block.description = help.description;
+            block.author_id = privateVersion.get_block().get_author().id;
+            block.save();
 
             // Vytvoření objektu
-            Model_BlockoBlockVersion blockoBlockVersion = new Model_BlockoBlockVersion();
-            blockoBlockVersion.version_name = help.blocko_block_version_name;
-            blockoBlockVersion.version_description = help.blocko_block_version_description;
-            blockoBlockVersion.design_json = help.blocko_block_design_json;
-            blockoBlockVersion.logic_json = help.blocko_block_logic_json;
-            blockoBlockVersion.approval_state = Enum_Approval_state.approved;
-            blockoBlockVersion.blocko_block = blockoBlock;
-            blockoBlockVersion.date_of_create = new Date();
-            blockoBlockVersion.save();
+            Model_BlockVersion version = new Model_BlockVersion();
+            version.name = help.version_name;
+            version.description = help.version_description;
+            version.design_json = help.design_json;
+            version.logic_json = help.logic_json;
+            version.approval_state = Approval.APPROVED;
+            version.block = block;
+            version.save();
 
             // Pokud jde o schválení po ediatci
             if (help.state.equals("edit")) {
-                privateBlockoBlockVersion.approval_state = Enum_Approval_state.edited;
+                privateVersion.approval_state = Approval.EDITED;
 
                 // Odeslání emailu
                 try {
                     new Email()
-                            .text("Version of Block " + blockoBlockVersion.get_blocko_block().name + ": " + Email.bold(blockoBlockVersion.version_name) + " was edited before publishing for this reason: ")
+                            .text("Version of Block " + version.get_block().name + ": " + Email.bold(version.name) + " was edited before publishing for this reason: ")
                             .text(help.reason)
-                            .send(blockoBlockVersion.get_blocko_block().get_author().mail, "Version of Block edited" );
+                            .send(version.get_block().get_author().email, "Version of Block edited" );
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError(e);
+                    logger.internalServerError(e);
                 }
-            }
-            else privateBlockoBlockVersion.approval_state = Enum_Approval_state.approved;
+            } else privateVersion.approval_state = Approval.APPROVED;
 
             // Uložení úprav
-            privateBlockoBlockVersion.update();
+            privateVersion.update();
 
             // Vrácení výsledku
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
-
-    /**
-    @ApiOperation(value = "", hidden = true)
-    @Security.Authenticated(Secured_Admin.class)
-    public Result blockoBlockVersion_editScheme() {
-
-        try {
-
-            // Získání JSON
-            final Form<Swagger_BlockoBlock_BlockoVersion_Scheme_Edit> form = Form.form(Swagger_BlockoBlock_BlockoVersion_Scheme_Edit.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_BlockoBlock_BlockoVersion_Scheme_Edit help = form.get();
-
-            // Kontrola objektu
-            Model_BlockoBlockVersion blockoBlockVersion = Model_BlockoBlockVersion.get_scheme();
-            if (blockoBlockVersion == null) return GlobalResult.result_notFound("Scheme not found");
-
-            // Úprava objektu
-            blockoBlockVersion.design_json = help.design_json;
-            blockoBlockVersion.logic_json = help.logic_json;
-
-            // Uložení změn
-            blockoBlockVersion.update();
-
-            // Vrácení výsledku
-            return GlobalResult.result_ok();
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-
-    @ApiOperation(value = "", hidden = true)
-    @Security.Authenticated(Secured_Admin.class)
-    public Result blockoBlockVersion_createScheme() {
-
-        try {
-
-            Model_BlockoBlockVersion scheme = Model_BlockoBlockVersion.get_scheme();
-            if (scheme != null) return GlobalResult.result_badRequest("Scheme already exists.");
-
-            // Získání JSON
-            final Form<Swagger_BlockoBlock_BlockoVersion_Scheme_Edit> form = Form.form(Swagger_BlockoBlock_BlockoVersion_Scheme_Edit.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_BlockoBlock_BlockoVersion_Scheme_Edit help = form.get();
-
-            // Úprava objektu
-            scheme = new Model_BlockoBlockVersion();
-            scheme.version_name = "version_scheme";
-            scheme.design_json = help.design_json;
-            scheme.logic_json = help.logic_json;
-
-            // Uložení změn
-            scheme.save();
-
-            // Vrácení výsledku
-            return GlobalResult.result_ok();
-        } catch (Exception e) {
-            return Server_Logger.result_internalServerError(e, request());
-        }
-    }
-    */
 }

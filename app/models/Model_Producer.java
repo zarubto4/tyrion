@@ -1,70 +1,42 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.Controller_Security;
+import controllers._BaseController;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import utilities.logger.Class_Logger;
+import org.ehcache.Cache;
+import utilities.cache.CacheField;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.logger.Logger;
+import utilities.model.NamedModel;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-
 @Entity
 @ApiModel(value = "Producer", description = "Model of Producer")
 @Table(name="Producer")
-public class Model_Producer extends Model {
+public class Model_Producer extends NamedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_Producer.class);
+    private static final Logger logger = new Logger(Model_Producer.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                        @Id @ApiModelProperty(required = true)  public UUID id;
-                                                            @ApiModelProperty(required = true)  public String name;
-                     @Column(columnDefinition = "TEXT")     @ApiModelProperty(required = true)  public String description;
-
-    @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<Model_TypeOfBoard> type_of_boards = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<Model_BlockoBlock> blocko_blocks = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<Model_GridWidget>  grid_widgets = new ArrayList<>();
-
-    @JsonIgnore public boolean removed_by_user;
+    @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<Model_HardwareType> hardware_types = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<Model_Block> blocks = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="producer", cascade = CascadeType.ALL) public List<Model_Widget> widgets = new ArrayList<>();
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override
-    public void save() {
-
-        terminal_logger.debug("save: Creating new Object");
-
-        super.save();
-    }
-
-    @JsonIgnore @Override
-    public void update() {
-
-        terminal_logger.debug("update: ID = {}",  this.id);
-
-        super.update();
-
-    }
-
-    @JsonIgnore @Override
-    public void delete() {
-
-        terminal_logger.debug("delete: ID = {}",  this.id);
-
-        super.delete();
-    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -76,23 +48,52 @@ public class Model_Producer extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient public boolean create_permission(){  return Controller_Security.get_person().has_permission("Producer_create"); }
-    @JsonIgnore   @Transient public boolean read_permission()  {  return true; }
-    @JsonProperty @Transient public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("Producer_edit");   }
-    @JsonProperty @Transient public boolean delete_permission(){  return Controller_Security.get_person().has_permission("Producer_delete"); }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.Producer_create.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        // Now all are public
+        return;
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission()  {
+        if(_BaseController.person().has_permission(Permission.Producer_update.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void  check_delete_permission() throws _Base_Result_Exception  {
+        if(_BaseController.person().has_permission(Permission.Producer_delete.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
 
-    public enum permissions{Producer_create, Producer_edit, Producer_delete}
+    public enum Permission { Producer_create, Producer_read, Producer_update, Producer_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public static Model_Producer get_byId(String id) {
+    @CacheField(value = Model_Producer.class, duration = CacheField.DayCacheConstant)
+    public static Cache<UUID, Model_Producer> cache;
 
-        terminal_logger.warn("CACHE is not implemented - TODO");
-        return find.byId(id);
+    public static Model_Producer getById(String id) throws _Base_Result_Exception {
+        return getById(UUID.fromString(id));
+    }
+
+    public static Model_Producer getById(UUID id) throws _Base_Result_Exception {
+
+        Model_Producer producer = cache.get(id);
+
+        if (producer == null) {
+
+            producer = Model_Producer.find.byId(id);
+            if (producer == null) throw new Result_Error_NotFound(Model_Producer.class);
+
+            cache.put(id, producer);
+        }
+
+        // Check Permission
+        producer.check_read_permission();
+        return producer;
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String, Model_Producer> find = new Model.Finder<>(Model_Producer.class);
 
+    public static Finder<UUID, Model_Producer> find = new Finder<>(Model_Producer.class);
 }

@@ -1,89 +1,103 @@
 package utilities.financial.fakturoid;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.inject.Inject;
 import models.Model_Invoice;
-import play.api.Play;
 import play.data.Form;
+import play.data.FormFactory;
 import play.i18n.Lang;
 import play.libs.F;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
-import utilities.enums.Enum_Payment_method;
-import utilities.enums.Enum_Payment_status;
-import utilities.logger.Class_Logger;
+import utilities.enums.PaymentMethod;
+import utilities.enums.PaymentStatus;
+import utilities.logger.Logger;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletionStage;
 
 /**
  * This class is used to check status of invoices from Fakturoid.
  */
 public class Fakturoid_InvoiceCheck {
-
+/*
     // Logger
-    private static final Class_Logger terminal_logger = new Class_Logger(Fakturoid_InvoiceCheck.class);
+    private static final Logger logger = new Logger(Fakturoid_InvoiceCheck.class);
+
+    private WSClient ws;
+    private FormFactory formFactory;
+    private Fakturoid fakturoid;
+
+    @Inject
+    public Fakturoid_InvoiceCheck(WSClient ws, FormFactory formFactory, Fakturoid fakturoid) {
+        this.ws = ws;
+        this.formFactory = formFactory;
+        this.fakturoid = fakturoid;
+    }
 
     /**
      * List of invoices, that needs to be checked. This is the queue
-     */
+     *//*
     private static List<Model_Invoice> invoices = new ArrayList<>();
 
     /**
      * Method starts the concurrent thread.
-     */
-    public static void startThread(){
-        terminal_logger.info("startThread: starting");
-        if(!check_invoice_thread.isAlive()) check_invoice_thread.start();
+     *//*
+    public void startThread() {
+        logger.info("startThread: starting");
+        if (!check_invoice_thread.isAlive()) check_invoice_thread.start();
     }
 
     /**
      * Method adds invoice to queue and interrupts thread if it is sleeping.
      * @param invoice Model invoice that needs to be checked
-     */
-    public static void addToQueue(Model_Invoice invoice){
+     *//*
+    public void addToQueue(Model_Invoice invoice) {
 
-        terminal_logger.info("addToQueue: adding payment to queue");
+        logger.info("addToQueue: adding payment to queue");
 
         invoices.add(invoice);
 
-        if(check_invoice_thread.getState() == Thread.State.TIMED_WAITING) {
-            terminal_logger.debug("GoPay_PaymentCheck:: addToQueue: thread is sleeping, waiting for interruption!");
+        if (check_invoice_thread.getState() == Thread.State.TIMED_WAITING) {
+            logger.debug("GoPay_PaymentCheck:: addToQueue: thread is sleeping, waiting for interruption!");
             check_invoice_thread.interrupt();
         }
     }
 
     /**
      * Thread with infinite loop inside. If there are not any invoices in the queue, thread goes to sleep.
-     */
-    private static Thread check_invoice_thread = new Thread(){
+     *//*
+    private static Thread check_invoice_thread = new Thread() {
 
         @Override
-        public void run(){
+        public void run() {
 
-            while(true){
-                try{
+            while(true) {
+                try {
 
-                    if(!invoices.isEmpty()) {
+                    if (!invoices.isEmpty()) {
 
-                        terminal_logger.debug("check_invoice_thread: checking {} invoices ", invoices.size());
+                        logger.debug("check_invoice_thread: checking {} invoices ", invoices.size());
 
                         Model_Invoice invoice = invoices.get(0);
 
-                        checkInvoice(invoice);
+                        //checkInvoice(invoice);
 
                         invoices.remove(invoice);
 
                     } else {
 
-                        terminal_logger.debug("check_invoice_thread: no invoices, thread is going to sleep");
+                        logger.debug("check_invoice_thread: no invoices, thread is going to sleep");
                         sleep(2100000000);
                     }
-                }catch (InterruptedException i){
+                } catch (InterruptedException i) {
                     // Do nothing
-                }catch (Exception e){
-                    terminal_logger.internalServerError(e);
+                } catch (Exception e) {
+                    logger.internalServerError(e);
                 }
             }
         }
@@ -92,14 +106,12 @@ public class Fakturoid_InvoiceCheck {
     /**
      * Method gets the invoice from Fakturoid and checks its status.
      * If it is paid this method transforms it to a tax document (non-proforma).
-     * If payment method is "bank_transfer" the appropriate amount of credit will be added to product.
+     * If payment method is "BANK_TRANSFER" the appropriate amount of credit will be added to product.
      * Method tries 5 times to get the result.
      * @param invoice Given invoice that is being checked.
-     */
-    private static void checkInvoice(Model_Invoice invoice) {
+     *//*
+    public void checkInvoice(Model_Invoice invoice) {
         try {
-
-            WSClient ws = Play.current().injector().instanceOf(WSClient.class);
 
             // Some operations require more tries
             for (int trial = 5; trial > 0; trial--) {
@@ -111,19 +123,19 @@ public class Fakturoid_InvoiceCheck {
                 // Get proforma and check if it has a related_id of new invoice
                 try {
 
-                    F.Promise<WSResponse> responsePromise = ws.url(Server.Fakturoid_url + "/invoices/" + (invoice.proforma ? invoice.proforma_id : invoice.fakturoid_id) + ".json")
+                    CompletionStage<WSResponse> responsePromise = ws.url(Server.Fakturoid_url + "/invoices/" + (invoice.proforma ? invoice.proforma_id : invoice.fakturoid_id) + ".json")
                             .setAuth(Server.Fakturoid_secret_combo)
                             .setContentType("application/json")
-                            .setHeader("User-Agent", Server.Fakturoid_user_agent)
-                            .setRequestTimeout(5000)
+                            .addHeader("User-Agent", Server.Fakturoid_user_agent)
+                            .setRequestTimeout(Duration.ofSeconds(5))
                             .get();
 
-                    response = responsePromise.get(5000);
+                    response = responsePromise.toCompletableFuture().get();
 
                     result = response.asJson();
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError(e);
+                    logger.internalServerError(e);
                     Thread.sleep(2500);
                     continue;
                 }
@@ -132,11 +144,11 @@ public class Fakturoid_InvoiceCheck {
 
                     case 200: {
 
-                        terminal_logger.debug("checkInvoice: GET: Result: {}", result.toString());
+                        logger.debug("checkInvoice: GET: Result: {}", result.toString());
 
                         // Binding Json with help object
-                        final Form<Fakturoid_ResponseInvoice> form = Form.form(Fakturoid_ResponseInvoice.class).bind(result);
-                        if(form.hasErrors()) throw new Exception("Error binding Json from Fakturoid: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
+                        final Form<Fakturoid_ResponseInvoice> form = formFactory.form(Fakturoid_ResponseInvoice.class).bind(result);
+                        if (form.hasErrors()) throw new Exception("Error binding Json from Fakturoid: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
                         Fakturoid_ResponseInvoice help = form.get();
 
                         // If it has related_id of new invoice, get the new invoice and update our DB
@@ -151,21 +163,21 @@ public class Fakturoid_InvoiceCheck {
 
                                     try {
 
-                                        F.Promise<WSResponse> responsePromise2 = ws.url(Server.Fakturoid_url + "/invoices/" + help.related_id + ".json")
+                                        CompletionStage<WSResponse> responsePromise2 = ws.url(Server.Fakturoid_url + "/invoices/" + help.related_id + ".json")
                                                 .setAuth(Server.Fakturoid_secret_combo)
                                                 .setContentType("application/json")
-                                                .setHeader("User-Agent", Server.Fakturoid_user_agent)
-                                                .setRequestTimeout(5000)
+                                                .addHeader("User-Agent", Server.Fakturoid_user_agent)
+                                                .setRequestTimeout(Duration.ofSeconds(5))
                                                 .get();
 
-                                        response2 = responsePromise2.get(5000);
+                                        response2 = responsePromise2.toCompletableFuture().get();
 
-                                        terminal_logger.debug("checkInvoice: response statust for related_id {} is {}", help.related_id, response2.getStatus());
+                                        logger.debug("checkInvoice: response statust for related_id {} is {}", help.related_id, response2.getStatus());
 
                                         result2 = response2.asJson();
 
                                     } catch (Exception e) {
-                                        terminal_logger.internalServerError(e);
+                                        logger.internalServerError(e);
                                         Thread.sleep(2500);
                                         continue;
                                     }
@@ -175,12 +187,12 @@ public class Fakturoid_InvoiceCheck {
                                         case 200: {
 
                                             // Binding Json with help object
-                                            final Form<Fakturoid_ResponseInvoice> form2 = Form.form(Fakturoid_ResponseInvoice.class).bind(result2);
+                                            final Form<Fakturoid_ResponseInvoice> form2 = formFactory.form(Fakturoid_ResponseInvoice.class).bind(result2);
                                             if (form2.hasErrors()) throw new Exception("Error binding Json from Fakturoid: " + form2.errorsAsJson().toString());
                                             Fakturoid_ResponseInvoice help2 = form2.get();
 
-                                            terminal_logger.debug("checkInvoice: local proforma id: {}, from request proforma id: {}", invoice.proforma_id, help2.related_id);
-                                            terminal_logger.debug("checkInvoice: local invoice id: {}, from request invoice id: {}", help.related_id, help2.id);
+                                            logger.debug("checkInvoice: local proforma id: {}, from request proforma id: {}", invoice.proforma_id, help2.related_id);
+                                            logger.debug("checkInvoice: local invoice id: {}, from request invoice id: {}", help.related_id, help2.id);
 
                                             invoice.fakturoid_id = help2.id;
                                             invoice.fakturoid_pdf_url = help2.pdf_url;
@@ -198,7 +210,7 @@ public class Fakturoid_InvoiceCheck {
                                     break;
                                 }
                             } catch (Exception e) {
-                                terminal_logger.internalServerError(e);
+                                logger.internalServerError(e);
                                 invoice.getProduct().archiveEvent("Proforma paid", "System marked proforma as paid, but cannot transform it to invoice.", invoice.id);
                             }
                         }
@@ -207,22 +219,22 @@ public class Fakturoid_InvoiceCheck {
                         if (!help.status.equals("paid")) break;
 
                         // If bank transfer then upload credit
-                        if (invoice.method == Enum_Payment_method.bank_transfer) {
+                        if (invoice.method == PaymentMethod.BANK_TRANSFER) {
 
                             invoice.getProduct().credit_upload(invoice.total_price());
                             invoice.paid = new Date();
                         }
 
                         // If credit card then credit was already uploaded when payment was received, this is just sync with Fakturoid
-                        if (invoice.method == Enum_Payment_method.credit_card) {
+                        if (invoice.method == PaymentMethod.CREDIT_CARD) {
 
                             invoice.notificationInvoiceNew();
-                            Fakturoid.sendInvoiceEmail(invoice, null);
+                            fakturoid.sendInvoiceEmail(invoice, null);
                         }
 
-                        terminal_logger.debug("checkInvoice: set status to 'paid'");
+                        logger.debug("checkInvoice: set status to 'paid'");
 
-                        invoice.status = Enum_Payment_status.paid;
+                        invoice.status = PaymentStatus.PAID;
                         invoice.update();
 
                         break;
@@ -235,7 +247,7 @@ public class Fakturoid_InvoiceCheck {
                 break;
             }
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
-    }
+    }*/
 }

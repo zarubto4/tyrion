@@ -1,7 +1,7 @@
 package utilities.errors;
 
-import com.avaje.ebean.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import io.ebean.annotation.EnumValue;
 
 public enum ErrorCode {
 
@@ -34,6 +34,7 @@ public enum ErrorCode {
 
     // ---- Homer status ------
     @EnumValue("HOMER_IS_OFFLINE")                      HOMER_IS_OFFLINE( 502, "Homer is offline"),
+
     @EnumValue("WEBSOCKET_TIME_OUT_EXCEPTION")          WEBSOCKET_TIME_OUT_EXCEPTION ( 503 ,  "Time for sending Message with required response is up!"),
     @EnumValue("HOMER_NOT_EXIST")                       HOMER_NOT_EXIST ( 504 ,  "Server not Exist!"),
     @EnumValue("HOMER_SERVER_NOT_SET_FOR_HARDWARE")     HOMER_SERVER_NOT_SET_FOR_HARDWARE( 502, "Hardware is never loged before, or Tyrion didnt know where device is"),
@@ -46,10 +47,11 @@ public enum ErrorCode {
     @EnumValue("ERROR")                                 ERROR                                   ( 50 , "Undefined Error - In Logger"),
 
 
-    @EnumValue("CRITICAL_TYRION_SERVER_SIDE_ERROR")     CRITICAL_TYRION_SERVER_SIDE_ERROR( 400, "Something happend on Tyrion server side.");
-
+    @EnumValue("CRITICAL_TYRION_SERVER_SIDE_ERROR")     CRITICAL_TYRION_SERVER_SIDE_ERROR( 400, "Something happen on Tyrion server side."),
+    @EnumValue("COMPILATION_SERVER_IS_OFFLINE")         COMPILATION_SERVER_IS_OFFLINE(532, "Compilation server is offline");
 
     /*
+
     @EnumValue("ERROR_30001")                           ERROR_30001( 30001 , "Unknow full-id"),
     @EnumValue("ERROR_30002")                           ERROR_30002( 30002 , "Unknow shot-id"),
 
@@ -78,13 +80,14 @@ public enum ErrorCode {
 
     @EnumValue("JSON_INVALID")                          JSON_INVALID( 10000 , "Missing some Label"),
     @EnumValue("EMPTY_ARRAY")                           EMPTY_ARRAY( 10001 , "Array of commands is empty");
+
     */
     
 
     @JsonCreator
     public static ErrorCode fromString(String key) {
-        for(ErrorCode action : ErrorCode.values()) {
-            if(action.name().equalsIgnoreCase(key)) {
+        for (ErrorCode action : ErrorCode.values()) {
+            if (action.name().equalsIgnoreCase(key)) {
                 return action;
             }
         }

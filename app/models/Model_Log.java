@@ -1,51 +1,42 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import controllers._BaseController;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.model.NamedModel;
 
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import java.util.Date;
+import java.beans.Transient;
 import java.util.UUID;
 
 @Entity
 @ApiModel(description = "Model of Log",
         value = "Log")
 @Table(name="Log")
-public class Model_Log extends Model{
+public class Model_Log extends NamedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                        @Id public String id;
-                            public String name;
-                            public Date created;
                             public String type; // "tyrion", "homer"
-
-      @JsonIgnore @OneToOne public Model_FileRecord file;
+      @JsonIgnore @OneToOne public Model_Blob file;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
-    public void save() {
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (Model_Log.find.byId(this.id) == null) break;
-        }
-        super.save();
-    }
 
     @JsonIgnore @Override
-    public void delete() {
+    public boolean delete() { // TODO better
 
-        Model_FileRecord file = this.file;
+        Model_Blob file = this.file;
 
         this.file = null;
         this.update();
@@ -53,7 +44,7 @@ public class Model_Log extends Model{
         file.refresh();
         file.delete();
 
-        super.delete();
+        return super.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -66,7 +57,35 @@ public class Model_Log extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
+        if (_BaseController.person().has_permission(Permission.Log_delete.name())) return;
+        throw new Result_Error_NotSupportedException();
+    }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if (_BaseController.person().has_permission(Permission.Log_delete.name())) return;
+        throw new Result_Error_NotSupportedException();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        if (_BaseController.person().has_permission(Permission.Log_delete.name())) return;
+        throw new Result_Error_NotSupportedException();
+    }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        if (_BaseController.person().has_permission(Permission.Log_delete.name())) return;
+        throw new Result_Error_NotSupportedException();
+    }
+
+    public enum Permission {Log_create, Log_read, Log_update, Log_edit, Log_delete}
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+    public static Model_Log getById(UUID id) throws _Base_Result_Exception {
+        Model_Log board = find.byId(id);
+        if (board == null) throw new Result_Error_NotFound(Model_Log.class);
+        board.check_read_permission();
+        return board;
+    }
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String,Model_Log> find = new Model.Finder<>(Model_Log.class);
+    public static Finder<UUID, Model_Log> find = new Finder<>(Model_Log.class);
 
 }

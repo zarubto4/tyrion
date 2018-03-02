@@ -3,12 +3,12 @@ package utilities.document_db.document_objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.tc.util.UUID;
 import models.Model_ProductExtension;
 import play.libs.Json;
 import utilities.Server;
 
 import java.util.Date;
+import java.util.UUID;
 
 public class DM_RestApiRequestRecord {
 
@@ -27,11 +27,11 @@ public class DM_RestApiRequestRecord {
         ObjectNode request = Json.newObject();
 
         // Required variables by Mongo
-        request.put("id", UUID.getUUID().toString() + UUID.getUUID().toString());
+        request.put("id", UUID.randomUUID().toString() + UUID.randomUUID().toString());
         request.put("collection_type", Model_ProductExtension.class.getSimpleName());
         request.put("document_type", document_type);
         request.put("document_type_sub_type", document_type_sub_type);
-        request.put("server_version", Server.server_version);
+        request.put("server_version", Server.version);
 
         request.put("custom_id", custom_id);
         request.put("time", new Date().getTime() );

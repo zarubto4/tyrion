@@ -1,7 +1,6 @@
 package utilities.emails;
 
 import com.microtripit.mandrillapp.lutung.MandrillApi;
-import com.microtripit.mandrillapp.lutung.model.MandrillApiError;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessage;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessage.Recipient;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessage.MergeVar;
@@ -10,9 +9,8 @@ import com.microtripit.mandrillapp.lutung.view.MandrillMessageStatus;
 import models.Model_Customer;
 import models.Model_Person;
 import play.Configuration;
-import utilities.logger.Class_Logger;
+import utilities.logger.Logger;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -21,7 +19,7 @@ public class Email {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Email.class);
+    private static final Logger terminal_logger = new Logger(Email.class);
 
 /* VALUE  --------------------------------------------------------------------------------------------------------------*/
 
@@ -35,13 +33,13 @@ public class Email {
 
 /* OPERATION ......-----------------------------------------------------------------------------------------------------*/
     
-    public void sendBulk(List<String> emails, String subject){
+    public void sendBulk(List<String> emails, String subject) {
 
         terminal_logger.info("send():: sending email");
 
         List<Recipient> recipients = new ArrayList<>();
 
-        for (String email : emails){
+        for (String email : emails) {
 
             Recipient recipient = new Recipient();
             recipient.setEmail(email);
@@ -66,47 +64,42 @@ public class Email {
         try {
             MandrillMessageStatus[] messageStatusReports = mandrillApi.messages().sendTemplate("byzance-transactional", null ,message, false);
             terminal_logger.info("send():: status:" + messageStatusReports[0].getStatus());
-            if (messageStatusReports[0].getRejectReason() != null){
+            if (messageStatusReports[0].getRejectReason() != null) {
                 terminal_logger.info("send():: reject_reason:" + messageStatusReports[0].getRejectReason());
             }
-        } catch (IOException e){
-            terminal_logger.internalServerError(e);
-        } catch (MandrillApiError e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
         }
-
     }
 
-    public void send(List<Model_Person> persons, String subject){
+    public void send(List<Model_Person> persons, String subject) {
 
         List<String> emails = new ArrayList<>();
 
-        persons.forEach(person -> emails.add(person.mail));
-
-        sendBulk(emails, subject);
-
-    }
-
-    public void send(Model_Customer customer, String subject){
-
-        List<String> emails = new ArrayList<>();
-
-        customer.getEmployees().forEach(employee -> emails.add(employee.person.mail));
-
+        persons.forEach(person -> emails.add(person.email));
 
         sendBulk(emails, subject);
     }
 
-    public void send(Model_Person person, String subject){
+    public void send(Model_Customer customer, String subject) {
 
         List<String> emails = new ArrayList<>();
 
-        emails.add(person.mail);
+        customer.getEmployees().forEach(employee -> emails.add(employee.person.email));
 
         sendBulk(emails, subject);
     }
 
-    public void send(String mail, String subject){
+    public void send(Model_Person person, String subject) {
+
+        List<String> emails = new ArrayList<>();
+
+        emails.add(person.email);
+
+        sendBulk(emails, subject);
+    }
+
+    public void send(String mail, String subject) {
 
         List<String> emails = new ArrayList<>();
 
@@ -115,7 +108,7 @@ public class Email {
         sendBulk(emails, subject);
     }
 
-    public Email attachmentPDF(String name, byte[] file){
+    public Email attachmentPDF(String name, byte[] file) {
 
         MessageContent content = new MessageContent();
         content.setName(name);
@@ -130,7 +123,7 @@ public class Email {
         return this;
     }
 
-    public Email divider(){
+    public Email divider() {
 
         emailContentHtml.append(utilities.emails.templates.html.divider.render().body());
         emailContentText.append("\n----------------------------------------------------------\n");
@@ -140,14 +133,14 @@ public class Email {
         return this;
     }
 
-    public Email text(String text){
+    public Email text(String text) {
 
         text("13", text);
 
         return this;
     }
 
-    public Email text(String size, String text){
+    public Email text(String size, String text) {
 
         emailContentHtml.append(utilities.emails.templates.html.text.render(size + "pt",text).body());
         emailContentText.append("\n");
@@ -159,7 +152,7 @@ public class Email {
         return this;
     }
 
-    public Email link(String text, String link){
+    public Email link(String text, String link) {
 
         emailContentHtml.append(utilities.emails.templates.html.link.render(text,link).body());
         emailContentText.append("\n");
@@ -171,22 +164,22 @@ public class Email {
         return this;
     }
 
-    public static String bold(String text){
+    public static String bold(String text) {
 
         return "<strong>" + text + "</strong>";
     }
 
-    public static String italics(String text){
+    public static String italics(String text) {
 
         return "<em>" + text + "</em>";
     }
 
-    public static String underline(String text){
+    public static String underline(String text) {
 
         return "<span style=\"text-decoration: underline;\">" + text + "</span>";
     }
 
-    public static String newLine(){
+    public static String newLine() {
 
         return "<br>";
     }

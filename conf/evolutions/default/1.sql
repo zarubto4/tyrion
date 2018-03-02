@@ -1,1169 +1,1857 @@
+# --- Created by Ebean DDL
+# To stop Ebean DDL generation, remove this comment and start using Evolutions
 
 # --- !Ups
 
-create table ActualizationProcedure (
-  id                        varchar(40) not null,
-  state                     varchar(19),
-  homer_instance_record_id  varchar(255),
-  date_of_create            timestamp,
-  date_of_planing           timestamp,
-  date_of_finish            timestamp,
-  type_of_update            varchar(41),
-  project_id                varchar(255),
-  constraint ck_ActualizationProcedure_state check (state in ('complete_with_error','canceled','in_progress','successful_complete','complete','not_start_yet')),
-  constraint ck_ActualizationProcedure_type_of_update check (type_of_update in ('AUTOMATICALLY_BY_USER_ALWAYS_UP_TO_DATE','AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE','MANUALLY_RELEASE_MANAGER','MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME','MANUALLY_BY_USER','MANUALLY_BY_USER_BLOCKO_GROUP')),
-  constraint pk_ActualizationProcedure primary key (id))
-;
+create table authorizationtoken (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  token                         uuid,
+  person_id                     uuid,
+  where_logged                  varchar(13),
+  access_age                    timestamptz,
+  user_agent                    varchar(255),
+  provider_user_id              varchar(255),
+  provider_key                  TEXT,
+  type_of_connection            varchar(255),
+  return_url                    varchar(255),
+  social_token_verified         boolean default false not null,
+  deleted                       boolean default false not null,
+  constraint ck_authorizationtoken_where_logged check ( where_logged in ('E_STORE','HOMER_SERVER','BECKI_WEBSITE')),
+  constraint pk_authorizationtoken primary key (id)
+);
 
-create table BPair (
-  id                        varchar(40) not null,
-  c_program_version_id      varchar(255),
-  board_id                  varchar(255),
-  device_board_pair_id      varchar(40),
-  main_board_pair_id        varchar(40),
-  constraint uq_BPair_main_board_pair_id unique (main_board_pair_id),
-  constraint pk_BPair primary key (id))
-;
+create table bprogram (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  project_id                    uuid,
+  azure_b_program_link          varchar(255),
+  deleted                       boolean default false not null,
+  constraint pk_bprogram primary key (id)
+);
 
-create table BProgram (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  description               TEXT,
-  instance_id               varchar(255),
-  last_update               timestamp,
-  date_of_create            timestamp,
-  project_id                varchar(255),
-  removed_by_user           boolean,
-  azure_b_program_link      varchar(255),
-  constraint uq_BProgram_instance_id unique (instance_id),
-  constraint pk_BProgram primary key (id))
-;
+create table bprogram_tag (
+  bprogram_id                   uuid not null,
+  tag_id                        uuid not null,
+  constraint pk_bprogram_tag primary key (bprogram_id,tag_id)
+);
 
-create table BProgramHwGroup (
-  id                        varchar(40) not null,
-  constraint pk_BProgramHwGroup primary key (id))
-;
+create table bprogramversion (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  file_id                       uuid,
+  approval_state                varchar(11),
+  publish_type                  varchar(15),
+  blob_version_link             varchar(255),
+  library_id                    uuid,
+  b_program_id                  uuid,
+  additional_configuration      varchar(255),
+  deleted                       boolean default false not null,
+  constraint ck_bprogramversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
+  constraint ck_bprogramversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint uq_bprogramversion_file_id unique (file_id),
+  constraint pk_bprogramversion primary key (id)
+);
 
-create table BlockoBlock (
-  id                        varchar(40) not null,
-  name                      varchar(255),
-  description               TEXT,
-  author_id                 varchar(255),
-  type_of_block_id          varchar(255),
-  producer_id               varchar(40),
-  order_position            integer,
-  removed_by_user           boolean,
-  publish_type              varchar(20),
-  active                    boolean,
-  constraint ck_BlockoBlock_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_version','default_test_program')),
-  constraint pk_BlockoBlock primary key (id))
-;
+create table blob (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  path                          varchar(255),
+  boot_loader_id                uuid,
+  deleted                       boolean default false not null,
+  constraint uq_blob_boot_loader_id unique (boot_loader_id),
+  constraint pk_blob primary key (id)
+);
 
-create table BlockoBlockVersion (
-  id                        varchar(255) not null,
-  version_name              varchar(255),
-  version_description       varchar(255),
-  design_json               TEXT,
-  logic_json                TEXT,
-  approval_state            varchar(11),
-  publish_type              varchar(20),
-  removed_by_user           boolean,
-  author_id                 varchar(255),
-  date_of_create            timestamp,
-  blocko_block_id           varchar(40),
-  constraint ck_BlockoBlockVersion_approval_state check (approval_state in ('approved','edited','pending','disapproved')),
-  constraint ck_BlockoBlockVersion_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_version','default_test_program')),
-  constraint pk_BlockoBlockVersion primary key (id))
-;
+create table block (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  active                        boolean default false not null,
+  project_id                    uuid,
+  producer_id                   uuid,
+  order_position                integer,
+  publish_type                  varchar(15),
+  deleted                       boolean default false not null,
+  constraint ck_block_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint pk_block primary key (id)
+);
 
-create table Board (
-  id                        varchar(255) not null,
-  hash_for_adding           varchar(255),
-  wifi_mac_address          varchar(255),
-  mac_address               varchar(255),
-  name                      varchar(255),
-  description               TEXT,
-  picture_id                varchar(255),
-  date_of_user_registration timestamp,
-  date_of_create            timestamp,
-  batch_id                  varchar(255),
-  is_active                 boolean,
-  developer_kit             boolean,
-  backup_mode               boolean,
-  database_synchronize      boolean,
-  web_view                  boolean,
-  web_port                  integer,
-  type_of_board_id          varchar(255),
-  project_id                varchar(255),
-  actual_c_program_version_id varchar(255),
-  actual_backup_c_program_version_id varchar(255),
-  actual_boot_loader_id     varchar(40),
-  connected_server_id       varchar(255),
-  connected_instance_id     varchar(255),
-  constraint uq_Board_picture_id unique (picture_id),
-  constraint pk_Board primary key (id))
-;
+create table block_tag (
+  block_id                      uuid not null,
+  tag_id                        uuid not null,
+  constraint pk_block_tag primary key (block_id,tag_id)
+);
 
-create table BoardGroup (
-  id                        varchar(40) not null,
-  name                      varchar(255),
-  description               TEXT,
-  date_of_create            timestamp,
-  removed_by_user           boolean,
-  project_id                varchar(255),
-  constraint pk_BoardGroup primary key (id))
-;
+create table blockversion (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  file_id                       uuid,
+  approval_state                varchar(11),
+  publish_type                  varchar(15),
+  blob_version_link             varchar(255),
+  design_json                   TEXT,
+  logic_json                    TEXT,
+  block_id                      uuid,
+  deleted                       boolean default false not null,
+  constraint ck_blockversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
+  constraint ck_blockversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint uq_blockversion_file_id unique (file_id),
+  constraint pk_blockversion primary key (id)
+);
 
-create table BootLoader (
-  id                        varchar(40) not null,
-  date_of_create            timestamp,
-  name                      varchar(255),
-  description               TEXT,
-  version_identificator     varchar(255),
-  changing_note             TEXT,
-  type_of_board_id          varchar(255),
-  main_type_of_board_id     varchar(255),
-  azure_product_link        varchar(255),
-  constraint uq_BootLoader_main_type_of_board unique (main_type_of_board_id),
-  constraint pk_BootLoader primary key (id))
-;
+create table bootloader (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  version_identifier            varchar(255),
+  changing_note                 TEXT,
+  hardware_type_id              uuid,
+  main_hardware_type_id         uuid,
+  azure_product_link            varchar(255),
+  deleted                       boolean default false not null,
+  constraint uq_bootloader_main_hardware_type_id unique (main_hardware_type_id),
+  constraint pk_bootloader primary key (id)
+);
 
-create table CCompilation (
-  id                        varchar(40) not null,
-  date_of_create            timestamp,
-  c_compilation_version     varchar(255),
-  status                    varchar(34),
-  virtual_input_output      TEXT,
-  c_comp_build_url          TEXT,
-  bin_compilation_file_id   varchar(255),
-  firmware_version_core     varchar(255),
-  firmware_version_mbed     varchar(255),
-  firmware_version_lib      varchar(255),
-  firmware_build_id         varchar(255),
-  firmware_build_datetime   varchar(255),
-  constraint ck_CCompilation_status check (status in ('file_with_code_not_found','json_code_is_broken','successfully_compiled_and_restored','compilation_in_progress','compilation_server_error','hardware_unstable','server_was_offline','successfully_compiled_not_restored','compiled_with_code_errors','undefined')),
-  constraint uq_CCompilation_c_compilation_ve unique (c_compilation_version),
-  constraint uq_CCompilation_bin_compilation_ unique (bin_compilation_file_id),
-  constraint pk_CCompilation primary key (id))
-;
+create table cprogram (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  project_id                    uuid,
+  hardware_type_id              uuid,
+  publish_type                  varchar(15),
+  hardware_type_default_id      uuid,
+  hardware_type_test_id         uuid,
+  example_library_id            uuid,
+  azure_c_program_link          varchar(255),
+  deleted                       boolean default false not null,
+  constraint ck_cprogram_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint uq_cprogram_hardware_type_default_id unique (hardware_type_default_id),
+  constraint uq_cprogram_hardware_type_test_id unique (hardware_type_test_id),
+  constraint pk_cprogram primary key (id)
+);
 
-create table CProgram (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  description               TEXT,
-  project_id                varchar(255),
-  type_of_board_id          varchar(255),
-  publish_type              varchar(20),
-  date_of_create            timestamp,
-  removed_by_user           boolean,
-  type_of_board_default_id  varchar(255),
-  type_of_board_test_id     varchar(255),
-  example_library_id        varchar(255),
-  azure_c_program_link      varchar(255),
-  constraint ck_CProgram_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_version','default_test_program')),
-  constraint uq_CProgram_type_of_board_defaul unique (type_of_board_default_id),
-  constraint uq_CProgram_type_of_board_test_i unique (type_of_board_test_id),
-  constraint pk_CProgram primary key (id))
-;
+create table cprogram_tag (
+  cprogram_id                   uuid not null,
+  tag_id                        uuid not null,
+  constraint pk_cprogram_tag primary key (cprogram_id,tag_id)
+);
 
-create table CProgramUpdatePlan (
-  id                        varchar(40) not null,
-  actualization_procedure_id varchar(40),
-  date_of_finish            timestamp,
-  board_id                  varchar(255),
-  firmware_type             varchar(10),
-  c_program_version_for_update_id varchar(255),
-  bootloader_id             varchar(40),
-  binary_file_id            varchar(255),
-  state                     varchar(28),
-  count_of_tries            integer,
-  error                     varchar(255),
-  error_code                integer,
-  constraint ck_CProgramUpdatePlan_firmware_type check (firmware_type in ('BACKUP','FIRMWARE','BOOTLOADER','WIFI')),
-  constraint ck_CProgramUpdatePlan_state check (state in ('canceled','in_progress','waiting_for_device','homer_server_never_connected','overwritten','bin_file_not_found','not_updated','homer_server_is_offline','complete','instance_inaccessible','critical_error','not_start_yet')),
-  constraint pk_CProgramUpdatePlan primary key (id))
-;
+create table cprogramversion (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  file_id                       uuid,
+  approval_state                varchar(11),
+  publish_type                  varchar(15),
+  blob_version_link             varchar(255),
+  c_program_id                  uuid,
+  default_program_id            uuid,
+  deleted                       boolean default false not null,
+  constraint ck_cprogramversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
+  constraint ck_cprogramversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint uq_cprogramversion_file_id unique (file_id),
+  constraint uq_cprogramversion_default_program_id unique (default_program_id),
+  constraint pk_cprogramversion primary key (id)
+);
 
-create table ChangePropertyToken (
-  change_property_token     varchar(255) not null,
-  person_id                 varchar(255),
-  time_of_creation          timestamp,
-  property                  varchar(255),
-  value                     varchar(255),
-  constraint uq_ChangePropertyToken_person_id unique (person_id),
-  constraint pk_ChangePropertyToken primary key (change_property_token))
-;
+create table changepropertytoken (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  property                      varchar(255),
+  value                         varchar(255),
+  person_id                     uuid,
+  deleted                       boolean default false not null,
+  constraint uq_changepropertytoken_person_id unique (person_id),
+  constraint pk_changepropertytoken primary key (id)
+);
 
-create table CompilationServer (
-  id                        varchar(40) not null,
-  personal_server_name      varchar(255),
-  connection_identificator  varchar(255),
-  hash_certificate          varchar(255),
-  date_of_create            timestamp,
-  server_url                varchar(255),
-  constraint uq_CompilationServer_personal_se unique (personal_server_name),
-  constraint uq_CompilationServer_server_url unique (server_url),
-  constraint pk_CompilationServer primary key (id))
-;
+create table compilation (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  c_compilation_version         uuid,
+  status                        varchar(23),
+  virtual_input_output          TEXT,
+  build_url                     TEXT,
+  bin_compilation_file_id       uuid,
+  firmware_version_core         varchar(255),
+  firmware_version_mbed         varchar(255),
+  firmware_version_lib          varchar(255),
+  firmware_build_id             varchar(255),
+  firmware_build_datetime       timestamptz,
+  deleted                       boolean default false not null,
+  constraint ck_compilation_status check ( status in ('IN_PROGRESS','FILE_NOT_FOUND','SERVER_ERROR','SUCCESS','FAILED','UNDEFINED','BROKEN_JSON','SUCCESS_DOWNLOAD_FAILED','UNSTABLE','SERVER_OFFLINE')),
+  constraint uq_compilation_c_compilation_version unique (c_compilation_version),
+  constraint uq_compilation_bin_compilation_file_id unique (bin_compilation_file_id),
+  constraint pk_compilation primary key (id)
+);
 
-create table Customer (
-  id                        varchar(40) not null,
-  created                   timestamp,
-  fakturoid_subject_id      varchar(255),
-  removed_by_user           boolean,
-  constraint pk_Customer primary key (id))
-;
+create table compilationserver (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  personal_server_name          varchar(255),
+  connection_identifier         varchar(255),
+  hash_certificate              varchar(255),
+  server_url                    varchar(255),
+  deleted                       boolean default false not null,
+  constraint uq_compilationserver_personal_server_name unique (personal_server_name),
+  constraint uq_compilationserver_server_url unique (server_url),
+  constraint pk_compilationserver primary key (id)
+);
 
-create table Employee (
-  id                        varchar(40) not null,
-  created                   timestamp,
-  state                     varchar(7),
-  person_id                 varchar(255),
-  customer_id               varchar(40),
-  constraint ck_Employee_state check (state in ('owner','member','invited','admin')),
-  constraint pk_Employee primary key (id))
-;
+create table customer (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  fakturoid_subject_id          varchar(255),
+  deleted                       boolean default false not null,
+  constraint pk_customer primary key (id)
+);
 
-create table FileRecord (
-  id                        varchar(255) not null,
-  file_name                 varchar(255),
-  file_path                 varchar(255),
-  boot_loader_id            varchar(40),
-  version_object_id         varchar(255),
-  constraint uq_FileRecord_boot_loader_id unique (boot_loader_id),
-  constraint pk_FileRecord primary key (id))
-;
+create table employee (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  state                         varchar(7),
+  person_id                     uuid,
+  customer_id                   uuid,
+  deleted                       boolean default false not null,
+  constraint ck_employee_state check ( state in ('OWNER','INVITED','ADMIN','MEMBER')),
+  constraint pk_employee primary key (id)
+);
 
-create table FloatingPersonToken (
-  connection_id             varchar(255) not null,
-  auth_token                varchar(255),
-  person_id                 varchar(255),
-  created                   timestamp,
-  where_logged              varchar(13),
-  access_age                timestamp,
-  user_agent                varchar(255),
-  provider_user_id          varchar(255),
-  provider_key              TEXT,
-  type_of_connection        varchar(255),
-  return_url                varchar(255),
-  social_token_verified     boolean,
-  constraint ck_FloatingPersonToken_where_logged check (where_logged in ('E_STORE','HOMER_SERVER','BECKI_WEBSITE')),
-  constraint pk_FloatingPersonToken primary key (connection_id))
-;
+create table garfield (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  hardware_tester_id            varchar(255),
+  print_label_id_1              integer,
+  print_label_id_2              integer,
+  print_sticker_id              integer,
+  hardware_type_id              uuid,
+  producer_id                   uuid,
+  configurations                TEXT,
+  deleted                       boolean default false not null,
+  constraint uq_garfield_hardware_tester_id unique (hardware_tester_id),
+  constraint pk_garfield primary key (id)
+);
 
-create table Garfield (
-  id                        varchar(40) not null,
-  name                      varchar(255),
-  description               varchar(255),
-  hardware_tester_id        varchar(255),
-  print_label_id_1          integer,
-  print_label_id_2          integer,
-  print_sticker_id          integer,
-  type_of_board_id          varchar(255),
-  producer_id               varchar(255),
-  date_of_crate             timestamp,
-  constraint uq_Garfield_hardware_tester_id unique (hardware_tester_id),
-  constraint pk_Garfield primary key (id))
-;
+create table gridprogram (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  grid_project_id               uuid,
+  blob_link                     varchar(255),
+  deleted                       boolean default false not null,
+  constraint pk_gridprogram primary key (id)
+);
 
-create table GridTerminal (
-  terminal_token            varchar(255) not null,
-  user_agent                varchar(255),
-  device_type               varchar(255),
-  device_name               varchar(255),
-  person_id                 varchar(255),
-  date_of_create            timestamp,
-  date_of_last_update       timestamp,
-  ws_permission             boolean,
-  m_program_access          boolean,
-  up_to_date                boolean,
-  constraint pk_GridTerminal primary key (terminal_token))
-;
+create table gridprogram_tag (
+  grid_program_id               uuid not null,
+  tag_id                        uuid not null,
+  constraint pk_gridprogram_tag primary key (grid_program_id,tag_id)
+);
 
-create table GridWidget (
-  id                        varchar(40) not null,
-  name                      varchar(255),
-  description               TEXT,
-  order_position            integer,
-  removed_by_user           boolean,
-  author_id                 varchar(255),
-  type_of_widget_id         varchar(255),
-  producer_id               varchar(40),
-  publish_type              varchar(20),
-  active                    boolean,
-  constraint ck_GridWidget_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_version','default_test_program')),
-  constraint pk_GridWidget primary key (id))
-;
-
-create table GridWidgetVersion (
-  id                        varchar(255) not null,
-  version_name              varchar(255),
-  version_description       varchar(255),
-  design_json               TEXT,
-  logic_json                TEXT,
-  approval_state            varchar(11),
-  publish_type              varchar(20),
-  removed_by_user           boolean,
-  author_id                 varchar(255),
-  date_of_create            timestamp,
-  grid_widget_id            varchar(40),
-  constraint ck_GridWidgetVersion_approval_state check (approval_state in ('approved','edited','pending','disapproved')),
-  constraint ck_GridWidgetVersion_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_version','default_test_program')),
-  constraint pk_GridWidgetVersion primary key (id))
-;
-
-create table HomerInstance (
-  id                        varchar(255) not null,
-  cloud_homer_server_id     varchar(40),
-  name                      varchar(255),
-  description               TEXT,
-  project_id                varchar(255),
-  instance_type             varchar(10),
-  removed_by_user           boolean,
-  constraint ck_HomerInstance_instance_type check (instance_type in ('INDIVIDUAL','VIRTUAL')),
-  constraint pk_HomerInstance primary key (id))
-;
-
-create table HomerInstanceRecord (
-  id                        varchar(255) not null,
-  main_instance_history_id  varchar(255),
-  date_of_created           timestamp,
-  running_from              timestamp,
-  running_to                timestamp,
-  planed_when               timestamp,
-  version_object_id         varchar(255),
-  actual_running_instance_id varchar(255),
-  constraint uq_HomerInstanceRecord_actual_ru unique (actual_running_instance_id),
-  constraint pk_HomerInstanceRecord primary key (id))
-;
-
-create table HomerServer (
-  id                        varchar(40) not null,
-  connection_identificator  varchar(255),
-  hash_certificate          varchar(255),
-  date_of_create            timestamp,
-  personal_server_name      varchar(255),
-  json_additional_parameter TEXT,
-  mqtt_port                 integer,
-  mqtt_username             varchar(255),
-  mqtt_password             varchar(255),
-  grid_port                 integer,
-  web_view_port             integer,
-  server_remote_port        integer,
-  server_url                varchar(255),
-  server_type               varchar(14),
-  time_stamp_configuration  timestamp,
-  days_in_archive           integer,
-  logging                   boolean,
-  interactive               boolean,
-  log_level                 varchar(5),
-  constraint ck_HomerServer_server_type check (server_type in ('main_server','test_server','private_server','backup_server','public_server')),
-  constraint ck_HomerServer_log_level check (log_level in ('warn','trace','debug','error','info')),
-  constraint pk_HomerServer primary key (id))
-;
-
-create table Invitation (
-  id                        varchar(255) not null,
-  owner_id                  varchar(255),
-  project_id                varchar(255),
-  mail                      varchar(255),
-  date_of_creation          timestamp,
-  notification_id           varchar(255),
-  constraint pk_Invitation primary key (id))
-;
-
-create table Invoice (
-  id                        varchar(255) not null,
-  fakturoid_id              bigint,
-  fakturoid_pdf_url         varchar(255),
-  invoice_number            varchar(255),
-  gopay_id                  bigint,
-  gopay_order_number        varchar(255),
-  gw_url                    varchar(255),
-  proforma                  boolean,
-  proforma_id               bigint,
-  proforma_pdf_url          varchar(255),
-  created                   timestamp,
-  paid                      timestamp,
-  overdue                   timestamp,
-  product_id                varchar(255),
-  status                    varchar(8),
-  method                    varchar(13),
-  warning                   varchar(12),
-  constraint ck_Invoice_status check (status in ('canceled','overdue','pending','paid')),
-  constraint ck_Invoice_method check (method in ('credit_card','bank_transfer','free')),
-  constraint ck_Invoice_warning check (warning in ('none','first','zero_balance','deactivation','second')),
-  constraint pk_Invoice primary key (id))
-;
-
-create table InvoiceItem (
-  id                        bigint not null,
-  invoice_id                varchar(255),
-  name                      varchar(255),
-  quantity                  bigint,
-  unit_name                 varchar(255),
-  unit_price                bigint,
-  currency                  varchar(12),
-  constraint ck_InvoiceItem_currency check (currency in ('eur','czk','price_in_usd')),
-  constraint pk_InvoiceItem primary key (id))
-;
-
-create table Library (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  description               varchar(255),
-  removed_by_user           boolean,
-  project_id                varchar(255),
-  date_of_create            timestamp,
-  publish_type              varchar(20),
-  azure_library_link        varchar(255),
-  constraint ck_Library_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_version','default_test_program')),
-  constraint pk_Library primary key (id))
-;
-
-create table Log (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  created                   timestamp,
-  type                      varchar(255),
-  file_id                   varchar(255),
-  constraint uq_Log_file_id unique (file_id),
-  constraint pk_Log primary key (id))
-;
-
-create table MProgram (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  description               TEXT,
-  removed_by_user           boolean,
-  date_of_create            timestamp,
-  m_project_id              varchar(255),
-  azure_m_program_link      varchar(255),
-  constraint pk_MProgram primary key (id))
-;
-
-create table MProgramInstanceParameter (
-  id                        varchar(40) not null,
-  m_project_program_snapshot_id varchar(40),
-  m_program_version_id      varchar(255),
-  connection_token          varchar(255),
-  snapshot_settings         varchar(24),
-  constraint ck_MProgramInstanceParameter_snapshot_settings check (snapshot_settings in ('only_for_project_members','not_in_instance','absolutely_public')),
-  constraint pk_MProgramInstanceParameter primary key (id))
-;
-
-create table MProject (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  description               TEXT,
-  date_of_create            timestamp,
-  project_id                varchar(255),
-  removed_by_user           boolean,
-  azure_m_project_link      varchar(255),
-  constraint pk_MProject primary key (id))
-;
-
-create table MProjectProgramSnapShot (
-  id                        varchar(40) not null,
-  m_project_id              varchar(255),
-  constraint pk_MProjectProgramSnapShot primary key (id))
-;
-
-create table Notification (
-  id                        varchar(255) not null,
-  notification_level        varchar(7),
-  notification_importance   varchar(6),
-  state                     varchar(11),
-  content_string            TEXT,
-  buttons_string            TEXT,
-  confirmation_required     boolean,
-  confirmed                 boolean,
-  was_read                  boolean,
-  created                   timestamp,
-  person_id                 varchar(255),
-  constraint ck_Notification_notification_level check (notification_level in ('success','warning','error','info')),
-  constraint ck_Notification_notification_importance check (notification_importance in ('normal','high','low')),
-  constraint ck_Notification_state check (state in ('unconfirmed','deleted','created','updated')),
-  constraint pk_Notification primary key (id))
-;
-
-create table PasswordRecoveryToken (
-  id                        varchar(255) not null,
-  person_id                 varchar(255),
-  password_recovery_token   varchar(255),
-  time_of_creation          timestamp,
-  constraint uq_PasswordRecoveryToken_person_ unique (person_id),
-  constraint pk_PasswordRecoveryToken primary key (id))
-;
-
-create table PaymentDetails (
-  id                        bigint not null,
-  customer_id               varchar(40),
-  productidpaymentdetails   varchar(255),
-  company_account           boolean,
-  company_name              varchar(255),
-  company_authorized_email  varchar(255),
-  company_authorized_phone  varchar(255),
-  company_web               varchar(255),
-  company_registration_no   varchar(255),
-  company_vat_number        varchar(255),
-  full_name                 varchar(255),
-  street                    varchar(255),
-  street_number             varchar(255),
-  city                      varchar(255),
-  zip_code                  varchar(255),
-  country                   varchar(255),
-  invoice_email             varchar(255),
-  bank_account              varchar(255),
-  constraint uq_PaymentDetails_customer_id unique (customer_id),
-  constraint uq_PaymentDetails_productidpayme unique (productidpaymentdetails),
-  constraint pk_PaymentDetails primary key (id))
-;
-
-create table Permission (
-  permission_key            varchar(255) not null,
-  description               varchar(255),
-  constraint pk_Permission primary key (permission_key))
-;
-
-create table Person (
-  id                        varchar(255) not null,
-  mail                      varchar(255),
-  nick_name                 varchar(255),
-  full_name                 varchar(255),
-  country                   varchar(255),
-  gender                    varchar(255),
-  alternative_picture_link  varchar(255),
-  picture_id                varchar(255),
-  freeze_account            boolean,
-  mail_validated            boolean,
-  facebook_oauth_id         varchar(255),
-  github_oauth_id           varchar(255),
-  sha_password              bytea,
-  constraint uq_Person_mail unique (mail),
-  constraint uq_Person_nick_name unique (nick_name),
-  constraint uq_Person_picture_id unique (picture_id),
-  constraint pk_Person primary key (id))
-;
-
-create table Processor (
-  id                        varchar(40) not null,
-  processor_name            varchar(255),
-  description               TEXT,
-  processor_code            varchar(255),
-  speed                     integer,
-  removed_by_user           boolean,
-  constraint pk_Processor primary key (id))
-;
-
-create table Producer (
-  id                        varchar(40) not null,
-  name                      varchar(255),
-  description               TEXT,
-  removed_by_user           boolean,
-  constraint pk_Producer primary key (id))
-;
-
-create table Product (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  method                    varchar(13),
-  business_model            varchar(11),
-  subscription_id           varchar(255),
-  fakturoid_subject_id      varchar(255),
-  gopay_id                  bigint,
-  active                    boolean,
-  created                   timestamp,
-  on_demand                 boolean,
-  credit                    bigint,
-  financial_history         TEXT,
-  configuration             TEXT,
-  removed_byinvoi_user      boolean,
-  client_billing            boolean,
-  client_billing_invoice_parameters varchar(255),
-  customer_id               varchar(40),
-  azure_product_link        varchar(255),
-  constraint ck_Product_method check (method in ('credit_card','bank_transfer','free')),
-  constraint ck_Product_business_model check (business_model in ('saas','alpha','fee','integration','integrator','cal')),
-  constraint pk_Product primary key (id))
-;
-
-create table ProductExtension (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  description               varchar(255),
-  color                     varchar(255),
-  type                      varchar(12),
-  configuration             TEXT,
-  order_position            integer,
-  active                    boolean,
-  removed                   boolean,
-  created                   timestamp,
-  product_id                varchar(255),
-  tariff_included_id        varchar(255),
-  tariff_optional_id        varchar(255),
-  constraint ck_ProductExtension_type check (type in ('database','instance','log','rest_api','project','support','homer_server','participant')),
-  constraint pk_ProductExtension primary key (id))
-;
-
-create table Project (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  description               varchar(255),
-  removed_by_user           boolean,
-  product_id                varchar(255),
-  blob_project_link         varchar(255),
-  constraint pk_Project primary key (id))
-;
-
-create table ProjectParticipant (
-  id                        varchar(255) not null,
-  project_id                varchar(255),
-  person_id                 varchar(255),
-  state                     varchar(7),
-  constraint ck_ProjectParticipant_state check (state in ('owner','member','invited','admin')),
-  constraint pk_ProjectParticipant primary key (id))
-;
-
-create table RequestLog (
-  id                        varchar(40) not null,
-  request                   varchar(255),
-  call_count                bigint,
-  date_of_create            timestamp,
-  constraint uq_RequestLog_request unique (request),
-  constraint pk_RequestLog primary key (id))
-;
-
-create table SecurityRole (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  description               varchar(255),
-  constraint pk_SecurityRole primary key (id))
-;
-
-create table ServerError (
-  id                        varchar(40) not null,
-  summary                   TEXT,
-  description               TEXT,
-  type                      varchar(255),
-  message                   TEXT,
-  stack_trace               TEXT,
-  request                   varchar(255),
-  person                    varchar(255),
-  tyrion                    varchar(255),
-  repetition                bigint,
-  created                   timestamp,
-  cause_type                varchar(255),
-  cause_message             TEXT,
-  cause_stack_trace         TEXT,
-  youtrack_url              varchar(255),
-  constraint pk_ServerError primary key (id))
-;
-
-create table Tariff (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  description               varchar(255),
-  identifier                varchar(255),
-  active                    boolean,
-  business_model            varchar(11),
-  order_position            integer,
-  company_details_required  boolean,
-  payment_details_required  boolean,
-  payment_method_required   boolean,
-  credit_for_beginning      bigint,
-  color                     varchar(255),
-  awesome_icon              varchar(255),
-  labels_json               varchar(255),
-  constraint ck_Tariff_business_model check (business_model in ('saas','alpha','fee','integration','integrator','cal')),
-  constraint uq_Tariff_identifier unique (identifier),
-  constraint pk_Tariff primary key (id))
-;
-
-create table TypeOfBlock (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  description               TEXT,
-  project_id                varchar(255),
-  order_position            integer,
-  removed_by_user           boolean,
-  active                    boolean,
-  publish_type              varchar(20),
-  constraint ck_TypeOfBlock_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_version','default_test_program')),
-  constraint pk_TypeOfBlock primary key (id))
-;
-
-create table TypeOfBoard (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  compiler_target_name      varchar(255),
-  revision                  varchar(255),
-  description               TEXT,
-  producer_id               varchar(40),
-  processor_id              varchar(40),
-  connectible_to_internet   boolean,
-  picture_id                varchar(255),
-  removed_by_user           boolean,
-  constraint uq_TypeOfBoard_name unique (name),
-  constraint uq_TypeOfBoard_compiler_target_n unique (compiler_target_name),
-  constraint uq_TypeOfBoard_picture_id unique (picture_id),
-  constraint pk_TypeOfBoard primary key (id))
-;
-
-create table BoardFeature (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  constraint pk_BoardFeature primary key (id))
-;
-
-create table TypeOfBoardBatch (
-  id                        varchar(40) not null,
-  revision                  varchar(255),
-  production_batch          varchar(255),
-  date_of_assembly          varchar(255),
-  pcb_manufacture_name      varchar(255),
-  pcb_manufacture_id        varchar(255),
-  assembly_manufacture_name varchar(255),
-  assembly_manufacture_id   varchar(255),
-  customer_product_name     varchar(255),
-  customer_company_name     varchar(255),
-  customer_company_made_description varchar(255),
-  mac_address_start         bigint,
-  mac_address_end           bigint,
-  latest_used_mac_address   bigint,
-  ean_number                bigint,
-  type_of_board_id          varchar(255),
-  removed_by_user           boolean,
-  constraint pk_TypeOfBoardBatch primary key (id))
-;
-
-create table TypeOfWidget (
-  id                        varchar(255) not null,
-  name                      varchar(255),
-  description               TEXT,
-  project_id                varchar(255),
-  order_position            integer,
-  removed_by_user           boolean,
-  publish_type              varchar(20),
-  active                    boolean,
-  constraint ck_TypeOfWidget_publish_type check (publish_type in ('default_main_program','public_program','private_program','default_version','default_test_program')),
-  constraint pk_TypeOfWidget primary key (id))
-;
-
-create table ValidationToken (
-  person_email              varchar(255) not null,
-  auth_token                varchar(255),
-  created                   timestamp,
-  constraint pk_ValidationToken primary key (person_email))
-;
-
-create table VersionObject (
-  id                        varchar(255) not null,
-  version_name              varchar(255),
-  version_description       TEXT,
-  public_version            boolean,
-  removed_by_user           boolean,
-  date_of_create            timestamp,
-  author_id                 varchar(255),
-  library_id                varchar(255),
-  c_program_id              varchar(255),
-  approval_state            varchar(11),
-  default_program_id        varchar(255),
-  b_program_id              varchar(255),
-  m_program_id              varchar(255),
+create table gridprogramversion (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  file_id                       uuid,
+  approval_state                varchar(11),
+  publish_type                  varchar(15),
+  blob_version_link             varchar(255),
+  grid_program_id               uuid,
   m_program_virtual_input_output TEXT,
-  blob_version_link         varchar(255),
-  constraint ck_VersionObject_approval_state check (approval_state in ('approved','edited','pending','disapproved')),
-  constraint uq_VersionObject_default_program unique (default_program_id),
-  constraint pk_VersionObject primary key (id))
-;
+  public_access                 boolean default false not null,
+  deleted                       boolean default false not null,
+  constraint ck_gridprogramversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
+  constraint ck_gridprogramversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint uq_gridprogramversion_file_id unique (file_id),
+  constraint pk_gridprogramversion primary key (id)
+);
 
+create table gridproject (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  project_id                    uuid,
+  blob_link                     varchar(255),
+  deleted                       boolean default false not null,
+  constraint pk_gridproject primary key (id)
+);
 
-create table BoardGroup_Board (
-  BoardGroup_id                  varchar(40) not null,
-  Board_id                       varchar(255) not null,
-  constraint pk_BoardGroup_Board primary key (BoardGroup_id, Board_id))
-;
+create table gridproject_tag (
+  grid_project_id               uuid not null,
+  tag_id                        uuid not null,
+  constraint pk_gridproject_tag primary key (grid_project_id,tag_id)
+);
 
-create table Library_TypeOfBoard (
-  Library_id                     varchar(255) not null,
-  TypeOfBoard_id                 varchar(255) not null,
-  constraint pk_Library_TypeOfBoard primary key (Library_id, TypeOfBoard_id))
-;
+create table gridterminal (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  terminal_token                varchar(255),
+  user_agent                    varchar(255),
+  device_type                   varchar(255),
+  device_name                   varchar(255),
+  person_id                     uuid,
+  ws_permission                 boolean default false not null,
+  m_program_access              boolean default false not null,
+  up_to_date                    boolean default false not null,
+  deleted                       boolean default false not null,
+  constraint pk_gridterminal primary key (id)
+);
+
+create table hardware (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  full_id                       varchar(255),
+  dominant_entity               boolean default false not null,
+  wifi_mac_address              varchar(255),
+  mac_address                   varchar(255),
+  json_bootloader_core_configuration TEXT,
+  batch_id                      varchar(255),
+  is_active                     boolean default false not null,
+  mqtt_password                 varchar(255),
+  mqtt_username                 varchar(255),
+  developer_kit                 boolean default false not null,
+  backup_mode                   boolean default false not null,
+  database_synchronize          boolean default false not null,
+  hardware_type_id              uuid,
+  actual_c_program_version_id   uuid,
+  actual_backup_c_program_version_id uuid,
+  actual_boot_loader_id         uuid,
+  picture_id                    uuid,
+  project_id                    uuid,
+  connected_server_id           uuid,
+  connected_instance_id         uuid,
+  deleted                       boolean default false not null,
+  constraint uq_hardware_picture_id unique (picture_id),
+  constraint pk_hardware primary key (id)
+);
+
+create table hardware_tag (
+  hardware_id                   uuid not null,
+  tag_id                        uuid not null,
+  constraint pk_hardware_tag primary key (hardware_id,tag_id)
+);
+
+create table hardware_hardwaregroup (
+  hardware_id                   uuid not null,
+  hardware_group_id             uuid not null,
+  constraint pk_hardware_hardwaregroup primary key (hardware_id,hardware_group_id)
+);
+
+create table hardwarefeature (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  deleted                       boolean default false not null,
+  constraint pk_hardwarefeature primary key (id)
+);
+
+create table hardwarefeature_hardwaretype (
+  hardware_feature_id           uuid not null,
+  hardware_type_id              uuid not null,
+  constraint pk_hardwarefeature_hardwaretype primary key (hardware_feature_id,hardware_type_id)
+);
+
+create table hardwaregroup (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  project_id                    uuid,
+  deleted                       boolean default false not null,
+  constraint pk_hardwaregroup primary key (id)
+);
+
+create table hardwaretype (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  compiler_target_name          varchar(255),
+  producer_id                   uuid,
+  processor_id                  uuid,
+  connectible_to_internet       boolean,
+  picture_id                    uuid,
+  deleted                       boolean default false not null,
+  constraint uq_hardwaretype_compiler_target_name unique (compiler_target_name),
+  constraint uq_hardwaretype_picture_id unique (picture_id),
+  constraint pk_hardwaretype primary key (id)
+);
+
+create table hardwareupdate (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  actualization_procedure_id    uuid,
+  date_of_finish                timestamptz,
+  hardware_id                   uuid,
+  firmware_type                 varchar(10),
+  c_program_version_for_update_id uuid,
+  bootloader_id                 uuid,
+  binary_file_id                uuid,
+  state                         varchar(28),
+  count_of_tries                integer,
+  error                         varchar(255),
+  error_code                    integer,
+  deleted                       boolean default false not null,
+  constraint ck_hardwareupdate_firmware_type check ( firmware_type in ('BACKUP','FIRMWARE','BOOTLOADER','WIFI')),
+  constraint ck_hardwareupdate_state check ( state in ('NOT_YET_STARTED','IN_PROGRESS','NOT_UPDATED','COMPLETE','INSTANCE_INACCESSIBLE','WAITING_FOR_DEVICE','CANCELED','BIN_FILE_MISSING','OBSOLETE','HOMER_SERVER_IS_OFFLINE','CRITICAL_ERROR','HOMER_SERVER_NEVER_CONNECTED')),
+  constraint pk_hardwareupdate primary key (id)
+);
+
+create table homerserver (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  connection_identifier         varchar(255),
+  hash_certificate              varchar(255),
+  personal_server_name          varchar(255),
+  json_additional_parameter     TEXT,
+  mqtt_port                     integer,
+  grid_port                     integer,
+  web_view_port                 integer,
+  hardware_logger_port          integer,
+  rest_api_port                 integer,
+  server_url                    varchar(255),
+  server_version                varchar(255),
+  project_id                    uuid,
+  server_type                   varchar(7),
+  time_stamp_configuration      timestamptz,
+  days_in_archive               integer,
+  logging                       boolean default false not null,
+  interactive                   boolean default false not null,
+  log_level                     integer,
+  deleted                       boolean default false not null,
+  constraint ck_homerserver_server_type check ( server_type in ('BACKUP','TEST','PUBLIC','MAIN','PRIVATE')),
+  constraint ck_homerserver_log_level check ( log_level in (0,1,2,3,4)),
+  constraint pk_homerserver primary key (id)
+);
+
+create table instance (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  current_snapshot_id           uuid,
+  server_main_id                uuid,
+  server_backup_id              uuid,
+  project_id                    uuid,
+  b_program_id                  uuid,
+  deleted                       boolean default false not null,
+  constraint pk_instance primary key (id)
+);
+
+create table instance_tag (
+  instance_id                   uuid not null,
+  tag_id                        uuid not null,
+  constraint pk_instance_tag primary key (instance_id,tag_id)
+);
+
+create table instancesnapshot (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  deployed                      timestamptz,
+  stopped                       timestamptz,
+  instance_id                   uuid,
+  b_program_version_id          uuid,
+  program_id                    uuid,
+  deleted                       boolean default false not null,
+  constraint uq_instancesnapshot_program_id unique (program_id),
+  constraint pk_instancesnapshot primary key (id)
+);
+
+create table invitation (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  owner_id                      uuid,
+  project_id                    uuid,
+  email                         varchar(255),
+  notification_id               uuid,
+  deleted                       boolean default false not null,
+  constraint pk_invitation primary key (id)
+);
+
+create table invoice (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  fakturoid_id                  bigint,
+  fakturoid_pdf_url             varchar(255),
+  invoice_number                varchar(255),
+  gopay_id                      bigint,
+  gopay_order_number            varchar(255),
+  gw_url                        varchar(255),
+  proforma                      boolean default false not null,
+  proforma_id                   bigint,
+  proforma_pdf_url              varchar(255),
+  paid                          timestamptz,
+  overdue                       timestamptz,
+  product_id                    uuid,
+  status                        varchar(8),
+  method                        varchar(13),
+  warning                       varchar(12),
+  deleted                       boolean default false not null,
+  constraint ck_invoice_status check ( status in ('CANCELED','PAID','PENDING','OVERDUE')),
+  constraint ck_invoice_method check ( method in ('CREDIT','BANK_TRANSFER','CREDIT_CARD','FREE')),
+  constraint ck_invoice_warning check ( warning in ('ZERO_BALANCE','SECOND','NONE','FIRST','DEACTIVATION')),
+  constraint pk_invoice primary key (id)
+);
+
+create table invoiceitem (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  invoice_id                    uuid,
+  name                          varchar(255),
+  quantity                      bigint,
+  unit_name                     varchar(255),
+  unit_price                    bigint,
+  currency                      varchar(3),
+  deleted                       boolean default false not null,
+  constraint ck_invoiceitem_currency check ( currency in ('EUR','CZK','USD')),
+  constraint pk_invoiceitem primary key (id)
+);
+
+create table library (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  project_id                    uuid,
+  publish_type                  varchar(15),
+  azure_library_link            varchar(255),
+  deleted                       boolean default false not null,
+  constraint ck_library_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint pk_library primary key (id)
+);
+
+create table library_tag (
+  library_id                    uuid not null,
+  tag_id                        uuid not null,
+  constraint pk_library_tag primary key (library_id,tag_id)
+);
+
+create table library_hardwaretype (
+  library_id                    uuid not null,
+  hardware_type_id              uuid not null,
+  constraint pk_library_hardwaretype primary key (library_id,hardware_type_id)
+);
+
+create table libraryversion (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  file_id                       uuid,
+  approval_state                varchar(11),
+  publish_type                  varchar(15),
+  blob_version_link             varchar(255),
+  library_id                    uuid,
+  deleted                       boolean default false not null,
+  constraint ck_libraryversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
+  constraint ck_libraryversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint uq_libraryversion_file_id unique (file_id),
+  constraint pk_libraryversion primary key (id)
+);
+
+create table log (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  type                          varchar(255),
+  file_id                       uuid,
+  deleted                       boolean default false not null,
+  constraint uq_log_file_id unique (file_id),
+  constraint pk_log primary key (id)
+);
+
+create table mprograminstanceparameter (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  grid_project_program_snapshot_id uuid,
+  grid_program_version_id       uuid,
+  connection_token              varchar(255),
+  snapshot_settings             varchar(7),
+  deleted                       boolean default false not null,
+  constraint ck_mprograminstanceparameter_snapshot_settings check ( snapshot_settings in ('PROJECT','TESTING','PUBLIC')),
+  constraint pk_mprograminstanceparameter primary key (id)
+);
+
+create table mprojectprogramsnapshot (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  grid_project_id               uuid,
+  deleted                       boolean default false not null,
+  constraint pk_mprojectprogramsnapshot primary key (id)
+);
 
 create table b_program_version_snapshots (
-  MProjectProgramSnapShot_id     varchar(40) not null,
-  VersionObject_id               varchar(255) not null,
-  constraint pk_b_program_version_snapshots primary key (MProjectProgramSnapShot_id, VersionObject_id))
-;
+  mproject_program_snap_shot_id uuid not null,
+  bprogram_version_id           uuid not null,
+  constraint pk_b_program_version_snapshots primary key (mproject_program_snap_shot_id,bprogram_version_id)
+);
 
-create table Person_SecurityRole (
-  Person_id                      varchar(255) not null,
-  SecurityRole_id                varchar(255) not null,
-  constraint pk_Person_SecurityRole primary key (Person_id, SecurityRole_id))
-;
+create table notification (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  notification_level            varchar(7),
+  notification_importance       varchar(6),
+  state                         varchar(11),
+  content_string                TEXT,
+  buttons_string                TEXT,
+  confirmation_required         boolean default false not null,
+  confirmed                     boolean default false not null,
+  was_read                      boolean default false not null,
+  person_id                     uuid,
+  deleted                       boolean default false not null,
+  constraint ck_notification_notification_level check ( notification_level in ('SUCCESS','ERROR','INFO','WARNING')),
+  constraint ck_notification_notification_importance check ( notification_importance in ('HIGH','LOW','NORMAL')),
+  constraint ck_notification_state check ( state in ('CREATED','UPDATED','UNCONFIRMED','DELETED')),
+  constraint pk_notification primary key (id)
+);
 
-create table Person_Permission (
-  Person_id                      varchar(255) not null,
-  Permission_permission_key      varchar(255) not null,
-  constraint pk_Person_Permission primary key (Person_id, Permission_permission_key))
-;
+create table passwordrecoverytoken (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  person_id                     uuid,
+  password_recovery_token       varchar(255),
+  deleted                       boolean default false not null,
+  constraint uq_passwordrecoverytoken_person_id unique (person_id),
+  constraint pk_passwordrecoverytoken primary key (id)
+);
 
-create table SecurityRole_Permission (
-  SecurityRole_id                varchar(255) not null,
-  Permission_permission_key      varchar(255) not null,
-  constraint pk_SecurityRole_Permission primary key (SecurityRole_id, Permission_permission_key))
-;
+create table paymentdetails (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  customer_id                   uuid,
+  productidpaymentdetails       uuid,
+  company_account               boolean default false not null,
+  company_name                  varchar(255),
+  company_authorized_email      varchar(255),
+  company_authorized_phone      varchar(255),
+  company_web                   varchar(255),
+  company_registration_no       varchar(255),
+  company_vat_number            varchar(255),
+  full_name                     varchar(255),
+  street                        varchar(255),
+  street_number                 varchar(255),
+  city                          varchar(255),
+  zip_code                      varchar(255),
+  country                       varchar(255),
+  invoice_email                 varchar(255),
+  bank_account                  varchar(255),
+  deleted                       boolean default false not null,
+  constraint uq_paymentdetails_customer_id unique (customer_id),
+  constraint uq_paymentdetails_productidpaymentdetails unique (productidpaymentdetails),
+  constraint pk_paymentdetails primary key (id)
+);
 
-create table BoardFeature_TypeOfBoard (
-  BoardFeature_id                varchar(255) not null,
-  TypeOfBoard_id                 varchar(255) not null,
-  constraint pk_BoardFeature_TypeOfBoard primary key (BoardFeature_id, TypeOfBoard_id))
-;
+create table permission (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  deleted                       boolean default false not null,
+  constraint pk_permission primary key (id)
+);
 
-create table VersionObject_BProgramHwGroup (
-  VersionObject_id               varchar(255) not null,
-  BProgramHwGroup_id             varchar(40) not null,
-  constraint pk_VersionObject_BProgramHwGroup primary key (VersionObject_id, BProgramHwGroup_id))
-;
-create sequence InvoiceItem_seq;
+create table person (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  email                         varchar(255),
+  nick_name                     varchar(255),
+  first_name                    varchar(255),
+  last_name                     varchar(255),
+  country                       varchar(255),
+  gender                        varchar(255),
+  portal_config                 varchar(255),
+  validated                     boolean default false not null,
+  frozen                        boolean default false not null,
+  password                      varchar(255),
+  alternative_picture_link      varchar(255),
+  facebook_oauth_id             varchar(255),
+  github_oauth_id               varchar(255),
+  picture_id                    uuid,
+  deleted                       boolean default false not null,
+  constraint uq_person_email unique (email),
+  constraint uq_person_nick_name unique (nick_name),
+  constraint uq_person_picture_id unique (picture_id),
+  constraint pk_person primary key (id)
+);
 
-create sequence PaymentDetails_seq;
+create table person_role (
+  person_id                     uuid not null,
+  role_id                       uuid not null,
+  constraint pk_person_role primary key (person_id,role_id)
+);
 
-alter table ActualizationProcedure add constraint fk_ActualizationProcedure_home_1 foreign key (homer_instance_record_id) references HomerInstanceRecord (id);
-create index ix_ActualizationProcedure_home_1 on ActualizationProcedure (homer_instance_record_id);
-alter table BPair add constraint fk_BPair_c_program_version_2 foreign key (c_program_version_id) references VersionObject (id);
-create index ix_BPair_c_program_version_2 on BPair (c_program_version_id);
-alter table BPair add constraint fk_BPair_board_3 foreign key (board_id) references Board (id);
-create index ix_BPair_board_3 on BPair (board_id);
-alter table BPair add constraint fk_BPair_device_board_pair_4 foreign key (device_board_pair_id) references BProgramHwGroup (id);
-create index ix_BPair_device_board_pair_4 on BPair (device_board_pair_id);
-alter table BPair add constraint fk_BPair_main_board_pair_5 foreign key (main_board_pair_id) references BProgramHwGroup (id);
-create index ix_BPair_main_board_pair_5 on BPair (main_board_pair_id);
-alter table BProgram add constraint fk_BProgram_instance_6 foreign key (instance_id) references HomerInstance (id);
-create index ix_BProgram_instance_6 on BProgram (instance_id);
-alter table BProgram add constraint fk_BProgram_project_7 foreign key (project_id) references Project (id);
-create index ix_BProgram_project_7 on BProgram (project_id);
-alter table BlockoBlock add constraint fk_BlockoBlock_author_8 foreign key (author_id) references Person (id);
-create index ix_BlockoBlock_author_8 on BlockoBlock (author_id);
-alter table BlockoBlock add constraint fk_BlockoBlock_type_of_block_9 foreign key (type_of_block_id) references TypeOfBlock (id);
-create index ix_BlockoBlock_type_of_block_9 on BlockoBlock (type_of_block_id);
-alter table BlockoBlock add constraint fk_BlockoBlock_producer_10 foreign key (producer_id) references Producer (id);
-create index ix_BlockoBlock_producer_10 on BlockoBlock (producer_id);
-alter table BlockoBlockVersion add constraint fk_BlockoBlockVersion_author_11 foreign key (author_id) references Person (id);
-create index ix_BlockoBlockVersion_author_11 on BlockoBlockVersion (author_id);
-alter table BlockoBlockVersion add constraint fk_BlockoBlockVersion_blocko__12 foreign key (blocko_block_id) references BlockoBlock (id);
-create index ix_BlockoBlockVersion_blocko__12 on BlockoBlockVersion (blocko_block_id);
-alter table Board add constraint fk_Board_picture_13 foreign key (picture_id) references FileRecord (id);
-create index ix_Board_picture_13 on Board (picture_id);
-alter table Board add constraint fk_Board_type_of_board_14 foreign key (type_of_board_id) references TypeOfBoard (id);
-create index ix_Board_type_of_board_14 on Board (type_of_board_id);
-alter table Board add constraint fk_Board_project_15 foreign key (project_id) references Project (id);
-create index ix_Board_project_15 on Board (project_id);
-alter table Board add constraint fk_Board_actual_c_program_ver_16 foreign key (actual_c_program_version_id) references VersionObject (id);
-create index ix_Board_actual_c_program_ver_16 on Board (actual_c_program_version_id);
-alter table Board add constraint fk_Board_actual_backup_c_prog_17 foreign key (actual_backup_c_program_version_id) references VersionObject (id);
-create index ix_Board_actual_backup_c_prog_17 on Board (actual_backup_c_program_version_id);
-alter table Board add constraint fk_Board_actual_boot_loader_18 foreign key (actual_boot_loader_id) references BootLoader (id);
-create index ix_Board_actual_boot_loader_18 on Board (actual_boot_loader_id);
-alter table BoardGroup add constraint fk_BoardGroup_project_19 foreign key (project_id) references Project (id);
-create index ix_BoardGroup_project_19 on BoardGroup (project_id);
-alter table BootLoader add constraint fk_BootLoader_type_of_board_20 foreign key (type_of_board_id) references TypeOfBoard (id);
-create index ix_BootLoader_type_of_board_20 on BootLoader (type_of_board_id);
-alter table BootLoader add constraint fk_BootLoader_main_type_of_bo_21 foreign key (main_type_of_board_id) references TypeOfBoard (id);
-create index ix_BootLoader_main_type_of_bo_21 on BootLoader (main_type_of_board_id);
-alter table CCompilation add constraint fk_CCompilation_version_objec_22 foreign key (c_compilation_version) references VersionObject (id);
-create index ix_CCompilation_version_objec_22 on CCompilation (c_compilation_version);
-alter table CCompilation add constraint fk_CCompilation_bin_compilati_23 foreign key (bin_compilation_file_id) references FileRecord (id);
-create index ix_CCompilation_bin_compilati_23 on CCompilation (bin_compilation_file_id);
-alter table CProgram add constraint fk_CProgram_project_24 foreign key (project_id) references Project (id);
-create index ix_CProgram_project_24 on CProgram (project_id);
-alter table CProgram add constraint fk_CProgram_type_of_board_25 foreign key (type_of_board_id) references TypeOfBoard (id);
-create index ix_CProgram_type_of_board_25 on CProgram (type_of_board_id);
-alter table CProgram add constraint fk_CProgram_type_of_board_def_26 foreign key (type_of_board_default_id) references TypeOfBoard (id);
-create index ix_CProgram_type_of_board_def_26 on CProgram (type_of_board_default_id);
-alter table CProgram add constraint fk_CProgram_type_of_board_tes_27 foreign key (type_of_board_test_id) references TypeOfBoard (id);
-create index ix_CProgram_type_of_board_tes_27 on CProgram (type_of_board_test_id);
-alter table CProgram add constraint fk_CProgram_example_library_28 foreign key (example_library_id) references VersionObject (id);
-create index ix_CProgram_example_library_28 on CProgram (example_library_id);
-alter table CProgramUpdatePlan add constraint fk_CProgramUpdatePlan_actuali_29 foreign key (actualization_procedure_id) references ActualizationProcedure (id);
-create index ix_CProgramUpdatePlan_actuali_29 on CProgramUpdatePlan (actualization_procedure_id);
-alter table CProgramUpdatePlan add constraint fk_CProgramUpdatePlan_board_30 foreign key (board_id) references Board (id);
-create index ix_CProgramUpdatePlan_board_30 on CProgramUpdatePlan (board_id);
-alter table CProgramUpdatePlan add constraint fk_CProgramUpdatePlan_c_progr_31 foreign key (c_program_version_for_update_id) references VersionObject (id);
-create index ix_CProgramUpdatePlan_c_progr_31 on CProgramUpdatePlan (c_program_version_for_update_id);
-alter table CProgramUpdatePlan add constraint fk_CProgramUpdatePlan_bootloa_32 foreign key (bootloader_id) references BootLoader (id);
-create index ix_CProgramUpdatePlan_bootloa_32 on CProgramUpdatePlan (bootloader_id);
-alter table CProgramUpdatePlan add constraint fk_CProgramUpdatePlan_binary__33 foreign key (binary_file_id) references FileRecord (id);
-create index ix_CProgramUpdatePlan_binary__33 on CProgramUpdatePlan (binary_file_id);
-alter table ChangePropertyToken add constraint fk_ChangePropertyToken_person_34 foreign key (person_id) references Person (id);
-create index ix_ChangePropertyToken_person_34 on ChangePropertyToken (person_id);
-alter table Employee add constraint fk_Employee_person_35 foreign key (person_id) references Person (id);
-create index ix_Employee_person_35 on Employee (person_id);
-alter table Employee add constraint fk_Employee_customer_36 foreign key (customer_id) references Customer (id);
-create index ix_Employee_customer_36 on Employee (customer_id);
-alter table FileRecord add constraint fk_FileRecord_boot_loader_37 foreign key (boot_loader_id) references BootLoader (id);
-create index ix_FileRecord_boot_loader_37 on FileRecord (boot_loader_id);
-alter table FileRecord add constraint fk_FileRecord_version_object_38 foreign key (version_object_id) references VersionObject (id);
-create index ix_FileRecord_version_object_38 on FileRecord (version_object_id);
-alter table FloatingPersonToken add constraint fk_FloatingPersonToken_person_39 foreign key (person_id) references Person (id);
-create index ix_FloatingPersonToken_person_39 on FloatingPersonToken (person_id);
-alter table GridTerminal add constraint fk_GridTerminal_person_40 foreign key (person_id) references Person (id);
-create index ix_GridTerminal_person_40 on GridTerminal (person_id);
-alter table GridWidget add constraint fk_GridWidget_author_41 foreign key (author_id) references Person (id);
-create index ix_GridWidget_author_41 on GridWidget (author_id);
-alter table GridWidget add constraint fk_GridWidget_type_of_widget_42 foreign key (type_of_widget_id) references TypeOfWidget (id);
-create index ix_GridWidget_type_of_widget_42 on GridWidget (type_of_widget_id);
-alter table GridWidget add constraint fk_GridWidget_producer_43 foreign key (producer_id) references Producer (id);
-create index ix_GridWidget_producer_43 on GridWidget (producer_id);
-alter table GridWidgetVersion add constraint fk_GridWidgetVersion_author_44 foreign key (author_id) references Person (id);
-create index ix_GridWidgetVersion_author_44 on GridWidgetVersion (author_id);
-alter table GridWidgetVersion add constraint fk_GridWidgetVersion_grid_wid_45 foreign key (grid_widget_id) references GridWidget (id);
-create index ix_GridWidgetVersion_grid_wid_45 on GridWidgetVersion (grid_widget_id);
-alter table HomerInstance add constraint fk_HomerInstance_cloud_homer__46 foreign key (cloud_homer_server_id) references HomerServer (id);
-create index ix_HomerInstance_cloud_homer__46 on HomerInstance (cloud_homer_server_id);
-alter table HomerInstanceRecord add constraint fk_HomerInstanceRecord_main_i_47 foreign key (main_instance_history_id) references HomerInstance (id);
-create index ix_HomerInstanceRecord_main_i_47 on HomerInstanceRecord (main_instance_history_id);
-alter table HomerInstanceRecord add constraint fk_HomerInstanceRecord_versio_48 foreign key (version_object_id) references VersionObject (id);
-create index ix_HomerInstanceRecord_versio_48 on HomerInstanceRecord (version_object_id);
-alter table HomerInstanceRecord add constraint fk_HomerInstanceRecord_actual_49 foreign key (actual_running_instance_id) references HomerInstance (id);
-create index ix_HomerInstanceRecord_actual_49 on HomerInstanceRecord (actual_running_instance_id);
-alter table Invitation add constraint fk_Invitation_owner_50 foreign key (owner_id) references Person (id);
-create index ix_Invitation_owner_50 on Invitation (owner_id);
-alter table Invitation add constraint fk_Invitation_project_51 foreign key (project_id) references Project (id);
-create index ix_Invitation_project_51 on Invitation (project_id);
-alter table Invoice add constraint fk_Invoice_product_52 foreign key (product_id) references Product (id);
-create index ix_Invoice_product_52 on Invoice (product_id);
-alter table InvoiceItem add constraint fk_InvoiceItem_invoice_53 foreign key (invoice_id) references Invoice (id);
-create index ix_InvoiceItem_invoice_53 on InvoiceItem (invoice_id);
-alter table Library add constraint fk_Library_project_54 foreign key (project_id) references Project (id);
-create index ix_Library_project_54 on Library (project_id);
-alter table Log add constraint fk_Log_file_55 foreign key (file_id) references FileRecord (id);
-create index ix_Log_file_55 on Log (file_id);
-alter table MProgram add constraint fk_MProgram_m_project_56 foreign key (m_project_id) references MProject (id);
-create index ix_MProgram_m_project_56 on MProgram (m_project_id);
-alter table MProgramInstanceParameter add constraint fk_MProgramInstanceParameter__57 foreign key (m_project_program_snapshot_id) references MProjectProgramSnapShot (id);
-create index ix_MProgramInstanceParameter__57 on MProgramInstanceParameter (m_project_program_snapshot_id);
-alter table MProgramInstanceParameter add constraint fk_MProgramInstanceParameter__58 foreign key (m_program_version_id) references VersionObject (id);
-create index ix_MProgramInstanceParameter__58 on MProgramInstanceParameter (m_program_version_id);
-alter table MProject add constraint fk_MProject_project_59 foreign key (project_id) references Project (id);
-create index ix_MProject_project_59 on MProject (project_id);
-alter table MProjectProgramSnapShot add constraint fk_MProjectProgramSnapShot_m__60 foreign key (m_project_id) references MProject (id);
-create index ix_MProjectProgramSnapShot_m__60 on MProjectProgramSnapShot (m_project_id);
-alter table Notification add constraint fk_Notification_person_61 foreign key (person_id) references Person (id);
-create index ix_Notification_person_61 on Notification (person_id);
-alter table PasswordRecoveryToken add constraint fk_PasswordRecoveryToken_pers_62 foreign key (person_id) references Person (id);
-create index ix_PasswordRecoveryToken_pers_62 on PasswordRecoveryToken (person_id);
-alter table PaymentDetails add constraint fk_PaymentDetails_customer_63 foreign key (customer_id) references Customer (id);
-create index ix_PaymentDetails_customer_63 on PaymentDetails (customer_id);
-alter table PaymentDetails add constraint fk_PaymentDetails_product_64 foreign key (productidpaymentdetails) references Product (id);
-create index ix_PaymentDetails_product_64 on PaymentDetails (productidpaymentdetails);
-alter table Person add constraint fk_Person_picture_65 foreign key (picture_id) references FileRecord (id);
-create index ix_Person_picture_65 on Person (picture_id);
-alter table Product add constraint fk_Product_customer_66 foreign key (customer_id) references Customer (id);
-create index ix_Product_customer_66 on Product (customer_id);
-alter table ProductExtension add constraint fk_ProductExtension_product_67 foreign key (product_id) references Product (id);
-create index ix_ProductExtension_product_67 on ProductExtension (product_id);
-alter table ProductExtension add constraint fk_ProductExtension_tariff_in_68 foreign key (tariff_included_id) references Tariff (id);
-create index ix_ProductExtension_tariff_in_68 on ProductExtension (tariff_included_id);
-alter table ProductExtension add constraint fk_ProductExtension_tariff_op_69 foreign key (tariff_optional_id) references Tariff (id);
-create index ix_ProductExtension_tariff_op_69 on ProductExtension (tariff_optional_id);
-alter table Project add constraint fk_Project_product_70 foreign key (product_id) references Product (id);
-create index ix_Project_product_70 on Project (product_id);
-alter table ProjectParticipant add constraint fk_ProjectParticipant_project_71 foreign key (project_id) references Project (id);
-create index ix_ProjectParticipant_project_71 on ProjectParticipant (project_id);
-alter table ProjectParticipant add constraint fk_ProjectParticipant_person_72 foreign key (person_id) references Person (id);
-create index ix_ProjectParticipant_person_72 on ProjectParticipant (person_id);
-alter table TypeOfBlock add constraint fk_TypeOfBlock_project_73 foreign key (project_id) references Project (id);
-create index ix_TypeOfBlock_project_73 on TypeOfBlock (project_id);
-alter table TypeOfBoard add constraint fk_TypeOfBoard_producer_74 foreign key (producer_id) references Producer (id);
-create index ix_TypeOfBoard_producer_74 on TypeOfBoard (producer_id);
-alter table TypeOfBoard add constraint fk_TypeOfBoard_processor_75 foreign key (processor_id) references Processor (id);
-create index ix_TypeOfBoard_processor_75 on TypeOfBoard (processor_id);
-alter table TypeOfBoard add constraint fk_TypeOfBoard_picture_76 foreign key (picture_id) references FileRecord (id);
-create index ix_TypeOfBoard_picture_76 on TypeOfBoard (picture_id);
-alter table TypeOfBoardBatch add constraint fk_TypeOfBoardBatch_type_of_b_77 foreign key (type_of_board_id) references TypeOfBoard (id);
-create index ix_TypeOfBoardBatch_type_of_b_77 on TypeOfBoardBatch (type_of_board_id);
-alter table TypeOfWidget add constraint fk_TypeOfWidget_project_78 foreign key (project_id) references Project (id);
-create index ix_TypeOfWidget_project_78 on TypeOfWidget (project_id);
-alter table VersionObject add constraint fk_VersionObject_author_79 foreign key (author_id) references Person (id);
-create index ix_VersionObject_author_79 on VersionObject (author_id);
-alter table VersionObject add constraint fk_VersionObject_library_80 foreign key (library_id) references Library (id);
-create index ix_VersionObject_library_80 on VersionObject (library_id);
-alter table VersionObject add constraint fk_VersionObject_c_program_81 foreign key (c_program_id) references CProgram (id);
-create index ix_VersionObject_c_program_81 on VersionObject (c_program_id);
-alter table VersionObject add constraint fk_VersionObject_default_prog_82 foreign key (default_program_id) references CProgram (id);
-create index ix_VersionObject_default_prog_82 on VersionObject (default_program_id);
-alter table VersionObject add constraint fk_VersionObject_b_program_83 foreign key (b_program_id) references BProgram (id);
-create index ix_VersionObject_b_program_83 on VersionObject (b_program_id);
-alter table VersionObject add constraint fk_VersionObject_m_program_84 foreign key (m_program_id) references MProgram (id);
-create index ix_VersionObject_m_program_84 on VersionObject (m_program_id);
+create table person_permission (
+  person_id                     uuid not null,
+  permission_id                 uuid not null,
+  constraint pk_person_permission primary key (person_id,permission_id)
+);
 
+create table processor (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  processor_code                varchar(255),
+  speed                         integer not null,
+  deleted                       boolean default false not null,
+  constraint pk_processor primary key (id)
+);
 
+create table producer (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  deleted                       boolean default false not null,
+  constraint pk_producer primary key (id)
+);
 
-alter table BoardGroup_Board add constraint fk_BoardGroup_Board_BoardGrou_01 foreign key (BoardGroup_id) references BoardGroup (id);
+create table product (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  method                        varchar(13),
+  business_model                varchar(11),
+  subscription_id               varchar(255),
+  fakturoid_subject_id          varchar(255),
+  gopay_id                      bigint,
+  active                        boolean default false not null,
+  on_demand                     boolean default false not null,
+  credit                        bigint,
+  financial_history             TEXT,
+  configuration                 TEXT,
+  removed_byinvoi_user          boolean default false not null,
+  client_billing                boolean default false not null,
+  client_billing_invoice_parameters varchar(255),
+  customer_id                   uuid,
+  azure_product_link            varchar(255),
+  deleted                       boolean default false not null,
+  constraint ck_product_method check ( method in ('CREDIT','BANK_TRANSFER','CREDIT_CARD','FREE')),
+  constraint ck_product_business_model check ( business_model in ('INTEGRATOR','INTEGRATION','SAAS','FEE','ALPHA','CAL')),
+  constraint pk_product primary key (id)
+);
 
-alter table BoardGroup_Board add constraint fk_BoardGroup_Board_Board_02 foreign key (Board_id) references Board (id);
+create table productextension (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  color                         varchar(255),
+  type                          varchar(12),
+  configuration                 TEXT,
+  order_position                integer,
+  active                        boolean default false not null,
+  product_id                    uuid,
+  tariff_included_id            uuid,
+  tariff_optional_id            uuid,
+  deleted                       boolean default false not null,
+  constraint ck_productextension_type check ( type in ('database','instance','log','rest_api','project','support','homer_server','participant')),
+  constraint pk_productextension primary key (id)
+);
 
-alter table Library_TypeOfBoard add constraint fk_Library_TypeOfBoard_Librar_01 foreign key (Library_id) references Library (id);
+create table project (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  product_id                    uuid,
+  blob_project_link             varchar(255),
+  deleted                       boolean default false not null,
+  constraint pk_project primary key (id)
+);
 
-alter table Library_TypeOfBoard add constraint fk_Library_TypeOfBoard_TypeOf_02 foreign key (TypeOfBoard_id) references TypeOfBoard (id);
+create table project_tag (
+  project_id                    uuid not null,
+  tag_id                        uuid not null,
+  constraint pk_project_tag primary key (project_id,tag_id)
+);
 
-alter table b_program_version_snapshots add constraint fk_b_program_version_snapshot_01 foreign key (MProjectProgramSnapShot_id) references MProjectProgramSnapShot (id);
+create table projectparticipant (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  project_id                    uuid,
+  person_id                     uuid,
+  state                         varchar(7),
+  deleted                       boolean default false not null,
+  constraint ck_projectparticipant_state check ( state in ('OWNER','INVITED','ADMIN','MEMBER')),
+  constraint pk_projectparticipant primary key (id)
+);
 
-alter table b_program_version_snapshots add constraint fk_b_program_version_snapshot_02 foreign key (VersionObject_id) references VersionObject (id);
+create table role (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  deleted                       boolean default false not null,
+  constraint pk_role primary key (id)
+);
 
-alter table Person_SecurityRole add constraint fk_Person_SecurityRole_Person_01 foreign key (Person_id) references Person (id);
+create table role_permission (
+  role_id                       uuid not null,
+  permission_id                 uuid not null,
+  constraint pk_role_permission primary key (role_id,permission_id)
+);
 
-alter table Person_SecurityRole add constraint fk_Person_SecurityRole_Securi_02 foreign key (SecurityRole_id) references SecurityRole (id);
+create table servererror (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  type                          varchar(255),
+  message                       TEXT,
+  stack_trace                   TEXT,
+  request                       varchar(255),
+  person                        varchar(255),
+  tyrion                        varchar(255),
+  repetition                    bigint,
+  cause_type                    varchar(255),
+  cause_message                 TEXT,
+  cause_stack_trace             TEXT,
+  youtrack_url                  varchar(255),
+  deleted                       boolean default false not null,
+  constraint pk_servererror primary key (id)
+);
 
-alter table Person_Permission add constraint fk_Person_Permission_Person_01 foreign key (Person_id) references Person (id);
+create table tag (
+  id                            uuid not null,
+  value                         varchar(255),
+  constraint uq_tag_value unique (value),
+  constraint pk_tag primary key (id)
+);
 
-alter table Person_Permission add constraint fk_Person_Permission_Permissi_02 foreign key (Permission_permission_key) references Permission (permission_key);
+create table tariff (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  identifier                    varchar(255),
+  active                        boolean default false not null,
+  business_model                varchar(11),
+  order_position                integer,
+  company_details_required      boolean default false not null,
+  payment_details_required      boolean default false not null,
+  payment_method_required       boolean default false not null,
+  credit_for_beginning          bigint,
+  color                         varchar(255),
+  awesome_icon                  varchar(255),
+  labels_json                   varchar(255),
+  deleted                       boolean default false not null,
+  constraint ck_tariff_business_model check ( business_model in ('INTEGRATOR','INTEGRATION','SAAS','FEE','ALPHA','CAL')),
+  constraint uq_tariff_identifier unique (identifier),
+  constraint pk_tariff primary key (id)
+);
 
-alter table SecurityRole_Permission add constraint fk_SecurityRole_Permission_Se_01 foreign key (SecurityRole_id) references SecurityRole (id);
+create table updateprocedure (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  state                         varchar(19),
+  instance_id                   uuid,
+  date_of_planing               timestamptz,
+  date_of_finish                timestamptz,
+  type_of_update                varchar(41),
+  project_id                    uuid,
+  deleted                       boolean default false not null,
+  constraint ck_updateprocedure_state check ( state in ('complete_with_error','canceled','in_progress','successful_complete','complete','not_start_yet')),
+  constraint ck_updateprocedure_type_of_update check ( type_of_update in ('AUTOMATICALLY_BY_USER_ALWAYS_UP_TO_DATE','AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE','MANUALLY_RELEASE_MANAGER','MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME','MANUALLY_BY_USER','MANUALLY_BY_USER_BLOCKO_GROUP')),
+  constraint pk_updateprocedure primary key (id)
+);
 
-alter table SecurityRole_Permission add constraint fk_SecurityRole_Permission_Pe_02 foreign key (Permission_permission_key) references Permission (permission_key);
+create table validationtoken (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  email                         varchar(255),
+  token                         uuid,
+  deleted                       boolean default false not null,
+  constraint pk_validationtoken primary key (id)
+);
 
-alter table BoardFeature_TypeOfBoard add constraint fk_BoardFeature_TypeOfBoard_B_01 foreign key (BoardFeature_id) references BoardFeature (id);
+create table widget (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  order_position                integer,
+  project_id                    uuid,
+  producer_id                   uuid,
+  publish_type                  varchar(15),
+  active                        boolean default false not null,
+  deleted                       boolean default false not null,
+  constraint ck_widget_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint pk_widget primary key (id)
+);
 
-alter table BoardFeature_TypeOfBoard add constraint fk_BoardFeature_TypeOfBoard_T_02 foreign key (TypeOfBoard_id) references TypeOfBoard (id);
+create table widget_tag (
+  widget_id                     uuid not null,
+  tag_id                        uuid not null,
+  constraint pk_widget_tag primary key (widget_id,tag_id)
+);
 
-alter table VersionObject_BProgramHwGroup add constraint fk_VersionObject_BProgramHwGr_01 foreign key (VersionObject_id) references VersionObject (id);
+create table widgetversion (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
+  file_id                       uuid,
+  approval_state                varchar(11),
+  publish_type                  varchar(15),
+  blob_version_link             varchar(255),
+  design_json                   TEXT,
+  logic_json                    TEXT,
+  widget_id                     uuid,
+  deleted                       boolean default false not null,
+  constraint ck_widgetversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
+  constraint ck_widgetversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
+  constraint uq_widgetversion_file_id unique (file_id),
+  constraint pk_widgetversion primary key (id)
+);
 
-alter table VersionObject_BProgramHwGroup add constraint fk_VersionObject_BProgramHwGr_02 foreign key (BProgramHwGroup_id) references BProgramHwGroup (id);
+alter table authorizationtoken add constraint fk_authorizationtoken_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
+create index ix_authorizationtoken_person_id on authorizationtoken (person_id);
+
+alter table bprogram add constraint fk_bprogram_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
+create index ix_bprogram_project_id on bprogram (project_id);
+
+alter table bprogram_tag add constraint fk_bprogram_tag_bprogram foreign key (bprogram_id) references bprogram (id) on delete restrict on update restrict;
+create index ix_bprogram_tag_bprogram on bprogram_tag (bprogram_id);
+
+alter table bprogram_tag add constraint fk_bprogram_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
+create index ix_bprogram_tag_tag on bprogram_tag (tag_id);
+
+alter table bprogramversion add constraint fk_bprogramversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
+
+alter table bprogramversion add constraint fk_bprogramversion_library_id foreign key (library_id) references library (id) on delete restrict on update restrict;
+create index ix_bprogramversion_library_id on bprogramversion (library_id);
+
+alter table bprogramversion add constraint fk_bprogramversion_b_program_id foreign key (b_program_id) references bprogram (id) on delete restrict on update restrict;
+create index ix_bprogramversion_b_program_id on bprogramversion (b_program_id);
+
+alter table blob add constraint fk_blob_boot_loader_id foreign key (boot_loader_id) references bootloader (id) on delete restrict on update restrict;
+
+alter table block add constraint fk_block_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
+create index ix_block_project_id on block (project_id);
+
+alter table block add constraint fk_block_producer_id foreign key (producer_id) references producer (id) on delete restrict on update restrict;
+create index ix_block_producer_id on block (producer_id);
+
+alter table block_tag add constraint fk_block_tag_block foreign key (block_id) references block (id) on delete restrict on update restrict;
+create index ix_block_tag_block on block_tag (block_id);
+
+alter table block_tag add constraint fk_block_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
+create index ix_block_tag_tag on block_tag (tag_id);
+
+alter table blockversion add constraint fk_blockversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
+
+alter table blockversion add constraint fk_blockversion_block_id foreign key (block_id) references block (id) on delete restrict on update restrict;
+create index ix_blockversion_block_id on blockversion (block_id);
+
+alter table bootloader add constraint fk_bootloader_hardware_type_id foreign key (hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
+create index ix_bootloader_hardware_type_id on bootloader (hardware_type_id);
+
+alter table bootloader add constraint fk_bootloader_main_hardware_type_id foreign key (main_hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
+
+alter table cprogram add constraint fk_cprogram_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
+create index ix_cprogram_project_id on cprogram (project_id);
+
+alter table cprogram add constraint fk_cprogram_hardware_type_id foreign key (hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
+create index ix_cprogram_hardware_type_id on cprogram (hardware_type_id);
+
+alter table cprogram add constraint fk_cprogram_hardware_type_default_id foreign key (hardware_type_default_id) references hardwaretype (id) on delete restrict on update restrict;
+
+alter table cprogram add constraint fk_cprogram_hardware_type_test_id foreign key (hardware_type_test_id) references hardwaretype (id) on delete restrict on update restrict;
+
+alter table cprogram add constraint fk_cprogram_example_library_id foreign key (example_library_id) references libraryversion (id) on delete restrict on update restrict;
+create index ix_cprogram_example_library_id on cprogram (example_library_id);
+
+alter table cprogram_tag add constraint fk_cprogram_tag_cprogram foreign key (cprogram_id) references cprogram (id) on delete restrict on update restrict;
+create index ix_cprogram_tag_cprogram on cprogram_tag (cprogram_id);
+
+alter table cprogram_tag add constraint fk_cprogram_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
+create index ix_cprogram_tag_tag on cprogram_tag (tag_id);
+
+alter table cprogramversion add constraint fk_cprogramversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
+
+alter table cprogramversion add constraint fk_cprogramversion_c_program_id foreign key (c_program_id) references cprogram (id) on delete restrict on update restrict;
+create index ix_cprogramversion_c_program_id on cprogramversion (c_program_id);
+
+alter table cprogramversion add constraint fk_cprogramversion_default_program_id foreign key (default_program_id) references cprogram (id) on delete restrict on update restrict;
+
+alter table changepropertytoken add constraint fk_changepropertytoken_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
+
+alter table compilation add constraint fk_compilation_c_compilation_version foreign key (c_compilation_version) references cprogramversion (id) on delete restrict on update restrict;
+
+alter table compilation add constraint fk_compilation_bin_compilation_file_id foreign key (bin_compilation_file_id) references blob (id) on delete restrict on update restrict;
+
+alter table employee add constraint fk_employee_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
+create index ix_employee_person_id on employee (person_id);
+
+alter table employee add constraint fk_employee_customer_id foreign key (customer_id) references customer (id) on delete restrict on update restrict;
+create index ix_employee_customer_id on employee (customer_id);
+
+alter table gridprogram add constraint fk_gridprogram_grid_project_id foreign key (grid_project_id) references gridproject (id) on delete restrict on update restrict;
+create index ix_gridprogram_grid_project_id on gridprogram (grid_project_id);
+
+alter table gridprogram_tag add constraint fk_gridprogram_tag_gridprogram foreign key (grid_program_id) references gridprogram (id) on delete restrict on update restrict;
+create index ix_gridprogram_tag_gridprogram on gridprogram_tag (grid_program_id);
+
+alter table gridprogram_tag add constraint fk_gridprogram_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
+create index ix_gridprogram_tag_tag on gridprogram_tag (tag_id);
+
+alter table gridprogramversion add constraint fk_gridprogramversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
+
+alter table gridprogramversion add constraint fk_gridprogramversion_grid_program_id foreign key (grid_program_id) references gridprogram (id) on delete restrict on update restrict;
+create index ix_gridprogramversion_grid_program_id on gridprogramversion (grid_program_id);
+
+alter table gridproject add constraint fk_gridproject_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
+create index ix_gridproject_project_id on gridproject (project_id);
+
+alter table gridproject_tag add constraint fk_gridproject_tag_gridproject foreign key (grid_project_id) references gridproject (id) on delete restrict on update restrict;
+create index ix_gridproject_tag_gridproject on gridproject_tag (grid_project_id);
+
+alter table gridproject_tag add constraint fk_gridproject_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
+create index ix_gridproject_tag_tag on gridproject_tag (tag_id);
+
+alter table gridterminal add constraint fk_gridterminal_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
+create index ix_gridterminal_person_id on gridterminal (person_id);
+
+alter table hardware add constraint fk_hardware_hardware_type_id foreign key (hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
+create index ix_hardware_hardware_type_id on hardware (hardware_type_id);
+
+alter table hardware add constraint fk_hardware_actual_c_program_version_id foreign key (actual_c_program_version_id) references cprogramversion (id) on delete restrict on update restrict;
+create index ix_hardware_actual_c_program_version_id on hardware (actual_c_program_version_id);
+
+alter table hardware add constraint fk_hardware_actual_backup_c_program_version_id foreign key (actual_backup_c_program_version_id) references cprogramversion (id) on delete restrict on update restrict;
+create index ix_hardware_actual_backup_c_program_version_id on hardware (actual_backup_c_program_version_id);
+
+alter table hardware add constraint fk_hardware_actual_boot_loader_id foreign key (actual_boot_loader_id) references bootloader (id) on delete restrict on update restrict;
+create index ix_hardware_actual_boot_loader_id on hardware (actual_boot_loader_id);
+
+alter table hardware add constraint fk_hardware_picture_id foreign key (picture_id) references blob (id) on delete restrict on update restrict;
+
+alter table hardware add constraint fk_hardware_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
+create index ix_hardware_project_id on hardware (project_id);
+
+alter table hardware_tag add constraint fk_hardware_tag_hardware foreign key (hardware_id) references hardware (id) on delete restrict on update restrict;
+create index ix_hardware_tag_hardware on hardware_tag (hardware_id);
+
+alter table hardware_tag add constraint fk_hardware_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
+create index ix_hardware_tag_tag on hardware_tag (tag_id);
+
+alter table hardware_hardwaregroup add constraint fk_hardware_hardwaregroup_hardware foreign key (hardware_id) references hardware (id) on delete restrict on update restrict;
+create index ix_hardware_hardwaregroup_hardware on hardware_hardwaregroup (hardware_id);
+
+alter table hardware_hardwaregroup add constraint fk_hardware_hardwaregroup_hardwaregroup foreign key (hardware_group_id) references hardwaregroup (id) on delete restrict on update restrict;
+create index ix_hardware_hardwaregroup_hardwaregroup on hardware_hardwaregroup (hardware_group_id);
+
+alter table hardwarefeature_hardwaretype add constraint fk_hardwarefeature_hardwaretype_hardwarefeature foreign key (hardware_feature_id) references hardwarefeature (id) on delete restrict on update restrict;
+create index ix_hardwarefeature_hardwaretype_hardwarefeature on hardwarefeature_hardwaretype (hardware_feature_id);
+
+alter table hardwarefeature_hardwaretype add constraint fk_hardwarefeature_hardwaretype_hardwaretype foreign key (hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
+create index ix_hardwarefeature_hardwaretype_hardwaretype on hardwarefeature_hardwaretype (hardware_type_id);
+
+alter table hardwaregroup add constraint fk_hardwaregroup_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
+create index ix_hardwaregroup_project_id on hardwaregroup (project_id);
+
+alter table hardwaretype add constraint fk_hardwaretype_producer_id foreign key (producer_id) references producer (id) on delete restrict on update restrict;
+create index ix_hardwaretype_producer_id on hardwaretype (producer_id);
+
+alter table hardwaretype add constraint fk_hardwaretype_processor_id foreign key (processor_id) references processor (id) on delete restrict on update restrict;
+create index ix_hardwaretype_processor_id on hardwaretype (processor_id);
+
+alter table hardwaretype add constraint fk_hardwaretype_picture_id foreign key (picture_id) references blob (id) on delete restrict on update restrict;
+
+alter table hardwareupdate add constraint fk_hardwareupdate_actualization_procedure_id foreign key (actualization_procedure_id) references updateprocedure (id) on delete restrict on update restrict;
+create index ix_hardwareupdate_actualization_procedure_id on hardwareupdate (actualization_procedure_id);
+
+alter table hardwareupdate add constraint fk_hardwareupdate_hardware_id foreign key (hardware_id) references hardware (id) on delete restrict on update restrict;
+create index ix_hardwareupdate_hardware_id on hardwareupdate (hardware_id);
+
+alter table hardwareupdate add constraint fk_hardwareupdate_c_program_version_for_update_id foreign key (c_program_version_for_update_id) references cprogramversion (id) on delete restrict on update restrict;
+create index ix_hardwareupdate_c_program_version_for_update_id on hardwareupdate (c_program_version_for_update_id);
+
+alter table hardwareupdate add constraint fk_hardwareupdate_bootloader_id foreign key (bootloader_id) references bootloader (id) on delete restrict on update restrict;
+create index ix_hardwareupdate_bootloader_id on hardwareupdate (bootloader_id);
+
+alter table hardwareupdate add constraint fk_hardwareupdate_binary_file_id foreign key (binary_file_id) references blob (id) on delete restrict on update restrict;
+create index ix_hardwareupdate_binary_file_id on hardwareupdate (binary_file_id);
+
+alter table homerserver add constraint fk_homerserver_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
+create index ix_homerserver_project_id on homerserver (project_id);
+
+alter table instance add constraint fk_instance_server_main_id foreign key (server_main_id) references homerserver (id) on delete restrict on update restrict;
+create index ix_instance_server_main_id on instance (server_main_id);
+
+alter table instance add constraint fk_instance_server_backup_id foreign key (server_backup_id) references homerserver (id) on delete restrict on update restrict;
+create index ix_instance_server_backup_id on instance (server_backup_id);
+
+alter table instance add constraint fk_instance_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
+create index ix_instance_project_id on instance (project_id);
+
+alter table instance add constraint fk_instance_b_program_id foreign key (b_program_id) references bprogram (id) on delete restrict on update restrict;
+create index ix_instance_b_program_id on instance (b_program_id);
+
+alter table instance_tag add constraint fk_instance_tag_instance foreign key (instance_id) references instance (id) on delete restrict on update restrict;
+create index ix_instance_tag_instance on instance_tag (instance_id);
+
+alter table instance_tag add constraint fk_instance_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
+create index ix_instance_tag_tag on instance_tag (tag_id);
+
+alter table instancesnapshot add constraint fk_instancesnapshot_instance_id foreign key (instance_id) references instance (id) on delete restrict on update restrict;
+create index ix_instancesnapshot_instance_id on instancesnapshot (instance_id);
+
+alter table instancesnapshot add constraint fk_instancesnapshot_b_program_version_id foreign key (b_program_version_id) references bprogramversion (id) on delete restrict on update restrict;
+create index ix_instancesnapshot_b_program_version_id on instancesnapshot (b_program_version_id);
+
+alter table instancesnapshot add constraint fk_instancesnapshot_program_id foreign key (program_id) references blob (id) on delete restrict on update restrict;
+
+alter table invitation add constraint fk_invitation_owner_id foreign key (owner_id) references person (id) on delete restrict on update restrict;
+create index ix_invitation_owner_id on invitation (owner_id);
+
+alter table invitation add constraint fk_invitation_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
+create index ix_invitation_project_id on invitation (project_id);
+
+alter table invoice add constraint fk_invoice_product_id foreign key (product_id) references product (id) on delete restrict on update restrict;
+create index ix_invoice_product_id on invoice (product_id);
+
+alter table invoiceitem add constraint fk_invoiceitem_invoice_id foreign key (invoice_id) references invoice (id) on delete restrict on update restrict;
+create index ix_invoiceitem_invoice_id on invoiceitem (invoice_id);
+
+alter table library add constraint fk_library_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
+create index ix_library_project_id on library (project_id);
+
+alter table library_tag add constraint fk_library_tag_library foreign key (library_id) references library (id) on delete restrict on update restrict;
+create index ix_library_tag_library on library_tag (library_id);
+
+alter table library_tag add constraint fk_library_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
+create index ix_library_tag_tag on library_tag (tag_id);
+
+alter table library_hardwaretype add constraint fk_library_hardwaretype_library foreign key (library_id) references library (id) on delete restrict on update restrict;
+create index ix_library_hardwaretype_library on library_hardwaretype (library_id);
+
+alter table library_hardwaretype add constraint fk_library_hardwaretype_hardwaretype foreign key (hardware_type_id) references hardwaretype (id) on delete restrict on update restrict;
+create index ix_library_hardwaretype_hardwaretype on library_hardwaretype (hardware_type_id);
+
+alter table libraryversion add constraint fk_libraryversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
+
+alter table libraryversion add constraint fk_libraryversion_library_id foreign key (library_id) references library (id) on delete restrict on update restrict;
+create index ix_libraryversion_library_id on libraryversion (library_id);
+
+alter table log add constraint fk_log_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
+
+alter table mprograminstanceparameter add constraint fk_mprograminstanceparameter_grid_project_program_snapsho_1 foreign key (grid_project_program_snapshot_id) references mprojectprogramsnapshot (id) on delete restrict on update restrict;
+create index ix_mprograminstanceparameter_grid_project_program_snapsho_1 on mprograminstanceparameter (grid_project_program_snapshot_id);
+
+alter table mprograminstanceparameter add constraint fk_mprograminstanceparameter_grid_program_version_id foreign key (grid_program_version_id) references gridprogramversion (id) on delete restrict on update restrict;
+create index ix_mprograminstanceparameter_grid_program_version_id on mprograminstanceparameter (grid_program_version_id);
+
+alter table mprojectprogramsnapshot add constraint fk_mprojectprogramsnapshot_grid_project_id foreign key (grid_project_id) references gridproject (id) on delete restrict on update restrict;
+create index ix_mprojectprogramsnapshot_grid_project_id on mprojectprogramsnapshot (grid_project_id);
+
+alter table b_program_version_snapshots add constraint fk_b_program_version_snapshots_mprojectprogramsnapshot foreign key (mproject_program_snap_shot_id) references mprojectprogramsnapshot (id) on delete restrict on update restrict;
+create index ix_b_program_version_snapshots_mprojectprogramsnapshot on b_program_version_snapshots (mproject_program_snap_shot_id);
+
+alter table b_program_version_snapshots add constraint fk_b_program_version_snapshots_bprogramversion foreign key (bprogram_version_id) references bprogramversion (id) on delete restrict on update restrict;
+create index ix_b_program_version_snapshots_bprogramversion on b_program_version_snapshots (bprogram_version_id);
+
+alter table notification add constraint fk_notification_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
+create index ix_notification_person_id on notification (person_id);
+
+alter table passwordrecoverytoken add constraint fk_passwordrecoverytoken_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
+
+alter table paymentdetails add constraint fk_paymentdetails_customer_id foreign key (customer_id) references customer (id) on delete restrict on update restrict;
+
+alter table paymentdetails add constraint fk_paymentdetails_productidpaymentdetails foreign key (productidpaymentdetails) references product (id) on delete restrict on update restrict;
+
+alter table person add constraint fk_person_picture_id foreign key (picture_id) references blob (id) on delete restrict on update restrict;
+
+alter table person_role add constraint fk_person_role_person foreign key (person_id) references person (id) on delete restrict on update restrict;
+create index ix_person_role_person on person_role (person_id);
+
+alter table person_role add constraint fk_person_role_role foreign key (role_id) references role (id) on delete restrict on update restrict;
+create index ix_person_role_role on person_role (role_id);
+
+alter table person_permission add constraint fk_person_permission_person foreign key (person_id) references person (id) on delete restrict on update restrict;
+create index ix_person_permission_person on person_permission (person_id);
+
+alter table person_permission add constraint fk_person_permission_permission foreign key (permission_id) references permission (id) on delete restrict on update restrict;
+create index ix_person_permission_permission on person_permission (permission_id);
+
+alter table product add constraint fk_product_customer_id foreign key (customer_id) references customer (id) on delete restrict on update restrict;
+create index ix_product_customer_id on product (customer_id);
+
+alter table productextension add constraint fk_productextension_product_id foreign key (product_id) references product (id) on delete restrict on update restrict;
+create index ix_productextension_product_id on productextension (product_id);
+
+alter table productextension add constraint fk_productextension_tariff_included_id foreign key (tariff_included_id) references tariff (id) on delete restrict on update restrict;
+create index ix_productextension_tariff_included_id on productextension (tariff_included_id);
+
+alter table productextension add constraint fk_productextension_tariff_optional_id foreign key (tariff_optional_id) references tariff (id) on delete restrict on update restrict;
+create index ix_productextension_tariff_optional_id on productextension (tariff_optional_id);
+
+alter table project add constraint fk_project_product_id foreign key (product_id) references product (id) on delete restrict on update restrict;
+create index ix_project_product_id on project (product_id);
+
+alter table project_tag add constraint fk_project_tag_project foreign key (project_id) references project (id) on delete restrict on update restrict;
+create index ix_project_tag_project on project_tag (project_id);
+
+alter table project_tag add constraint fk_project_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
+create index ix_project_tag_tag on project_tag (tag_id);
+
+alter table projectparticipant add constraint fk_projectparticipant_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
+create index ix_projectparticipant_project_id on projectparticipant (project_id);
+
+alter table projectparticipant add constraint fk_projectparticipant_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
+create index ix_projectparticipant_person_id on projectparticipant (person_id);
+
+alter table role_permission add constraint fk_role_permission_role foreign key (role_id) references role (id) on delete restrict on update restrict;
+create index ix_role_permission_role on role_permission (role_id);
+
+alter table role_permission add constraint fk_role_permission_permission foreign key (permission_id) references permission (id) on delete restrict on update restrict;
+create index ix_role_permission_permission on role_permission (permission_id);
+
+alter table updateprocedure add constraint fk_updateprocedure_instance_id foreign key (instance_id) references instancesnapshot (id) on delete restrict on update restrict;
+create index ix_updateprocedure_instance_id on updateprocedure (instance_id);
+
+alter table widget add constraint fk_widget_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
+create index ix_widget_project_id on widget (project_id);
+
+alter table widget add constraint fk_widget_producer_id foreign key (producer_id) references producer (id) on delete restrict on update restrict;
+create index ix_widget_producer_id on widget (producer_id);
+
+alter table widget_tag add constraint fk_widget_tag_widget foreign key (widget_id) references widget (id) on delete restrict on update restrict;
+create index ix_widget_tag_widget on widget_tag (widget_id);
+
+alter table widget_tag add constraint fk_widget_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
+create index ix_widget_tag_tag on widget_tag (tag_id);
+
+alter table widgetversion add constraint fk_widgetversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
+
+alter table widgetversion add constraint fk_widgetversion_widget_id foreign key (widget_id) references widget (id) on delete restrict on update restrict;
+create index ix_widgetversion_widget_id on widgetversion (widget_id);
+
 
 # --- !Downs
 
-drop table if exists ActualizationProcedure cascade;
+alter table if exists authorizationtoken drop constraint if exists fk_authorizationtoken_person_id;
+drop index if exists ix_authorizationtoken_person_id;
 
-drop table if exists BPair cascade;
+alter table if exists bprogram drop constraint if exists fk_bprogram_project_id;
+drop index if exists ix_bprogram_project_id;
 
-drop table if exists BProgram cascade;
+alter table if exists bprogram_tag drop constraint if exists fk_bprogram_tag_bprogram;
+drop index if exists ix_bprogram_tag_bprogram;
 
-drop table if exists BProgramHwGroup cascade;
+alter table if exists bprogram_tag drop constraint if exists fk_bprogram_tag_tag;
+drop index if exists ix_bprogram_tag_tag;
 
-drop table if exists VersionObject_BProgramHwGroup cascade;
+alter table if exists bprogramversion drop constraint if exists fk_bprogramversion_file_id;
 
-drop table if exists BlockoBlock cascade;
+alter table if exists bprogramversion drop constraint if exists fk_bprogramversion_library_id;
+drop index if exists ix_bprogramversion_library_id;
 
-drop table if exists BlockoBlockVersion cascade;
+alter table if exists bprogramversion drop constraint if exists fk_bprogramversion_b_program_id;
+drop index if exists ix_bprogramversion_b_program_id;
 
-drop table if exists Board cascade;
+alter table if exists blob drop constraint if exists fk_blob_boot_loader_id;
 
-drop table if exists BoardGroup_Board cascade;
+alter table if exists block drop constraint if exists fk_block_project_id;
+drop index if exists ix_block_project_id;
 
-drop table if exists BoardGroup cascade;
+alter table if exists block drop constraint if exists fk_block_producer_id;
+drop index if exists ix_block_producer_id;
 
-drop table if exists BootLoader cascade;
+alter table if exists block_tag drop constraint if exists fk_block_tag_block;
+drop index if exists ix_block_tag_block;
 
-drop table if exists CCompilation cascade;
+alter table if exists block_tag drop constraint if exists fk_block_tag_tag;
+drop index if exists ix_block_tag_tag;
 
-drop table if exists CProgram cascade;
+alter table if exists blockversion drop constraint if exists fk_blockversion_file_id;
 
-drop table if exists CProgramUpdatePlan cascade;
+alter table if exists blockversion drop constraint if exists fk_blockversion_block_id;
+drop index if exists ix_blockversion_block_id;
 
-drop table if exists ChangePropertyToken cascade;
+alter table if exists bootloader drop constraint if exists fk_bootloader_hardware_type_id;
+drop index if exists ix_bootloader_hardware_type_id;
 
-drop table if exists CompilationServer cascade;
+alter table if exists bootloader drop constraint if exists fk_bootloader_main_hardware_type_id;
 
-drop table if exists Customer cascade;
+alter table if exists cprogram drop constraint if exists fk_cprogram_project_id;
+drop index if exists ix_cprogram_project_id;
 
-drop table if exists Employee cascade;
+alter table if exists cprogram drop constraint if exists fk_cprogram_hardware_type_id;
+drop index if exists ix_cprogram_hardware_type_id;
 
-drop table if exists FileRecord cascade;
+alter table if exists cprogram drop constraint if exists fk_cprogram_hardware_type_default_id;
 
-drop table if exists FloatingPersonToken cascade;
+alter table if exists cprogram drop constraint if exists fk_cprogram_hardware_type_test_id;
 
-drop table if exists Garfield cascade;
+alter table if exists cprogram drop constraint if exists fk_cprogram_example_library_id;
+drop index if exists ix_cprogram_example_library_id;
 
-drop table if exists GridTerminal cascade;
+alter table if exists cprogram_tag drop constraint if exists fk_cprogram_tag_cprogram;
+drop index if exists ix_cprogram_tag_cprogram;
 
-drop table if exists GridWidget cascade;
+alter table if exists cprogram_tag drop constraint if exists fk_cprogram_tag_tag;
+drop index if exists ix_cprogram_tag_tag;
 
-drop table if exists GridWidgetVersion cascade;
+alter table if exists cprogramversion drop constraint if exists fk_cprogramversion_file_id;
 
-drop table if exists HomerInstance cascade;
+alter table if exists cprogramversion drop constraint if exists fk_cprogramversion_c_program_id;
+drop index if exists ix_cprogramversion_c_program_id;
 
-drop table if exists HomerInstanceRecord cascade;
+alter table if exists cprogramversion drop constraint if exists fk_cprogramversion_default_program_id;
 
-drop table if exists HomerServer cascade;
+alter table if exists changepropertytoken drop constraint if exists fk_changepropertytoken_person_id;
 
-drop table if exists Invitation cascade;
+alter table if exists compilation drop constraint if exists fk_compilation_c_compilation_version;
 
-drop table if exists Invoice cascade;
+alter table if exists compilation drop constraint if exists fk_compilation_bin_compilation_file_id;
 
-drop table if exists InvoiceItem cascade;
+alter table if exists employee drop constraint if exists fk_employee_person_id;
+drop index if exists ix_employee_person_id;
 
-drop table if exists Library cascade;
+alter table if exists employee drop constraint if exists fk_employee_customer_id;
+drop index if exists ix_employee_customer_id;
 
-drop table if exists Library_TypeOfBoard cascade;
+alter table if exists gridprogram drop constraint if exists fk_gridprogram_grid_project_id;
+drop index if exists ix_gridprogram_grid_project_id;
 
-drop table if exists Log cascade;
+alter table if exists gridprogram_tag drop constraint if exists fk_gridprogram_tag_gridprogram;
+drop index if exists ix_gridprogram_tag_gridprogram;
 
-drop table if exists MProgram cascade;
+alter table if exists gridprogram_tag drop constraint if exists fk_gridprogram_tag_tag;
+drop index if exists ix_gridprogram_tag_tag;
 
-drop table if exists MProgramInstanceParameter cascade;
+alter table if exists gridprogramversion drop constraint if exists fk_gridprogramversion_file_id;
 
-drop table if exists MProject cascade;
+alter table if exists gridprogramversion drop constraint if exists fk_gridprogramversion_grid_program_id;
+drop index if exists ix_gridprogramversion_grid_program_id;
 
-drop table if exists MProjectProgramSnapShot cascade;
+alter table if exists gridproject drop constraint if exists fk_gridproject_project_id;
+drop index if exists ix_gridproject_project_id;
+
+alter table if exists gridproject_tag drop constraint if exists fk_gridproject_tag_gridproject;
+drop index if exists ix_gridproject_tag_gridproject;
+
+alter table if exists gridproject_tag drop constraint if exists fk_gridproject_tag_tag;
+drop index if exists ix_gridproject_tag_tag;
+
+alter table if exists gridterminal drop constraint if exists fk_gridterminal_person_id;
+drop index if exists ix_gridterminal_person_id;
+
+alter table if exists hardware drop constraint if exists fk_hardware_hardware_type_id;
+drop index if exists ix_hardware_hardware_type_id;
+
+alter table if exists hardware drop constraint if exists fk_hardware_actual_c_program_version_id;
+drop index if exists ix_hardware_actual_c_program_version_id;
+
+alter table if exists hardware drop constraint if exists fk_hardware_actual_backup_c_program_version_id;
+drop index if exists ix_hardware_actual_backup_c_program_version_id;
+
+alter table if exists hardware drop constraint if exists fk_hardware_actual_boot_loader_id;
+drop index if exists ix_hardware_actual_boot_loader_id;
+
+alter table if exists hardware drop constraint if exists fk_hardware_picture_id;
+
+alter table if exists hardware drop constraint if exists fk_hardware_project_id;
+drop index if exists ix_hardware_project_id;
+
+alter table if exists hardware_tag drop constraint if exists fk_hardware_tag_hardware;
+drop index if exists ix_hardware_tag_hardware;
+
+alter table if exists hardware_tag drop constraint if exists fk_hardware_tag_tag;
+drop index if exists ix_hardware_tag_tag;
+
+alter table if exists hardware_hardwaregroup drop constraint if exists fk_hardware_hardwaregroup_hardware;
+drop index if exists ix_hardware_hardwaregroup_hardware;
+
+alter table if exists hardware_hardwaregroup drop constraint if exists fk_hardware_hardwaregroup_hardwaregroup;
+drop index if exists ix_hardware_hardwaregroup_hardwaregroup;
+
+alter table if exists hardwarefeature_hardwaretype drop constraint if exists fk_hardwarefeature_hardwaretype_hardwarefeature;
+drop index if exists ix_hardwarefeature_hardwaretype_hardwarefeature;
+
+alter table if exists hardwarefeature_hardwaretype drop constraint if exists fk_hardwarefeature_hardwaretype_hardwaretype;
+drop index if exists ix_hardwarefeature_hardwaretype_hardwaretype;
+
+alter table if exists hardwaregroup drop constraint if exists fk_hardwaregroup_project_id;
+drop index if exists ix_hardwaregroup_project_id;
+
+alter table if exists hardwaretype drop constraint if exists fk_hardwaretype_producer_id;
+drop index if exists ix_hardwaretype_producer_id;
+
+alter table if exists hardwaretype drop constraint if exists fk_hardwaretype_processor_id;
+drop index if exists ix_hardwaretype_processor_id;
+
+alter table if exists hardwaretype drop constraint if exists fk_hardwaretype_picture_id;
+
+alter table if exists hardwareupdate drop constraint if exists fk_hardwareupdate_actualization_procedure_id;
+drop index if exists ix_hardwareupdate_actualization_procedure_id;
+
+alter table if exists hardwareupdate drop constraint if exists fk_hardwareupdate_hardware_id;
+drop index if exists ix_hardwareupdate_hardware_id;
+
+alter table if exists hardwareupdate drop constraint if exists fk_hardwareupdate_c_program_version_for_update_id;
+drop index if exists ix_hardwareupdate_c_program_version_for_update_id;
+
+alter table if exists hardwareupdate drop constraint if exists fk_hardwareupdate_bootloader_id;
+drop index if exists ix_hardwareupdate_bootloader_id;
+
+alter table if exists hardwareupdate drop constraint if exists fk_hardwareupdate_binary_file_id;
+drop index if exists ix_hardwareupdate_binary_file_id;
+
+alter table if exists homerserver drop constraint if exists fk_homerserver_project_id;
+drop index if exists ix_homerserver_project_id;
+
+alter table if exists instance drop constraint if exists fk_instance_server_main_id;
+drop index if exists ix_instance_server_main_id;
+
+alter table if exists instance drop constraint if exists fk_instance_server_backup_id;
+drop index if exists ix_instance_server_backup_id;
+
+alter table if exists instance drop constraint if exists fk_instance_project_id;
+drop index if exists ix_instance_project_id;
+
+alter table if exists instance drop constraint if exists fk_instance_b_program_id;
+drop index if exists ix_instance_b_program_id;
+
+alter table if exists instance_tag drop constraint if exists fk_instance_tag_instance;
+drop index if exists ix_instance_tag_instance;
+
+alter table if exists instance_tag drop constraint if exists fk_instance_tag_tag;
+drop index if exists ix_instance_tag_tag;
+
+alter table if exists instancesnapshot drop constraint if exists fk_instancesnapshot_instance_id;
+drop index if exists ix_instancesnapshot_instance_id;
+
+alter table if exists instancesnapshot drop constraint if exists fk_instancesnapshot_b_program_version_id;
+drop index if exists ix_instancesnapshot_b_program_version_id;
+
+alter table if exists instancesnapshot drop constraint if exists fk_instancesnapshot_program_id;
+
+alter table if exists invitation drop constraint if exists fk_invitation_owner_id;
+drop index if exists ix_invitation_owner_id;
+
+alter table if exists invitation drop constraint if exists fk_invitation_project_id;
+drop index if exists ix_invitation_project_id;
+
+alter table if exists invoice drop constraint if exists fk_invoice_product_id;
+drop index if exists ix_invoice_product_id;
+
+alter table if exists invoiceitem drop constraint if exists fk_invoiceitem_invoice_id;
+drop index if exists ix_invoiceitem_invoice_id;
+
+alter table if exists library drop constraint if exists fk_library_project_id;
+drop index if exists ix_library_project_id;
+
+alter table if exists library_tag drop constraint if exists fk_library_tag_library;
+drop index if exists ix_library_tag_library;
+
+alter table if exists library_tag drop constraint if exists fk_library_tag_tag;
+drop index if exists ix_library_tag_tag;
+
+alter table if exists library_hardwaretype drop constraint if exists fk_library_hardwaretype_library;
+drop index if exists ix_library_hardwaretype_library;
+
+alter table if exists library_hardwaretype drop constraint if exists fk_library_hardwaretype_hardwaretype;
+drop index if exists ix_library_hardwaretype_hardwaretype;
+
+alter table if exists libraryversion drop constraint if exists fk_libraryversion_file_id;
+
+alter table if exists libraryversion drop constraint if exists fk_libraryversion_library_id;
+drop index if exists ix_libraryversion_library_id;
+
+alter table if exists log drop constraint if exists fk_log_file_id;
+
+alter table if exists mprograminstanceparameter drop constraint if exists fk_mprograminstanceparameter_grid_project_program_snapsho_1;
+drop index if exists ix_mprograminstanceparameter_grid_project_program_snapsho_1;
+
+alter table if exists mprograminstanceparameter drop constraint if exists fk_mprograminstanceparameter_grid_program_version_id;
+drop index if exists ix_mprograminstanceparameter_grid_program_version_id;
+
+alter table if exists mprojectprogramsnapshot drop constraint if exists fk_mprojectprogramsnapshot_grid_project_id;
+drop index if exists ix_mprojectprogramsnapshot_grid_project_id;
+
+alter table if exists b_program_version_snapshots drop constraint if exists fk_b_program_version_snapshots_mprojectprogramsnapshot;
+drop index if exists ix_b_program_version_snapshots_mprojectprogramsnapshot;
+
+alter table if exists b_program_version_snapshots drop constraint if exists fk_b_program_version_snapshots_bprogramversion;
+drop index if exists ix_b_program_version_snapshots_bprogramversion;
+
+alter table if exists notification drop constraint if exists fk_notification_person_id;
+drop index if exists ix_notification_person_id;
+
+alter table if exists passwordrecoverytoken drop constraint if exists fk_passwordrecoverytoken_person_id;
+
+alter table if exists paymentdetails drop constraint if exists fk_paymentdetails_customer_id;
+
+alter table if exists paymentdetails drop constraint if exists fk_paymentdetails_productidpaymentdetails;
+
+alter table if exists person drop constraint if exists fk_person_picture_id;
+
+alter table if exists person_role drop constraint if exists fk_person_role_person;
+drop index if exists ix_person_role_person;
+
+alter table if exists person_role drop constraint if exists fk_person_role_role;
+drop index if exists ix_person_role_role;
+
+alter table if exists person_permission drop constraint if exists fk_person_permission_person;
+drop index if exists ix_person_permission_person;
+
+alter table if exists person_permission drop constraint if exists fk_person_permission_permission;
+drop index if exists ix_person_permission_permission;
+
+alter table if exists product drop constraint if exists fk_product_customer_id;
+drop index if exists ix_product_customer_id;
+
+alter table if exists productextension drop constraint if exists fk_productextension_product_id;
+drop index if exists ix_productextension_product_id;
+
+alter table if exists productextension drop constraint if exists fk_productextension_tariff_included_id;
+drop index if exists ix_productextension_tariff_included_id;
+
+alter table if exists productextension drop constraint if exists fk_productextension_tariff_optional_id;
+drop index if exists ix_productextension_tariff_optional_id;
+
+alter table if exists project drop constraint if exists fk_project_product_id;
+drop index if exists ix_project_product_id;
+
+alter table if exists project_tag drop constraint if exists fk_project_tag_project;
+drop index if exists ix_project_tag_project;
+
+alter table if exists project_tag drop constraint if exists fk_project_tag_tag;
+drop index if exists ix_project_tag_tag;
+
+alter table if exists projectparticipant drop constraint if exists fk_projectparticipant_project_id;
+drop index if exists ix_projectparticipant_project_id;
+
+alter table if exists projectparticipant drop constraint if exists fk_projectparticipant_person_id;
+drop index if exists ix_projectparticipant_person_id;
+
+alter table if exists role_permission drop constraint if exists fk_role_permission_role;
+drop index if exists ix_role_permission_role;
+
+alter table if exists role_permission drop constraint if exists fk_role_permission_permission;
+drop index if exists ix_role_permission_permission;
+
+alter table if exists updateprocedure drop constraint if exists fk_updateprocedure_instance_id;
+drop index if exists ix_updateprocedure_instance_id;
+
+alter table if exists widget drop constraint if exists fk_widget_project_id;
+drop index if exists ix_widget_project_id;
+
+alter table if exists widget drop constraint if exists fk_widget_producer_id;
+drop index if exists ix_widget_producer_id;
+
+alter table if exists widget_tag drop constraint if exists fk_widget_tag_widget;
+drop index if exists ix_widget_tag_widget;
+
+alter table if exists widget_tag drop constraint if exists fk_widget_tag_tag;
+drop index if exists ix_widget_tag_tag;
+
+alter table if exists widgetversion drop constraint if exists fk_widgetversion_file_id;
+
+alter table if exists widgetversion drop constraint if exists fk_widgetversion_widget_id;
+drop index if exists ix_widgetversion_widget_id;
+
+drop table if exists authorizationtoken cascade;
+
+drop table if exists bprogram cascade;
+
+drop table if exists bprogram_tag cascade;
+
+drop table if exists bprogramversion cascade;
+
+drop table if exists blob cascade;
+
+drop table if exists block cascade;
+
+drop table if exists block_tag cascade;
+
+drop table if exists blockversion cascade;
+
+drop table if exists bootloader cascade;
+
+drop table if exists cprogram cascade;
+
+drop table if exists cprogram_tag cascade;
+
+drop table if exists cprogramversion cascade;
+
+drop table if exists changepropertytoken cascade;
+
+drop table if exists compilation cascade;
+
+drop table if exists compilationserver cascade;
+
+drop table if exists customer cascade;
+
+drop table if exists employee cascade;
+
+drop table if exists garfield cascade;
+
+drop table if exists gridprogram cascade;
+
+drop table if exists gridprogram_tag cascade;
+
+drop table if exists gridprogramversion cascade;
+
+drop table if exists gridproject cascade;
+
+drop table if exists gridproject_tag cascade;
+
+drop table if exists gridterminal cascade;
+
+drop table if exists hardware cascade;
+
+drop table if exists hardware_tag cascade;
+
+drop table if exists hardware_hardwaregroup cascade;
+
+drop table if exists hardwarefeature cascade;
+
+drop table if exists hardwarefeature_hardwaretype cascade;
+
+drop table if exists hardwaregroup cascade;
+
+drop table if exists hardwaretype cascade;
+
+drop table if exists hardwareupdate cascade;
+
+drop table if exists homerserver cascade;
+
+drop table if exists instance cascade;
+
+drop table if exists instance_tag cascade;
+
+drop table if exists instancesnapshot cascade;
+
+drop table if exists invitation cascade;
+
+drop table if exists invoice cascade;
+
+drop table if exists invoiceitem cascade;
+
+drop table if exists library cascade;
+
+drop table if exists library_tag cascade;
+
+drop table if exists library_hardwaretype cascade;
+
+drop table if exists libraryversion cascade;
+
+drop table if exists log cascade;
+
+drop table if exists mprograminstanceparameter cascade;
+
+drop table if exists mprojectprogramsnapshot cascade;
 
 drop table if exists b_program_version_snapshots cascade;
 
-drop table if exists Notification cascade;
+drop table if exists notification cascade;
 
-drop table if exists PasswordRecoveryToken cascade;
+drop table if exists passwordrecoverytoken cascade;
 
-drop table if exists PaymentDetails cascade;
+drop table if exists paymentdetails cascade;
 
-drop table if exists Permission cascade;
+drop table if exists permission cascade;
 
-drop table if exists Person_Permission cascade;
+drop table if exists person cascade;
 
-drop table if exists SecurityRole_Permission cascade;
+drop table if exists person_role cascade;
 
-drop table if exists Person cascade;
+drop table if exists person_permission cascade;
 
-drop table if exists Person_SecurityRole cascade;
+drop table if exists processor cascade;
 
-drop table if exists Processor cascade;
+drop table if exists producer cascade;
 
-drop table if exists Producer cascade;
+drop table if exists product cascade;
 
-drop table if exists Product cascade;
+drop table if exists productextension cascade;
 
-drop table if exists ProductExtension cascade;
+drop table if exists project cascade;
 
-drop table if exists Project cascade;
+drop table if exists project_tag cascade;
 
-drop table if exists ProjectParticipant cascade;
+drop table if exists projectparticipant cascade;
 
-drop table if exists RequestLog cascade;
+drop table if exists role cascade;
 
-drop table if exists SecurityRole cascade;
+drop table if exists role_permission cascade;
 
-drop table if exists ServerError cascade;
+drop table if exists servererror cascade;
 
-drop table if exists Tariff cascade;
+drop table if exists tag cascade;
 
-drop table if exists TypeOfBlock cascade;
+drop table if exists tariff cascade;
 
-drop table if exists TypeOfBoard cascade;
+drop table if exists updateprocedure cascade;
 
-drop table if exists BoardFeature_TypeOfBoard cascade;
+drop table if exists validationtoken cascade;
 
-drop table if exists BoardFeature cascade;
+drop table if exists widget cascade;
 
-drop table if exists TypeOfBoardBatch cascade;
+drop table if exists widget_tag cascade;
 
-drop table if exists TypeOfWidget cascade;
-
-drop table if exists ValidationToken cascade;
-
-drop table if exists VersionObject cascade;
-
-drop sequence if exists InvoiceItem_seq;
-
-drop sequence if exists PaymentDetails_seq;
+drop table if exists widgetversion cascade;
 

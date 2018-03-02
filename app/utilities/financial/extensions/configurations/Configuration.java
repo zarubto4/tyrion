@@ -1,69 +1,55 @@
 package utilities.financial.extensions.configurations;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import controllers._BaseFormFactory;
 import play.data.Form;
 import play.i18n.Lang;
 import play.libs.Json;
-import utilities.enums.Enum_ExtensionType;
+import utilities.enums.ExtensionType;
+import utilities.model.BaseModel;
+import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_online_status;
 
 
 public interface Configuration {
 
+    /**
+     * _BaseFormFactory
+     */
 
-
-    static Object getConfiguration(Enum_ExtensionType type, String configuration){
-
-        Form<?> form;
-
+    static Object getConfiguration(ExtensionType type, String configuration) {
         switch (type) {
 
             case project:{
-                form = Form.form(Configuration_Project.class).bind(Json.parse(configuration));
-                break;
+                return BaseModel.baseFormFactory.formFromJsonWithValidation(Configuration_Project.class, Json.parse(configuration));
             }
 
             case database:{
-                form = Form.form(Configuration_Database.class).bind(Json.parse(configuration));
-                break;
+                return BaseModel.baseFormFactory.formFromJsonWithValidation(Configuration_Database.class, Json.parse(configuration));
             }
 
             case log:{
-                form = Form.form(Configuration_Log.class).bind(Json.parse(configuration));
-                break;
+                return BaseModel.baseFormFactory.formFromJsonWithValidation(Configuration_Log.class, Json.parse(configuration));
             }
 
             case rest_api:{
-                form = Form.form(Configuration_RestApi.class).bind(Json.parse(configuration));
-                break;
+                return BaseModel.baseFormFactory.formFromJsonWithValidation(Configuration_RestApi.class, Json.parse(configuration));
             }
 
             case support:{
-                form = Form.form(Configuration_Support.class).bind(Json.parse(configuration));
-                break;
+                return BaseModel.baseFormFactory.formFromJsonWithValidation(Configuration_Support.class, Json.parse(configuration));
             }
 
             case instance:{
-                form = Form.form(Configuration_Instance.class).bind(Json.parse(configuration));
-                break;
+                return BaseModel.baseFormFactory.formFromJsonWithValidation(Configuration_Instance.class, Json.parse(configuration));
             }
 
             case homer_server:{
-                form = Form.form(Configuration_HomerServer.class).bind(Json.parse(configuration));
-                break;
+                return BaseModel.baseFormFactory.formFromJsonWithValidation(Configuration_Project.class, Json.parse(configuration));
             }
 
             case participant:{
-                form = Form.form(Configuration_Participant.class).bind(Json.parse(configuration));
-                break;
+                return BaseModel.baseFormFactory.formFromJsonWithValidation(Configuration_Participant.class, Json.parse(configuration));
             }
 
             default: throw new IllegalStateException("Extension type is unknown.");
         }
-
-        if(form.hasErrors()) {
-            throw new IllegalStateException("Error parsing product configuration. Errors: " + form.errorsAsJson(Lang.forCode("en-US")));
-        }
-
-        return form.get();
-
     }
 }

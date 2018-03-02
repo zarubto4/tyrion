@@ -1,81 +1,105 @@
 package controllers;
 
+import akka.actor.ActorRef;
+import akka.actor.ActorSystem;
+import akka.stream.Materializer;
+import com.typesafe.config.Config;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import models.Model_CompilationServer;
-import models.Model_Person;
 import models.Model_HomerServer;
+import models.Model_Person;
+import org.ehcache.Cache;
+import play.libs.F;
 import play.libs.Json;
-import play.mvc.Controller;
-import play.mvc.Result;
-import play.mvc.Security;
-import play.mvc.WebSocket;
-import utilities.logger.Class_Logger;
-import utilities.logger.ServerLogger;
-import utilities.login_entities.Secured_API;
-import utilities.login_entities.TokenCache;
-import utilities.response.GlobalResult;
-import utilities.response.response_objects.Result_Unauthorized;
-import utilities.swagger.outboundClass.Swagger_Websocket_Token;
-import web_socket.message_objects.common.WS_Token;
-import web_socket.message_objects.common.service_class.WS_Message_Tyrion_restart_echo;
-import web_socket.message_objects.compilator_with_tyrion.WS_Message_Ping_compilation_server;
-import web_socket.message_objects.homer_with_tyrion.WS_Message_Homer_ping;
-import web_socket.services.*;
+import play.libs.streams.ActorFlow;
+import play.mvc.*;
+import responses.Result_InternalServerError;
+import responses.Result_Unauthorized;
+import utilities.authentication.Authentication;
+import utilities.logger.Logger;
+import utilities.swagger.output.Swagger_Websocket_Token;
+import websocket.interfaces.WS_Portal;
+import websocket.interfaces.WS_Compiler;
+import websocket.interfaces.WS_Homer;
+import websocket.interfaces.WS_PortalSingle;
+import websocket.messages.compilator_with_tyrion.WS_Message_Ping_compilation_server;
+import websocket.messages.homer_with_tyrion.WS_Message_Homer_ping;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import javax.inject.Inject;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+
+import javax.inject.Named;
+
+import static akka.pattern.PatternsCS.ask;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class Controller_WebSocket extends Controller {
+public class Controller_WebSocket extends _BaseController {
 
-    
-// LOGGER ##############################################################################################################
+/* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Controller_WebSocket.class);
-    
-/* VALUES  -------------------------------------------------------------------------------------------------------------*/
+    private static final Logger logger = new Logger(Controller_WebSocket.class);
 
-    /*
-     *      Připojené servery, kde běží Homer instance jsou drženy v homer_cloud_server. Jde jen o jednoduché čisté spojení
-     *      a několik servisních metod. Ale aby bylo dosaženo toho, že Homer jak v cloudu tak i na fyzickém počítači byl obsluhován stejně
-     *      je redundantně (jen ukazateli) vytvořeno virtuální spojení na každou instanci blocko programu v cloudu.
-     *
-     *      <Model_HomerServer.id, WS_HomerServer>
+/* STATIC --------------------------------------------------------------------------------------------------------------*/
+
+    /**
+     * Holds all connections of Homer servers
      */
-    public static Map<String, WS_HomerServer> homer_servers = new HashMap<>();                  // Sem se vkládají servery z not_synchronize_homer_servers, kde úspěšně proběhla synchronizace
-    public static Map<String, WS_HomerServer> not_synchronize_homer_servers = new HashMap<>();  // Sem se vkládají servery, které jsou připojené, ale ještě nejsou synchronizované
+    public static Map<UUID, WS_Homer> homers = new HashMap<>();
 
-    /*
-     *      Komnpilační servery, které mají být při kompilaci rovnoměrně zatěžovány - nastřídačku. Ale předpokladem je, že všechny dělají vždy totéž.
-     *
-     *      <Model_CompilationServer.id, WS_CompilerServer>
+    /**
+     * Holds all connections of Homer servers
      */
-    public static Map<String, WS_CompilerServer> compiler_cloud_servers = new HashMap<>();
+    public static Map<UUID, WS_Homer> homers_not_sync = new HashMap<>();
 
-    /*
-     *      Becki (frontend) spojení na realtime synchronizaci blocka, objektů, notifikací atd.
-     *      Je zde podporován režim multipřihlášení. To znamená, že Uživatel se přihlásí na dvou počítačích. Objekt WS_Becki_Website obsahuje pole připojení
-     *      jednotlivých počítačů a je vrstvou, zakrývající exekutivitu odeslání - udělá to že když má odeslat zprávu, jen projede for cyklem všechny obejkty.
-     *
-     *      <Person.id, WS_Becki_Website>
-     *
-     *     (Person_id - Identificator, List of Websocket connections kde Identificator je Token přihlášeného uživatele, který Becki dostane při login)
+    /**
+     * Holds all connections of Compiler servers
      */
-    public static Map<String, WS_Becki_Website> becki_website = new HashMap<>();
+    public static Map<UUID, WS_Compiler> compilers = new HashMap<>();
 
-
-    /*
-     *      Tokeny pro ověření uživatele
+    /**
+     * Holds all connections of Becki portals
      */
-    public static TokenCache tokenCache = new TokenCache( (long) 5, (long) 500, 50000);
+    public static Map<UUID, WS_Portal> portals = new HashMap<>();
+
+    /**
+     * Holds person connection tokens and ids
+     */
+    public static Cache<UUID, UUID> tokenCache;
+
+    /**
+     * Closes all WebSocket connections
+     */
+    public static void close() {
+
+        logger.warn("close - closing all WebSockets");
+
+        homers.forEach((id, homer) -> homer.close());
+        homers_not_sync.forEach((id, homer) -> homer.close());
+        compilers.forEach((id, compiler) -> compiler.close());
+        portals.forEach((id, portal) -> portal.close());
+
+        logger.info("close - all WebSockets closed");
+    }
+
+    private final ActorSystem actorSystem;
+    private final Materializer materializer;
+    private Config config;
+    private static List<String> list_of_portal_alowed_url_connection = null;
 
 
 
-/* PUBLIC API ----------------------------------------------------------------------------------------------------------*/
+    @Inject
+    public Controller_WebSocket(ActorSystem actorSystem, Materializer materializer, Config config) {
+        this.actorSystem = actorSystem;
+        this.materializer = materializer;
+        this.config = config;
+    }
+
+    /* PUBLIC API ----------------------------------------------------------------------------------------------------------*/
 
     @ApiOperation(value = "get Websocket Access Token",
             tags = {"Access", "WebSocket"},
@@ -84,234 +108,190 @@ public class Controller_WebSocket extends Controller {
                     "lost is token deactivated also. ",
             produces = "application/json",
             consumes = "text/plain",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Token successfully generated", response = Swagger_Websocket_Token.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",         response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Token successfully generated",  response = Swagger_Websocket_Token.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",          response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",             response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(Secured_API.class)
+    @Security.Authenticated(Authentication.class)
     public Result get_Websocket_token() {
         try {
+                UUID token = UUID.randomUUID();
 
-            String web_socket_token = UUID.randomUUID().toString();
+                tokenCache.put(token, personId());
 
-            WS_Token token = new WS_Token();
-            token.token = web_socket_token;
-            token.person_id = Controller_Security.get_person_id();
+                Swagger_Websocket_Token swagger_websocket_token = new Swagger_Websocket_Token();
+                swagger_websocket_token.websocket_token = token;
 
-            tokenCache.put(web_socket_token, token);
+                return ok(Json.toJson(swagger_websocket_token));
 
-            Swagger_Websocket_Token swagger_websocket_token = new Swagger_Websocket_Token();
-            swagger_websocket_token.websocket_token = web_socket_token;
-
-            return GlobalResult.result_ok(Json.toJson(swagger_websocket_token));
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
-
-
-
-/* WEB-SOCKET CONNECTION -----------------------------------------------------------------------------------------------*/
 
     @ApiOperation(value = "Homer Server Connection", hidden = true, tags = {"WebSocket"})
-    public  WebSocket<String>  homer_cloud_server_connection(String connection_identificator){
-        try{
+    public WebSocket homer(String token) {
+        return WebSocket.Json.acceptOrResult(request -> {
+            try {
 
-            terminal_logger.debug("homer_cloud_server_connection:: Incoming connection: Server:  "+ connection_identificator);
+                logger.trace("homer - incoming connection: " + token);
 
-            //Find object (only ID)
-            Model_HomerServer homer_server_selected = Model_HomerServer.find.where().eq("connection_identificator", connection_identificator).select("id").findUnique();
+                //Find object (only ID)
+                Model_HomerServer homer = Model_HomerServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
+                if(homer != null){
+                    if (homers.containsKey(homer.id)) {
+                        logger.warn("homer - server is already connected, trying to ping previous connection");
 
-
-            if(homer_server_selected== null){
-                // Připojím se
-                terminal_logger.warn("homer_cloud_server_connection:: Incoming connection: Server:  "+ connection_identificator + " is not registred in database!!!!!");
-                return WebSocket.reject(forbidden("Server side error - already connected"));
-            }
-
-            // Get Object from Cache
-            Model_HomerServer homer_server =  Model_HomerServer.get_byId(homer_server_selected.id.toString());
-
-            if(homer_servers.containsKey(homer_server.id.toString())) {
-                terminal_logger.warn("homer_cloud_server_connection::  Server is connected -> Tyrion try to send ping");
-
-                WS_Message_Homer_ping result = homer_server.ping();
-                if(!result.status.equals("success")){
-                    terminal_logger.error("homer_cloud_server_connection:: Ping Failed - Tyrion remove previous connection");
-                    if(homer_servers.containsKey(homer_server.id.toString())){
-                        homer_servers.get(homer_server.id.toString()).onClose();
-                    }
-                    return null;
-                }
-
-                terminal_logger.warn("homer_cloud_server_connection:: Connection:: Server is already connected and working!! Its prohibited connected to Tyrion with same name");
-                return WebSocket.reject(forbidden("Server side error - already connected"));
-            }
-
-
-            terminal_logger.trace("homer_cloud_server_connection:: Tyrion initialize connection for Homer Server");
-            WS_HomerServer server = new WS_HomerServer(homer_server);
-            not_synchronize_homer_servers.put(homer_server.id.toString(), server);
-
-            // Připojím se
-            terminal_logger.trace("homer_cloud_server_connection:: Connection is successful");
-            WebSocket<String> webSocket = server.connection();
-
-            terminal_logger.trace("homer_cloud_server_connection:: Successfully connected");
-            return webSocket;
-
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return WebSocket.reject(forbidden());
-        }
-    }
-
-    @ApiOperation(value = "Compilation Server Connection", hidden = true, tags = {"WebSocket"})
-    public  WebSocket<String> code_server_connection(String connection_identificator){
-        try{
-
-            terminal_logger.debug("code_server_connection:: Server is connecting. Server: "+ connection_identificator);
-
-            terminal_logger.trace("code_server_connection:: Control Server and its unique names!");
-
-            //Find object (only ID)
-            Model_CompilationServer cloud_compilation_server_selected = Model_CompilationServer.find.where().eq("connection_identificator", connection_identificator).select("id").findUnique();
-
-            if(cloud_compilation_server_selected == null) {
-                terminal_logger.warn("code_server_connection:: unrecognized identificator {}", connection_identificator);
-                return WebSocket.reject(forbidden("Server side error - unrecognized name"));
-            }
-
-            Model_CompilationServer cloud_compilation_server =  Model_CompilationServer.get_byId(cloud_compilation_server_selected.id.toString());
-
-
-            if(compiler_cloud_servers.containsKey(cloud_compilation_server.id.toString())) {
-
-                try {
-                    terminal_logger.warn("code_server_connection:: At Tyrion is already connected cloud_blocko_server compilation of the same name - will not allow another connection");
-
-                    WS_CompilerServer ws_compilerServer = compiler_cloud_servers.get(cloud_compilation_server.id.toString());
-                    WS_Message_Ping_compilation_server result = ws_compilerServer.server.ping();
-                    if (!result.status.equals("success")) {
-                        terminal_logger.warn("code_server_connection:: Ping Failed - Tyrion remove previous connection");
-                        if (compiler_cloud_servers.containsKey(cloud_compilation_server.id.toString())){
-                            compiler_cloud_servers.get(cloud_compilation_server.id.toString()).onClose();
+                        WS_Message_Homer_ping result = homer.ping();
+                        if(!result.status.equals("success")){
+                            logger.error("homer - ping failed, removing previous connection");
+                            homers.get(homer.id).close();
+                        } else {
+                            logger.warn("homer - server is already connected, connection is working, cannot connect twice");
+                            return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
                         }
-                        return null;
                     }
 
-                    terminal_logger.warn("code_server_connection:: Server is already connected and working!! Its prohibited connected to Tyrion with same unique name");
-                    return WebSocket.reject(forbidden("Server side error - already connected"));
+                    logger.info("homer - connection was successful");
+                    return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_Homer.props(actorRef, homer.id), actorSystem, materializer)));
 
-                }catch (NullPointerException e){
-
-                    terminal_logger.warn("code_server_connection:: Ping Failed - Tyrion remove previous connection");
-                    if(compiler_cloud_servers.containsKey(cloud_compilation_server.id.toString())) compiler_cloud_servers.get(cloud_compilation_server.id.toString()).onClose();
-
+                } else {
+                    logger.warn("homer - server with token: {} is not registered in the database, rejecting connection wtih token: {}", token);
                 }
+
+            } catch (Exception e) {
+                logger.internalServerError(e);
             }
 
-            // Inicializuji Websocket pro Homera
-            WS_CompilerServer server = new WS_CompilerServer(cloud_compilation_server);
+            return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
+        });
+    }
 
-            cloud_compilation_server.check_after_connection();
+    @ApiOperation(value = "Compiler Server Connection", hidden = true, tags = {"WebSocket"})
+    public WebSocket compiler(String token) {
+        return WebSocket.Json.acceptOrResult(request -> {
+            try {
 
-            // Připojím se
-            terminal_logger.debug("code_server_connection:: Sever connect");
-            return server.connection();
+                logger.debug("compiler - incoming connection: {}", token);
 
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return WebSocket.reject(forbidden("Server side error"));
+                //Find object (only ID)
+                Model_CompilationServer compiler = Model_CompilationServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
+                if(compiler != null){
+
+                    if (compilers.containsKey(compiler.id)) {
+                        logger.error("compiler - server is already connected, trying to ping previous connection");
+
+                        WS_Message_Ping_compilation_server result = compiler.ping();
+
+                        System.out.println("Error::" + result.error );
+                        if(!result.status.equals("success") && !result.error.equals("Missing field code.")){
+                            logger.error("compiler - ping failed, removing previous connection");
+                            compilers.get(compiler.id).close();
+                        } else {
+                            logger.warn("compiler - server is already connected, connection is working, cannot connect twice");
+                            return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
+                        }
+                    }
+
+                    logger.info("compiler - connection was successful");
+                    return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_Compiler.props(actorRef, compiler.id), actorSystem, materializer)));
+
+                } else {
+                    logger.warn("compiler - server with token: {} is not registered in the database, rejecting token: {}", token);
+                }
+
+            } catch (Exception e) {
+                logger.internalServerError(e);
+            }
+
+            return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
+        });
+    }
+
+    @ApiOperation(value = "Portal Server Connection", hidden = true, tags = {"WebSocket"})
+    public WebSocket portal(String token_in_string) {
+        return WebSocket.Json.acceptOrResult(request -> {
+            try {
+                UUID token = UUID.fromString(token_in_string);
+
+                logger.trace("portal - incoming connection: {}", token);
+
+                Model_Person person;
+
+                if (sameOriginCheck(request)) {
+
+                    if (tokenCache.containsKey(token) && (person = Model_Person.getById(tokenCache.get(token))) != null) {
+
+                        WS_Portal portal;
+
+                        if (portals.containsKey(person.id)) {
+                            portal = portals.get(person.id);
+                        } else {
+                            portal =  new WS_Portal(person.id);
+                        }
+
+                        tokenCache.remove(token);
+
+                        if (!portal.all_person_connections.containsKey(token)) {
+
+                            return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_PortalSingle.props(actorRef, portal, token), actorSystem, materializer)));
+
+                        } else {
+                            logger.info("portal - rejecting connection: {}, already established", token);
+                        }
+                    } else {
+                        logger.info("portal - rejecting connection: {}, token is expired or person not found", token);
+                    }
+                } else {
+                    logger.info("Error! - Origins not Allowed!");
+                }
+
+            } catch (Exception e) {
+                logger.internalServerError(e);
+            }
+
+            return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
+        });
+
+    }
+
+
+
+    /**
+     * Checks that the WebSocket comes from the same origin.  This is necessary to protect
+     * against Cross-Site WebSocket Hijacking as WebSocket does not implement Same Origin Policy.
+     * <p>
+     * See https://tools.ietf.org/html/rfc6455#section-1.3 and
+     * http://blog.dewhurstsecurity.com/2013/08/30/security-testing-html5-websockets.html
+     */
+    private boolean sameOriginCheck(Http.RequestHeader rh) {
+        final Optional<String> origin = rh.header("Origin");
+
+        if (! origin.isPresent()) {
+            logger.error("originCheck: rejecting request because no Origin header found");
+            return false;
+        } else if (originMatches(origin.get())) {
+            return true;
+        } else {
+            logger.error("originCheck: rejecting request because Origin header value " + origin + " is not in the same origin");
+            return false;
         }
     }
 
-    @ApiOperation(value = "FrontEnd Becki Connection", hidden = true, tags = {"WebSocket"})
-    public  WebSocket<String>  becki_website_connection (String security_token){
-        try{
-
-            terminal_logger.debug("becki_website_connection:: Incoming connection: "+ security_token);
-
-
-            WS_Token token = tokenCache.get(security_token);
-
-            if(token == null ) {
-              terminal_logger.warn("becki_website_connection:: Incoming token "+ security_token + "is invalid! Probably too late for access");
-              return WebSocket.reject(forbidden());
-            }
-
-            String person_id = token.person_id;
-            tokenCache.remove(security_token);
-
-
-            terminal_logger.trace("becki_website_connection:: Controlling of incoming token "+ security_token);
-            Model_Person person = Model_Person.get_byId(person_id);
-            if(person == null){
-                terminal_logger.warn("becki_website_connection: Person with this id not exist!");
-                return WebSocket.reject(forbidden());
-            }
-
-            WS_Becki_Website website;
-
-            if(becki_website.containsKey(person.id)) {
-                website = becki_website.get(person.id);
-            }else{
-                website = new WS_Becki_Website(person);
-                becki_website.put(person.id , website);
-            }
-
-            terminal_logger.trace("becki_website_connection: Check if token is already connected");
-            if(website.all_person_Connections != null && website.all_person_Connections.containsKey(security_token)) return WebSocket.reject(forbidden());
-            WS_Becki_Single_Connection website_connection = new WS_Becki_Single_Connection(security_token, website);
-
-            terminal_logger.trace("becki_website_connection:  Connection successful");
-            return website_connection.connection();
-
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
-            return WebSocket.reject(forbidden("Server side error"));
-        }
-    }
-
-/* Test & Control API --------------------------------------------------------------------------------------------------*/
-
-    public static void server_violently_terminate_terminal(WS_Interface_type terminal){
-
-        terminal.write_without_confirmation(new WS_Message_Tyrion_restart_echo().make_request());
-
+    private boolean originMatches(String origin) {
         try {
-            terminal.close();
-        }catch(Exception e){}
-    }
 
-    public static void disconnectHomerServers() {
+            if (list_of_portal_alowed_url_connection == null) {
+                list_of_portal_alowed_url_connection = (List<String>) config.getAnyRefList("play.filters.hosts.allowed");
+            }
 
-        terminal_logger.warn("disconnectHomerServers:  Trying to safely disconnect all Homer Servers");
-
-        for (Map.Entry<String, WS_HomerServer> entry :  Controller_WebSocket.homer_servers.entrySet()) {
-            server_violently_terminate_terminal(entry.getValue());
-        }
-    }
-
-    public static void disconnectCodeServers() {
-
-        terminal_logger.warn("disconnectCodeServers: Trying to safely disconnect all Code Servers");
-
-        for (Map.Entry<String, WS_CompilerServer> entry :  Controller_WebSocket.compiler_cloud_servers.entrySet()) {
-            server_violently_terminate_terminal(entry.getValue());
-        }
-    }
-
-    public static void disconnectBeckiApplications() {
-
-        terminal_logger.warn("disconnectBeckiApplications: Trying to safely disconnect all Becki applications");
-
-        for (Map.Entry<String, WS_Becki_Website> entry :  Controller_WebSocket.becki_website.entrySet()) {
-            entry.getValue().onClose();
+            return list_of_portal_alowed_url_connection.contains(origin);
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return false;
         }
     }
 

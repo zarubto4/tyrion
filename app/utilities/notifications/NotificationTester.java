@@ -1,25 +1,22 @@
 package utilities.notifications;
 
+import com.google.inject.Inject;
+import controllers._BaseController;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
 import play.data.Form;
-import play.mvc.Controller;
+import play.data.FormFactory;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.enums.Enum_Notification_action;
-import utilities.enums.Enum_Notification_importance;
-import utilities.enums.Enum_Notification_level;
-import utilities.enums.Enum_Notification_type;
-import utilities.logger.Class_Logger;
-import utilities.logger.ServerLogger;
-import utilities.login_entities.Secured_API;
+import utilities.authentication.Authentication;
+import utilities.enums.*;
+import utilities.logger.Logger;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Link;
 import utilities.notifications.helps_objects.Notification_Text;
-import utilities.response.GlobalResult;
-import utilities.swagger.documentationClass.Swagger_Notification_Test;
+import utilities.swagger.input.Swagger_Notification_Test;
 
 import java.util.Date;
 import java.util.Random;
@@ -27,54 +24,61 @@ import java.util.UUID;
 
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class NotificationTester extends Controller {
+public class NotificationTester extends _BaseController {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(NotificationTester.class);
+    private static final Logger terminal_logger = new Logger(NotificationTester.class);
+
+    private FormFactory formFactory;
+
+    @Inject
+    public NotificationTester(FormFactory formFactory) {
+        this.formFactory = formFactory;
+    }
 
 /*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
     @ApiOperation(value = "test_notifications", hidden = true)
-    @Security.Authenticated(Secured_API.class)
-    public Result test_chain_notifications(String mail){
+    @Security.Authenticated(Authentication.class)
+    public Result test_chain_notifications(String mail) {
         try {
 
-            terminal_logger.debug("Notification_Tester:: test_chain_notifications:: Email:: " + mail);
+            terminal_logger.debug("test_chain_notifications - email: {}", mail);
 
-            Model_Person person = Model_Person.find.where().eq("mail", mail).findUnique();
-            if (person == null) return GlobalResult.result_notFound("Person not found");
+            Model_Person person = Model_Person.getByEmail(mail);
+            if (person == null) return notFound("Person not found");
 
             Thread notification_test_thread = new Thread() {
 
                 @Override
                 public void run() {
-                    try{
+                    try {
 
-                        String id = UUID.randomUUID().toString();
+                        UUID id = UUID.randomUUID();
 
                         Random rand = new Random();
 
-                        if( rand.nextInt(10) > 5) {
+                        if ( rand.nextInt(10) > 5) {
 
                             Model_Notification notification_start = new Model_Notification();
 
-                            notification_start.setId(id)
-                                    .setChainType(Enum_Notification_type.CHAIN_START)
-                                    .setImportance(Enum_Notification_importance.low)
-                                    .setLevel(Enum_Notification_level.info);
+                            notification_start.setNotificationId(id)
+                                    .setChainType(NotificationType.CHAIN_START)
+                                    .setImportance(NotificationImportance.LOW)
+                                    .setLevel(NotificationLevel.INFO);
 
                             notification_start.setText(new Notification_Text().setText("CHAIN TEST:: Yes thats all!!!!"))
                                     .send(person);
 
-                        }else {
+                        } else {
 
                             Model_Notification notification_start = new Model_Notification();
 
-                            notification_start.setId(id)
-                                    .setChainType(Enum_Notification_type.CHAIN_UPDATE)
-                                    .setImportance(Enum_Notification_importance.low)
-                                    .setLevel(Enum_Notification_level.info);
+                            notification_start.setNotificationId(id)
+                                    .setChainType(NotificationType.CHAIN_UPDATE)
+                                    .setImportance(NotificationImportance.LOW)
+                                    .setLevel(NotificationLevel.INFO);
 
                             notification_start.setText(new Notification_Text().setText("CHAIN TEST:: Shit! This Test not send CHAIN_START notification parameter but first message is CHAIN_UPDATE !!!!"))
                                     .send(person);
@@ -82,14 +86,14 @@ public class NotificationTester extends Controller {
 
                         sleep(4000);
                         
-                        for(int i = 0; i <= 100; i = i+8){
+                        for (int i = 0; i <= 100; i = i+8) {
 
                             Model_Notification notification_progress = new Model_Notification();
 
-                            notification_progress.setId(id)
-                                    .setChainType(Enum_Notification_type.CHAIN_UPDATE)
-                                    .setImportance( Enum_Notification_importance.low)
-                                    .setLevel( Enum_Notification_level.info);
+                            notification_progress.setNotificationId(id)
+                                    .setChainType(NotificationType.CHAIN_UPDATE)
+                                    .setImportance( NotificationImportance.LOW)
+                                    .setLevel( NotificationLevel.INFO);
 
                             notification_progress
                                     .setText(new Notification_Text().setText("CHAIN TEST:: This is message about progress on Board " + i + "%" + " Actual time is:: "))
@@ -102,14 +106,14 @@ public class NotificationTester extends Controller {
 
                         sleep(4000);
 
-                        if(rand.nextInt(10) > 5){
+                        if (rand.nextInt(10) > 5) {
 
                             Model_Notification notification_finish = new Model_Notification();
 
-                            notification_finish.setId(id)
-                                    .setChainType(Enum_Notification_type.CHAIN_UPDATE)
-                                    .setImportance( Enum_Notification_importance.low)
-                                    .setLevel( Enum_Notification_level.info);
+                            notification_finish.setNotificationId(id)
+                                    .setChainType(NotificationType.CHAIN_UPDATE)
+                                    .setImportance( NotificationImportance.LOW)
+                                    .setLevel( NotificationLevel.INFO);
 
                             notification_finish.setText(new Notification_Text().setText("CHAIN TEST:: Shit... This test not send CHAIN_END parameter - Do you know what to do? " ))
                                     .send(person);
@@ -119,15 +123,15 @@ public class NotificationTester extends Controller {
 
                         Model_Notification notification_finish = new Model_Notification();
 
-                        notification_finish.setId(id)
-                                .setChainType(Enum_Notification_type.CHAIN_END)
-                                .setImportance( Enum_Notification_importance.low)
-                                .setLevel( Enum_Notification_level.info);
+                        notification_finish.setNotificationId(id)
+                                .setChainType(NotificationType.CHAIN_END)
+                                .setImportance( NotificationImportance.LOW)
+                                .setLevel( NotificationLevel.INFO);
 
                         notification_finish.setText(new Notification_Text().setText("CHAIN TEST:: Yes thats all!!!!" ))
                                 .send(person);
 
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         terminal_logger.internalServerError(e);
                     }
                 }
@@ -135,65 +139,58 @@ public class NotificationTester extends Controller {
 
             notification_test_thread.start();
 
-            return GlobalResult.result_ok();
+            return ok();
 
-        }catch (Exception e){
-            return ServerLogger.result_internalServerError(e, request());
+        } catch (Exception e) {
+            return internalServerError(e);
         }
     }
-
-
 
     @ApiOperation(value = "test_notifications", hidden = true)
-    @Security.Authenticated(Secured_API.class)
-    public Result test_notifications(){
+    @Security.Authenticated(Authentication.class)
+    public Result test_notifications() {
         try {
 
-            terminal_logger.debug("Notification_Tester:: test_notifications:: ");
-            final Form<Swagger_Notification_Test> form = Form.form(Swagger_Notification_Test.class).bindFromRequest();
-            if(form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
+            terminal_logger.debug("test_notifications - test");
+            final Form<Swagger_Notification_Test> form = formFactory.form(Swagger_Notification_Test.class).bindFromRequest();
+            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
             Swagger_Notification_Test help = form.get();
 
-            Model_Person person = Model_Person.find.where().eq("mail", help.mail).findUnique();
-            if (person == null) return GlobalResult.result_notFound("Person not found");
+            Model_Person person = Model_Person.getByEmail(help.mail);
+            if (person == null) return notFound("Person not found");
 
             test_notification(person, help.level, help.importance, help.type, help.buttons);
-            return GlobalResult.result_ok();
+            return ok();
 
-        }catch (Exception e){
-            return ServerLogger.result_internalServerError(e, request());
+        } catch (Exception e) {
+            return internalServerError(e);
         }
     }
 
+    public static void test_notification(Model_Person person, String level, String importance, String type, String buttons) {
 
+        NotificationLevel lvl;
 
+        NotificationImportance imp;
 
-
-
-    public static void test_notification(Model_Person person, String level, String importance, String type, String buttons){
-
-        Enum_Notification_level lvl;
-
-        Enum_Notification_importance imp;
-
-        switch (importance){
-            case "low": imp = Enum_Notification_importance.low; break;
-            case "normal": imp = Enum_Notification_importance.normal; break;
-            case "high": imp = Enum_Notification_importance.high; break;
-            default: imp = Enum_Notification_importance.normal; break;
+        switch (importance) {
+            case "low": imp = NotificationImportance.LOW; break;
+            case "normal": imp = NotificationImportance.NORMAL; break;
+            case "high": imp = NotificationImportance.HIGH; break;
+            default: imp = NotificationImportance.NORMAL; break;
         }
 
-        switch (level){
-            case "info": lvl = Enum_Notification_level.info;break;
-            case "success": lvl = Enum_Notification_level.success;break;
-            case "warning": lvl = Enum_Notification_level.warning;break;
-            case "error": lvl = Enum_Notification_level.error;break;
-            default: lvl = Enum_Notification_level.info;break;
+        switch (level) {
+            case "info": lvl = NotificationLevel.INFO;break;
+            case "success": lvl = NotificationLevel.SUCCESS;break;
+            case "warning": lvl = NotificationLevel.WARNING;break;
+            case "error": lvl = NotificationLevel.ERROR;break;
+            default: lvl = NotificationLevel.INFO;break;
         }
 
         Model_Notification notification;
 
-        switch (type){
+        switch (type) {
             case "1":{
                 notification = new Model_Notification()
                         .setImportance(imp)
@@ -207,17 +204,17 @@ public class NotificationTester extends Controller {
                         .setText(new Notification_Text().setText(" test red color text, ").setColor(Becki_color.byzance_red))
                         .setLink(new Notification_Link().setUrl("Text linku na google ", "http://google.com"));
 
-                Model_Project project = Model_Project.find.where().eq("participants.person.id", person.id).eq("name", "První velkolepý projekt").findUnique();
+                Model_Project project = Model_Project.find.query().where().eq("participants.person.id", person.id).eq("name", "První velkolepý projekt").findOne();
                 if (project != null) {
                     notification.setObject(project);
 
-                    if (!project.boards.isEmpty()){
-                        Model_Board board = project.boards.get(0);
+                    if (!project.hardware.isEmpty()) {
+                        Model_Hardware board = project.hardware.get(0);
                         notification.setObject(board);
                     }
 
                     Model_CProgram cProgram;
-                    if (!project.c_programs.isEmpty()){
+                    if (!project.c_programs.isEmpty()) {
 
                         cProgram = project.c_programs.get(0);
 
@@ -226,7 +223,6 @@ public class NotificationTester extends Controller {
                         cProgram = new Model_CProgram();
                         cProgram.name                  = "Test notification c program";
                         cProgram.description           = "random text sd asds dasda ";
-                        cProgram.date_of_create        = new Date();
                         cProgram.project               = project;
                         cProgram.save();
                         cProgram.refresh();
@@ -236,36 +232,34 @@ public class NotificationTester extends Controller {
 
                     notification.setObject(cProgram);
 
-                    Model_VersionObject version_object;
-                    if (cProgram.getVersion_objects().isEmpty()){
+                    Model_CProgramVersion version;
+                    if (cProgram.get_versions().isEmpty()) {
 
-                        version_object = new Model_VersionObject();
-                        version_object.version_name        = "Test notification c version";
-                        version_object.version_description = "random text sd asds dasda";
-                        version_object.author              = person;
-                        version_object.date_of_create      = new Date();
-                        version_object.c_program           = cProgram;
-                        version_object.public_version      = false;
-                        version_object.save();
-                        version_object.refresh();
+                        version = new Model_CProgramVersion();
+                        version.name        = "Test notification c version";
+                        version.description = "random text sd asds dasda";
+                        version.author_id              = person.id;
+                        version.c_program           = cProgram;
+                        version.publish_type        = ProgramType.PRIVATE;
+                        version.save();
+                        version.refresh();
 
                         terminal_logger.info("Setting new C Program Version");
 
                     } else {
-                        version_object = cProgram.getVersion_objects().get(0);
+                        version = cProgram.get_versions().get(0);
                     }
 
-                    notification.setObject(version_object);
+                    notification.setObject(version);
 
                     Model_BProgram bProgram;
-                    if (!project.b_programs.isEmpty()){
+                    if (!project.b_programs.isEmpty()) {
                         bProgram = project.b_programs.get(0);
                     } else {
 
                         bProgram = new Model_BProgram();
                         bProgram.name                  = "Test notification b program";
                         bProgram.description           = "random text sd asds dasda ";
-                        bProgram.date_of_create        = new Date();
                         bProgram.project = project;
                         bProgram.save();
                         bProgram.refresh();
@@ -275,25 +269,25 @@ public class NotificationTester extends Controller {
 
                     notification.setObject(bProgram);
 
-                    Model_VersionObject b_version_object;
-                    if (bProgram.getVersion_objects().isEmpty()){
+                    Model_BProgramVersion b_version;
+                    if (bProgram.get_versions().isEmpty()) {
 
-                        b_version_object = new Model_VersionObject();
-                        b_version_object.version_name        = "Test notification b version";
-                        b_version_object.version_description = "random text sd asds dasda";
-                        b_version_object.author              = person;
-                        b_version_object.date_of_create      = new Date();
-                        b_version_object.b_program           = bProgram;
-                        b_version_object.save();
-                        b_version_object.refresh();
+                        b_version = new Model_BProgramVersion();
+                        b_version.name        = "Test notification b version";
+                        b_version.description = "random text sd asds dasda";
+                        b_version.author_id              = person.id;
+                        b_version.b_program           = bProgram;
+                        version.publish_type        = ProgramType.PRIVATE;
+                        b_version.save();
+                        b_version.refresh();
 
                         terminal_logger.info("Setting new B Program Version");
 
                     } else {
-                        b_version_object = bProgram.getVersion_objects().get(0);
+                        b_version = bProgram.get_versions().get(0);
                     }
 
-                    notification.setObject(b_version_object);
+                    notification.setObject(b_version);
                 }
 
 
@@ -334,22 +328,22 @@ public class NotificationTester extends Controller {
                         .setLink( new Notification_Link().setUrl("Yes", "http://google.com"));
                 break;}
         }
-        switch (buttons){
+        switch (buttons) {
             case "0": break;
             case "1":{
-                notification.setButton( new Notification_Button().setAction(Enum_Notification_action.confirm_notification).setPayload("test").setColor(Becki_color.byzance_blue).setText("OK") );
+                notification.setButton( new Notification_Button().setAction(NotificationAction.CONFIRM_NOTIFICATION).setPayload("test").setColor(Becki_color.byzance_blue).setText("OK") );
                 break;}
             case "2":{
-                notification.setButton( new Notification_Button().setAction(Enum_Notification_action.confirm_notification).setPayload("test").setColor(Becki_color.byzance_green).setText("YES") );
-                notification.setButton( new Notification_Button().setAction(Enum_Notification_action.confirm_notification).setPayload("test").setColor(Becki_color.byzance_red).setText("NO").setUnderLine() );
+                notification.setButton( new Notification_Button().setAction(NotificationAction.CONFIRM_NOTIFICATION).setPayload("test").setColor(Becki_color.byzance_green).setText("YES") );
+                notification.setButton( new Notification_Button().setAction(NotificationAction.CONFIRM_NOTIFICATION).setPayload("test").setColor(Becki_color.byzance_red).setText("NO").setUnderLine() );
                 break;}
             case "3":{
-                notification.setButton( new Notification_Button().setAction(Enum_Notification_action.confirm_notification).setPayload("test").setColor(Becki_color.white).setText("NO").setBold() );
-                notification.setButton( new Notification_Button().setAction(Enum_Notification_action.confirm_notification).setPayload("test").setColor(Becki_color.byzance_green).setText("NO").setItalic() );
-                notification.setButton( new Notification_Button().setAction(Enum_Notification_action.confirm_notification).setPayload("test").setColor(Becki_color.byzance_blue).setText("NO").setItalic() );
+                notification.setButton( new Notification_Button().setAction(NotificationAction.CONFIRM_NOTIFICATION).setPayload("test").setColor(Becki_color.white).setText("NO").setBold() );
+                notification.setButton( new Notification_Button().setAction(NotificationAction.CONFIRM_NOTIFICATION).setPayload("test").setColor(Becki_color.byzance_green).setText("NO").setItalic() );
+                notification.setButton( new Notification_Button().setAction(NotificationAction.CONFIRM_NOTIFICATION).setPayload("test").setColor(Becki_color.byzance_blue).setText("NO").setItalic() );
                 break;}
             default:{
-                notification.setButton( new Notification_Button().setAction(Enum_Notification_action.confirm_notification).setPayload("test").setColor(Becki_color.byzance_blue).setText("NO").setItalic() );
+                notification.setButton( new Notification_Button().setAction(NotificationAction.CONFIRM_NOTIFICATION).setPayload("test").setColor(Becki_color.byzance_blue).setText("NO").setItalic() );
                 break;}
         }
 

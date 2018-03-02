@@ -1,84 +1,76 @@
 package controllers;
 
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.Expr;
+import com.google.inject.Inject;
+import io.ebean.Ebean;
+import io.ebean.Expr;
 import io.swagger.annotations.*;
 import models.Model_Person;
 import models.Model_Permission;
-import models.Model_SecurityRole;
+import models.Model_Role;
 import play.data.Form;
+import play.data.FormFactory;
 import play.libs.Json;
 import play.mvc.BodyParser;
-import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.logger.Class_Logger;
-import utilities.logger.ServerLogger;
-import utilities.login_entities.Secured_API;
-import utilities.response.GlobalResult;
-import utilities.response.response_objects.Result_NotFound;
-import utilities.response.response_objects.Result_Forbidden;
-import utilities.response.response_objects.Result_Unauthorized;
-import utilities.response.response_objects.Result_Ok;
-import utilities.swagger.documentationClass.*;
-import utilities.swagger.outboundClass.Swagger_Role_Short_Detail;
-import utilities.swagger.outboundClass.Swagger_System_Access;
+import responses.*;
+import utilities.authentication.Authentication;
+import utilities.logger.Logger;
+import utilities.swagger.input.*;
+import utilities.swagger.output.Swagger_System_Access;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-@Security.Authenticated(Secured_API.class)
-public class Controller_Permission extends Controller {
+@Security.Authenticated(Authentication.class)
+public class Controller_Permission extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Permission.class);
+    private static final Logger logger = new Logger(Controller_Permission.class);
 
-///###################################################################################################################*/
+// CONTROLLER CONFIGURATION ############################################################################################
+
+    private _BaseFormFactory baseFormFactory;
+
+    @Inject public Controller_Permission(_BaseFormFactory formFactory) {
+        this.baseFormFactory = formFactory;
+    }
+
+// #####################################################################################################################
 
     @ApiOperation(value = "add Permission to Person",
             tags = {"Admin-Permission"},
             notes = "If you want add permission to Person. You need permission for that or have right system Roles",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "PersonPermission_edit_person_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result", response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result permission_person_add(@ApiParam(required = true) String person_id, @ApiParam(required = true) String permission_id) {
+    public Result permission_person_add(UUID person_id, UUID permission_id) {
         try {
 
-            Model_Person person = Model_Person.find.byId(person_id);
-            if (person == null) return GlobalResult.result_notFound("Person person_id not found");
+            // Kontrola objektu
+            Model_Person person = Model_Person.getById(person_id);
 
-            Model_Permission personPermission = Model_Permission.find.byId(permission_id);
+            // Kontrola objektu
+            Model_Permission personPermission = Model_Permission.getById(permission_id);
 
-            if (personPermission == null)
-                return GlobalResult.result_notFound("PersonPermission permission_id not found");
-
-            if (!personPermission.edit_person_permission()) return GlobalResult.result_forbidden();
-
-
-            if (!person.person_permissions.contains(personPermission)) person.person_permissions.add(personPermission);
+            if (!person.permissions.contains(personPermission)) person.permissions.add(personPermission);
             person.update();
 
-            return GlobalResult.result_ok();
+            return ok();
 
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -87,41 +79,31 @@ public class Controller_Permission extends Controller {
             notes = "If you want remove permission from Person. You need permission for that or have right system Roles",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "PersonPermission_edit_person_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result", response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result permission_person_remove(@ApiParam(required = true) String person_id, @ApiParam(required = true) String permission_id) {
+    public Result permission_person_remove(UUID person_id, UUID permission_id) {
         try {
 
-            Model_Person person = Model_Person.find.byId(person_id);
-            if (person == null) return GlobalResult.result_notFound("Person person_id not found");
+            // Kontrola objektu
+            Model_Person person = Model_Person.getById(person_id);
 
-            Model_Permission personPermission = Model_Permission.find.byId(permission_id);
-            if (personPermission == null)
-                return GlobalResult.result_notFound("PersonPermission permission_id not found");
+            // Kontrola objektu
+            Model_Permission personPermission = Model_Permission.getById(permission_id);
 
-            if (!personPermission.edit_person_permission()) return GlobalResult.result_forbidden();
-
-            if (person.person_permissions.contains(personPermission))
-                person.person_permissions.remove(personPermission);
+            if (person.permissions.contains(personPermission)) person.permissions.remove(personPermission);
             person.update();
 
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -129,29 +111,22 @@ public class Controller_Permission extends Controller {
             tags = {"Admin-Permission"},
             notes = "Get all user Permission. You need permission for that or have right system Roles",
             produces = "application/json",
-            response = Model_Permission.class,
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Public", value = "Without Permission"),
-                    })
-            }
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result", response = Model_Permission.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result permission_get_all() {
         try {
 
-            List<Model_Permission> permissions = Model_Permission.find.where().orderBy("UPPER(permission_key) ASC").findList();
-            return GlobalResult.result_ok(Json.toJson(permissions));
+            List<Model_Permission> permissions = Model_Permission.find.query().where().orderBy("UPPER(name) ASC").findList();
+            return ok(Json.toJson(permissions));
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
 
     }
@@ -161,177 +136,140 @@ public class Controller_Permission extends Controller {
             tags = {"Admin-Permission"},
             notes = "edit permission description",
             produces = "application/json",
-            response = Model_Permission.class,
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_description", properties = {
-                            @ExtensionProperty(name = "edit_permission", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Permission_Edit",
+                            dataType = "utilities.swagger.input.Swagger_Permission_Edit",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result", response = Model_Permission.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result permission_edit(String permission_id) {
+    public Result permission_edit(UUID permission_id) {
         try {
 
-            final Form<Swagger_Permission_Edit> form = Form.form(Swagger_Permission_Edit.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.result_invalidBody(form.errorsAsJson());
-            }
-            Swagger_Permission_Edit help = form.get();
+            // Get and Validate Object
+            Swagger_Permission_Edit help = baseFormFactory.formFromRequestWithValidation(Swagger_Permission_Edit.class);
 
-            Model_Permission permission = Model_Permission.find.where().eq("permission_key", permission_id).findUnique();
-            if (permission == null) return GlobalResult.result_notFound("PersonPermission permission_id not found");
-
-            if (!permission.edit_person_permission())
-                return GlobalResult.result_forbidden("PersonPermission you have no permission");
+            // Kontrola objektu
+            Model_Permission permission = Model_Permission.getById(permission_id);
 
             permission.description = help.description;
             permission.update();
 
-            return GlobalResult.result_ok(Json.toJson(permission));
+            return ok(Json.toJson(permission));
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
 
     }
 
-//######################################################################################################################
+// #####################################################################################################################
 
     @ApiOperation(value = "add Role Permissions",
             tags = {"Admin-Permission", "Admin-Role"},
-            notes = "If you want add system person_permissions to Role. You need permission for that or have right system Roles",
+            notes = "If you want add system permissions to Role. You need permission for that or have right system Roles",
             produces = "application/json",
-            response = Result_Ok.class,
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SecurityRole_update", value = "true"),
-                    })
-            }
-
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Role_Add_Permission",
+                            dataType = "utilities.swagger.input.Swagger_Role_Add_Permission",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result permission_add_to_role(@ApiParam(required = true) String role_id) {
+    public Result permission_add_to_role(UUID role_id) {
         try {
 
-            final Form<Swagger_Role_Add_Permission> form = Form.form(Swagger_Role_Add_Permission.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.result_invalidBody(form.errorsAsJson());
-            }
-            Swagger_Role_Add_Permission help = form.get();
+            // Get and Validate Object
+            Swagger_Role_Add_Permission help = baseFormFactory.formFromRequestWithValidation(Swagger_Role_Add_Permission.class);
 
-            List<Model_Permission> personPermissions = Model_Permission.find.where().in("permission_key", help.permissions).findList();
+            // Kontrola objektu
+            List<Model_Permission> personPermissions = Model_Permission.find.query().where().in("name", help.permissions).findList();
 
-            Model_SecurityRole securityRole = Model_SecurityRole.find.byId(role_id);
-            if (securityRole == null) return GlobalResult.result_notFound("SecurityRole role_id not found");
+            // Kontrola objektu
+            Model_Role securityRole = Model_Role.getById(role_id);
 
-            if (!securityRole.update_permission()) return GlobalResult.result_forbidden();
-
-            for(Model_Permission permission : personPermissions){
-                if(!securityRole.person_permissions.contains(permission)){
-                    securityRole.person_permissions.add(permission);
+            for(Model_Permission permission : personPermissions) {
+                if (!securityRole.permissions.contains(permission)) {
+                    securityRole.permissions.add(permission);
                 }
             }
 
             securityRole.update();
-            securityRole.refresh();
 
-            return GlobalResult.result_ok(Json.toJson(securityRole));
+            return ok(securityRole.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
     @ApiOperation(value = "remove Role Permission",
             tags = {"Admin-Permission", "Admin-Role"},
-            notes = "If you want remove system person_permissions from Role. You need permission for that or have right system Roles",
+            notes = "If you want remove system permissions from Role. You need permission for that or have right system Roles",
             produces = "application/json",
             protocols = "https",
-            consumes = "text/html",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SecurityRole_update", value = "true"),
-                    })
-            }
+            consumes = "text/html"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result permission_remove_from_role(@ApiParam(required = true) String permission_id, @ApiParam(required = true) String role_id) {
+    public Result permission_remove_from_role(UUID permission_id, UUID role_id) {
         try {
 
-            Model_Permission personPermission = Model_Permission.find.byId(permission_id);
-            if (personPermission == null)
-                return GlobalResult.result_notFound("PersonPermission permission_id not found");
+            // Kontrola objektu
+            Model_Permission personPermission = Model_Permission.getById(permission_id);
 
-            Model_SecurityRole securityRole = Model_SecurityRole.find.byId(role_id);
-            if (securityRole == null) return GlobalResult.result_notFound("SecurityRole role_id not found");
+            // Kontrola objektu
+            Model_Role securityRole = Model_Role.getById(role_id);
 
-            if (!securityRole.update_permission()) return GlobalResult.result_forbidden();
-
-            if (securityRole.person_permissions.contains(personPermission))
-                securityRole.person_permissions.remove(personPermission);
+            if (securityRole.permissions.contains(personPermission)) securityRole.permissions.remove(personPermission);
 
             securityRole.update();
 
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
-//######################################################################################################################
+// ######################################################################################################################
 
     @ApiOperation(value = "create Role",
             tags = {"Admin-Role"},
             notes = "If you want create new Role in system. You need permission for that or have right system Roles",
             produces = "application/json",
-            response = Model_SecurityRole.class,
             protocols = "https",
             code = 201
     )
@@ -339,41 +277,38 @@ public class Controller_Permission extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_SecurityRole_New",
+                            dataType = "utilities.swagger.input.Swagger_NameAndDescription",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successfully created", response = Model_SecurityRole.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_Role.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     public Result role_create() {
         try {
-            final Form<Swagger_SecurityRole_New> form = Form.form(Swagger_SecurityRole_New.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.result_invalidBody(form.errorsAsJson());
-            }
-            Swagger_SecurityRole_New help = form.get();
 
-            Model_SecurityRole securityRole = new Model_SecurityRole();
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+
+            // Kontrola objektu
+            Model_Role securityRole = new Model_Role();
 
             securityRole.name = help.name;
             securityRole.description = help.description;
 
-            if (!securityRole.create_permission()) return GlobalResult.result_forbidden();
-
             securityRole.save();
 
-            return GlobalResult.result_created(Json.toJson(securityRole));
+            return created(Json.toJson(securityRole));
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -382,35 +317,27 @@ public class Controller_Permission extends Controller {
             notes = "If you want delete  Role from system. You need permission for that or have right system Roles",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SecurityRole_delete", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Successfully created", response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result role_delete(@ApiParam(required = true) String role_id) {
+    public Result role_delete(UUID role_id) {
         try {
 
-            Model_SecurityRole securityRole = Model_SecurityRole.find.byId(role_id);
-            if (securityRole == null) return GlobalResult.result_notFound("SecurityRole role_id not found");
-
-            if (!securityRole.delete_permission()) return GlobalResult.result_forbidden();
+            // Kontrola objektu
+            Model_Role securityRole = Model_Role.getById(role_id);
 
             securityRole.delete();
 
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -419,54 +346,44 @@ public class Controller_Permission extends Controller {
             notes = "edit description",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SecurityRole_uddate", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Role_Edit",
+                            dataType = "utilities.swagger.input.Swagger_NameAndDescription",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully created", response = Model_SecurityRole.class),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result", response = Model_Role.class),
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result role_edit(@ApiParam(required = true) String role_id) {
+    public Result role_edit(UUID role_id) {
         try {
 
-            final Form<Swagger_Role_Edit> form = Form.form(Swagger_Role_Edit.class).bindFromRequest();
-            if (form.hasErrors()) {
-                return GlobalResult.result_invalidBody(form.errorsAsJson());
-            }
-            Swagger_Role_Edit help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
-            Model_SecurityRole securityRole = Model_SecurityRole.find.byId(role_id);
-            if (securityRole == null) return GlobalResult.result_notFound("SecurityRole role_id not found");
+            // Kontrola objektu
+            Model_Role role = Model_Role.getById(role_id);
 
-            if (!securityRole.update_permission()) return GlobalResult.result_forbidden();
+            role.name = help.name;
+            role.description = help.description;
 
-            securityRole.name = help.name;
-            securityRole.description = help.description;
-            securityRole.update();
+            role.update();
 
-            return GlobalResult.result_ok(Json.toJson(securityRole));
+            return ok(role.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -475,33 +392,25 @@ public class Controller_Permission extends Controller {
             notes = "get description",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SecurityRole_uddate", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully created", response = Model_SecurityRole.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Successfully created",      response = Model_Role.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result role_get(@ApiParam(required = true) String role_id) {
+    public Result role_get(UUID role_id) {
         try {
 
-            Model_SecurityRole securityRole = Model_SecurityRole.find.byId(role_id);
-            if (securityRole == null) return GlobalResult.result_notFound("SecurityRole role_id not found");
+            // Kontrola objektu
+            Model_Role role = Model_Role.getById(role_id);
 
-            if (!securityRole.read_permission()) return GlobalResult.result_forbidden();
-
-            return GlobalResult.result_ok(Json.toJson(securityRole));
+            return ok(role.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -509,70 +418,61 @@ public class Controller_Permission extends Controller {
             tags = {"Admin-Role", "Admin-Person"},
             notes = "If you set Role to Person. You need permission for that or have right system Roles",
             produces = "application/json",
-            response = Result_Ok.class,
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension(name = "permission_required", properties = {
-                            @ExtensionProperty(name = "SecurityRole_update", value = "true"),
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Invite_Person",
+                            dataType = "utilities.swagger.input.Swagger_Invite_Person",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Model_SecurityRole.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Role.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result role_add_person(@ApiParam(required = true) String role_id) {
+    public Result role_add_person(UUID role_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Invite_Person> form = Form.form(Swagger_Invite_Person.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_Invite_Person help = form.get();
+            // Get and Validate Object
+            Swagger_Invite_Person help = baseFormFactory.formFromRequestWithValidation(Swagger_Invite_Person.class);
 
             if (help.persons_mail.isEmpty()) {
-                return GlobalResult.result_badRequest("Fill in some emails.");
+                return badRequest("Fill in some emails.");
             }
 
             // Kontrola objektu
-            Model_SecurityRole securityRole = Model_SecurityRole.find.byId(role_id);
-            if (securityRole == null) return GlobalResult.result_notFound("SecurityRole not found");
+            Model_Role securityRole = Model_Role.getById(role_id);
 
-            // Kontrola oprávnění
-            if (!securityRole.update_permission()) return GlobalResult.result_forbidden();
 
-            terminal_logger.debug("role_add_person: Finding {} person(s)", help.persons_mail.size());
-
-            List<Model_Person> persons = Model_Person.find.where().notExists(Ebean.find(Model_SecurityRole.class).where(Expr.in("persons.mail", help.persons_mail))).in("mail", help.persons_mail).findList();
+            List<Model_Person> persons = Model_Person.find.query().where().notExists(Ebean.find(Model_Role.class).where(Expr.in("persons.email", help.persons_mail))).in("email", help.persons_mail).findList();
 
             if (persons.isEmpty()) {
-                return GlobalResult.result_badRequest("No person to add was found for given email values.");
+                return badRequest("No person to add was found for given email values.");
             }
 
-            terminal_logger.debug("role_add_person: Adding {} person(s)", persons.size());
+            // Check Permission
+            for(Model_Person person: persons){
+                person.check_update_permission();
+            }
+
+            logger.debug("role_add_person: Adding {} person(s)", persons.size());
+
             securityRole.persons.addAll(persons);
             securityRole.update();
 
-            securityRole.refresh();
 
-            return GlobalResult.result_ok(Json.toJson(securityRole));
+            return ok(Json.toJson(securityRole));
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -581,34 +481,31 @@ public class Controller_Permission extends Controller {
             notes = "If you set Role to Person. You need permission for that or have right system Roles",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result role_remove_person(@ApiParam(required = true) String role_id, @ApiParam(required = true) String person_id) {
+    public Result role_remove_person(UUID role_id, UUID person_id) {
         try {
 
-            Model_Person person = Model_Person.find.byId(person_id);
-            if (person == null) return GlobalResult.result_notFound("Person person_id not found");
+            // Kontrola objektu
+            Model_Person person = Model_Person.getById(person_id);
 
-            Model_SecurityRole securityRole = Model_SecurityRole.find.byId(role_id);
-            if (securityRole == null) return GlobalResult.result_notFound("SecurityRole role_id not found");
-
-            if (!securityRole.update_permission()) return GlobalResult.result_forbidden();
+            // Kontrola objektu
+            Model_Role securityRole = Model_Role.getById(role_id);
 
             if (person.roles.contains(securityRole)) person.roles.remove(securityRole);
             person.update();
 
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -616,32 +513,27 @@ public class Controller_Permission extends Controller {
             tags = {"Admin-Role"},
             notes = "If you set Role to Person. You need permission for that or have right system Roles",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result", response = Swagger_Role_Short_Detail.class, responseContainer = "List"),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result", response = Model_Role.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result role_get_all() {
         try {
 
-            List<Model_SecurityRole> roles = Model_SecurityRole.find.orderBy("UPPER(name) ASC").findList();
-
-            List<Swagger_Role_Short_Detail> details = new ArrayList<>();
-            for (Model_SecurityRole role : roles) details.add(role.get_group_short_detail());
-
-            return GlobalResult.result_ok(Json.toJson(details));
+            List<Model_Role> roles = Model_Role.find.query().orderBy("UPPER(name) ASC").findList();
+            return ok(Json.toJson(roles));
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
 
     }
 
-//######################################################################################################################
+// ######################################################################################################################
 
     @ApiOperation(value = "get Person Roles and Permissions",
             tags = {"Admin-Role", "Admin-Permission", "Person"},
@@ -651,33 +543,32 @@ public class Controller_Permission extends Controller {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result", response = Swagger_System_Access.class),
             @ApiResponse(code = 400, message = "Object not found", response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission", response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error")
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result system_access_get_everything(@ApiParam(required = true) String person_id) {
+    public Result system_access_get_everything(UUID person_id) {
         try {
 
-            Model_Person person = Model_Person.find.byId(person_id);
-            if (person == null) return GlobalResult.result_notFound("Person person_id not found");
+            Model_Person person = Model_Person.getById(person_id);
 
             Swagger_System_Access system_access = new Swagger_System_Access();
             system_access.roles = person.roles;
-            system_access.permissions = person.person_permissions;
+            system_access.permissions = person.permissions;
 
-            return GlobalResult.result_ok(Json.toJson(system_access));
+            return ok(Json.toJson(system_access));
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
 
 
     }
 
 
-//######################################################################################################################
+// ######################################################################################################################
 
 }

@@ -1,12 +1,11 @@
 package utilities.scheduler;
 
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.impl.StdSchedulerFactory;
-
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.impl.StdSchedulerFactory;
 
 @Singleton
 public class SchedulerProvider implements Provider<Scheduler> {
@@ -22,5 +21,4 @@ public class SchedulerProvider implements Provider<Scheduler> {
     public Scheduler get() {
         return scheduler;
     }
-
 }

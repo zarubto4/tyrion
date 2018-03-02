@@ -1,15 +1,16 @@
 package utilities.financial;
 
-import models.Model_Person;
-import models.Model_Product;
-import models.Model_ProductExtension;
-import models.Model_Project;
-import utilities.enums.Enum_ExtensionType;
+import models.*;
+import utilities.enums.ExtensionType;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.extensions.configurations.Configuration_Project;
 import utilities.financial.extensions.configurations.Configuration_RestApi;
-import utilities.logger.Class_Logger;
+import utilities.logger.Logger;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
  */
 public class FinancialPermission {
 
-    private static final Class_Logger terminal_logger = new Class_Logger(FinancialPermission.class);
+    private static final Logger terminal_logger = new Logger(FinancialPermission.class);
 
     /**
      * Checks permission for given action.
@@ -26,13 +27,13 @@ public class FinancialPermission {
      * @param action String action that is being performed.
      * @return Boolean true if user is allowed to do it, otherwise false.
      */
-    public static boolean check(Model_Product product, String action){
+    public static void check_permission(Model_Product product, String action) throws _Base_Result_Exception {
 
         switch (action) {
 
             case "project": {
 
-                List<Model_ProductExtension> filtered = product.extensions.stream().filter(extension -> extension.type == Enum_ExtensionType.project).collect(Collectors.toList());
+                List<Model_ProductExtension> filtered = product.extensions.stream().filter(extension -> extension.type == ExtensionType.project).collect(Collectors.toList());
 
                 int available = 0;
 
@@ -40,10 +41,11 @@ public class FinancialPermission {
                     available += ((Configuration_Project)extension.getConfiguration()).count;
                 }
 
-                return Model_Project.find.where().eq("product.id", product.id).findRowCount() < available;
+                if( Model_Project.find.query().where().eq("product.id", product.id).findCount() < available) return;
+                throw new Result_Error_PermissionDenied();
             }
 
-            default: return false;
+            default: throw new Result_Error_PermissionDenied();
         }
     }
 
@@ -58,7 +60,7 @@ public class FinancialPermission {
      * @param instance_id Currently unused param.
      * @return Long count of available requests user can do from Blocko instance.
      */
-    public static Long checkRestApiRequest(Object object, String instance_id){
+    public static Long checkRestApiRequest(Object object, UUID instance_id) {
 
         Model_Product product = null;
         //final String custom_id;
@@ -123,7 +125,7 @@ public class FinancialPermission {
 
         if (product != null) {
 
-            List<Model_ProductExtension> filtered = product.extensions.stream().filter(extension -> extension.type == Enum_ExtensionType.rest_api).collect(Collectors.toList());
+            List<Model_ProductExtension> filtered = product.extensions.stream().filter(extension -> extension.type == ExtensionType.rest_api).collect(Collectors.toList());
 
             terminal_logger.debug("checkRestApiRequest: filtered extensions");
 
@@ -146,7 +148,7 @@ public class FinancialPermission {
         }
 
         /*
-        new Thread( () -> {
+        new Thread(() -> {
             try {
                 Server.documentClient.createDocument(DocumentDB.blocko_request_collection.getSelfLink(), DM_RestApiRequestRecord.make_request(custom_id), null, true);
                 terminal_logger.debug("checkRestApiRequest: saving request record");

@@ -1,12 +1,16 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.Controller_Security;
+import controllers._BaseController;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import utilities.logger.Class_Logger;
+import org.ehcache.Cache;
+import utilities.cache.CacheField;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.logger.Logger;
+import utilities.model.NamedModel;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -16,51 +20,24 @@ import java.util.UUID;
 @Entity
 @ApiModel(description = "Model of Processor", value = "Processor")
 @Table(name="Processor")
-public class Model_Processor extends Model {
+public class Model_Processor extends NamedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_Processor.class);
+    private static final Logger logger = new Logger(Model_Processor.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                        @Id @ApiModelProperty(required = true)  public UUID id;
-                                                            @ApiModelProperty(required = true)  public String processor_name;
-                @Column(columnDefinition = "TEXT")          @ApiModelProperty(required = true)  public String description;
-                                                            @ApiModelProperty(required = true)  public String processor_code;
-                                                            @ApiModelProperty(required = true)  public int speed;
+    public String processor_code;
+    public int speed;
 
-    @JsonIgnore @OneToMany(mappedBy="processor", cascade = CascadeType.ALL) public List<Model_TypeOfBoard> type_of_boards = new ArrayList<>();
-
-    @JsonIgnore public boolean removed_by_user;
+    @JsonIgnore @OneToMany(mappedBy="processor", cascade = CascadeType.ALL) public List<Model_HardwareType> hardware_types = new ArrayList<>();
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
-
-    @JsonIgnore @Override
-    public void save() {
-
-        super.save();
-    }
-
-    @JsonIgnore @Override public void update() {
-
-        terminal_logger.debug("update: ID = {}",  this.id);
-
-        super.update();
-
-    }
-
-    @JsonIgnore @Override public void delete() {
-
-        terminal_logger.debug("delete: ID = {}",  this.id);
-
-        super.delete();
-    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -72,26 +49,53 @@ public class Model_Processor extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   @Transient                                    public boolean create_permission(){  return Controller_Security.get_person().has_permission("Processor_create"); }
-    @JsonIgnore   @Transient                                    public boolean read_permission()  {  return true; }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.Processor_create.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        // Not limited now
+        return;
+    }
 
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean edit_permission()  {  return Controller_Security.get_person().has_permission("Processor_edit");   }
-    @JsonProperty @Transient @ApiModelProperty(required = true) public boolean delete_permission(){  return Controller_Security.get_person().has_permission("Processor_delete"); }
+    @JsonIgnore @Transient @Override public void check_update_permission()  throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.Processor_update.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_delete_permission()  throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.Processor_delete.name())) return;
+        throw new Result_Error_PermissionDenied();
+    }
 
-    public enum permissions{Processor_create, Processor_edit, Processor_delete}
-
+    public enum Permission { Processor_create, Processor_update, Processor_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public static Model_Processor get_byId(String id) {
+    @CacheField(value = Model_Processor.class, duration = CacheField.DayCacheConstant)
+    public static Cache<UUID, Model_Processor> cache;
 
-        terminal_logger.warn("CACHE is not implemented - TODO");
-        return find.byId(id);
+    public static Model_Processor getById(String id) throws _Base_Result_Exception {
+        return getById(UUID.fromString(id));
+    }
+
+    public static Model_Processor getById(UUID id) throws _Base_Result_Exception {
+
+        Model_Processor processor = cache.get(id);
+
+        if (processor == null) {
+
+            processor = Model_Processor.find.byId(id);
+            if (processor == null) throw new Result_Error_NotFound(Model_Processor.class);
+
+            cache.put(id, processor);
+        }
+
+        // Check Permission
+        processor.check_read_permission();
+        return processor;
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String, Model_Processor> find = new Finder<>(Model_Processor.class);
 
-
+    public static Finder<UUID, Model_Processor> find = new Finder<>(Model_Processor.class);
 }

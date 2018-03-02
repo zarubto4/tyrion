@@ -1,35 +1,47 @@
 package controllers;
 
+import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.*;
 import play.data.Form;
+import play.data.FormFactory;
 import play.libs.Json;
 import play.mvc.BodyParser;
-import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import responses.*;
 import utilities.Server;
+import utilities.authentication.Authentication;
 import utilities.emails.Email;
-import utilities.logger.Class_Logger;
-import utilities.logger.ServerLogger;
-import utilities.login_entities.Secured_API;
-import utilities.response.GlobalResult;
-import utilities.response.response_objects.*;
-import utilities.swagger.documentationClass.*;
-import utilities.swagger.outboundClass.Swagger_Project_Short_Detail;
+import utilities.enums.BoardCommand;
+import utilities.enums.NetworkStatus;
+import utilities.errors.Exceptions.Result_Error_InvalidBody;
+import utilities.hardware_registration_auhtority.DM_Board_Registration_Central_Authority;
+import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
+import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
+import utilities.logger.Logger;
+import utilities.swagger.input.*;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-@Security.Authenticated(Secured_API.class)
-public class Controller_Project extends Controller {
+@Security.Authenticated(Authentication.class)
+public class Controller_Project extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Project.class);
+    private static final Logger logger = new Logger(Controller_Project.class);
+
+// CONTROLLER CONFIGURATION ############################################################################################
+
+    private _BaseFormFactory baseFormFactory;
+
+    @Inject public Controller_Project(_BaseFormFactory formFactory) {
+        this.baseFormFactory = formFactory;
+    }
     
 // GENERAL PROJECT #####################################################################################################
 
@@ -44,14 +56,14 @@ public class Controller_Project extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Project_New",
+                            dataType = "utilities.swagger.input.Swagger_Project_New",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 201, message = "Successfully created",      response = Model_Project.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -62,28 +74,20 @@ public class Controller_Project extends Controller {
     public Result project_create() {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Project_New> form = Form.form(Swagger_Project_New.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_Project_New help = form.get();
+            // Get and Validate Object
+            Swagger_Project_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_Project_New.class);
 
-            Model_Product product = Model_Product.get_byId(help.product_id);
-            if (product == null) {return GlobalResult.result_notFound("Product not found");}
+            // Kontrola objektu
+            Model_Product product = Model_Product.getById(help.product_id);
 
             // Vytvoření objektu
             Model_Project project  = new Model_Project();
-            project.name = help.name;
+            project.name        = help.name;
             project.description = help.description;
-            project.product = product;
-
-            // Kontrola oprávnění těsně před uložením
-            if (!project.create_permission())  return GlobalResult.result_forbidden();
-            if (!project.financial_permission())  return GlobalResult.result_badRequest("You cannot create project right now. Buy an extension for projects.");
+            project.product     = product;
 
             // Uložení objektu
             project.save();
-
-            project.refresh();
 
             for (Model_Employee employee : product.customer.getEmployees()) {
 
@@ -93,18 +97,16 @@ public class Controller_Project extends Controller {
                 participant.state = employee.state;
 
                 participant.save();
-
-                System.out.println("P5idávám ID při registraci projektu do PErson Access " + project.id);
-                participant.person.cache_value_project_ids.add(project.id);
+                participant.person.cache_project_ids.add(project.id);
             }
 
             project.refresh();
 
             // Vrácení objektu
-            return GlobalResult.result_created(Json.toJson(project));
+            return created(project.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -112,11 +114,10 @@ public class Controller_Project extends Controller {
             tags = {"Project"},
             notes = "get all Projects by logged Person",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Project_Short_Detail.class, responseContainer = "list"),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class, responseContainer = "list"),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -127,10 +128,10 @@ public class Controller_Project extends Controller {
         try {
 
             // Vrácení seznamu
-            return GlobalResult.result_ok(Json.toJson(  Controller_Security.get_person().get_user_access_projects() ));
+            return ok(Json.toJson(person().get_user_access_projects()));
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -138,20 +139,9 @@ public class Controller_Project extends Controller {
             tags = {"Project"},
             notes = "get Projects by project_id",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_description", properties = {
-                            @ExtensionProperty(name = "Project.read_permission", value = Model_Project.read_permission_docs ),
-                    }),
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.read_permission", value = "true"),
-                            @ExtensionProperty(name = "Static Permission key", value =  "Project_read" ),
-                            @ExtensionProperty(name = "Dynamic Permission key", value = "Project_read.{project_id}"),
-                    })
-            }
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -159,22 +149,17 @@ public class Controller_Project extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result project_get(@ApiParam(value = "project_id String path", required = true)  String project_id) {
-
+    public Result project_get(UUID project_id) {
         try {
 
             // Kontrola objektu
-            Model_Project project = Model_Project.get_byId(project_id);
-            if (project == null) return GlobalResult.result_notFound("Project project_id not found");
-
-            // Kontrola oprávnění
-            if (!project.read_permission())   return GlobalResult.result_forbidden();
+            Model_Project project = Model_Project.getById(project_id);
 
             // Vraácení objektu
-            return GlobalResult.result_ok(Json.toJson(project));
+            return ok(project.json());
 
          } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
 
     }
@@ -192,7 +177,7 @@ public class Controller_Project extends Controller {
                     })
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -200,29 +185,19 @@ public class Controller_Project extends Controller {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result project_delete(@ApiParam(value = "project_id String path", required = true) String project_id) {
+    public Result project_delete(UUID project_id) {
         try {
-
             // Kontrola objektu
-            Model_Project project = Model_Project.get_byId(project_id);
-            if (project == null) return GlobalResult.result_notFound("Project project_id not found");
-
-            // Kontrola oprávnění
-            if (!project.delete_permission())   return GlobalResult.result_forbidden();
-
-            // Kvuli bezpečnosti abych nesmazal něco co nechceme
-            for (Model_CProgram c : project.get_c_programs_not_deleted()) {
-                c.delete();
-            }
+            Model_Project project = Model_Project.getById(project_id);
 
             // Smazání objektu
             project.delete();
 
             // Vrácení potvrzení
-            return GlobalResult.result_ok();
+            return ok();
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -230,26 +205,20 @@ public class Controller_Project extends Controller {
             tags = {"Project"},
             notes = "edit ne Project",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.edit_permission", value = "true")
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Project_Edit",
+                            dataType = "utilities.swagger.input.Swagger_NameAndDescription",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -258,33 +227,27 @@ public class Controller_Project extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_update(@ApiParam(value = "project_id String path", required = true)  String project_id) {
+    public Result project_update(UUID project_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Project_Edit> form = Form.form(Swagger_Project_Edit.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_Project_Edit help = form.get();
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_Project project = Model_Project.get_byId(project_id);
-            if (project == null) return GlobalResult.result_notFound("Project project_id not found");
-
-            // Kontrola oprávnění
-            if (!project.edit_permission() )   return GlobalResult.result_forbidden();
+            Model_Project project = Model_Project.getById(project_id);
 
             // Úprava objektu
-            project.name = help.project_name;
-            project.description = help.project_description;
+            project.name = help.name;
+            project.description = help.description;
 
             // Uložení do DB
             project.update();
 
             // Vrácení změny
-            return GlobalResult.result_ok(Json.toJson(project));
+            return ok(project.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -292,26 +255,20 @@ public class Controller_Project extends Controller {
             tags = {"Project"},
             notes = "sends Invitation to all users in list: List<persons_mail>",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.share_permission", value = "true")
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Invite_Person",
+                            dataType = "utilities.swagger.input.Swagger_Invite_Person",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
@@ -321,20 +278,17 @@ public class Controller_Project extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_invite(@ApiParam(value = "project_id String path", required = true)  String project_id) {
+    public Result project_invite(UUID project_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Invite_Person> form = Form.form(Swagger_Invite_Person.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_Invite_Person help = form.get();
+            // Get and Validate Object
+            Swagger_Invite_Person help = baseFormFactory.formFromRequestWithValidation(Swagger_Invite_Person.class);
 
             // Kontrola objektu
-            Model_Project project = Model_Project.get_byId(project_id);
-            if (project == null) return GlobalResult.result_notFound("Project project_id not found");
+            Model_Project project = Model_Project.getById(project_id);
 
             // Kontrola oprávnění
-            if (!project.share_permission()) return GlobalResult.result_forbidden();
+            project.check_share_permission();
 
             // Získání seznamu uživatelů, kteří jsou registrovaní(listIn) a kteří ne(listOut)
             List<Model_Person> listIn = new ArrayList<>();
@@ -342,30 +296,29 @@ public class Controller_Project extends Controller {
 
             // Roztřídění seznamů
             for (String mail : help.persons_mail) {
-                Model_Person person =  Model_Person.find.where().eq("mail",mail).findUnique();
+                Model_Person person =  Model_Person.find.query().where().eq("email",mail).findOne();
                 if (person != null) {
                     listIn.add(person);
-                    toRemove.add(person.mail);
+                    toRemove.add(person.email);
                 }
             }
             help.persons_mail.removeAll(toRemove);
 
-            terminal_logger.debug("project_invite - registered users {}", Json.toJson(listIn));
-            terminal_logger.debug("project_invite - unregistered users {}", Json.toJson(help.persons_mail));
+            logger.debug("project_invite - registered users {}", Json.toJson(listIn));
+            logger.debug("project_invite - unregistered users {}", Json.toJson(help.persons_mail));
 
-            String full_name = Controller_Security.get_person().full_name;
+            String full_name = person().full_name();
 
             // Vytvoření pozvánky pro nezaregistrované uživatele
             for (String mail :  help.persons_mail) {
 
-                terminal_logger.debug("project_invite - creating invitation for {}", mail);
+                logger.debug("project_invite - creating invitation for {}", mail);
 
-                Model_Invitation invitation = Model_Invitation.find.where().eq("mail", mail).eq("project.id", project.id).findUnique();
+                Model_Invitation invitation = Model_Invitation.find.query().where().eq("email", mail).eq("project.id", project.id).findOne();
                 if (invitation == null) {
                     invitation = new Model_Invitation();
-                    invitation.mail = mail;
-                    invitation.date_of_creation = new Date();
-                    invitation.owner = Controller_Security.get_person();
+                    invitation.email = mail;
+                    invitation.owner = person();
                     invitation.project = project;
                     invitation.save();
                 }
@@ -382,7 +335,7 @@ public class Controller_Project extends Controller {
                             .send(mail, "Invitation to Collaborate");
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError(e);
+                    logger.internalServerError(e);
                 }
             }
 
@@ -390,14 +343,13 @@ public class Controller_Project extends Controller {
 
                 if (project.isParticipant(person)) continue;
 
-                terminal_logger.debug("project_invite - creating invitation for {}", person.mail);
+                logger.debug("project_invite - creating invitation for {}", person.email);
 
-                Model_Invitation invitation = Model_Invitation.find.where().eq("mail", person.mail).eq("project.id", project.id).findUnique();
+                Model_Invitation invitation = Model_Invitation.find.query().where().eq("email", person.email).eq("project.id", project.id).findOne();
                 if (invitation == null) {
                     invitation = new Model_Invitation();
-                    invitation.mail = person.mail;
-                    invitation.date_of_creation = new Date();
-                    invitation.owner = Controller_Security.get_person();
+                    invitation.email = person.email;
+                    invitation.owner = person();
                     invitation.project = project;
                     invitation.save();
                 }
@@ -406,10 +358,10 @@ public class Controller_Project extends Controller {
 
                     new Email()
                             .text("User " + Email.bold(full_name) + " invites you to collaborate on the project " + Email.bold(project.name) + ". If you would like to participate in it, log in to your Byzance account.")
-                            .send(person.mail, "Invitation to Collaborate");
+                            .send(person.email, "Invitation to Collaborate");
 
                 } catch (Exception e) {
-                    terminal_logger.internalServerError(e);
+                    logger.internalServerError(e);
                 }
 
                 project.notification_project_invitation(person, invitation);
@@ -419,10 +371,10 @@ public class Controller_Project extends Controller {
             project.cache_refresh();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(project));
+            return ok(project.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -430,21 +382,20 @@ public class Controller_Project extends Controller {
             tags = {"Project"},
             notes = "Changes participant status ",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Project_Participant_status",
+                            dataType = "utilities.swagger.input.Swagger_Project_Participant_status",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_ProjectParticipant.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -452,24 +403,21 @@ public class Controller_Project extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_changeParticipantStatus(@ApiParam(value = "project_id String path", required = true)  String project_id) {
+    public Result project_changeParticipantStatus(UUID project_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Project_Participant_status> form = Form.form(Swagger_Project_Participant_status.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_Project_Participant_status help = form.get();
+            // Get and Validate Object
+            Swagger_Project_Participant_status help = baseFormFactory.formFromRequestWithValidation(Swagger_Project_Participant_status.class);
 
             // Kontrola objektu
-            Model_Project project = Model_Project.get_byId(project_id);
-            if (project == null) return GlobalResult.result_notFound("Project no longer exists");
+            Model_Project project = Model_Project.getById(project_id);
 
             // Kontrola oprávnění
-            if (!project.admin_permission()) return GlobalResult.result_forbidden();
+            project.admin_permission();
 
             // Kontrola objektu
-            Model_ProjectParticipant participant = Model_ProjectParticipant.find.where().eq("person.id", help.person_id).eq("project.id", project_id).findUnique();
-            if (participant == null) return GlobalResult.result_notFound("Participant not found");
+            Model_ProjectParticipant participant = Model_ProjectParticipant.find.query().where().eq("person.id", help.person_id).eq("project.id", project_id).findOne();
+            if (participant == null) return notFound("Participant not found");
 
             // Uložení změn
             participant.state = help.state;
@@ -478,9 +426,9 @@ public class Controller_Project extends Controller {
             // Odeslání notifikace uživateli
             project.notification_project_participant_change_status(participant);
 
-            return GlobalResult.result_ok(Json.toJson(participant));
+            return ok(Json.toJson(participant));
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -488,26 +436,20 @@ public class Controller_Project extends Controller {
             tags = {"Project"},
             notes = "unshare Project with all users in list: List<person_id>",
             produces = "application/json",
-            protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.unshare_permission", value = "true")
-                    })
-            }
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Invite_Person",
+                            dataType = "utilities.swagger.input.Swagger_Invite_Person",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -516,27 +458,24 @@ public class Controller_Project extends Controller {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_removeParticipant(@ApiParam(value = "project_id String path", required = true) String project_id) {
+    public Result project_removeParticipant(UUID project_id) {
         try {
 
-            // Zpracování Json
-            final Form<Swagger_Invite_Person> form = Form.form(Swagger_Invite_Person.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_Invite_Person help = form.get();
+            // Get and Validate Object
+            Swagger_Invite_Person help = baseFormFactory.formFromRequestWithValidation(Swagger_Invite_Person.class);
 
             //Kontrola objektu
-            Model_Project project = Model_Project.get_byId(project_id);
-            if (project == null) return GlobalResult.result_notFound("Project not found");
+            Model_Project project = Model_Project.getById(project_id);
 
             // Kontrola oprávnění
-            if (!project.unshare_permission()) return GlobalResult.result_forbidden();
+            project.check_share_permission();
 
             List<Model_Person> list = new ArrayList<>();
 
             // Získání seznamu
             for (String mail : help.persons_mail) {
 
-                Model_Person person = Model_Person.find.where().eq("mail",mail).findUnique();
+                Model_Person person = Model_Person.find.query().where().eq("email",mail).findOne();
                 if (person != null)
                     list.add(person);
             }
@@ -545,13 +484,13 @@ public class Controller_Project extends Controller {
 
             for (String mail : help.persons_mail) {
 
-                Model_Invitation invitation = Model_Invitation.find.where().eq("mail",mail).eq("project.id", project_id).findUnique();
+                Model_Invitation invitation = Model_Invitation.find.query().where().eq("email",mail).eq("project.id", project_id).findOne();
                 if (invitation != null)
                     invitations.add(invitation);
             }
 
             for (Model_Person person : list) {
-                Model_ProjectParticipant participant = Model_ProjectParticipant.find.where().eq("person.id", person.id).eq("project.id", project.id).findUnique();
+                Model_ProjectParticipant participant = Model_ProjectParticipant.find.query().where().eq("person.id", person.id).eq("project.id", project.id).findOne();
                 if (participant != null) {
 
                     // Úprava objektu
@@ -568,10 +507,310 @@ public class Controller_Project extends Controller {
             project.refresh();
 
             // Vrácení objektu
-            return GlobalResult.result_ok(Json.toJson(project));
+            return ok(project.json());
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "tag Project",
+            tags = {"Project"},
+            notes = "",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_Tags",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result project_addTags() {
+        try {
+
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+
+            Model_Project project = Model_Project.getById(help.object_id);
+
+            project.addTags(help.tags);
+
+            // Vrácení objektu
+            return ok(project.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "untag Project",
+            tags = {"Project"},
+            notes = "",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_Tags",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result project_removeTags() {
+        try {
+
+            // Get and Validate Object
+            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+
+            // Kontrola Objektu
+            Model_Project project = Model_Project.getById(help.object_id);
+
+            // Odstranění Tagu
+            project.removeTags(help.tags);
+
+            // Vrácení objektu
+            return ok(project.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "addHW Project",
+            tags = {"Project"},
+            notes = "add new HW to Project, creates HardwareRegistration",
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_Project_AddHardware",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Ok Result",                 response = Model_Hardware.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result project_addHardware() {
+        try {
+
+            // Get and Validate Object
+            Swagger_Project_AddHardware help = baseFormFactory.formFromRequestWithValidation(Swagger_Project_AddHardware.class);
+
+            logger.debug("registering new device with hash: {}", help.registration_hash);
+
+            // First - We have to find object in central Hardware Registration Atuhority
+            // Second Make a copy to local database for actual Hardware and if hardware is not active in any other project, automatically activated that
+
+            Model_Project project = Model_Project.getById(help.project_id);
+            project.check_update_permission();
+
+            DM_Board_Registration_Central_Authority registration_authority = Hardware_Registration_Authority.get_registration_hardware_from_central_authority_by_hash(help.registration_hash);
+
+            // Hash not exist
+            if(registration_authority == null){
+               return notFound("Hash not found.");
+            }
+
+            // Already not registred under project!
+            if (Model_Hardware.find.query().where().eq("full_id", registration_authority.full_id).eq("project.id", help.project_id).findCount() > 0) {
+                return badRequest("Already registred under this project");
+            }
+
+            // Copy is done - Hardware is saved in database, but without any connections for projec, groups etc..
+            Model_Hardware hardware = Hardware_Registration_Authority.make_copy_of_hardware_to_local_database(help.registration_hash);
+            hardware.project = project;
+
+            // Set name if help contains it
+            if(help.name != null && !help.name.equals("")) {
+                hardware.name = help.name;
+            }
+
+            // Set group if help contains it
+            if (help.group_ids != null && !help.group_ids.isEmpty()) {
+
+                for(UUID group_id : help.group_ids) {
+
+                    Model_HardwareGroup group = Model_HardwareGroup.getById(group_id);
+                    group.check_update_permission();
+
+                    group.hardware.add(hardware);
+
+                    hardware.hardware_groups.add(group);
+                    hardware.cache_hardware_groups_ids.add(group.id);
+                }
+            }
+
+            // Set Dominance if its possible (Not dominant in diferent project!
+            if (Model_Hardware.find.query().where().eq("full_id", hardware.full_id).eq("dominant_entity", true).findCount() == 0) {
+                hardware.dominant_entity = true;
+            }
+
+            // Update
+            hardware.update();
+
+            // Set hardware as Dominant if is not dominant in another project
+
+            if(project.cache_hardware_ids == null) {
+               project.cache_hardware_ids = new ArrayList<>();
+            }
+
+            project.cache_hardware_ids.add(hardware.id);
+
+            return created(hardware.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "removeHW Project",
+            tags = {"Project"},
+            notes = "removes HW from Project",
+            produces = "application/json",
+            protocols = "https"
+    )
+
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result project_removeHardware(String registration_id) {
+        try {
+
+            Model_Hardware hardware = Model_Hardware.getById(registration_id);
+
+
+            return ok();
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "deactiveHW Project",
+            tags = {"Project"},
+            notes = "freze HW from Project",
+            produces = "application/json",
+            protocols = "https"
+    )
+
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Hardware.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result project_deactiveHardware(String registration_id) {
+        try {
+
+            Model_Hardware hardware = Model_Hardware.getById(registration_id);
+
+            hardware.check_deactivate_permission();
+
+            hardware.dominant_entity = false;
+            hardware.update();
+
+            // log Hard disconection
+            if(hardware.online_state() == NetworkStatus.ONLINE) {
+                hardware.make_log_disconnect();
+                // If device is online, restart it. So Device will connect immediately and it will find probably a new activated alternative of Device
+                hardware.execute_command(BoardCommand.RESTART, true);
+            }
+
+            Model_Hardware.cache_status.remove(hardware.id);
+
+
+            return ok(hardware.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "activeHW Project",
+            tags = {"Project"},
+            notes = "freze HW from Project",
+            produces = "application/json",
+            protocols = "https"
+    )
+
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Hardware.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result project_activeHardware(String registration_id) {
+        try {
+
+            Model_Hardware hardware = Model_Hardware.getById(registration_id);
+
+            hardware.check_activate_permission();
+            hardware.dominant_entity = true;
+            hardware.update();
+
+            hardware.is_online_get_from_cache();
+
+
+            return ok(hardware.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
         }
     }
 }

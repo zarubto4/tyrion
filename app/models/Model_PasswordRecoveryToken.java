@@ -1,67 +1,41 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import utilities.logger.Class_Logger;
+import io.ebean.Finder;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.logger.Logger;
+import utilities.model.BaseModel;
 
 import javax.persistence.*;
-import java.util.Date;
 import java.util.UUID;
 
 @Entity
 @Table(name="PasswordRecoveryToken")
-public class Model_PasswordRecoveryToken extends Model{
+public class Model_PasswordRecoveryToken extends BaseModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_PasswordRecoveryToken.class);
+    private static final Logger logger = new Logger(Model_PasswordRecoveryToken.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-          @Id public String id;
     @OneToOne public Model_Person person;
               public String password_recovery_token;
-              public Date time_of_creation;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public void  setPasswordRecoveryToken(){
-        while(true){ // I need Unique Value
+    public void  setPasswordRecoveryToken() {
+        while(true) { // I need Unique Value
             this.password_recovery_token = UUID.randomUUID().toString();
-            if (Model_PasswordRecoveryToken.find.where().eq("password_recovery_token",this.password_recovery_token).findUnique() == null) break;
+            if (Model_PasswordRecoveryToken.find.query().where().eq("password_recovery_token",this.password_recovery_token).findOne() == null) break;
         }
     }
-
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override
-    public void save() {
-
-        terminal_logger.debug("save :: Creating new Object");
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
-            if (Model_Invitation.find.byId(this.id) == null) break;
-        }
-        super.save();
-    }
-
-    @JsonIgnore @Override public void update() {
-        terminal_logger.debug("update :: Update object Id: {}",  this.id);
-
-        super.update();
-    }
-
-    @JsonIgnore @Override public void delete() {
-
-        terminal_logger.debug("update :: Delete object Id: {} ", this.id);
-
-        super.delete();
-    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -73,9 +47,14 @@ public class Model_PasswordRecoveryToken extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<String,Model_PasswordRecoveryToken> find = new Finder<>(Model_PasswordRecoveryToken.class);
 
+    public static Finder<UUID, Model_PasswordRecoveryToken> find = new Finder<>(Model_PasswordRecoveryToken.class);
 }

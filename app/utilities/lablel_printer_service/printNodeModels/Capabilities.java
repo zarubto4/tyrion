@@ -7,7 +7,7 @@ import java.util.HashMap;
  */
 public class Capabilities {
 
-    public Capabilities(){}
+    public Capabilities() {}
     
     public String[] bins;
     public boolean collate;

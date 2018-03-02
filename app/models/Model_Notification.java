@@ -1,21 +1,26 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import controllers.Controller_Security;
+import controllers._BaseController;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.enums.*;
-import utilities.logger.Class_Logger;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.logger.Logger;
+import utilities.model.BaseModel;
 import utilities.notifications.NotificationHandler;
 import utilities.notifications.helps_objects.*;
-import utilities.swagger.outboundClass.Swagger_Notification_Button;
-import utilities.swagger.outboundClass.Swagger_Notification_Element;
-import web_socket.services.WS_Becki_Website;
+import utilities.swagger.output.Swagger_Notification_Button;
+import utilities.swagger.output.Swagger_Notification_Element;
+import websocket.interfaces.WS_Portal;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -26,65 +31,60 @@ import java.util.UUID;
 @Entity
 @ApiModel( value = "Notification", description = "Model of Notification" )
 @Table(name="Notification")
-public class Model_Notification extends Model {
+public class Model_Notification extends BaseModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_Notification.class);
+    private static final Logger logger = new Logger(Model_Notification.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-             @Id   @JsonProperty @ApiModelProperty(required = true) public String id;
+          @Enumerated(EnumType.STRING) public NotificationLevel notification_level;   // Typ zprávy
+          @Enumerated(EnumType.STRING) public NotificationImportance notification_importance; // Důležitost (podbarvení zprávy)
+          @Transient                   public NotificationType notification_type; // Typ zprávy pro long pool - chain message.
+          @Enumerated(EnumType.STRING) public NotificationState state; // Machinace s notifikací na straně Becki
 
-    @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Notification_level notification_level;   // Typ zprávy
-    @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Notification_importance notification_importance; // Důležitost (podbarvení zprávy)
-    @Transient                   @ApiModelProperty(required = true) public Enum_Notification_type notification_type; // Typ zprávy pro long pool - chain message.
-    @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Enum_Notification_state state; // Machinace s notifikací na straně Becki
+    @Column(columnDefinition = "TEXT") private String content_string;  // Obsah v podobě Json.toString().
+    @Column(columnDefinition = "TEXT") private String buttons_string;
 
-                                @Column(columnDefinition = "TEXT")  private String content_string;  // Obsah v podobě Json.toString().
-                                @Column(columnDefinition = "TEXT")  private String buttons_string;
-
-                                @ApiModelProperty(required = true)  public boolean confirmation_required;
-                                @ApiModelProperty(required = true)  public boolean confirmed;
-                                @ApiModelProperty(required = true)  public boolean was_read;
-
-
-    @ApiModelProperty(required = true, dataType = "integer",
-            readOnly = true, value = "UNIX time in ms")             public Date   created;
+                                       public boolean confirmation_required;
+                                       public boolean confirmed;
+                                       public boolean was_read;
+                                
 
     @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY) public Model_Person person;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, example = "notification")            @JsonProperty public static final String messageType = "notification";              //TODO DB na message_type
-    @ApiModelProperty(required = true, example =  WS_Becki_Website.CHANNEL) @JsonProperty public static final String messageChannel = WS_Becki_Website.CHANNEL; //TODO DB na message_channel
+    @ApiModelProperty(required = true, example = WS_Portal.CHANNEL) @JsonProperty public static final String messageChannel = WS_Portal.CHANNEL; //TODO DB na message_channel
 
-    @JsonProperty @ApiModelProperty(required = true) public String message_type(){ return messageType;}
-    @JsonProperty @ApiModelProperty(required = true) public String message_channel(){ return messageChannel;}
+    @JsonProperty @ApiModelProperty(required = true) public String message_type() { return messageType;}
+    @JsonProperty @ApiModelProperty(required = true) public String message_channel() { return messageChannel;}
 
     @JsonProperty @ApiModelProperty(required = true)
-    public List<Swagger_Notification_Element> notification_body(){
+    public List<Swagger_Notification_Element> notification_body() {
         try {
-            if(array == null || array.size() < 1) array = new ObjectMapper().readValue(content_string, new TypeReference<List<Swagger_Notification_Element>>() {});
+            if (array == null || array.size() < 1) array = new ObjectMapper().readValue(content_string, new TypeReference<List<Swagger_Notification_Element>>() {});
             return array;
 
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return new ArrayList<>();   // Vracím prázdný list - ale reportuji chybu
         }
     }
 
     @JsonProperty @ApiModelProperty(required = false)
-    public List<Swagger_Notification_Button> buttons(){
+    public List<Swagger_Notification_Button> buttons() {
         try {
 
-            if((buttons == null || buttons.size() < 1) && buttons_string != null ){
+            if ((buttons == null || buttons.size() < 1) && buttons_string != null ) {
                 buttons = new ObjectMapper().readValue(buttons_string, new TypeReference<List<Swagger_Notification_Button>>() {});
             }
             return buttons;
 
-        }catch (Exception e){
-            terminal_logger.internalServerError(e);
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return new ArrayList<>();   // Vracím prázdný list - ale reportuji chybu
         }
 
@@ -96,58 +96,58 @@ public class Model_Notification extends Model {
     @JsonIgnore @Transient List<Swagger_Notification_Button> buttons = new ArrayList<>();
 
     @JsonIgnore
-    public Model_Notification(){
-        this.state = Enum_Notification_state.created;
-        this.notification_type = Enum_Notification_type.INDIVIDUAL;
+    public Model_Notification() {
+        this.state = NotificationState.CREATED;
+        this.notification_type = NotificationType.INDIVIDUAL;
         this.created = new Date();
     }
 
-    @JsonIgnore  @Transient
-    public Model_Notification setId(String id){
+    @JsonIgnore
+    public Model_Notification setNotificationId(UUID id) {
         this.id = id;
         return this;
     }
 
-    @JsonIgnore  @Transient
-    public Model_Notification setImportance(Enum_Notification_importance importance){
+    @JsonIgnore
+    public Model_Notification setImportance(NotificationImportance importance) {
         this.notification_importance = importance;
         return this;
     }
 
-    @JsonIgnore  @Transient
-    public Model_Notification setLevel(Enum_Notification_level level){
+    @JsonIgnore
+    public Model_Notification setLevel(NotificationLevel level) {
         this.notification_level = level;
         return this;
     }
 
-    @JsonIgnore  @Transient
-    public Model_Notification setState(Enum_Notification_state state){
+    @JsonIgnore
+    public Model_Notification setState(NotificationState state) {
         this.state = state;
         return this;
     }
 
     //---------------------------------------------------------------------------------------------------------------------
 
-    @JsonIgnore @Transient
-    public Model_Notification setText(Notification_Text text){
+    @JsonIgnore
+    public Model_Notification setText(Notification_Text text) {
         array.add(text.element);
         return this;
     }
 
-    @JsonIgnore @Transient
-    public Model_Notification setnewLine(){
+    @JsonIgnore
+    public Model_Notification setNewLine() {
         array.add( new Notification_NewLine().element );
         return this;
     }
 
-    @JsonIgnore @Transient
-    public Model_Notification setChainType(Enum_Notification_type notification_type){
+    @JsonIgnore
+    public Model_Notification setChainType(NotificationType notification_type) {
         this.notification_type = notification_type;
         return this;
     }
 
-    @JsonIgnore @Transient
-    public Model_Notification setDate(Date date){
+    @JsonIgnore
+    public Model_Notification setDate(Date date) {
 
         Notification_Date element_date = new Notification_Date();
         element_date.setDate(date);
@@ -156,19 +156,19 @@ public class Model_Notification extends Model {
         return this;
     }
 
-    @JsonIgnore @Transient
-    public Model_Notification setObject(Object object){
+    @JsonIgnore
+    public Model_Notification setObject(Object object) {
 
         Swagger_Notification_Element element = new Swagger_Notification_Element();
-        element.type       = Enum_Notification_element_type.object;
+        element.type       = NotificationElement.OBJECT;
         element.color      = "black";
 
         String class_name = object.getClass().getSimpleName().replaceAll("Swagger_","").replaceAll("Model_","");
 
-        switch (class_name){
+        switch (class_name) {
             case "Person" : {
                 element.name = class_name;
-                element.text = ((Model_Person)object).full_name;
+                element.text = ((Model_Person)object).full_name();
                 element.id = ((Model_Person)object).id;
                 break;
             }
@@ -190,12 +190,12 @@ public class Model_Notification extends Model {
                 element.id = ((Model_Project)object).id;
                 break;
             }
-            case "Board" : {
-                Model_Board board = (Model_Board)object;
+            case "Hardware" : {
+                Model_Hardware hardware = (Model_Hardware)object;
                 element.name = class_name;
-                element.id = board.id;
-                element.text = board.name;
-                element.project_id = board.project_id();
+                element.id = hardware.id;
+                element.text = hardware.name;
+                element.project_id = hardware.project_id();
                 break;
             }
             case "CProgram" : {
@@ -203,7 +203,7 @@ public class Model_Notification extends Model {
                 element.name = class_name;
                 element.id = cProgram.id;
                 element.text = cProgram.name;
-                element.project_id = cProgram.project_id();
+                element.project_id = cProgram.get_project_id();
                 break;
             }
             case "BProgram" : {
@@ -214,50 +214,61 @@ public class Model_Notification extends Model {
                 element.project_id = bProgram.project != null ? bProgram.project.id : null;
                 break;
             }
-            case "VersionObject" : {
+            case "CProgramVersion" : {
 
-                Model_VersionObject versionObject = (Model_VersionObject)object;
+                Model_CProgramVersion version = (Model_CProgramVersion) object;
 
-                element.id = versionObject.id;
 
-                if (versionObject.get_c_program() != null){
+                element.name = class_name;
+                element.id = version.id;
+                element.text = version.name;
+                element.program_id = version.get_c_program_id();
+                element.project_id = version.get_c_program().get_project_id();
+                break;
+            }
+            case "BProgramVersion" : {
 
-                    element.name = "C_Program_Version";
-                    element.text = versionObject.version_name;
-                    element.program_id = versionObject.get_c_program().id;
-                    element.project_id = versionObject.get_c_program().project_id();
+                Model_BProgramVersion version = (Model_BProgramVersion) object;
 
-                } else if (versionObject.get_b_program() != null){
+                element.name = class_name;
+                element.id = version.id;
+                element.text = version.name;
+                element.program_id = version.get_b_program_id();
+                element.project_id = version.get_b_program().get_project_id();
+                break;
+            }
+            case "GridProgramVersion" : {
 
-                    element.name = "B_Program_Version";
-                    element.text = versionObject.version_name;
-                    element.program_id = versionObject.get_b_program().id;
-                    element.project_id = versionObject.get_b_program().project != null ? versionObject.get_b_program().project.id : null;
-                }
+                Model_GridProgramVersion version = (Model_GridProgramVersion) object;
 
+                element.name = class_name;
+                element.id = version.id;
+                element.text = version.name;
+                element.program_id = version.get_grid_program_id();
+                element.project_id = version.get_grid_program().get_grid_project_id();
                 break;
             }
 
-            case "HomerInstance" : {
-                Model_HomerInstance homerInstance = (Model_HomerInstance) object;
+            case "Instance" : {
+                Model_Instance homerInstance = (Model_Instance) object;
                 element.name = class_name;
                 element.id = homerInstance.id;
-                element.project_id = homerInstance.b_program.project_id();
+                element.project_id = homerInstance.project_id();
 
                 break;
             }
 
             case "ActualizationProcedure" : {
-                Model_ActualizationProcedure actualizationProcedure = (Model_ActualizationProcedure) object;
+                Model_UpdateProcedure actualizationProcedure = (Model_UpdateProcedure) object;
                 element.name = class_name;
                 element.text = actualizationProcedure.id.toString().substring(0,12);
-                element.id = actualizationProcedure.id.toString();
+                element.id = actualizationProcedure.id;
                 element.project_id = actualizationProcedure.get_project_id();
                 break;
             }
 
             default:{
-                terminal_logger.internalServerError(new Exception("Notification Unsupported Object: " + class_name));
+                logger.internalServerError(new Exception("Notification Unsupported Object: " + class_name));
             }
         }
 
@@ -265,14 +276,14 @@ public class Model_Notification extends Model {
         return this;
     }
 
-    @JsonIgnore @Transient
-    public Model_Notification setLink(Notification_Link link){
+    @JsonIgnore
+    public Model_Notification setLink(Notification_Link link) {
         array.add(link.element);
         return this;
     }
 
-    @JsonIgnore @Transient
-    public Model_Notification setButton(Notification_Button button){
+    @JsonIgnore
+    public Model_Notification setButton(Notification_Button button) {
         this.confirmation_required = true;
         buttons.add(button.element);
         return this;
@@ -282,32 +293,32 @@ public class Model_Notification extends Model {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @Override
-    public void save(){
+    public void save() {
         // Notifikace je automaticky uložena pomocí save_object()
-        terminal_logger.info("Notifikace je automaticky uložena pomocí save_object()");
+        logger.info("Notifikace je automaticky uložena pomocí save_object()");
         try {
             throw new Exception("Not supported! Notifications are saved automatically using save_object()");
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 
     @Override
-    public void delete(){
+    public boolean delete() {
         try {
-            this.state = Enum_Notification_state.deleted;
+            this.state = NotificationState.DELETED;
             this.send();
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
-        super.delete();
+        return super.delete();
     }
 
-    @JsonIgnore @Transient
-    public Model_Notification save_object(){
+    @JsonIgnore
+    public Model_Notification save_object() {
 
         while (true) { // I need Unique Value
-            this.id = UUID.randomUUID().toString();
+            this.id = UUID.randomUUID(); // TODO rewrite
             if (Model_Notification.find.byId(this.id) == null) break;
         }
 
@@ -319,67 +330,66 @@ public class Model_Notification extends Model {
         try {
 
             // If the notification is about project invitation, id of the notification is saved to model invitation
-            if ((!this.buttons().isEmpty()) && (this.buttons().get(0).action == Enum_Notification_action.accept_project_invitation)) {
+            if ((!this.buttons().isEmpty()) && (this.buttons().get(0).action == NotificationAction.ACCEPT_PROJECT_INVITATION)) {
 
-                Model_Invitation invitation = Model_Invitation.find.byId(this.buttons().get(0).payload);
+                Model_Invitation invitation = Model_Invitation.getById(this.buttons().get(0).payload);
                 invitation.notification_id = this.id;
                 invitation.update();
             }
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
 
         return this;
     }
 
-    @JsonIgnore @Transient
-    public void set_read(){
+    @JsonIgnore
+    public void set_read() {
         this.was_read = true;
         this.update();
     }
 
-    @JsonIgnore @Transient
-    public void confirm(){
+    @JsonIgnore
+    public void confirm() {
         this.confirmed = true;
         this.was_read = true;
         this.update();
-        this.state = Enum_Notification_state.updated;
+        this.state = NotificationState.UPDATED;
         this.send();
     }
 
-    @JsonIgnore @Transient public List<String> list_of_ids_receivers = new ArrayList<>(); // List ofon_ids Pers
+    @JsonIgnore @Transient public List<UUID> list_of_ids_receivers = new ArrayList<>();
 
-    @JsonIgnore @Transient
-    public void send(List<Model_Person> receivers){
-        for(Model_Person person : receivers) this.list_of_ids_receivers.add(person.id);
+    @JsonIgnore
+    public void send(List<Model_Person> receivers) {
+        for (Model_Person person : receivers) this.list_of_ids_receivers.add(person.id);
         NotificationHandler.addToQueue(this);
     }
 
+    @JsonIgnore
+    public void send_under_project(UUID project_id) {
 
-    @JsonIgnore @Transient
-    public void send_under_project(String project_id){
-
-        if(project_id == null){
+        if (project_id == null) {
             return;
         }
 
-        this.list_of_ids_receivers.addAll( Model_Project.get_project_becki_person_ids_list(project_id)); // Přidám z Cashe všechny ID osob, které odebírjí konkrétní projekt
+        this.list_of_ids_receivers.addAll(Model_Project.get_project_becki_person_ids_list(project_id)); // Přidám z Cashe všechny ID osob, které odebírjí konkrétní projekt
         NotificationHandler.addToQueue(this);
     }
 
-    @JsonIgnore @Transient
-    public void send(Model_Person person){
+    @JsonIgnore
+    public void send(Model_Person person) {
         this.list_of_ids_receivers.add(person.id);
         NotificationHandler.addToQueue(this);
     }
 
     // Pro opětovné odeslání, když už notifikace obsahuje person
-    @JsonIgnore @Transient
-    public void send(){
+    @JsonIgnore
+    public void send() {
         try {
             NotificationHandler.addToQueue(this);
-        }catch (NullPointerException npe){
-            terminal_logger.internalServerError(new Exception("Method probably misused, use this method only when you resend notifications. If notification contains person."));
+        } catch (NullPointerException npe) {
+            logger.internalServerError(new Exception("Method probably misused, use this method only when you resend notifications. If notification contains person."));
         }
 
     }
@@ -392,24 +402,49 @@ public class Model_Notification extends Model {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public boolean delete_permission(){return this.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Notification_delete") ;}
-    @JsonIgnore @Transient public boolean confirm_permission(){return this.person.id.equals(Controller_Security.get_person_id()) || Controller_Security.get_person().has_permission("Notification_confirm") ;}
 
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        throw new Result_Error_NotSupportedException();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        throw new Result_Error_NotSupportedException();
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.Notification_read.name())) return;
+        if(this.person.id.equals(_BaseController.personId())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient @Override public void check_delete_permission() {
+        if(_BaseController.person().has_permission(Permission.Notification_delete.name())) return;
+        if(this.person.id.equals(_BaseController.personId())) return;
+        throw new Result_Error_PermissionDenied();
+    }
+    @JsonIgnore @Transient public void check_confirm_permission() {
+        if(this.person.id.equals(_BaseController.personId())) return;
+        throw new Result_Error_PermissionDenied();
+    }
 
+    public enum Permission {Notification_crete, Notification_update, Notification_read, Notification_delete}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public static Model_Notification get_byId(String id) {
+    //!!!!! Do not implement Cache!!!
 
-        terminal_logger.warn("CACHE is not implemented - TODO");
-        return find.byId(id);
+    public static Model_Notification getById(String id) throws _Base_Result_Exception {
+        return getById(UUID.fromString(id));
+    }
 
+    public static Model_Notification getById(UUID id) throws _Base_Result_Exception {
+        Model_Notification notification = find.byId(id);
+        if(notification == null)  throw new Result_Error_NotFound(Model_Notification.class);
+
+        // Check Permission
+        notification.check_read_permission();
+        return notification;
     }
 
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<String,Model_Notification> find = new Finder<>(Model_Notification.class);
-
+    public static Finder<UUID,Model_Notification> find = new Finder<>(Model_Notification.class);
 }

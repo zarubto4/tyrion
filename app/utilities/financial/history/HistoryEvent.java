@@ -1,5 +1,7 @@
 package utilities.financial.history;
 
+import java.util.UUID;
+
 /**
  * This class contains information about financial event.
  */
@@ -23,5 +25,5 @@ public class HistoryEvent {
     /**
      * String id of an related invoice if there is any.
      */
-    public String invoice_id;
+    public UUID invoice_id;
 }

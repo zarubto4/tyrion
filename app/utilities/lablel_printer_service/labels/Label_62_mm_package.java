@@ -1,66 +1,64 @@
 package utilities.lablel_printer_service.labels;
 
-
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Image;
+import controllers._BaseController;
+import models.Model_CProgramVersion;
+import models.Model_Garfield;
+import models.Model_Hardware;
+import models.Model_HardwareBatch;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
+import utilities.hardware_registration_auhtority.DM_Board_Registration_Central_Authority;
+import utilities.logger.Logger;
 
-import java.io.FileOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
-
-import controllers.Controller_Security;
-import models.Model_Board;
-import models.Model_Garfield;
-import models.Model_TypeOfBoard_Batch;
-import models.Model_VersionObject;
-import utilities.logger.Class_Logger;
-
 import java.io.*;
-
 
 public class Label_62_mm_package {
 
     // Logger
-    private static final Class_Logger terminal_logger = new Class_Logger(Label_62_mm_package.class);
+    private static final Logger terminal_logger = new Logger(Label_62_mm_package.class);
 
     // For image placing to cell
     private PdfContentByte contentByte;
     private Rectangle Label_65_mm_Antistatic_Package = new RectangleReadOnly(Utilities.millimetersToPoints(62), Utilities.millimetersToPoints(75));
 
-    Model_Board board = null;
-    Model_TypeOfBoard_Batch print_info = null;
+    Model_Hardware board = null;
+    Model_HardwareBatch print_info = null;
     Model_Garfield garfield = null;
 
-    public Label_62_mm_package(Model_Board board, Model_TypeOfBoard_Batch batch, Model_Garfield garfield) throws IllegalArgumentException{
+    public Label_62_mm_package(Model_Hardware board, Model_HardwareBatch batch, Model_Garfield garfield) throws IllegalArgumentException{
 
         this.board = board;
         this.print_info = batch;
         this.garfield = garfield;
 
 
-        Model_VersionObject test_version = Model_VersionObject.find.where().eq("default_program.type_of_board.boards.id", board.id).isNotNull("default_program.type_of_board_test").findUnique();
-        Model_VersionObject production_version = Model_VersionObject.find.where().eq("default_program.type_of_board.boards.id", board.id).isNotNull("default_program.type_of_board_default").findUnique();
+        Model_CProgramVersion test_version = Model_CProgramVersion.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_test").findOne();
+        Model_CProgramVersion production_version = Model_CProgramVersion.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_default").findOne();
 
 
-        if(test_version == null){
+        if (test_version == null) {
             terminal_logger.error("Label_62_mm_package:: Test Firmware is not set");
         }
 
-        if(production_version == null){
+        if (production_version == null) {
             terminal_logger.error("Label_62_mm_package:: Production Firmware is not set");
         }
 
-        if(garfield == null){
+        if (garfield == null) {
             throw new IllegalArgumentException("Garfield is not set");
         }
     }
 
-    public ByteArrayOutputStream get_label(){
+    public ByteArrayOutputStream get_label() {
 
         try {
 
@@ -76,14 +74,14 @@ public class Label_62_mm_package {
             */
             return out;
 
-        } catch (Exception e){
+        } catch (Exception e) {
             terminal_logger.internalServerError(e);
             e.printStackTrace();
             return null;
         }
     }
 
-    private ByteArrayOutputStream make_label(){
+    private ByteArrayOutputStream make_label() {
         try {
 
             // step 2: Create Document
@@ -120,14 +118,14 @@ public class Label_62_mm_package {
 
             return out;
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             terminal_logger.internalServerError(e);
             return null;
         }
     }
 
-    private PdfPTable head(){
+    private PdfPTable head() {
 
         PdfPTable head = new PdfPTable(1);
         head.setWidthPercentage(100);
@@ -160,7 +158,7 @@ public class Label_62_mm_package {
         PdfPCell cell_Right = new PdfPCell();
 
             Paragraph p_code = new Paragraph("Code: ", bold);
-                      p_code.add(new Chunk(board.get_type_of_board().name, regular));
+                      p_code.add(new Chunk(board.getHardwareType().name, regular));
 
             Paragraph p_product = new Paragraph("Product Revision: ", bold);
                       p_product.add(new Chunk(print_info.revision , regular));
@@ -181,27 +179,27 @@ public class Label_62_mm_package {
 
 
             SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
-            String date = DATE_FORMAT.format(board.date_of_create);
+            String date = DATE_FORMAT.format(board.created);
 
             Paragraph p_tested = new Paragraph("Tested: ", bold);
                       p_tested.add(new Chunk(date, regular));
 
 
-            board.get_type_of_board().main_test_c_program();
+            board.getHardwareType().main_test_c_program();
 
 
-            Model_VersionObject test_version = Model_VersionObject.find.where().eq("default_program.type_of_board.boards.id", board.id).isNotNull("default_program.type_of_board_test").findUnique();
-            Model_VersionObject production_version = Model_VersionObject.find.where().eq("default_program.type_of_board.boards.id", board.id).isNotNull("default_program.type_of_board_default").findUnique();
+        Model_CProgramVersion test_version = Model_CProgramVersion.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_test").findOne();
+        Model_CProgramVersion production_version = Model_CProgramVersion.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_default").findOne();
 
 
             Paragraph p_test_version = new Paragraph("FW Test Version: ", bold);
-                      p_test_version.add(new Chunk(test_version != null ? test_version.version_name : "Not Tracked ", regular));
+                      p_test_version.add(new Chunk(test_version != null ? test_version.name : "Not Tracked ", regular));
 
             Paragraph p_prod_version = new Paragraph("FW Prod Version: ", bold);
-                      p_prod_version.add(new Chunk(production_version != null ? production_version.version_name : "Not Tracked ", regular));
+                      p_prod_version.add(new Chunk(production_version != null ? production_version.name : "Not Tracked ", regular));
 
             Paragraph p_who_tested = new Paragraph("Who tested it: ", bold);
-                      p_who_tested.add(new Chunk(Controller_Security.get_person().full_name, regular));
+                      p_who_tested.add(new Chunk(_BaseController.person().full_name(), regular));
 
             Paragraph station = new Paragraph("Test Station: ", bold);
                       station.add(new Chunk(garfield.name, regular));
@@ -218,7 +216,7 @@ public class Label_62_mm_package {
         return table;
     }
 
-    private PdfPTable device_id_barcode() throws DocumentException {
+    private PdfPTable device_id_barcode() throws DocumentException, _Base_Result_Exception, IOException {
 
 
         PdfPTable table = new PdfPTable(2);
@@ -245,8 +243,13 @@ public class Label_62_mm_package {
         Paragraph add_description = new Paragraph("Registration Hash ", bold);
         add_description.setAlignment(Element.ALIGN_MIDDLE);
 
+        // Mac Address ID
+        DM_Board_Registration_Central_Authority hw = Hardware_Registration_Authority.get_registration_hardware_from_central_authority_by_full_id(board.full_id);
+        if(hw == null) {
+            throw new Result_Error_NotFound(Model_Hardware.class);
+        }
         // QR Code for ADD
-        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(board.hash_for_adding, 1000, 1000, null);
+        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(hw.hash_for_adding, 1000, 1000, null);
         Image codeQrImage = barcodeQRCode.getImage();
         codeQrImage.scaleAbsolute(50 , 50);
 
@@ -263,13 +266,13 @@ public class Label_62_mm_package {
         Paragraph p_code = new Paragraph("Processor ID ", bold);
                   p_code.setAlignment(Element.ALIGN_MIDDLE);
                   p_code.add( Chunk.NEWLINE );
-                  p_code.add(new Chunk(board.id, regular));
+                  p_code.add(new Chunk(board.id.toString(), regular));
                   table.addCell(p_code);
 
         // Left Cell 2
         Paragraph database_id = new Paragraph("Database ID ", bold);
                   database_id.add( Chunk.NEWLINE );
-                  database_id.add(new Chunk(board.id, regular));
+                  database_id.add(new Chunk(board.id.toString(), regular));
                   table.addCell(database_id);
 
         // Left Cell 3
@@ -298,7 +301,7 @@ public class Label_62_mm_package {
         return  table;
     }
 
-    private PdfPTable bottom(){
+    private PdfPTable bottom() {
 
         PdfPTable bottom = new PdfPTable(1);
         bottom.setWidthPercentage(100);

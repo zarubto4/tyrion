@@ -1,5 +1,0 @@
-
- SEM SI DÁVÁM POZNÁMKY K VÝVOJI
-
-   // Zpracování Json
-   Swagger_B_Program_New help = Json.fromJson(request().body().asJson(), Swagger_B_Program_New.class);

@@ -1,81 +1,51 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.Controller_Security;
+import controllers._BaseController;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import utilities.enums.Enum_Participant_status;
-import utilities.logger.Class_Logger;
-import utilities.swagger.outboundClass.Swagger_Person_Short_Detail;
+import utilities.enums.ParticipantStatus;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.logger.Logger;
+import utilities.model.BaseModel;
 
 import javax.persistence.*;
-import java.util.Date;
 import java.util.UUID;
 
 @Entity
 @ApiModel(value = "Employee", description = "Model of Employee")
 @Table(name="Employee")
-public class Model_Employee extends Model{
+public class Model_Employee extends BaseModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_Employee.class);
+    private static final Logger logger = new Logger(Model_Employee.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                            @Id public UUID id;
-                    @JsonIgnore public Date created;
-                                public Enum_Participant_status state;
+                                public ParticipantStatus state;
          @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Person person;
          @JsonIgnore @ManyToOne public Model_Customer customer;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty
-    public Swagger_Person_Short_Detail person(){
-
-        return this.get_person().get_short_person();
+    public Model_Person person() {
+        return this.get_person();
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @Transient @JsonIgnore
-    public Model_Person get_person(){
+    public Model_Person get_person() {
 
-        Model_Person person = Model_Person.find.where().eq("employees.id", id).select("id").findUnique();
-        return Model_Person.get_byId(person.id);
-
+        Model_Person person = Model_Person.find.query().where().eq("employees.id", id).select("id").findOne();
+        return Model_Person.getById(person.id);
     }
-
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override
-    public void save() {
-
-        terminal_logger.debug("save: Creating new Object");
-
-        created = new Date();
-
-        super.save();
-    }
-
-    @JsonIgnore @Override
-    public void update() {
-
-        terminal_logger.debug("update: Update object Id = {}",  this.id);
-
-        super.update();
-    }
-
-    @JsonIgnore @Override
-    public void delete() {
-
-        terminal_logger.debug("delete: Delete object Id = {} ", this.id);
-
-        this.delete();
-    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -89,20 +59,47 @@ public class Model_Employee extends Model{
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore   public boolean create_permission()    {return true;}
-    @JsonProperty public boolean update_permission()    {return true;}
-    @JsonProperty public boolean edit_permission()      {return true;}
-    @JsonProperty public boolean delete_permission()    {return person.id.equals(Controller_Security.get_person_id()) || customer.isEmployee(Controller_Security.get_person()) || Controller_Security.get_person().has_permission("Employee_delete");}
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.Employee_read.name())) return;
+        if(person.id.equals(_BaseController.person().id)) return;
+        customer.check_read_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.Employee_crate.name())) return;
+        if(person.id.equals(_BaseController.person().id)) return;
+        customer.check_update_permission();
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.Employee_update.name())) return;
+        if(person.id.equals(_BaseController.person().id)) return;
+        customer.check_update_permission();
+    }
 
-    public enum permissions{Employee_edit, Employee_read, Employee_update, Employee_delete}
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.Employee_delete.name())) return;
+        if(person.id.equals(_BaseController.person().id)) return;
+        customer.check_delete_permission();
+    }
+
+    public enum Permission { Employee_crate, Employee_edit, Employee_read, Employee_update, Employee_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore public static Model_Employee get_byId(String id) {
-        return find.byId(id);
+    public static Model_Employee getById(String id) throws _Base_Result_Exception {
+        return getById(UUID.fromString(id));
+    }
+    
+    public static Model_Employee getById(UUID id) throws _Base_Result_Exception {
+
+        Model_Employee employee = find.byId(id);
+        if (employee == null) throw new Result_Error_NotFound(Model_Employee.class);
+
+        employee.check_read_permission();
+        return employee;
+
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<String, Model_Employee> find = new Finder<>(Model_Employee.class);
+    public static Finder<UUID, Model_Employee> find = new Finder<>(Model_Employee.class);
 }

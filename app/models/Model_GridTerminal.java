@@ -1,42 +1,39 @@
 package models;
 
-import com.avaje.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.logger.Class_Logger;
-
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.logger.Logger;
+import utilities.model.BaseModel;
 import javax.persistence.*;
-import java.util.Date;
 import java.util.UUID;
 
 
 @Entity
-@ApiModel(value = "Grid_Terminal", description = "Model of Grid_Terminal")
+@ApiModel(value = "GridTerminal", description = "Model of GridTerminal")
 @Table(name="GridTerminal")
-public class Model_GridTerminal extends Model {
+public class Model_GridTerminal extends BaseModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Model_GridTerminal.class);
+    private static final Logger logger = new Logger(Model_GridTerminal.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Id
     @ApiModelProperty(required = true, readOnly = true, example = "Mobile, WebBrowser") public String terminal_token;
-    @ApiModelProperty(required = false, readOnly = true)                                public String user_agent;
-    @ApiModelProperty(required = true, example = "Mobile, WebBrowser")                  public String device_type;
-    @ApiModelProperty(required = true, example = "Iphone 5S, Chrome 4")                 public String device_name;
+    @ApiModelProperty(required = false, readOnly = true, example = "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405") public String user_agent;
+    @ApiModelProperty(required = false, example = "Mobile, WebBrowser")                  public String device_type;
+    @ApiModelProperty(required = false, example = "Iphone 5S, Chrome 4")                 public String device_name;
 
     // public Integer resolution_height;
     // public Integer resolution_width; -resolution_width teoreticky potřebné pro vývojáře Gridu
 
     @ApiModelProperty(required = false, readOnly = true, value = "Only if Terminal Device is connected with logged Person")
     @JsonIgnore @ManyToOne(cascade = CascadeType.ALL) public Model_Person person;
-
-    @JsonIgnore  public Date date_of_create;
-    @JsonIgnore  public Date date_of_last_update;
-
 
     // lokální nedořešené oprávnění
     @ApiModelProperty(required = true)  public boolean ws_permission;       // TODO TOM smazat?
@@ -47,32 +44,16 @@ public class Model_GridTerminal extends Model {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-
     public static final String private_prefix = "tprt_"; // Token PRiviT
     public static final String public_prefix  = "tpuk_"; // Token PUbliK
 
     @JsonIgnore @Override
     public void save() {
-                                                   // Dont change this prefix - its used on another places
-         if(person != null) this.terminal_token = private_prefix + UUID.randomUUID().toString() + UUID.randomUUID().toString();  // terminal private token _
+                                                // Dont change this prefix - its used on another places
+         if (person != null) this.terminal_token = private_prefix + UUID.randomUUID().toString() + UUID.randomUUID().toString();  // terminal private token _
          else               this.terminal_token = public_prefix + UUID.randomUUID().toString() + UUID.randomUUID().toString();  // terminal public token _
 
         super.save();
-    }
-
-
-
-    @JsonIgnore @Override public void update() {
-
-        terminal_logger.debug("update :: Update object Id: {}",  this.terminal_token);
-        super.update();
-    }
-
-    @JsonIgnore @Override public void delete() {
-
-        terminal_logger.debug("update :: Delete object Id: {} ", this.terminal_token);
-        super.delete();
-
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -84,17 +65,26 @@ public class Model_GridTerminal extends Model {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public static Model_GridTerminal get_byId(String id) {
+    public static Model_GridTerminal getById(String id) throws _Base_Result_Exception {
+        return getById(UUID.fromString(id));
+    }
 
-        terminal_logger.warn("CACHE is not implemented - TODO");
-        return find.byId(id);
+    public static Model_GridTerminal getById(UUID id) throws _Base_Result_Exception {
 
+        Model_GridTerminal terminal = find.byId(id);
+        if (terminal == null) throw new Result_Error_NotFound(Model_GridTerminal.class);
+
+        terminal.check_read_permission();
+        return terminal;
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Model.Finder<String,Model_GridTerminal> find = new Model.Finder<>(Model_GridTerminal.class);
+
+    public static Finder<UUID, Model_GridTerminal> find = new Finder<>(Model_GridTerminal.class);
 }

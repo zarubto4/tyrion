@@ -1,55 +1,69 @@
 package controllers;
 
-import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+import com.typesafe.config.Config;
+import io.ebean.Ebean;
 import io.swagger.annotations.*;
 import models.*;
-import play.Application;
-import play.Configuration;
+import play.Environment;
 import play.data.Form;
+import play.data.FormFactory;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import play.mvc.BodyParser;
-import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import responses.*;
 import utilities.Server;
-import utilities.logger.Class_Logger;
-import utilities.logger.ServerLogger;
+import utilities.authentication.Authentication;
+import utilities.logger.Logger;
 import utilities.logger.YouTrack;
-import utilities.login_entities.Secured_API;
-import utilities.response.GlobalResult;
-import utilities.response.response_objects.*;
-import utilities.scheduler.CustomScheduler;
-import utilities.swagger.documentationClass.*;
-import utilities.swagger.outboundClass.Swagger_Report_Admin_Dashboard;
-import utilities.swagger.outboundClass.Swagger_ServerUpdates;
+import utilities.scheduler.SchedulerController;
+import utilities.swagger.input.*;
+import utilities.swagger.output.Swagger_Report_Admin_Dashboard;
+import utilities.swagger.output.Swagger_ServerUpdates;
 import utilities.update_server.GitHub_Asset;
 import utilities.update_server.GitHub_Release;
 import utilities.update_server.ServerUpdate;
 
-import javax.inject.Inject;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-@Security.Authenticated(Secured_API.class)
-public class Controller_Admin extends Controller {
+@Security.Authenticated(Authentication.class)
+public class Controller_Admin extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
-    private static final Class_Logger terminal_logger = new Class_Logger(Controller_Admin.class);
+    private static final Logger logger = new Logger(Controller_Admin.class);
+
+// CONTROLLER CONFIGURATION ############################################################################################
+
+    private _BaseFormFactory baseFormFactory;
+    private WSClient ws;
+    private Environment environment;
+    private YouTrack youTrack;
+    private Config config;
+    private SchedulerController scheduler;
 
     @Inject
-    WSClient ws;
+    public Controller_Admin(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        this.environment = environment;
+        this.ws = ws;
+        this.baseFormFactory = formFactory;
+        this.youTrack = youTrack;
+        this.config = config;
+        this.scheduler = scheduler;
+    }
 
-    @Inject
-    Application application;
+// CONTROLLER CONTENT ##################################################################################################
 
     @ApiOperation(
             value = "get Report_Admin_Dashboard",
@@ -60,8 +74,8 @@ public class Controller_Admin extends Controller {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successfully removed",      response = Swagger_Report_Admin_Dashboard.class),
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok result",                 response = Swagger_Report_Admin_Dashboard.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -71,27 +85,29 @@ public class Controller_Admin extends Controller {
     public Result report_admin_dashboard() {
         try {
 
+            person().is_admin();
+
             Swagger_Report_Admin_Dashboard report = new Swagger_Report_Admin_Dashboard();
 
-            report.person_registration = Model_Person.find.findRowCount();
-            report.project_created     = Model_Project.find.findRowCount();
-            report.board_registered = Model_Board.find.findRowCount();
+            report.person_registration = Model_Person.find.query().findCount();
+            report.project_created = Model_Project.find.query().findCount();
+            report.board_registered = Model_Hardware.find.query().findCount();
 
-            report.homer_server_public_created     = Model_HomerServer.find.findRowCount();
+            report.homer_server_public_created     = Model_HomerServer.find.query().findCount();
             report.homer_server_private_created    = 0;
 
-            report.homer_server_public_online      = Controller_WebSocket.homer_servers.size();
+            report.homer_server_public_online      = Controller_WebSocket.homers.size();
             report.homer_server_private_online     = 0;
 
-            report.compilation_server_public_created = Model_CompilationServer.find.where().findRowCount();
-            report.compilation_server_public_online  = Controller_WebSocket.compiler_cloud_servers.size();
+            report.compilation_server_public_created = Model_CompilationServer.find.query().where().findCount();
+            report.compilation_server_public_online  = Controller_WebSocket.compilers.size();
 
-            report.bugs_reported = Model_ServerError.find.findRowCount();
+            report.bugs_reported = Model_ServerError.find.query().findCount();
 
-            return GlobalResult.result_ok(Json.toJson(report));
+            return ok(Json.toJson(report));
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -103,7 +119,7 @@ public class Controller_Admin extends Controller {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",                 response = Model_ServerError.class, responseContainer = "list"),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
@@ -111,12 +127,14 @@ public class Controller_Admin extends Controller {
     public Result serverError_getAll() {
         try {
 
+            person().is_admin();
+
             List<Model_ServerError> errors = Model_ServerError.find.all();
 
-            return GlobalResult.result_ok(Json.toJson(errors));
+            return ok(Json.toJson(errors));
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -128,7 +146,7 @@ public class Controller_Admin extends Controller {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",                 response = Model_ServerError.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
@@ -137,13 +155,12 @@ public class Controller_Admin extends Controller {
     public Result serverError_get(@ApiParam(value = "bug_id String path", required = true) String bug_id) {
         try {
 
-            Model_ServerError error = Model_ServerError.find.byId(bug_id);
-            if (error == null) return GlobalResult.result_notFound("Bug not found");
+            Model_ServerError error = Model_ServerError.getById(bug_id);
 
-            return GlobalResult.result_ok(Json.toJson(error));
+            return ok(Json.toJson(error));
 
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -158,14 +175,14 @@ public class Controller_Admin extends Controller {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_Bug_Description",
+                            dataType = "utilities.swagger.input.Swagger_Bug_Description",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_ServerError.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -177,21 +194,18 @@ public class Controller_Admin extends Controller {
     public Result serverError_addDescription(@ApiParam(value = "bug_id String path", required = true) String bug_id) {
         try {
 
-            final Form<Swagger_Bug_Description> form = Form.form(Swagger_Bug_Description.class).bindFromRequest();
-            if (form.hasErrors()) return GlobalResult.result_invalidBody(form.errorsAsJson());
-            Swagger_Bug_Description help = form.get();
+            // Get and Validate Object
+            Swagger_Bug_Description help  = baseFormFactory.formFromRequestWithValidation(Swagger_Bug_Description.class);
 
-            Model_ServerError error = Model_ServerError.find.byId(bug_id);
-            if (error == null) return GlobalResult.result_notFound("Bug not found");
-
-            if (!error.edit_permission()) return GlobalResult.result_forbidden();
+            // Kontrola objektu
+            Model_ServerError error = Model_ServerError.getById(bug_id);
 
             error.description = help.description;
             error.update();
 
-            return GlobalResult.result_ok(Json.toJson(error));
+            return ok(Json.toJson(error));
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -202,7 +216,7 @@ public class Controller_Admin extends Controller {
             protocols = "https",
             code = 200
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Model_ServerError.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -213,17 +227,14 @@ public class Controller_Admin extends Controller {
     public Result serverError_report(@ApiParam(value = "bug_id String path", required = true) String bug_id) {
         try {
 
-            Model_ServerError error = Model_ServerError.find.byId(bug_id);
-            if (error == null) return GlobalResult.result_notFound("Bug not found");
+            Model_ServerError error = Model_ServerError.getById(bug_id);
 
-            if (!error.edit_permission()) return GlobalResult.result_forbidden();
-
-            error.youtrack_url = YouTrack.report(error);
+            error.youtrack_url = youTrack.report(error);
             error.update();
 
-            return GlobalResult.result_ok(Json.toJson(error));
+            return ok(Json.toJson(error));
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -232,10 +243,9 @@ public class Controller_Admin extends Controller {
             notes = "",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -244,16 +254,13 @@ public class Controller_Admin extends Controller {
     })
     public Result serverError_delete(@ApiParam(value = "bug_id String path", required = true) String bug_id) {
         try {
-            Model_ServerError error = Model_ServerError.find.byId(bug_id);
-            if (error == null) return GlobalResult.result_notFound("Bug not found");
 
-            if (!error.delete_permission()) return GlobalResult.result_forbidden();
-
+            Model_ServerError error = Model_ServerError.getById(bug_id);
             error.delete();
 
-            return GlobalResult.result_ok();
+            return ok();
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -262,10 +269,9 @@ public class Controller_Admin extends Controller {
             notes = "",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -276,13 +282,13 @@ public class Controller_Admin extends Controller {
             List<Model_ServerError> errors = Model_ServerError.find.all();
 
             if (!errors.isEmpty()) {
-                if (!errors.get(0).delete_permission()) return GlobalResult.result_forbidden();
+                errors.get(0).check_delete_permission();
                 Ebean.delete(errors);
             }
 
-            return GlobalResult.result_ok();
+            return ok();
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -293,21 +299,20 @@ public class Controller_Admin extends Controller {
             notes = "",
             produces = "application/json",
             consumes = "text/html",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.documentationClass.Swagger_ServerUpdate",
+                            dataType = "utilities.swagger.input.Swagger_ServerUpdate",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
                     )
             }
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -318,33 +323,31 @@ public class Controller_Admin extends Controller {
         try {
 
             // Must be built by 'activator dist' for this feature to work correctly
-            if (application.isDev()) {
-                return GlobalResult.result_badRequest("This feature is available only in production mode.");
+            if (environment.isDev()) {
+                return badRequest("This feature is available only in production mode.");
             }
 
-            // Zpracování Json
-            final Form<Swagger_ServerUpdate> form = Form.form(Swagger_ServerUpdate.class).bindFromRequest();
-            if (form.hasErrors()) {return GlobalResult.result_invalidBody(form.errorsAsJson());}
-            Swagger_ServerUpdate help = form.get();
+            // Get and Validate Object
+            Swagger_ServerUpdate help  = baseFormFactory.formFromRequestWithValidation(Swagger_ServerUpdate.class);
 
-            terminal_logger.debug("server_scheduleUpdate - requesting releases");
+            logger.debug("server_scheduleUpdate - requesting releases");
 
-            WSResponse releases = ws.url(Configuration.root().getString("GitHub.releasesUrl") + "/tags/" + help.version)
-                    .setHeader("Authorization", "token " + Configuration.root().getString("GitHub.apiKey"))
+            WSResponse releases = ws.url(config.getString("GitHub.releasesUrl") + "/tags/" + help.version)
+                    .addHeader("Authorization", "token " + config.getString("GitHub.apiKey"))
                     .get()
-                    .get(10000);
+                    .toCompletableFuture()
+                    .get();
 
-            final Form<GitHub_Release> release_form = Form.form(GitHub_Release.class).bind(releases.asJson());
-            if (release_form.hasErrors()) {return GlobalResult.result_externalServerError(release_form.errorsAsJson());}
-            GitHub_Release release = release_form.get();
+            // Get and Validate Object
+            GitHub_Release release = baseFormFactory.formFromJsonWithValidation(GitHub_Release.class, (releases.asJson()));
 
-            terminal_logger.debug("server_scheduleUpdate - got release");
+            logger.debug("server_scheduleUpdate - got release");
 
             Optional<GitHub_Asset> optional = release.assets.stream().filter(a -> a.name.equals("dist.zip")).findAny();
             if (optional.isPresent()) {
                 GitHub_Asset asset = optional.get();
 
-                terminal_logger.debug("server_scheduleUpdate - Asset was found");
+                logger.debug("server_scheduleUpdate - Asset was found");
 
                 ServerUpdate update = new ServerUpdate();
                 update.server = "tyrion";
@@ -352,14 +355,14 @@ public class Controller_Admin extends Controller {
                 update.time = help.update_time;
                 update.url = asset.url;
 
-                CustomScheduler.scheduleUpdateServer(update);
+                scheduler.scheduleUpdateServer(update);
             } else {
-                return GlobalResult.result_badRequest("Bad release, cannot find the asset file");
+                return badRequest("Bad release, cannot find the asset file");
             }
 
-            return GlobalResult.result_ok();
+            return ok();
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 
@@ -367,10 +370,9 @@ public class Controller_Admin extends Controller {
             tags = {"Admin"},
             notes = "",
             produces = "application/json",
-            protocols = "https",
-            code = 200
+            protocols = "https"
     )
-    @ApiResponses(value = {
+    @ApiResponses({
             @ApiResponse(code = 200, message = "OK Result",                 response = Swagger_ServerUpdates.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -380,22 +382,23 @@ public class Controller_Admin extends Controller {
     public Result server_getUpdates() {
         try {
 
-            terminal_logger.debug("server_getUpdates - requesting releases");
+            logger.debug("server_getUpdates - requesting releases");
 
-            WSResponse response = ws.url(Configuration.root().getString("GitHub.releasesUrl"))
-                    .setHeader("Authorization", "token " + Configuration.root().getString("GitHub.apiKey"))
-                    .setHeader("Accept", "application/json")
+            WSResponse response = ws.url(config.getString("GitHub.releasesUrl"))
+                    .addHeader("Authorization", "token " + config.getString("GitHub.apiKey"))
+                    .addHeader("Accept", "application/json")
                     .get()
-                    .get(10000);
+                    .toCompletableFuture()
+                    .get();
 
             int status = response.getStatus();
 
-            terminal_logger.debug("server_getUpdates - got response, status {}", status);
+            logger.debug("server_getUpdates - got response, status {}", status);
 
             if (status != 200) {
                 String body = response.getBody();
-                terminal_logger.internalServerError(new Exception("Error response from GitHub. Status was " + status + " and body: " + body));
-                return GlobalResult.result_custom(status, body);
+                logger.internalServerError(new Exception("Error response from GitHub. Status was " + status + " and body: " + body));
+                return customResult(status, "GitHub_Error", body);
             }
 
             ObjectMapper mapper = new ObjectMapper();
@@ -405,47 +408,47 @@ public class Controller_Admin extends Controller {
             try {
                 releases = mapper.readValue(response.asJson().toString(), new TypeReference<List<Swagger_GitHubReleases>>() {});
             } catch (Exception e) {
-                terminal_logger.internalServerError(e);
-                return GlobalResult.result_externalServerError("Cannot parse response from GitHub");
+                logger.internalServerError(e);
+                return externalServerError("Cannot parse response from GitHub");
             }
 
-            terminal_logger.debug("server_getUpdates - number of releases {}", releases.size());
+            logger.debug("server_getUpdates - number of releases {}", releases.size());
 
             Swagger_ServerUpdates updates = new Swagger_ServerUpdates();
 
             releases.stream().filter(release -> {
 
                 if (release.draft || release.prerelease || release.assets.stream().noneMatch(asset -> asset.name.equals("dist.zip"))) {
-                    terminal_logger.debug("server_getUpdates - release is only draft or has not dist package");
+                    logger.debug("server_getUpdates - release is only draft or has not dist package");
                     return false;
                 }
 
-                terminal_logger.debug("server_getUpdates - filtering depending on mode, release: {}", Json.toJson(release));
+                logger.debug("server_getUpdates - filtering depending on mode, release: {}", Json.toJson(release));
 
-                switch (Server.server_mode) {
-                    case developer: {
+                switch (Server.mode) {
+                    case DEVELOPER: {
                         Pattern pattern = Pattern.compile("^(v)(\\d+\\.)(\\d+\\.)(\\d+)(-(.)*)?$");
                         Matcher matcher = pattern.matcher(release.tag_name);
                         if (!matcher.find()) {
-                            terminal_logger.debug("server_getUpdates - release is invalid for developer mode");
+                            logger.debug("server_getUpdates - release is invalid for developer mode");
                             return false;
                         }
                         break;
                     }
-                    case stage: {
+                    case STAGE: {
                         Pattern pattern = Pattern.compile("^(v)(\\d+\\.)(\\d+\\.)(\\d+)(-beta(.)*)?$");
                         Matcher matcher = pattern.matcher(release.tag_name);
                         if (!matcher.find()) {
-                            terminal_logger.debug("server_getUpdates - release is invalid for stage mode");
+                            logger.debug("server_getUpdates - release is invalid for stage mode");
                             return false;
                         }
                         break;
                     }
-                    case production: {
+                    case PRODUCTION: {
                         Pattern pattern = Pattern.compile("^(v)(\\d+\\.)(\\d+\\.)(\\d+)$");
                         Matcher matcher = pattern.matcher(release.tag_name);
                         if (!matcher.find()) {
-                            terminal_logger.debug("server_getUpdates - release is invalid for production mode");
+                            logger.debug("server_getUpdates - release is invalid for production mode");
                             return false;
                         }
                         break;
@@ -454,7 +457,7 @@ public class Controller_Admin extends Controller {
                 }
 
                 String version = release.tag_name.replace("v", "");
-                String current = Server.server_version;
+                String current = Server.version;
 
                 if (version.contains("-")) {
                     version = version.substring(0, version.indexOf("-"));
@@ -468,7 +471,7 @@ public class Controller_Admin extends Controller {
                     Long versionNumber = new Long(versionNumbers[i]);
                     Long currentNumber = new Long(currentNumbers[i]);
                     if (versionNumber < currentNumber || (i == versionNumbers.length - 1 && versionNumber.equals(currentNumber))) {
-                        terminal_logger.debug("server_getUpdates - release is older than current running version");
+                        logger.debug("server_getUpdates - release is older than current running version");
                         return false;
                     }
                 }
@@ -477,11 +480,11 @@ public class Controller_Admin extends Controller {
 
             }).forEach(release -> updates.releases.add(release));
 
-            terminal_logger.debug("server_getUpdates - got releases");
+            logger.debug("server_getUpdates - got releases");
 
-            return GlobalResult.result_ok(Json.toJson(updates));
+            return ok(Json.toJson(updates));
         } catch (Exception e) {
-            return ServerLogger.result_internalServerError(e, request());
+            return controllerServerError(e);
         }
     }
 }
