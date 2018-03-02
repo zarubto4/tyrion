@@ -270,6 +270,7 @@ PUT       /blocko/approval                                              controll
 #Public Clasic Rest-Api
 
 POST      /homer_server                                                 controllers.Controller_ExternalServer.homer_server_create()
+GET       /homer_server_registration_data                               controllers.Controller_ExternalServer.get_registration_data()
 
 PUT       /homer_server/set_backup/:server_id                           controllers.Controller_ExternalServer.homer_server_set_backup_server(server_id: java.util.UUID)
 PUT       /homer_server/set_main/:server_id                             controllers.Controller_ExternalServer.homer_server_set_main_server(server_id: java.util.UUID)

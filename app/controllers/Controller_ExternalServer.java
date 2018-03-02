@@ -21,6 +21,8 @@ import utilities.authentication.AuthenticationHomer;
 import utilities.enums.CompilationStatus;
 import utilities.enums.HomerType;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.homer_auto_deploy.DigitalOceanTyrionService;
+import utilities.homer_auto_deploy.models.common.Swagger_ServerRegistration_FormData;
 import utilities.logger.Logger;
 import utilities.swagger.input.Swagger_C_Program_Version_Update;
 import utilities.swagger.input.Swagger_CompilationServer_New;
@@ -49,6 +51,32 @@ public class Controller_ExternalServer extends _BaseController {
 
 
 // HOMER SERVER ########################################################################################################
+
+    @ApiOperation(value = "get Homer_Server Registration Components",
+            tags = {"External-Server"},
+            notes = "Get All data for User registration form in Portal",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Successfully created",    response = Swagger_ServerRegistration_FormData.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result get_registration_data() {
+        try {
+
+            Swagger_ServerRegistration_FormData data = DigitalOceanTyrionService.get_data();
+
+            // Vrácení objektu
+            return ok(Json.toJson(data));
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
 
     @ApiOperation(value = "create Homer_Server",
             tags = {"External-Server"},
