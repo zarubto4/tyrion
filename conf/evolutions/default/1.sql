@@ -30,6 +30,7 @@ create table bprogram (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   project_id                    uuid,
   azure_b_program_link          varchar(255),
   deleted                       boolean default false not null,
@@ -49,8 +50,8 @@ create table bprogramversion (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
-  file_id                       uuid,
   author_id                     uuid,
+  file_id                       uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
   blob_version_link             varchar(255),
@@ -84,8 +85,8 @@ create table block (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
-  active                        boolean default false not null,
   author_id                     uuid,
+  active                        boolean default false not null,
   project_id                    uuid,
   producer_id                   uuid,
   order_position                integer,
@@ -108,8 +109,8 @@ create table blockversion (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
-  file_id                       uuid,
   author_id                     uuid,
+  file_id                       uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
   blob_version_link             varchar(255),
@@ -130,6 +131,7 @@ create table bootloader (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   version_identifier            varchar(255),
   changing_note                 TEXT,
   hardware_type_id              uuid,
@@ -147,6 +149,7 @@ create table cprogram (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   project_id                    uuid,
   hardware_type_id              uuid,
   publish_type                  varchar(15),
@@ -174,8 +177,8 @@ create table cprogramversion (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
-  file_id                       uuid,
   author_id                     uuid,
+  file_id                       uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
   blob_version_link             varchar(255),
@@ -269,6 +272,7 @@ create table garfield (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   hardware_tester_id            varchar(255),
   print_label_id_1              integer,
   print_label_id_2              integer,
@@ -288,6 +292,7 @@ create table gridprogram (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   grid_project_id               uuid,
   blob_link                     varchar(255),
   deleted                       boolean default false not null,
@@ -307,8 +312,8 @@ create table gridprogramversion (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
-  file_id                       uuid,
   author_id                     uuid,
+  file_id                       uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
   blob_version_link             varchar(255),
@@ -329,6 +334,7 @@ create table gridproject (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   project_id                    uuid,
   blob_link                     varchar(255),
   deleted                       boolean default false not null,
@@ -365,6 +371,7 @@ create table hardware (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   full_id                       varchar(255),
   dominant_entity               boolean default false not null,
   wifi_mac_address              varchar(255),
@@ -409,6 +416,7 @@ create table hardwarefeature (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   deleted                       boolean default false not null,
   constraint pk_hardwarefeature primary key (id)
 );
@@ -426,6 +434,7 @@ create table hardwaregroup (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   project_id                    uuid,
   deleted                       boolean default false not null,
   constraint pk_hardwaregroup primary key (id)
@@ -438,6 +447,7 @@ create table hardwaretype (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   compiler_target_name          varchar(255),
   producer_id                   uuid,
   processor_id                  uuid,
@@ -507,6 +517,7 @@ create table instance (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   current_snapshot_id           uuid,
   server_main_id                uuid,
   server_backup_id              uuid,
@@ -600,6 +611,7 @@ create table library (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   project_id                    uuid,
   publish_type                  varchar(15),
   azure_library_link            varchar(255),
@@ -627,8 +639,8 @@ create table libraryversion (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
-  file_id                       uuid,
   author_id                     uuid,
+  file_id                       uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
   blob_version_link             varchar(255),
@@ -647,6 +659,7 @@ create table log (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   type                          varchar(255),
   file_id                       uuid,
   deleted                       boolean default false not null,
@@ -752,6 +765,7 @@ create table permission (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   deleted                       boolean default false not null,
   constraint pk_permission primary key (id)
 );
@@ -801,6 +815,7 @@ create table processor (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   processor_code                varchar(255),
   speed                         integer not null,
   deleted                       boolean default false not null,
@@ -814,6 +829,7 @@ create table producer (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   deleted                       boolean default false not null,
   constraint pk_producer primary key (id)
 );
@@ -825,6 +841,7 @@ create table product (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   method                        varchar(13),
   business_model                varchar(11),
   subscription_id               varchar(255),
@@ -853,6 +870,7 @@ create table productextension (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   color                         varchar(255),
   type                          varchar(12),
   configuration                 TEXT,
@@ -873,6 +891,7 @@ create table project (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   product_id                    uuid,
   blob_project_link             varchar(255),
   deleted                       boolean default false not null,
@@ -905,6 +924,7 @@ create table role (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   deleted                       boolean default false not null,
   constraint pk_role primary key (id)
 );
@@ -922,6 +942,7 @@ create table servererror (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   type                          varchar(255),
   message                       TEXT,
   stack_trace                   TEXT,
@@ -951,6 +972,7 @@ create table tariff (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
+  author_id                     uuid,
   identifier                    varchar(255),
   active                        boolean default false not null,
   business_model                varchar(11),
@@ -1003,8 +1025,8 @@ create table widget (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
-  order_position                integer,
   author_id                     uuid,
+  order_position                integer,
   project_id                    uuid,
   producer_id                   uuid,
   publish_type                  varchar(15),
@@ -1027,8 +1049,8 @@ create table widgetversion (
   removed                       timestamptz,
   name                          varchar(255),
   description                   TEXT,
-  file_id                       uuid,
   author_id                     uuid,
+  file_id                       uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
   blob_version_link             varchar(255),
@@ -1056,9 +1078,6 @@ create index ix_bprogram_tag_tag on bprogram_tag (tag_id);
 
 alter table bprogramversion add constraint fk_bprogramversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
 
-alter table bprogramversion add constraint fk_bprogramversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
-create index ix_bprogramversion_author_id on bprogramversion (author_id);
-
 alter table bprogramversion add constraint fk_bprogramversion_library_id foreign key (library_id) references library (id) on delete restrict on update restrict;
 create index ix_bprogramversion_library_id on bprogramversion (library_id);
 
@@ -1083,9 +1102,6 @@ alter table block_tag add constraint fk_block_tag_tag foreign key (tag_id) refer
 create index ix_block_tag_tag on block_tag (tag_id);
 
 alter table blockversion add constraint fk_blockversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
-
-alter table blockversion add constraint fk_blockversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
-create index ix_blockversion_author_id on blockversion (author_id);
 
 alter table blockversion add constraint fk_blockversion_block_id foreign key (block_id) references block (id) on delete restrict on update restrict;
 create index ix_blockversion_block_id on blockversion (block_id);
@@ -1116,9 +1132,6 @@ create index ix_cprogram_tag_tag on cprogram_tag (tag_id);
 
 alter table cprogramversion add constraint fk_cprogramversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
 
-alter table cprogramversion add constraint fk_cprogramversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
-create index ix_cprogramversion_author_id on cprogramversion (author_id);
-
 alter table cprogramversion add constraint fk_cprogramversion_c_program_id foreign key (c_program_id) references cprogram (id) on delete restrict on update restrict;
 create index ix_cprogramversion_c_program_id on cprogramversion (c_program_id);
 
@@ -1146,9 +1159,6 @@ alter table gridprogram_tag add constraint fk_gridprogram_tag_tag foreign key (t
 create index ix_gridprogram_tag_tag on gridprogram_tag (tag_id);
 
 alter table gridprogramversion add constraint fk_gridprogramversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
-
-alter table gridprogramversion add constraint fk_gridprogramversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
-create index ix_gridprogramversion_author_id on gridprogramversion (author_id);
 
 alter table gridprogramversion add constraint fk_gridprogramversion_grid_program_id foreign key (grid_program_id) references gridprogram (id) on delete restrict on update restrict;
 create index ix_gridprogramversion_grid_program_id on gridprogramversion (grid_program_id);
@@ -1284,9 +1294,6 @@ create index ix_library_hardwaretype_hardwaretype on library_hardwaretype (hardw
 
 alter table libraryversion add constraint fk_libraryversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
 
-alter table libraryversion add constraint fk_libraryversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
-create index ix_libraryversion_author_id on libraryversion (author_id);
-
 alter table libraryversion add constraint fk_libraryversion_library_id foreign key (library_id) references library (id) on delete restrict on update restrict;
 create index ix_libraryversion_library_id on libraryversion (library_id);
 
@@ -1383,9 +1390,6 @@ create index ix_widget_tag_tag on widget_tag (tag_id);
 
 alter table widgetversion add constraint fk_widgetversion_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
 
-alter table widgetversion add constraint fk_widgetversion_author_id foreign key (author_id) references person (id) on delete restrict on update restrict;
-create index ix_widgetversion_author_id on widgetversion (author_id);
-
 alter table widgetversion add constraint fk_widgetversion_widget_id foreign key (widget_id) references widget (id) on delete restrict on update restrict;
 create index ix_widgetversion_widget_id on widgetversion (widget_id);
 
@@ -1405,9 +1409,6 @@ alter table if exists bprogram_tag drop constraint if exists fk_bprogram_tag_tag
 drop index if exists ix_bprogram_tag_tag;
 
 alter table if exists bprogramversion drop constraint if exists fk_bprogramversion_file_id;
-
-alter table if exists bprogramversion drop constraint if exists fk_bprogramversion_author_id;
-drop index if exists ix_bprogramversion_author_id;
 
 alter table if exists bprogramversion drop constraint if exists fk_bprogramversion_library_id;
 drop index if exists ix_bprogramversion_library_id;
@@ -1433,9 +1434,6 @@ alter table if exists block_tag drop constraint if exists fk_block_tag_tag;
 drop index if exists ix_block_tag_tag;
 
 alter table if exists blockversion drop constraint if exists fk_blockversion_file_id;
-
-alter table if exists blockversion drop constraint if exists fk_blockversion_author_id;
-drop index if exists ix_blockversion_author_id;
 
 alter table if exists blockversion drop constraint if exists fk_blockversion_block_id;
 drop index if exists ix_blockversion_block_id;
@@ -1466,9 +1464,6 @@ drop index if exists ix_cprogram_tag_tag;
 
 alter table if exists cprogramversion drop constraint if exists fk_cprogramversion_file_id;
 
-alter table if exists cprogramversion drop constraint if exists fk_cprogramversion_author_id;
-drop index if exists ix_cprogramversion_author_id;
-
 alter table if exists cprogramversion drop constraint if exists fk_cprogramversion_c_program_id;
 drop index if exists ix_cprogramversion_c_program_id;
 
@@ -1496,9 +1491,6 @@ alter table if exists gridprogram_tag drop constraint if exists fk_gridprogram_t
 drop index if exists ix_gridprogram_tag_tag;
 
 alter table if exists gridprogramversion drop constraint if exists fk_gridprogramversion_file_id;
-
-alter table if exists gridprogramversion drop constraint if exists fk_gridprogramversion_author_id;
-drop index if exists ix_gridprogramversion_author_id;
 
 alter table if exists gridprogramversion drop constraint if exists fk_gridprogramversion_grid_program_id;
 drop index if exists ix_gridprogramversion_grid_program_id;
@@ -1634,9 +1626,6 @@ drop index if exists ix_library_hardwaretype_hardwaretype;
 
 alter table if exists libraryversion drop constraint if exists fk_libraryversion_file_id;
 
-alter table if exists libraryversion drop constraint if exists fk_libraryversion_author_id;
-drop index if exists ix_libraryversion_author_id;
-
 alter table if exists libraryversion drop constraint if exists fk_libraryversion_library_id;
 drop index if exists ix_libraryversion_library_id;
 
@@ -1732,9 +1721,6 @@ alter table if exists widget_tag drop constraint if exists fk_widget_tag_tag;
 drop index if exists ix_widget_tag_tag;
 
 alter table if exists widgetversion drop constraint if exists fk_widgetversion_file_id;
-
-alter table if exists widgetversion drop constraint if exists fk_widgetversion_author_id;
-drop index if exists ix_widgetversion_author_id;
 
 alter table if exists widgetversion drop constraint if exists fk_widgetversion_widget_id;
 drop index if exists ix_widgetversion_widget_id;

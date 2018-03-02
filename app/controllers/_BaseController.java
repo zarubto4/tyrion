@@ -67,7 +67,6 @@ public abstract class _BaseController {
                 throw new Result_Error_Unauthorized();
             }
         } catch (Exception e) {
-            logger.internalServerError(e);
             throw new Result_Error_Unauthorized();
         }
     }
@@ -97,10 +96,10 @@ public abstract class _BaseController {
      */
     public JsonNode getBodyAsJson() {
         try {
-
             return Controller.request().body().asJson();
         } catch (Exception e) {
-            logger.internalServerError(e);
+            logger.error(" getBodyAsJson:: ERROR EXCEPTION");
+            // logger.internalServerError(e);
             throw new NullPointerException();
         }
     }
@@ -414,7 +413,7 @@ public abstract class _BaseController {
     public static Result controllerServerError(Throwable error) {
         try{
 
-            logger.warn("controllerServerError:: Incoming Error: {} ", error.getClass().getSimpleName());
+            logger.error("controllerServerError:: Incoming Error: {} ", error.getClass().getSimpleName());
 
             // Result_Error_NotFound
             if(error.getClass().getSimpleName().equals(_Base_Result_Exception.class.getSimpleName())){

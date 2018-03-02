@@ -76,17 +76,10 @@ public class Model_Person extends BaseModel {
 
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Employee>              employees            = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ProjectParticipant>    projects_participant = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Block>                 blocks               = new ArrayList<>(); // Propojení, které bločky uživatel vytvořil
-    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BlockVersion>          blocks_versions        = new ArrayList<>(); // Propojení, které verze bločků uživatel vytvořil
-    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Widget>                widgets              = new ArrayList<>(); // Propojení, které widgety uživatel vytvořil
-    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_WidgetVersion>         widget_cersions       = new ArrayList<>(); // Propojení, které verze widgetů uživatel vytvořil
-    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BProgramVersion>       b_program_versions    = new ArrayList<>(); // Propojení, které verze uživatel vytvořil
-    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_CProgramVersion>       c_program_versions    = new ArrayList<>(); // Propojení, které verze uživatel vytvořil
-    @JsonIgnore @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_GridProgramVersion>    grid_program_versions = new ArrayList<>(); // Propojení, které verze uživatel vytvořil
-    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_AuthorizationToken>    authorization_tokens  = new ArrayList<>(); // Propojení, které uživatel napsal
-    @JsonIgnore @OneToMany(mappedBy = "owner",  cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Invitation>            invitations          = new ArrayList<>(); // Pozvánky, které uživatel rozeslal
+    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_AuthorizationToken>    authorization_tokens  = new ArrayList<>();  // Propojení, které uživatel napsal
+    @JsonIgnore @OneToMany(mappedBy = "owner",  cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Invitation>            invitations          = new ArrayList<>();   // Pozvánky, které uživatel rozeslal
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Notification>          notifications        = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_GridTerminal>          grid_terminals       = new ArrayList<>(); // Přihlášený websocket uživatele
+    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_GridTerminal>          grid_terminals       = new ArrayList<>();   // Přihlášený websocket uživatele
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 

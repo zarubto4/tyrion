@@ -760,8 +760,8 @@ public class TestHelper extends Controller{
         try {
 
             Model_WidgetVersion gridWidgetVersion = new Model_WidgetVersion();
-            gridWidgetVersion.version_name = UUID.randomUUID().toString();
-            gridWidgetVersion.version_description = UUID.randomUUID().toString();
+            gridWidgetVersion.name = UUID.randomUUID().toString();
+            gridWidgetVersion.description = UUID.randomUUID().toString();
             gridWidgetVersion.design_json = UUID.randomUUID().toString();
             gridWidgetVersion.logic_json = UUID.randomUUID().toString();
             gridWidgetVersion.widget = gridWidget;

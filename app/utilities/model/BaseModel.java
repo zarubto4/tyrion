@@ -317,11 +317,11 @@ public abstract class BaseModel extends Model {
     @JsonIgnore private void save_author() {
         try {
 
-            Field field = this.getClass().getDeclaredField("author");
+            Field field = this.getClass().getDeclaredField("author_id");
             if (field != null) {
                 // Set only if its not set before by some special logic (For example, when we create copies of objects
                 if (field.get(Model_Person.class) == null) {
-                    field.set(_BaseController.person(), Model_Person.class);
+                    field.set(_BaseController.person().id, UUID.class);
                 }
             }
 

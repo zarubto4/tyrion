@@ -119,15 +119,18 @@ public class Controller_WebSocket extends _BaseController {
     public Result get_Websocket_token() {
         try {
 
-            UUID token = UUID.randomUUID();
+                System.out.println("get_Websocket_token");
+                UUID token = UUID.randomUUID();
 
-            tokenCache.put(token, personId());
+                tokenCache.put(token, personId());
 
-            Swagger_Websocket_Token swagger_websocket_token = new Swagger_Websocket_Token();
-            swagger_websocket_token.websocket_token = token;
+                Swagger_Websocket_Token swagger_websocket_token = new Swagger_Websocket_Token();
+                swagger_websocket_token.websocket_token = token;
 
-            return ok(Json.toJson(swagger_websocket_token));
+                return ok(Json.toJson(swagger_websocket_token));
+
         } catch (Exception e) {
+            logger.error("Došlo k piča chybě!");
             return controllerServerError(e);
         }
     }
@@ -159,7 +162,7 @@ public class Controller_WebSocket extends _BaseController {
                     return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_Homer.props(actorRef, homer.id), actorSystem, materializer)));
 
                 } else {
-                    logger.warn("homer - server with token: {} is not registered in the database, rejecting", token);
+                    logger.warn("homer - server with token: {} is not registered in the database, rejecting connection wtih token: {}", token);
                 }
 
             } catch (Exception e) {
@@ -184,7 +187,9 @@ public class Controller_WebSocket extends _BaseController {
                         logger.warn("compiler - server is already connected, trying to ping previous connection");
 
                         WS_Message_Ping_compilation_server result = compiler.ping();
-                        if(!result.status.equals("success")){
+
+                        System.out.println("Error::" + result.error );
+                        if(!result.status.equals("success") && !result.error.equals("Missing field code.")){
                             logger.error("compiler - ping failed, removing previous connection");
                             compilers.get(compiler.id).close();
                         } else {
@@ -197,7 +202,7 @@ public class Controller_WebSocket extends _BaseController {
                     return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_Compiler.props(actorRef, compiler.id), actorSystem, materializer)));
 
                 } else {
-                    logger.warn("compiler - server with token: {} is not registered in the database, rejecting", token);
+                    logger.warn("compiler - server with token: {} is not registered in the database, rejecting token: {}", token);
                 }
 
             } catch (Exception e) {

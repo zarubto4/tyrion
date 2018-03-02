@@ -1302,7 +1302,7 @@ public class Controller_Grid extends _BaseController {
                 Model_WidgetVersion copy_object = new Model_WidgetVersion();
                 copy_object.name        = version.name;
                 copy_object.description = version.description;
-                copy_object.author      = version.author;
+                copy_object.author_id      = version.author_id;
                 copy_object.design_json = version.design_json;
                 copy_object.logic_json  = version.logic_json;
                 copy_object.widget      = grid_widget_new;

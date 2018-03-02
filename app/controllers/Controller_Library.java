@@ -160,7 +160,7 @@ public class Controller_Library extends _BaseController {
                 copy_object.description     = version.description;
                 copy_object.library         = library_new;
                 copy_object.publish_type    = ProgramType.PRIVATE;
-                copy_object.author          = version.author;
+                copy_object.author_id          = version.author_id;
 
                 // Zkontroluji oprávnění
                 copy_object.save();
@@ -737,7 +737,7 @@ public class Controller_Library extends _BaseController {
                 version.description      = help.version_description;
                 version.library          = library;
                 version.publish_type     = ProgramType.PUBLIC;
-                version.author           = version_old.author;
+                version.author_id           = version_old.author_id;
 
                 // Zkontroluji oprávnění
                 version.save();

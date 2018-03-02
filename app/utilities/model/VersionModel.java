@@ -32,44 +32,32 @@ public abstract class VersionModel extends NamedModel {
 
     @JsonIgnore @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER) public Model_Blob file; // TODO Cache 
 
-    @ManyToOne(fetch = FetchType.LAZY) public Model_Person author;
-
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only if user make request for publishing") @Enumerated(EnumType.STRING) public Approval approval_state;
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only for main / default program - and access only for administrators") @Enumerated(EnumType.STRING) public ProgramType publish_type;
 
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Cached private UUID cache_author_id;
+
 
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty
-    public Model_Person author() {
+    @JsonIgnore
+    public Model_Person author() throws _Base_Result_Exception {
         try {
-            return get_author();
-        } catch (_Base_Result_Exception e){
+
+            if (author_id != null) {
+                return Model_Person.getById(author_id);
+            }
+
             return null;
-        } catch (Exception e) {
+        }catch (Exception e){
             logger.internalServerError(e);
             return null;
         }
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore
-    public Model_Person get_author() throws _Base_Result_Exception {
-
-        if (cache_author_id == null) {
-            Model_Person person = Model_Person.find.query().where().eq("widgetVersionsAuthor.id", id).select("id").findOne();
-
-            if(person == null) throw new Result_Error_NotFound(Model_Person.class);
-            cache_author_id = person.id;
-        }
-
-        return Model_Person.getById(cache_author_id);
-    }
 
 
     @JsonIgnore @Override

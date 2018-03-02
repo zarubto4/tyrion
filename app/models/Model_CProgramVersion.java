@@ -303,7 +303,7 @@ public class Model_CProgramVersion extends VersionModel {
             compilation.status = CompilationStatus.IN_PROGRESS;
             compilation.update();
 
-            Model_Blob file_record = Model_Blob.find.query().where().eq("name", "code.json").eq("version.id", id).findOne();
+            Model_Blob file_record = file;
             if (file_record == null) {
 
                 logger.internalServerError(new Exception("File not found! Version is not compilable!"));

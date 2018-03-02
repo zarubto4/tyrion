@@ -1028,7 +1028,7 @@ public class Controller_Code extends _BaseController {
                 version.description      = help.version_description;
                 version.c_program        = c_program;
                 version.publish_type     = ProgramType.PUBLIC;
-                version.author           = version_old.author;
+                version.author_id           = version_old.author_id;
 
                 // Zkontroluji oprávnění
                 version.save();

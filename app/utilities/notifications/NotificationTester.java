@@ -238,7 +238,7 @@ public class NotificationTester extends _BaseController {
                         version = new Model_CProgramVersion();
                         version.name        = "Test notification c version";
                         version.description = "random text sd asds dasda";
-                        version.author              = person;
+                        version.author_id              = person.id;
                         version.c_program           = cProgram;
                         version.publish_type        = ProgramType.PRIVATE;
                         version.save();
@@ -275,7 +275,7 @@ public class NotificationTester extends _BaseController {
                         b_version = new Model_BProgramVersion();
                         b_version.name        = "Test notification b version";
                         b_version.description = "random text sd asds dasda";
-                        b_version.author              = person;
+                        b_version.author_id              = person.id;
                         b_version.b_program           = bProgram;
                         version.publish_type        = ProgramType.PRIVATE;
                         b_version.save();
