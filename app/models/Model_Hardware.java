@@ -1467,7 +1467,7 @@ public class Model_Hardware extends TaggedModel {
             }
 
             if (Model_HomerServer.getById(plan.getHardware().connected_server_id).online_state() != NetworkStatus.ONLINE) {
-                logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", plan.actualization_procedure.id , plan.id, Model_HomerServer.getById(plan.getHardware().connected_server_id).personal_server_name);
+                logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", plan.actualization_procedure.id , plan.id, Model_HomerServer.getById(plan.getHardware().connected_server_id).name);
                 plan.state = HardwareUpdateState.HOMER_SERVER_IS_OFFLINE;
                 plan.update();
                 return;
@@ -1577,7 +1577,7 @@ public class Model_Hardware extends TaggedModel {
                 }
 
                 if (Model_HomerServer.getById(plan.getHardware().connected_server_id).online_state() != NetworkStatus.ONLINE) {
-                    logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id, Model_HomerServer.getById(plan.hardware.connected_server_id).personal_server_name);
+                    logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id, Model_HomerServer.getById(plan.hardware.connected_server_id).name);
                     plan.state = HardwareUpdateState.HOMER_SERVER_IS_OFFLINE;
                     plan.update();
                     continue;

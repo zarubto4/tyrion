@@ -18,6 +18,7 @@ import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
 import utilities.grid_support.utils.IP_Founder;
 import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
+import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
 import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
@@ -44,6 +45,7 @@ public class Server {
     public static ServerMode mode;
     public static String version;
     public static String httpAddress;
+    public static String clearAddress;
     public static String wsAddress;
 
     // Azure - Blob
@@ -182,6 +184,7 @@ public class Server {
         // Nastavení pro Tyrion Adresy
         if(httpAddress == null) httpAddress = "http://" + configuration.getString("server." + mode);
         if(wsAddress == null)   wsAddress   = "ws://" + configuration.getString("server." + mode);
+        if(clearAddress == null)   clearAddress  = configuration.getString("server." + mode);
 
         // Nastavení adresy, kde běží Grid APP
         if(grid_app_main_url == null) grid_app_main_url = "https://" + configuration.getString("Grid_App." + mode + ".mainUrl");
@@ -430,6 +433,7 @@ public class Server {
         Hardware_Registration_Authority.baseFormFactory = Server.injector.getInstance(_BaseFormFactory.class);
         WS_Homer.baseFormFactory                        = Server.injector.getInstance(_BaseFormFactory.class);
         Synchronize_Homer_Synchronize_Settings.baseFormFactory = Server.injector.getInstance(_BaseFormFactory.class);
+        DigitalOceanThreadRegister.baseFormFactory      = Server.injector.getInstance(_BaseFormFactory.class);
         Model_HardwareBatch.baseFormFactory             = Server.injector.getInstance(_BaseFormFactory.class);
         BaseModel.baseFormFactory                       = Server.injector.getInstance(_BaseFormFactory.class);
         DigitalOceanTyrionService.baseFormFactory       = Server.injector.getInstance(_BaseFormFactory.class);

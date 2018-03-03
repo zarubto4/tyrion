@@ -23,7 +23,7 @@ public class WS_Message_Homer_Get_configuration extends WS_AbstractMessage {
         request_conf.put("message_type", message_type);
         request_conf.put("message_channel", Model_HomerServer.CHANNEL);
         request_conf.put("status", "success");
-        request_conf.put("server_name", server.personal_server_name);
+        request_conf.put("server_name", server.name);
         request_conf.put("mqtt_port", server.mqtt_port);
         request_conf.put("grid_port", server.grid_port);
         request_conf.put("web_port", server.hardware_logger_port);

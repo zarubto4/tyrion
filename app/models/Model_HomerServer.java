@@ -28,6 +28,7 @@ import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.model.TaggedModel;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
 import websocket.WS_Message;
 import websocket.interfaces.WS_Homer;
@@ -46,7 +47,7 @@ import java.util.List;
 @Entity
 @ApiModel(description = "Model of HomerServer", value = "HomerServer")
 @Table(name="HomerServer")
-public class Model_HomerServer extends BaseModel {
+public class Model_HomerServer extends TaggedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -56,8 +57,6 @@ public class Model_HomerServer extends BaseModel {
 
     @JsonIgnore public String connection_identifier;
     @JsonIgnore public String hash_certificate;
-
-    @ApiModelProperty(required = true, readOnly = true) public String personal_server_name;
 
     @JsonIgnore @Column(columnDefinition = "TEXT") public String json_additional_parameter;        // DB dokument - smožností rozšíření na cokoliv
 
@@ -581,7 +580,7 @@ public class Model_HomerServer extends BaseModel {
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Homer_ping.class, node);
 
         } catch (Exception e) {
-            logger.warn("Cloud Homer server {} Id {} is offline!", personal_server_name, id);
+            logger.warn("Cloud Homer server {} Id {} is offline!", name, id);
             return new WS_Message_Homer_ping();
         }
     }

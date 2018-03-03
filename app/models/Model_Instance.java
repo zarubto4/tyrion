@@ -26,7 +26,6 @@ import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_instance_with_tyrion.verification.WS_Message_Grid_token_verification;
 import websocket.messages.homer_instance_with_tyrion.verification.WS_Message_WebView_token_verification;
-import websocket.messages.homer_with_tyrion.verification.WS_Message_Check_homer_server_permission;
 import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 import websocket.messages.homer_instance_with_tyrion.*;
 
@@ -97,7 +96,7 @@ public class Model_Instance extends TaggedModel {
                 return cache_server_name;
             }
 
-            cache_server_name = Model_HomerServer.getById(server_id()).personal_server_name;
+            cache_server_name = Model_HomerServer.getById(server_id()).name;
             return cache_server_name;
 
         } catch (Exception e) {

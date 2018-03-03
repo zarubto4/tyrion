@@ -57,7 +57,7 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
 
             Model_HomerServer homer = Model_HomerServer.getById(homer_server.id);
 
-            //homer.personal_server_name = help.server_name;
+            //homer.name = help.server_name;
             if (homer.mqtt_port != help.mqtt_port || homer.grid_port != help.grid_port || homer.web_view_port != help.web_view_port ||  homer.hardware_logger_port != help.hw_logger_port ||  homer.rest_api_port != help.rest_api_port) {
                 homer.mqtt_port = help.mqtt_port;   // 1881
                 homer.grid_port = help.grid_port;   // 8503
@@ -80,7 +80,7 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
             terminal_logger.trace(" " + homer_server.id + "synchronize_configuration: done!");
 
         } catch (Exception e) {
-            System.out.println("synchronize_configuration: TimeoutException");
+            terminal_logger.error("synchronize_configuration: TimeoutException");
             terminal_logger.internalServerError(e);
             homer_server.onClose();
         }
