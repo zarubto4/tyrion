@@ -183,11 +183,6 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test3() {
         try {
 
-            DigitalOceanTyrionService oceanTyrionService = new DigitalOceanTyrionService();
-
-            Model_HomerServer server = new Model_HomerServer();
-            server.id = UUID.randomUUID();
-            DigitalOceanTyrionService.create_server(server);
 
 
             return ok();

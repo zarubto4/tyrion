@@ -486,9 +486,11 @@ create table homerserver (
   created                       timestamptz,
   updated                       timestamptz,
   removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
   connection_identifier         varchar(255),
   hash_certificate              varchar(255),
-  personal_server_name          varchar(255),
   json_additional_parameter     TEXT,
   mqtt_port                     integer,
   grid_port                     integer,
@@ -508,6 +510,12 @@ create table homerserver (
   constraint ck_homerserver_server_type check ( server_type in ('BACKUP','TEST','PUBLIC','MAIN','PRIVATE')),
   constraint ck_homerserver_log_level check ( log_level in (0,1,2,3,4)),
   constraint pk_homerserver primary key (id)
+);
+
+create table homerserver_tag (
+  homer_server_id               uuid not null,
+  tag_id                        uuid not null,
+  constraint pk_homerserver_tag primary key (homer_server_id,tag_id)
 );
 
 create table instance (
@@ -1236,6 +1244,12 @@ create index ix_hardwareupdate_binary_file_id on hardwareupdate (binary_file_id)
 alter table homerserver add constraint fk_homerserver_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
 create index ix_homerserver_project_id on homerserver (project_id);
 
+alter table homerserver_tag add constraint fk_homerserver_tag_homerserver foreign key (homer_server_id) references homerserver (id) on delete restrict on update restrict;
+create index ix_homerserver_tag_homerserver on homerserver_tag (homer_server_id);
+
+alter table homerserver_tag add constraint fk_homerserver_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
+create index ix_homerserver_tag_tag on homerserver_tag (tag_id);
+
 alter table instance add constraint fk_instance_server_main_id foreign key (server_main_id) references homerserver (id) on delete restrict on update restrict;
 create index ix_instance_server_main_id on instance (server_main_id);
 
@@ -1562,6 +1576,12 @@ drop index if exists ix_hardwareupdate_binary_file_id;
 alter table if exists homerserver drop constraint if exists fk_homerserver_project_id;
 drop index if exists ix_homerserver_project_id;
 
+alter table if exists homerserver_tag drop constraint if exists fk_homerserver_tag_homerserver;
+drop index if exists ix_homerserver_tag_homerserver;
+
+alter table if exists homerserver_tag drop constraint if exists fk_homerserver_tag_tag;
+drop index if exists ix_homerserver_tag_tag;
+
 alter table if exists instance drop constraint if exists fk_instance_server_main_id;
 drop index if exists ix_instance_server_main_id;
 
@@ -1778,6 +1798,8 @@ drop table if exists hardwaretype cascade;
 drop table if exists hardwareupdate cascade;
 
 drop table if exists homerserver cascade;
+
+drop table if exists homerserver_tag cascade;
 
 drop table if exists instance cascade;
 

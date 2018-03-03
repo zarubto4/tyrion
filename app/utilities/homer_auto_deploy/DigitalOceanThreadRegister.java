@@ -29,7 +29,6 @@ public class DigitalOceanThreadRegister extends Thread {
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
     private static final Logger logger = new Logger(Synchronize_Homer_Synchronize_Settings.class);
-    private static  WSClient ws = Play.current().injector().instanceOf(WSClient.class);
 
     /*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
@@ -47,6 +46,9 @@ public class DigitalOceanThreadRegister extends Thread {
 
     @Override
     public void run() {
+
+        WSClient ws = Play.current().injector().instanceOf(WSClient.class);
+
         try {
             logger.trace("run:: Thread for Homer Server id: {} Configuration. Registration ID: {} Fist Action is Wait 30 seconds. ITs time to copy and make a configuration on DigitalOcean side.", homer_server_id, registration.id);
             sleep(1000 * 30);
