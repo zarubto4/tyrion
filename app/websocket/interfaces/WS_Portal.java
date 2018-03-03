@@ -9,8 +9,6 @@ import models.Model_HomerServer;
 import models.Model_Notification;
 import models.Model_Project;
 import utilities.logger.Logger;
-import websocket.WS_Interface;
-import websocket.messages.homer_with_tyrion.verification.WS_Message_Check_homer_server_permission;
 import websocket.messages.tyrion_with_becki.WS_Message_Subscribe_Notifications;
 import websocket.messages.tyrion_with_becki.WS_Message_UnSubscribe_Notifications;
 
@@ -68,11 +66,11 @@ public class WS_Portal {
                             becki_notification_confirmation_from_becki(ws, json);
                             return;
                         }    // Becki poslala odpověď, že dostala notifikaci
-                        case WS_Message_Subscribe_Notifications.messageType: {
+                        case WS_Message_Subscribe_Notifications.message_type: {
                             becki_subscribe_notification(ws, json);
                             return;
                         }    // Becki poslala odpověď, že ví že subscribe_notification
-                        case WS_Message_UnSubscribe_Notifications.messageType: {
+                        case WS_Message_UnSubscribe_Notifications.message_type: {
                             becki_unsubscribe_notification(ws, json);
                             return;
                         }    // Becki poslala odpověď, že ví že už ne! subscribe_notification
@@ -124,6 +122,7 @@ public class WS_Portal {
     public void becki_subscribe_notification (WS_PortalSingle ws, ObjectNode json){
         try {
 
+            logger.trace("becki_subscribe_notification:: Content:: {}", json.toString());
             WS_Message_Subscribe_Notifications subscribe_notifications = baseFormFactory.formFromJsonWithValidation(ws, WS_Message_Subscribe_Notifications.class, json);
 
             WS_PortalSingle single_connection = all_person_connections.get( subscribe_notifications.single_connection_token);
@@ -141,6 +140,7 @@ public class WS_Portal {
     public void becki_unsubscribe_notification (WS_PortalSingle ws, ObjectNode json){
         try{
 
+            logger.trace("becki_unsubscribe_notification:: Content:: {}", json.toString());
             WS_Message_UnSubscribe_Notifications un_subscribe_notifications = baseFormFactory.formFromJsonWithValidation(ws, WS_Message_UnSubscribe_Notifications.class, json);
 
             WS_PortalSingle single_connection = all_person_connections.get(un_subscribe_notifications.single_connection_token);

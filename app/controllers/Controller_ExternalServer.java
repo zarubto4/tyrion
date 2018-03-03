@@ -119,13 +119,13 @@ public class Controller_ExternalServer extends _BaseController {
                 server.project =  Model_Project.getById(help.project_id);
             }
 
+            server.save();
 
 
-
-            Swagger_ServerRegistration_FormData data = DigitalOceanTyrionService.get_data();
+            DigitalOceanTyrionService.create_server(server, help.size_slug, help.region_slug);
 
             // Vrácení objektu
-            return created(Json.toJson(data));
+            return created(Json.toJson(server));
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -283,7 +283,7 @@ public class Controller_ExternalServer extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_HomerServer_New",
+                            dataType = "utilities.swagger.input.Swagger_HomerServer_New_Manually",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"

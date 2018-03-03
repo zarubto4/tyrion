@@ -28,7 +28,7 @@ public class DigitalOceanThreadRegister extends Thread {
 
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(Synchronize_Homer_Synchronize_Settings.class);
+    private static final Logger logger = new Logger(DigitalOceanThreadRegister.class);
 
     /*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
@@ -79,34 +79,44 @@ public class DigitalOceanThreadRegister extends Thread {
 
 
                         logger.trace("create_server::   Default Homer Server Port is  3000");
-                        String configuration_homer_url = server.server_url + ":3000" + "/configuration";
+                        String configuration_homer_url = "http://" + server.server_url + ":3000" + "/configuration";
 
                         logger.trace("crate_server:: Try to request Homer Server on url {}", configuration_homer_url);
                         logger.trace("crate_server:: Request Server Configuration will be: {}", json.toString());
 
-                        WSResponse response = ws.url(configuration_homer_url)
-                                .setRequestTimeout(Duration.ofSeconds(10))
-                                .post(json.toString())
-                                .toCompletableFuture()
-                                .get();
+                        try {
 
-                        int status = response.getStatus();
+                            WSResponse response = ws.url(configuration_homer_url)
+                                    .setRequestTimeout(Duration.ofSeconds(10))
+                                    .post(json.toString())
+                                    .toCompletableFuture()
+                                    .get();
 
-                        if(status == 200) {
-                            logger.debug("crate_server:: Done! Server is deployed and now we will try to check if its connected to this server!");
-                            sleep(10000);
-                            Model_HomerServer server_again_but_probably_after_cleaning_cache = Model_HomerServer.getById(homer_server_id);
-                            if(server_again_but_probably_after_cleaning_cache.online_state() == NetworkStatus.ONLINE) {
-                                logger.debug("crate_server::  Amazing -server deployed and running!");
+                            int status = response.getStatus();
+
+
+                            if (status == 200) {
+                                logger.debug("crate_server:: Done! Server is deployed and now we will try to check if its connected to this server!");
+                                sleep(10000);
+                                Model_HomerServer server_again_but_probably_after_cleaning_cache = Model_HomerServer.getById(homer_server_id);
+                                if (server_again_but_probably_after_cleaning_cache.online_state() == NetworkStatus.ONLINE) {
+                                    logger.debug("crate_server::  Amazing -server deployed and running!");
+                                } else {
+                                    logger.error("crate_server::  After Configuration - server is still Offline! Notification to Slack send.");
+                                    String slack_echo = "Automatic procedure for register and deploy homer server to Digital Ocean https://www.digitalocean.com has stuck. \n";
+                                    slack_echo += "Homer Serve ID: " + homer_server_id + ", Name:" + server_again_but_probably_after_cleaning_cache.name + "\n";
+                                    slack_echo += "Droplet ID: " + droplet.getId() + ", Droplet Name:" + droplet.getName() + "\n";
+                                    slack_echo += "Droplet rul: " + server.server_url + ", Api URL:" + server.server_url + ":" + server.rest_api_port + " <---\n";
+                                    slack_echo += "Tyrion Server Type: " + Server.mode + ", Tyrion URL: " + Server.httpAddress + "\n";
+                                    Slack.post_error(slack_echo);
+                                }
                             } else {
-                                logger.error("crate_server::  After Configuration - server is still Offline! Notification to Slack send.");
-                                String slack_echo = "Automatic procedure for register and deploy homer server to Digital Ocean https://www.digitalocean.com has stuck. \n";
-                                slack_echo += "Homer Serve ID: " + homer_server_id + ", Name:" + server_again_but_probably_after_cleaning_cache.name + "\n";
-                                slack_echo += "Droplet ID: " + droplet.getId() + ", Droplet Name:" + droplet.getName() + "\n";
-                                slack_echo += "Droplet rul: " + server.server_url + ", Api URL:" + server.server_url + ":" + server.rest_api_port + " <---\n";
-                                slack_echo += "Tyrion Server Type: " + Server.mode + ", Tyrion URL: " + Server.httpAddress + "\n";
-                                Slack.post_error(slack_echo);
+                                logger.error("crate_server::  Something is wrong - we have incorect response on Rest Api request");
+                                logger.error("crate_server::  Response  Head {} and body: ",  response.getStatus(), response.getBody());
+
                             }
+                        } catch (Exception e) {
+                            logger.internalServerError(e);
                         }
 
 

@@ -36,7 +36,7 @@ public class DigitalOceanTyrionService {
     public DigitalOceanTyrionService(){
     }
 
-    public static void create_server(Model_HomerServer homer_server, String region_slug, String server_size_slug) throws RequestUnsuccessfulException, DigitalOceanException {
+    public static void create_server(Model_HomerServer homer_server, String server_size_slug, String region_slug) throws RequestUnsuccessfulException, DigitalOceanException {
 
         logger.info("create_server:: DigitalOceanTyrionService - New request for Creating Server! Homer Server ID: {}, Name {}, Region Slug: {}, Server Size Slug: {}", homer_server.id, homer_server.name, region_slug, server_size_slug);
 
