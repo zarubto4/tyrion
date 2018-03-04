@@ -25,9 +25,15 @@ public class Swagger_Library_List extends _Swagger_Filter_Common{
     public Swagger_Library_List(Query<Model_Library> query , int page_number) {
 
         if (page_number < 1) page_number = 1;
-        List<UUID> uuids =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findIds();
+        List<Model_Library> uuids_o =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).select("id").findList();
 
-        for (UUID uuid : uuids) {
+        List<UUID> uuids = new ArrayList<>();
+        for(Model_Library l : uuids_o) {
+            uuids.add(l.id);
+        }
+
+
+        for (UUID uuid: uuids) {
             this.content.add(Model_Library.getById(uuid));
         }
         this.total   = query.findCount();

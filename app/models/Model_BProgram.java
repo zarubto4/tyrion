@@ -127,14 +127,10 @@ public class Model_BProgram extends TaggedModel {
     public List<Model_BProgramVersion> get_versions() {
         try {
 
-            if (cache_version_ids.isEmpty()) {
+            if (cache_version_ids == null || cache_version_ids.isEmpty()) {
 
-                List<UUID> uuid_ids =  Model_BProgramVersion.find.query().where().eq("b_program.id", id).order().desc("created").findIds();
+                cache_version_ids =  Model_BProgramVersion.find.query().where().eq("b_program.id", id).order().desc("created").findIds();
 
-                // Získání seznamu
-                for (UUID uuid_id : uuid_ids) {
-                    cache_version_ids.add(uuid_id);
-                }
             }
 
             List<Model_BProgramVersion> versions  = new ArrayList<>();

@@ -21,6 +21,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+
+import static java.lang.Math.abs;
 
 public class DigitalOceanTyrionService {
 
@@ -118,6 +121,12 @@ public class DigitalOceanTyrionService {
         newDroplet.setEnableBackup(Boolean.FALSE);
         newDroplet.setEnableIpv6(Boolean.TRUE);
         newDroplet.setEnablePrivateNetworking(Boolean.FALSE);
+
+        Random random = new Random();
+        List<Key> keys = new ArrayList<Key>();
+        keys.add(new Key(abs(random.nextInt())));
+        keys.add(new Key(abs(random.nextInt())));
+        newDroplet.setKeys(keys);
 
         logger.trace("create_server::Time to add Tags");
         // Add Tags

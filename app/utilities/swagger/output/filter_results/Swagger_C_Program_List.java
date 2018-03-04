@@ -24,7 +24,12 @@ public class Swagger_C_Program_List extends _Swagger_Filter_Common {
     public Swagger_C_Program_List(Query<Model_CProgram> query , int page_number) {
 
         if (page_number < 1) page_number = 1;
-        List<UUID> uuids =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findIds();
+        List<Model_CProgram> uuids_o =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).select("id").findList();
+
+        List<UUID> uuids = new ArrayList<>();
+        for(Model_CProgram l : uuids_o) {
+            uuids.add(l.id);
+        }
 
         for (UUID uuid : uuids) {
             this.content.add(Model_CProgram.getById(uuid));

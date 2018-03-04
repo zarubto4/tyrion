@@ -539,14 +539,13 @@ public class Controller_Code extends _BaseController {
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_CProgram> query = Ebean.find(Model_CProgram.class);
-
             query.orderBy("UPPER(name) ASC");
+            query.where().eq("deleted", false);
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
-
                 Model_Project.getById(help.project_id);
-                query.where().eq("project.id", help.project_id).eq("deleted", false);
+                query.where().eq("project.id", help.project_id);
             }
 
             if (!help.hardware_type_ids.isEmpty()) {
@@ -554,7 +553,7 @@ public class Controller_Code extends _BaseController {
             }
 
             if (help.public_programs) {
-                query.where().isNull("project").eq("deleted", false).eq("publish_type", ProgramType.PUBLIC.name());
+                query.where().isNull("project").eq("publish_type", ProgramType.PUBLIC.name());
             }
 
             if (help.pending_programs) {

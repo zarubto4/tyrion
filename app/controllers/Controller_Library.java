@@ -244,8 +244,7 @@ public class Controller_Library extends _BaseController {
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_Library> query = Ebean.find(Model_Library.class);
-
-            query.orderBy("UPPER(name) ASC");
+            query.where().eq("deleted", false);
 
 
             if (!help.hardware_type_ids.isEmpty()) {
@@ -254,14 +253,14 @@ public class Controller_Library extends _BaseController {
 
             if (help.project_id != null) {
                 Model_Project.getById(help.project_id);
-                query.where().eq("project_id", help.project_id).eq("deleted", false);
+                query.where().eq("project_id", help.project_id);
 
             } else {
                 query.where().isNull("project_id");
             }
 
             if (help.public_library) {
-                query.where().isNull("project_id").eq("deleted", false).eq("publish_type", ProgramType.PUBLIC.name());
+                query.where().isNull("project_id").eq("publish_type", ProgramType.PUBLIC.name());
             }
 
             if (help.pending_library) {

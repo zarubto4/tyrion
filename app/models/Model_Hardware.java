@@ -2797,6 +2797,12 @@ public class Model_Hardware extends TaggedModel {
         return board;
     }
 
+    /**
+     * Specialní vyjímka - vždy vracíme Hardware podle full_id (číslo proceosru) kde
+     * máme dominanci! Tuto metodu výlučn používá část systému obsluhující fyzický hardware.
+     * @param fullId
+     * @return
+     */
     public static Model_Hardware getByFullId(String fullId) {
          String id = (String) find.query().where().eq("full_id", fullId).eq("dominant_entity", true).select("id").getId();
         return  getById(id);

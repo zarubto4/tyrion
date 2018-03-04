@@ -160,10 +160,11 @@ public class Controller_Blocko extends _BaseController {
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_BProgram> query = Ebean.find(Model_BProgram.class);
-            query.where().eq("project.participants.person.id", _BaseController.personId());
+            query.where().eq("deleted", false);
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
+                Model_Project.getById(help.project_id);
                 query.where().eq("project.id", help.project_id);
             }
 
