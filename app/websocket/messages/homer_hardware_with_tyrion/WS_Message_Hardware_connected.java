@@ -14,7 +14,7 @@ public class WS_Message_Hardware_connected extends WS_AbstractMessage {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Constraints.Required public UUID hardware_id;
+    @Constraints.Required public String hardware_id;
 
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/

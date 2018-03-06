@@ -15,7 +15,7 @@ public class Swagger_GridWidget_Filter {
     public UUID project_id;
 
     @ApiModelProperty(required = false, value = "Only for Admins with permissions")
-    public  boolean pending_widget;
+    public  boolean pending_widgets;
 
     @ApiModelProperty(required = false, value = "Show - All Public Programs which are confirmed and approved.")
     public boolean public_programs;

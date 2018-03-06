@@ -11,11 +11,8 @@ import play.mvc.*;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.document_db.document_objects.DM_Board_Bootloader_DefaultConfig;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
-import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
-import utilities.hardware_registration_auhtority.DM_Board_Registration_Central_Authority;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
@@ -117,7 +114,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result processor_get( String processor_id) {
+    public Result processor_get(UUID processor_id) {
         try {
 
             //Zkontroluji validitu
@@ -184,7 +181,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result processor_edit(String processor_id) {
+    public Result processor_edit(UUID processor_id) {
         try {
 
             // Get and Validate Object
@@ -224,7 +221,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result processor_delete(String processor_id) {
+    public Result processor_delete(UUID processor_id) {
         try {
 
             // Kontroluji validitu
@@ -259,7 +256,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result fileRecord_get_bootLoader(String bootloader_id) {
+    public Result fileRecord_get_bootLoader(UUID bootloader_id) {
         try {
 
             Model_BootLoader boot_loader = Model_BootLoader.getById(bootloader_id);
@@ -291,7 +288,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result fileRecord_get_firmware(String version_id) {
+    public Result fileRecord_get_firmware(UUID version_id) {
         try {
 
             // Kontrola validity objektu
@@ -385,7 +382,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result producer_update(String producer_id) {
+    public Result producer_update(UUID producer_id) {
         try {
 
             // Get and Validate Object
@@ -451,7 +448,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result producer_get( String producer_id) {
+    public Result producer_get(UUID producer_id) {
         try {
 
             // Kontrola objektu
@@ -479,7 +476,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result producer_delete(String producer_id) {
+    public Result producer_delete(UUID producer_id) {
         try {
 
             // Kontrola objektu
@@ -610,7 +607,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardwareType_update(String hardware_type_id) {
+    public Result hardwareType_update(UUID hardware_type_id) {
         try {
 
             // Get and Validate Object
@@ -660,7 +657,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardwareType_delete( String hardware_type_id) {
+    public Result hardwareType_delete(UUID hardware_type_id) {
         try {
 
             // Kontrola objektu
@@ -728,7 +725,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardwareType_get(String hardware_type_id) {
+    public Result hardwareType_get(UUID hardware_type_id) {
         try {
 
             // Kontrola validity objektu
@@ -766,7 +763,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(value = BodyParser.Json.class)
-    public Result hardwareType_uploadPicture(String hardware_type_id) {
+    public Result hardwareType_uploadPicture(UUID hardware_type_id) {
         try {
 
             // Get and Validate Object
@@ -843,7 +840,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardwareBatch_create(String hardware_type_id) {
+    public Result hardwareBatch_create(UUID hardware_type_id) {
         try {
 
             // Get and Validate Object
@@ -872,8 +869,8 @@ public class Controller_Hardware extends _BaseController {
             batch.customer_company_name = help.customer_company_name;
             batch.customer_company_made_description = help.customer_company_made_description;
 
-            batch.mac_address_start = help.mac_address_start;
-            batch.mac_address_end = help.mac_address_end;
+            batch.mac_address_start = help.mac_address_start.toUpperCase();
+            batch.mac_address_end = help.mac_address_end.toUpperCase();
             batch.ean_number = help.ean_number;
 
             batch.description = help.description;
@@ -903,7 +900,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardwareBatch_delete(String batch_id) {
+    public Result hardwareBatch_delete(UUID batch_id) {
         try {
 
             // Kontrola objektu
@@ -946,7 +943,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardwareBatch_edit(String batch_id) {
+    public Result hardwareBatch_edit(UUID batch_id) {
         try {
 
             // Get and Validate Object
@@ -972,8 +969,8 @@ public class Controller_Hardware extends _BaseController {
             batch.customer_company_name = help.customer_company_name;
             batch.customer_company_made_description = help.customer_company_made_description;
 
-            batch.mac_address_start = help.mac_address_start;
-            batch.mac_address_end = help.mac_address_end;
+            batch.mac_address_start = help.mac_address_start.toUpperCase();
+            batch.mac_address_end = help.mac_address_end.toUpperCase();
             batch.ean_number = help.ean_number;
 
             batch.description = help.description;
@@ -1014,7 +1011,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bootLoader_create(String hardware_type_id) {
+    public Result bootLoader_create(UUID hardware_type_id) {
         try {
 
             // Get and Validate Object
@@ -1068,7 +1065,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bootLoader_update(String boot_loader_id) {
+    public Result bootLoader_update(UUID boot_loader_id) {
         try {
 
             // Get and Validate Object
@@ -1106,7 +1103,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bootLoader_delete(String boot_loader_id) {
+    public Result bootLoader_delete(UUID boot_loader_id) {
         try {
 
             // Kontrola objektu
@@ -1147,7 +1144,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(value = BodyParser.Json.class)
-    public Result bootLoader_uploadFile(String boot_loader_id) {
+    public Result bootLoader_uploadFile(UUID boot_loader_id) {
         try {
 
             // Get and Validate Object
@@ -1209,7 +1206,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Empty.class)
-    public Result bootLoader_markAsMain(String boot_loader_id) {
+    public Result bootLoader_markAsMain(UUID boot_loader_id) {
         try {
 
             Model_BootLoader boot_loader = Model_BootLoader.getById(boot_loader_id);
@@ -1409,11 +1406,11 @@ public class Controller_Hardware extends _BaseController {
                 throw new Result_Error_PermissionDenied();
             }
 
-            if(!Hardware_Registration_Authority.check_if_value_is_registered(full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
+            if(!Model_HardwareRegistrationEntity.check_if_value_is_registered(full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
                 return notFound(Model_Hardware.class);
             }
 
-            DM_Board_Registration_Central_Authority hw = Hardware_Registration_Authority.get_registration_hardware_from_central_authority_by_full_id(full_id);
+            Model_HardwareRegistrationEntity hw = Model_HardwareRegistrationEntity.getbyFull_id(full_id);
 
             Swagger_Hardware_Registration_Hash hash = new Swagger_Hardware_Registration_Hash();
             hash.hash = hw.hash_for_adding;
@@ -1471,71 +1468,76 @@ public class Controller_Hardware extends _BaseController {
             
             // Kontrola Objektu
             Model_Garfield garfield = Model_Garfield.getById(help.garfield_station_id);
-            
+
+            // Odzkouším -zda už není registrovaný v centárlní autoritě!
+            if (Model_HardwareRegistrationEntity.check_if_value_is_registered(help.full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
+                System.out.println("hardware_create_garfield:: Hardware is already registred in Central authority");
+            } else {
+
+            }
+
+
             String mqtt_password_not_hashed = UUID.randomUUID().toString();
             String mqtt_username_not_hashed = UUID.randomUUID().toString();
 
-            Model_Hardware hardware = Model_Hardware.getByFullId(help.full_id);
-            if (hardware == null) {
+            if(Model_HardwareRegistrationEntity.getbyFull_macAddress(batch.get_nextMacAddress_just_for_check()) != null) {
+                logger.error("hardware_create_garfield:: Mac Address {} is already used!", batch.get_nextMacAddress_just_for_check());
+                return badRequest("hardware_create_garfield:: Mac Address {} is already used!");
+             }
 
-                logger.warn("hardware_create_garfield - device not found in local DB, registering hardware, id: {}", help.full_id);
+            Model_HardwareRegistrationEntity registration_of_hardware = Model_HardwareRegistrationEntity.getbyFull_id(help.full_id);
 
-                // Try to Find it on Registration Authority
-                if (Hardware_Registration_Authority.check_if_value_is_registered(help.full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
-                    logger.error("Device is already Registered ID: {}", help.full_id);
-                    return badRequest("Device is already Registered ID: " + help.full_id);
-                }
-                if (Hardware_Registration_Authority.check_if_value_is_registered(batch.get_nextMacAddress_just_for_check(), Enum_Hardware_Registration_DB_Key.mac_address)) {
+            // Pokud je null - zaregistruji hardware jako nový do centrální autority
+            if (registration_of_hardware == null) {
+                logger.warn("hardware_create_garfield:: Hardware is not regstred in central authority!");
+                logger.warn("hardware_create_garfield:: - hardware is not found in centrall database, full_id: {}", help.full_id);
+                logger.warn("hardware_create_garfield:: - Creation of new device for central database");
+
+                if (Model_HardwareRegistrationEntity.check_if_value_is_registered(batch.get_nextMacAddress_just_for_check(), Enum_Hardware_Registration_DB_Key.mac_address)) {
                     logger.error("Next Mac Address fot this device is already registered. Check It. Mac Address:: {}", help.full_id);
                     return badRequest("Next Mac Address fot this device is already registered. Check It Mac Address:: " +  help.full_id);
                 }
 
-                hardware = new Model_Hardware();
-                hardware.full_id = help.full_id;
-                hardware.is_active = false;
-                hardware.hardware_type = hardwareType;
-                hardware.batch_id = batch.batch_id;
-                hardware.mac_address = batch.get_new_MacAddress();
-                hardware.mqtt_username = BCrypt.hashpw(mqtt_username_not_hashed, BCrypt.gensalt());
-                hardware.mqtt_password = BCrypt.hashpw(mqtt_password_not_hashed, BCrypt.gensalt());
+                registration_of_hardware = new Model_HardwareRegistrationEntity();
+                registration_of_hardware.full_id = help.full_id;
+                registration_of_hardware.mac_address = batch.get_new_MacAddress();
+                registration_of_hardware.hardware_type_compiler_target_name =  hardwareType.compiler_target_name;
+                registration_of_hardware.production_batch_id = batch.batch_id;
+                registration_of_hardware.mqtt_username = mqtt_username_not_hashed;
+                registration_of_hardware.mqtt_password =mqtt_password_not_hashed;
+                registration_of_hardware.save();
 
-                if (Hardware_Registration_Authority.register_device(hardware, hardwareType, batch)) {
-                    hardware.save();
-                } else {
-                    Model_Hardware hardware_repair_from_authority = Model_Hardware.getByFullId(help.full_id);
-                    if (hardware_repair_from_authority != null) {
-                        hardware = hardware_repair_from_authority;
-                    } else {
-                       return notFound("Registration Authority Fail!!");
-                    }
-                }
 
-                hardware.refresh();
+            // Pokud nový není - změním jeho oprávnění na mqtt a oprávnění uložím!
             } else {
-                hardware.mqtt_username = BCrypt.hashpw(mqtt_username_not_hashed, BCrypt.gensalt());
-                hardware.mqtt_password = BCrypt.hashpw(mqtt_password_not_hashed, BCrypt.gensalt());
-                hardware.update();
+                logger.warn("hardware_create_garfield:: Hardware is already registered in Central authority");
+                logger.warn("hardware_create_garfield:: Changing only basic mqtt_username and mqtt_password");
+                registration_of_hardware.mqtt_username = BCrypt.hashpw(mqtt_username_not_hashed, BCrypt.gensalt());
+                registration_of_hardware.mqtt_password = BCrypt.hashpw(mqtt_password_not_hashed, BCrypt.gensalt());
+                registration_of_hardware.update();
             }
 
             // Vytisknu štítky
-
             Printer_Api api = new Printer_Api();
 
-            // Label 62 mm
+            // Kontrola zda jde štítek vytisknout!
             try {
                 // Test for creating - Controlling all prerequisites and requirements
-                new Label_62_mm_package(hardware, batch, garfield);
+                new Label_62_mm_package(registration_of_hardware, batch, hardwareType, garfield);
             } catch (IllegalArgumentException e) {
                 return badRequest("Something is wrong: " + e.getMessage());
             }
 
-            Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(hardware, batch, garfield);
+            // Vytisknu štítky
+            Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(registration_of_hardware, batch, hardwareType, garfield);
             api.printFile(garfield.print_sticker_id, 1, "Garfield Print Label", label_62_mmPackage.get_label(), null);
 
             // Label qith QR kode on Ethernet connector
-            Label_62_split_mm_Details label_12_mm_details = new Label_62_split_mm_Details(hardware);
+            Label_62_split_mm_Details label_12_mm_details = new Label_62_split_mm_Details(registration_of_hardware);
             api.printFile(garfield.print_label_id_1, 1, "Garfield Print QR Hash", label_12_mm_details.get_label(), null);
 
+
+            // Vytvořím registrační číčoviny pro hardware
             if (hardwareType.connectible_to_internet) {
 
                 // Najdu backup_server
@@ -1546,7 +1548,8 @@ public class Controller_Hardware extends _BaseController {
                 Model_HomerServer main_server = Model_HomerServer.find.query().where().eq("server_type", HomerType.MAIN).findOne();
                 if (main_server == null) return notFound("Main server not found!!!");
 
-                DM_Board_Bootloader_DefaultConfig conf = hardware.bootloader_core_configuration();
+                // Vytvořím konfigurační soubor
+                DM_Board_Bootloader_DefaultConfig conf = DM_Board_Bootloader_DefaultConfig.generateConfig();
 
                 Swagger_Hardware_New_Settings_Result_Configuration configuration = new Swagger_Hardware_New_Settings_Result_Configuration();
                 configuration.normal_mqtt_hostname = main_server.server_url;
@@ -1555,7 +1558,7 @@ public class Controller_Hardware extends _BaseController {
                 configuration.mqtt_password = mqtt_username_not_hashed;
                 configuration.backup_mqtt_hostname = backup_server.server_url;
                 configuration.backup_mqtt_port = backup_server.mqtt_port;
-                configuration.mac = hardware.mac_address;
+                configuration.mac = registration_of_hardware.mac_address;
                 configuration.autobackup = conf.autobackup;
                 configuration.blreport = conf.blreport;
                 configuration.wdenable = conf.wdenable;
@@ -1568,14 +1571,15 @@ public class Controller_Hardware extends _BaseController {
                 configuration.wdtime = conf.wdtime;
 
                 Swagger_Hardware_New_Settings_Result result = new Swagger_Hardware_New_Settings_Result();
-                result.full_id = hardware.full_id;
+                result.full_id = registration_of_hardware.full_id;
                 result.configuration = configuration;
 
                 return created(Json.toJson(result));
+            }else {
+                logger.error("hardware_create_garfield:: Error not supported type of board - device is not connectible to internet!");
+                return badRequest("hardware_create_garfield:: Error not supported type of board - device is not connectible to internet!");
             }
 
-            // Vracím seznam zařízení k registraci
-            return created(Json.toJson(hardware));
         } catch (IllegalCharsetNameException e) {
             return badRequest("All Mac Address used");
         } catch (Exception e) {
@@ -1609,7 +1613,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardware_update_description( String hardware_id) {
+    public Result hardware_update_description(UUID hardware_id) {
         try {
 
             // Get and Validate Object
@@ -1665,7 +1669,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardware_update_parameters( String hardware_id) {
+    public Result hardware_update_parameters(UUID hardware_id) {
         try {
 
             // Get and Validate Object
@@ -2048,14 +2052,14 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(value = BodyParser.Json.class)
-    public Result hardware_uploadPicture(String hardware_registration_id) {
+    public Result hardware_uploadPicture(UUID hardware_id) {
         try {
 
             // Get and Validate Object
             Swagger_BASE64_FILE help = baseFormFactory.formFromRequestWithValidation(Swagger_BASE64_FILE.class);
 
             //Kontrola objektu
-            Model_Hardware hardware = Model_Hardware.getById(hardware_registration_id);
+            Model_Hardware hardware = Model_Hardware.getById(hardware_id);
 
             hardware.check_update_permission();
 
@@ -2100,7 +2104,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result hardware_generate_new_password(String hardware_id) {
+    public Result hardware_generate_new_password(UUID hardware_id) {
         try {
 
             //Kontrola objektu
@@ -2146,7 +2150,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardware_redirect_to_server(String hardware_id) {
+    public Result hardware_redirect_to_server(UUID hardware_id) {
         try {
 
             // Get and Validate Object
@@ -2241,10 +2245,10 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result hardware_removePicture(String hardware_registration_id) {
+    public Result hardware_removePicture(UUID hardware_id) {
         try {
 
-            Model_Hardware hardware = Model_Hardware.getById(hardware_registration_id);
+            Model_Hardware hardware = Model_Hardware.getById(hardware_id);
 
             if (hardware.picture != null) {
                 hardware.picture.delete();
@@ -2273,7 +2277,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardware_deactivate( String hardware_id) {
+    public Result hardware_deactivate( UUID hardware_id) {
         try {
 
             // Kotrola objektu
@@ -2310,7 +2314,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardware_get(String hardware_id) {
+    public Result hardware_get(UUID hardware_id) {
         try {
 
             // Kotrola objektu
@@ -2359,7 +2363,7 @@ public class Controller_Hardware extends _BaseController {
             Model_Project.getById(project_id);
 
             // Kotrola objektu
-            DM_Board_Registration_Central_Authority hardware = Hardware_Registration_Authority.get_registration_hardware_from_central_authority_by_hash(registration_hash);
+            Model_HardwareRegistrationEntity hardware = Model_HardwareRegistrationEntity.getbyFull_hash(registration_hash);
 
             if (hardware == null) {
                 status.status = BoardRegistrationStatus.NOT_EXIST;
@@ -2431,7 +2435,7 @@ public class Controller_Hardware extends _BaseController {
     }
 
     @ApiOperation(value = "Remove Hardware from Database - Only for Administrators", hidden = true)
-    public Result hardware_delete(String hardware_id) {
+    public Result hardware_delete(UUID hardware_id) {
         try {
 
             // Kontrola objektu
@@ -2619,7 +2623,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardwareGroup_update(String hardware_group_id) {
+    public Result hardwareGroup_update(UUID hardware_group_id) {
         try {
 
             // Get and Validate Object
@@ -2659,7 +2663,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardwareGroup_delete(String hardware_group_id) {
+    public Result hardwareGroup_delete(UUID hardware_group_id) {
         try {
 
             Model_HardwareGroup group = Model_HardwareGroup.getById(hardware_group_id);
@@ -2863,7 +2867,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardwareGroup_get(String group_id) {
+    public Result hardwareGroup_get(UUID group_id) {
         try {
 
             // Kontrola validity objektu

@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
 
+import javax.validation.Constraint;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +24,7 @@ public class Swagger_Board_New_Garfield implements Constraints.Validatable<List<
         @Constraints.Required @ApiModelProperty(required = true) public UUID garfield_station_id;
 
         @ApiModelProperty(value = "Must be unique!!!, The hardware_id must have 24 hexadecimal characters!", required = true)
-        @Constraints.Required
+        @Constraints.Required  @Constraints.MinLength(value = 24) @Constraints.MaxLength(value = 24)
         public String full_id; // Processor ID
 
         @Override

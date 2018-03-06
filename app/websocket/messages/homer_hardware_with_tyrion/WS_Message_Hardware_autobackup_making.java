@@ -12,7 +12,7 @@ public class WS_Message_Hardware_autobackup_making extends WS_AbstractMessage_In
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Constraints.Required public String hardware_id;
+    @Constraints.Required public String full_id;
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 

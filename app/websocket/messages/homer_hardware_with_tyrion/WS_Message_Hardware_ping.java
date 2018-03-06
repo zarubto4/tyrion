@@ -24,13 +24,13 @@ public class WS_Message_Hardware_ping extends WS_AbstractMessage_Instance {
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public ObjectNode make_request(List<String> device_ids) {
+    public ObjectNode make_request(List<String> device_full_ids) {
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
         request.put("message_channel", Model_Instance.CHANNEL);
-        request.set("hardware_ids", Json.toJson(device_ids));
+        request.set("full_ids", Json.toJson(device_full_ids));
 
         return request;
     }
@@ -43,7 +43,7 @@ public class WS_Message_Hardware_ping extends WS_AbstractMessage_Instance {
 
         public DevicePingStatus() {}
 
-        @Constraints.Required  public String hardware_id;
+        @Constraints.Required  public String full_id;
         @Constraints.Required  public Integer response_time;       // timestamp in milis  Limit 30 000  (30 sekund)
 
     }

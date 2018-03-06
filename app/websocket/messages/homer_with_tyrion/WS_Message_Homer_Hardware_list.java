@@ -18,7 +18,7 @@ public class WS_Message_Homer_Hardware_list extends WS_AbstractMessage {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Valid public List<String> hardware_ids = new ArrayList<>();
+    @Valid public List<String> full_ids = new ArrayList<>();
 
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/

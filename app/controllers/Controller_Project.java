@@ -3,8 +3,6 @@ package controllers;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.*;
-import play.data.Form;
-import play.data.FormFactory;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -15,10 +13,6 @@ import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.BoardCommand;
 import utilities.enums.NetworkStatus;
-import utilities.errors.Exceptions.Result_Error_InvalidBody;
-import utilities.hardware_registration_auhtority.DM_Board_Registration_Central_Authority;
-import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
-import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
 import utilities.logger.Logger;
 import utilities.swagger.input.*;
 
@@ -648,7 +642,7 @@ public class Controller_Project extends _BaseController {
             Model_Project project = Model_Project.getById(help.project_id);
             project.check_update_permission();
 
-            DM_Board_Registration_Central_Authority registration_authority = Hardware_Registration_Authority.get_registration_hardware_from_central_authority_by_hash(help.registration_hash);
+            Model_HardwareRegistrationEntity registration_authority = Model_HardwareRegistrationEntity.getbyFull_hash(help.registration_hash);
 
             // Hash not exist
             if(registration_authority == null){
@@ -661,7 +655,7 @@ public class Controller_Project extends _BaseController {
             }
 
             // Copy is done - Hardware is saved in database, but without any connections for projec, groups etc..
-            Model_Hardware hardware = Hardware_Registration_Authority.make_copy_of_hardware_to_local_database(help.registration_hash);
+            Model_Hardware hardware = Model_HardwareRegistrationEntity.make_copy_of_hardware_to_local_database(help.registration_hash);
             hardware.project = project;
 
             // Set name if help contains it
@@ -723,7 +717,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_removeHardware(String registration_id) {
+    public Result project_removeHardware(UUID registration_id) {
         try {
 
             Model_Hardware hardware = Model_Hardware.getById(registration_id);
@@ -752,7 +746,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_deactiveHardware(String registration_id) {
+    public Result project_deactiveHardware(UUID registration_id) {
         try {
 
             Model_Hardware hardware = Model_Hardware.getById(registration_id);
@@ -795,7 +789,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_activeHardware(String registration_id) {
+    public Result project_activeHardware(UUID registration_id) {
         try {
 
             Model_Hardware hardware = Model_Hardware.getById(registration_id);

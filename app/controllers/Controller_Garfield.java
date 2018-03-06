@@ -2,9 +2,7 @@ package controllers;
 
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
-import models.Model_Garfield;
-import models.Model_Hardware;
-import models.Model_HardwareBatch;
+import models.*;
 import play.data.Form;
 import play.data.FormFactory;
 import play.libs.Json;
@@ -67,7 +65,7 @@ public class Controller_Garfield extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Garfield(@ApiParam(required = true) String garfield_id) {
+    public Result edit_Garfield(UUID garfield_id) {
         try {
 
             // Get and Validate Object
@@ -159,7 +157,7 @@ public class Controller_Garfield extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result remove_Garfield(@ApiParam(required = true) String garfield_id) {
+    public Result remove_Garfield(UUID garfield_id) {
         try {
 
             // Kontrola objektu
@@ -189,7 +187,7 @@ public class Controller_Garfield extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result get_Garfield(@ApiParam(required = true) String garfield_id) {
+    public Result get_Garfield(UUID garfield_id) {
         try {
 
             // Kontrola objektu
@@ -217,12 +215,13 @@ public class Controller_Garfield extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result print_label(@ApiParam(required = true) String board_id) {
+    public Result print_label(UUID board_id) {
         try {
 
 
             // Kotrola objektu
             Model_Hardware hardware = Model_Hardware.getById(board_id);
+            Model_HardwareRegistrationEntity entity = Model_HardwareRegistrationEntity.getbyFull_id(hardware.full_id);
 
             Model_HardwareBatch batch = Model_HardwareBatch.getById(hardware.batch_id);
 
@@ -243,18 +242,18 @@ public class Controller_Garfield extends _BaseController {
             // Label 62 mm
             try {
                 // Test for creating - Controlling all prerequisites and requirements
-                new Label_62_mm_package(hardware, batch, garfield);
+                new Label_62_mm_package(entity, batch, hardware.getHardwareType(), garfield);
             } catch (IllegalArgumentException e) {
                 logger.error("print_label:: Label_62_mm_package printer info Error, " + e.getMessage());
                 return badRequest("Something is wrong: " + e.getMessage());
             }
 
             // Label 62 mm
-            Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(hardware, batch, garfield);
+            Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(entity, batch, hardware.getHardwareType(), garfield);
             api.printFile(garfield.print_sticker_id, 1, "Garfield Print Label", label_62_mmPackage.get_label(), null);
 
             // Label qith QR kode on Ethernet connector
-            Label_62_split_mm_Details label_12_mm_details = new Label_62_split_mm_Details(hardware);
+            Label_62_split_mm_Details label_12_mm_details = new Label_62_split_mm_Details(entity);
             api.printFile(garfield.print_label_id_1, 1, "Garfield Print QR Hash", label_12_mm_details.get_label(), null);
 
 
@@ -311,7 +310,7 @@ public class Controller_Garfield extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result online_state_Printer(@ApiParam(required = true) String garfield_id, @ApiParam(required = true) Integer printer_id) {
+    public Result online_state_Printer(UUID garfield_id, Integer printer_id) {
         try {
 
             // Kontrola objektu
@@ -345,7 +344,7 @@ public class Controller_Garfield extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result print_test_Printer(@ApiParam(required = true) String garfield_id, @ApiParam(required = true) Integer printer_id) {
+    public Result print_test_Printer(UUID garfield_id, Integer printer_id) {
         try {
 
             // Kontrola objektu
@@ -362,9 +361,12 @@ public class Controller_Garfield extends _BaseController {
 
             if (garfield.print_sticker_id.equals(printer_id)) {
 
-                Model_Hardware board = new Model_Hardware();
-                board.id = UUID.randomUUID();
+                Model_HardwareRegistrationEntity board = new Model_HardwareRegistrationEntity();
                 board.full_id = "123456789123456789123456";
+                board.hash_for_adding = "dsfasdfsdfsdfsdfasdfsdfsdfsadf";
+
+                Model_HardwareType type = new Model_HardwareType();
+                type.name = "test name";
 
                 Model_HardwareBatch info = new Model_HardwareBatch();
                 info.revision = "1.9.9";
@@ -379,7 +381,7 @@ public class Controller_Garfield extends _BaseController {
                 info.customer_company_made_description = "1.9.9";
 
                 Printer_Api api = new Printer_Api();
-                Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(board, info, garfield);
+                Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(board, info, type, garfield);
 
                 api.printFile(printer_id, 1, "test", label_62_mmPackage.get_label(), null);
 
