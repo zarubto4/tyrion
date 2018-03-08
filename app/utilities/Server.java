@@ -133,6 +133,7 @@ public class Server {
 
 
         setBaseForm();
+        setConfigurationInjectorForNonStaticClass();
 
         // TODO Batch_Registration_Authority.synchronize();
 
@@ -438,6 +439,17 @@ public class Server {
         WS_Portal.baseFormFactory                       = Server.injector.getInstance(_BaseFormFactory.class);
         Model_HardwareRegistrationEntity.baseFormFactory= Server.injector.getInstance(_BaseFormFactory.class);
     }
+
+    /**
+     * Set configuration
+     */
+    private static void setConfigurationInjectorForNonStaticClass() {
+        DigitalOceanTyrionService.configuration = configuration;
+
+    }
+
+
+
 
     /**
      * Finds the MAC address of the current host.

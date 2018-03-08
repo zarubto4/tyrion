@@ -1,14 +1,17 @@
 package utilities.homer_auto_deploy;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import com.myjeeva.digitalocean.DigitalOcean;
 import com.myjeeva.digitalocean.exception.DigitalOceanException;
 import com.myjeeva.digitalocean.exception.RequestUnsuccessfulException;
 import com.myjeeva.digitalocean.impl.DigitalOceanClient;
 import com.myjeeva.digitalocean.pojo.*;
+import com.typesafe.config.Config;
 import controllers._BaseFormFactory;
 import models.Model_HomerServer;
 import models.Model_Product;
+import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.Server;
 import utilities.errors.Exceptions.Result_Error_NotFound;
@@ -22,6 +25,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import static java.lang.Math.abs;
 
@@ -34,7 +38,13 @@ public class DigitalOceanTyrionService {
     /*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
     @Inject public static _BaseFormFactory baseFormFactory; // Its Required to set this in Server.class Component
+    @Inject public static Config configuration; // Its Required to set this in Server.class Component
     public static  DigitalOcean apiClient = new DigitalOceanClient( "42b67cd7450e5301121fb85f34d6ce39f86f7665c496e9f324c8b0dcb0ff3cfa");
+
+    /**
+     * Holds person connection tokens and ids
+     */
+    public static Cache<String, Swagger_ServerRegistration_FormData> tokenCache;
 
     public DigitalOceanTyrionService(){
     }
@@ -207,6 +217,11 @@ public class DigitalOceanTyrionService {
 
     public static Swagger_ServerRegistration_FormData get_data()  throws RequestUnsuccessfulException, DigitalOceanException {
 
+
+        if(tokenCache.containsKey("data")) {
+            return tokenCache.get("data");
+        }
+
         List<Swagger_ServerRegistration_FormData_ServerSize> server_sizes = new ArrayList<>();
 
         logger.trace("get_data::Start Wit Requesting");
@@ -214,7 +229,16 @@ public class DigitalOceanTyrionService {
         List<Region> regions =  apiClient.getAvailableRegions(0).getRegions();
         logger.trace("get_data::All data in Cache");
 
+        // Get All Allowed config size
+        List<String> groups = configuration.getStringList("digitalOcean.allowed_server_types");
+
         for(Size size : sizes) {
+
+            // Ignor all not allowed Server Sizes from Config
+            if(!groups.contains(size.getSlug())) {
+                logger.trace("get_data::  Slug {} is not in allowed list", size.getSlug());
+                continue;
+            }
 
             logger.trace("get_data::  Size");
             logger.trace("get_data::     Slug:          " + size.getSlug());
@@ -261,6 +285,7 @@ public class DigitalOceanTyrionService {
         Swagger_ServerRegistration_FormData data = new Swagger_ServerRegistration_FormData();
         data.server_sizes = server_sizes;
 
+        tokenCache.put("data", data);
         logger.trace("get_data::Complete Done Response is completed ----------------------------------------------");
         return data;
     }
