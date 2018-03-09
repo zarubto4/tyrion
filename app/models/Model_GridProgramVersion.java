@@ -180,7 +180,7 @@ public class Model_GridProgramVersion extends VersionModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_GridProgramVersion.class, duration = 600)
+    @CacheField(Model_GridProgramVersion.class)
     public static Cache<UUID, Model_GridProgramVersion> cache;
 
     public static Model_GridProgramVersion getById(String id) throws _Base_Result_Exception {

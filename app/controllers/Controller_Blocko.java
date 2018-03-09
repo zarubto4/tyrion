@@ -13,7 +13,6 @@ import responses.*;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.Approval;
-import utilities.enums.GridAccess;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
 import utilities.scheduler.SchedulerController;
@@ -1071,7 +1070,7 @@ public class Controller_Blocko extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Mobile_Connection_Summary",
+                            dataType = "utilities.swagger.output.Swagger_Mobile_Connection_Summary",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
