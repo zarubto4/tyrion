@@ -8,8 +8,6 @@ import io.ebean.Ebean;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
-import play.data.Form;
-import play.data.FormFactory;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -20,12 +18,14 @@ import utilities.authentication.Authentication;
 import utilities.authentication.AuthenticationHomer;
 import utilities.enums.CompilationStatus;
 import utilities.enums.HomerType;
-import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.homer_auto_deploy.DigitalOceanTyrionService;
+import utilities.homer_auto_deploy.models.common.Swagger_ServerRegistration_FormData;
 import utilities.logger.Logger;
-import utilities.swagger.input.Swagger_C_Program_Version_Update;
 import utilities.swagger.input.Swagger_CompilationServer_New;
 import utilities.swagger.input.Swagger_HomerServer_Filter;
-import utilities.swagger.input.Swagger_HomerServer_New;
+import utilities.swagger.input.Swagger_HomerServer_New_Auto;
+import utilities.swagger.input.Swagger_HomerServer_New_Manually;
 import utilities.swagger.output.filter_results.Swagger_HomerServer_List;
 
 import java.util.*;
@@ -50,7 +50,33 @@ public class Controller_ExternalServer extends _BaseController {
 
 // HOMER SERVER ########################################################################################################
 
-    @ApiOperation(value = "create Homer_Server",
+    @ApiOperation(value = "get Homer_Server Registration Components",
+            tags = {"External-Server"},
+            notes = "Get All data for User registration form in Portal",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Successfully created",    response = Swagger_ServerRegistration_FormData.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result get_registration_data() {
+        try {
+
+            Swagger_ServerRegistration_FormData data = DigitalOceanTyrionService.get_data();
+
+            // Vrácení objektu
+            return ok(Json.toJson(data));
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "create Homer_Server Automatically",
             tags = {"External-Server"},
             notes = "Create new Homer_Server - private or public",
             produces = "application/json",
@@ -61,7 +87,7 @@ public class Controller_ExternalServer extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_HomerServer_New",
+                            dataType = "utilities.swagger.input.Swagger_HomerServer_New_Auto",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -69,23 +95,80 @@ public class Controller_ExternalServer extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 201, message = "Successfully created",          response = Swagger_HomerServer_New.class),
-            @ApiResponse(code = 400, message = "Invalid body",                  response = Result_InvalidBody.class),
-            @ApiResponse(code = 403, message = "Need required permission",      response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",             response = Result_InternalServerError.class)
+            @ApiResponse(code = 201, message = "Successfully created",    response = Model_HomerServer.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result homer_server_create() {
+    public Result homer_server_create_automaticaly() {
         try {
 
             // Get and Validate Object
-            Swagger_HomerServer_New help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_New.class);
+            Swagger_HomerServer_New_Auto help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_New_Auto.class);
 
             // Vytvoření objektu
             Model_HomerServer server = new Model_HomerServer();
-            server.personal_server_name = help.personal_server_name;
+            server.name = help.name;
+            server.description = help.description;
 
+            if(help.project_id == null) {
+                server.server_type = HomerType.PUBLIC;
+            }else {
+                server.server_type = HomerType.PRIVATE;
+                server.project =  Model_Project.getById(help.project_id);
+            }
+
+            server.save();
+
+
+            DigitalOceanTyrionService.create_server(server, help.size_slug, help.region_slug);
+
+            // Vrácení objektu
+            return created(Json.toJson(server));
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "create Homer_Server Manualy",
+            tags = {"External-Server"},
+            notes = "Create new Homer_Server - private or public",
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_HomerServer_New_Manually",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Successfully created",    response = Model_HomerServer.class),
+            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    @Security.Authenticated(Authentication.class)
+    public Result homer_server_create_manualy() {
+        try {
+
+            // Get and Validate Object
+            Swagger_HomerServer_New_Manually help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_New_Manually.class);
+
+            // Vytvoření objektu
+            Model_HomerServer server = new Model_HomerServer();
+            server.name = help.name;
+            server.description = help.description;
 
             server.mqtt_port = help.mqtt_port;
             server.grid_port = help.grid_port;
@@ -100,12 +183,8 @@ public class Controller_ExternalServer extends _BaseController {
             if(help.project_id == null) {
                 server.server_type = HomerType.PUBLIC;
             }else {
-
                 server.server_type = HomerType.PRIVATE;
-
-                Model_Project project = Model_Project.getById(help.project_id);
-                server.project = project;
-
+                server.project =  Model_Project.getById(help.project_id);;
             }
 
             // Uložení objektu
@@ -205,7 +284,7 @@ public class Controller_ExternalServer extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_HomerServer_New",
+                            dataType = "utilities.swagger.input.Swagger_HomerServer_New_Manually",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -225,13 +304,14 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_HomerServer_New help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_New.class);
+            Swagger_HomerServer_New_Manually help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_New_Manually.class);
 
             // Kontrola objektu
             Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
 
             // Úprava objektu
-            server.personal_server_name = help.personal_server_name;
+            server.name = help.name;
+            server.description = help.description;
             server.mqtt_port = help.mqtt_port;
             server.grid_port = help.grid_port;
             server.web_view_port = help.web_view_port;
@@ -284,7 +364,7 @@ public class Controller_ExternalServer extends _BaseController {
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_HomerServer> query = Ebean.find(Model_HomerServer.class);
 
-            query.orderBy("UPPER(personal_server_name) ASC");
+            query.orderBy("UPPER(name) ASC");
             query.where().eq("deleted", false);
 
             if (!help.server_types.isEmpty()) {
@@ -626,11 +706,11 @@ public class Controller_ExternalServer extends _BaseController {
             Model_Compilation compilation = version.compilation;
 
             if (compilation == null) {
-                return notFound("File not found");
+                throw new Result_Error_NotFound(Model_Compilation.class);
             }
 
             if (compilation.status != CompilationStatus.SUCCESS) {
-                return notFound("File not successfully compiled and restored");
+                throw new Result_Error_NotFound(Model_Blob.class);
             }
 
             byte[] bytes = Model_Blob.get_decoded_binary_string_from_Base64(compilation.blob.get_fileRecord_from_Azure_inString());
@@ -665,7 +745,7 @@ public class Controller_ExternalServer extends _BaseController {
             Model_Compilation compilation = Model_Compilation.getById(compilation_id);
 
             if (compilation.status != CompilationStatus.SUCCESS) {
-                return notFound("File not successfully compiled and restored");
+                throw new Result_Error_NotFound(Model_Blob.class);
             }
 
             // Separace na Container a Blob

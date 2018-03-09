@@ -23,13 +23,13 @@ public class WS_Message_Instance_set_hardware extends WS_AbstractMessage_Instanc
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public ObjectNode make_request( List<UUID> devicesId) {
+    public ObjectNode make_request( List<String> full_ids) {
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
         request.put("message_channel", Model_Instance.CHANNEL);
-        request.set("hardware_ids", Json.toJson(devicesId) );
+        request.set("full_ids", Json.toJson(full_ids) );
 
         return request;
     }

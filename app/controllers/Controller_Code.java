@@ -391,7 +391,7 @@ public class Controller_Code extends _BaseController {
                 content.set("imported_libraries", Json.toJson(scheme_load_form.imported_libraries));
 
                 // Content se nahraje na Azure
-                Model_Blob.uploadAzure_Version(content.toString(), "code.json", c_program.get_path(), version);
+                version.file = Model_Blob.upload(content.toString(), "code.json", c_program.get_path());
                 version.update();
 
 
@@ -465,7 +465,7 @@ public class Controller_Code extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version.file;
 
-                Model_Blob.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program_new.get_path() ,  copy_object);
+                copy_object.file = Model_Blob.upload(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program_new.get_path());
                 copy_object.update();
 
                 copy_object.compile_program_thread(version.compilation.firmware_version_lib);
@@ -540,14 +540,13 @@ public class Controller_Code extends _BaseController {
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_CProgram> query = Ebean.find(Model_CProgram.class);
-
             query.orderBy("UPPER(name) ASC");
+            query.where().eq("deleted", false);
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
-
                 Model_Project.getById(help.project_id);
-                query.where().eq("project.id", help.project_id).eq("deleted", false);
+                query.where().eq("project.id", help.project_id);
             }
 
             if (!help.hardware_type_ids.isEmpty()) {
@@ -555,7 +554,7 @@ public class Controller_Code extends _BaseController {
             }
 
             if (help.public_programs) {
-                query.where().isNull("project").eq("deleted", false).eq("publish_type", ProgramType.PUBLIC.name());
+                query.where().isNull("project").eq("publish_type", ProgramType.PUBLIC.name());
             }
 
             if (help.pending_programs) {
@@ -795,7 +794,7 @@ public class Controller_Code extends _BaseController {
             version.save();
 
             // Content se nahraje na Azure
-            Model_Blob.uploadAzure_Version(Json.toJson(help).toString(), "code.json" , c_program.get_path() ,  version);
+            version.file =  Model_Blob.upload(Json.toJson(help).toString(), "code.json" , c_program.get_path());
             version.update();
 
             // Start with asynchronous ccompilation
@@ -1039,7 +1038,7 @@ public class Controller_Code extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version_old.file;
 
-                Model_Blob.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program.get_path() ,  version);
+                version.file = Model_Blob.upload(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program.get_path());
                 version.update();
 
                 version.compile_program_thread(version_old.compilation.firmware_version_lib);

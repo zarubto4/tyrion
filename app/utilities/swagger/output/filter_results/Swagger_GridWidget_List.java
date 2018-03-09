@@ -3,6 +3,7 @@ package utilities.swagger.output.filter_results;
 import io.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import models.Model_CProgram;
 import models.Model_Widget;
 
 import java.util.ArrayList;
@@ -23,9 +24,15 @@ public class Swagger_GridWidget_List extends _Swagger_Filter_Common {
     public Swagger_GridWidget_List(Query<Model_Widget> query, int page_number) {
 
         if (page_number < 1) page_number = 1;
-        List<UUID> ids =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findIds();
+        List<Model_Widget> uuids_o =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).select("id").findList();
 
-        for (UUID id : ids) {
+        List<UUID> uuids = new ArrayList<>();
+        for(Model_Widget l : uuids_o) {
+            uuids.add(l.id);
+        }
+
+
+        for (UUID id : uuids) {
             this.content.add( Model_Widget.getById(id));
         }
 

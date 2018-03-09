@@ -281,7 +281,7 @@ public abstract class _BaseController {
      * @return
      */
     public static Result notFound(String message) {
-        return Controller.notFound(Json.toJson(new Result_NotFound(message))); // todo smazat
+        return Controller.notFound(Json.toJson(new Result_NotFound(message)));
     }
 
 // FOR COMPILATOR ######################################################################################################

@@ -170,18 +170,6 @@ public class Model_CProgram extends TaggedModel {
     @JsonIgnore @Override public void save() {
 
         logger.debug("save :: Creating new Object");
-
-        // C_Program is Private registred under Project
-        if (project != null) {
-            logger.debug("save :: is a private Program");
-            this.azure_c_program_link = project.getPath() + "/c-programs/" + this.id;
-
-        } else {
-            // C_Program is public C_Program for every users
-            logger.debug("save :: is a public Program");
-            this.azure_c_program_link = "public-c-programs/"  + this.id;
-        }
-
         super.save();
 
         // Call notification about project update
@@ -249,12 +237,21 @@ public class Model_CProgram extends TaggedModel {
 
 /* BlOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore private String azure_c_program_link; // Link, který je náhodně generovaný pro Azure - a který se připojuje do cesty souborům
-
     @JsonIgnore @Transient
     public String get_path() {
 
-        return  azure_c_program_link;
+        // C_Program is Private registred under Project
+        if (project != null) {
+            return project.getPath() + "/c-programs/" + this.id;
+        } else {
+
+            if(get_project_id() == null) {
+                logger.debug("save :: is a public Program");
+                return "public-c-programs/" + this.id;
+            }else {
+               return get_project().getPath() + "/c-programs/" + this.id;
+            }
+        }
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/

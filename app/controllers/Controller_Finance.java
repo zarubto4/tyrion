@@ -13,6 +13,7 @@ import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.enums.*;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.financial.extensions.configurations.*;
 import utilities.financial.fakturoid.Fakturoid;
@@ -389,7 +390,7 @@ public class Controller_Finance extends _BaseController {
             try {
                 ExtensionType type = ExtensionType.valueOf(help.extension_type);
             } catch (Exception e) {
-                return notFound("Extension Type not found");
+                throw new Result_Error_NotFound(ExtensionType.class);
             }
 
             Model_ProductExtension extension = new Model_ProductExtension();
@@ -408,8 +409,6 @@ public class Controller_Finance extends _BaseController {
 
             return ok(Json.toJson(extension));
 
-        } catch (IllegalStateException e) {
-            return badRequest("Illegal or not Valid Config");
         } catch (Exception e) {
             return controllerServerError(e);
         }

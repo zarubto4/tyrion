@@ -103,26 +103,6 @@ public class Model_GridProgram extends TaggedModel {
         }
     }
 
-
-
-    @JsonIgnore @Transient public static JsonNode get_m_code(Model_GridProgramVersion version) {
-        try {
-
-            Model_Blob fileRecord = Model_Blob.find.query().where().eq("version.id", version.id).eq("name", "grid_program.json").findOne();
-
-            if (fileRecord != null) {
-                JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
-                return json.get("m_code");
-            }
-
-            return Json.newObject();
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return Json.newObject();
-        }
-    }
-
     @JsonIgnore @Transient public List<Swagger_M_Program_Version_Interface> program_versions_interface() {
         try {
 

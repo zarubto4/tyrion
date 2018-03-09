@@ -662,7 +662,6 @@ public class GoPay extends _BaseController {
 
             // Finding in DB
             Model_Invoice invoice = Model_Invoice.getById(invoice_id);
-            if (invoice == null) return notFound("Invoice not found");
 
             invoice.getProduct().archiveEvent("Refund payment", "Request for refund for this reason: " + help.reason, null);
 

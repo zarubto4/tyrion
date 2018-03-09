@@ -6,8 +6,6 @@ import io.ebean.Ebean;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
-import play.data.Form;
-import play.data.FormFactory;
 import play.libs.Json;
 import play.mvc.*;
 import responses.*;
@@ -630,7 +628,8 @@ public class Controller_Grid extends _BaseController {
             ObjectNode content = Json.newObject();
             content.put("m_code", help.m_code);
 
-            Model_Blob.uploadAzure_Version(content.toString(), "grid_program.json" , gridProgram.get_path() ,  version);
+            version.file = Model_Blob.upload(content.toString(), "grid_program.json" , gridProgram.get_path());
+            version.update();
 
             return created(gridProgram.json());
 
@@ -752,7 +751,7 @@ public class Controller_Grid extends _BaseController {
 
     @ApiOperation(value = "getByToken GridProgram",
             tags = {"APP-Api"},
-            notes = "get M_Program by token",
+            notes = "get Grid_Program by token",
             produces = "application/json",
             protocols = "https"
     )
@@ -770,16 +769,21 @@ public class Controller_Grid extends _BaseController {
 
 
             logger.debug("get_M_Program_byQR_Token_forMobile: Connection token: " + qr_token);
+            logger.debug("get_M_Program_byQR_Token_forMobile: Instance ID:: " + qr_token.substring(0 , 24));
+            logger.debug("get_M_Program_byQR_Token_forMobile: Grid Program ID:: " + qr_token.substring(25 , 44));
 
-            Model_MProgramInstanceParameter parameter = Model_MProgramInstanceParameter.find.query()
-                    .where()
-                    .eq("connection_token" , qr_token)
-                    .isNotNull("grid_project_program_snapshot.instance_versions.instance_record.actual_running_instance")
-                    .findOne();
+            UUID instance_id = UUID.fromString(qr_token.substring(0 , 24));
+            UUID grid_program_id = UUID.fromString(qr_token.substring(24 , 44));
 
-            if (parameter == null) return notFound("MProgramInstanceParameter by token not found in database");
+            Model_Instance instance = Model_Instance.getById(instance_id);
 
-            return ok(Json.toJson(parameter.get_connection_summary( ctx())));
+            if(instance.current_snapshot() == null){
+                return badRequest("Instance not running");
+            }
+
+            Swagger_Mobile_Connection_Summary result = instance.current_snapshot().get_connection_summary(grid_program_id,ctx());
+
+            return ok(Json.toJson(result));
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1020,7 +1024,7 @@ public class Controller_Grid extends _BaseController {
 
     }
 
-    @ApiOperation(value = "get Grid_Widget by Filter",
+    @ApiOperation(value = "get Widget by Filter",
             tags = {"Grid-Widget"},
             notes = "get GridWidget List",
             produces = "application/json",
@@ -1056,10 +1060,10 @@ public class Controller_Grid extends _BaseController {
             if (help.project_id != null) {
 
                 Model_Project project = Model_Project.getById(help.project_id);
-                query.where().eq("type_of_widget.project.id", help.project_id);
+                query.where().eq("project.id", help.project_id);
             }
 
-            if (help.pending_widget) {
+            if (help.pending_widgets) {
                 query.where().eq("versions.approval_state", Approval.PENDING.name()).eq("versions.deleted", false);
             }
 
@@ -1247,7 +1251,7 @@ public class Controller_Grid extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "make_Clone Grid_Widget",
+    @ApiOperation(value = "make_Clone Widget",
             tags = {"Grid_Widget"},
             notes = "clone Grid_Widget for private",
             produces = "application/json",
@@ -1321,7 +1325,7 @@ public class Controller_Grid extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "deactivate Grid_Widget",
+    @ApiOperation(value = "deactivate Widget",
             tags = {"Admin-Grid-Widget"},
             notes = "deactivate Widget",
             produces = "application/json",
@@ -1354,7 +1358,7 @@ public class Controller_Grid extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "activate Grid_Widget",
+    @ApiOperation(value = "activate Widget",
             tags = {"Admin-Grid-Widget"},
             notes = "activate Widget",
             produces = "application/json",
@@ -1387,7 +1391,7 @@ public class Controller_Grid extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "order Grid_Widget Up",
+    @ApiOperation(value = "order Widget Up",
             tags = {"Grid-Widget"},
             notes = "set up order",
             produces = "application/json",
@@ -1418,7 +1422,7 @@ public class Controller_Grid extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "order Grid_Widget Down",
+    @ApiOperation(value = "order Widget Down",
             tags = {"Grid-Widget"},
             notes = "set down order",
             produces = "application/json",
@@ -1450,7 +1454,7 @@ public class Controller_Grid extends _BaseController {
 
 // WIDGET VERSION ######################################################################################################    
 
-    @ApiOperation(value = "delete Grid_Widget_Version",
+    @ApiOperation(value = "delete Widget_Version",
             tags = {"Grid-Widget"},
             notes = "delete GridWidget version",
             produces = "application/json",
@@ -1482,7 +1486,7 @@ public class Controller_Grid extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "set_As_Main Grid_Widget_Version",
+    @ApiOperation(value = "set_As_Main Widget_Version",
             tags = {"Admin-Grid-Widget"},
             notes = "",     //TODO
             produces = "application/json",
@@ -1532,7 +1536,7 @@ public class Controller_Grid extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "make Grid_Widget_Version public",
+    @ApiOperation(value = "make Widget_Version public",
             tags = {"C_Program"},
             notes = "Make C_Program public, so other users can see it and use it. Attention! Attention! Attention! A user can publish only three programs at the stage waiting for approval.",
             produces = "application/json",
@@ -1577,7 +1581,7 @@ public class Controller_Grid extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "create Grid_Widget_Version",
+    @ApiOperation(value = "create Widget_Version",
             tags = {"Grid-Widget"},
             notes = "new GridWidget version",
             produces = "application/json",
@@ -1635,7 +1639,7 @@ public class Controller_Grid extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "get Grid_Widget_Version",
+    @ApiOperation(value = "get Widget_Version",
             tags = {"Grid-Widget"},
             notes = "get version (content) from independent GridWidget",
             produces = "application/json",
@@ -1666,7 +1670,7 @@ public class Controller_Grid extends _BaseController {
 
     }
 
-    @ApiOperation(value = "edit Grid_Widget_Version",
+    @ApiOperation(value = "edit Widget_Version",
             tags = {"Grid-Widget"},
             notes = "You can edit only basic information of the version. If you want to update the code, " +
                     "you have to create a new version!",
@@ -1721,7 +1725,7 @@ public class Controller_Grid extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "get Grid_Widget_Versions",
+    @ApiOperation(value = "get Widget_Versions",
             tags = {"Grid-Widget"},
             notes = "get all versions (content) from independent GridWidget",
             produces = "application/json",
@@ -1763,7 +1767,7 @@ public class Controller_Grid extends _BaseController {
 
 // GRID ADMIN ##########################################################################################################
 
-    @ApiOperation(value = "edit Grid_Widget_Version Response publication",
+    @ApiOperation(value = "edit Widget_Version Response publication",
             tags = {"Admin-Grid-Widget"},
             notes = "sets Approval_state to pending",
             produces = "application/json",

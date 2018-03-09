@@ -13,7 +13,7 @@ public class WS_Message_Subscribe_Notifications extends WS_AbstractMessage {
 
     // MessageType
     @JsonIgnore
-    public static final String messageType = "subscribe_notification";
+    public static final String message_type = "subscribe_notification";
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
@@ -25,7 +25,7 @@ public class WS_Message_Subscribe_Notifications extends WS_AbstractMessage {
     public static ObjectNode approve_result(String message_id) {
 
         ObjectNode request = Json.newObject();
-        request.put("message_type", messageType);
+        request.put("message_type", message_type);
         request.put("message_channel", WS_Portal.CHANNEL);
         request.put("status", "success");
         request.put("message_id", message_id);

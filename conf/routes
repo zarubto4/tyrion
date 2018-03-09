@@ -229,7 +229,7 @@ PUT       /instance/tags/add                                            controll
 PUT       /instance/tags/remove                                         controllers.Controller_Blocko.instance_removeTags
 
 PUT       /instance/filter/:page_number                                 controllers.Controller_Blocko.get_b_program_instance_by_filter(page_number:Int)
-PUT       /instance/grid_app                                            controllers.Controller_Blocko.instance_change_settings_grid_App()
+PUT       /instance/grid_app/:snapshot_id                               controllers.Controller_Blocko.instance_change_settings_grid_App(snapshot_id: java.util.UUID)
 
 #InstanceSnapshot
 POST      /instance/snapshot                                            controllers.Controller_Blocko.instanceSnapshot_create
@@ -269,7 +269,9 @@ PUT       /blocko/approval                                              controll
 
 #Public Clasic Rest-Api
 
-POST      /homer_server                                                 controllers.Controller_ExternalServer.homer_server_create()
+POST      /homer_server_manualy                                         controllers.Controller_ExternalServer.homer_server_create_manualy()
+POST      /homer_server_automaticaly                                    controllers.Controller_ExternalServer.homer_server_create_automaticaly()
+GET       /homer_server_registration_data                               controllers.Controller_ExternalServer.get_registration_data()
 
 PUT       /homer_server/set_backup/:server_id                           controllers.Controller_ExternalServer.homer_server_set_backup_server(server_id: java.util.UUID)
 PUT       /homer_server/set_main/:server_id                             controllers.Controller_ExternalServer.homer_server_set_main_server(server_id: java.util.UUID)
@@ -376,7 +378,7 @@ PUT       /hardware/backup                                              controll
 
 PUT       /hardware/filter/:page_number                                 controllers.Controller_Hardware.hardware_getByFilter(page_number: Int)
 GET       /hardware/check/:registration_hash/:project_id                controllers.Controller_Hardware.hardware_check(registration_hash, project_id: java.util.UUID)
-GET       /hardware/hash/:full_id                                       controllers.Controller_Hardware.hardware_get_registration_hash(full_id: java.util.UUID)
+GET       /hardware/hash/:full_id                                       controllers.Controller_Hardware.hardware_get_registration_hash(full_id)
 GET       /hardware/:hardware_id                                        controllers.Controller_Hardware.hardware_get(hardware_id: java.util.UUID)
 DELETE    /hardware/deactivate/:hardware_id                             controllers.Controller_Hardware.hardware_deactivate(hardware_id: java.util.UUID)
 
@@ -488,8 +490,8 @@ DELETE    /garfiled/:garfield_id                                        controll
 GET       /garfiled/:garfield_id                                        controllers.Controller_Garfield.get_Garfield(garfield_id: java.util.UUID)
 GET       /admin/garfiled-print-labes/:hardware_id                      controllers.Controller_Garfield.print_label(hardware_id: java.util.UUID)
 
-GET       /printer/printer/:garfield_id/:printer_id                     controllers.Controller_Garfield.online_state_Printer(garfield_id, printer_id: Integer)
-POST      /printer/test/:garfield_id/:printer_id                        controllers.Controller_Garfield.print_test_Printer(garfield_id, printer_id: Integer)
+GET       /printer/printer/:garfield_id/:printer_id                     controllers.Controller_Garfield.online_state_Printer(garfield_id : java.util.UUID, printer_id: Integer)
+POST      /printer/test/:garfield_id/:printer_id                        controllers.Controller_Garfield.print_test_Printer(garfield_id : java.util.UUID, printer_id: Integer)
 
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################

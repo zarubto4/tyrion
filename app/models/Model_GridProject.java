@@ -34,7 +34,7 @@ public class Model_GridProject extends TaggedModel {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                                           @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Project project;
-    @JsonIgnore @OneToMany(mappedBy = "grid_project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_MProjectProgramSnapShot> snapShots = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "grid_project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BProgramVersionSnapGridProject> snapShots = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "grid_project", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_GridProgram> grid_programs = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/

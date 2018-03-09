@@ -26,7 +26,7 @@ public class WS_Message_Hardware_validation_request extends WS_AbstractMessage_H
         result.put("message_channel", message_channel);
         result.put("token_approve", token_approve);
         result.put("message_id", message_id);
-        result.put("hardware_id", hardware_id);
+        result.put("full_id", full_id);
         result.put("status" , "success");
         result.put("password" , password);
         result.put("user_name" , user_name);

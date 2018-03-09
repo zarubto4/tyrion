@@ -53,7 +53,7 @@ public class Model_InvoiceItem extends BaseModel {
 
         if (cache_invoice_id == null) {
 
-            Model_Widget widget = Model_Widget.find.query().where().eq("versions.id", id).select("id").findOne();
+            Model_Widget widget = Model_Widget.find.query().where().eq("versions.id", id).select("id").findOne(); // TODO won't work
             if (widget != null) {
                 cache_invoice_id = widget.id;
             } else {
@@ -84,7 +84,7 @@ public class Model_InvoiceItem extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { get_invoice().check_update_permission();}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { invoice.check_update_permission();}
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { get_invoice().check_read_permission();}
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { get_invoice().check_update_permission();}
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { get_invoice().check_update_permission();}

@@ -92,14 +92,10 @@ public class Model_Library extends TaggedModel {
     public List<Model_LibraryVersion> getVersions() {
         try {
 
-            if (cache_version_ids.isEmpty()) {
+            if (cache_version_ids == null ||cache_version_ids.isEmpty()) {
 
-                List<UUID> ids =  Model_LibraryVersion.find.query().where().eq("library.id", id).eq("deleted", false).order().desc("created").findIds();
+                cache_version_ids =  Model_LibraryVersion.find.query().where().eq("library.id", id).eq("deleted", false).order().desc("created").findIds();
 
-                // Získání seznamu
-                for (UUID id : ids) {
-                    cache_version_ids.add(id);
-                }
             }
 
             List<Model_LibraryVersion> versions  = new ArrayList<>();

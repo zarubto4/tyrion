@@ -18,6 +18,4 @@ public abstract class NamedModel extends BaseModel {
 
     @JsonIgnore public UUID author_id;
 
-
-
 }

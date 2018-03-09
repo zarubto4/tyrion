@@ -197,7 +197,7 @@ public class Utilities_Demo_data_Controller extends _BaseController {
         try {
 
             // Ochranná zarážka proti znovu vytvoření
-            if (Model_HomerServer.find.query().where().eq("personal_server_name", "Alfa").findOne() != null)
+            if (Model_HomerServer.find.query().where().eq("name", "Alfa").findOne() != null)
                 return badRequest("Its Already done!");
 
             if (Model_HomerServer.find.query().where().eq("server_type", HomerType.MAIN).findCount() > 0) {
@@ -206,7 +206,7 @@ public class Utilities_Demo_data_Controller extends _BaseController {
 
             // Nasstavím Homer servery
             Model_HomerServer cloud_server_1 = new Model_HomerServer();
-            cloud_server_1.personal_server_name = "Alfa";
+            cloud_server_1.name = "Alfa";
             cloud_server_1.server_url = "localhost";
             cloud_server_1.grid_port = 8503;
             cloud_server_1.mqtt_port = 1881;
@@ -218,7 +218,7 @@ public class Utilities_Demo_data_Controller extends _BaseController {
             cloud_server_1.save();
 
             Model_HomerServer cloud_server_2 = new Model_HomerServer();
-            cloud_server_2.personal_server_name = "Hydra";
+            cloud_server_2.name = "Hydra";
             cloud_server_2.server_url = "localhost";
             cloud_server_2.grid_port = 8503;
             cloud_server_2.mqtt_port = 1881;
@@ -229,7 +229,7 @@ public class Utilities_Demo_data_Controller extends _BaseController {
 
 
             Model_HomerServer cloud_server_3 = new Model_HomerServer();
-            cloud_server_3.personal_server_name = "Andromeda";
+            cloud_server_3.name = "Andromeda";
             cloud_server_3.server_url = "localhost";
             cloud_server_3.grid_port = 8503;
             cloud_server_3.mqtt_port = 1881;
@@ -239,7 +239,7 @@ public class Utilities_Demo_data_Controller extends _BaseController {
             cloud_server_3.save();
 
             Model_HomerServer cloud_server_4 = new Model_HomerServer();
-            cloud_server_4.personal_server_name = "Gemini";
+            cloud_server_4.name = "Gemini";
             cloud_server_4.server_url = "localhost4";
             cloud_server_4.grid_port = 8503;
             cloud_server_4.mqtt_port = 1881;

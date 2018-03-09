@@ -140,4 +140,33 @@ public class Slack {
             e.printStackTrace();
         }
     }
+
+
+    /**
+     * Posts a message to Byzance Slack, chanel #servers
+     * @param message String message to post.
+     */
+    public static void post_error(String message) {
+        try {
+
+            WSClient ws = Play.current().injector().instanceOf(WSClient.class);
+
+            ObjectNode json = Json.newObject();
+            json.put("username", "Tyrion");
+            json.put("icon_emoji", ":tyrion:");
+            json.put("title", "Alert. Something is wrong!");
+            json.put("text", "*" + message + "*" );
+            json.put("color", "danger");
+            json.put("mrkdwn", true);
+
+            ws.url(Server.slack_webhook_url_channel_servers)
+                    .setRequestTimeout(Duration.ofSeconds(10))
+                    .post(json.toString())
+                    .toCompletableFuture()
+                    .get();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

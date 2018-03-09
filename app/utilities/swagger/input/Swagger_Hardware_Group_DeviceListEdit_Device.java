@@ -12,7 +12,7 @@ public class Swagger_Hardware_Group_DeviceListEdit_Device {
 
     public Swagger_Hardware_Group_DeviceListEdit_Device() {}
 
-    public String hardware_id;
+    public UUID hardware_id;
     public List<UUID> hardware_group_ids;
 
 }

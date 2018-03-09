@@ -35,7 +35,7 @@ public class Model_GridProgramVersion extends VersionModel {
     @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY) public Model_GridProgram grid_program;
     @JsonProperty @Column(columnDefinition = "TEXT")  public String m_program_virtual_input_output;
 
-    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "grid_program_version") public List<Model_MProgramInstanceParameter> m_program_instance_parameters = new ArrayList<>();
+    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "grid_program_version") public List<Model_BProgramVersionSnapGridProjectProgram> m_program_instance_parameters = new ArrayList<>();
 
     public boolean public_access;
 
@@ -161,9 +161,17 @@ public class Model_GridProgramVersion extends VersionModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient public String get_path() {
+        if(grid_program != null) {
+            return grid_program.get_path() + "/version/" + this.id;
+        }else {
+            return get_grid_program().get_path() + "/version/" + this.id;
+        }
+    }
+
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { get_grid_program().check_update_permission();}
+    @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { grid_program.check_update_permission();} // You have to access grid_program directly, because get_grid_program() finds the grid_program by id of the version which is not yet created
     @JsonIgnore @Override public void check_read_permission()   throws _Base_Result_Exception { get_grid_program().check_read_permission();}
     @JsonIgnore @Override public void check_update_permission() throws _Base_Result_Exception { get_grid_program().check_update_permission();}
     @JsonIgnore @Override public void check_delete_permission() throws _Base_Result_Exception { get_grid_program().check_update_permission();}
@@ -172,7 +180,7 @@ public class Model_GridProgramVersion extends VersionModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_GridProgramVersion.class, duration = 600)
+    @CacheField(Model_GridProgramVersion.class)
     public static Cache<UUID, Model_GridProgramVersion> cache;
 
     public static Model_GridProgramVersion getById(UUID id) throws _Base_Result_Exception {

@@ -323,17 +323,8 @@ public abstract class BaseModel extends Model {
             for(Field field : fields) {
 
                 if(field.getName().equals("author_id")) {
-
-                    System.out.println("Našel jsem field author_id");
-                    System.out.println("Co je to za Typ??? "+ field.getType().getSimpleName() );
-
-                    UUID uuid = _BaseController.person().id;
-
-                    field.setAccessible(true);
-
-                    if (field.get(uuid) == null) {
-                        System.out.println("Obsah je prázdný a tak je vhodne uživatele přiřadit");
-                        field.set(uuid, _BaseController.person().id);
+                    if (field.get(this) == null) {
+                        field.set(this, _BaseController.person().id);
                         return;
                     }
                 }
@@ -341,9 +332,7 @@ public abstract class BaseModel extends Model {
             }
 
         }catch (Exception e) {
-            System.out.println("Error save_author");
-            e.printStackTrace();
-            // Don't log anything!
+            logger.internalServerError(e);
         }
     }
 
