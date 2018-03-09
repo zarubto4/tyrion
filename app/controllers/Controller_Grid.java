@@ -6,8 +6,6 @@ import io.ebean.Ebean;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
-import play.data.Form;
-import play.data.FormFactory;
 import play.libs.Json;
 import play.mvc.*;
 import responses.*;
@@ -630,7 +628,8 @@ public class Controller_Grid extends _BaseController {
             ObjectNode content = Json.newObject();
             content.put("m_code", help.m_code);
 
-            Model_Blob.uploadAzure_Version(content.toString(), "grid_program.json" , gridProgram.get_path() ,  version);
+            version.file = Model_Blob.upload(content.toString(), "grid_program.json" , gridProgram.get_path());
+            version.update();
 
             return created(gridProgram.json());
 
@@ -752,7 +751,7 @@ public class Controller_Grid extends _BaseController {
 
     @ApiOperation(value = "getByToken GridProgram",
             tags = {"APP-Api"},
-            notes = "get M_Program by token",
+            notes = "get Grid_Program by token",
             produces = "application/json",
             protocols = "https"
     )
@@ -770,16 +769,21 @@ public class Controller_Grid extends _BaseController {
 
 
             logger.debug("get_M_Program_byQR_Token_forMobile: Connection token: " + qr_token);
+            logger.debug("get_M_Program_byQR_Token_forMobile: Instance ID:: " + qr_token.substring(0 , 24));
+            logger.debug("get_M_Program_byQR_Token_forMobile: Grid Program ID:: " + qr_token.substring(25 , 44));
 
-            Model_MProgramInstanceParameter parameter = Model_MProgramInstanceParameter.find.query()
-                    .where()
-                    .eq("connection_token" , qr_token)
-                    .isNotNull("grid_project_program_snapshot.instance_versions.instance_record.actual_running_instance")
-                    .findOne();
+            UUID instance_id = UUID.fromString(qr_token.substring(0 , 24));
+            UUID grid_program_id = UUID.fromString(qr_token.substring(24 , 44));
 
-            if (parameter == null) return notFound("MProgramInstanceParameter by token not found in database");
+            Model_Instance instance = Model_Instance.getById(instance_id);
 
-            return ok(Json.toJson(parameter.get_connection_summary( ctx())));
+            if(instance.current_snapshot() == null){
+                return badRequest("Instance not running");
+            }
+
+            Swagger_Mobile_Connection_Summary result = instance.current_snapshot().get_connection_summary(grid_program_id,ctx());
+
+            return ok(Json.toJson(result));
 
         } catch (Exception e) {
             return controllerServerError(e);

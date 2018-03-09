@@ -174,7 +174,16 @@ public class Model_LibraryVersion extends VersionModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+    @JsonIgnore @Transient public String get_path() {
+        if(library != null) {
+            return library.get_path() + "/version/" + this.id;
+        }else {
+            return get_library().get_path() + "/version/" + this.id;
+        }
+    }
+
+
+ /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { get_library().check_update_permission();}
     @JsonIgnore @Override public void check_read_permission()   throws _Base_Result_Exception { get_library().check_read_permission();}

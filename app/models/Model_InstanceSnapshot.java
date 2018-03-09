@@ -1,28 +1,33 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers._BaseController;
+import controllers._BaseFormFactory;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
+import play.data.validation.Constraints;
 import play.libs.Json;
+import play.mvc.Http;
+import utilities.Server;
+import utilities.authentication.Authentication;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
-import utilities.enums.NetworkStatus;
-import utilities.enums.NotificationImportance;
-import utilities.enums.NotificationLevel;
-import utilities.errors.Exceptions.Result_Error_NotFound;
-import utilities.errors.Exceptions.Result_Error_NotSupportedException;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.enums.*;
+import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.notifications.helps_objects.Notification_Text;
-import utilities.swagger.input.Swagger_Library_File_Load;
-import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_autobackup_made;
+import utilities.swagger.input.Swagger_GridWidgetVersion_GridApp_source;
+import utilities.swagger.input.Swagger_InstanceSnapShotConfiguration;
+import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationFile;
+import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationProgram;
+import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
+import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_hardware;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_status;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_program;
@@ -31,6 +36,7 @@ import websocket.messages.homer_with_tyrion.WS_Message_Homer_Instance_add;
 import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 
 import javax.persistence.*;
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -40,6 +46,11 @@ import java.util.UUID;
 @ApiModel(value = "InstanceSnapshot", description = "Model of InstanceSnapshot")
 @Table(name="InstanceSnapshot")
 public class Model_InstanceSnapshot extends BaseModel {
+
+    /**
+     * _BaseFormFactory
+     */
+    public static _BaseFormFactory baseFormFactory; // Its Required to set this in Server.class Component
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -58,6 +69,15 @@ public class Model_InstanceSnapshot extends BaseModel {
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY)  public Model_Blob program;
     @JsonIgnore @OneToMany(fetch = FetchType.LAZY) public List<Model_UpdateProcedure> procedures = new ArrayList<>();
 
+    /**
+     * Here we collect everything additional settings for Snapshot.
+     * For example permission to Snapshot MProgram Aplications.
+     *
+     *
+     * SnapShotConfiguration Object!!!!
+     */
+    @JsonIgnore @Column(columnDefinition = "TEXT") public String json_additional_parameter;  // DB dokument - smožností rozšíření na cokoliv
+
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Cached private UUID cache_version_id;
@@ -65,11 +85,72 @@ public class Model_InstanceSnapshot extends BaseModel {
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Swagger_Short_Reference b_program_version(){
+        try {
+
+            Model_BProgramVersion b_program_version = get_b_program_version();
+            return new Swagger_Short_Reference(b_program_version.id, b_program_version.name, b_program_version.description);
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Swagger_Short_Reference b_program(){
+        try {
+
+            Model_BProgramVersion b_program_version = get_b_program_version();
+            return new Swagger_Short_Reference(b_program_version.get_b_program().id, b_program_version.get_b_program().name, b_program_version.get_b_program().description);
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<Model_BProgramVersionSnapGridProject> m_projects(){
+        try {
+
+            Model_BProgramVersion b_program_version = get_b_program_version();
+            return b_program_version.grid_project_snapshots;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Swagger_InstanceSnapShotConfiguration settings(){
+        return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapShotConfiguration.class, Json.parse(this.json_additional_parameter));
+    }
+
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "only if snapshot is main")
+    public String program(){
+        try {
+
+            if (Model_Instance.find.query().where().eq("current_snapshot_id", id).findCount() > 0) {
+                if(program != null) program.get_fileRecord_from_Azure_inString();
+            }
+
+            return null;
+
+        }catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+
+
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public Model_BProgramVersion get_b_program_version() throws _Base_Result_Exception {
-
 
         if (cache_version_id == null) {
             return Model_BProgramVersion.getById(get_b_program_version_id());
@@ -110,6 +191,28 @@ public class Model_InstanceSnapshot extends BaseModel {
 
         return cache_instance_id;
     }
+
+
+    @JsonIgnore
+    public List<String> getHardwareFullIds() throws _Base_Result_Exception {
+        // TODO - Vylouskat z Jsonu Snapshotu instance
+        throw new Result_Error_NotSupportedException();
+    }
+
+    @JsonIgnore
+    public List<UUID> getHardwareGroupseIds() throws _Base_Result_Exception {
+        // TODO - Vylouskat z Jsonu Snapshotu instance
+        throw new Result_Error_NotSupportedException();
+    }
+
+    @JsonIgnore
+    public Model_Product getProduct() throws _Base_Result_Exception {
+        return this.get_instance().get_project().getProduct();
+
+    }
+
+
+/* Actions --------------------------------------------------------------------------------------------------------*/
 
     public void deploy() {
         new Thread(() -> {
@@ -170,7 +273,7 @@ public class Model_InstanceSnapshot extends BaseModel {
                 }
 
                 Model_Instance.cache_status.put(get_instance_id(), true);
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, get_instance_id(), true, this.get_instance().project_id());
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, get_instance_id(), true, this.get_instance().get_project_id());
 
                 // Step 4
                 // TODO this.create_actualization_hardware_request();
@@ -215,19 +318,13 @@ public class Model_InstanceSnapshot extends BaseModel {
     public WS_Message_Instance_set_terminals setTerminals() {
         try {
 
-            List<UUID> terminalIds = new ArrayList<>();
+            // TODO Update terminals command to connected devices
+            // List<UUID> terminalIds = new ArrayList<>();
+            // return get_instance().setTerminals(terminalIds);
 
-            for (Model_MProjectProgramSnapShot snapShot : this.get_b_program_version().b_program_version_snapshots) {
-                terminalIds.add(snapShot.grid_project_id());
-            }
-
-            if (!terminalIds.isEmpty()) {
-                return get_instance().setTerminals(terminalIds);
-            } else {
-                WS_Message_Instance_set_terminals result = new WS_Message_Instance_set_terminals();
-                result.status = "success";
-                return result;
-            }
+            WS_Message_Instance_set_terminals result = new WS_Message_Instance_set_terminals();
+            result.status = "success";
+            return result;
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -249,25 +346,8 @@ public class Model_InstanceSnapshot extends BaseModel {
         }
     }
 
-    @JsonIgnore
-    public List<String> getHardwareFullIds() throws _Base_Result_Exception {
-        // TODO - Vylouskat z Jsonu Snapshotu instance
-        throw new Result_Error_NotSupportedException();
-    }
-
-    @JsonIgnore
-    public List<UUID> getHardwareGroupseIds() throws _Base_Result_Exception {
-        // TODO - Vylouskat z Jsonu Snapshotu instance
-        throw new Result_Error_NotSupportedException();
-    }
-
-    @JsonIgnore
-    public Model_Product getProduct() throws _Base_Result_Exception {
-        return this.get_instance().get_project().getProduct();
-
-    }
-
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -301,7 +381,7 @@ public class Model_InstanceSnapshot extends BaseModel {
                     .setObject(this.get_b_program_version())
                     .setText(new Notification_Text().setText(" from Blocko program "))
                     .setObject(this.get_b_program_version().get_b_program())
-                    .send_under_project(this.get_instance().project_id());
+                    .send_under_project(this.get_instance().get_project_id());
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -324,7 +404,7 @@ public class Model_InstanceSnapshot extends BaseModel {
                     .setText( new Notification_Text().setText(" from Blocko program "))
                     .setObject(this.get_b_program_version().get_b_program())
                     .setText( new Notification_Text().setText(". Server will try to do that as soon as possible."))
-                    .send_under_project(this.get_instance().project_id());
+                    .send_under_project(this.get_instance().get_project_id());
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -339,7 +419,7 @@ public class Model_InstanceSnapshot extends BaseModel {
                     .setLevel(NotificationLevel.INFO)
                     .setText( new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
                     .setObject(this.get_b_program_version())
-                    .send_under_project(this.get_instance().project_id());
+                    .send_under_project(this.get_instance().get_project_id());
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -348,7 +428,188 @@ public class Model_InstanceSnapshot extends BaseModel {
 
 /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
 
+
+/* Helper Class --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public Swagger_Mobile_Connection_Summary get_connection_summary(UUID grid_program_version_id,  Http.Context context) throws _Base_Result_Exception {
+
+        // OBJEKT který se variabilně naplní a vrátí - ITS EMPTY!!!!
+        Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
+
+        Swagger_InstanceSnapShotConfiguration settings = settings();
+        Swagger_InstanceSnapShotConfigurationFile collection = null;
+        Swagger_InstanceSnapShotConfigurationProgram program = null;
+
+        for(Swagger_InstanceSnapShotConfigurationFile grids_collection : settings.grids_collections){
+            for(Swagger_InstanceSnapShotConfigurationProgram grids_program : collection.grid_programs){
+                if(grids_program.grid_program_version_id == grid_program_version_id){
+                    collection = grids_collection;
+                    program = grids_program;
+                    break;
+                }
+            }
+        }
+
+        if(collection == null){
+            logger.error("SnapShotConfigurationFile is missing return null");
+            throw new Result_Error_NotFound(Swagger_InstanceSnapShotConfigurationFile.class);
+        }
+
+        if(program == null){
+            logger.error("SnapShotConfigurationFileProgram is missing return null");
+            throw new Result_Error_NotFound(Swagger_InstanceSnapShotConfigurationProgram.class);
+        }
+
+        // Nastavení SSL
+        if (Server.mode == ServerMode.DEVELOPER) {
+            summary.grid_app_url = "ws://";
+        } else {
+            summary.grid_app_url = "wss://";
+        }
+
+        switch (program.snapshot_settings) {
+
+            case PUBLIC: {
+
+                summary.grid_app_url += Model_HomerServer.getById(instance.server_id()).get_Grid_APP_URL() + instance.id + "/" + collection.grid_project_id + "/"  + program.connection_token;
+                summary.grid_program = Model_GridProgramVersion.getById(program.grid_program_version_id).file.get_fileRecord_from_Azure_inString();
+                summary.grid_project_id = collection.grid_project_id;
+                summary.grid_program_id = program.grid_program_id;
+                summary.grid_program_version_id = program.grid_program_version_id;
+                summary.instance_id = get_instance().id;
+                summary.source_code_list = version_separator(Json.parse(Model_GridProgramVersion.getById(program.grid_program_version_id).file.get_fileRecord_from_Azure_inString()));
+                return summary;
+            }
+
+            case PROJECT: {
+
+                // Check Token
+                String token = new Authentication().getUsername(context);
+                if (token == null) throw new Result_Error_PermissionDenied();
+
+                // Check Person By Token (who send request)
+                Model_Person person = _BaseController.person();
+                if (person == null) throw new Result_Error_PermissionDenied();
+
+                //Chekc Permission
+                check_read_permission();
+
+                Model_GridTerminal terminal = new Model_GridTerminal();
+                terminal.device_name = "Unknown";
+                terminal.device_type = "Unknown";
+
+                if ( Http.Context.current().request().headers().get("User-Agent")[0] != null) terminal.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
+                else  terminal.user_agent = "Unknown browser";
+
+                terminal.person = person;
+                terminal.save();
+
+                summary.grid_app_url += Model_HomerServer.getById(instance.server_id()).get_Grid_APP_URL() + instance.id + "/" + collection.grid_project_id + "/" + terminal.terminal_token;
+                summary.grid_program = Model_GridProgramVersion.getById(program.grid_program_version_id).file.get_fileRecord_from_Azure_inString();
+                summary.grid_project_id = collection.grid_project_id;
+                summary.grid_program_id = program.grid_program_id;
+                summary.grid_program_version_id = program.grid_program_version_id;
+                summary.instance_id = get_instance().id;
+                summary.source_code_list = version_separator(Json.parse(Model_GridProgramVersion.getById(program.grid_program_version_id).file.get_fileRecord_from_Azure_inString()));
+                return summary;
+            }
+
+            /* TODO doimplementovat v budoucnu
+            case only_for_project_members_and_imitated_emails: {
+
+                summary.grid_app_url += instance.cloud_homer_server.server_url + instance.cloud_homer_server.grid_port + "/" + instance.b_program_name() + "/#token";
+                summary.grid_program = Model_MProgram.get_m_code(grid_program_version);
+                summary.instance_id = get_instance().id;
+
+                return summary;
+            }
+            */
+        }
+
+        logger.error("Invalid settings on Instance Grid App permissions");
+        throw new Result_Error_Unauthorized();
+    }
+
+
+    /**
+     * Modelové schéma určené k parsování m_programu která přišla z Becki ----------------------------------------------
+     */
+    private List<Swagger_GridWidgetVersion_GridApp_source> version_separator(JsonNode m_program) {
+
+        try {
+
+            // List for returning
+            List<Swagger_GridWidgetVersion_GridApp_source> list = new ArrayList<>();
+
+            // Create object
+            M_Program_Parser program_parser = baseFormFactory.formFromJsonWithValidation(M_Program_Parser.class, m_program);
+
+            // Loking for objects
+            for (Widget_Parser widget_parser : program_parser.screens.main.get(0).widgets) {
+
+                Swagger_GridWidgetVersion_GridApp_source detail = new Swagger_GridWidgetVersion_GridApp_source();
+                detail.id          = widget_parser.type.version_id;
+                detail.logic_json = Model_WidgetVersion.getById(widget_parser.type.version_id).logic_json;
+
+                list.add(detail);
+            }
+            return list;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new ArrayList<>();
+        }
+    }
+
+    public static class M_Program_Parser{
+
+        public M_Program_Parser() {}
+
+        @Valid
+        public Screen_Parser screens;
+    }
+
+    public static class Screen_Parser{
+
+        public Screen_Parser() {}
+
+        @Valid public List<Main_Parser> main = new ArrayList<>();
+    }
+
+    public static class Main_Parser{
+
+        public Main_Parser() {}
+
+        @Valid public List<Widget_Parser> widgets  = new ArrayList<>();
+    }
+
+    public static class Widget_Parser{
+
+        public Widget_Parser() {}
+
+        @Valid  public Type_Parser type;
+    }
+
+    public static class Type_Parser{
+
+        public Type_Parser() {}
+
+        @Valid public String version_id;
+    }
+
+
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient
+    public String get_path() {
+        // If its new Snapshot
+        if(instance != null) {
+            return instance.get_path() + "/snapshots/" + this.id;
+        }else {
+            return get_instance().get_path() + "/snapshots/" + this.id;
+        }
+    }
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 

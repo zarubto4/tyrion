@@ -131,13 +131,8 @@ public class Server {
 
         DocumentDB.init();
 
-
         setBaseForm();
         setConfigurationInjectorForNonStaticClass();
-
-        // TODO Batch_Registration_Authority.synchronize();
-
-        // TODO Hardware_Registration_Authority.synchronize_hardware();
     }
 
     /**
@@ -438,6 +433,7 @@ public class Server {
         DigitalOceanTyrionService.baseFormFactory       = Server.injector.getInstance(_BaseFormFactory.class);
         WS_Portal.baseFormFactory                       = Server.injector.getInstance(_BaseFormFactory.class);
         Model_HardwareRegistrationEntity.baseFormFactory= Server.injector.getInstance(_BaseFormFactory.class);
+        Model_InstanceSnapshot.baseFormFactory          = Server.injector.getInstance(_BaseFormFactory.class);
     }
 
     /**

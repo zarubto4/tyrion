@@ -168,7 +168,7 @@ public class Controller_Library extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version.file;
 
-                Model_Blob.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "library.json" , library_new.get_path() ,  copy_object);
+                copy_object.file = Model_Blob.upload(fileRecord.get_fileRecord_from_Azure_inString(), "library.json" , library_new.get_path());
                 copy_object.update();
 
             }
@@ -497,7 +497,7 @@ public class Controller_Library extends _BaseController {
             Swagger_Library_File_Load library_file_collection = new Swagger_Library_File_Load();
             library_file_collection.files = help.files;
 
-            Model_Blob.uploadAzure_Version(Json.toJson(library_file_collection).toString(), "library.json" , library.get_path() ,  version);
+            version.file = Model_Blob.upload(Json.toJson(library_file_collection).toString(), "library.json" , library.get_path());
 
             version.refresh();
             library.refresh();
@@ -608,7 +608,6 @@ public class Controller_Library extends _BaseController {
 
             // Ověření objektu
             Model_LibraryVersion version = Model_LibraryVersion.getById(version_id);
-            if (version == null) return notFound("Version not found");
 
             // Smažu zástupný objekt
             version.delete();
@@ -746,8 +745,7 @@ public class Controller_Library extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version_old.file;
 
-
-                Model_Blob.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , library.get_path() ,  version);
+                version.file = Model_Blob.upload(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , library.get_path());
                 version.update();
 
                 // Admin to schválil bez dalších keců

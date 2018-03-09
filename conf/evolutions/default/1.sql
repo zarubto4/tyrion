@@ -32,7 +32,6 @@ create table bprogram (
   description                   TEXT,
   author_id                     uuid,
   project_id                    uuid,
-  azure_b_program_link          varchar(255),
   deleted                       boolean default false not null,
   constraint pk_bprogram primary key (id)
 );
@@ -54,15 +53,36 @@ create table bprogramversion (
   file_id                       uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
-  blob_version_link             varchar(255),
   library_id                    uuid,
   b_program_id                  uuid,
-  additional_configuration      varchar(255),
+  additional_json_configuration varchar(255),
   deleted                       boolean default false not null,
   constraint ck_bprogramversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
   constraint ck_bprogramversion_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
   constraint uq_bprogramversion_file_id unique (file_id),
   constraint pk_bprogramversion primary key (id)
+);
+
+create table bpversionsnapgridproject (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  b_program_version_id          uuid,
+  grid_project_id               uuid,
+  deleted                       boolean default false not null,
+  constraint pk_bpversionsnapgridproject primary key (id)
+);
+
+create table bpversionsnapgridprogram (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  grid_project_program_snapshot_id uuid,
+  grid_program_version_id       uuid,
+  deleted                       boolean default false not null,
+  constraint pk_bpversionsnapgridprogram primary key (id)
 );
 
 create table blob (
@@ -113,7 +133,6 @@ create table blockversion (
   file_id                       uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
-  blob_version_link             varchar(255),
   design_json                   TEXT,
   logic_json                    TEXT,
   block_id                      uuid,
@@ -156,7 +175,6 @@ create table cprogram (
   hardware_type_default_id      uuid,
   hardware_type_test_id         uuid,
   example_library_id            uuid,
-  azure_c_program_link          varchar(255),
   deleted                       boolean default false not null,
   constraint ck_cprogram_publish_type check ( publish_type in ('PUBLIC','DEFAULT_VERSION','DEFAULT_MAIN','PRIVATE','DEFAULT_TEST')),
   constraint uq_cprogram_hardware_type_default_id unique (hardware_type_default_id),
@@ -181,7 +199,6 @@ create table cprogramversion (
   file_id                       uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
-  blob_version_link             varchar(255),
   c_program_id                  uuid,
   default_program_id            uuid,
   deleted                       boolean default false not null,
@@ -316,7 +333,6 @@ create table gridprogramversion (
   file_id                       uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
-  blob_version_link             varchar(255),
   grid_program_id               uuid,
   m_program_virtual_input_output TEXT,
   public_access                 boolean default false not null,
@@ -551,6 +567,7 @@ create table instancesnapshot (
   instance_id                   uuid,
   b_program_version_id          uuid,
   program_id                    uuid,
+  json_additional_parameter     TEXT,
   deleted                       boolean default false not null,
   constraint uq_instancesnapshot_program_id unique (program_id),
   constraint pk_instancesnapshot primary key (id)
@@ -651,7 +668,6 @@ create table libraryversion (
   file_id                       uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
-  blob_version_link             varchar(255),
   library_id                    uuid,
   deleted                       boolean default false not null,
   constraint ck_libraryversion_approval_state check ( approval_state in ('EDITED','DISAPPROVED','PENDING','APPROVED')),
@@ -673,36 +689,6 @@ create table log (
   deleted                       boolean default false not null,
   constraint uq_log_file_id unique (file_id),
   constraint pk_log primary key (id)
-);
-
-create table mprograminstanceparameter (
-  id                            uuid not null,
-  created                       timestamptz,
-  updated                       timestamptz,
-  removed                       timestamptz,
-  grid_project_program_snapshot_id uuid,
-  grid_program_version_id       uuid,
-  connection_token              varchar(255),
-  snapshot_settings             varchar(7),
-  deleted                       boolean default false not null,
-  constraint ck_mprograminstanceparameter_snapshot_settings check ( snapshot_settings in ('PROJECT','TESTING','PUBLIC')),
-  constraint pk_mprograminstanceparameter primary key (id)
-);
-
-create table mprojectprogramsnapshot (
-  id                            uuid not null,
-  created                       timestamptz,
-  updated                       timestamptz,
-  removed                       timestamptz,
-  grid_project_id               uuid,
-  deleted                       boolean default false not null,
-  constraint pk_mprojectprogramsnapshot primary key (id)
-);
-
-create table b_program_version_snapshots (
-  mproject_program_snap_shot_id uuid not null,
-  bprogram_version_id           uuid not null,
-  constraint pk_b_program_version_snapshots primary key (mproject_program_snap_shot_id,bprogram_version_id)
 );
 
 create table notification (
@@ -1061,7 +1047,6 @@ create table widgetversion (
   file_id                       uuid,
   approval_state                varchar(11),
   publish_type                  varchar(15),
-  blob_version_link             varchar(255),
   design_json                   TEXT,
   logic_json                    TEXT,
   widget_id                     uuid,
@@ -1091,6 +1076,18 @@ create index ix_bprogramversion_library_id on bprogramversion (library_id);
 
 alter table bprogramversion add constraint fk_bprogramversion_b_program_id foreign key (b_program_id) references bprogram (id) on delete restrict on update restrict;
 create index ix_bprogramversion_b_program_id on bprogramversion (b_program_id);
+
+alter table bpversionsnapgridproject add constraint fk_bpversionsnapgridproject_b_program_version_id foreign key (b_program_version_id) references bprogramversion (id) on delete restrict on update restrict;
+create index ix_bpversionsnapgridproject_b_program_version_id on bpversionsnapgridproject (b_program_version_id);
+
+alter table bpversionsnapgridproject add constraint fk_bpversionsnapgridproject_grid_project_id foreign key (grid_project_id) references gridproject (id) on delete restrict on update restrict;
+create index ix_bpversionsnapgridproject_grid_project_id on bpversionsnapgridproject (grid_project_id);
+
+alter table bpversionsnapgridprogram add constraint fk_bpversionsnapgridprogram_grid_project_program_snapshot_1 foreign key (grid_project_program_snapshot_id) references bpversionsnapgridproject (id) on delete restrict on update restrict;
+create index ix_bpversionsnapgridprogram_grid_project_program_snapshot_1 on bpversionsnapgridprogram (grid_project_program_snapshot_id);
+
+alter table bpversionsnapgridprogram add constraint fk_bpversionsnapgridprogram_grid_program_version_id foreign key (grid_program_version_id) references gridprogramversion (id) on delete restrict on update restrict;
+create index ix_bpversionsnapgridprogram_grid_program_version_id on bpversionsnapgridprogram (grid_program_version_id);
 
 alter table blob add constraint fk_blob_boot_loader_id foreign key (boot_loader_id) references bootloader (id) on delete restrict on update restrict;
 
@@ -1310,21 +1307,6 @@ create index ix_libraryversion_library_id on libraryversion (library_id);
 
 alter table log add constraint fk_log_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
 
-alter table mprograminstanceparameter add constraint fk_mprograminstanceparameter_grid_project_program_snapsho_1 foreign key (grid_project_program_snapshot_id) references mprojectprogramsnapshot (id) on delete restrict on update restrict;
-create index ix_mprograminstanceparameter_grid_project_program_snapsho_1 on mprograminstanceparameter (grid_project_program_snapshot_id);
-
-alter table mprograminstanceparameter add constraint fk_mprograminstanceparameter_grid_program_version_id foreign key (grid_program_version_id) references gridprogramversion (id) on delete restrict on update restrict;
-create index ix_mprograminstanceparameter_grid_program_version_id on mprograminstanceparameter (grid_program_version_id);
-
-alter table mprojectprogramsnapshot add constraint fk_mprojectprogramsnapshot_grid_project_id foreign key (grid_project_id) references gridproject (id) on delete restrict on update restrict;
-create index ix_mprojectprogramsnapshot_grid_project_id on mprojectprogramsnapshot (grid_project_id);
-
-alter table b_program_version_snapshots add constraint fk_b_program_version_snapshots_mprojectprogramsnapshot foreign key (mproject_program_snap_shot_id) references mprojectprogramsnapshot (id) on delete restrict on update restrict;
-create index ix_b_program_version_snapshots_mprojectprogramsnapshot on b_program_version_snapshots (mproject_program_snap_shot_id);
-
-alter table b_program_version_snapshots add constraint fk_b_program_version_snapshots_bprogramversion foreign key (bprogram_version_id) references bprogramversion (id) on delete restrict on update restrict;
-create index ix_b_program_version_snapshots_bprogramversion on b_program_version_snapshots (bprogram_version_id);
-
 alter table notification add constraint fk_notification_person_id foreign key (person_id) references person (id) on delete restrict on update restrict;
 create index ix_notification_person_id on notification (person_id);
 
@@ -1423,6 +1405,18 @@ drop index if exists ix_bprogramversion_library_id;
 
 alter table if exists bprogramversion drop constraint if exists fk_bprogramversion_b_program_id;
 drop index if exists ix_bprogramversion_b_program_id;
+
+alter table if exists bpversionsnapgridproject drop constraint if exists fk_bpversionsnapgridproject_b_program_version_id;
+drop index if exists ix_bpversionsnapgridproject_b_program_version_id;
+
+alter table if exists bpversionsnapgridproject drop constraint if exists fk_bpversionsnapgridproject_grid_project_id;
+drop index if exists ix_bpversionsnapgridproject_grid_project_id;
+
+alter table if exists bpversionsnapgridprogram drop constraint if exists fk_bpversionsnapgridprogram_grid_project_program_snapshot_1;
+drop index if exists ix_bpversionsnapgridprogram_grid_project_program_snapshot_1;
+
+alter table if exists bpversionsnapgridprogram drop constraint if exists fk_bpversionsnapgridprogram_grid_program_version_id;
+drop index if exists ix_bpversionsnapgridprogram_grid_program_version_id;
 
 alter table if exists blob drop constraint if exists fk_blob_boot_loader_id;
 
@@ -1642,21 +1636,6 @@ drop index if exists ix_libraryversion_library_id;
 
 alter table if exists log drop constraint if exists fk_log_file_id;
 
-alter table if exists mprograminstanceparameter drop constraint if exists fk_mprograminstanceparameter_grid_project_program_snapsho_1;
-drop index if exists ix_mprograminstanceparameter_grid_project_program_snapsho_1;
-
-alter table if exists mprograminstanceparameter drop constraint if exists fk_mprograminstanceparameter_grid_program_version_id;
-drop index if exists ix_mprograminstanceparameter_grid_program_version_id;
-
-alter table if exists mprojectprogramsnapshot drop constraint if exists fk_mprojectprogramsnapshot_grid_project_id;
-drop index if exists ix_mprojectprogramsnapshot_grid_project_id;
-
-alter table if exists b_program_version_snapshots drop constraint if exists fk_b_program_version_snapshots_mprojectprogramsnapshot;
-drop index if exists ix_b_program_version_snapshots_mprojectprogramsnapshot;
-
-alter table if exists b_program_version_snapshots drop constraint if exists fk_b_program_version_snapshots_bprogramversion;
-drop index if exists ix_b_program_version_snapshots_bprogramversion;
-
 alter table if exists notification drop constraint if exists fk_notification_person_id;
 drop index if exists ix_notification_person_id;
 
@@ -1741,6 +1720,10 @@ drop table if exists bprogram_tag cascade;
 
 drop table if exists bprogramversion cascade;
 
+drop table if exists bpversionsnapgridproject cascade;
+
+drop table if exists bpversionsnapgridprogram cascade;
+
 drop table if exists blob cascade;
 
 drop table if exists block cascade;
@@ -1822,12 +1805,6 @@ drop table if exists library_hardwaretype cascade;
 drop table if exists libraryversion cascade;
 
 drop table if exists log cascade;
-
-drop table if exists mprograminstanceparameter cascade;
-
-drop table if exists mprojectprogramsnapshot cascade;
-
-drop table if exists b_program_version_snapshots cascade;
 
 drop table if exists notification cascade;
 

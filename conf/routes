@@ -229,7 +229,7 @@ PUT       /instance/tags/add                                            controll
 PUT       /instance/tags/remove                                         controllers.Controller_Blocko.instance_removeTags
 
 PUT       /instance/filter/:page_number                                 controllers.Controller_Blocko.get_b_program_instance_by_filter(page_number:Int)
-PUT       /instance/grid_app                                            controllers.Controller_Blocko.instance_change_settings_grid_App()
+PUT       /instance/grid_app/:snapshot_id                               controllers.Controller_Blocko.instance_change_settings_grid_App(snapshot_id: java.util.UUID)
 
 #InstanceSnapshot
 POST      /instance/snapshot                                            controllers.Controller_Blocko.instanceSnapshot_create

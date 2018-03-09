@@ -253,7 +253,7 @@ public class Model_Notification extends BaseModel {
                 Model_Instance homerInstance = (Model_Instance) object;
                 element.name = class_name;
                 element.id = homerInstance.id;
-                element.project_id = homerInstance.project_id();
+                element.project_id = homerInstance.get_project_id();
 
                 break;
             }

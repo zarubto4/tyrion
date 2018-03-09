@@ -21,6 +21,9 @@ import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.swagger.input.Swagger_InstanceSnapShotConfiguration;
+import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationFile;
+import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationProgram;
 import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.*;
@@ -43,7 +46,7 @@ public class Model_Instance extends TaggedModel {
     
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    public UUID current_snapshot_id;
+    @JsonIgnore public UUID current_snapshot_id;
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_HomerServer server_main;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_HomerServer server_backup;
@@ -64,40 +67,13 @@ public class Model_Instance extends TaggedModel {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true)
-    public UUID project_id()             {
 
-        if (cache_project_id == null) {
-            Model_Project project = Model_Project.find.query().where().eq("instances.id", id).select("id").findOne();
-            cache_project_id = project.id;
-        }
-
-        return cache_project_id;
-    }
-
-    @JsonProperty
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_Short_Reference b_program(){
-        if(cache_b_program_id == null) {
-            cache_b_program_id = Model_BProgram.find.query().where().eq("instances.id", id).select("id").findSingleAttribute();
-        }
-        if(cache_b_program_id == null) return null;
-
-        Model_BProgram b_rpogram = Model_BProgram.getById(cache_b_program_id);
-        return new Swagger_Short_Reference(project.id, b_rpogram.name, b_rpogram.description);
-    }
-
-    @JsonProperty @ApiModelProperty(required = true)
-    public String server_name()              {
-
         try {
 
-        if (cache_server_name != null) {
-                return cache_server_name;
-            }
-
-            cache_server_name = Model_HomerServer.getById(server_id()).name;
-            return cache_server_name;
+            Model_BProgram b_rpogram = Model_BProgram.getById(get_b_program_id());
+            return new Swagger_Short_Reference(b_rpogram.id, b_rpogram.name, b_rpogram.description);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -105,42 +81,38 @@ public class Model_Instance extends TaggedModel {
         }
     }
 
-    @JsonProperty @ApiModelProperty(required = true)
-    public UUID server_id()                {
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Model_HomerServer server(){
         try {
 
-            if (cache_server_main_id == null) {
-                Model_HomerServer homer_server = Model_HomerServer.find.query().where().eq("instances.id", id).select("id").findOne();
-
-                if (homer_server == null) {
-                    logger.warn("server_id - instance has not set default server");
-
-                    this.server_main = Model_HomerServer.find.query().where().eq("server_type", HomerType.MAIN.name()).findOne();
-                    if (this.server_main == null) {
-                        throw new Exception("Main server is not set! Cannot set Default Server to instance!");
-                    }
-                    this.update();
-
-                    // For Cache * next lines of codes
-                    homer_server = this.server_main;
-                }
-
-                cache_server_main_id = homer_server.id;
-            }
-            return cache_server_main_id;
+            Model_HomerServer server = Model_HomerServer.getById(server_id());
+            return server;
 
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
     }
+
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Model_InstanceSnapshot current_snapshot() throws _Base_Result_Exception  {
+
+        if (this.current_snapshot_id != null) {
+            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(this.current_snapshot_id);
+            if (snapshot != null) {
+                return snapshot;
+            }
+        }
+        return null;
+    }
+
 
     @JsonProperty @ApiModelProperty(required = true)
     public NetworkStatus online_state() {
 
         // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
         // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
-        if (getCurrentSnapshot() == null) {
+        if (current_snapshot() == null) {
 
             if (snapshots.isEmpty()) {
                 return NetworkStatus.NOT_YET_FIRST_CONNECTED;
@@ -170,7 +142,7 @@ public class Model_Instance extends TaggedModel {
                             WS_Message_Instance_status status = get_instance_status();
 
                             if (status.status.equals("success")) cache_status.put(id, status.get_status(id).status);
-                            WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, status.get_status(id).status, project_id());
+                            WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, status.get_status(id).status, get_project_id());
 
                         } catch (Exception e) {
                             logger.internalServerError(e);
@@ -199,7 +171,7 @@ public class Model_Instance extends TaggedModel {
     public String instance_remote_url() {
         try {
 
-            if (getCurrentSnapshot() != null) {
+            if (current_snapshot() != null) {
 
                 if (Server.mode == ServerMode.DEVELOPER) {
                     return "ws://" + Model_HomerServer.getById(server_id()).server_url + ":" + Model_HomerServer.getById(server_id()).web_view_port + "/" + id + "/#token";
@@ -207,7 +179,6 @@ public class Model_Instance extends TaggedModel {
                     return "wss://" + Model_HomerServer.getById(server_id()).server_url + ":" + Model_HomerServer.getById(server_id()).web_view_port + "/" + id + "/#token";
                 }
             }
-
             return null;
 
         } catch (Exception e) {
@@ -219,6 +190,7 @@ public class Model_Instance extends TaggedModel {
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
 
     @JsonIgnore
     public UUID get_project_id() throws _Base_Result_Exception {
@@ -235,6 +207,21 @@ public class Model_Instance extends TaggedModel {
         return cache_project_id;
     }
 
+
+    @JsonIgnore
+    public UUID get_b_program_id() throws _Base_Result_Exception {
+
+        if(cache_b_program_id == null) {
+
+            cache_b_program_id  = Model_BProgram.find.query().where().eq("instances.id", id).select("id").findSingleAttribute();
+            if (cache_b_program_id == null) throw new Result_Error_NotFound(Model_BProgram.class);
+
+            return  cache_b_program_id;
+        }
+
+        return cache_b_program_id;
+    }
+
     @JsonIgnore
     public Model_Project get_project() throws _Base_Result_Exception {
 
@@ -246,22 +233,41 @@ public class Model_Instance extends TaggedModel {
     }
 
 
-    @JsonIgnore
-    public Model_InstanceSnapshot getCurrentSnapshot() throws _Base_Result_Exception  {
-
-        if (this.current_snapshot_id != null) {
-            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(this.current_snapshot_id);
-            if (snapshot != null) {
-                return snapshot;
-            }
-        }
-        return null;
-    }
 
     @JsonIgnore
     public List<String> getHardwareFullIds() throws _Base_Result_Exception  {
 
-        return getCurrentSnapshot().getHardwareFullIds();
+        return current_snapshot().getHardwareFullIds();
+    }
+
+    @JsonIgnore
+    public UUID server_id()                {
+        try {
+
+            if (cache_server_main_id == null) {
+                Model_HomerServer homer_server = Model_HomerServer.find.query().where().eq("instances.id", id).select("id").findOne();
+
+                if (homer_server == null) {
+                    logger.warn("server_id - instance has not set default server");
+
+                    this.server_main = Model_HomerServer.find.query().where().eq("server_type", HomerType.MAIN.name()).findOne();
+                    if (this.server_main == null) {
+                        throw new Exception("Main server is not set! Cannot set Default Server to instance!");
+                    }
+                    this.update();
+
+                    // For Cache * next lines of codes
+                    homer_server = this.server_main;
+                }
+
+                cache_server_main_id = homer_server.id;
+            }
+            return cache_server_main_id;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
 /* JSON Override  Method -----------------------------------------------------------------------------------------*/
@@ -275,7 +281,7 @@ public class Model_Instance extends TaggedModel {
 
         if (project != null) {
             try {
-                Model_Project.getById(this.project_id()).cache_instance_ids.add(id);
+                Model_Project.getById(this.get_project_id()).cache_instance_ids.add(id);
             }catch (Exception e) {
                 // Nothing
             }
@@ -306,12 +312,11 @@ public class Model_Instance extends TaggedModel {
         this.deleted = true;
         super.update();
 
-        if (project_id() != null) {
-            try {
-                Model_Project.getById(project_id()).cache_instance_ids.remove(id);
-            } catch (Exception e) {
-                // Nothing
-            }
+
+        try {
+            Model_Project.getById(get_project_id()).cache_instance_ids.remove(id);
+        } catch (Exception e) {
+            // Nothing
         }
 
         if (cache.containsKey(this.id)) {
@@ -527,7 +532,7 @@ public class Model_Instance extends TaggedModel {
     //-- Helper Commands --//
     @JsonIgnore
     public void deploy() {
-        getCurrentSnapshot().deploy();
+        current_snapshot().deploy();
     }
 
     @JsonIgnore
@@ -536,8 +541,8 @@ public class Model_Instance extends TaggedModel {
         cache_status.put(this.id, false);
         WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, true, get_project_id());
 
-        if (getCurrentSnapshot() != null) {
-            getCurrentSnapshot().stop();
+        if (current_snapshot() != null) {
+            current_snapshot().stop();
             this.current_snapshot_id = null;
             this.update();
         }
@@ -558,7 +563,7 @@ public class Model_Instance extends TaggedModel {
             logger.debug("cloud_verification_token_GRID::  Checking Token");
             logger.debug("cloud_verification_token_GRID::  Token:: {} ", help.token);
             logger.debug("cloud_verification_token_GRID::  Instance ID:: {} ", help.instance_id);
-            logger.debug("cloud_verification_token_GRID::  App ID:: {}", help.snapshot_id);
+            logger.debug("cloud_verification_token_GRID::  App ID:: {}", help.grid_app_id);
 
             Model_GridTerminal terminal = Model_GridTerminal.find.query().where().eq("terminal_token", help.token).findOne();
 
@@ -566,20 +571,42 @@ public class Model_Instance extends TaggedModel {
             if (terminal == null) {
 
                 System.out.println("terminal == null");
-                Model_MProgramInstanceParameter parameter = Model_MProgramInstanceParameter.find.query().where()
-                        .eq("connection_token", help.token)
-                        .isNotNull("grid_project_program_snapshot.instance_versions.instance_record.actual_running_instance")
-                        .findOne();
+                // Najít c configuráku token
 
-                if (parameter == null) {
-                    logger.error("cloud_verification_token_GRID:: Model_MProgramInstanceParameter parameter is null");
-                    homer.send(help.get_result(false));
-                    return;
+                Swagger_InstanceSnapShotConfiguration settings = this.current_snapshot().settings();
+                Swagger_InstanceSnapShotConfigurationFile collection = null;
+                Swagger_InstanceSnapShotConfigurationProgram program = null;
+
+
+                if(settings == null){
+                    logger.error("SnapShotConfiguration is missing return null");
+                    throw new Result_Error_NotFound(Swagger_InstanceSnapShotConfiguration.class);
                 }
-                GridAccess settings = parameter.snapshot_settings();
-                logger.debug("Enum_MProgram_SnapShot_settings {}", settings.name());
 
-                switch (settings) {
+                for(Swagger_InstanceSnapShotConfigurationFile grids_collection : settings.grids_collections){
+                    for(Swagger_InstanceSnapShotConfigurationProgram grids_program : collection.grid_programs){
+                        if(grids_program.grid_program_id == help.grid_app_id){
+                            collection = grids_collection;
+                            program = grids_program;
+                            break;
+                        }
+                    }
+                }
+
+                if(collection == null){
+                    logger.error("SnapShotConfigurationFile is missing return null");
+                    throw new Result_Error_NotFound(Swagger_InstanceSnapShotConfigurationFile.class);
+                }
+
+                if(program == null){
+                    logger.error("SnapShotConfigurationFileProgram is missing return null");
+                    throw new Result_Error_NotFound(Swagger_InstanceSnapShotConfigurationProgram.class);
+                }
+
+
+                logger.debug("Enum_MProgram_SnapShot_settings: {}", program.snapshot_settings);
+
+                switch (program.snapshot_settings) {
 
                     case PUBLIC: {
                         System.out.println("Je to plnohodnotně public");
@@ -610,7 +637,7 @@ public class Model_Instance extends TaggedModel {
                 logger.debug("cloud_verification_token_GRID::  Person id:: {}", terminal.person.id);
                 logger.debug("cloud_verification_token_GRID::  Person mail:: {}", terminal.person.email);
                 logger.debug("cloud_verification_token_GRID::  Instance ID:: {} ", help.instance_id);
-                logger.debug("cloud_verification_token_GRID::  App ID:: {}", help.snapshot_id);
+                logger.debug("cloud_verification_token_GRID::  App ID:: {}", help.grid_app_id);
 
 
                 if (terminal.person == null) {
@@ -675,6 +702,11 @@ public class Model_Instance extends TaggedModel {
     }
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient
+    public String get_path() {
+        return get_project().getPath() + "/instances/" + this.id;
+    }
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 

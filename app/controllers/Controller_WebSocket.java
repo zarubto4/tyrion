@@ -118,9 +118,15 @@ public class Controller_WebSocket extends _BaseController {
     @Security.Authenticated(Authentication.class)
     public Result get_Websocket_token() {
         try {
+
+                logger.trace("get_Websocket_token: request");
                 UUID token = UUID.randomUUID();
 
+                logger.trace("get_Websocket_token: token created:: {}", token);
+
                 tokenCache.put(token, personId());
+
+                logger.trace("get_Websocket_token: token assigned to person:: {}", personId());
 
                 Swagger_Websocket_Token swagger_websocket_token = new Swagger_Websocket_Token();
                 swagger_websocket_token.websocket_token = token;

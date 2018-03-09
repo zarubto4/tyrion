@@ -17,6 +17,7 @@ public class Swagger_ActualizationProcedureTask_Filter {
 
     @ApiModelProperty(required = false,  readOnly = true) public List<UUID> hardware_ids = new ArrayList<>();
     @ApiModelProperty(required = false,  readOnly = true) public List<UUID> instance_ids = new ArrayList<>();
+    @ApiModelProperty(required = false,  readOnly = true) public List<UUID> instance_snapshot_ids = new ArrayList<>();
     @ApiModelProperty(required = false,  readOnly = true) public List<UUID> actualization_procedure_ids = new ArrayList<>();
 
     @ApiModelProperty(required = false, readOnly = true)  public List<HardwareUpdateState> update_states  = new ArrayList<>();

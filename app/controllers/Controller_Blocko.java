@@ -5,8 +5,7 @@ import io.ebean.Ebean;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
-import play.data.Form;
-import play.data.FormFactory;
+import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -19,6 +18,7 @@ import utilities.enums.ProgramType;
 import utilities.logger.Logger;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
+import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
 import utilities.swagger.output.filter_results.Swagger_B_Program_List;
 import utilities.swagger.output.filter_results.Swagger_Block_List;
 import utilities.swagger.output.filter_results.Swagger_Instance_List;
@@ -408,21 +408,21 @@ public class Controller_Blocko extends _BaseController {
                     Model_GridProject m_project = Model_GridProject.getById(help_m_project_snap.m_project_id);
 
 
-                    Model_MProjectProgramSnapShot snap = new Model_MProjectProgramSnapShot();
+                    Model_BProgramVersionSnapGridProject snap = new Model_BProgramVersionSnapGridProject();
                     snap.grid_project = m_project;
 
                     for (Swagger_B_Program_Version_New.M_Program_SnapShot help_m_program_snap : help_m_project_snap.m_program_snapshots) {
                         Model_GridProgramVersion m_program_version = Model_GridProgramVersion.find.query().where().eq("id", help_m_program_snap.version_id).eq("grid_program.id", help_m_program_snap.m_program_id).eq("grid_program.grid_project.id", m_project.id).findOne();
 
-                        Model_MProgramInstanceParameter snap_shot_parameter = new Model_MProgramInstanceParameter();
+                        Model_BProgramVersionSnapGridProjectProgram snap_shot_parameter = new Model_BProgramVersionSnapGridProjectProgram();
 
                         snap_shot_parameter.grid_program_version = m_program_version;
                         snap_shot_parameter.grid_project_program_snapshot = snap;
 
-                        snap.m_program_snapshots.add(snap_shot_parameter);
+                        snap.grid_programs.add(snap_shot_parameter);
                     }
 
-                    version.b_program_version_snapshots.add(snap);
+                    version.grid_project_snapshots.add(snap);
                 }
             }
 
@@ -430,7 +430,8 @@ public class Controller_Blocko extends _BaseController {
             version.save();
 
             // Nahrání na Azure
-            Model_Blob.uploadAzure_Version(file_content, "blocko.json", bProgram.get_path() , version);
+            version.file = Model_Blob.upload(file_content, "blocko.json", bProgram.get_path());
+            version.update();
 
             // Vrácení objektu
             return ok(version.json());
@@ -843,7 +844,7 @@ public class Controller_Blocko extends _BaseController {
             Model_InstanceSnapshot snapshot = new Model_InstanceSnapshot();
             snapshot.b_program_version = version;
             snapshot.instance = instance;
-            snapshot.program = Model_Blob.upload(help.snapshot, "snapshot.json", "TODO" ); // PATH TODO
+            snapshot.program = Model_Blob.upload(help.snapshot, "snapshot.json", snapshot.get_path() );
 
             return created(snapshot.json());
 
@@ -1070,7 +1071,7 @@ public class Controller_Blocko extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Instance_GridApp_Settings",
+                            dataType = "utilities.swagger.input.Swagger_Mobile_Connection_Summary",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -1078,34 +1079,30 @@ public class Controller_Blocko extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_MProgramInstanceParameter.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_InstanceSnapshot.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result instance_change_settings_grid_App() {
+    public Result instance_change_settings_grid_App(UUID snapshot_id) {
         try {
 
             // Get and Validate Object
-            Swagger_Instance_GridApp_Settings help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_GridApp_Settings.class);
+            Swagger_Mobile_Connection_Summary help = baseFormFactory.formFromRequestWithValidation(Swagger_Mobile_Connection_Summary.class);
 
 
             // Hledám objekt
-            Model_MProgramInstanceParameter program_parameter = Model_MProgramInstanceParameter.getById(help.m_program_parameter_id);
-
-
-            //PArsuju Enum kdyžtak chyba IllegalArgumentException
-            GridAccess settings = GridAccess.valueOf(help.snapshot_settings);
+            Model_InstanceSnapshot snapshot_settings = Model_InstanceSnapshot.getById(snapshot_id);
 
             // Měním parameter
-            program_parameter.snapshot_settings = settings;
+            snapshot_settings.json_additional_parameter = Json.toJson(help).toString();
 
             // Update
-            program_parameter.update();
+            snapshot_settings.update();
 
             // Vracím Objekt
-            return ok(program_parameter.json());
+            return ok(snapshot_settings.json());
 
         } catch (IllegalArgumentException e) {
 

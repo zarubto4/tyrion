@@ -35,7 +35,7 @@ public class Model_GridProgramVersion extends VersionModel {
     @JsonIgnore  @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY) public Model_GridProgram grid_program;
     @JsonProperty @Column(columnDefinition = "TEXT")  public String m_program_virtual_input_output;
 
-    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "grid_program_version") public List<Model_MProgramInstanceParameter> m_program_instance_parameters = new ArrayList<>();
+    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "grid_program_version") public List<Model_BProgramVersionSnapGridProjectProgram> m_program_instance_parameters = new ArrayList<>();
 
     public boolean public_access;
 
@@ -160,6 +160,14 @@ public class Model_GridProgramVersion extends VersionModel {
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient public String get_path() {
+        if(grid_program != null) {
+            return grid_program.get_path() + "/version/" + this.id;
+        }else {
+            return get_grid_program().get_path() + "/version/" + this.id;
+        }
+    }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

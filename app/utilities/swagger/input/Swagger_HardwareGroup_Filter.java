@@ -16,5 +16,10 @@ public class Swagger_HardwareGroup_Filter {
     @ApiModelProperty(required = true)
     public UUID project_id;
 
+    @ApiModelProperty(value = "List of instance.id", required = false)
+    public List<UUID> instances;
+
+    @ApiModelProperty(value = "List of instance_snapshot.id", required = false)
+    public List<UUID> instance_snapshots;
 }
 

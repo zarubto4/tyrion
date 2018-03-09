@@ -35,7 +35,7 @@ public class Model_BProgram extends TaggedModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Project project;
     @JsonIgnore @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BProgramVersion> versions = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Instance>   instancies    = new ArrayList<>(); // Dont used that, its only short reference fo rnew Instance
+    @JsonIgnore @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Instance>   instances    = new ArrayList<>(); // Dont used that, its only short reference fo rnew Instance
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -62,47 +62,6 @@ public class Model_BProgram extends TaggedModel {
         }
     }
 
-    // TODO bude asi v instanci
-    /*@JsonProperty @Transient public Swagger_B_Program_State instance_details() {
-        try {
-
-            Swagger_B_Program_State state = new Swagger_B_Program_State();
-
-            state.online_state = Model_HomerInstance.getById(instance_id()).online_state();
-
-            if (Server.server_mode == Enum_Tyrion_Server_mode.developer && instance().getCurrentSnapshot() != null) {
-                // /#token - frontend pouze nahradí substring - můžeme tedy do budoucna za adresu přidávat další parametry
-                state.instance_remote_url = "ws://" + Model_HomerServer.getById(instance().server_id()).get_WebView_APP_URL() + instance_id() + "/#token";
-            } else {
-                state.instance_remote_url = "wss://" + Model_HomerServer.getById(instance().server_id()).get_WebView_APP_URL()  + instance_id() + "/#token";
-            }
-
-            if (instance().getCurrentSnapshot() != null) {
-                // Jaká verze Blocko Programu je aktuální?
-                state.version_id = instance().getCurrentSnapshot().get_b_program_version().id;
-                state.name = instance().getCurrentSnapshot().get_b_program_version().name;
-
-                // Vracím naposledy použitou - Becki si to vyřeší sama
-            } else if (!instance().instance_history.isEmpty()) {
-                state.version_id = instance().instance_history.get(0).get_b_program_version().id;
-                state.name = instance().instance_history.get(0).get_b_program_version().name;
-            }
-
-            // Instnace ID
-            state.instance_id = instance_id();
-
-            // Informace o Serveru
-            state.server_id = instance().server_id();
-            state.server_name = instance().server_name();
-            state.server_online_state = instance().server_online_state();
-
-            return state;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }*/
 
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
@@ -154,9 +113,6 @@ public class Model_BProgram extends TaggedModel {
 
     @JsonIgnore @Override
     public void save() {
-        
-        this.azure_b_program_link = project.getPath() + "/b-programs/"  + UUID.randomUUID().toString();
-
         if(project != null) {
             if (project.cache_b_program_ids == null) {
                 project.cache_b_program_ids = new ArrayList<>();
@@ -216,11 +172,9 @@ public class Model_BProgram extends TaggedModel {
 
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore private String azure_b_program_link;
-
-    @JsonIgnore
+    @JsonIgnore @Transient
     public String get_path() {
-        return azure_b_program_link;
+        return get_project().getPath() + "/b-programs/" + this.id;
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/

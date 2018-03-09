@@ -11,6 +11,7 @@ import play.mvc.*;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.document_db.document_objects.DM_Board_Bootloader_DefaultConfig;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
 import utilities.lablel_printer_service.Printer_Api;
@@ -481,7 +482,6 @@ public class Controller_Hardware extends _BaseController {
 
             // Kontrola objektu
             Model_Producer producer = Model_Producer.getById(producer_id);
-            if (producer == null) return notFound("Producer not found");
             
             if (producer.hardware_types.size() > 0 || producer.blocks.size() > 0 || producer.widgets.size() > 0)
                 return badRequest("Producer is assigned to some objects, so cannot be deleted.");
@@ -1276,7 +1276,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_Board_Bootloader_Update help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_Bootloader_Update.class);
 
             List<Model_Hardware> boards = Model_Hardware.find.query().where().in("id", help.device_ids).findList();
-            if (boards.isEmpty()) return notFound("Hardware not found");
+            if (boards.isEmpty()) return badRequest("Hardware not found");
 
             List<WS_Help_Hardware_Pair> hardware_for_update = new ArrayList<>();
 
@@ -1290,7 +1290,6 @@ public class Controller_Hardware extends _BaseController {
                 if (help.bootloader_id != null) {
 
                     pair.bootLoader = Model_BootLoader.getById(help.bootloader_id);
-                    if (pair.bootLoader == null) return notFound("BootLoader not found");
 
                 } else {
                     pair.bootLoader = Model_BootLoader.find.query().where().eq("main_hardware_type.hardware.id", hardware.id).findOne();
@@ -1364,7 +1363,6 @@ public class Controller_Hardware extends _BaseController {
 
             // Kotrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById( help.hardware_type_id);
-            if (hardwareType == null) return notFound("HardwareType not found");
 
             // Kontorluji oprávnění
             hardwareType.check_register_new_device_permission();
@@ -1542,11 +1540,9 @@ public class Controller_Hardware extends _BaseController {
 
                 // Najdu backup_server
                 Model_HomerServer backup_server = Model_HomerServer.find.query().where().eq("server_type", HomerType.BACKUP).findOne();
-                if (backup_server == null) return notFound("Backup server not found!!!");
 
                 // Najdu Main_server
                 Model_HomerServer main_server = Model_HomerServer.find.query().where().eq("server_type", HomerType.MAIN).findOne();
-                if (main_server == null) return notFound("Main server not found!!!");
 
                 // Vytvořím konfigurační soubor
                 DM_Board_Bootloader_DefaultConfig conf = DM_Board_Bootloader_DefaultConfig.generateConfig();
@@ -1677,7 +1673,6 @@ public class Controller_Hardware extends _BaseController {
 
             // Kotrola objektu
             Model_Hardware board = Model_Hardware.getById(hardware_id);
-            if (board == null) return notFound("Board hardware_id not found");
 
             // Kontrola oprávnění
             board.check_update_permission();
@@ -2220,8 +2215,9 @@ public class Controller_Hardware extends _BaseController {
 
             // Kontrola objektu
             Model_Hardware board = Model_Hardware.getById(help.hardware_id);
-
-            if (help.command == null) return notFound("Board command not recognized");
+            if (help.command == null) {
+                throw new Result_Error_NotFound(BoardCommand.class);
+            }
 
             board.check_update_permission();
             board.execute_command(help.command, true);
@@ -2282,7 +2278,6 @@ public class Controller_Hardware extends _BaseController {
 
             // Kotrola objektu
             Model_Hardware board = Model_Hardware.getById(hardware_id);
-            if (board == null) return notFound("Board hardware_id not found");
 
             // Úprava stavu
             board.is_active = false;
