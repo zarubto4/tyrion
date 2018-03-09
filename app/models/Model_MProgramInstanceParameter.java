@@ -308,10 +308,6 @@ public class Model_MProgramInstanceParameter extends BaseModel {
     @CacheField(value = Model_MProgramInstanceParameter.class)
     public static Cache<UUID, Model_MProgramInstanceParameter> cache;
 
-    public static Model_MProgramInstanceParameter getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_MProgramInstanceParameter getById(UUID id) throws _Base_Result_Exception {
         Model_MProgramInstanceParameter instanceParameter = cache.get(id);
         if (instanceParameter == null) {

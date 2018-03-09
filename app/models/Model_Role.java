@@ -78,9 +78,6 @@ public class Model_Role extends NamedModel {
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     // TODO Cache
-    public static Model_Role getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
 
     public static Model_Role getById(UUID id) throws _Base_Result_Exception {
 

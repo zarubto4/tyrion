@@ -289,10 +289,6 @@ public class Model_GridProgram extends TaggedModel {
 
     @CacheField(Model_GridProgram.class)
     public static Cache<UUID, Model_GridProgram> cache;
-
-    public static Model_GridProgram getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
     
     public static Model_GridProgram getById(UUID id) throws _Base_Result_Exception {
 

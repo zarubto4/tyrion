@@ -613,7 +613,7 @@ public class Controller_Finance extends _BaseController {
 
     @ApiOperation(value = "create Tariff_Extension",
             tags = {"Admin-Extension"},
-            notes = "",
+            notes = "", //TODO
             produces = "application/json",
             protocols = "https",
             code = 201
@@ -1205,7 +1205,7 @@ public class Controller_Finance extends _BaseController {
 
     @ApiOperation(value = "get Products user Own List",
             tags = {"Price & Invoice & Tariffs"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             protocols = "https"
     )

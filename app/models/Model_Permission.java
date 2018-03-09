@@ -67,10 +67,6 @@ public class Model_Permission extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Permission getById(String id) {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Permission getById(UUID id) {
         return find.byId(id);
     }

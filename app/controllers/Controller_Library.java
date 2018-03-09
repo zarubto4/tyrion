@@ -197,7 +197,7 @@ public class Controller_Library extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result library_get(String library_id) {
+    public Result library_get(UUID library_id) {
         try {
 
             // Kontrola objektu
@@ -306,7 +306,7 @@ public class Controller_Library extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result library_edit(String library_id) {
+    public Result library_edit(UUID library_id) {
         try {
 
             // Get and Validate Object
@@ -332,7 +332,7 @@ public class Controller_Library extends _BaseController {
 
     @ApiOperation(value = "tag Library",
             tags = {"Library"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -376,7 +376,7 @@ public class Controller_Library extends _BaseController {
 
     @ApiOperation(value = "untag Library",
             tags = {"Library"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -432,7 +432,7 @@ public class Controller_Library extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result library_delete(String library_id) {
+    public Result library_delete(UUID library_id) {
         try {
 
             // Kontrola objektu
@@ -477,7 +477,7 @@ public class Controller_Library extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result library_version_create(String library_id) {
+    public Result library_version_create(UUID library_id) {
         try {
 
             // Get and Validate Object
@@ -526,7 +526,7 @@ public class Controller_Library extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result library_version_get(String version_id) {
+    public Result library_version_get(UUID version_id) {
         try {
 
             // Vyhledám Objekt
@@ -566,7 +566,7 @@ public class Controller_Library extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result library_version_edit(String version_id) {
+    public Result library_version_edit(UUID version_id) {
         try {
 
             // Get and Validate Object
@@ -604,7 +604,7 @@ public class Controller_Library extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result library_version_delete(String version_id) {
+    public Result library_version_delete(UUID version_id) {
         try {
 
             // Ověření objektu
@@ -640,7 +640,7 @@ public class Controller_Library extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result library_version_make_public(String version_id) {
+    public Result library_version_make_public(UUID version_id) {
         try {
 
             // Kontrola objektu

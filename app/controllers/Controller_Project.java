@@ -516,7 +516,7 @@ public class Controller_Project extends _BaseController {
 
     @ApiOperation(value = "tag Project",
             tags = {"Project"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -561,7 +561,7 @@ public class Controller_Project extends _BaseController {
 
     @ApiOperation(value = "untag Project",
             tags = {"Project"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -723,7 +723,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_removeHardware(String registration_id) {
+    public Result project_removeHardware(UUID registration_id) {
         try {
 
             Model_Hardware hardware = Model_Hardware.getById(registration_id);
@@ -752,7 +752,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_deactiveHardware(String registration_id) {
+    public Result project_deactiveHardware(UUID registration_id) {
         try {
 
             Model_Hardware hardware = Model_Hardware.getById(registration_id);
@@ -795,7 +795,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_activeHardware(String registration_id) {
+    public Result project_activeHardware(UUID registration_id) {
         try {
 
             Model_Hardware hardware = Model_Hardware.getById(registration_id);

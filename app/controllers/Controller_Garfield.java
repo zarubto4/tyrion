@@ -67,7 +67,7 @@ public class Controller_Garfield extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result edit_Garfield(@ApiParam(required = true) String garfield_id) {
+    public Result edit_Garfield(@ApiParam(required = true) UUID garfield_id) {
         try {
 
             // Get and Validate Object
@@ -159,7 +159,7 @@ public class Controller_Garfield extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result remove_Garfield(@ApiParam(required = true) String garfield_id) {
+    public Result remove_Garfield(@ApiParam(required = true) UUID garfield_id) {
         try {
 
             // Kontrola objektu
@@ -189,7 +189,7 @@ public class Controller_Garfield extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result get_Garfield(@ApiParam(required = true) String garfield_id) {
+    public Result get_Garfield(@ApiParam(required = true) UUID garfield_id) {
         try {
 
             // Kontrola objektu
@@ -217,7 +217,7 @@ public class Controller_Garfield extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result print_label(@ApiParam(required = true) String board_id) {
+    public Result print_label(@ApiParam(required = true) UUID board_id) {
         try {
 
 

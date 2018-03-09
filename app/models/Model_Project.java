@@ -828,11 +828,6 @@ public class Model_Project extends TaggedModel {
     @CacheField(value = IdsList.class, name = "Model_Project_Person_Ids")
     public static Cache<UUID, IdsList> token_cache;
 
-
-    public static Model_Project getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Project getById(UUID id) throws _Base_Result_Exception {
 
         Model_Project project = cache.get(id);

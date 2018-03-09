@@ -154,10 +154,6 @@ public class Model_Garfield  extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Garfield getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Garfield getById(UUID id) throws _Base_Result_Exception {
 
         Model_Garfield garfield = find.byId(id);

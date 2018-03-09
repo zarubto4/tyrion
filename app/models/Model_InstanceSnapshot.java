@@ -382,10 +382,6 @@ public class Model_InstanceSnapshot extends BaseModel {
     @CacheField(Model_InstanceSnapshot.class)
     public static Cache<UUID, Model_InstanceSnapshot> cache;
 
-    public static Model_InstanceSnapshot getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_InstanceSnapshot getById(UUID id) throws _Base_Result_Exception {
         Model_InstanceSnapshot snapshot = cache.get(id);
         if (snapshot == null) {

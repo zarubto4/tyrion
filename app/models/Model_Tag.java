@@ -61,10 +61,6 @@ public class Model_Tag extends Model {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Tag getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Tag getById(UUID id) throws _Base_Result_Exception {
         return find.byId(id);
     }

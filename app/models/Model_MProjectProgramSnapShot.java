@@ -79,10 +79,6 @@ public class Model_MProjectProgramSnapShot extends BaseModel {
     @CacheField(value = Model_MProjectProgramSnapShot.class, duration = CacheField.DayCacheConstant)
     public static Cache<UUID, Model_MProjectProgramSnapShot> cache;
 
-    public static Model_MProjectProgramSnapShot getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_MProjectProgramSnapShot getById(UUID id) throws _Base_Result_Exception {
 
         Model_MProjectProgramSnapShot snapShot = cache.get(id);

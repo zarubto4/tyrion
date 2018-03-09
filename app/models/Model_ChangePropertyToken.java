@@ -45,10 +45,6 @@ public class Model_ChangePropertyToken extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_ChangePropertyToken getById(String id) {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_ChangePropertyToken getById(UUID id) {
         return find.byId(id);
     }

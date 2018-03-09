@@ -85,10 +85,6 @@ public class Model_Employee extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Employee getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-    
     public static Model_Employee getById(UUID id) throws _Base_Result_Exception {
 
         Model_Employee employee = find.byId(id);

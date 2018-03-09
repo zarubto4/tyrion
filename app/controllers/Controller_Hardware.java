@@ -117,7 +117,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result processor_get( String processor_id) {
+    public Result processor_get(UUID processor_id) {
         try {
 
             //Zkontroluji validitu
@@ -184,7 +184,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result processor_edit(String processor_id) {
+    public Result processor_edit(UUID processor_id) {
         try {
 
             // Get and Validate Object
@@ -224,7 +224,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result processor_delete(String processor_id) {
+    public Result processor_delete(UUID processor_id) {
         try {
 
             // Kontroluji validitu
@@ -246,7 +246,7 @@ public class Controller_Hardware extends _BaseController {
 
     @ApiOperation(value = "get Bootloader FileRecord",
             tags = {"File", "Garfield"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -259,7 +259,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result fileRecord_get_bootLoader(String bootloader_id) {
+    public Result fileRecord_get_bootLoader(UUID bootloader_id) {
         try {
 
             Model_BootLoader boot_loader = Model_BootLoader.getById(bootloader_id);
@@ -278,7 +278,7 @@ public class Controller_Hardware extends _BaseController {
 
     @ApiOperation(value = "get CProgram_Version FileRecord",
             tags = { "File" , "Garfield"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -291,7 +291,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result fileRecord_get_firmware(String version_id) {
+    public Result fileRecord_get_firmware(UUID version_id) {
         try {
 
             // Kontrola validity objektu
@@ -385,7 +385,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result producer_update(String producer_id) {
+    public Result producer_update(UUID producer_id) {
         try {
 
             // Get and Validate Object
@@ -451,7 +451,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result producer_get( String producer_id) {
+    public Result producer_get(UUID producer_id) {
         try {
 
             // Kontrola objektu
@@ -479,7 +479,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result producer_delete(String producer_id) {
+    public Result producer_delete(UUID producer_id) {
         try {
 
             // Kontrola objektu
@@ -610,7 +610,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardwareType_update(String hardware_type_id) {
+    public Result hardwareType_update(UUID hardware_type_id) {
         try {
 
             // Get and Validate Object
@@ -660,7 +660,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardwareType_delete( String hardware_type_id) {
+    public Result hardwareType_delete( UUID hardware_type_id) {
         try {
 
             // Kontrola objektu
@@ -728,7 +728,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardwareType_get(String hardware_type_id) {
+    public Result hardwareType_get(UUID hardware_type_id) {
         try {
 
             // Kontrola validity objektu
@@ -766,7 +766,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(value = BodyParser.Json.class)
-    public Result hardwareType_uploadPicture(String hardware_type_id) {
+    public Result hardwareType_uploadPicture(UUID hardware_type_id) {
         try {
 
             // Get and Validate Object
@@ -843,7 +843,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardwareBatch_create(String hardware_type_id) {
+    public Result hardwareBatch_create(UUID hardware_type_id) {
         try {
 
             // Get and Validate Object
@@ -903,7 +903,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardwareBatch_delete(String batch_id) {
+    public Result hardwareBatch_delete(UUID batch_id) {
         try {
 
             // Kontrola objektu
@@ -946,7 +946,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardwareBatch_edit(String batch_id) {
+    public Result hardwareBatch_edit(UUID batch_id) {
         try {
 
             // Get and Validate Object
@@ -1014,7 +1014,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bootLoader_create(String hardware_type_id) {
+    public Result bootLoader_create(UUID hardware_type_id) {
         try {
 
             // Get and Validate Object
@@ -1068,7 +1068,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bootLoader_update(String boot_loader_id) {
+    public Result bootLoader_update(UUID boot_loader_id) {
         try {
 
             // Get and Validate Object
@@ -1093,7 +1093,7 @@ public class Controller_Hardware extends _BaseController {
 
     @ApiOperation(value = "delete Bootloader",
             tags = { "HardwareType"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "text/html",
             protocols = "https"
@@ -1106,7 +1106,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result bootLoader_delete(String boot_loader_id) {
+    public Result bootLoader_delete(UUID boot_loader_id) {
         try {
 
             // Kontrola objektu
@@ -1125,7 +1125,7 @@ public class Controller_Hardware extends _BaseController {
 
     @ApiOperation(value = "upload Bootloader File",
             tags = {"Admin-Bootloader"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             protocols = "https"
     )
@@ -1147,7 +1147,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(value = BodyParser.Json.class)
-    public Result bootLoader_uploadFile(String boot_loader_id) {
+    public Result bootLoader_uploadFile(UUID boot_loader_id) {
         try {
 
             // Get and Validate Object
@@ -1209,7 +1209,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Empty.class)
-    public Result bootLoader_markAsMain(String boot_loader_id) {
+    public Result bootLoader_markAsMain(UUID boot_loader_id) {
         try {
 
             Model_BootLoader boot_loader = Model_BootLoader.getById(boot_loader_id);
@@ -1402,7 +1402,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardware_get_registration_hash(String full_id) {
+    public Result hardware_get_registration_hash(UUID full_id) {
         try {
 
             if(!person().is_admin()) {
@@ -1609,7 +1609,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardware_update_description( String hardware_id) {
+    public Result hardware_update_description(UUID hardware_id) {
         try {
 
             // Get and Validate Object
@@ -1665,7 +1665,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardware_update_parameters( String hardware_id) {
+    public Result hardware_update_parameters(UUID hardware_id) {
         try {
 
             // Get and Validate Object
@@ -1813,7 +1813,7 @@ public class Controller_Hardware extends _BaseController {
 
     @ApiOperation(value = "update Board Backup",
             tags = { "Hardware"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https",
@@ -2048,7 +2048,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(value = BodyParser.Json.class)
-    public Result hardware_uploadPicture(String hardware_registration_id) {
+    public Result hardware_uploadPicture(UUID hardware_registration_id) {
         try {
 
             // Get and Validate Object
@@ -2100,7 +2100,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result hardware_generate_new_password(String hardware_id) {
+    public Result hardware_generate_new_password(UUID hardware_id) {
         try {
 
             //Kontrola objektu
@@ -2146,7 +2146,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardware_redirect_to_server(String hardware_id) {
+    public Result hardware_redirect_to_server(UUID hardware_id) {
         try {
 
             // Get and Validate Object
@@ -2241,7 +2241,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result hardware_removePicture(String hardware_registration_id) {
+    public Result hardware_removePicture(UUID hardware_registration_id) {
         try {
 
             Model_Hardware hardware = Model_Hardware.getById(hardware_registration_id);
@@ -2273,7 +2273,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardware_deactivate( String hardware_id) {
+    public Result hardware_deactivate(UUID hardware_id) {
         try {
 
             // Kotrola objektu
@@ -2310,7 +2310,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardware_get(String hardware_id) {
+    public Result hardware_get(UUID hardware_id) {
         try {
 
             // Kotrola objektu
@@ -2450,7 +2450,7 @@ public class Controller_Hardware extends _BaseController {
 
     @ApiOperation(value = "tag HardwareRegistration",
             tags = {"HardwareRegistration"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -2495,7 +2495,7 @@ public class Controller_Hardware extends _BaseController {
 
     @ApiOperation(value = "untag HardwareRegistration",
             tags = {"HardwareRegistration"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -2619,7 +2619,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardwareGroup_update(String hardware_group_id) {
+    public Result hardwareGroup_update(UUID hardware_group_id) {
         try {
 
             // Get and Validate Object
@@ -2659,7 +2659,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardwareGroup_delete(String hardware_group_id) {
+    public Result hardwareGroup_delete(UUID hardware_group_id) {
         try {
 
             Model_HardwareGroup group = Model_HardwareGroup.getById(hardware_group_id);
@@ -2863,7 +2863,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardwareGroup_get(String group_id) {
+    public Result hardwareGroup_get(UUID group_id) {
         try {
 
             // Kontrola validity objektu

@@ -74,10 +74,6 @@ public class Model_Processor extends NamedModel {
     @CacheField(value = Model_Processor.class, duration = CacheField.DayCacheConstant)
     public static Cache<UUID, Model_Processor> cache;
 
-    public static Model_Processor getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Processor getById(UUID id) throws _Base_Result_Exception {
 
         Model_Processor processor = cache.get(id);

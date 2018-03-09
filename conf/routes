@@ -41,10 +41,10 @@ GET       /login/person                                                 controll
 ######################################################################################################################################################################
 
 GET       /notification/list/:page_number                               controllers.Controller_Notification.notification_getByFilter(page_number: Integer)
-DELETE    /notification/:notification_id                                controllers.Controller_Notification.notification_delete(notification_id)
+DELETE    /notification/:notification_id                                controllers.Controller_Notification.notification_delete(notification_id: java.util.UUID)
 
 GET       /notification/unconfirmed                                     controllers.Controller_Notification.notifications_getUnconfirmed()
-PUT       /notification/confirm/:notification_id                        controllers.Controller_Notification.notification_confirm(notification_id)
+PUT       /notification/confirm/:notification_id                        controllers.Controller_Notification.notification_confirm(notification_id: java.util.UUID)
 
 PUT       /notification/read                                            controllers.Controller_Notification.notification_read()
 
@@ -203,9 +203,9 @@ PUT       /project/change_participant_state/:project_id                 controll
 PUT       /project/tags/add                                             controllers.Controller_Project.project_addTags
 PUT       /project/tags/remove                                          controllers.Controller_Project.project_removeTags
 PUT       /project/hardware/add                                         controllers.Controller_Project.project_addHardware
-PUT       /project/hardware/remove/:registration_id                     controllers.Controller_Project.project_removeHardware(registration_id)
-PUT       /project/hardware/deactive/:registration_id                   controllers.Controller_Project.project_deactiveHardware(registration_id)
-PUT       /project/hardware/activate/:registration_id                   controllers.Controller_Project.project_activeHardware(registration_id)
+PUT       /project/hardware/remove/:registration_id                     controllers.Controller_Project.project_removeHardware(registration_id: java.util.UUID)
+PUT       /project/hardware/deactive/:registration_id                   controllers.Controller_Project.project_deactiveHardware(registration_id: java.util.UUID)
+PUT       /project/hardware/activate/:registration_id                   controllers.Controller_Project.project_activeHardware(registration_id: java.util.UUID)
 
 #Program
 POST      /b_program/version/:b_program_id                              controllers.Controller_Blocko.bProgramVersion_create(b_program_id: java.util.UUID)
@@ -297,13 +297,13 @@ DELETE    /compilation_server/:server_id                                controll
 
 #Actualization Procedure
 PUT       /update_procedure/filter/:page_number                         controllers.Controller_Update.get_Actualization_Procedures_by_filter(page_number: Int)
-GET       /update_procedure/object/:procedure_id                        controllers.Controller_Update.get_Actualization_Procedure(procedure_id)
+GET       /update_procedure/object/:procedure_id                        controllers.Controller_Update.get_Actualization_Procedure(procedure_id: java.util.UUID)
 POST      /update_procedure/make                                        controllers.Controller_Update.make_actualization_procedure()
 PUT       /update_procedure/cancel/:procedure_id                        controllers.Controller_Update.canceled_procedure(procedure_id)
 
 #Task
 PUT       /update_task/filter/:page_number                              controllers.Controller_Update.get_Actualization_CProgramUpdatePlan_by_filter(page_number: Int)
-PUT       /update_task/object/:task_id                                  controllers.Controller_Update.get_Actualization_CProgramUpdatePlan(task_id)
+PUT       /update_task/object/:task_id                                  controllers.Controller_Update.get_Actualization_CProgramUpdatePlan(task_id: java.util.UUID)
 
 ### COMPILATION & LIBRARIES ############ COMPILATION & LIBRARIES ############### COMPILATION & LIBRARIES ################ COMPILATION & LIBRARIES ##############################
 ################################################################################################################################################################################
@@ -311,80 +311,80 @@ PUT       /update_task/object/:task_id                                  controll
 #C_Program
 POST      /c_program/create                                             controllers.Controller_Code.c_program_create()
 PUT       /c_program/clone                                              controllers.Controller_Code.c_program_clone()
-GET       /c_program/get/:c_program_id                                  controllers.Controller_Code.c_program_get(c_program_id)
+GET       /c_program/get/:c_program_id                                  controllers.Controller_Code.c_program_get(c_program_id: java.util.UUID)
 PUT       /c_program/filter/:page_number                                controllers.Controller_Code.c_program_getByFilter(page_number: Int)
 
-PUT       /c_program/:c_program_id                                      controllers.Controller_Code.c_program_edit(c_program_id)
-DELETE    /c_program/:c_program_id                                      controllers.Controller_Code.c_program_delete(c_program_id)
+PUT       /c_program/:c_program_id                                      controllers.Controller_Code.c_program_edit(c_program_id: java.util.UUID)
+DELETE    /c_program/:c_program_id                                      controllers.Controller_Code.c_program_delete(c_program_id: java.util.UUID)
 
-POST      /c_program/version/create/:c_program_id                       controllers.Controller_Code.c_program_version_create(c_program_id)
-GET       /c_program/version/get/:version_id                            controllers.Controller_Code.c_program_version_get(version_id)
-PUT       /c_program/version/edit/:version_id                           controllers.Controller_Code.c_program_version_edit(version_id)
-DELETE    /c_program/version/delete/:version_id                         controllers.Controller_Code.c_program_version_delete(version_id)
+POST      /c_program/version/create/:c_program_id                       controllers.Controller_Code.c_program_version_create(c_program_id: java.util.UUID)
+GET       /c_program/version/get/:version_id                            controllers.Controller_Code.c_program_version_get(version_id: java.util.UUID)
+PUT       /c_program/version/edit/:version_id                           controllers.Controller_Code.c_program_version_edit(version_id: java.util.UUID)
+DELETE    /c_program/version/delete/:version_id                         controllers.Controller_Code.c_program_version_delete(version_id: java.util.UUID)
 
 POST      /c_program/version/compile                                    controllers.Controller_Code.compile_c_program_code()
-PUT       /c_program/version/compile/:version_id                        controllers.Controller_Code.compile_c_program_version(version_id)
+PUT       /c_program/version/compile/:version_id                        controllers.Controller_Code.compile_c_program_version(version_id: java.util.UUID)
 
-PUT       /c_program/default/mark/:version_id                           controllers.Controller_Code.c_program_markScheme(version_id)
+PUT       /c_program/default/mark/:version_id                           controllers.Controller_Code.c_program_markScheme(version_id: java.util.UUID)
 
 #C_Program/Public
 PUT       /c_program/version_for_aprove/approve_decision                controllers.Controller_Code.c_program_public_response()
-PUT       /c_program/version/make_public/:version_id                    controllers.Controller_Code.c_program_version_make_public(version_id)
+PUT       /c_program/version/make_public/:version_id                    controllers.Controller_Code.c_program_version_make_public(version_id: java.util.UUID)
 
 #Libraries
 POST      /library                                                      controllers.Controller_Library.library_create()
 PUT       /library/clone                                                controllers.Controller_Library.library_clone()
 PUT       /library/tags/add                                             controllers.Controller_Library.library_addTags
 PUT       /library/tags/remove                                          controllers.Controller_Library.library_removeTags
-GET       /library/:library_id                                          controllers.Controller_Library.library_get(library_id)
-PUT       /library/:library_id                                          controllers.Controller_Library.library_edit(library_id)
+GET       /library/:library_id                                          controllers.Controller_Library.library_get(library_id: java.util.UUID)
+PUT       /library/:library_id                                          controllers.Controller_Library.library_edit(library_id: java.util.UUID)
 PUT       /library/filter/:page_number                                  controllers.Controller_Library.library_getByFilter(page_number: Int)
-DELETE    /library/:library_id                                          controllers.Controller_Library.library_delete(library_id)
+DELETE    /library/:library_id                                          controllers.Controller_Library.library_delete(library_id: java.util.UUID)
 
-POST      /library/version/:library_id                                  controllers.Controller_Library.library_version_create(library_id)
-GET       /library/version/:version_id                                  controllers.Controller_Library.library_version_get(version_id)
-PUT       /library/version/:version_id                                  controllers.Controller_Library.library_version_edit(version_id)
-DELETE    /library/version/:version_id                                  controllers.Controller_Library.library_version_delete(version_id)
+POST      /library/version/:library_id                                  controllers.Controller_Library.library_version_create(library_id: java.util.UUID)
+GET       /library/version/:version_id                                  controllers.Controller_Library.library_version_get(version_id: java.util.UUID)
+PUT       /library/version/:version_id                                  controllers.Controller_Library.library_version_edit(version_id: java.util.UUID)
+DELETE    /library/version/:version_id                                  controllers.Controller_Library.library_version_delete(version_id: java.util.UUID)
 
 #Libraries/Public
 PUT       /library/version_for_aprove/approve_decision                  controllers.Controller_Library.library_public_response()
-PUT       /library/version/make_public/:version_id                      controllers.Controller_Library.library_version_make_public(version_id)
+PUT       /library/version/make_public/:version_id                      controllers.Controller_Library.library_version_make_public(version_id: java.util.UUID)
 
 #Actualization
 PUT       /c_program/version/upload                                     controllers.Controller_Hardware.hardware_updateFirmware()
 
 #Producer
 POST      /producer                                                     controllers.Controller_Hardware.producer_create()
-PUT       /producer/:producer_id                                        controllers.Controller_Hardware.producer_update(producer_id)
+PUT       /producer/:producer_id                                        controllers.Controller_Hardware.producer_update(producer_id: java.util.UUID)
 GET       /producer/all                                                 controllers.Controller_Hardware.producer_getAll()
-GET       /producer/:producer_id                                        controllers.Controller_Hardware.producer_get(producer_id)
-DELETE    /producer/:producer_id                                        controllers.Controller_Hardware.producer_delete(producer_id)
+GET       /producer/:producer_id                                        controllers.Controller_Hardware.producer_get(producer_id: java.util.UUID)
+DELETE    /producer/:producer_id                                        controllers.Controller_Hardware.producer_delete(producer_id: java.util.UUID)
 
 #Processor
 POST      /processor                                                    controllers.Controller_Hardware.processor_create()
-GET       /processor/:processor_id                                      controllers.Controller_Hardware.processor_get(processor_id)
+GET       /processor/:processor_id                                      controllers.Controller_Hardware.processor_get(processor_id: java.util.UUID)
 GET       /processor                                                    controllers.Controller_Hardware.processor_getAll()
-PUT       /processor/:processor_id                                      controllers.Controller_Hardware.processor_edit(processor_id)
-DELETE    /processor/:processor_id                                      controllers.Controller_Hardware.processor_delete(processor_id)
+PUT       /processor/:processor_id                                      controllers.Controller_Hardware.processor_edit(processor_id: java.util.UUID)
+DELETE    /processor/:processor_id                                      controllers.Controller_Hardware.processor_delete(processor_id: java.util.UUID)
 
 #Hardware
 POST      /hardware/manual_registration                                 controllers.Controller_Hardware.hardware_create_manual()
 POST      /hardware/automatic_registration                              controllers.Controller_Hardware.hardware_create_garfield()
-PUT       /hardware/userDescription/:hardware_id                        controllers.Controller_Hardware.hardware_update_description(hardware_id)
-PUT       /hardware/parameters/:hardware_id                             controllers.Controller_Hardware.hardware_update_parameters(hardware_id)
+PUT       /hardware/userDescription/:hardware_id                        controllers.Controller_Hardware.hardware_update_description(hardware_id: java.util.UUID)
+PUT       /hardware/parameters/:hardware_id                             controllers.Controller_Hardware.hardware_update_parameters(hardware_id: java.util.UUID)
 PUT       /hardware/backup                                              controllers.Controller_Hardware.hardware_updateBackup()
 
 PUT       /hardware/filter/:page_number                                 controllers.Controller_Hardware.hardware_getByFilter(page_number: Int)
 GET       /hardware/check/:registration_hash/:project_id                controllers.Controller_Hardware.hardware_check(registration_hash, project_id: java.util.UUID)
-GET       /hardware/hash/:full_id                                       controllers.Controller_Hardware.hardware_get_registration_hash(full_id)
-GET       /hardware/:hardware_id                                        controllers.Controller_Hardware.hardware_get(hardware_id)
-DELETE    /hardware/deactivate/:hardware_id                             controllers.Controller_Hardware.hardware_deactivate(hardware_id)
+GET       /hardware/hash/:full_id                                       controllers.Controller_Hardware.hardware_get_registration_hash(full_id: java.util.UUID)
+GET       /hardware/:hardware_id                                        controllers.Controller_Hardware.hardware_get(hardware_id: java.util.UUID)
+DELETE    /hardware/deactivate/:hardware_id                             controllers.Controller_Hardware.hardware_deactivate(hardware_id: java.util.UUID)
 
-PUT       /hardware/picture/upload/:hardware_id                         controllers.Controller_Hardware.hardware_uploadPicture(hardware_id)
-PUT       /hardware/picture/remove/:hardware_id                         controllers.Controller_Hardware.hardware_removePicture(hardware_id)
+PUT       /hardware/picture/upload/:hardware_id                         controllers.Controller_Hardware.hardware_uploadPicture(hardware_id: java.util.UUID)
+PUT       /hardware/picture/remove/:hardware_id                         controllers.Controller_Hardware.hardware_removePicture(hardware_id: java.util.UUID)
 PUT       /hardware/command                                             controllers.Controller_Hardware.hardware_command_execution()
-PUT       /hardware/mqtt_password_reset/:hardware_id                    controllers.Controller_Hardware.hardware_generate_new_password(hardware_id)
-PUT       /hardware/change_server/:hardware_id                          controllers.Controller_Hardware.hardware_redirect_to_server(hardware_id)
+PUT       /hardware/mqtt_password_reset/:hardware_id                    controllers.Controller_Hardware.hardware_generate_new_password(hardware_id: java.util.UUID)
+PUT       /hardware/change_server/:hardware_id                          controllers.Controller_Hardware.hardware_redirect_to_server(hardware_id: java.util.UUID)
 
 #Hardware Registration
 PUT       /hardware_registration/tags/add                               controllers.Controller_Hardware.hardwareRegistration_addTags
@@ -393,100 +393,100 @@ PUT       /hardware_registration/tags/remove                            controll
 #Hardware Group
 POST      /hardware_group                                               controllers.Controller_Hardware.hardwareGroup_create()
 PUT       /hardware_group/hardware_synnchronize                         controllers.Controller_Hardware.board_group_update_device_list()
-PUT       /hardware_group/:group_id                                     controllers.Controller_Hardware.hardwareGroup_update(group_id)
+PUT       /hardware_group/:group_id                                     controllers.Controller_Hardware.hardwareGroup_update(group_id: java.util.UUID)
 PUT       /hardware_group/filter/:page_number                           controllers.Controller_Hardware.hardwareGroup_get_filter(page_number: Int)
-GET       /hardware_group/individual/:group_id                          controllers.Controller_Hardware.hardwareGroup_get(group_id)
-DELETE    /hardware_group/:group_id                                     controllers.Controller_Hardware.hardwareGroup_delete(group_id)
+GET       /hardware_group/individual/:group_id                          controllers.Controller_Hardware.hardwareGroup_get(group_id: java.util.UUID)
+DELETE    /hardware_group/:group_id                                     controllers.Controller_Hardware.hardwareGroup_delete(group_id: java.util.UUID)
 
 #Hardware Type
 POST      /hardware_type                                                controllers.Controller_Hardware.hardwareType_create()
-PUT       /hardware_type/picture/:hardware_type_id                      controllers.Controller_Hardware.hardwareType_uploadPicture(hardware_type_id)
-PUT       /hardware_type/:hardware_type_id                              controllers.Controller_Hardware.hardwareType_update(hardware_type_id)
-DELETE    /hardware_type/:hardware_type_id                              controllers.Controller_Hardware.hardwareType_delete(hardware_type_id)
+PUT       /hardware_type/picture/:hardware_type_id                      controllers.Controller_Hardware.hardwareType_uploadPicture(hardware_type_id: java.util.UUID)
+PUT       /hardware_type/:hardware_type_id                              controllers.Controller_Hardware.hardwareType_update(hardware_type_id: java.util.UUID)
+DELETE    /hardware_type/:hardware_type_id                              controllers.Controller_Hardware.hardwareType_delete(hardware_type_id: java.util.UUID)
 GET       /hardware_type/all                                            controllers.Controller_Hardware.hardwareType_getAll()
-GET       /hardware_type/:hardware_type_id                              controllers.Controller_Hardware.hardwareType_get(hardware_type_id)
+GET       /hardware_type/:hardware_type_id                              controllers.Controller_Hardware.hardwareType_get(hardware_type_id: java.util.UUID)
 
-POST      /hardware_batch/:hardware_type_id                             controllers.Controller_Hardware.hardwareBatch_create(hardware_type_id)
-PUT       /hardware_batch/:batch_id                                     controllers.Controller_Hardware.hardwareBatch_edit(batch_id)
-DELETE    /hardware_batch/:batch_id                                     controllers.Controller_Hardware.hardwareBatch_delete(batch_id)
+POST      /hardware_batch/:hardware_type_id                             controllers.Controller_Hardware.hardwareBatch_create(hardware_type_id: java.util.UUID)
+PUT       /hardware_batch/:batch_id                                     controllers.Controller_Hardware.hardwareBatch_edit(batch_id: java.util.UUID)
+DELETE    /hardware_batch/:batch_id                                     controllers.Controller_Hardware.hardwareBatch_delete(batch_id: java.util.UUID)
 
 #Bootloader
-POST      /bootloader/:hardware_type_id                                 controllers.Controller_Hardware.bootLoader_create(hardware_type_id)
-PUT       /bootloader/file/:boot_loader_id                              controllers.Controller_Hardware.bootLoader_uploadFile(boot_loader_id)
-PUT       /bootloader/mark/bootloader/:boot_loader_id                   controllers.Controller_Hardware.bootLoader_markAsMain(boot_loader_id)
+POST      /bootloader/:hardware_type_id                                 controllers.Controller_Hardware.bootLoader_create(hardware_type_id: java.util.UUID)
+PUT       /bootloader/file/:boot_loader_id                              controllers.Controller_Hardware.bootLoader_uploadFile(boot_loader_id: java.util.UUID)
+PUT       /bootloader/mark/bootloader/:boot_loader_id                   controllers.Controller_Hardware.bootLoader_markAsMain(boot_loader_id: java.util.UUID)
 PUT       /bootloader/update_device_list                                controllers.Controller_Hardware.bootLoader_manualUpdate()
-PUT       /bootloader/:boot_loader_id                                   controllers.Controller_Hardware.bootLoader_update(boot_loader_id)
-DELETE    /bootloader/:boot_loader_id                                   controllers.Controller_Hardware.bootLoader_delete(boot_loader_id)
+PUT       /bootloader/:boot_loader_id                                   controllers.Controller_Hardware.bootLoader_update(boot_loader_id: java.util.UUID)
+DELETE    /bootloader/:boot_loader_id                                   controllers.Controller_Hardware.bootLoader_delete(boot_loader_id: java.util.UUID)
 
 #File / Skryto ve swaggeru
-GET       /file/bootloader/:bootloader_id                               controllers.Controller_Hardware.fileRecord_get_bootLoader(bootloader_id)
-GET       /file/cprogram_version/:version_id                            controllers.Controller_Hardware.fileRecord_get_firmware(version_id)
+GET       /file/bootloader/:bootloader_id                               controllers.Controller_Hardware.fileRecord_get_bootLoader(bootloader_id: java.util.UUID)
+GET       /file/cprogram_version/:version_id                            controllers.Controller_Hardware.fileRecord_get_firmware(version_id: java.util.UUID)
 
 ### GRIDS ############ GRIDS ############### GRIDS ################ GRIDS ######################################################################################################
 ################################################################################################################################################################################
 
 #M Project
-GET       /grid_project/interface/:grid_project_id                      controllers.Controller_Grid.gridProject_getInterface(grid_project_id)
+GET       /grid_project/interface/:grid_project_id                      controllers.Controller_Grid.gridProject_getInterface(grid_project_id: java.util.UUID)
 
-POST      /grid_project/:project_id                                     controllers.Controller_Grid.gridProject_create(project_id)
-GET       /grid_project/:grid_project_id                                controllers.Controller_Grid.gridProject_get(grid_project_id)
-PUT       /grid_project/:grid_project_id                                controllers.Controller_Grid.gridProject_update(grid_project_id)
+POST      /grid_project/:project_id                                     controllers.Controller_Grid.gridProject_create(project_id: java.util.UUID)
+GET       /grid_project/:grid_project_id                                controllers.Controller_Grid.gridProject_get(grid_project_id: java.util.UUID)
+PUT       /grid_project/:grid_project_id                                controllers.Controller_Grid.gridProject_update(grid_project_id: java.util.UUID)
 PUT       /grid_project/tags/add                                        controllers.Controller_Grid.gridProject_addTags
 PUT       /grid_project/tags/remove                                     controllers.Controller_Grid.gridProject_removeTags
-DELETE    /grid_project/:grid_project_id                                controllers.Controller_Grid.gridProject_delete(grid_project_id)
+DELETE    /grid_project/:grid_project_id                                controllers.Controller_Grid.gridProject_delete(grid_project_id: java.util.UUID)
 
 #M Program
-POST      /grid_program/version/:grid_program_id                        controllers.Controller_Grid.gridProgramVersion_create(grid_program_id)
-PUT       /grid_program/version/:version_id                             controllers.Controller_Grid.gridProgramVersion_update(version_id)
-GET       /grid_program/version/:version_id                             controllers.Controller_Grid.gridProgramVersion_get(version_id)
-DELETE    /grid_program/version/:version_id                             controllers.Controller_Grid.gridProgramVersion_delete(version_id)
+POST      /grid_program/version/:grid_program_id                        controllers.Controller_Grid.gridProgramVersion_create(grid_program_id: java.util.UUID)
+PUT       /grid_program/version/:version_id                             controllers.Controller_Grid.gridProgramVersion_update(version_id: java.util.UUID)
+GET       /grid_program/version/:version_id                             controllers.Controller_Grid.gridProgramVersion_get(version_id: java.util.UUID)
+DELETE    /grid_program/version/:version_id                             controllers.Controller_Grid.gridProgramVersion_delete(version_id: java.util.UUID)
 
-POST      /grid_program/:grid_project_id                                controllers.Controller_Grid.gridProgram_create(grid_project_id)
-GET       /grid_program/:grid_program_id                                controllers.Controller_Grid.gridProgram_get(grid_program_id)
-PUT       /grid_program/:grid_program_id                                controllers.Controller_Grid.gridProgram_update(grid_program_id)
+POST      /grid_program/:grid_project_id                                controllers.Controller_Grid.gridProgram_create(grid_project_id: java.util.UUID)
+GET       /grid_program/:grid_program_id                                controllers.Controller_Grid.gridProgram_get(grid_program_id: java.util.UUID)
+PUT       /grid_program/:grid_program_id                                controllers.Controller_Grid.gridProgram_update(grid_program_id: java.util.UUID)
 PUT       /grid_program/tags/add                                        controllers.Controller_Grid.gridProgram_addTags
 PUT       /grid_program/tags/remove                                     controllers.Controller_Grid.gridProgram_removeTags
-DELETE    /grid_program/:grid_program_id                                controllers.Controller_Grid.gridProgram_delete(grid_program_id)
+DELETE    /grid_program/:grid_program_id                                controllers.Controller_Grid.gridProgram_delete(grid_program_id: java.util.UUID)
 
 # Terminals Aps
 GET       /grid_program/app/token/*qr_token                             controllers.Controller_Grid.gridProgram_getByQRToken(qr_token)
 
 PUT       /websocket/terminal/identificator                             controllers.Controller_Grid.get_identificator()
-PUT       /websocket/terminal/identificator/:terminal_id                controllers.Controller_Grid.check_identifiactor(terminal_id)
+PUT       /websocket/terminal/identificator/:terminal_id                controllers.Controller_Grid.check_identifiactor(terminal_id: java.util.UUID)
 
 # Wigets
 POST      /widget                                                       controllers.Controller_Grid.widget_create()
-PUT       /widget/order/up/:grid_widget_id                              controllers.Controller_Grid.widget_order_up(grid_widget_id)
-PUT       /widget/order/down/:grid_widget_id                            controllers.Controller_Grid.widget_order_down(grid_widget_id)
+PUT       /widget/order/up/:grid_widget_id                              controllers.Controller_Grid.widget_order_up(grid_widget_id: java.util.UUID)
+PUT       /widget/order/down/:grid_widget_id                            controllers.Controller_Grid.widget_order_down(grid_widget_id: java.util.UUID)
 POST      /widget/make_clone                                            controllers.Controller_Grid.widget_clone()
 PUT       /widget/tags/add                                              controllers.Controller_Grid.widget_addTags
 PUT       /widget/tags/remove                                           controllers.Controller_Grid.widget_removeTags
 
-PUT       /widget/:grid_widget_id                                       controllers.Controller_Grid.widget_update(grid_widget_id)
-GET       /widget/:grid_widget_id                                       controllers.Controller_Grid.widget_get(grid_widget_id)
-DELETE    /widget/:grid_widget_id                                       controllers.Controller_Grid.widget_delete(grid_widget_id)
+PUT       /widget/:grid_widget_id                                       controllers.Controller_Grid.widget_update(grid_widget_id: java.util.UUID)
+GET       /widget/:grid_widget_id                                       controllers.Controller_Grid.widget_get(grid_widget_id: java.util.UUID)
+DELETE    /widget/:grid_widget_id                                       controllers.Controller_Grid.widget_delete(grid_widget_id: java.util.UUID)
 PUT       /widget/list/:page_number                                     controllers.Controller_Grid.widget_getByFilter(page_number: Int)
-PUT       /admin/widget/deactive/:grid_widget_id                        controllers.Controller_Grid.widget_deactivate(grid_widget_id)
-PUT       /admin/widget/active/:grid_widget_id                          controllers.Controller_Grid.widget_activate(grid_widget_id)
+PUT       /admin/widget/deactive/:grid_widget_id                        controllers.Controller_Grid.widget_deactivate(grid_widget_id: java.util.UUID)
+PUT       /admin/widget/active/:grid_widget_id                          controllers.Controller_Grid.widget_activate(grid_widget_id: java.util.UUID)
 PUT       /admin/widget/approval                                        controllers.Controller_Grid.widget_public_response()
 
-POST      /widget/version/:grid_widget_id                               controllers.Controller_Grid.widgetVersion_create(grid_widget_id)
-PUT       /widget/version/:grid_widget_version_id                       controllers.Controller_Grid.widgetVersion_edit(grid_widget_version_id)
-PUT       /widget/version/make_public/:grid_widget_version_id           controllers.Controller_Grid.widgetVersion_version_make_public(grid_widget_version_id)
-GET       /widget/version/all/:grid_widget_id                           controllers.Controller_Grid.widgetVersion_getAll(grid_widget_id)
-GET       /widget/version/:grid_widget_version_id                       controllers.Controller_Grid.widgetVersion_get(grid_widget_version_id)
-DELETE    /widget/version/:grid_widget_version_id                       controllers.Controller_Grid.widgetVersion_delete(grid_widget_version_id)
-PUT       /admin/widget/version/set_main/:grid_widget_id                controllers.Controller_Grid.widgetVersion_set_main(grid_widget_id)
+POST      /widget/version/:grid_widget_id                               controllers.Controller_Grid.widgetVersion_create(grid_widget_id: java.util.UUID)
+PUT       /widget/version/:grid_widget_version_id                       controllers.Controller_Grid.widgetVersion_edit(grid_widget_version_id: java.util.UUID)
+PUT       /widget/version/make_public/:grid_widget_version_id           controllers.Controller_Grid.widgetVersion_version_make_public(grid_widget_version_id: java.util.UUID)
+GET       /widget/version/all/:grid_widget_id                           controllers.Controller_Grid.widgetVersion_getAll(grid_widget_id: java.util.UUID)
+GET       /widget/version/:grid_widget_version_id                       controllers.Controller_Grid.widgetVersion_get(grid_widget_version_id: java.util.UUID)
+DELETE    /widget/version/:grid_widget_version_id                       controllers.Controller_Grid.widgetVersion_delete(grid_widget_version_id: java.util.UUID)
+PUT       /admin/widget/version/set_main/:grid_widget_id                controllers.Controller_Grid.widgetVersion_set_main(grid_widget_id: java.util.UUID)
 
 ### GARFIELD ############ GARFIELD ############### GARFIELD ################ GARFIELD ##########################################################################################
 ################################################################################################################################################################################
 
 POST      /garfiled                                                     controllers.Controller_Garfield.create_Garfield()
 GET       /garfield                                                     controllers.Controller_Garfield.get_Garfield_list()
-PUT       /garfiled/:garfield_id                                        controllers.Controller_Garfield.edit_Garfield(garfield_id)
-DELETE    /garfiled/:garfield_id                                        controllers.Controller_Garfield.remove_Garfield(garfield_id)
-GET       /garfiled/:garfield_id                                        controllers.Controller_Garfield.get_Garfield(garfield_id)
-GET       /admin/garfiled-print-labes/:hardware_id                      controllers.Controller_Garfield.print_label(hardware_id)
+PUT       /garfiled/:garfield_id                                        controllers.Controller_Garfield.edit_Garfield(garfield_id: java.util.UUID)
+DELETE    /garfiled/:garfield_id                                        controllers.Controller_Garfield.remove_Garfield(garfield_id: java.util.UUID)
+GET       /garfiled/:garfield_id                                        controllers.Controller_Garfield.get_Garfield(garfield_id: java.util.UUID)
+GET       /admin/garfiled-print-labes/:hardware_id                      controllers.Controller_Garfield.print_label(hardware_id: java.util.UUID)
 
 GET       /printer/printer/:garfield_id/:printer_id                     controllers.Controller_Garfield.online_state_Printer(garfield_id, printer_id: Integer)
 POST      /printer/test/:garfield_id/:printer_id                        controllers.Controller_Garfield.print_test_Printer(garfield_id, printer_id: Integer)
@@ -515,10 +515,10 @@ GET       /admin/report/dashboard                                       controll
 
 # BUGS SERVISE PAGE
 GET       /admin/bug                                                    controllers.Controller_Admin.serverError_getAll()
-GET       /admin/bug/:bug_id                                            controllers.Controller_Admin.serverError_get(bug_id)
+GET       /admin/bug/:bug_id                                            controllers.Controller_Admin.serverError_get(bug_id: java.util.UUID)
 DELETE    /admin/bug                                                    controllers.Controller_Admin.serverError_deleteAll()
-DELETE    /admin/bug/:bug_id                                            controllers.Controller_Admin.serverError_delete(bug_id)
-PUT       /admin/bug/report/:bug_id                                     controllers.Controller_Admin.serverError_report(bug_id)
+DELETE    /admin/bug/:bug_id                                            controllers.Controller_Admin.serverError_delete(bug_id: java.util.UUID)
+PUT       /admin/bug/report/:bug_id                                     controllers.Controller_Admin.serverError_report(bug_id: java.util.UUID)
 
 POST      /admin/update                                                 controllers.Controller_Admin.server_scheduleUpdate()
 GET       /admin/update                                                 controllers.Controller_Admin.server_getUpdates()

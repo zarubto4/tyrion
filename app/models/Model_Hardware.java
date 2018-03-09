@@ -2778,10 +2778,6 @@ public class Model_Hardware extends TaggedModel {
     @CacheField(value = Boolean.class, duration = 300, name ="Model_Hardware_Status")
     public static Cache<UUID, Boolean> cache_status;
 
-    public static Model_Hardware getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Hardware getById(UUID id) throws _Base_Result_Exception {
 
         Model_Hardware board = cache.get(id);

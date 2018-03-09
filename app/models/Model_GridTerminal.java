@@ -71,10 +71,6 @@ public class Model_GridTerminal extends BaseModel {
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_GridTerminal getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_GridTerminal getById(UUID id) throws _Base_Result_Exception {
 
         Model_GridTerminal terminal = find.byId(id);

@@ -562,10 +562,6 @@ public class Model_Blob extends BaseModel {
     @CacheField(value = String.class, duration = CacheField.HalfDayCacheConstant, maxElements = 500, automaticProlonging = false)
     public static Cache<UUID, String> cache_public_link;
 
-    public static Model_Blob getById(String id) throws _Base_Result_Exception  {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Blob getById(UUID id) throws _Base_Result_Exception  {
         return Model_Blob.find.byId(id);
     }

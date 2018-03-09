@@ -307,10 +307,6 @@ public class Model_BootLoader extends NamedModel {
     @CacheField(value = Model_BootLoader.class)
     public static Cache<UUID, Model_BootLoader> cache;
 
-    public static Model_BootLoader getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_BootLoader getById(UUID id) throws _Base_Result_Exception {
 
         Model_BootLoader bootloader = cache.get(id);

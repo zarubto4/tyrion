@@ -60,10 +60,6 @@ public class Model_ValidationToken extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_ValidationToken getById(String id) {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_ValidationToken getById(UUID id) {
         return find.byId(id);
     }

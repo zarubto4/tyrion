@@ -21,6 +21,7 @@ import utilities.swagger.input.Swagger_Notification_Read;
 import utilities.swagger.output.filter_results.Swagger_Notification_List;
 
 import java.util.List;
+import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_Notification extends _BaseController {
@@ -84,7 +85,7 @@ public class Controller_Notification extends _BaseController {
           @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
   })
   @Security.Authenticated(Authentication.class)
-  public Result notification_delete(String notification_id) {
+  public Result notification_delete(UUID notification_id) {
     try {
 
       Model_Notification notification = Model_Notification.getById(notification_id);
@@ -203,7 +204,7 @@ public class Controller_Notification extends _BaseController {
           @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
   })
   @Security.Authenticated(Authentication.class)
-  public Result notification_confirm( String notification_id) {
+  public Result notification_confirm(UUID notification_id) {
       try {
 
           // Get and Validate Object

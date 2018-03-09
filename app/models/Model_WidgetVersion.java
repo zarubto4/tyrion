@@ -156,10 +156,6 @@ public class Model_WidgetVersion extends VersionModel {
     @CacheField(value = Model_WidgetVersion.class)
     public static Cache<UUID, Model_WidgetVersion> cache;
 
-    public static Model_WidgetVersion getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_WidgetVersion getById(UUID id) throws _Base_Result_Exception {
 
         Model_WidgetVersion grid_widget_version = cache.get(id);

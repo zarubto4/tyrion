@@ -872,7 +872,7 @@ public class Controller_Person extends _BaseController {
 
     @ApiOperation(value = "email Person approving password or email change",
             tags = {"Admin-Person"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             protocols = "https"
     )
