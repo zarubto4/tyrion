@@ -83,10 +83,12 @@ public abstract class WS_Interface extends AbstractActor {
 
     @Override
     public void postStop() {
+        logger.trace("postStop - closed socket, id: {}", this.id);
         this.onClose();
     }
 
     public void close() {
+        logger.trace("close - closing socket, id: {}", this.id);
         onClose();
         self().tell(PoisonPill.getInstance(), self());
     }
@@ -128,7 +130,8 @@ public abstract class WS_Interface extends AbstractActor {
                 if (messageBuffer.containsKey(id)) {
                     logger.trace("onMessage - its message from buffer");
                     messageBuffer.get(id).resolve(json);
-                }else {
+                    messageBuffer.remove(id);
+                } else {
 
                     logger.trace("onMessage - its not message from Buffer - set to onMessage in some WS_Interface");
                     this.onMessage(json);

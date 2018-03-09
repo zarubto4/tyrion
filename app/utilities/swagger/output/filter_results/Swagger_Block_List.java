@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@ApiModel(description = "Individual Blocko Block List",
-        value = "Blocko_Block_List")
+@ApiModel(description = "Individual Block List",
+        value = "Block_List")
 public class Swagger_Block_List extends _Swagger_Filter_Common {
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
@@ -27,8 +27,8 @@ public class Swagger_Block_List extends _Swagger_Filter_Common {
 
         for (UUID id : ids) {
 
-            Model_Block blockoBlock = Model_Block.getById(id);
-            this.content.add(blockoBlock);
+            Model_Block block = Model_Block.getById(id);
+            this.content.add(block);
         }
 
         this.total = query.findCount();

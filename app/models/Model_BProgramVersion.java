@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import org.ehcache.Cache;
@@ -35,7 +36,7 @@ public class Model_BProgramVersion extends VersionModel {
     @JsonIgnore @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)   public Model_BProgram b_program;
     @JsonIgnore public String additional_configuration;
 
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "instance_versions") public List<Model_MProjectProgramSnapShot> b_program_version_snapshots = new ArrayList<>();    // Vazba kvůli puštěným B_programům
+    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "instance_versions") public List<Model_MProjectProgramSnapShot> b_program_version_snapshots = new ArrayList<>();    // Vazba kvůli puštěným B_programům
 
     // B_Program - Instance
     @JsonIgnore @OneToMany(mappedBy="b_program_version", fetch = FetchType.LAZY) public List<Model_InstanceSnapshot> instances = new ArrayList<>();
@@ -46,6 +47,7 @@ public class Model_BProgramVersion extends VersionModel {
 
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
+    @JsonProperty
     public String program() {
         // TODO Hodně náročné na stahování do Cahce - Nejlépe takový objekt na linky, že sám sebe zahodí po vypršení platnosti
         // Myslím, že jsem ho někde programoval!
@@ -152,7 +154,7 @@ public class Model_BProgramVersion extends VersionModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { get_b_program().check_update_permission();}
+    @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { b_program.check_update_permission();} // You have to access b_program directly, because get_b_program() finds the b_program by id of the version which is not yet created
     @JsonIgnore @Override public void check_read_permission()   throws _Base_Result_Exception { get_b_program().check_read_permission();}
     @JsonIgnore @Override public void check_update_permission() throws _Base_Result_Exception { get_b_program().check_update_permission();}
     @JsonIgnore @Override public void check_delete_permission() throws _Base_Result_Exception { get_b_program().check_update_permission();}
@@ -161,7 +163,7 @@ public class Model_BProgramVersion extends VersionModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_BProgramVersion.class, duration = 600)
+    @CacheField(Model_BProgramVersion.class)
     public static Cache<UUID, Model_BProgramVersion> cache;
 
     public static Model_BProgramVersion getById(String id) throws _Base_Result_Exception {

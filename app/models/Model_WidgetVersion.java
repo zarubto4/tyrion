@@ -144,7 +144,7 @@ public class Model_WidgetVersion extends VersionModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { get_grid_widget().check_update_permission();}
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { widget.check_update_permission();} // You have to access widget directly, because get_grid_widget() finds the widget by id of the version which is not yet created
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { get_grid_widget().check_read_permission();}
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { get_grid_widget().check_update_permission();}
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { get_grid_widget().check_update_permission();}

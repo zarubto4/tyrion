@@ -163,7 +163,7 @@ public class Model_GridProgramVersion extends VersionModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { get_grid_program().check_update_permission();}
+    @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { grid_program.check_update_permission();} // You have to access grid_program directly, because get_grid_program() finds the grid_program by id of the version which is not yet created
     @JsonIgnore @Override public void check_read_permission()   throws _Base_Result_Exception { get_grid_program().check_read_permission();}
     @JsonIgnore @Override public void check_update_permission() throws _Base_Result_Exception { get_grid_program().check_update_permission();}
     @JsonIgnore @Override public void check_delete_permission() throws _Base_Result_Exception { get_grid_program().check_update_permission();}

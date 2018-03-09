@@ -133,7 +133,7 @@ public class Model_BlockVersion extends VersionModel {
 
 /* PERMISSIONS ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore public void check_create_permission() throws _Base_Result_Exception { get_block().check_update_permission();}
+    @JsonIgnore public void check_create_permission() throws _Base_Result_Exception { block.check_update_permission();} // You have to access block directly, because get_block() finds the block by id of the version which is not yet created
     @JsonIgnore public void check_read_permission()   throws _Base_Result_Exception { get_block().check_read_permission();}
     @JsonIgnore public void check_update_permission() throws _Base_Result_Exception { get_block().check_update_permission();}
     @JsonIgnore public void check_delete_permission() throws _Base_Result_Exception { get_block().check_update_permission();}
