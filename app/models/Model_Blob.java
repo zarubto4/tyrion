@@ -150,97 +150,10 @@ public class Model_Blob extends BaseModel {
 
         Model_Blob fileRecord = new Model_Blob();
         fileRecord.name = name;
-        fileRecord.path = path;
+        fileRecord.path = path + "/" + name;
         fileRecord.save();
 
         return fileRecord;
-    }
-
-    @JsonIgnore
-    public static Model_Blob uploadAzure_Version(String file_content, String file_name, String file_path, VersionModel version) throws Exception{
-        try {
-
-            logger.debug("uploadAzure_Version:: Azure upload: "+ file_path + version.get_path() + "/" + file_name );
-
-            int slash = file_path.indexOf("/");
-            String container_name = file_path.substring(0,slash);
-            String real_file_path = file_path.substring(slash+1);
-            CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
-
-            CloudBlockBlob blob = container.getBlockBlobReference( real_file_path + version.get_path() + "/" + file_name);
-
-            InputStream is = new ByteArrayInputStream(file_content.getBytes());
-            blob.upload(is, -1);
-
-            Model_Blob fileRecord = new Model_Blob();
-            fileRecord.name =  file_name;
-            fileRecord.path =  file_path  + version.get_path() + "/" + file_name;
-
-            if(version.getClass().getName().equals(Model_CProgramVersion.class.getName())) {
-                fileRecord.c_program_version = (Model_CProgramVersion) version;
-            } else if(version.getClass().getName().equals(Model_LibraryVersion.class.getName())){
-                fileRecord.library_version = (Model_LibraryVersion) version;
-            } else if(version.getClass().getName().equals(Model_BProgramVersion.class.getName())){
-                fileRecord.b_program_version = (Model_BProgramVersion) version;
-            }
-
-            fileRecord.save();
-
-            version.file = fileRecord;
-            version.update();
-
-            return fileRecord;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonIgnore
-    public static Model_Blob uploadAzure_Version(File file, String file_name, String file_path, VersionModel version) throws Exception{
-
-        try {
-
-            logger.debug("uploadAzure_Version:: Azure upload: "+ file_path + version.get_path() + "/" + file_name);
-
-
-            int slash = file_path.indexOf("/");
-            String container_name = file_path.substring(0,slash);
-            String real_file_path = file_path.substring(slash+1);
-            CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
-
-            CloudBlockBlob blob = container.getBlockBlobReference( real_file_path + version.get_path() + "/" + file_name);
-
-            InputStream is = new FileInputStream(file);
-            blob.upload(is, -1);
-
-            Model_Blob fileRecord = new Model_Blob();
-            fileRecord.name = file_name;
-            fileRecord.path =   file_path + version.get_path()+ "/" + file_name;
-
-            if(version.getClass().getName().equals(Model_CProgramVersion.class.getName())) {
-                fileRecord.c_program_version = (Model_CProgramVersion) version;
-            } else if(version.getClass().getName().equals(Model_LibraryVersion.class.getName())){
-                fileRecord.library_version = (Model_LibraryVersion) version;
-            } else if(version.getClass().getName().equals(Model_BProgramVersion.class.getName())){
-                fileRecord.b_program_version = (Model_BProgramVersion) version;
-            }
-
-            fileRecord.save();
-
-            version.file = fileRecord;
-            version.update();
-
-            // Sobor smažu z adresáře
-            file.delete();
-
-            return fileRecord;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
     }
 
     @JsonIgnore

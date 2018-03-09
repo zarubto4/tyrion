@@ -1,5 +1,6 @@
 package utilities.cache;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import controllers.Controller_WebSocket;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
@@ -11,6 +12,8 @@ import org.reflections.Reflections;
 import org.reflections.scanners.FieldAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+import utilities.homer_auto_deploy.DigitalOceanTyrionService;
+import utilities.homer_auto_deploy.models.common.Swagger_ServerRegistration_FormData;
 import utilities.logger.Logger;
 
 import java.lang.reflect.Field;
@@ -80,6 +83,12 @@ public class ServerCache {
                 CacheConfigurationBuilder.newCacheConfigurationBuilder(UUID.class, UUID.class,
                         ResourcePoolsBuilder.heap(1000))
                         .withExpiry(Expirations.timeToLiveExpiration(Duration.of(25, TimeUnit.SECONDS))).build());
+
+        // Sets token cache for web socket connections
+        DigitalOceanTyrionService.tokenCache = cacheManager.createCache("Digital_Ocean_server_sizes",
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Swagger_ServerRegistration_FormData.class,
+                        ResourcePoolsBuilder.heap(3))
+                        .withExpiry(Expirations.timeToLiveExpiration(Duration.of(12, TimeUnit.HOURS))).build());
     }
 
     /**

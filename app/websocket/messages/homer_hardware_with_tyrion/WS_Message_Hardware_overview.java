@@ -31,8 +31,8 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
      * Slower for a small number of elements - significantly faster for a large number of elements.
      */
     @JsonIgnore
-    HashMap<UUID, WS_Message_Hardware_overview_Board> map = new HashMap<>();
-    public WS_Message_Hardware_overview_Board get_device_from_list(UUID device_id) {
+    HashMap<String, WS_Message_Hardware_overview_Board> map = new HashMap<>();
+    public WS_Message_Hardware_overview_Board get_device_from_list(String device_full_id) {
 
         // System.out.println("WS_Message_Hardware_overview get_device_from_list " +  hardware_id);
 
@@ -49,12 +49,12 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
                 status.message_id = super.message_id;
                 status.message_type = super.message_type;
                 status.websocket_identificator = super.websocket_identificator;
-                map.put(status.hardware_id, status);
+                map.put(status.full_id, status);
             }
         }
 
-        if (map.containsKey(device_id)) {
-            return map.get(device_id);
+        if (map.containsKey(device_full_id)) {
+            return map.get(device_full_id);
         } else {
             // System.out.println("WS_Message_Hardware_overview: Seznam neobsahuje dané ID :( " +  hardware_id);
             WS_Message_Hardware_overview_Board overview_board = new WS_Message_Hardware_overview_Board();
@@ -69,13 +69,13 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public ObjectNode make_request(List<UUID> devices_ids) {
+    public ObjectNode make_request(List<String> full_ids) {
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
         request.put("message_channel", Model_Hardware.CHANNEL);
-        request.set("hardware_ids", Json.toJson(devices_ids));
+        request.set("full_ids", Json.toJson(full_ids));
 
         request.set("info_keys", Json.toJson(Arrays.asList(
 

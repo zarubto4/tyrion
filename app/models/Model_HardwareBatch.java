@@ -84,16 +84,30 @@ public class Model_HardwareBatch {
     @JsonIgnore
     public String get_nextMacAddress_just_for_check() throws IllegalCharsetNameException{
 
+        logger.trace("get_nextMacAddress_just_for_check:: revision: {} , latest used mac address now: {}", revision, latest_used_mac_address);
+
         // Its used only for check - if some other server dont use this mac address and if its not registred in central hardware registration authority
         if (latest_used_mac_address == null) {
             return convert_to_MAC_ISO(Long.parseLong(mac_address_start, 16));
         }
 
+
+        logger.trace("get_nextMacAddress_just_for_check:: Latest allowed: {} : converted:: {}", mac_address_end, Long.parseLong(mac_address_end, 16));
+        logger.trace("get_nextMacAddress_just_for_check:: Latest used:    {} : converted:: {}", latest_used_mac_address, Long.parseLong(latest_used_mac_address, 16) );
+
         if (Long.parseLong(latest_used_mac_address, 16) >= Long.parseLong(mac_address_end, 16)) {
             throw new IllegalCharsetNameException("All Mac Address used");
         }
 
-        return convert_to_MAC_ISO(Long.parseLong(latest_used_mac_address, 16)+ 1);
+        logger.trace("get_nextMacAddress_just_for_check:: Latest address:  {} is ok ", latest_used_mac_address);
+        Long latest = Long.parseLong(latest_used_mac_address, 16);
+        logger.trace("get_nextMacAddress_just_for_check:: Latest address in Long {} is ok ", latest);
+        Long latest_plus_one = latest + 1;
+        logger.trace("get_nextMacAddress_just_for_check:: Latest address in Long+1 {} is ok ", latest_plus_one);
+
+        String latest_in_string = Long.toString(latest_plus_one, 16);
+        logger.trace("get_nextMacAddress_just_for_check:: Latest address in String+1 {} is ok ", latest_in_string);
+        return convert_to_MAC_ISO(latest_plus_one);
     }
 
     @JsonIgnore
@@ -109,10 +123,18 @@ public class Model_HardwareBatch {
             throw new IllegalCharsetNameException("All Mac Address used");
         }
 
-        Long help = Long.parseLong(latest_used_mac_address, 16)+ 1;
-        this.latest_used_mac_address = help.toString();
-        update();
 
+        Long latest_used = Long.parseLong(latest_used_mac_address, 16);
+        logger.debug("get_new_MacAddress in batch revision {} - Latest used MAc Address:: {}", this.revision, latest_used);
+
+        Long latest_used_1 = latest_used + 1;
+
+        this.latest_used_mac_address = Long.toString(latest_used_1, 16);
+        logger.debug("get_new_MacAddress in batch revision {} - new one will be in long {}", this.revision, latest_used_1);
+        logger.debug("get_new_MacAddress in batch revision {} - new one will be in mac  {}", this.revision, latest_used_mac_address);
+        this.update();
+
+        logger.debug("get_new_MacAddress in batch revision {} - new one will be {} ", this.revision, Long.parseLong(latest_used_mac_address, 16));
         return convert_to_MAC_ISO(Long.parseLong(latest_used_mac_address, 16));
 
     }
@@ -127,7 +149,10 @@ public class Model_HardwareBatch {
         }
 
         StringBuffer m = new StringBuffer(Long.toString(mac, 16));
-        while (m.length() < 12) m.insert(0, "0");
+        while (m.length() < 12){
+            System.out.println("convert_to_MAC_ISO:while");
+            m.insert(0, "0");
+        }
 
         for (int j = m.length() - 2; j >= 2; j-=2) {
             m.insert(j, ":");

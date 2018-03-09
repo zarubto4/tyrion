@@ -17,7 +17,6 @@ import utilities.document_db.DocumentDB;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
 import utilities.grid_support.utils.IP_Founder;
-import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
 import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
 import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.logger.Logger;
@@ -132,12 +131,8 @@ public class Server {
 
         DocumentDB.init();
 
-
         setBaseForm();
-
-        // TODO Batch_Registration_Authority.synchronize();
-
-        // TODO Hardware_Registration_Authority.synchronize_hardware();
+        setConfigurationInjectorForNonStaticClass();
     }
 
     /**
@@ -430,7 +425,6 @@ public class Server {
      * Set BaseForm for Json Control
      */
     private static void setBaseForm() {
-        Hardware_Registration_Authority.baseFormFactory = Server.injector.getInstance(_BaseFormFactory.class);
         WS_Homer.baseFormFactory                        = Server.injector.getInstance(_BaseFormFactory.class);
         Synchronize_Homer_Synchronize_Settings.baseFormFactory = Server.injector.getInstance(_BaseFormFactory.class);
         DigitalOceanThreadRegister.baseFormFactory      = Server.injector.getInstance(_BaseFormFactory.class);
@@ -438,7 +432,20 @@ public class Server {
         BaseModel.baseFormFactory                       = Server.injector.getInstance(_BaseFormFactory.class);
         DigitalOceanTyrionService.baseFormFactory       = Server.injector.getInstance(_BaseFormFactory.class);
         WS_Portal.baseFormFactory                       = Server.injector.getInstance(_BaseFormFactory.class);
+        Model_HardwareRegistrationEntity.baseFormFactory= Server.injector.getInstance(_BaseFormFactory.class);
+        Model_InstanceSnapshot.baseFormFactory          = Server.injector.getInstance(_BaseFormFactory.class);
     }
+
+    /**
+     * Set configuration
+     */
+    private static void setConfigurationInjectorForNonStaticClass() {
+        DigitalOceanTyrionService.configuration = configuration;
+
+    }
+
+
+
 
     /**
      * Finds the MAC address of the current host.

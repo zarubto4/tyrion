@@ -17,7 +17,7 @@ public class WS_Message_Hardware_terminal_logger_validation_request extends WS_A
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Constraints.Required public List<String> hardware_ids;
+    @Constraints.Required public List<String> full_ids;
     @Constraints.Required public String token;
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/

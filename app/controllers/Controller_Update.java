@@ -231,7 +231,6 @@ public class Controller_Update extends _BaseController {
             for (Swagger_ActualizationProcedure_Make_HardwareType hardware_type_settings : help.hardware_type_settings) {
 
                 Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_settings.hardware_type_id);
-                if (hardwareType == null) return notFound("firmware_type not found");
 
                 Model_CProgramVersion c_program_version = null;
 
@@ -250,9 +249,6 @@ public class Controller_Update extends _BaseController {
 
                 for (UUID uuid_id : uuid_ids) {
                     Model_Hardware hardware = Model_Hardware.getById(uuid_id);
-
-                    if (!hardware.get_project_id().equals(project.id))
-                    return notFound("hardware_id is not from same project");
 
                     Model_HardwareUpdate plan = new Model_HardwareUpdate();
                     plan.hardware = hardware;
@@ -371,7 +367,16 @@ public class Controller_Update extends _BaseController {
                     Model_Instance.getById(instance_id);
                 }
 
-                query.where().in("actualization_procedure.homer_instance_record.main_instance_history.id", help.instance_ids); // TODO
+                query.where().in("actualization_procedure.instance.instance.id", help.instance_ids);
+            }
+
+            if (!help.instance_snapshot_ids.isEmpty()) {
+
+                for (UUID instance_id : help.instance_snapshot_ids) {
+                    Model_InstanceSnapshot.getById(instance_id);
+                }
+
+                query.where().in("actualization_procedure.instance.id", help.instance_ids);
             }
 
             if (!help.actualization_procedure_ids.isEmpty()) {

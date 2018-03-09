@@ -7,19 +7,15 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Image;
 import controllers._BaseController;
-import models.Model_CProgramVersion;
-import models.Model_Garfield;
-import models.Model_Hardware;
-import models.Model_HardwareBatch;
+import models.*;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
-import utilities.hardware_registration_auhtority.Hardware_Registration_Authority;
-import utilities.hardware_registration_auhtority.DM_Board_Registration_Central_Authority;
 import utilities.logger.Logger;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.io.*;
+import java.util.Date;
 
 public class Label_62_mm_package {
 
@@ -30,20 +26,20 @@ public class Label_62_mm_package {
     private PdfContentByte contentByte;
     private Rectangle Label_65_mm_Antistatic_Package = new RectangleReadOnly(Utilities.millimetersToPoints(62), Utilities.millimetersToPoints(75));
 
-    Model_Hardware board = null;
+    Model_HardwareRegistrationEntity board = null;
     Model_HardwareBatch print_info = null;
+    Model_HardwareType print_type = null;
     Model_Garfield garfield = null;
 
-    public Label_62_mm_package(Model_Hardware board, Model_HardwareBatch batch, Model_Garfield garfield) throws IllegalArgumentException{
+    public Label_62_mm_package(Model_HardwareRegistrationEntity board, Model_HardwareBatch batch, Model_HardwareType print_type, Model_Garfield garfield) throws IllegalArgumentException{
 
         this.board = board;
         this.print_info = batch;
         this.garfield = garfield;
+        this.print_type = print_type;
 
-
-        Model_CProgramVersion test_version = Model_CProgramVersion.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_test").findOne();
-        Model_CProgramVersion production_version = Model_CProgramVersion.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_default").findOne();
-
+        Model_CProgramVersion test_version = print_type.test_program.default_main_version;
+        Model_CProgramVersion production_version = print_type.main_c_program.default_main_version;
 
         if (test_version == null) {
             terminal_logger.error("Label_62_mm_package:: Test Firmware is not set");
@@ -158,7 +154,7 @@ public class Label_62_mm_package {
         PdfPCell cell_Right = new PdfPCell();
 
             Paragraph p_code = new Paragraph("Code: ", bold);
-                      p_code.add(new Chunk(board.getHardwareType().name, regular));
+                      p_code.add(new Chunk(print_type.name, regular));
 
             Paragraph p_product = new Paragraph("Product Revision: ", bold);
                       p_product.add(new Chunk(print_info.revision , regular));
@@ -179,18 +175,21 @@ public class Label_62_mm_package {
 
 
             SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
-            String date = DATE_FORMAT.format(board.created);
+            System.out.println("časový formát:: " + board.created);
+            Long long_created = Long.parseLong(board.created);
+            System.out.println("časový formát long_created:: " + long_created);
+            Date date_c = new Date(long_created);
+            String date = DATE_FORMAT.format(date_c);
 
             Paragraph p_tested = new Paragraph("Tested: ", bold);
                       p_tested.add(new Chunk(date, regular));
 
 
-            board.getHardwareType().main_test_c_program();
+            print_type.main_test_c_program();
 
 
-        Model_CProgramVersion test_version = Model_CProgramVersion.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_test").findOne();
-        Model_CProgramVersion production_version = Model_CProgramVersion.find.query().where().eq("default_program.hardware_type.hardware.id", board.id).isNotNull("default_program.hardware_type_default").findOne();
-
+        Model_CProgramVersion test_version = print_type.test_program.default_main_version;
+        Model_CProgramVersion production_version = print_type.main_c_program.default_main_version;
 
             Paragraph p_test_version = new Paragraph("FW Test Version: ", bold);
                       p_test_version.add(new Chunk(test_version != null ? test_version.name : "Not Tracked ", regular));
@@ -243,13 +242,9 @@ public class Label_62_mm_package {
         Paragraph add_description = new Paragraph("Registration Hash ", bold);
         add_description.setAlignment(Element.ALIGN_MIDDLE);
 
-        // Mac Address ID
-        DM_Board_Registration_Central_Authority hw = Hardware_Registration_Authority.get_registration_hardware_from_central_authority_by_full_id(board.full_id);
-        if(hw == null) {
-            throw new Result_Error_NotFound(Model_Hardware.class);
-        }
+
         // QR Code for ADD
-        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(hw.hash_for_adding, 1000, 1000, null);
+        BarcodeQRCode barcodeQRCode = new BarcodeQRCode(board.hash_for_adding, 1000, 1000, null);
         Image codeQrImage = barcodeQRCode.getImage();
         codeQrImage.scaleAbsolute(50 , 50);
 
@@ -266,13 +261,13 @@ public class Label_62_mm_package {
         Paragraph p_code = new Paragraph("Processor ID ", bold);
                   p_code.setAlignment(Element.ALIGN_MIDDLE);
                   p_code.add( Chunk.NEWLINE );
-                  p_code.add(new Chunk(board.id.toString(), regular));
+                  p_code.add(new Chunk(board.full_id, regular));
                   table.addCell(p_code);
 
         // Left Cell 2
         Paragraph database_id = new Paragraph("Database ID ", bold);
                   database_id.add( Chunk.NEWLINE );
-                  database_id.add(new Chunk(board.id.toString(), regular));
+                  database_id.add(new Chunk(board.full_id, regular));
                   table.addCell(database_id);
 
         // Left Cell 3

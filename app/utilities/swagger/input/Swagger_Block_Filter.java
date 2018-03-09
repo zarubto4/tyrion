@@ -14,4 +14,7 @@ public class Swagger_Block_Filter {
 
     @ApiModelProperty(required = false, value = "Only for Admins with permissions")
     public boolean pending_blocks;
+
+    @ApiModelProperty(required = false, value = "Show - All Public Programs which are confirmed and approved.")
+    public boolean public_programs;
 }

@@ -59,17 +59,9 @@ public abstract class VersionModel extends NamedModel {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-
     @JsonIgnore @Override
     public void save() {
         super.save();
-    }
-
-/* BLOB DATA  ---------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore public String blob_version_link;
-    @JsonIgnore @Transient public String get_path() {
-        return  blob_version_link;
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/

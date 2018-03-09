@@ -12,7 +12,6 @@ public class WS_Message_Hardware_autobackup_made extends WS_AbstractMessage_Hard
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-
     @Constraints.Required public String build_id;
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/

@@ -18,7 +18,7 @@ public abstract class WS_AbstractMessage_Hardware {
     @Constraints.Required public String message_id;
     @Constraints.Required public String message_channel;
 
-    @Constraints.Required public String hardware_id;
+    @Constraints.Required public String full_id;
                           public String status = "error";
 
     public String error  = null;
@@ -26,6 +26,6 @@ public abstract class WS_AbstractMessage_Hardware {
 
     @JsonIgnore
     public Model_Hardware get_hardware() {
-        return Model_Hardware.getByFullId(hardware_id);
+        return Model_Hardware.getByFullId(full_id);
     }
 }

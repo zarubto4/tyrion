@@ -9,6 +9,7 @@ import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_overvie
 import websocket.messages.homer_with_tyrion.WS_Message_Homer_Hardware_list;
 
 import java.util.List;
+import java.util.UUID;
 
 
 public class Synchronize_Homer_Hardware_after_connection extends Thread{
@@ -44,7 +45,7 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                 return;
             }
 
-            List<String> device_ids_on_server = message_homer_hardware_list.hardware_ids;
+            List<String> device_ids_on_server = message_homer_hardware_list.full_ids;
             terminal_logger.info("4. Number of registered or connected Devices on Server:: {} ", device_ids_on_server.size());
             check_device_on_server(device_ids_on_server);
 
@@ -55,11 +56,11 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
         }
     }
 
-    public void check_device_on_server(List<String> device_ids_on_server) {
+    public void check_device_on_server(List<String> full_ids_on_server) {
 
-        for (String board_not_cached_id : device_ids_on_server) {
+        for (String full_id : full_ids_on_server) {
 
-            Model_Hardware board = Model_Hardware.getById(board_not_cached_id);
+            Model_Hardware board = Model_Hardware.getByFullId(full_id);
             if (board == null) continue;
 
             if (board.connected_server_id == null) {
@@ -83,7 +84,7 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
 
                 WS_Message_Hardware_connected connected = new WS_Message_Hardware_connected();
                 connected.status = overview.status;
-                connected.hardware_id = board.id;
+                connected.hardware_id = board.full_id;
                 Model_Hardware.device_Connected(connected);
 
             } else {

@@ -435,7 +435,7 @@ public class Model_Hardware extends TaggedModel {
                     // Začnu zjišťovat stav - v separátním vlákně!
                     new Thread(() -> {
                         try {
-                            write_without_confirmation(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(id)));
+                            write_without_confirmation(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(full_id)));
                         } catch (Exception e) {
                             logger.internalServerError(e);
                         }
@@ -774,7 +774,7 @@ public class Model_Hardware extends TaggedModel {
     }
 
     @JsonIgnore
-    public UUID get_id() {return id;}
+    public String get_full_id() {return full_id;}
 
     // Kontrola připojení - Echo o připojení
     @JsonIgnore
@@ -783,7 +783,7 @@ public class Model_Hardware extends TaggedModel {
 
             logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.hardware_id);
 
-            Model_Hardware device = Model_Hardware.getById(help.hardware_id);
+            Model_Hardware device = Model_Hardware.getByFullId(help.hardware_id);
 
             if (device == null) {
                 logger.warn("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.hardware_id);
@@ -791,7 +791,7 @@ public class Model_Hardware extends TaggedModel {
             }
 
             // Aktualizuji cache status online HW
-            cache_status.put(help.hardware_id, Boolean.TRUE);
+            cache_status.put(device.id, Boolean.TRUE);
 
             if (device.project_id() == null) {
                 logger.warn("device_Connected - hardware {} is not in project", device.id);
@@ -835,17 +835,17 @@ public class Model_Hardware extends TaggedModel {
         try {
 
 
-            Model_Hardware device =  Model_Hardware.getById(help.hardware_id);
+            Model_Hardware device =  Model_Hardware.getByFullId(help.full_id);
 
             if (device == null) {
-                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.hardware_id);
+                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.full_id);
                 return;
             }
 
-            logger.debug("master_device_Disconnected:: Updating device status " +  help.hardware_id + " on offline ");
+            logger.debug("master_device_Disconnected:: Updating device status " +  help.full_id + " on offline ");
 
             // CHACHE OFFLINE
-            cache_status.put(help.hardware_id, Boolean.FALSE);
+            cache_status.put(device.id, Boolean.FALSE);
 
 
             // Uprava Cache Paměti
@@ -865,7 +865,7 @@ public class Model_Hardware extends TaggedModel {
             // Záznam do DM databáze
             device.make_log_disconnect();
 
-            Model_Hardware.cache_status.put(help.hardware_id, false);
+            Model_Hardware.cache_status.put(device.id, false);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -877,12 +877,12 @@ public class Model_Hardware extends TaggedModel {
     public static void device_auto_backup_start_echo(WS_Message_Hardware_autobackup_making help) {
         try {
 
-            logger.debug("device_auto_backup_echo:: Device send Echo about making backup on device ID:: {} ", help.hardware_id);
+            logger.debug("device_auto_backup_echo:: Device send Echo about making backup on device ID:: {} ", help.full_id);
 
-            Model_Hardware device = Model_Hardware.getById(help.hardware_id);
+            Model_Hardware device = Model_Hardware.getByFullId(help.full_id);
 
             if (device == null) {
-                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.hardware_id);
+                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.full_id);
                 return;
             }
 
@@ -899,12 +899,12 @@ public class Model_Hardware extends TaggedModel {
     public static void device_auto_backup_done_echo(WS_Message_Hardware_autobackup_made help) {
         try {
 
-            logger.debug("device_auto_backup_done_echo:: Device send Echo about backup done on device ID:: {} ", help.hardware_id);
+            logger.debug("device_auto_backup_done_echo:: Device send Echo about backup done on device ID:: {} ", help.full_id);
 
-            Model_Hardware device = Model_Hardware.getById(help.hardware_id);
+            Model_Hardware device = Model_Hardware.getByFullId(help.full_id);
 
             if (device == null) {
-                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.hardware_id);
+                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.full_id);
                 return;
             }
             Model_CProgramVersion c_program_version = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", help.build_id).select("id").findOne();
@@ -965,9 +965,9 @@ public class Model_Hardware extends TaggedModel {
 
             UUID project_id = null;
 
-            for (String hardware_id : request.hardware_ids) {
+            for (String full_id : request.full_ids) {
 
-                Model_Hardware board =  Model_Hardware.getById(hardware_id);
+                Model_Hardware board =  Model_Hardware.getByFullId(full_id);
                 if (board == null) {
                     homer.send(request.get_result(false));
                     return;
@@ -1044,9 +1044,9 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
-    private static HashMap<UUID, List<UUID>> server_Separate(List<Model_Hardware> devices) {
+    private static HashMap<UUID, List<String>> server_Separate(List<Model_Hardware> devices) {
 
-        HashMap<UUID, List<UUID>> serverHashMap = new HashMap<>(); // < Model_HomerServer.id, List<Model_Board.id>
+        HashMap<UUID, List<String>> serverHashMap = new HashMap<>(); // < Model_HomerServer.id, List<Model_Board.id>
 
         // Separate Board Acording servers
         for (Model_Hardware device : devices) {
@@ -1058,7 +1058,7 @@ public class Model_Hardware extends TaggedModel {
             if (!serverHashMap.containsKey(device.connected_server_id)) {serverHashMap.put(device.connected_server_id, new ArrayList<>());}
 
             // Add to collection
-            serverHashMap.get(device.connected_server_id).add(device.id);
+            serverHashMap.get(device.connected_server_id).add(device.full_id);
         }
 
         return serverHashMap;
@@ -1156,7 +1156,7 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore @Transient public static WS_Message_Hardware_online_status get_devices_online_state(List<Model_Hardware> devices) {
 
         // Sepparate Device by servers
-        HashMap<UUID, List<UUID>> serverHashMap = server_Separate(devices);
+        HashMap<UUID, List<String>> serverHashMap = server_Separate(devices);
 
         // Create Server Parralell command
         HashMap<UUID, ObjectNode> request_collection = new HashMap<>();
@@ -1187,8 +1187,8 @@ public class Model_Hardware extends TaggedModel {
     public WS_Message_Hardware_overview_Board get_devices_overview() {
 
         WS_Message_Hardware_overview overview = get_devices_overview(Collections.singletonList(this));
-        if (overview.get_device_from_list(id) != null) {
-            return overview.get_device_from_list(id);
+        if (overview.get_device_from_list(full_id) != null) {
+            return overview.get_device_from_list(full_id);
         }
 
         return new WS_Message_Hardware_overview_Board();
@@ -1197,7 +1197,7 @@ public class Model_Hardware extends TaggedModel {
     public static WS_Message_Hardware_overview get_devices_overview(List<Model_Hardware> devices) {
 
         // Separate Device by servers
-        HashMap<UUID, List<UUID>> serverHashMap = server_Separate(devices);
+        HashMap<UUID, List<String>> serverHashMap = server_Separate(devices);
 
         // Create Server Parallel command
         HashMap<UUID, ObjectNode> request_collection = new HashMap<>();
@@ -1353,7 +1353,7 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public WS_Message_Hardware_change_server device_relocate_server(String mqtt_host, String mqtt_port) {
         try {
-            JsonNode node = write_with_confirmation( new WS_Message_Hardware_change_server().make_request(mqtt_host, mqtt_port, Collections.singletonList(this.id)), 1000 * 5, 0, 2);
+            JsonNode node = write_with_confirmation( new WS_Message_Hardware_change_server().make_request(mqtt_host, mqtt_port, Collections.singletonList(this.full_id)), 1000 * 5, 0, 2);
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_change_server.class, node);
 
         } catch (Exception e) {
@@ -1367,7 +1367,7 @@ public class Model_Hardware extends TaggedModel {
         try {
 
             // Sepparate Device by servers
-            HashMap<UUID, List<UUID>> serverHashMap = server_Separate(devices);
+            HashMap<UUID, List<String>> serverHashMap = server_Separate(devices);
 
             // Create Server Parralell command
             HashMap<UUID, ObjectNode> request_collection = new HashMap<>();
@@ -1573,7 +1573,7 @@ public class Model_Hardware extends TaggedModel {
                 }
 
                 if (!server_device_sort.containsKey(plan.getHardware().connected_server_id)) {
-                    server_device_sort.put(plan.getHardware().connected_server_id, new ArrayList<Model_HardwareUpdate>());
+                    server_device_sort.put(plan.getHardware().connected_server_id, new ArrayList<>());
                 }
 
                 if (Model_HomerServer.getById(plan.getHardware().connected_server_id).online_state() != NetworkStatus.ONLINE) {
@@ -1817,7 +1817,7 @@ public class Model_Hardware extends TaggedModel {
 
     /**
      * Pokud máme odchylku od databáze na hardwaru, to jest nesedí firmware_build_id na hW s tím co říká databáze
-     * @param overview
+     * @param overview object of WS_Message_Hardware_overview_Board
      */
     @JsonIgnore
     private void check_firmware(WS_Message_Hardware_overview_Board overview) {
@@ -2704,14 +2704,7 @@ public class Model_Hardware extends TaggedModel {
 
     public enum Permission {Hardware_create, Hardware_read, Hardware_update, Hardware_edit, Hardware_delete}
 
-    public static String generate_hash() {
-        String hash = "HW" + UUID.randomUUID().toString().replaceAll("[-]","").substring(0, 24);
-        if (Model_Hardware.find.query().where().eq("registration_hash", hash).findOne() != null) {
-            return generate_hash();
-        } else {
-            return hash;
-        }
-    }
+
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -2778,10 +2771,6 @@ public class Model_Hardware extends TaggedModel {
     @CacheField(value = Boolean.class, duration = 300, name ="Model_Hardware_Status")
     public static Cache<UUID, Boolean> cache_status;
 
-    public static Model_Hardware getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Hardware getById(UUID id) throws _Base_Result_Exception {
 
         Model_Hardware board = cache.get(id);
@@ -2804,7 +2793,7 @@ public class Model_Hardware extends TaggedModel {
      * @return
      */
     public static Model_Hardware getByFullId(String fullId) {
-         String id = (String) find.query().where().eq("full_id", fullId).eq("dominant_entity", true).select("id").getId();
+        UUID id = (UUID) find.query().where().eq("full_id", fullId).eq("dominant_entity", true).select("id").getId();
         return  getById(id);
     }
 

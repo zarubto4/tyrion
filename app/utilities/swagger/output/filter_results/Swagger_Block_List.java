@@ -23,10 +23,14 @@ public class Swagger_Block_List extends _Swagger_Filter_Common {
     public Swagger_Block_List(Query<Model_Block> query, int page_number) {
 
         if (page_number < 1) page_number = 1;
-        List<UUID> ids =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findIds();
+        List<Model_Block> uuids_o =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).select("id").findList();
 
-        for (UUID id : ids) {
+        List<UUID> uuids = new ArrayList<>();
+        for(Model_Block l : uuids_o) {
+            uuids.add(l.id);
+        }
 
+        for (UUID id : uuids) {
             Model_Block block = Model_Block.getById(id);
             this.content.add(block);
         }

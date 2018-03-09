@@ -390,7 +390,7 @@ public class Controller_Code extends _BaseController {
                 content.set("imported_libraries", Json.toJson(scheme_load_form.imported_libraries));
 
                 // Content se nahraje na Azure
-                Model_Blob.uploadAzure_Version(content.toString(), "code.json", c_program.get_path(), version);
+                version.file = Model_Blob.upload(content.toString(), "code.json", c_program.get_path());
                 version.update();
 
 
@@ -464,7 +464,7 @@ public class Controller_Code extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version.file;
 
-                Model_Blob.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program_new.get_path() ,  copy_object);
+                copy_object.file = Model_Blob.upload(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program_new.get_path());
                 copy_object.update();
 
                 copy_object.compile_program_thread(version.compilation.firmware_version_lib);
@@ -793,7 +793,7 @@ public class Controller_Code extends _BaseController {
             version.save();
 
             // Content se nahraje na Azure
-            Model_Blob.uploadAzure_Version(Json.toJson(help).toString(), "code.json" , c_program.get_path() ,  version);
+            version.file =  Model_Blob.upload(Json.toJson(help).toString(), "code.json" , c_program.get_path());
             version.update();
 
             // Start with asynchronous ccompilation
@@ -1037,7 +1037,7 @@ public class Controller_Code extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version_old.file;
 
-                Model_Blob.uploadAzure_Version(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program.get_path() ,  version);
+                version.file = Model_Blob.upload(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program.get_path());
                 version.update();
 
                 version.compile_program_thread(version_old.compilation.firmware_version_lib);

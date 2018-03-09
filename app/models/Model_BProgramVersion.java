@@ -34,9 +34,10 @@ public class Model_BProgramVersion extends VersionModel {
     @JsonIgnore @OneToMany(mappedBy = "example_library", cascade = CascadeType.ALL)  public List<Model_CProgram> examples = new ArrayList<>();
 
     @JsonIgnore @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)   public Model_BProgram b_program;
-    @JsonIgnore public String additional_configuration;
 
-    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "instance_versions") public List<Model_MProjectProgramSnapShot> b_program_version_snapshots = new ArrayList<>();    // Vazba kvůli puštěným B_programům
+    @JsonIgnore public String additional_json_configuration;
+
+    @OneToMany(mappedBy = "b_program_version", cascade = CascadeType.ALL) public List<Model_BProgramVersionSnapGridProject> grid_project_snapshots = new ArrayList<>();    // Vazba kvůli puštěným B_programům
 
     // B_Program - Instance
     @JsonIgnore @OneToMany(mappedBy="b_program_version", fetch = FetchType.LAZY) public List<Model_InstanceSnapshot> instances = new ArrayList<>();
@@ -151,6 +152,14 @@ public class Model_BProgramVersion extends VersionModel {
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient public String get_path() {
+        if(b_program != null) {
+            return b_program.get_path() + "/version/" + this.id;
+        }else {
+            return get_b_program().get_path() + "/version/" + this.id;
+        }
+    }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

@@ -98,7 +98,6 @@ public class Controller_Security extends _BaseController {
             if (token_type == TokenType.PERSON_TOKEN) {
 
                 Model_Person person = Model_Person.getByAuthToken(UUID.fromString(help.token));
-                if (person == null) return notFound("Token not found");
 
                 result.token = help.token;
                 result.available_requests = 50L;

@@ -538,6 +538,10 @@ public class Model_CProgramVersion extends VersionModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient public String get_path() {
+        return  c_program.get_path() + "/version/" + this.id;
+    }
+
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { c_program.check_update_permission();}

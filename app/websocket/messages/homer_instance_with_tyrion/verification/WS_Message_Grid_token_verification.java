@@ -6,6 +6,8 @@ import play.data.validation.Constraints;
 import play.libs.Json;
 import websocket.messages.common.abstract_class.WS_AbstractMessage_Instance;
 
+import java.util.UUID;
+
 public class WS_Message_Grid_token_verification extends WS_AbstractMessage_Instance {
 
     // MessageType
@@ -13,8 +15,8 @@ public class WS_Message_Grid_token_verification extends WS_AbstractMessage_Insta
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Constraints.Required public String token;
-    @Constraints.Required public String snapshot_id;
+    @Constraints.Required public UUID token;
+    @Constraints.Required public UUID grid_app_id;
 
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
