@@ -151,64 +151,83 @@ public class Model_Blob extends BaseModel {
         Model_Blob fileRecord = new Model_Blob();
         fileRecord.name = name;
         fileRecord.path = path + "/" + name;
+        logger.trace("Azure save total path: " +  fileRecord.path);
         fileRecord.save();
 
         return fileRecord;
     }
 
     @JsonIgnore
-    public static Model_Blob uploadAzure_File(File file, String file_name, String file_path) throws Exception{
+    public static Model_Blob upload(File file, String name, String path) throws Exception{
 
-        logger.debug("uploadAzure_File:: Azure upload: "+ file_path);
+        logger.debug("upload - path: {}", path);
 
-        String container_name = file_path.substring(0,file_path.indexOf("/"));
-        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
+        int slash = path.indexOf("/");
 
-        CloudBlockBlob blob = container.getBlockBlobReference(file_name);
+        CloudBlobContainer container = Server.blobClient.getContainerReference(path.substring(0, slash)); // Get container reference for container name from path
+        CloudBlockBlob blob = container.getBlockBlobReference(path.substring(slash + 1) + "/" + name); // Path after container
 
         InputStream is = new FileInputStream(file);
         blob.upload(is, -1);
 
         Model_Blob fileRecord = new Model_Blob();
-        fileRecord.name = file_name;
-        fileRecord.path = file_path;
+        fileRecord.name = name;
+        fileRecord.path = path + "/" + name;
+        logger.trace("Azure save total path: " +  fileRecord.path);
         fileRecord.save();
 
         return fileRecord;
     }
 
     @JsonIgnore
-    public static Model_Blob uploadAzure_File(String file, String contentType, String file_name, String file_path) throws Exception{
+    public static Model_Blob upload(byte[] file, String name, String path) throws Exception{
+
+        logger.debug("upload - path: {}", path);
+
+        int slash = path.indexOf("/");
+
+        CloudBlobContainer container = Server.blobClient.getContainerReference(path.substring(0, slash)); // Get container reference for container name from path
+        CloudBlockBlob blob = container.getBlockBlobReference(path.substring(slash + 1) + "/" + name); // Path after container
+
+        logger.trace("Azure save path: " + path );
+        logger.trace("Azure Container: " + blob.getName());
+
+        InputStream is = new ByteArrayInputStream(file);
+        blob.upload(is, -1);
+
+        Model_Blob fileRecord = new Model_Blob();
+        fileRecord.name = name;
+        fileRecord.path = path + "/" + name;
+
+        logger.trace("Azure save total path: " +  fileRecord.path);
+        fileRecord.save();
+
+        return fileRecord;
+    }
+
+    @JsonIgnore
+    public static Model_Blob upload(String file, String contentType, String name, String path) throws Exception{
 
         byte[] bytes = Model_Blob.get_decoded_binary_string_from_Base64(file);
 
-
-        logger.trace("Azure file path  ::" + file_path);
-        logger.trace("Azure file name  ::" + file_name);
+        logger.trace("Azure file path  ::" + path);
+        logger.trace("Azure file name  ::" + name);
         logger.trace("Azure contentType::" + contentType);
 
-        String container_name = file_path.substring(0,file_path.indexOf("/"));
-        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
+        int slash = path.indexOf("/");
 
-
-        int slash = file_path.indexOf("/");
-        String real_file_path = file_path.substring(slash+1);
-
-
-        // Opravil jsem zde nahrávání obrázků z HW stárnky a type of board stránky - pokud se to psorralo někde jinde
-        // tak bych to probral jestli to nejsednotit pomocí statických proměných celé flow nahrávání - ale myslím, že jsem podchytil všechny
-        // usecase
-
-        // Zde musí být plná cesta bez kontejneru!
-        CloudBlockBlob blob = container.getBlockBlobReference(real_file_path);
+        CloudBlobContainer container = Server.blobClient.getContainerReference(path.substring(0, slash)); // Get container reference for container name from path
+        CloudBlockBlob blob = container.getBlockBlobReference(path.substring(slash + 1) + "/" + name); // Path after container
 
         InputStream is = new ByteArrayInputStream(bytes);
         blob.getProperties().setContentType(contentType);
         blob.upload(is, -1);
 
         Model_Blob fileRecord = new Model_Blob();
-        fileRecord.name = file_name;
-        fileRecord.path = file_path;
+        fileRecord.name = name;
+        fileRecord.path = path + "/" + name;
+
+        logger.trace("Azure save total path: " +  fileRecord.path);
         fileRecord.save();
 
         return fileRecord;
@@ -231,32 +250,7 @@ public class Model_Blob extends BaseModel {
         }
     }
 
-    @JsonIgnore
-    public static Model_Blob create_Binary_file(String file_path, byte[] file_content, String file_name) throws Exception{
 
-        logger.debug("create_Binary_file:: Azure create_Binary_file: " + file_path +"/"+ file_name );
-
-        int slash = file_path.indexOf("/");
-        String container_name = file_path.substring(0,slash);
-        String real_file_path = file_path.substring(slash+1);
-
-        logger.trace("Azure save path: " + file_path );
-        logger.trace("Azure Container: " + container_name);
-        logger.trace("Real File  Path: " + real_file_path);
-
-        CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
-        CloudBlockBlob blob = container.getBlockBlobReference( real_file_path +"/" + file_name );
-
-        InputStream is = new ByteArrayInputStream(file_content);
-        blob.upload(is, -1);
-
-        Model_Blob fileRecord = new Model_Blob();
-        fileRecord.name = file_name;
-        fileRecord.path = file_path + "/" + file_name;
-        fileRecord.save();
-
-        return fileRecord;
-    }
 
     /**
      *  Metoda slouží k rekurzivnímu procháázení úrovně adresáře v Azure data storage a mazání jeho obsahu.

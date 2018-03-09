@@ -801,7 +801,7 @@ public class Controller_Hardware extends _BaseController {
             logger.debug("hardwareType_uploadPicture - File Name:: " + file_name );
             logger.debug("hardwareType_uploadPicture - File Path:: " + file_path );
 
-            hardwareType.picture  = Model_Blob.uploadAzure_File( parts[1], dataType[0], file_name , file_path);
+            hardwareType.picture  = Model_Blob.upload( parts[1], dataType[0], file_name , file_path);
             hardwareType.update();
             
             return ok();
@@ -1173,7 +1173,7 @@ public class Controller_Hardware extends _BaseController {
             logger.debug("bootLoader_uploadFile::  File Name " + file_name );
             logger.debug("bootLoader_uploadFile::  File Path " + file_path );
 
-            boot_loader.file = Model_Blob.uploadAzure_File( parts[1], content_type[0], file_name, file_path);
+            boot_loader.file = Model_Blob.upload( parts[1], content_type[0], file_name, file_path);
             boot_loader.update();
 
             // Nefungovalo to korektně občas - tak se to ukládá oboustraně!
@@ -2078,7 +2078,7 @@ public class Controller_Hardware extends _BaseController {
             String file_name = UUID.randomUUID().toString() + ".png";
             String file_path = hardware.getPath() + "/" + file_name;
 
-            hardware.picture = Model_Blob.uploadAzure_File(parts[1], dataType[0], file_name , file_path);
+            hardware.picture = Model_Blob.upload(parts[1], dataType[0], file_name , file_path);
             hardware.update();
 
             return ok(hardware.json());

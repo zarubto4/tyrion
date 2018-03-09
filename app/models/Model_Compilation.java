@@ -221,7 +221,7 @@ public class Model_Compilation extends BaseModel {
 
     @JsonIgnore @Transient
     public String get_path() {
-        return version.c_program.get_path() + version.get_path();
+        return version.get_path();
     }
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/

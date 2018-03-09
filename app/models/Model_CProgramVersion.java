@@ -465,7 +465,7 @@ public class Model_CProgramVersion extends VersionModel {
                     logger.trace("compile_program_procedure:: Body is ok - uploading to Azure");
 
                     // Daný soubor potřebuji dostat na Azure a Propojit s verzí
-                    this.compilation.blob = Model_Blob.create_Binary_file(this.compilation.get_path(), body, "firmware.bin");
+                    this.compilation.blob = Model_Blob.upload(body, "firmware.bin", this.compilation.get_path());
 
                     logger.trace("compile_program_procedure:: Body is ok - uploading to Azure was successful");
                     this.compilation.status = CompilationStatus.SUCCESS;

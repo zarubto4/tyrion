@@ -8,7 +8,6 @@ import org.quartz.JobExecutionException;
 import utilities.enums.ServerMode;
 import utilities.logger.Logger;
 import utilities.scheduler.Restrict;
-import utilities.scheduler.Scheduled;
 
 
 import java.io.File;
@@ -49,7 +48,7 @@ public class Job_LogAzureUpload implements Job {
 
                 String file_name = new Date().toString();
 
-                Model_Blob.uploadAzure_File(file, file_name, "logs/" + file_name);
+                Model_Blob.upload(file, file_name, "logs/" + file_name);
 
                 logger.debug("Job_LogAzureUpload:: log_upload_thread: log successfully uploaded");
 

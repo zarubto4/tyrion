@@ -1070,7 +1070,7 @@ public class Controller_Blocko extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.output.Swagger_Mobile_Connection_Summary",
+                            dataType = "utilities.swagger.input.Swagger_InstanceSnapShotConfiguration",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -1088,7 +1088,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Mobile_Connection_Summary help = baseFormFactory.formFromRequestWithValidation(Swagger_Mobile_Connection_Summary.class);
+            Swagger_InstanceSnapShotConfiguration help = baseFormFactory.formFromRequestWithValidation(Swagger_InstanceSnapShotConfiguration.class);
 
 
             // Hledám objekt

@@ -87,9 +87,7 @@ public class Model_BProgram extends TaggedModel {
         try {
 
             if (cache_version_ids == null || cache_version_ids.isEmpty()) {
-
                 cache_version_ids =  Model_BProgramVersion.find.query().where().eq("b_program.id", id).order().desc("created").findIds();
-
             }
 
             List<Model_BProgramVersion> versions  = new ArrayList<>();

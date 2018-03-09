@@ -294,7 +294,7 @@ public class Job_CheckCompilationLibraries implements Job {
                         logger.debug("check_version_thread:: bootLoader_uploadFile::  File Name " + file_name);
                         logger.debug("check_version_thread:: bootLoader_uploadFile::  File Path " + file_path);
 
-                        new_bootLoader.file = Model_Blob.uploadAzure_File(file_body, "application/octet-stream", file_name, file_path);
+                        new_bootLoader.file = Model_Blob.upload(file_body, "application/octet-stream", file_name, file_path);
                         new_bootLoader.save();
 
                         // Nefungovalo to korektně občas - tak se to ukládá oboustraně!

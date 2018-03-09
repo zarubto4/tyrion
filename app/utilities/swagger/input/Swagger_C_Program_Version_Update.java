@@ -21,6 +21,7 @@ public class Swagger_C_Program_Version_Update {
 
     @ApiModelProperty(required = false, value = "The Library Version tag_name from HardwareType.supported_libraries")
     @Constraints.MaxLength(value = 60)
+    @Constraints.Required
     public String library_compilation_version;
 
     @Constraints.Required

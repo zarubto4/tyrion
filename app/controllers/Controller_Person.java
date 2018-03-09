@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.*;
-import play.data.Form;
-import play.data.FormFactory;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
@@ -1050,7 +1048,7 @@ public class Controller_Person extends _BaseController {
             logger.debug("person_uploadPicture::  File Name " + file_name );
             logger.debug("person_uploadPicture::  File Path " + file_path );
 
-            person.picture = Model_Blob.uploadAzure_File( parts[1], content_type[0], file_name, file_path);
+            person.picture = Model_Blob.upload( parts[1], content_type[0], file_name, file_path);
             person.update();
 
 
