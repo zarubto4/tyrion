@@ -208,9 +208,6 @@ public class Model_Person extends BaseModel {
         if (cache_permissions_keys.isEmpty()) {
             for (Model_Permission m :  Model_Permission.find.query().where().eq("roles.persons.id", id).findList() ) cache_permission(m.name, true);
         }
-
-        logger.debug("has_permission - permissions: {}", Json.toJson(this.cache_permissions_keys));
-
         return this.cache_permissions_keys.containsKey(permission_key);
     }
 

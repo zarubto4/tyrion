@@ -776,7 +776,7 @@ public class Controller_Blocko extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "delete Instance",
+    @ApiOperation(value = "remove Instance",
             tags = {"Instance"},
             notes = "",
             protocols = "https"
@@ -1035,6 +1035,7 @@ public class Controller_Blocko extends _BaseController {
 
             // Tvorba parametru dotazu
             Query<Model_Instance> query = Ebean.find(Model_Instance.class);
+            query.where().eq("deleted", false);
 
             if (!help.instance_types.isEmpty() ) {
                 query.where().in("instance_type", help.instance_types);

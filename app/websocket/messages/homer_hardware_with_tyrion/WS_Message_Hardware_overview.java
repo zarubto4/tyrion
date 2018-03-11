@@ -48,7 +48,7 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
                 status.message_channel = super.message_channel;
                 status.message_id = super.message_id;
                 status.message_type = super.message_type;
-                status.websocket_identificator = super.websocket_identificator;
+                status.websocket_identificator = websocket_identificator;
                 map.put(status.full_id, status);
             }
         }

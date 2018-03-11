@@ -409,7 +409,7 @@ public class Model_Instance extends TaggedModel {
             request.put("error_code", ErrorCode.HOMER_SERVER_NOT_SET_FOR_INSTANCE.error_code());
             request.put("error_message", ErrorCode.HOMER_SERVER_NOT_SET_FOR_INSTANCE.error_message());
             request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
-            request.put("websocket_identificator", "unknown");
+            request.put("websocket_identificator", "00000000-0000-4000-A000-000000000000");
 
             return request;
         }
@@ -425,7 +425,7 @@ public class Model_Instance extends TaggedModel {
             request.put("error_code", ErrorCode.HOMER_NOT_EXIST.error_code());
             request.put("error_message", ErrorCode.HOMER_NOT_EXIST.error_message());
             request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
-            request.put("websocket_identificator", "unknown");
+            request.put("websocket_identificator", "00000000-0000-4000-A000-000000000000");
 
             return request;
         }

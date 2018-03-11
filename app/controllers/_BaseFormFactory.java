@@ -72,6 +72,7 @@ public class _BaseFormFactory extends FormFactory {
         Form<T> bind =  form.bind(jsonNode);
 
         if (bind.hasErrors()){
+            logger.error("formFromJsonWithValidation::InvalidBody::JsonFor ParserControl:: {}", jsonNode.toString());
             logger.error("formFromJsonWithValidation::InvalidBody::ErrorList::{}", bind.errorsAsJson(Lang.forCode("en-US")).toString());
             throw new Result_Error_InvalidBody(bind.errorsAsJson());
         }
@@ -94,7 +95,7 @@ public class _BaseFormFactory extends FormFactory {
         Form<T> bind =  form.bind(jsonNode);
 
         if (bind.hasErrors()){
-
+            logger.error("formFromJsonWithValidation::InvalidBody::JsonFor ParserControl:: {}", jsonNode.toString());
             logger.error("formFromJsonWithValidation::InvalidBody::ErrorList::{}", bind.errorsAsJson(Lang.forCode("en-US")).toString());
             ObjectNode error = (ObjectNode) new ObjectMapper().readTree(jsonNode.asText());
 
@@ -127,7 +128,7 @@ public class _BaseFormFactory extends FormFactory {
         Form<T> bind =  form.bind(jsonNode);
 
         if (bind.hasErrors()){
-
+            logger.error("formFromJsonWithValidation::InvalidBody::JsonFor ParserControl:: {}", jsonNode.toString());
             logger.error("formFromJsonWithValidation::InvalidBody::ErrorList::{}", bind.errorsAsJson(Lang.forCode("en-US")).toString());
             ObjectNode error = (ObjectNode) new ObjectMapper().readTree(jsonNode.asText());
 

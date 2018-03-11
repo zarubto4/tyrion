@@ -1,6 +1,7 @@
 package websocket.messages.compilator_with_tyrion;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.Model_CompilationServer;
 import models.Model_HardwareType;

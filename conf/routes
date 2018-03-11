@@ -223,6 +223,7 @@ PUT       /b_program/tags/remove                                        controll
 
 #Instance
 POST      /instance                                                     controllers.Controller_Blocko.instance_create
+DELETE    /instance/:instance_id                                        controllers.Controller_Blocko.instance_delete(instance_id: java.util.UUID)
 GET       /instance/:instance_id                                        controllers.Controller_Blocko.instance_get(instance_id: java.util.UUID)
 PUT       /instance/:instance_id                                        controllers.Controller_Blocko.instance_update(instance_id: java.util.UUID)
 PUT       /instance/tags/add                                            controllers.Controller_Blocko.instance_addTags

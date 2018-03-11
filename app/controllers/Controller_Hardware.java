@@ -1414,7 +1414,7 @@ public class Controller_Hardware extends _BaseController {
             hash.hash = hw.hash_for_adding;
 
             // Vracím seznam zařízení k registraci
-            return created(Json.toJson(hash));
+            return ok(Json.toJson(hash));
 
         } catch (Exception e) {
             return controllerServerError(e);

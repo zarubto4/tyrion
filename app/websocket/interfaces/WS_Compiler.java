@@ -74,7 +74,6 @@ public class WS_Compiler extends WS_Interface {
         logger.trace("make_Compilation Start");
         // Odpověd
         ObjectNode response_one = super.sendWithResponse(message);
-
         logger.trace("make_Compilation: We have Response {}", response_one);
 
         if (!response_one.has("status") || ( response_one.has("status") && !response_one.get("status").asText().equals("success"))) {
@@ -109,8 +108,6 @@ public class WS_Compiler extends WS_Interface {
             }
         }
 
-
-
         UUID build_id = UUID.fromString(response_one.get("build_id").asText());
         response_one.put("message_id", build_id.toString());
 
@@ -120,7 +117,7 @@ public class WS_Compiler extends WS_Interface {
 
         logger.trace("make_Compilation:: IDENTIFICATOR:: {} Message is registered in Buffer under build_id:: {} ", id, build_id);
         ObjectNode response_two = get_compilation.send();
-        response_two.put("interface_code", response_one.get("interface_code").asText());
+        response_two.put("interface_code", response_one.get("interface_code").toString());
         response_two.put("build_id", build_id.toString());
 
         logger.debug("make_Compilation:: MESSAGE ABOUT BUILD IS DONE:: {} ", response_two);

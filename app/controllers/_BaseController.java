@@ -6,17 +6,20 @@ import models.Model_Person;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 import responses.*;
 import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
+import utilities.server_measurement.RequestLatency;
 import utilities.swagger.input.Swagger_Project_New;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -161,6 +164,7 @@ public abstract class _BaseController {
      * @return 200 result ok with json
      */
     public static Result ok(JsonNode json) {
+        check_latency();
         return Controller.ok(json);
     }
 
@@ -180,6 +184,7 @@ public abstract class _BaseController {
      * @return
      */
     public static Result ok(File file) {
+        check_latency();
         return Controller.ok(file);
     }
 
@@ -481,4 +486,20 @@ public abstract class _BaseController {
         ServerLogger.error(error, current_stack.getClassName() + "::" + current_stack.getMethodName(), Controller.request());
         return Controller.internalServerError(Json.toJson(new Result_InternalServerError()));
     }
+
+    //**********************************************************************************************************************
+
+    public static void check_latency(){
+        try{
+            if(Http.Context.current().args.containsKey("tyrion_response_measurement_time")){
+                RequestLatency.count_end( (String) Http.Context.current().args.get("tyrion_response_measurement_method"), (String) Http.Context.current().args.get("tyrion_response_measurement_path"), ( new Date().getTime() - (long) Http.Context.current().args.get("tyrion_response_measurement_time")));
+            }
+        }catch (Exception e){
+            logger.internalServerError(e);
+        }
+    }
+
+
+    //**********************************************************************************************************************
+
 }

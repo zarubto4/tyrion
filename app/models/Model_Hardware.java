@@ -1071,13 +1071,14 @@ public class Model_Hardware extends TaggedModel {
         // Response with Error Message
         if (this.connected_server_id == null) {
 
+            logger.warn("write_with_confirmation- Try to send request on Hardware, but connected_server_id is empty!");
             ObjectNode request = Json.newObject();
             request.put("message_type", json.get("message_type").asText());
             request.put("message_channel", Model_Hardware.CHANNEL);
             request.put("error_code", ErrorCode.HOMER_SERVER_NOT_SET_FOR_HARDWARE.error_code());
             request.put("error_message", ErrorCode.HOMER_SERVER_NOT_SET_FOR_HARDWARE.error_message());
             request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
-            request.put("websocket_identificator", "unknown");
+            request.put("websocket_identificator", "00000000-0000-4000-A000-000000000000");
 
             return request;
         }
@@ -1096,7 +1097,7 @@ public class Model_Hardware extends TaggedModel {
             request.put("error_code", ErrorCode.HOMER_NOT_EXIST.error_code());
             request.put("error_message", ErrorCode.HOMER_NOT_EXIST.error_message());
             request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
-            request.put("websocket_identificator", "unknown");
+            request.put("websocket_identificator", "00000000-0000-4000-A000-000000000000");
 
             return request;
         }
