@@ -85,7 +85,9 @@ public class Controller_Admin extends _BaseController {
     public Result report_admin_dashboard() {
         try {
 
-            person().is_admin();
+            if(!person().is_admin()) {
+                return forbidden();
+            }
 
             Swagger_Report_Admin_Dashboard report = new Swagger_Report_Admin_Dashboard();
 
@@ -127,7 +129,9 @@ public class Controller_Admin extends _BaseController {
     public Result serverError_getAll() {
         try {
 
-            person().is_admin();
+            if(!person().is_admin()) {
+                return forbidden();
+            }
 
             List<Model_ServerError> errors = Model_ServerError.find.all();
 
@@ -193,6 +197,7 @@ public class Controller_Admin extends _BaseController {
     @BodyParser.Of(BodyParser.Json.class)
     public Result serverError_addDescription(@ApiParam(value = "bug_id String path", required = true) String bug_id) {
         try {
+
 
             // Get and Validate Object
             Swagger_Bug_Description help  = baseFormFactory.formFromRequestWithValidation(Swagger_Bug_Description.class);
@@ -279,6 +284,11 @@ public class Controller_Admin extends _BaseController {
     })
     public Result serverError_deleteAll() {
         try {
+
+            if(!person().is_admin()) {
+                return forbidden();
+            }
+
             List<Model_ServerError> errors = Model_ServerError.find.all();
 
             if (!errors.isEmpty()) {
@@ -381,6 +391,10 @@ public class Controller_Admin extends _BaseController {
     })
     public Result server_getUpdates() {
         try {
+
+            if(!person().is_admin()) {
+                return forbidden();
+            }
 
             logger.debug("server_getUpdates - requesting releases");
 

@@ -15,6 +15,7 @@ import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheField;
+import utilities.cache.Cached;
 import utilities.document_db.document_objects.DM_HomerServer_Connect;
 import utilities.document_db.document_objects.DM_HomerServer_Disconnect;
 import utilities.enums.HomerType;
@@ -80,17 +81,19 @@ public class Model_HomerServer extends TaggedModel {
     public boolean interactive;
     public LogLevel log_level;
 
+    @JsonIgnore @OneToMany(mappedBy = "server_main", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Instance> instances = new ArrayList<>();
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "server_main", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    public List<Model_Instance> instances = new ArrayList<>();
+
+/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient @Cached private UUID cache_project_id;
+
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
     @JsonProperty
     public NetworkStatus online_state() {
-
         return Controller_WebSocket.homers.containsKey(id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
     }
 
@@ -117,6 +120,21 @@ public class Model_HomerServer extends TaggedModel {
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient public UUID get_project_id() throws _Base_Result_Exception  {
+
+    if (cache_project_id == null) {
+        Model_Project project = Model_Project.find.query().where().eq("servers.id", id).select("id").findOne();
+        if (project == null) return null;
+        cache_project_id = project.id;
+    }
+
+    return cache_project_id;
+}
+
+    @JsonIgnore @Transient public Model_Project get_project() throws _Base_Result_Exception  {
+        return  Model_Project.getById(get_project_id());
+    }
 
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -180,7 +198,7 @@ public class Model_HomerServer extends TaggedModel {
 
             for (Object unique_identificator_help : Model_HomerServer.find.query().where().eq("server_type", HomerType.PUBLIC).findIds()) {
 
-                Integer actual_Server_count = Model_Instance.find.query().where().eq("cloud_homer_server.id", server_id).findCount();
+                Integer actual_Server_count = Model_Instance.find.query().where().eq("server_main.id", server_id).findCount();
 
                 if (actual_Server_count == 0) {
                     server_id = unique_identificator_help.toString();
@@ -217,7 +235,7 @@ public class Model_HomerServer extends TaggedModel {
 
                 for (Object unique_identificator_help : Model_HomerServer.find.query().where().eq("server_type", HomerType.PUBLIC).findIds()) {
 
-                    Integer actual_Server_count = Model_Instance.find.query().where().eq("cloud_homer_server.id", server_id).findCount();
+                    Integer actual_Server_count = Model_Instance.find.query().where().eq("server_main.id", server_id).findCount();
 
                     if (actual_Server_count == 0) {
                         server_id = unique_identificator_help.toString();
@@ -373,7 +391,7 @@ public class Model_HomerServer extends TaggedModel {
                 }
 
                 if (homer_server.server_type.equals(HomerType.PRIVATE)) {
-                    throw new Exception("approve_validation_for_homer_server - TODO private server!!!");
+                    WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerServer.class,homer_server.id, true, homer_server.get_project_id());
                 }
 
                 return;
@@ -665,7 +683,10 @@ public class Model_HomerServer extends TaggedModel {
             cache.put(id, server);
         }
 
-        server.check_read_permission();
+        if(server.its_person_operation()) {
+            server.check_read_permission();
+        }
+
         return server;
     }
 

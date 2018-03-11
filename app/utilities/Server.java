@@ -22,6 +22,9 @@ import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 import utilities.model.BaseModel;
+import utilities.models_update_echo.EchoHandler;
+import utilities.notifications.NotificationHandler;
+import utilities.scheduler.jobs.Job_CheckCompilationLibraries;
 import utilities.threads.homer_server.Synchronize_Homer_Synchronize_Settings;
 import websocket.interfaces.WS_Homer;
 import websocket.interfaces.WS_Portal;
@@ -133,6 +136,7 @@ public class Server {
 
         setBaseForm();
         setConfigurationInjectorForNonStaticClass();
+        startThreads();
     }
 
     /**
@@ -140,8 +144,18 @@ public class Server {
      */
     public static void stop() {
         ServerCache.close();
-
         Controller_WebSocket.close();
+    }
+
+
+    /**
+     * Some Threads are required to start on beginin. Thay have implemented sleep and wake up mode
+     */
+    public static void startThreads() {
+        EchoHandler.startThread();
+        NotificationHandler.startThread();
+       // GoPay_PaymentCheck.startThread();
+       // Fakturoid_InvoiceCheck.startThread();
     }
 
     /**
@@ -434,6 +448,7 @@ public class Server {
         WS_Portal.baseFormFactory                       = Server.injector.getInstance(_BaseFormFactory.class);
         Model_HardwareRegistrationEntity.baseFormFactory= Server.injector.getInstance(_BaseFormFactory.class);
         Model_InstanceSnapshot.baseFormFactory          = Server.injector.getInstance(_BaseFormFactory.class);
+        Job_CheckCompilationLibraries.baseFormFactory   = Server.injector.getInstance(_BaseFormFactory.class);
     }
 
     /**

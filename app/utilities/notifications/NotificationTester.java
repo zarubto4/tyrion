@@ -2,6 +2,7 @@ package utilities.notifications;
 
 import com.google.inject.Inject;
 import controllers._BaseController;
+import controllers._BaseFormFactory;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
@@ -16,6 +17,7 @@ import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Link;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.swagger.input.Swagger_C_Program_Version_Update;
 import utilities.swagger.input.Swagger_Notification_Test;
 
 import java.util.Date;
@@ -30,11 +32,12 @@ public class NotificationTester extends _BaseController {
 
     private static final Logger terminal_logger = new Logger(NotificationTester.class);
 
-    private FormFactory formFactory;
+    @Inject
+    public static _BaseFormFactory baseFormFactory;
 
     @Inject
-    public NotificationTester(FormFactory formFactory) {
-        this.formFactory = formFactory;
+    public NotificationTester(_BaseFormFactory formFactory) {
+        this.baseFormFactory = formFactory;
     }
 
 /*  VALUES -------------------------------------------------------------------------------------------------------------*/
@@ -43,6 +46,10 @@ public class NotificationTester extends _BaseController {
     @Security.Authenticated(Authentication.class)
     public Result test_chain_notifications(String mail) {
         try {
+
+            if(!person().is_admin()) {
+                return forbidden();
+            }
 
             terminal_logger.debug("test_chain_notifications - email: {}", mail);
 
@@ -142,7 +149,7 @@ public class NotificationTester extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -151,10 +158,15 @@ public class NotificationTester extends _BaseController {
     public Result test_notifications() {
         try {
 
+            if(!person().is_admin()) {
+                return forbidden();
+            }
+
             terminal_logger.debug("test_notifications - test");
-            final Form<Swagger_Notification_Test> form = formFactory.form(Swagger_Notification_Test.class).bindFromRequest();
-            if (form.hasErrors()) {return invalidBody(form.errorsAsJson());}
-            Swagger_Notification_Test help = form.get();
+
+            // Get and Validate Object
+            Swagger_Notification_Test help  = baseFormFactory.formFromRequestWithValidation(Swagger_Notification_Test.class);
+
 
             Model_Person person = Model_Person.getByEmail(help.mail);
             if (person == null) return notFound("Person not found");
@@ -163,7 +175,7 @@ public class NotificationTester extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 

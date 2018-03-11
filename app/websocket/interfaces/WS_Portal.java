@@ -31,6 +31,7 @@ public class WS_Portal {
 
     public WS_Portal(UUID person_id) {
         this.person_id = person_id;
+        logger.trace("WS_Portal:new - add Object to Controller_WebSocket.portals by ID {} ", person_id);
         Controller_WebSocket.portals.put(person_id, this);
     }
 
@@ -41,7 +42,8 @@ public class WS_Portal {
 
 
     public void send(ObjectNode message) {
-        all_person_connections.forEach((id, single) -> single.send(message));
+        logger.debug("send: message: To all ( {} )   person connection {} ", this.all_person_connections.size(), message);
+        this.all_person_connections.forEach((id, single) -> single.send(message));
     }
 
 
@@ -125,12 +127,13 @@ public class WS_Portal {
             logger.trace("becki_subscribe_notification:: Content:: {}", json.toString());
             WS_Message_Subscribe_Notifications subscribe_notifications = baseFormFactory.formFromJsonWithValidation(ws, WS_Message_Subscribe_Notifications.class, json);
 
-            WS_PortalSingle single_connection = all_person_connections.get( subscribe_notifications.single_connection_token);
-            single_connection.notification_subscriber = true;
+            logger.trace("becki_subscribe_notification:: Subscribe Token: {}", subscribe_notifications.single_connection_token);
+            logger.trace("becki_subscribe_notification:: All In Map Token size: {}", this.all_person_connections.size());
+                    ws.notification_subscriber = true;
 
             Model_Project.becki_person_id_subscribe(person_id);
 
-            single_connection.send(WS_Message_Subscribe_Notifications.approve_result(subscribe_notifications.message_id));
+            ws.send(WS_Message_Subscribe_Notifications.approve_result(subscribe_notifications.message_id));
 
         }catch (Exception e){
             logger.internalServerError(e);
@@ -143,12 +146,12 @@ public class WS_Portal {
             logger.trace("becki_unsubscribe_notification:: Content:: {}", json.toString());
             WS_Message_UnSubscribe_Notifications un_subscribe_notifications = baseFormFactory.formFromJsonWithValidation(ws, WS_Message_UnSubscribe_Notifications.class, json);
 
-            WS_PortalSingle single_connection = all_person_connections.get(un_subscribe_notifications.single_connection_token);
-            single_connection.notification_subscriber = false;
+            logger.trace("becki_subscribe_notification:: UNSubscribe Token: {}", un_subscribe_notifications.single_connection_token);
+            ws.notification_subscriber = false;
 
             Model_Project.becki_person_id_unsubscribe(person_id);
 
-            single_connection.send(WS_Message_UnSubscribe_Notifications.approve_result(un_subscribe_notifications.message_id));
+            ws.send(WS_Message_UnSubscribe_Notifications.approve_result(un_subscribe_notifications.message_id));
 
         }catch (Exception e){
             logger.internalServerError(e);

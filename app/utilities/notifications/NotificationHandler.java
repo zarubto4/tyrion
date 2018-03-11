@@ -149,8 +149,11 @@ public class NotificationHandler {
 
                     // Send notification to all user's websocket connections
                     if (Controller_WebSocket.portals.containsKey(person_id)) {
+                        logger.debug("sendNotification: Controller_WebSocket.portals contain person_id: {} " , person_id);
                         WS_Portal portal = Controller_WebSocket.portals.get(person_id);
                         portal.send(message);
+                    }else {
+                        logger.debug("sendNotification: Controller_WebSocket.portals NOT contain person_id: {} " , person_id);
                     }
 
                 } catch (NullPointerException e) {

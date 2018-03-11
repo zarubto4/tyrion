@@ -297,7 +297,7 @@ public abstract class BaseModel extends Model {
      * Just a idea..
       * @return
      */
-    @JsonIgnore private boolean its_person_operation() {
+    @JsonIgnore public boolean its_person_operation() {
         try {
             return  _BaseController.isAuthenticated();
         }catch (Exception e){

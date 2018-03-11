@@ -1046,7 +1046,7 @@ public class Controller_Blocko extends _BaseController {
             }
 
             if (!help.server_unique_ids.isEmpty()) {
-                query.where().in("cloud_homer_server.id", help.server_unique_ids);
+                query.where().in("server_main.id", help.server_unique_ids);
             }
 
             // Vytvářím seznam podle stránky

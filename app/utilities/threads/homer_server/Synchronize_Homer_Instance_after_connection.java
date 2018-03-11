@@ -87,24 +87,16 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
     private List<UUID> required_instance_on_server() {
 
         // Vylistuji si seznam instnancí, které by měli běžet na serveru
-        List<Model_Instance> instances_in_database_for_uploud = new ArrayList<>();
 
         // Přidám všechny reálné instance, které mají běžet.
-        instances_in_database_for_uploud.addAll(
-                Model_Instance.find.query().where()
-                        .eq("cloud_homer_server.id", homer.id)
-                        .ne("deleted", true)
-                        .isNotNull("actual_instance")
-                        .select("id")
-                        .findList());
+        List<UUID> instances_in_database_for_upload = Model_Instance.find.query().where()
+                .eq("server_main.id", homer.id)
+                .eq("deleted", false)
+                .isNotNull("current_snapshot_id")
+                .select("id")
+                .findSingleAttributeList();
 
-        List<UUID> instance_ids = new ArrayList<>();
-
-        for (Model_Instance homerInstance : instances_in_database_for_uploud) {
-            instance_ids.add(homerInstance.id);
-        }
-
-        return instance_ids;
+        return instances_in_database_for_upload;
     }
 
     private List<UUID> actual_on_server() throws InterruptedException{

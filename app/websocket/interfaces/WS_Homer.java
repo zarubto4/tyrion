@@ -105,7 +105,11 @@ public class WS_Homer extends WS_Interface {
         Controller_WebSocket.homers_not_sync.remove(this.id);
         Controller_WebSocket.homers.remove(this.id);
 
-        Model_HomerServer.getById(this.id).is_disconnect();
+        try {
+            Model_HomerServer.getById(this.id).is_disconnect();
+        }catch (Exception e){
+            // Nothing - Server is maybe removed - so getById made a NotFound Exception
+        }
     }
 
     public void verificationSuccess(String message_id) {

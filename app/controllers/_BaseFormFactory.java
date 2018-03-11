@@ -52,8 +52,10 @@ public class _BaseFormFactory extends FormFactory {
         Form<T> bind = form.bindFromRequest();
 
         if (bind.hasErrors()){
-            logger.error("formFromRequestWithValidation::InvalidBody::ErrorList::{}", bind.errorsAsJson());
-            throw new Result_Error_InvalidBody(bind.errorsAsJson());
+            logger.error("formFromJsonWithValidation::InvalidBody::JsonFor ParserControl:: {}", bind.toString());
+            JsonNode node_errors = bind.errorsAsJson(Lang.forCode("en-US"));
+            logger.error("formFromJsonWithValidation::InvalidBody::ErrorList::{}", node_errors.toString());
+            throw new Result_Error_InvalidBody(node_errors);
         }
 
         return bind.get();
@@ -74,7 +76,7 @@ public class _BaseFormFactory extends FormFactory {
         if (bind.hasErrors()){
             logger.error("formFromJsonWithValidation::InvalidBody::JsonFor ParserControl:: {}", jsonNode.toString());
             logger.error("formFromJsonWithValidation::InvalidBody::ErrorList::{}", bind.errorsAsJson(Lang.forCode("en-US")).toString());
-            throw new Result_Error_InvalidBody(bind.errorsAsJson());
+            throw new Result_Error_InvalidBody(bind.errorsAsJson(Lang.forCode("en-US")));
         }
 
         return bind.get();

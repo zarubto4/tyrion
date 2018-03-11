@@ -4,6 +4,7 @@ package utilities.financial.fakturoid;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
+import controllers._BaseFormFactory;
 import models.Model_PaymentDetails;
 import models.Model_Product;
 import models.Model_Invoice;
@@ -24,6 +25,7 @@ import utilities.enums.PaymentStatus;
 import utilities.enums.PaymentWarning;
 import utilities.logger.Logger;
 import utilities.swagger.input.Swagger_Fakturoid_Callback;
+import utilities.swagger.input.Swagger_GitHubReleases_List;
 
 import java.time.Duration;
 import java.util.Calendar;
@@ -39,12 +41,12 @@ public class Fakturoid extends Controller {
     // Logger
     private static final Logger logger = new Logger(Fakturoid.class);
 
-    private FormFactory formFactory;
+    private _BaseFormFactory baseFormFactory;
     private WSClient ws;
 
     @Inject
-    public Fakturoid(FormFactory formFactory, WSClient ws, Fakturoid_InvoiceCheck invoiceCheck) {
-        this.formFactory = formFactory;
+    public Fakturoid(_BaseFormFactory formFactory, WSClient ws, Fakturoid_InvoiceCheck invoiceCheck) {
+        this.baseFormFactory = formFactory;
         this.ws = ws;
     }
 
@@ -60,10 +62,8 @@ public class Fakturoid extends Controller {
     public Result fakturoid_callback() {
         try {
 
-            // Binding Json with help object
-            final Form<Swagger_Fakturoid_Callback> form = formFactory.form(Swagger_Fakturoid_Callback.class).bindFromRequest();
-            if (form.hasErrors()) throw new Exception("Error binding Json from Fakturoid: " + form.errorsAsJson().toString());
-            Swagger_Fakturoid_Callback help = form.get();
+            // Get and Validate Object
+            Swagger_Fakturoid_Callback help = baseFormFactory.formFromRequestWithValidation(Swagger_Fakturoid_Callback.class);
 
             logger.warn("fakturoid_callback: Body: {}", request().body().asJson());
 
@@ -851,10 +851,9 @@ public class Fakturoid extends Controller {
 
                         logger.debug("checkInvoice: GET: Result: {}", result.toString());
 
-                        // Binding Json with help object
-                        final Form<Fakturoid_ResponseInvoice> form = formFactory.form(Fakturoid_ResponseInvoice.class).bind(result);
-                        if (form.hasErrors()) throw new Exception("Error binding Json from Fakturoid: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-                        Fakturoid_ResponseInvoice help = form.get();
+                        // Get and Validate Object
+                        Fakturoid_ResponseInvoice help = baseFormFactory.formFromJsonWithValidation(Fakturoid_ResponseInvoice.class, response.asJson());
+
 
                         // If it has related_id of new invoice, get the new invoice and update our DB
                         if (invoice.proforma && help.related_id != null) {
@@ -891,10 +890,8 @@ public class Fakturoid extends Controller {
 
                                         case 200: {
 
-                                            // Binding Json with help object
-                                            final Form<Fakturoid_ResponseInvoice> form2 = formFactory.form(Fakturoid_ResponseInvoice.class).bind(result2);
-                                            if (form2.hasErrors()) throw new Exception("Error binding Json from Fakturoid: " + form2.errorsAsJson().toString());
-                                            Fakturoid_ResponseInvoice help2 = form2.get();
+                                            // Get and Validate Object
+                                            Fakturoid_ResponseInvoice help2 = baseFormFactory.formFromJsonWithValidation(Fakturoid_ResponseInvoice.class, result2);
 
                                             logger.debug("checkInvoice: local proforma id: {}, from request proforma id: {}", invoice.proforma_id, help2.related_id);
                                             logger.debug("checkInvoice: local invoice id: {}, from request invoice id: {}", help.related_id, help2.id);

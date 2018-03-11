@@ -20,6 +20,7 @@ import utilities.enums.CompilationStatus;
 import utilities.enums.HomerType;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.homer_auto_deploy.DigitalOceanTyrionService;
+import utilities.homer_auto_deploy.SelfDeployedThreadRegister;
 import utilities.homer_auto_deploy.models.common.Swagger_ServerRegistration_FormData;
 import utilities.logger.Logger;
 import utilities.swagger.input.Swagger_CompilationServer_New;
@@ -189,6 +190,8 @@ public class Controller_ExternalServer extends _BaseController {
 
             // Uložení objektu
             server.save();
+
+            new SelfDeployedThreadRegister(server).start();
 
             // Vrácení objektu
             return created(server.json());

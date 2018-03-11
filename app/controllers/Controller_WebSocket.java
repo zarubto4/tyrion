@@ -161,7 +161,7 @@ public class Controller_WebSocket extends _BaseController {
                         }
                     }
 
-                    logger.info("homer - connection was successful");
+                    logger.info("homer - connection was successful. Server {}", homer.name);
                     return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_Homer.props(actorRef, homer.id), actorSystem, materializer)));
 
                 } else {
@@ -218,27 +218,29 @@ public class Controller_WebSocket extends _BaseController {
     }
 
     @ApiOperation(value = "Portal Server Connection", hidden = true, tags = {"WebSocket"})
-    public WebSocket portal(String token_in_string) {
+    public WebSocket portal(UUID token) {
         return WebSocket.Json.acceptOrResult(request -> {
             try {
-                UUID token = UUID.fromString(token_in_string);
 
                 logger.trace("portal - incoming connection: {}", token);
 
-                Model_Person person;
+                Model_Person person = Model_Person.getById(tokenCache.get(token));
 
                 if (sameOriginCheck(request)) {
 
-                    if (tokenCache.containsKey(token) && (person = Model_Person.getById(tokenCache.get(token))) != null) {
+                    if (tokenCache.containsKey(token) && person != null) {
 
                         WS_Portal portal;
 
                         if (portals.containsKey(person.id)) {
+                            logger.trace("portal - User {} is already connected somewhere else", person.nick_name);
                             portal = portals.get(person.id);
                         } else {
+                            logger.trace("portal - User {} its first connection!", person.nick_name);
                             portal =  new WS_Portal(person.id);
                         }
 
+                        // Remove Token from Cache
                         tokenCache.remove(token);
 
                         if (!portal.all_person_connections.containsKey(token)) {

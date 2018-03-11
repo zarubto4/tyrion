@@ -842,7 +842,9 @@ public class Model_Project extends TaggedModel {
             cache.put(id, project);
         }
 
-        project.check_read_permission();
+        if(project.its_person_operation()) {
+            project.check_read_permission();
+        }
 
         return project;
     }

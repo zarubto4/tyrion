@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import controllers._BaseController;
+import controllers._BaseFormFactory;
 import models.Model_Product;
 import models.Model_Invoice;
 import models.Model_PaymentDetails;
@@ -25,6 +26,7 @@ import utilities.enums.RecurrenceCycle;
 import utilities.financial.fakturoid.Fakturoid;
 import utilities.financial.goPay.helps_objects.*;
 import utilities.logger.Logger;
+import utilities.swagger.input.Swagger_Fakturoid_Callback;
 import utilities.swagger.input.Swagger_Payment_Refund;
 
 import javax.validation.ValidationException;
@@ -56,13 +58,13 @@ public class GoPay extends _BaseController {
     private Date last_refresh;
 
     private WSClient ws;
-    private FormFactory formFactory;
+    private _BaseFormFactory baseFormFactory;
     private Fakturoid fakturoid;
 
     @Inject
-    public GoPay(WSClient ws, FormFactory formFactory, Fakturoid fakturoid) {
+    public GoPay(WSClient ws, _BaseFormFactory formFactory, Fakturoid fakturoid) {
         this.ws = ws;
-        this.formFactory = formFactory;
+        this.baseFormFactory = formFactory;
         this.fakturoid = fakturoid;
     }
 
@@ -211,32 +213,29 @@ public class GoPay extends _BaseController {
 
             logger.debug("singlePayment: Response from GoPay: " + response.toString());
 
-            final Form<GoPay_Result> form = formFactory.form(GoPay_Result.class).bind(response);
-            if (form.hasErrors())
-                logger.internalServerError(new Exception("Error while binding Json: " + form.errorsAsJson().toString()));
-            else {
-                GoPay_Result help = form.get();
+            // Get and Validate Object
+            GoPay_Result help = baseFormFactory.formFromJsonWithValidation(GoPay_Result.class, response);
 
-                logger.debug("singlePayment: Set GoPay ID to Invoice");
+            logger.debug("singlePayment: Set GoPay ID to Invoice");
 
-                invoice.gopay_id = help.id;
-                invoice.gopay_order_number = help.order_number;
-                invoice.gw_url = help.gw_url;
-                invoice.update();
+            invoice.gopay_id = help.id;
+            invoice.gopay_order_number = help.order_number;
+            invoice.gw_url = help.gw_url;
+            invoice.update();
 
-                product.archiveEvent("Single payment", "Single GoPay payment number: " + invoice.gopay_id + " was created", invoice.id);
+            product.archiveEvent("Single payment", "Single GoPay payment number: " + invoice.gopay_id + " was created", invoice.id);
 
-                if (help.recurrence != null && help.recurrence.recurrence_cycle == RecurrenceCycle.ON_DEMAND) {
+            if (help.recurrence != null && help.recurrence.recurrence_cycle == RecurrenceCycle.ON_DEMAND) {
 
-                    logger.debug("singlePayment: Set GoPay ID to Product because it is ON_DEMAND payment");
+                logger.debug("singlePayment: Set GoPay ID to Product because it is ON_DEMAND payment");
 
-                    product.archiveEvent("On demand payment", "On demand GoPay payment number: " + invoice.gopay_id + " was set", invoice.id);
+                product.archiveEvent("On demand payment", "On demand GoPay payment number: " + invoice.gopay_id + " was set", invoice.id);
 
-                    product.gopay_id = invoice.gopay_id;
-                    product.update();
-                }
+                product.gopay_id = invoice.gopay_id;
+                product.update();
             }
-            break;
+
+
         }
         return invoice;
     }
@@ -320,11 +319,8 @@ public class GoPay extends _BaseController {
 
                 case 200: {
 
-                    // Binding Json with help object
-                    final Form<GoPay_Result> form = formFactory.form(GoPay_Result.class).bind(result);
-                    if (form.hasErrors())
-                        throw new Exception("Error while binding Json: " + form.errorsAsJson().toString());
-                    GoPay_Result help = form.get();
+                    // Get and Validate Object
+                    GoPay_Result help = baseFormFactory.formFromJsonWithValidation(GoPay_Result.class, result);
 
                     invoice.gopay_id = help.id;
                     invoice.gw_url = null;
@@ -518,9 +514,9 @@ public class GoPay extends _BaseController {
                     logger.debug("checkPayment: Status: " + response.getStatus() + " Response " + result);
 
                     if (response.getStatus() == 200) {
-                        final Form<GoPay_Result> form = formFactory.form(GoPay_Result.class).bind(result);
-                        if (form.hasErrors()) throw new Exception("Error while binding Json: " + form.errorsAsJson().toString());
-                        GoPay_Result help = form.get();
+
+                        // Get and Validate Object
+                        GoPay_Result help = baseFormFactory.formFromJsonWithValidation(GoPay_Result.class, result);
 
                         switch (help.state) {
 
@@ -655,10 +651,8 @@ public class GoPay extends _BaseController {
     public Result payment_refund(UUID invoice_id) {
         try {
 
-            // Binding Json with help object
-            final Form<Swagger_Payment_Refund> form = formFactory.form(Swagger_Payment_Refund.class).bindFromRequest();
-            if (form.hasErrors()) return invalidBody(form.errorsAsJson());
-            Swagger_Payment_Refund help = form.get();
+            // Get and Validate Object
+            Swagger_Payment_Refund help = baseFormFactory.formFromRequestWithValidation(Swagger_Payment_Refund.class);
 
             // Finding in DB
             Model_Invoice invoice = Model_Invoice.getById(invoice_id);

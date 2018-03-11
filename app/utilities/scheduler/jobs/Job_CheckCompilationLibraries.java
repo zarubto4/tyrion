@@ -3,6 +3,7 @@ package utilities.scheduler.jobs;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+import controllers._BaseFormFactory;
 import models.Model_Blob;
 import models.Model_BootLoader;
 import models.Model_HardwareType;
@@ -21,10 +22,7 @@ import utilities.Server;
 import utilities.enums.ServerMode;
 import utilities.logger.Logger;
 import utilities.scheduler.Scheduled;
-import utilities.swagger.input.Swagger_CompilationLibrary;
-import utilities.swagger.input.Swagger_GitHubReleases;
-import utilities.swagger.input.Swagger_GitHubReleases_Asset;
-import utilities.swagger.input.Swagger_GitHubReleases_List;
+import utilities.swagger.input.*;
 
 import java.net.ConnectException;
 import java.net.URLDecoder;
@@ -39,6 +37,9 @@ import java.util.regex.Pattern;
  */
 @Scheduled("30 0/1 * * * ?")
 public class Job_CheckCompilationLibraries implements Job {
+
+    @Inject
+    public static _BaseFormFactory baseFormFactory;
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -101,13 +102,12 @@ public class Job_CheckCompilationLibraries implements Job {
                 ObjectNode request_list = Json.newObject();
                 request_list.set("list", ws_response_get_all_releases.asJson());
 
-                final Form<Swagger_GitHubReleases_List> form = formFactory.form(Swagger_GitHubReleases_List.class).bind(request_list);
-                if (form.hasErrors()) {
-                    throw new Exception("check_version_thread: Incoming Json from GitHub has not right Form: " + form.errorsAsJson(Lang.forCode("en-US")).toString());
-                }
+                // Get and Validate Object
+                Swagger_GitHubReleases_List help = baseFormFactory.formFromJsonWithValidation(Swagger_GitHubReleases_List.class, request_list);
+
 
                 // Seznam Release z GitHubu v upravené podobě
-                List<Swagger_GitHubReleases> releases = form.get().list;
+                List<Swagger_GitHubReleases> releases = help.list;
 
                 List<UUID> hardwareTypes_id = Model_HardwareType.find.query().where().findIds();
                 // Do každého typu desky - který má Tyrion v DB doplní podporované knihovny

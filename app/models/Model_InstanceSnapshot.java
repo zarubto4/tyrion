@@ -518,7 +518,7 @@ public class Model_InstanceSnapshot extends BaseModel {
             /* TODO doimplementovat v budoucnu
             case only_for_project_members_and_imitated_emails: {
 
-                summary.grid_app_url += instance.cloud_homer_server.server_url + instance.cloud_homer_server.grid_port + "/" + instance.b_program_name() + "/#token";
+                summary.grid_app_url += instance.server_main.server_url + instance.server_main.grid_port + "/" + instance.b_program_name() + "/#token";
                 summary.grid_program = Model_MProgram.get_m_code(grid_program_version);
                 summary.instance_id = get_instance().id;
 

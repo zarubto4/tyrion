@@ -186,7 +186,7 @@ public class DigitalOceanTyrionService {
         homer_server.update();
 
         DigitalOceanThreadRegister threadRegister = new DigitalOceanThreadRegister(homer_server, blueOcean);
-        threadRegister.run();
+        threadRegister.start();
 
     }
 

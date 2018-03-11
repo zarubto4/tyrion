@@ -404,10 +404,12 @@ public class Model_Notification extends BaseModel {
 
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        throw new Result_Error_NotSupportedException();
+        // nothing
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        throw new Result_Error_NotSupportedException();
+        if(_BaseController.person().has_permission(Permission.Notification_update.name())) return;
+        if(this.person.id.equals(_BaseController.personId())) return;
+        throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Notification_read.name())) return;
@@ -439,7 +441,9 @@ public class Model_Notification extends BaseModel {
         if(notification == null)  throw new Result_Error_NotFound(Model_Notification.class);
 
         // Check Permission
-        notification.check_read_permission();
+        if(notification.its_person_operation()) {
+            notification.check_read_permission();
+        }
         return notification;
     }
 
