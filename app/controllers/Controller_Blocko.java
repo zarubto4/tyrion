@@ -841,10 +841,13 @@ public class Controller_Blocko extends _BaseController {
 
             Model_BProgramVersion version = Model_BProgramVersion.getById(help.version_id);
 
+            // TODO do something with help.interfaces (update hardware, save it somewhere, tell homer which hw is in instance)
+
             Model_InstanceSnapshot snapshot = new Model_InstanceSnapshot();
             snapshot.b_program_version = version;
             snapshot.instance = instance;
             snapshot.program = Model_Blob.upload(help.snapshot, "snapshot.json", snapshot.get_path() );
+            snapshot.save();
 
             return created(snapshot.json());
 

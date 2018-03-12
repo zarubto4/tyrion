@@ -95,12 +95,12 @@ public class Model_BProgramVersion extends VersionModel {
         super.save();
 
         new Thread(() -> {
-            EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, library.get_project_id(), library.id));
+            EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, b_program.get_project_id(), b_program.id));
         }).start();
 
         // Add to Cache
-        if (library != null) {
-            library.cache_version_ids.add(0, id);
+        if (b_program != null) {
+            b_program.cache_version_ids.add(0, id);
         }
     }
 
@@ -112,7 +112,7 @@ public class Model_BProgramVersion extends VersionModel {
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, get_b_program().get_project_id(), get_b_program_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, get_b_program().get_project_id(), get_b_program_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -137,7 +137,7 @@ public class Model_BProgramVersion extends VersionModel {
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, get_b_program().get_project_id(), get_b_program_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, get_b_program().get_project_id(), get_b_program_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }

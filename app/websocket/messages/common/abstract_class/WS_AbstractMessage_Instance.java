@@ -6,6 +6,7 @@ import play.data.validation.Constraints;
 import utilities.logger.Logger;
 
 import javax.persistence.Transient;
+import java.util.UUID;
 
 public abstract class WS_AbstractMessage_Instance {
 
@@ -28,6 +29,6 @@ public abstract class WS_AbstractMessage_Instance {
 
     @JsonIgnore @Transient public Model_Instance get_instance() {
 
-        return Model_Instance.getById(instance_id);
+        return Model_Instance.getById(UUID.fromString(instance_id));
     }
 }

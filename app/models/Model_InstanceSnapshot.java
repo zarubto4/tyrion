@@ -66,7 +66,7 @@ public class Model_InstanceSnapshot extends BaseModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Instance instance;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BProgramVersion b_program_version;
-    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)  public Model_Blob program;
+    @JsonIgnore @OneToOne  public Model_Blob program;
     @JsonIgnore @OneToMany(fetch = FetchType.LAZY) public List<Model_UpdateProcedure> procedures = new ArrayList<>();
 
     /**
@@ -126,16 +126,17 @@ public class Model_InstanceSnapshot extends BaseModel {
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_InstanceSnapShotConfiguration settings(){
-        return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapShotConfiguration.class, Json.parse(this.json_additional_parameter));
+        if (this.json_additional_parameter != null) {
+            return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapShotConfiguration.class, Json.parse(this.json_additional_parameter));
+        }
+
+        return null;
     }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "only if snapshot is main")
     public String program(){
         try {
-
-            if (Model_Instance.find.query().where().eq("current_snapshot_id", id).findCount() > 0) {
-                if(program != null) program.get_fileRecord_from_Azure_inString();
-            }
+            if (program != null) return program.get_fileRecord_from_Azure_inString();
 
             return null;
 
@@ -144,8 +145,6 @@ public class Model_InstanceSnapshot extends BaseModel {
             return null;
         }
     }
-
-
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 

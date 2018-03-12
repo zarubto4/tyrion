@@ -54,7 +54,7 @@ public class Model_Instance extends TaggedModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BProgram b_program; // Only first reference!
 
-    @OneToMany(mappedBy = "instance", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "instance", cascade = CascadeType.ALL) @OrderBy("created DESC")
     public List<Model_InstanceSnapshot> snapshots = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
