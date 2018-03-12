@@ -203,7 +203,7 @@ public class Model_Notification extends BaseModel {
                 element.name = class_name;
                 element.id = cProgram.id;
                 element.text = cProgram.name;
-                element.project_id = cProgram.get_project_id();
+                element.project_id = cProgram.getProjectId();
                 break;
             }
             case "BProgram" : {
@@ -223,7 +223,7 @@ public class Model_Notification extends BaseModel {
                 element.id = version.id;
                 element.text = version.name;
                 element.program_id = version.get_c_program_id();
-                element.project_id = version.get_c_program().get_project_id();
+                element.project_id = version.get_c_program().getProjectId();
                 break;
             }
             case "BProgramVersion" : {
@@ -234,7 +234,7 @@ public class Model_Notification extends BaseModel {
                 element.id = version.id;
                 element.text = version.name;
                 element.program_id = version.get_b_program_id();
-                element.project_id = version.get_b_program().get_project_id();
+                element.project_id = version.get_b_program().getProjectId();
                 break;
             }
             case "GridProgramVersion" : {
@@ -253,7 +253,7 @@ public class Model_Notification extends BaseModel {
                 Model_Instance homerInstance = (Model_Instance) object;
                 element.name = class_name;
                 element.id = homerInstance.id;
-                element.project_id = homerInstance.get_project_id();
+                element.project_id = homerInstance.getProjectId();
 
                 break;
             }

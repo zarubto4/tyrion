@@ -80,7 +80,8 @@ public class Model_CProgramVersion extends VersionModel {
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true, value = "Value can be empty, Server cannot guarantee that. External documentation: " + Model_Compilation.virtual_input_output_docu)
     public String virtual_input_output(){
-        return compilation.virtual_input_output;
+        if(compilation != null) return compilation.virtual_input_output;
+        else return null;
     }
 
     @JsonProperty @ApiModelProperty(required = false, readOnly = true, value = "Link for download file in Binary (Not in Base64). Its ready to manual Upload. Only if \"status\" == \"SUCCESS\"")
@@ -185,7 +186,7 @@ public class Model_CProgramVersion extends VersionModel {
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, c_program.get_project_id(), c_program.id));
+                EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, c_program.getProjectId(), c_program.id));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -193,7 +194,7 @@ public class Model_CProgramVersion extends VersionModel {
 
         // Add to Cache
         if (c_program != null) {
-            c_program.cache_version_ids.add(0, id);
+            c_program.cache().add(this.getClass(), id);
         }
     }
 
@@ -205,7 +206,7 @@ public class Model_CProgramVersion extends VersionModel {
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, get_c_program().get_project_id(), get_c_program_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, get_c_program().getProjectId(), get_c_program_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -223,14 +224,14 @@ public class Model_CProgramVersion extends VersionModel {
 
         // Add to Cache
         try {
-            get_c_program().cache_version_ids.remove(id);
+            get_c_program().cache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_c_program().get_project_id(), get_c_program_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_c_program().getProjectId(), get_c_program_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }

@@ -42,10 +42,6 @@ public class Model_BProgramVersion extends VersionModel {
     // B_Program - Instance
     @JsonIgnore @OneToMany(mappedBy="b_program_version", fetch = FetchType.LAZY) public List<Model_InstanceSnapshot> instances = new ArrayList<>();
 
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Cached private UUID cache_b_program_id;
-
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
     @JsonProperty
@@ -62,26 +58,22 @@ public class Model_BProgramVersion extends VersionModel {
     @JsonIgnore
     public UUID get_b_program_id() throws _Base_Result_Exception {
 
-        if (cache_b_program_id == null) {
-
-            Model_BProgram bProgram = Model_BProgram.find.query().where().eq("versions.id", id).select("id").findOne();
-            if (bProgram != null) {
-                cache_b_program_id = bProgram.id;
-            } else {
-                throw new Result_Error_NotFound(Model_BProgram.class);
-            }
+        if (cache().get(Model_Project.class) == null) {
+            cache().add(Model_Project.class, Model_BProgram.find.query().where().eq("versions.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache_b_program_id;
+        return cache().get(Model_Project.class);
+
     }
 
     @JsonIgnore
     public Model_BProgram get_b_program() throws _Base_Result_Exception {
-
-        if (cache_b_program_id == null) {
-           return Model_BProgram.getById(get_b_program_id());
+        try {
+            return Model_BProgram.getById(get_b_program_id());
+        }catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
         }
-        return Model_BProgram.getById(cache_b_program_id);
     }
 
 
@@ -95,12 +87,12 @@ public class Model_BProgramVersion extends VersionModel {
         super.save();
 
         new Thread(() -> {
-            EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, b_program.get_project_id(), b_program.id));
+            EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, b_program.getProjectId(), b_program.id));
         }).start();
 
         // Add to Cache
         if (b_program != null) {
-            b_program.cache_version_ids.add(0, id);
+            b_program.cache().add(this.getClass(), id);
         }
     }
 
@@ -112,7 +104,7 @@ public class Model_BProgramVersion extends VersionModel {
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, get_b_program().get_project_id(), get_b_program_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, get_b_program().getProjectId(), get_b_program_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -130,14 +122,14 @@ public class Model_BProgramVersion extends VersionModel {
 
         // Remove from Cache
         try {
-            get_b_program().cache_version_ids.remove(id);
+            get_b_program().cache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, get_b_program().get_project_id(), get_b_program_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, get_b_program().getProjectId(), get_b_program_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }

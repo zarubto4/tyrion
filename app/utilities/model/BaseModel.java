@@ -60,6 +60,74 @@ public abstract class BaseModel extends Model {
     @JsonIgnore @SoftDelete
     public boolean deleted;
 
+
+/* GENERAL OBJECT CACHE ------------------------------------------------------------------------------------------------*/
+    /**
+     *
+     */
+
+    public IDCache cache(){
+
+        if(idCache == null) {
+            idCache = new IDCache();
+        }
+
+        return idCache;
+    }
+
+    // It must be always private!
+    private IDCache idCache;
+
+    // Private Class not acceptable from other Tyrion Components
+    public class IDCache {
+
+        private HashMap<Class, List<UUID>> cash_map = new HashMap<>();
+
+        public void add(Class c, List<UUID> ids){
+            if(!cash_map.containsKey(c)){
+                cash_map.put(c, ids);
+            }else {
+                cash_map.get(c).addAll(ids);
+            }
+        }
+
+        public void add(Class c, UUID id){
+            if(!cash_map.containsKey(c)){
+                cash_map.put(c, Collections.singletonList(id));
+            }else {
+                cash_map.get(c).add(id);
+            }
+        }
+
+        public void remove(Class c, List<UUID> ids){
+            if(cash_map.containsKey(c)){
+                cash_map.get(c).removeAll(ids);
+            }
+        }
+
+        public void remove(Class c, UUID id){
+            if(cash_map.containsKey(c)){
+                cash_map.get(c).remove(id);
+            }
+        }
+
+        public List<UUID> gets(Class c){
+            return cash_map.getOrDefault(c, null);
+        }
+
+        public UUID get(Class c){
+            if(cash_map.containsKey(c)){
+               List<UUID> list = cash_map.get(c);
+               if(!list.isEmpty()){
+                   return list.get(0);
+               }
+            }
+
+            return null;
+        }
+
+    }
+
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     /**
@@ -114,9 +182,8 @@ public abstract class BaseModel extends Model {
         }
 
         super.save();
-        this.cache();
 
-        new Thread(this::cache).start(); // Caches the object
+        new Thread(this::cacheCleaner).start(); // Caches the object
 
         logger.trace("save - saved '{}' to DB, id: {}", this.getClass().getSimpleName(), this.id);
 
@@ -144,7 +211,7 @@ public abstract class BaseModel extends Model {
             }
 
             super.update();
-            this.cache();
+            this.cacheCleaner();
 
         } catch (Exception e){
             logger.warn("Unauthorized UPDATE operation, its required remove everything from Cache");
@@ -192,7 +259,7 @@ public abstract class BaseModel extends Model {
      * TODO measure performance impact
      */
     @SuppressWarnings("unchecked")
-    public void cache() {
+    private void cacheCleaner() {
         long start = System.currentTimeMillis();
         Class<? extends BaseModel> cls = this.getClass();
         for (Field field : cls.getDeclaredFields()) {
@@ -223,7 +290,7 @@ public abstract class BaseModel extends Model {
      * TODO measure performance impact
      */
     @SuppressWarnings("unchecked")
-    public void evict() {
+    private void evict() {
         long start = System.currentTimeMillis();
         Class<? extends BaseModel> cls = this.getClass();
         for (Field field : cls.getDeclaredFields()) {

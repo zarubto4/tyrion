@@ -45,9 +45,9 @@ public class Swagger_Boards_For_Blocko {
                 c_program_short_detail_for_blocko.id = c_program.id;
                 c_program_short_detail_for_blocko.name = c_program.name;
                 c_program_short_detail_for_blocko.description = c_program.description;
-                c_program_short_detail_for_blocko.hardware_type_id = c_program.hardware_type_id();
+                c_program_short_detail_for_blocko.hardware_type_id = c_program.getHardwareTypeId();
 
-                for (Model_CProgramVersion version : c_program.get_versions()) {
+                for (Model_CProgramVersion version : c_program.getVersions()) {
 
                     Swagger_C_Program_Versions_Short_Detail_For_Blocko versions_short_detail_for_blocko = new Swagger_C_Program_Versions_Short_Detail_For_Blocko();
                     versions_short_detail_for_blocko.id = version.id;

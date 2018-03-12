@@ -14,7 +14,6 @@ import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheField;
-import utilities.cache.Cached;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.errors.Exceptions.Result_Error_NotFound;
@@ -57,14 +56,6 @@ public class Model_Instance extends TaggedModel {
     @OneToMany(mappedBy = "instance", cascade = CascadeType.ALL) @OrderBy("created DESC")
     public List<Model_InstanceSnapshot> snapshots = new ArrayList<>();
 
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Cached private String cache_server_name;
-    @JsonIgnore @Transient @Cached private UUID cache_server_main_id;
-    @JsonIgnore @Transient @Cached private UUID cache_server_backup_id;
-    @JsonIgnore @Transient @Cached private UUID cache_project_id;
-    @JsonIgnore @Transient @Cached private UUID cache_b_program_id;
-
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 
@@ -72,8 +63,8 @@ public class Model_Instance extends TaggedModel {
     public Swagger_Short_Reference b_program(){
         try {
 
-            Model_BProgram b_rpogram = Model_BProgram.getById(get_b_program_id());
-            return new Swagger_Short_Reference(b_rpogram.id, b_rpogram.name, b_rpogram.description);
+            Model_BProgram program = get_BProgram();
+            return new Swagger_Short_Reference(program.id, program.name, program.description);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -85,8 +76,7 @@ public class Model_Instance extends TaggedModel {
     public Model_HomerServer server(){
         try {
 
-            Model_HomerServer server = Model_HomerServer.getById(server_id());
-            return server;
+            return getHomerServer();
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -142,7 +132,7 @@ public class Model_Instance extends TaggedModel {
                             WS_Message_Instance_status status = get_instance_status();
 
                             if (status.status.equals("success")) cache_status.put(id, status.get_status(id).status);
-                            WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, status.get_status(id).status, get_project_id());
+                            WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, status.get_status(id).status, getProjectId());
 
                         } catch (Exception e) {
                             logger.internalServerError(e);
@@ -191,48 +181,45 @@ public class Model_Instance extends TaggedModel {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-
     @JsonIgnore
-    public UUID get_project_id() throws _Base_Result_Exception {
+    public UUID getProjectId() {
 
-        if (cache_project_id == null) {
-
-            Model_Project project = Model_Project.find.query().where().eq("instances.id", id).select("id").findOne();
-            if (project == null) throw new Result_Error_NotFound(Model_Project.class);
-
-            cache_project_id = project.id;
-            return project.id;
+        if (cache().get(Model_Project.class) == null) {
+            cache().add(Model_Project.class, Model_Project.find.query().where().eq("instances.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache_project_id;
+        return cache().get(Model_Project.class);
     }
 
+    @JsonIgnore
+    public Model_Project getProject() {
+        try {
+            return Model_Project.getById(getProjectId());
+        }catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 
     @JsonIgnore
     public UUID get_b_program_id() throws _Base_Result_Exception {
 
-        if(cache_b_program_id == null) {
+       if (cache().get(Model_BProgram.class) == null) {
+           cache().add(Model_BProgram.class, Model_BProgram.find.query().where().eq("instances.id", id).select("id").findSingleAttributeList());
+       }
 
-            cache_b_program_id  = Model_BProgram.find.query().where().eq("instances.id", id).select("id").findSingleAttribute();
-            if (cache_b_program_id == null) throw new Result_Error_NotFound(Model_BProgram.class);
-
-            return  cache_b_program_id;
-        }
-
-        return cache_b_program_id;
+       return cache().get(Model_BProgram.class);
     }
 
     @JsonIgnore
-    public Model_Project get_project() throws _Base_Result_Exception {
-
-        if (cache_project_id == null) {
-            return Model_Project.getById(get_project_id());
-        }else {
-            return Model_Project.getById(cache_project_id);
+    public Model_BProgram get_BProgram() throws _Base_Result_Exception {
+        try {
+            return Model_BProgram.getById(get_b_program_id());
+        }catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
         }
     }
-
-
 
     @JsonIgnore
     public List<String> getHardwareFullIds() throws _Base_Result_Exception  {
@@ -241,34 +228,26 @@ public class Model_Instance extends TaggedModel {
     }
 
     @JsonIgnore
-    public UUID server_id()                {
+    public UUID server_id() {
+
+        if (cache().get(Model_HomerServer.class) == null) {
+            cache().add(Model_HomerServer.class, Model_HomerServer.find.query().where().eq("instances.id", id).select("id").findSingleAttributeList());
+        }
+
+        return cache().get(Model_HomerServer.class);
+
+    }
+
+    @JsonIgnore
+    public Model_HomerServer getHomerServer() {
         try {
-
-            if (cache_server_main_id == null) {
-                Model_HomerServer homer_server = Model_HomerServer.find.query().where().eq("instances.id", id).select("id").findOne();
-
-                if (homer_server == null) {
-                    logger.warn("server_id - instance has not set default server");
-
-                    this.server_main = Model_HomerServer.find.query().where().eq("server_type", HomerType.MAIN.name()).findOne();
-                    if (this.server_main == null) {
-                        throw new Exception("Main server is not set! Cannot set Default Server to instance!");
-                    }
-                    this.update();
-
-                    // For Cache * next lines of codes
-                    homer_server = this.server_main;
-                }
-
-                cache_server_main_id = homer_server.id;
-            }
-            return cache_server_main_id;
-
-        } catch (Exception e) {
+            return Model_HomerServer.getById(server_id());
+        }catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
     }
+
 
 /* JSON Override  Method -----------------------------------------------------------------------------------------*/
 
@@ -281,7 +260,7 @@ public class Model_Instance extends TaggedModel {
 
         if (project != null) {
             try {
-                Model_Project.getById(this.get_project_id()).cache_instance_ids.add(id);
+                getProject().cache().add(this.getClass(), id);
             }catch (Exception e) {
                 // Nothing
             }
@@ -314,7 +293,7 @@ public class Model_Instance extends TaggedModel {
 
 
         try {
-            Model_Project.getById(get_project_id()).cache_instance_ids.remove(id);
+            getProject().cache().remove(this.getClass(), id);
         } catch (Exception e) {
             // Nothing
         }
@@ -324,15 +303,6 @@ public class Model_Instance extends TaggedModel {
         }
 
         return false;
-    }
-
-    public void cache_refresh() {
-        this.refresh();
-        if (cache.containsKey(this.id)) {
-            cache.replace(this.id, this);
-        } else {
-            cache.put(this.id, this);
-        }
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -539,7 +509,7 @@ public class Model_Instance extends TaggedModel {
     public void stop() {
 
         cache_status.put(this.id, false);
-        WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, true, get_project_id());
+        WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, true, getProjectId());
 
         if (current_snapshot() != null) {
             current_snapshot().stop();
@@ -705,7 +675,7 @@ public class Model_Instance extends TaggedModel {
 
     @JsonIgnore @Transient
     public String get_path() {
-        return get_project().getPath() + "/instances/" + this.id;
+        return getProject().getPath() + "/instances/" + this.id;
     }
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
@@ -718,16 +688,16 @@ public class Model_Instance extends TaggedModel {
     }
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Instance_read.name())) return;
-        get_project().check_read_permission();
+        getProject().check_read_permission();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Instance_update.name())) return;
-        get_project().check_update_permission();
+        getProject().check_update_permission();
     }
 
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Instance_delete.name())) return;
-        get_project().check_delete_permission();
+        getProject().check_delete_permission();
     }
 
     public enum Permission { Instance_create, Instance_read, Instance_update, Instance_delete }

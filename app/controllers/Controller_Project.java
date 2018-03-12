@@ -687,12 +687,8 @@ public class Controller_Project extends _BaseController {
             hardware.update();
 
             // Set hardware as Dominant if is not dominant in another project
+            project.cache().add(Model_Hardware.class, hardware.id);
 
-            if(project.cache_hardware_ids == null) {
-               project.cache_hardware_ids = new ArrayList<>();
-            }
-
-            project.cache_hardware_ids.add(hardware.id);
 
             return created(hardware.json());
 

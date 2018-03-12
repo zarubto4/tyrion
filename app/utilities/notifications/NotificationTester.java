@@ -245,7 +245,7 @@ public class NotificationTester extends _BaseController {
                     notification.setObject(cProgram);
 
                     Model_CProgramVersion version;
-                    if (cProgram.get_versions().isEmpty()) {
+                    if (cProgram.getVersions().isEmpty()) {
 
                         version = new Model_CProgramVersion();
                         version.name        = "Test notification c version";
@@ -259,7 +259,7 @@ public class NotificationTester extends _BaseController {
                         terminal_logger.info("Setting new C Program Version");
 
                     } else {
-                        version = cProgram.get_versions().get(0);
+                        version = cProgram.getVersions().get(0);
                     }
 
                     notification.setObject(version);
@@ -282,7 +282,7 @@ public class NotificationTester extends _BaseController {
                     notification.setObject(bProgram);
 
                     Model_BProgramVersion b_version;
-                    if (bProgram.get_versions().isEmpty()) {
+                    if (bProgram.getVersions().isEmpty()) {
 
                         b_version = new Model_BProgramVersion();
                         b_version.name        = "Test notification b version";
@@ -296,7 +296,7 @@ public class NotificationTester extends _BaseController {
                         terminal_logger.info("Setting new B Program Version");
 
                     } else {
-                        b_version = bProgram.get_versions().get(0);
+                        b_version = bProgram.getVersions().get(0);
                     }
 
                     notification.setObject(b_version);

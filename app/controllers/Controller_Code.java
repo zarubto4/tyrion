@@ -381,17 +381,8 @@ public class Controller_Code extends _BaseController {
 
                 version.save();
 
-                // Get and Validate Object
-                Swagger_C_Program_Version_Update scheme_load_form  = baseFormFactory.formFromJsonWithValidation(Swagger_C_Program_Version_Update.class, Json.parse(version.file.get_fileRecord_from_Azure_inString()));
-
-                // Nahraje do Azure a připojí do verze soubor
-                ObjectNode content = Json.newObject();
-                content.put("main", scheme_load_form.main);
-                content.set("files", Json.toJson(scheme_load_form.files));
-                content.set("imported_libraries", Json.toJson(scheme_load_form.imported_libraries));
-
                 // Content se nahraje na Azure
-                version.file = Model_Blob.upload(content.toString(), "code.json", c_program.get_path());
+                version.file = Model_Blob.upload(hardwareType.get_main_c_program().default_main_version.file.get_fileRecord_from_Azure_inString(), "code.json", c_program.get_path());
                 version.update();
 
 
@@ -446,12 +437,12 @@ public class Controller_Code extends _BaseController {
             Model_CProgram c_program_new =  new Model_CProgram();
             c_program_new.name = help.name;
             c_program_new.description = help.description;
-            c_program_new.hardware_type = c_program_old.get_hardware_type();
+            c_program_new.hardware_type = c_program_old.getHardwareType();
             c_program_new.project = project;
 
             c_program_new.save();
 
-            for (Model_CProgramVersion version : c_program_old.get_versions()) {
+            for (Model_CProgramVersion version : c_program_old.getVersions()) {
 
                 Model_CProgramVersion copy_object = new Model_CProgramVersion();
                 copy_object.name            = version.name;
@@ -1056,7 +1047,7 @@ public class Controller_Code extends _BaseController {
                                 .divider()
                                 .text("We will publish it as soon as possible.")
                                 .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                                .send(version_old.get_c_program().get_project().getProduct().customer, "Publishing your program" );
+                                .send(version_old.get_c_program().getProject().getProduct().customer, "Publishing your program" );
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -1076,7 +1067,7 @@ public class Controller_Code extends _BaseController {
                                 .text("We will publish it as soon as possible. We also had to make some changes to your program or rename something.")
                                 .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                                 .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                                .send(version_old.get_c_program().get_project().getProduct().customer, "Publishing your program" );
+                                .send(version_old.get_c_program().getProject().getProduct().customer, "Publishing your program" );
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -1101,7 +1092,7 @@ public class Controller_Code extends _BaseController {
                                     "We are glad that you want to contribute to our public libraries. Here are some tips what to improve, so you can try it again.")
                             .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                             .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                            .send(version_old.c_program.get_project().getProduct().customer, "Publishing your program");
+                            .send(version_old.c_program.getProject().getProduct().customer, "Publishing your program");
 
                 } catch (Exception e) {
                     logger.internalServerError(e);

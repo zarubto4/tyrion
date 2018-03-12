@@ -105,7 +105,7 @@ public class Model_GridProject extends TaggedModel {
 
         // If Object Contains Project - add id to cache
         if (project != null) {
-            project.cache_grid_project_ids.add(id);
+            project.cache().add(this.getClass(), id);
         }
 
         // Add to General Cache
@@ -148,7 +148,7 @@ public class Model_GridProject extends TaggedModel {
         cache.remove(id);
 
         try {
-            Model_Project.getById(get_project_id()).cache_grid_project_ids.remove(id);
+            get_project().cache().remove(this.getClass(), id);
         }catch (_Base_Result_Exception e){
             // Nothing
         }

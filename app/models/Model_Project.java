@@ -56,19 +56,6 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Instance>              instances       = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HomerServer>           servers         = new ArrayList<>();
 
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Cached public List<UUID> cache_hardware_ids;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_c_program_ids;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_library_ids;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_b_program_ids;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_grid_project_ids;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_hardware_group_ids;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_widget_ids;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_block_ids;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_instance_ids;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_homer_server_ids;    // TODO není zapracováno zatím [TZ]
-    @JsonIgnore @Transient @Cached public UUID cache_product_id;
     @JsonIgnore @Transient @Cached public ProjectStats project_stats;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -93,18 +80,6 @@ public class Model_Project extends TaggedModel {
             return false;
         }
     }
-
-    /* Zatím Toto nepožíváme!!!!
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_Hardware>                hardware()      { return active() ? getHardware()       : new ArrayList<>(); }
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_BProgram>                b_programs()    { return active() ? getBPrograms()      : new ArrayList<>(); }
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_CProgram>                c_programs()    { return active() ? getCPrograms()      : new ArrayList<>(); }
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_Library>                 libraries()     { return active() ? getLibraries()      : new ArrayList<>(); }
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_GridProject>             grid_projects() { return active() ? getGridProjects()   : new ArrayList<>(); }
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_Widget>                  widgets()       { return active() ? getWidgets()        : new ArrayList<>(); }
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_Block>                   blocks()        { return active() ? getBlocks()         : new ArrayList<>(); }
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_Instance>                instances()     { return active() ? getInstances()      : new ArrayList<>(); }
-    */
-
 
     /**
      * Making List of Model_ProjectParticipant from Model_ProjectParticipant and also from all invitations!
@@ -138,291 +113,256 @@ public class Model_Project extends TaggedModel {
     }
 
 
-
-
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* GET SQL PARAMETER - CACHE OBJECTS ------------------------------------------------------------------------------------*/
 
     @JsonIgnore
+    public List<UUID> getHardwareIds() {
+
+        if (cache().gets(Model_Hardware.class) == null) {
+            cache().add(Model_Hardware.class, Model_Hardware.find.query().where().eq("project.id", id).select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_CProgram.class);
+    }
+
+    @JsonIgnore
     public List<Model_Hardware> getHardware() {
         try {
 
-            List<Model_Hardware> hardwares = new ArrayList<>();
+            List<Model_Hardware> list = new ArrayList<>();
 
-            if (cache_hardware_ids == null) {
-                cache_hardware_ids= Model_Hardware.find.query().where().eq("project.id", id).findIds();
+            for (UUID id : getHardwareIds() ) {
+                list.add(Model_Hardware.getById(id));
             }
 
-            for (UUID id : cache_hardware_ids) {
-                hardwares.add(Model_Hardware.getById(id));
-            }
-
-            return hardwares;
+            return list;
 
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
         }
+    }
+
+    @JsonIgnore
+    public List<UUID> getCProgramsIds() {
+
+        if (cache().gets(Model_CProgram.class) == null) {
+            cache().add(Model_CProgram.class, Model_CProgram.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_CProgram.class);
     }
 
     @JsonIgnore
     public List<Model_CProgram> getCPrograms() {
         try {
 
-            List<Model_CProgram> cPrograms;
+            List<Model_CProgram> list = new ArrayList<>();
 
-            if (cache_c_program_ids == null) {
-
-                cPrograms = Model_CProgram.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").findList();
-
-                // Získání seznamu
-                for (Model_CProgram cProgram : cPrograms) {
-                    cache_c_program_ids.add(cProgram.id);
-                    cProgram.cache();
-                }
-
-                return cPrograms;
-            } else {
-                cPrograms = new ArrayList<>();
-
-                for (UUID id : cache_c_program_ids) {
-                    cPrograms.add(Model_CProgram.getById(id));
-                }
+            for (UUID id : getCProgramsIds() ) {
+                list.add(Model_CProgram.getById(id));
             }
 
-            return cPrograms;
+            return list;
 
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
         }
+    }
+
+    @JsonIgnore
+    public List<UUID> getLibrariesIds() {
+
+        if (cache().gets(Model_Library.class) == null) {
+            cache().add(Model_Library.class, Model_Library.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_Library.class);
     }
 
     @JsonIgnore
     public List<Model_Library> getLibraries() {
         try {
 
-            List<Model_Library> libraries;
+            List<Model_Library> list = new ArrayList<>();
 
-            if (cache_library_ids == null) {
-
-                libraries = Model_Library.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").findList();
-
-                // Získání seznamu
-                for (Model_Library library : libraries) {
-                    cache_library_ids.add(library.id);
-                    library.cache();
-                }
-
-                return libraries;
-            } else {
-                libraries = new ArrayList<>();
-
-                for (UUID id : cache_library_ids) {
-                    libraries.add(Model_Library.getById(id));
-                }
+            for (UUID id : getLibrariesIds() ) {
+                list.add(Model_Library.getById(id));
             }
 
-            return libraries;
+            return list;
 
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
         }
+    }
+
+    @JsonIgnore
+    public List<UUID> getBProgramsIds() {
+
+        if (cache().gets(Model_BProgram.class) == null) {
+            cache().add(Model_BProgram.class, Model_BProgram.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_BProgram.class);
     }
 
     @JsonIgnore
     public List<Model_BProgram> getBPrograms() {
         try {
 
-            List<Model_BProgram> b_programs;
+            List<Model_BProgram> list = new ArrayList<>();
 
-            if (cache_b_program_ids == null) {
-
-                b_programs = Model_BProgram.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").findList();
-
-                // Získání seznamu
-                for (Model_BProgram b_program : b_programs) {
-                    cache_b_program_ids.add(b_program.id);
-                    b_program.cache();
-                }
-
-                return b_programs;
-            } else {
-                b_programs = new ArrayList<>();
-
-                for (UUID id : cache_b_program_ids) {
-                    b_programs.add(Model_BProgram.getById(id));
-                }
+            for (UUID id : getBProgramsIds() ) {
+                list.add(Model_BProgram.getById(id));
             }
 
-            return b_programs;
+            return list;
+
 
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
         }
+    }
+
+    @JsonIgnore
+    public List<UUID> getGridProjectsIds() {
+
+        if (cache().gets(Model_GridProject.class) == null) {
+            cache().add(Model_GridProject.class, Model_BProgram.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_GridProject.class);
     }
 
     @JsonIgnore
     public List<Model_GridProject> getGridProjects() {
         try {
 
-            List<Model_GridProject> gridProjects;
+            List<Model_GridProject> list = new ArrayList<>();
 
-            if (cache_grid_project_ids == null) {
-
-                gridProjects = Model_GridProject.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").findList();
-
-                // Získání seznamu
-                for (Model_GridProject gridProject : gridProjects) {
-                    cache_grid_project_ids.add(gridProject.id);
-                    gridProject.cache();
-                }
-
-                return gridProjects;
-            } else {
-                gridProjects = new ArrayList<>();
-
-                for (UUID id : cache_grid_project_ids) {
-                    gridProjects.add(Model_GridProject.getById(id));
-                }
+            for (UUID id : getGridProjectsIds() ) {
+                list.add(Model_GridProject.getById(id));
             }
 
-            return gridProjects;
+            return list;
 
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
         }
+    }
+
+    @JsonIgnore
+    public List<UUID> getHardwareGroupsIds() {
+
+        if (cache().gets(Model_HardwareGroup.class) == null) {
+            cache().add(Model_HardwareGroup.class, Model_HardwareGroup.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_HardwareGroup.class);
     }
 
     @JsonIgnore
     public List<Model_HardwareGroup> getHardwareGroups() {
         try {
 
-            List<Model_HardwareGroup> groups;
+            List<Model_HardwareGroup> list = new ArrayList<>();
 
-            if (cache_hardware_group_ids == null) {
-
-                groups = Model_HardwareGroup.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").findList();
-
-                // Získání seznamu
-                for (Model_HardwareGroup group : groups) {
-                    cache_hardware_group_ids.add(group.id);
-                    group.cache();
-                }
-
-                return groups;
-            } else {
-                groups = new ArrayList<>();
-
-                for (UUID id : cache_hardware_group_ids) {
-                    groups.add(Model_HardwareGroup.getById(id));
-                }
+            for (UUID id : getHardwareGroupsIds() ) {
+                list.add(Model_HardwareGroup.getById(id));
             }
 
-            return groups;
+            return list;
 
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
         }
+    }
+
+    @JsonIgnore
+    public List<UUID> getWidgetsIds() {
+
+        if (cache().gets(Model_Widget.class) == null) {
+            cache().add(Model_Widget.class, Model_Widget.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_Widget.class);
     }
 
     @JsonIgnore
     public List<Model_Widget> getWidgets() {
         try {
 
-            List<Model_Widget> widgets;
+            List<Model_Widget> list = new ArrayList<>();
 
-            if (cache_widget_ids == null) {
-
-                widgets = Model_Widget.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").findList();
-
-                // Získání seznamu
-                for (Model_Widget widget : widgets) {
-                    cache_widget_ids.add(widget.id);
-                    widget.cache();
-                }
-
-                return widgets;
-            } else {
-                widgets = new ArrayList<>();
-
-                for (UUID id : cache_widget_ids) {
-                    widgets.add(Model_Widget.getById(id));
-                }
+            for (UUID id : getWidgetsIds() ) {
+                list.add(Model_Widget.getById(id));
             }
 
-            return widgets;
+            return list;
 
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
         }
+    }
+
+    @JsonIgnore
+    public List<UUID> getBlocksIds() {
+
+        if (cache().gets(Model_Block.class) == null) {
+            cache().add(Model_Block.class, Model_Widget.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_Block.class);
     }
 
     @JsonIgnore
     public List<Model_Block> getBlocks() {
         try {
 
-            List<Model_Block> blocks;
+            List<Model_Block> list = new ArrayList<>();
 
-            if (cache_block_ids == null) {
-
-                blocks = Model_Block.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").findList();
-
-                // Získání seznamu
-                for (Model_Block block : blocks) {
-                    cache_block_ids.add(block.id);
-                    block.cache();
-                }
-
-                return blocks;
-            } else {
-                blocks = new ArrayList<>();
-
-                for (UUID id : cache_block_ids) {
-                    blocks.add(Model_Block.getById(id));
-                }
+            for (UUID id : getBlocksIds() ) {
+                list.add(Model_Block.getById(id));
             }
 
-            return blocks;
+            return list;
 
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
         }
+    }
+
+    @JsonIgnore
+    public List<UUID> getInstancesIds() {
+
+        if (cache().gets(Model_Instance.class) == null) {
+            cache().add(Model_Instance.class, Model_Widget.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_Instance.class);
     }
 
     @JsonIgnore
     public List<Model_Instance> getInstances() {
         try {
 
-            List<Model_Instance> instances;
+            List<Model_Instance> list = new ArrayList<>();
 
-            if (cache_instance_ids == null) {
-
-                instances = Model_Instance.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").findList();
-
-                // Získání seznamu
-                for (Model_Instance instance : instances) {
-                    cache_instance_ids.add(instance.id);
-                    instance.cache();
-                }
-
-                return instances;
-            } else {
-                instances = new ArrayList<>();
-
-                for (UUID id : cache_instance_ids) {
-                    instances.add(Model_Instance.getById(id));
-                }
+            for (UUID id : getInstancesIds() ) {
+                list.add(Model_Instance.getById(id));
             }
 
-            return instances;
+            return list;
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -431,19 +371,23 @@ public class Model_Project extends TaggedModel {
     }
 
     @JsonIgnore
-    public Model_Product getProduct() {
+    public UUID getProductId() {
 
-        if (cache_product_id == null) {
-            Model_Product product = Model_Product.find.query().where().eq("projects.id", id).findOne();
-            if (product == null) return null;
-
-            product.cache();
-
-            cache_product_id = product.id;
-            return product;
+        if (cache().get(Model_Product.class) == null) {
+            cache().add(Model_Product.class, Model_Product.find.query().where().eq("projects.id", id).select("id").findSingleAttributeList());
         }
 
-        return Model_Product.getById(cache_product_id);
+        return cache().get(Model_Product.class);
+    }
+
+    @JsonIgnore
+    public Model_Product getProduct() {
+        try {
+            return Model_Product.getById(getProductId());
+        }catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
 /* JSON IGNORE METHOD && VALUES --------------------------------------------------------------------------------------*/

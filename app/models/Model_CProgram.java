@@ -17,6 +17,7 @@ import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
+import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
@@ -50,92 +51,82 @@ public class Model_CProgram extends TaggedModel {
     @JsonIgnore @OneToOne(mappedBy = "default_program", cascade = CascadeType.ALL) public Model_CProgramVersion default_main_version;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                 public Model_LibraryVersion example_library;          // Program je příklad pro použití knihovny
 
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Cached public List<UUID> cache_version_ids = new ArrayList<>();
-    @JsonIgnore @Transient @Cached private UUID cache_hardware_type_id;
-    @JsonIgnore @Transient @Cached private String cache_hardware_type_name;
-    @JsonIgnore @Transient @Cached private UUID cache_project_id;
-    @JsonIgnore @Transient @Cached private String cache_project_name;
-
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-
-    @JsonProperty public UUID hardware_type_id()     {
+    @JsonProperty @ApiModelProperty(required = true)
+    public Swagger_Short_Reference hardware_type(){
         try {
-
-            if (cache_hardware_type_id == null) {
-                Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("c_programs.id", id).select("id").findOne();
-                cache_hardware_type_id = hardwareType.id;
-            }
-
-            return cache_hardware_type_id;
-
+            Model_HardwareType type = getHardwareType();
+            return new Swagger_Short_Reference(type.id, type.name, type.description);
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
     }
-    @JsonProperty public String hardware_type_name()   {
-        try {
 
-            if (cache_hardware_type_name == null) {
-                cache_hardware_type_name = Model_HardwareType.getById(hardware_type_id()).name;
-            }
-
-            return cache_hardware_type_name;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-
-    }
     @JsonProperty public List<Model_CProgramVersion> program_versions() {
         try {
 
-            return get_versions().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList());
+            return getVersions().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList());
 
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
+        }
+    }
+
+    @JsonProperty @ApiModelProperty(value = "Visible only for Administrators with permission - its default version of Main Program of each hardware type", required = false)
+    public Model_CProgramVersion default_version() {
+        try {
+
+            if (getProjectId() != null) return null;
+            check_update_permission();
+
+            return default_main_version;
+
+        }catch (Exception e){
+            return null;
         }
     }
 
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public UUID get_project_id() throws _Base_Result_Exception  {
+    @JsonIgnore @Transient public UUID getProjectId() throws _Base_Result_Exception  {
 
-        if (cache_project_id == null) {
-            Model_Project project = Model_Project.find.query().where().eq("c_programs.id", id).select("id").findOne();
-            if (project == null) return null;
-            cache_project_id = project.id;
+        if (cache().get(Model_Project.class) == null) {
+            cache().add(Model_Project.class, Model_Project.find.query().where().eq("c_programs.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache_project_id;
+        return cache().get(Model_Project.class);
     }
 
-    @JsonIgnore @Transient public Model_Project get_project() throws _Base_Result_Exception  {
-        return  Model_Project.getById(get_project_id());
+    @JsonIgnore @Transient public Model_Project getProject() throws _Base_Result_Exception {
+        try {
+            return Model_Project.getById(getProjectId());
+        }catch (Exception e) {
+            return null;
+        }
     }
 
-    @JsonIgnore @Transient public List<Model_CProgramVersion> get_versions() {
+    @JsonIgnore @Transient public List<UUID> getVersionsId() {
+        if (cache().gets(Model_CProgramVersion.class) == null) {
+            cache().add(Model_CProgramVersion.class, Model_CProgramVersion.find.query().where().eq("c_program.id", id).eq("deleted", false).order().desc("created").select("id").findSingleAttributeList());
+        }
 
+        return cache().gets(Model_CProgramVersion.class);
+    }
+
+    @JsonIgnore @Transient public List<Model_CProgramVersion> getVersions() {
         try {
 
-            if (cache_version_ids.isEmpty()) {
-                cache_version_ids = Model_CProgramVersion.find.query().where().eq("c_program.id", id).eq("deleted", false).order().desc("created").select("id").findSingleAttributeList();
+            List<Model_CProgramVersion> list = new ArrayList<>();
 
+            for (UUID id : getVersionsId() ) {
+                list.add(Model_CProgramVersion.getById(id));
             }
 
-            List<Model_CProgramVersion> versions  = new ArrayList<>();
-
-            for (UUID version_id : cache_version_ids) {
-                versions.add(Model_CProgramVersion.getById(version_id));
-            }
-
-            return versions;
+            return list;
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -143,15 +134,23 @@ public class Model_CProgram extends TaggedModel {
         }
     }
 
-    @JsonIgnore @Transient public List<Model_CProgramVersion> get_version_objects_all_For_Admin() {
-        return Model_CProgramVersion.find.query().where().eq("c_program.id", id).order().desc("created").findList();
+    @JsonIgnore @Transient public UUID getHardwareTypeId()     {
+
+        if (cache().get(Model_HardwareType.class) == null) {
+            cache().add(Model_HardwareType.class,  (UUID) Model_HardwareType.find.query().where().eq("c_programs.id", id).select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_HardwareType.class);
+
     }
 
-
-
-    @JsonIgnore @Transient public Model_HardwareType get_hardware_type() {
-        if (hardware_type_id() == null) return null;
-        return Model_HardwareType.getById(hardware_type_id());
+    @JsonIgnore @Transient public Model_HardwareType getHardwareType()     {
+        try {
+            return Model_HardwareType.getById(getHardwareTypeId());
+        }catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -174,7 +173,7 @@ public class Model_CProgram extends TaggedModel {
         // Call notification about model update
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo( Model_CProgram.class, get_project_id(), this.id));
+                EchoHandler.addToQueue(new WSM_Echo( Model_CProgram.class, getProjectId(), this.id));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -192,15 +191,14 @@ public class Model_CProgram extends TaggedModel {
 
         // Remove from Project Cache
         try {
-            get_project().cache_c_program_ids.remove(id);
+            getProject().cache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
 
-
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, get_project_id(), get_project_id()));
+                EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, getProjectId(), getProjectId()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -210,15 +208,6 @@ public class Model_CProgram extends TaggedModel {
         return false;
     }
 
-
-    @JsonIgnore @Override public void refresh() {
-        logger.debug("update :: Delete object Id: {} ", this.id);
-
-        this.cache_version_ids.clear();
-        cache.remove(id);
-        super.refresh();
-
-    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -234,11 +223,11 @@ public class Model_CProgram extends TaggedModel {
             return project.getPath() + "/c-programs/" + this.id;
         } else {
 
-            if(get_project_id() == null) {
+            if(getProjectId() == null) {
                 logger.debug("save :: is a public Program");
                 return "public-c-programs/" + this.id;
             }else {
-               return get_project().getPath() + "/c-programs/" + this.id;
+               return getProject().getPath() + "/c-programs/" + this.id;
             }
         }
     }
@@ -271,7 +260,7 @@ public class Model_CProgram extends TaggedModel {
 
         try{
             // Object project not exist so its public program, and user not need read permission
-            get_project();
+            getProject();
         }catch (Exception e) {
             // Nothing
             return;

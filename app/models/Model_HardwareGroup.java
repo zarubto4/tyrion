@@ -116,8 +116,7 @@ public class Model_HardwareGroup extends NamedModel {
 
         super.save();
 
-        if(project.cache_hardware_group_ids == null) project.cache_hardware_group_ids = new ArrayList<>();
-        project.cache_hardware_group_ids.add(id);
+        project.cache().add(this.getClass(), id);
 
         //  if create something under project
         //  if (project != null ) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo(Model_Project.class, project_id(), project_id()))).start();
@@ -132,7 +131,7 @@ public class Model_HardwareGroup extends NamedModel {
         this.deletePermanent();
 
         try {
-            get_project().cache_hardware_group_ids.remove(id);
+            get_project().cache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
            // Nothing
         }

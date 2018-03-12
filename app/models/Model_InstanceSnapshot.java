@@ -206,7 +206,7 @@ public class Model_InstanceSnapshot extends BaseModel {
 
     @JsonIgnore
     public Model_Product getProduct() throws _Base_Result_Exception {
-        return this.get_instance().get_project().getProduct();
+        return this.get_instance().getProject().getProduct();
 
     }
 
@@ -272,7 +272,7 @@ public class Model_InstanceSnapshot extends BaseModel {
                 }
 
                 Model_Instance.cache_status.put(get_instance_id(), true);
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, get_instance_id(), true, this.get_instance().get_project_id());
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, get_instance_id(), true, this.get_instance().getProjectId());
 
                 // Step 4
                 // TODO this.create_actualization_hardware_request();
@@ -380,7 +380,7 @@ public class Model_InstanceSnapshot extends BaseModel {
                     .setObject(this.get_b_program_version())
                     .setText(new Notification_Text().setText(" from Blocko program "))
                     .setObject(this.get_b_program_version().get_b_program())
-                    .send_under_project(this.get_instance().get_project_id());
+                    .send_under_project(this.get_instance().getProjectId());
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -403,7 +403,7 @@ public class Model_InstanceSnapshot extends BaseModel {
                     .setText( new Notification_Text().setText(" from Blocko program "))
                     .setObject(this.get_b_program_version().get_b_program())
                     .setText( new Notification_Text().setText(". Server will try to do that as soon as possible."))
-                    .send_under_project(this.get_instance().get_project_id());
+                    .send_under_project(this.get_instance().getProjectId());
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -418,7 +418,7 @@ public class Model_InstanceSnapshot extends BaseModel {
                     .setLevel(NotificationLevel.INFO)
                     .setText( new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
                     .setObject(this.get_b_program_version())
-                    .send_under_project(this.get_instance().get_project_id());
+                    .send_under_project(this.get_instance().getProjectId());
 
         } catch (Exception e) {
             logger.internalServerError(e);

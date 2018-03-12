@@ -190,7 +190,7 @@ public class Model_Widget extends TaggedModel {
         // Add to Cache
         if (project != null) {
             new Thread(() -> { EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, project.id, project.id)); }).start();
-            project.cache_widget_ids.add(0,id);
+            project.cache().add(this.getClass(), id);
         }
     }
 
@@ -223,7 +223,7 @@ public class Model_Widget extends TaggedModel {
 
         // Remove from Project Cache
         try {
-            get_project().cache_widget_ids.remove(id);
+            get_project().cache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }

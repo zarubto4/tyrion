@@ -153,7 +153,7 @@ public class Model_Library extends TaggedModel {
         super.save();
 
         if (project != null) {
-            project.cache_library_ids.add(id);
+            project.cache().add(this.getClass(),id);
         }
 
         cache.put(id, this);
@@ -177,7 +177,7 @@ public class Model_Library extends TaggedModel {
         super.delete();
 
         try{
-            Model_Project.getById(get_project_id()).cache_library_ids.remove(id);
+            Model_Project.getById(get_project_id()).cache().remove(this.getClass(),id);
         }catch (_Base_Result_Exception exception){
             // Nothing
         }

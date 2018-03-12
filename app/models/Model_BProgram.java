@@ -37,24 +37,13 @@ public class Model_BProgram extends TaggedModel {
     @JsonIgnore @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_BProgramVersion> versions = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="b_program", cascade=CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Instance>   instances    = new ArrayList<>(); // Dont used that, its only short reference fo rnew Instance
 
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Cached public List<UUID> cache_version_ids;
-    @JsonIgnore @Transient @Cached private UUID cache_project_id;
-
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty
     public List<Model_BProgramVersion> program_versions() {
         try {
 
-            List<Model_BProgramVersion> versions = new ArrayList<>();
-
-            for (Model_BProgramVersion version : get_versions().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())) {
-                versions.add(version);
-            }
-
-            return versions;
+            return getVersions().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList());
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -62,47 +51,56 @@ public class Model_BProgram extends TaggedModel {
         }
     }
 
-
 /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public UUID get_project_id() throws _Base_Result_Exception  {
-
-        if (cache_project_id == null) {
-            Model_Project project = Model_Project.find.query().where().eq("b_programs.id", id).select("id").findOne();
-            if (project == null) return null;
-            cache_project_id = project.id;
-        }
-
-        return cache_project_id;
-    }
-
-    @JsonIgnore @Transient public Model_Project get_project() throws _Base_Result_Exception  {
-        return  Model_Project.getById(get_project_id());
-    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public List<Model_BProgramVersion> get_versions() {
+    public UUID getProjectId() {
+
+        if (cache().get(Model_Project.class) == null) {
+            cache().add(Model_Project.class, Model_Project.find.query().where().eq("b_programs.id", id).select("id").findSingleAttributeList());
+        }
+
+        return cache().get(Model_Project.class);
+    }
+
+    @JsonIgnore
+    public Model_Project getProject() {
+        try {
+            return Model_Project.getById(getProjectId());
+        }catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public List<UUID> getVersionsIds() {
+
+        if (cache().gets(Model_BProgramVersion.class) == null) {
+            cache().add(Model_BProgramVersion.class,  Model_BProgramVersion.find.query().where().eq("b_program.id", id).order().desc("created").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_BProgramVersion.class);
+    }
+
+    @JsonIgnore
+    public List<Model_BProgramVersion> getVersions() {
         try {
 
-            if (cache_version_ids == null || cache_version_ids.isEmpty()) {
-                cache_version_ids =  Model_BProgramVersion.find.query().where().eq("b_program.id", id).order().desc("created").findIds();
+            List<Model_BProgramVersion> list = new ArrayList<>();
+
+            for (UUID id : getVersionsIds() ) {
+                list.add(Model_BProgramVersion.getById(id));
             }
 
-            List<Model_BProgramVersion> versions  = new ArrayList<>();
-
-            for (UUID version_id : cache_version_ids) {
-                versions.add(Model_BProgramVersion.getById(version_id));
-            }
-
-            return versions;
-
+            return list;
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
         }
-
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -111,14 +109,12 @@ public class Model_BProgram extends TaggedModel {
 
     @JsonIgnore @Override
     public void save() {
-        if(project != null) {
-            if (project.cache_b_program_ids == null) {
-                project.cache_b_program_ids = new ArrayList<>();
-            }
-            project.cache_b_program_ids.add(this.id);
-        }
 
         super.save();
+
+        if(project != null) {
+            project.cache().add(this.getClass(), this.id);
+        }
 
         cache.put(this.id, this);
 
@@ -135,7 +131,7 @@ public class Model_BProgram extends TaggedModel {
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo( Model_BProgram.class, get_project_id(), id));
+                EchoHandler.addToQueue(new WSM_Echo( Model_BProgram.class, getProjectId(), id));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -151,14 +147,14 @@ public class Model_BProgram extends TaggedModel {
 
         // Remove from Project Cache
         try {
-            get_project().cache_b_program_ids.remove(id);
+            getProject().cache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, get_project_id(), get_project_id()));
+                EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, getProjectId(), getProjectId()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -172,7 +168,7 @@ public class Model_BProgram extends TaggedModel {
 
     @JsonIgnore @Transient
     public String get_path() {
-        return get_project().getPath() + "/b-programs/" + this.id;
+        return getProject().getPath() + "/b-programs/" + this.id;
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
