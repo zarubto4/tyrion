@@ -494,22 +494,22 @@ public class Controller_Security extends _BaseController {
             OAuth2AccessToken accessToken = service.getAccessToken(floatingPersonToken.token.toString());
 
 
-            System.out.println("1. Got the Access Token!");
-            System.out.println("2. (if your curious it looks like this: " + accessToken + ", 'rawResponse'='" + accessToken.getRawResponse() + "')");
-            System.out.println();
+            logger.trace("facebook_oauth_get:: 1. Got the Access Token!");
+            logger.trace("facebook_oauth_get:: 2. (if your curious it looks like this: " + accessToken + ", 'rawResponse'='" + accessToken.getRawResponse() + "')");
+
 
             // Now let's go and ask for a protected resource!
-            System.out.println("3. Now we're going to access a protected resource...");
+            logger.trace("facebook_oauth_get:: 3. Now we're going to access a protected resource...");
 
-            System.out.println("4. Facebook URL: " + Server.Facebook_url);
+            logger.trace("facebook_oauth_get:: 4. Facebook URL:{} " , Server.Facebook_url);
 
             OAuthRequest request = new OAuthRequest(Verb.GET, Server.GitHub_url);
             service.signRequest(accessToken, request);
 
             Response response = service.execute(request);
 
-            System.out.println("5. Got it! Lets see what we found...");
-            System.out.println("6. Code: " + response.getCode());
+            logger.trace("facebook_oauth_get:: 5. Got it! Lets see what we found...");
+            logger.trace("facebook_oauth_get:: 6. Code: " + response.getCode());
 
 
             if (!response.isSuccessful()) {
@@ -520,13 +520,11 @@ public class Controller_Security extends _BaseController {
             }
 
 
-            System.out.println("7. GET_facebook_oauth:: Get Response was successful");
+            logger.trace("facebook_oauth_get:: 7. GET_facebook_oauth:: Get Response was successful");
 
             JsonNode jsonNode = Json.parse(response.getBody());
-            System.out.println("8. Převedl jsem body na JSON:: " + jsonNode.toString());
+            logger.trace("facebook_oauth_get:: 8. Převedl jsem body na JSON::{} " , jsonNode.toString());
 
-
-            System.out.println("9. Chystám se udělat request");
 
 
             CompletionStage<WSResponse> responsePromise = Server.injector.getInstance(WSClient.class)
@@ -540,15 +538,15 @@ public class Controller_Security extends _BaseController {
 
             JsonNode json_response_from_facebook = responsePromise.toCompletableFuture().get().asJson();
 
-            System.out.println("10. JsonRequest: " + json_response_from_facebook.toString());
+            logger.trace("facebook_oauth_get:: 10. JsonRequest:{} " + json_response_from_facebook.toString());
 
 
             Model_Person person = Model_Person.find.query().where().eq("facebook_oauth_id",json_response_from_facebook.get("id").asText() ).findOne();
             if (person != null) {
 
-                System.out.println("Tento uživatel se nepřihlašuje poprvné - pouze updajtuji jeho informace");
+                logger.trace("facebook_oauth_get:: This user is not logging for the first time - only updating his information");
+                logger.trace("facebook_oauth_get:: 13. list is not empty - user has already sign up through facebook");
 
-                System.out.println("13. Seznam není prázdný - uživatel se už někdy registroval skrze facebook");
 
                 if (json_response_from_facebook.has("email")) person.email = json_response_from_facebook.get("email").asText();
                 if (json_response_from_facebook.has("name")) person.first_name = json_response_from_facebook.get("name").asText();
@@ -560,13 +558,12 @@ public class Controller_Security extends _BaseController {
             }
             else {
 
-                System.out.println("13. Uživatel neexistuje s tímto id tvořím nového ale ještě před tím zkontroluji zda už nění registrovaný klasicky přes email");
+
 
                 if (json_response_from_facebook.has("email")) person = Model_Person.find.query().where().eq("email", json_response_from_facebook.get("email").asText()).findOne();
 
                 if (person != null) {
 
-                    System.out.println("13. Uživatel existuje s emailem ale bez facebook tokenu - a tak jen doplním token");
 
                     person = Model_Person.find.query().where().eq("email", json_response_from_facebook.get("email").asText()).findOne();
                     person.facebook_oauth_id = jsonNode.get("id").asText();
@@ -589,7 +586,7 @@ public class Controller_Security extends _BaseController {
             }
 
 
-            System.out.println("16. floatingPersonToken.return_url " + floatingPersonToken.return_url);
+            System.out.println("facebook_oauth_get:: 16. floatingPersonToken.return_url " + floatingPersonToken.return_url);
             new Check_Online_Status_after_user_login(person.id).run();
             return redirect(floatingPersonToken.return_url.replace("[_status_]", "success"));
 
@@ -638,8 +635,6 @@ public class Controller_Security extends _BaseController {
             // Get and Validate Object
             Swagger_SocialNetwork_Login help  = baseFormFactory.formFromRequestWithValidation(Swagger_SocialNetwork_Login.class);
 
-            System.out.print("Link k přesměrování při přihlášení přes github:: " + help.redirect_url);
-
             logger.debug("GitHub  request for login:: return link:: {}", help.redirect_url);
 
 
@@ -654,8 +649,8 @@ public class Controller_Security extends _BaseController {
 
             floatingPersonToken.update();
 
-            System.out.println("GitHub_callBack ::" + Server.GitHub_callBack);
-            System.out.println("GitHub_url ::" + Server.GitHub_url);
+            logger.trace("facebook_oauth_get:: GitHub_callBack ::" + Server.GitHub_callBack);
+            logger.trace("facebook_oauth_get:: GitHub_url ::" + Server.GitHub_url);
 
 
             OAuth20Service service = Social.GitHub( floatingPersonToken.provider_key);
@@ -707,8 +702,6 @@ public class Controller_Security extends _BaseController {
 
             // Get and Validate Object
             Swagger_SocialNetwork_Login help  = baseFormFactory.formFromRequestWithValidation(Swagger_SocialNetwork_Login.class);
-            
-            System.out.println("Link k přesměrování při přihlášení přes facebook:: " + help.redirect_url);
 
             logger.debug("Facebook request for login:: return link:: {}", help.redirect_url);
 

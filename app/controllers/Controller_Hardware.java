@@ -1469,7 +1469,7 @@ public class Controller_Hardware extends _BaseController {
 
             // Odzkouším -zda už není registrovaný v centárlní autoritě!
             if (Model_HardwareRegistrationEntity.check_if_value_is_registered(help.full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
-                System.out.println("hardware_create_garfield:: Hardware is already registred in Central authority");
+                logger.trace("hardware_create_garfield:: Hardware is already registred in Central authority");
             } else {
 
             }
@@ -1707,10 +1707,10 @@ public class Controller_Hardware extends _BaseController {
                         WS_Message_Hardware_set_settings settings =  board.set_hardware_configuration_parameter(help);
                         return ok(Json.toJson(board));
                     } catch (IllegalArgumentException e) {
-                        System.out.println("IllegalArgumentException" + e.getMessage());
+                        logger.trace("IllegalArgumentException" + e.getMessage());
                         return badRequest(e.getMessage());
                     } catch (Exception e) {
-                        System.out.println("Exception" + e.getMessage());
+                        logger.trace("Exception" + e.getMessage());
                         return badRequest(e.getMessage());
                     }
                 }
@@ -2151,14 +2151,14 @@ public class Controller_Hardware extends _BaseController {
             // Get and Validate Object
             Swagger_Board_Server_Redirect help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_Server_Redirect.class);
 
-            System.out.println("hardware_redirect_to_server:: Příjem zprávy:: " + Json.toJson(help));
+            logger.trace("hardware_redirect_to_server:: Příjem zprávy:: " + Json.toJson(help));
 
             Model_Hardware board = Model_Hardware.getById(hardware_id);
 
             // Jedná se o přesměrování na server v rámci stejné hierarchie - na server co mám v DB
             if (help.server_id != null) {
 
-                System.out.println("Bude se přesměrovávat z databáze");
+                logger.trace("hardware_redirect_to_server:: Bude se přesměrovávat z databáze");
 
                 Model_HomerServer server = Model_HomerServer.getById(help.server_id);
                 board.device_relocate_server(server);
@@ -2342,9 +2342,8 @@ public class Controller_Hardware extends _BaseController {
     public Result hardware_check(String registration_hash, UUID project_id) {
         try {
 
-            System.out.println("registration_hash: "+  registration_hash);
-            System.out.println("project_id: " + project_id.toString());
-
+            logger.trace("hardware_check:: Registration_hash: "+  registration_hash);
+            logger.trace("hardware_check:: Project_id: {}", project_id.toString());
 
             Swagger_Board_Registration_Status status = new Swagger_Board_Registration_Status();
 

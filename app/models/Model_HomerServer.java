@@ -398,9 +398,9 @@ public class Model_HomerServer extends TaggedModel {
 
             } else {
 
-                System.out.println("Hash nesedí ");
-                System.out.println("Hash původního Serveru:: " + Model_HomerServer.getById(ws_homer.id).hash_certificate);
-                System.out.println("Hash příchozí  zprávy :: " + message.hash_token);
+                logger.trace("approve_validation_for_homer_server:: Hash nesedí ");
+                logger.trace("approve_validation_for_homer_server:: Hash původního Serveru:: " + Model_HomerServer.getById(ws_homer.id).hash_certificate);
+                logger.trace("approve_validation_for_homer_server:: Hash příchozí  zprávy :: " + message.hash_token);
 
                 ws_homer.authorized = false;
                 ws_homer.token = null;

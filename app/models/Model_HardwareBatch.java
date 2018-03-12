@@ -150,7 +150,7 @@ public class Model_HardwareBatch {
 
         StringBuffer m = new StringBuffer(Long.toString(mac, 16));
         while (m.length() < 12){
-            System.out.println("convert_to_MAC_ISO:while");
+            logger.trace("convert_to_MAC_ISO:: while");
             m.insert(0, "0");
         }
 
