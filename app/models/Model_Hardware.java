@@ -781,12 +781,12 @@ public class Model_Hardware extends TaggedModel {
     public static void device_Connected(WS_Message_Hardware_connected help) {
         try {
 
-            logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.hardware_id);
+            logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.full_id);
 
-            Model_Hardware device = Model_Hardware.getByFullId(help.hardware_id);
+            Model_Hardware device = Model_Hardware.getByFullId(help.full_id);
 
             if (device == null) {
-                logger.warn("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.hardware_id);
+                logger.warn("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.full_id);
                 return;
             }
 
@@ -946,13 +946,18 @@ public class Model_Hardware extends TaggedModel {
     public static void check_mqtt_hardware_connection_validation(WS_Homer homer, WS_Message_Hardware_validation_request request) {
         try {
 
-            System.out.println("check_mqtt_hardware_connection_validation: " + Json.toJson(request) );
+            logger.debug("check_mqtt_hardware_connection_validation: {} ", Json.toJson(request) );
             Model_Hardware board = request.get_hardware();
 
             if(board == null) {
                 logger.debug("Device has not any active or dominant entity in local database");
+                homer.send(request.get_result(false));
                 return;
             }
+
+            logger.debug("check_mqtt_hardware_connection_validation: Device is not null - HW name {} . Pass from Homer: {} Name from Homer: {} ", board.name, request.password, request.user_name);
+            logger.debug("check_mqtt_hardware_connection_validation: Device is not null - HW name {} . Pass from Tyrion: {} Name from Tyrion: {} ", board.name, board.mqtt_password, board.mqtt_username);
+
 
             if (BCrypt.checkpw(request.password, board.mqtt_password) && BCrypt.checkpw(request.user_name, board.mqtt_username)) {
                 homer.send(request.get_result(true));
@@ -961,7 +966,15 @@ public class Model_Hardware extends TaggedModel {
             }
 
         } catch (Exception e) {
+
+            if(Server.mode == ServerMode.DEVELOPER) {
+                logger.error("check_mqtt_hardware_connection_validation:: Device has not right permission to connect. But this is Dev version of Tyrion. So its allowed.");
+                homer.send(request.get_result(true));
+                return;
+            }
+
             logger.internalServerError(e);
+            homer.send(request.get_result(false));
         }
     }
 
@@ -1010,65 +1023,6 @@ public class Model_Hardware extends TaggedModel {
 
     /* Servers Parallel tasks  ----------------------------------------------------------------------------------------------*/
 
-    /**
-     * Jelikož je nutné vrstvou zakrýt dotazování na devices, které jsou na různých server
-     * a jelikož dotazování má fungovat paralelně, slouží následující metoda k tomu, že jednoltivým serverům paralelně
-     * rozešle příkaz a čeká na splnění všech maximální možnou dobu. Poté odpovědi sbalí a dá do pole, které vrátí.
-     *
-     * Každé vlákno se nakonci podívá, kolik je hotovo, když je hotovo vše - vrací vlákno které má shodné číslo kolekci.
-     *
-     * @param get_result_from_servers
-     * @return JsonNode
-     */
-     private static List<JsonNode> server_parallel(HashMap<UUID, ObjectNode> get_result_from_servers, Integer time, Integer delay, Integer number_of_retries) {
-        try {
-
-            List<Callable<ObjectNode>> callables = new ArrayList<Callable<ObjectNode>>();
-
-            for (UUID server_id : get_result_from_servers.keySet()) {
-
-                 Callable<ObjectNode> callable = new ParallelTask(server_id, get_result_from_servers.get(server_id), time, delay, number_of_retries);
-                 callables.add(callable);
-            }
-
-            ExecutorService executor = Executors.newWorkStealingPool();
-
-            List<JsonNode> results = new ArrayList<>();
-
-            executor.invokeAll(callables).forEach(future -> {
-                try {
-                    results.add(future.get());
-                } catch (Exception e) {
-                    throw new IllegalStateException(e);
-                }
-            });
-
-            return results;
-
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private static HashMap<UUID, List<String>> server_Separate(List<Model_Hardware> devices) {
-
-        HashMap<UUID, List<String>> serverHashMap = new HashMap<>(); // < Model_HomerServer.id, List<Model_Board.id>
-
-        // Separate Board Acording servers
-        for (Model_Hardware device : devices) {
-
-            // Skip never unconnected device
-            if (device.connected_server_id == null) continue;
-
-            // If not collection exist -> create that
-            if (!serverHashMap.containsKey(device.connected_server_id)) {serverHashMap.put(device.connected_server_id, new ArrayList<>());}
-
-            // Add to collection
-            serverHashMap.get(device.connected_server_id).add(device.full_id);
-        }
-
-        return serverHashMap;
-    }
 
     // Odesílání zprávy harwaru jde skrze serve, zde je metoda, která pokud to nejde odeslat naplní objekt a vrácí ho
     @JsonIgnore
@@ -1157,88 +1111,20 @@ public class Model_Hardware extends TaggedModel {
 
     //-- Online State Hardware  --//
     @JsonIgnore @Transient public WS_Message_Hardware_online_status get_devices_online_state() {
-        return get_devices_online_state(Collections.singletonList(this));
-    }
 
-    @JsonIgnore @Transient public static WS_Message_Hardware_online_status get_devices_online_state(List<Model_Hardware> devices) {
+        JsonNode node = write_with_confirmation(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(this.full_id)), 1000 * 5, 0, 2);
+        return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_online_status.class, node);
 
-        // Sepparate Device by servers
-        HashMap<UUID, List<String>> serverHashMap = server_Separate(devices);
-
-        // Create Server Parralell command
-        HashMap<UUID, ObjectNode> request_collection = new HashMap<>();
-        for (UUID key : serverHashMap.keySet()) {
-            request_collection.put(key, new WS_Message_Hardware_online_status().make_request(serverHashMap.get(key)));
-        }
-
-        // Make Parallel Operation
-        List<JsonNode> results = server_parallel(request_collection,1000 * 10, 0, 1 );
-
-        // Common Result for fill
-        WS_Message_Hardware_online_status result = new WS_Message_Hardware_online_status();
-
-        for (JsonNode json_result : results ) {
-            try {
-                result.hardware_list.addAll(baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_online_status.class, json_result).hardware_list);
-
-            } catch (Exception e) {
-                logger.internalServerError(e);
-                return new WS_Message_Hardware_online_status();
-            }
-        }
-        return result;
     }
 
     //-- Over View Hardware  --//
     @JsonIgnore
     public WS_Message_Hardware_overview_Board get_devices_overview() {
-
-        WS_Message_Hardware_overview overview = get_devices_overview(Collections.singletonList(this));
-        if (overview.get_device_from_list(full_id) != null) {
-            return overview.get_device_from_list(full_id);
-        }
-
-        return new WS_Message_Hardware_overview_Board();
+        JsonNode node = write_with_confirmation(new WS_Message_Hardware_overview().make_request(Collections.singletonList(this.full_id)), 1000 * 5, 0, 2);
+        WS_Message_Hardware_overview overview = baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_overview.class, node);
+        return overview.get_device_from_list(this.full_id);
     }
 
-    public static WS_Message_Hardware_overview get_devices_overview(List<Model_Hardware> devices) {
-
-        // Separate Device by servers
-        HashMap<UUID, List<String>> serverHashMap = server_Separate(devices);
-
-        // Create Server Parallel command
-        HashMap<UUID, ObjectNode> request_collection = new HashMap<>();
-        for (UUID key : serverHashMap.keySet()) {
-            request_collection.put(key, new WS_Message_Hardware_overview().make_request(serverHashMap.get(key)) );
-        }
-
-        // Make Parallel Operation
-        List<JsonNode> results = server_parallel(request_collection,1000 * 10, 0, 1 );
-
-        // Common Result for fill
-        WS_Message_Hardware_overview result = new WS_Message_Hardware_overview();
-        result.status = "success";
-
-        for (JsonNode json_result : results) {
-            try {
-
-                WS_Message_Hardware_overview overview = baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_overview.class, json_result);
-
-                // TODO should the exception be really thrown here? [AT]
-                if (!overview.status.equals("success") && overview.hardware_list.isEmpty()) {
-                    throw new Exception("WS_Message_Hardware_overview: Status is not success or hw list is empty");
-                }
-
-                result.hardware_list.addAll(overview.hardware_list);
-
-            } catch (Exception e) {
-                logger.internalServerError(e);
-                return new WS_Message_Hardware_overview();
-            }
-        }
-
-        return result;
-    }
 
 
     // Change Hardware Alias  --//GRID Apps
@@ -1352,9 +1238,7 @@ public class Model_Hardware extends TaggedModel {
     //-- ADD or Remove // Change Server --//
     @JsonIgnore
     public void device_relocate_server(Model_HomerServer future_server) {
-        List<Model_Hardware> devices = new ArrayList<>();
-        devices.add(this);
-        device_relocate_server(devices, future_server);
+        JsonNode node = write_with_confirmation(new WS_Message_Hardware_change_server().make_request(future_server, Collections.singletonList(this.full_id)), 1000 * 5, 0, 2);
     }
 
     @JsonIgnore
@@ -1369,26 +1253,7 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
-    @JsonIgnore
-    public void device_relocate_server(List<Model_Hardware> devices, Model_HomerServer future_server) {
-        try {
 
-            // Sepparate Device by servers
-            HashMap<UUID, List<String>> serverHashMap = server_Separate(devices);
-
-            // Create Server Parralell command
-            HashMap<UUID, ObjectNode> request_collection = new HashMap<>();
-            for (UUID key : serverHashMap.keySet()) {
-                request_collection.put(key, new WS_Message_Hardware_change_server().make_request(future_server, serverHashMap.get(key)));
-            }
-
-            // Make Parallel Operation
-            List<JsonNode> results = server_parallel(request_collection,1000 * 10, 0, 1);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
 
     //-- Set AutoBackup  --//
     @JsonIgnore

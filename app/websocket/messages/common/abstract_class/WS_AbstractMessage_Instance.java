@@ -21,7 +21,7 @@ public abstract class WS_AbstractMessage_Instance {
     @Constraints.Required public String message_id;
     @Constraints.Required public String message_channel;
 
-                           public String instance_id;
+                           public UUID instance_id;
                            public String status = "error";
 
     public String error  = null;

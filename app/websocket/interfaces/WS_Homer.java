@@ -164,8 +164,10 @@ public class WS_Homer extends WS_Interface {
             logger.internalServerError(new Exception("Invalid data came from Homer and also it is not verified connection", e));
 
             if (json.has("message_id")) {
+                logger.error("verify: Error:: Invalid data came from Homer and also it is not verified connection");
                 verificationFail(json.get("message_id").asText());
             } else {
+                logger.error("verify: Error:: Invalid data came from Homer and also it is not verified connection");
                 verificationFail(UUID.randomUUID().toString());
             }
         }

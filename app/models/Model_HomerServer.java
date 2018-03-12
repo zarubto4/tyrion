@@ -377,8 +377,13 @@ public class Model_HomerServer extends TaggedModel {
     public static void approve_validation_for_homer_server(WS_Homer ws_homer, WS_Message_Check_homer_server_permission message) {
         try {
 
+            logger.warn("approve_validation_for_homer_server:: message.hash_token {}", message.hash_token);
 
-            if (message.hash_token.equals(Model_HomerServer.getById(ws_homer.id).hash_certificate)) {
+            Model_HomerServer server = Model_HomerServer.getById(ws_homer.id);
+            logger.warn("approve_validation_for_homer_server:: Server ID {}, Server Name: {}", server.id, server.name);
+            logger.warn("approve_validation_for_homer_server:: server.hash_token {}", server.hash_certificate);
+
+            if (message.hash_token.equals(server.hash_certificate)) {
 
                 Model_HomerServer homer_server = Model_HomerServer.getById(ws_homer.id);
                 homer_server.make_log_connect();
@@ -398,9 +403,9 @@ public class Model_HomerServer extends TaggedModel {
 
             } else {
 
-                System.out.println("Hash nesedí ");
-                System.out.println("Hash původního Serveru:: " + Model_HomerServer.getById(ws_homer.id).hash_certificate);
-                System.out.println("Hash příchozí  zprávy :: " + message.hash_token);
+                logger.error("approve_validation_for_homer_server:: Hash is not same on Server {} {}", server.id, server.name);
+                logger.error("approve_validation_for_homer_server:: message.hash_token: {}", message.hash_token);
+                logger.error("approve_validation_for_homer_server:: server.hash_token:  {}", server.hash_certificate);
 
                 ws_homer.authorized = false;
                 ws_homer.token = null;
@@ -410,8 +415,10 @@ public class Model_HomerServer extends TaggedModel {
             }
 
         } catch (Exception e) {
-            ws_homer.verificationFail(UUID.randomUUID().toString());
             logger.internalServerError(e);
+            logger.error("approve_validation_for_homer_server: Error");
+            ws_homer.verificationFail(UUID.randomUUID().toString());
+
         }
     }
 

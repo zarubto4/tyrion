@@ -37,7 +37,6 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
 
             terminal_logger.info("4. Spouštím Sycnhronizační proceduru Synchronize_Homer_Hardware_after_connection");
 
-
             WS_Message_Homer_Hardware_list message_homer_hardware_list = homer_server.get_homer_server_list_of_hardware();
 
             if (!message_homer_hardware_list.status.equals("success")) {
@@ -84,7 +83,7 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
 
                 WS_Message_Hardware_connected connected = new WS_Message_Hardware_connected();
                 connected.status = overview.status;
-                connected.hardware_id = board.full_id;
+                connected.full_id = board.full_id;
                 Model_Hardware.device_Connected(connected);
 
             } else {

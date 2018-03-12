@@ -22,13 +22,13 @@ public class Job_UploadBlockoToCloud implements Job {
 
     public Job_UploadBlockoToCloud() {}
 
-    private String record_id;
+    private UUID record_id;
     
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
         logger.info("execute: Executing Job_UploadBlockoToCloud");
 
-        record_id = context.getMergedJobDataMap().getString("record_id");
+        record_id = UUID.fromString(context.getMergedJobDataMap().getString("record_id"));
 
         if (!upload_blocko_thread.isAlive()) upload_blocko_thread.start();
     }
@@ -48,7 +48,7 @@ public class Job_UploadBlockoToCloud implements Job {
 
                 logger.trace("upload_blocko_thread: uploading the record");
 
-                // record.put_record_into_cloud(); TODO [TOM]
+                record.deploy();
 
             } catch (Exception e) {
                 logger.internalServerError(e);
