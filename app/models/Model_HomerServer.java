@@ -686,7 +686,7 @@ public class Model_HomerServer extends TaggedModel {
 
             cache.put(id, server);
         }
-
+        // Check Permission
         if(server.its_person_operation()) {
             server.check_read_permission();
         }

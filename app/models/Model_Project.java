@@ -828,11 +828,6 @@ public class Model_Project extends TaggedModel {
     @CacheField(value = IdsList.class, name = "Model_Project_Person_Ids")
     public static Cache<UUID, IdsList> token_cache;
 
-
-    public static Model_Project getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Project getById(UUID id) throws _Base_Result_Exception {
 
         Model_Project project = cache.get(id);
@@ -841,7 +836,7 @@ public class Model_Project extends TaggedModel {
             if (project == null) throw new Result_Error_NotFound(Model_Project.class);
             cache.put(id, project);
         }
-
+        // Check Permission
         if(project.its_person_operation()) {
             project.check_read_permission();
         }
