@@ -58,7 +58,7 @@ public class Controller_Notification extends _BaseController {
   public Result notification_getByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2... " + " For first call, use 1", required = false) Integer page_number) {
      try {
 
-        Query<Model_Notification> query =  Model_Notification.find.query().where().eq("person.id", _BaseController.personId()).order().desc("created");
+        Query<Model_Notification> query =  Model_Notification.find.query().where().eq("person.id", _BaseController.personId()).eq("deleted", false).order().desc("created");
 
         Swagger_Notification_List result = new Swagger_Notification_List(query, page_number);
 
