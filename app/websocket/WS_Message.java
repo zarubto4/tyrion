@@ -28,7 +28,7 @@ public class WS_Message {
         } else {
             this.id = UUID.fromString(message.get("message_id").asText());
         }
-        this.confirmationThread = new WS_ConfirmationThread(message, delay, timeout, retries);
+        this.confirmationThread = new WS_ConfirmationThread(message, delay, timeout, retries, id);
     }
 
 

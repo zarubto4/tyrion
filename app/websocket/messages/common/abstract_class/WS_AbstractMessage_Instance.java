@@ -6,6 +6,7 @@ import play.data.validation.Constraints;
 import utilities.logger.Logger;
 
 import javax.persistence.Transient;
+import java.util.UUID;
 
 public abstract class WS_AbstractMessage_Instance {
 
@@ -20,7 +21,7 @@ public abstract class WS_AbstractMessage_Instance {
     @Constraints.Required public String message_id;
     @Constraints.Required public String message_channel;
 
-                           public String instance_id;
+                           public UUID instance_id;
                            public String status = "error";
 
     public String error  = null;

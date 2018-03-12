@@ -94,13 +94,7 @@ public class Model_CProgram extends TaggedModel {
     @JsonProperty public List<Model_CProgramVersion> program_versions() {
         try {
 
-            List<Model_CProgramVersion> versions = new ArrayList<>();
-
-            for (Model_CProgramVersion version : get_versions().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())) {
-                versions.add(version);
-            }
-
-            return versions;
+            return get_versions().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList());
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -131,13 +125,8 @@ public class Model_CProgram extends TaggedModel {
         try {
 
             if (cache_version_ids.isEmpty()) {
+                cache_version_ids = Model_CProgramVersion.find.query().where().eq("c_program.id", id).eq("deleted", false).order().desc("created").select("id").findSingleAttributeList();
 
-                List<UUID> ids =  Model_CProgramVersion.find.query().where().eq("c_program.id", id).eq("deleted", false).order().desc("created").findIds();
-
-                // Získání seznamu
-                for (UUID id : ids) {
-                    cache_version_ids.add(id);
-                }
             }
 
             List<Model_CProgramVersion> versions  = new ArrayList<>();
@@ -283,7 +272,8 @@ public class Model_CProgram extends TaggedModel {
         try{
             // Object project not exist so its public program, and user not need read permission
             get_project();
-        }catch (_Base_Result_Exception exception) {
+        }catch (Exception e) {
+            // Nothing
             return;
         }
 
@@ -350,7 +340,7 @@ public class Model_CProgram extends TaggedModel {
         if(c_program.its_person_operation()) {
             c_program.check_read_permission();
         }
-        c_program.check_create_permission();
+
         return c_program;
     }
 

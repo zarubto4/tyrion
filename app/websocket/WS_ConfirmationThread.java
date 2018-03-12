@@ -26,13 +26,15 @@ public class WS_ConfirmationThread implements Supplier<ObjectNode> {
     private int timeout;
     private int retries;
     private boolean resolved;
+    private UUID websocket_identificator;
 
-    public WS_ConfirmationThread(ObjectNode message, int delay, int timeout, int retries) {
+    public WS_ConfirmationThread(ObjectNode message, int delay, int timeout, int retries, UUID websocket_identificator) {
         this.message = message;
         this.delay = delay;
         this.timeout = timeout;
         this.retries = retries;
         this.id = UUID.fromString(message.get("message_id").asText());
+        this.websocket_identificator = websocket_identificator;
     }
 
     @Override
@@ -91,7 +93,7 @@ public class WS_ConfirmationThread implements Supplier<ObjectNode> {
         message.put("error_code", ErrorCode.WEBSOCKET_TIME_OUT_EXCEPTION.error_code());
         message.put("message_id",message.get("message_id").asText());
         message.put("message_channel",message.get("message_channel").asText());
-        message.put("websocket_identificator",message.get("websocket_identificator").asText());
+        message.put("websocket_identificator", websocket_identificator.toString());
 
         this.sender.removeMessage(this.id);
 

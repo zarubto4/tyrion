@@ -17,7 +17,7 @@ public class Swagger_ActualizationProcedure_Make {
     @Constraints.Required @ApiModelProperty(required = true,  readOnly = true) public UUID project_id;
     @Constraints.Required @ApiModelProperty(required = true,  readOnly = true) public String firmware_type;       // Enum_Firmware_type
 
-    @Constraints.Required @ApiModelProperty(required = true, readOnly = true)  public String hardware_group_id;
+    @Constraints.Required @ApiModelProperty(required = true, readOnly = true)  public UUID hardware_group_id;
 
     @Valid
     @ApiModelProperty(required = true,  readOnly = true) public List<Swagger_ActualizationProcedure_Make_HardwareType> hardware_type_settings = new ArrayList<>();

@@ -97,7 +97,7 @@ public class Controller_Security extends _BaseController {
 
             if (token_type == TokenType.PERSON_TOKEN) {
 
-                Model_Person person = Model_Person.getByAuthToken(UUID.fromString(help.token));
+                Model_Person person = Model_Person.getByAuthToken(help.token);
 
                 result.token = help.token;
                 result.available_requests = 50L;
