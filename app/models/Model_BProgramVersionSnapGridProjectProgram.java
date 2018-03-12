@@ -118,6 +118,10 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
 
             cache.put(id, instanceParameter);
         }
+        // Check Permission
+        if(instanceParameter.its_person_operation()) {
+            instanceParameter.check_read_permission();
+        }
 
         return instanceParameter;
     }

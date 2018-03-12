@@ -119,9 +119,11 @@ public class Model_Invitation extends BaseModel {
 
             cache.put(id, invitation);
         }
-
         // Check Permission
-        invitation.check_read_permission();
+        if(invitation.its_person_operation()) {
+            invitation.check_read_permission();
+        }
+
         return invitation;
     }
 

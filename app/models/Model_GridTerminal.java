@@ -80,7 +80,10 @@ public class Model_GridTerminal extends BaseModel {
         Model_GridTerminal terminal = find.byId(id);
         if (terminal == null) throw new Result_Error_NotFound(Model_GridTerminal.class);
 
-        terminal.check_read_permission();
+        // Check Permission
+        if(terminal.its_person_operation()) {
+            terminal.check_read_permission();
+        }
         return terminal;
     }
 

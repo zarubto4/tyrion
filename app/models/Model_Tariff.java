@@ -255,9 +255,10 @@ public class Model_Tariff extends NamedModel {
 
             cache.put(id, tariff);
         }
-
         // Check Permission
-        tariff.check_read_permission();
+        if(tariff.its_person_operation()) {
+            tariff.check_read_permission();
+        }
         return tariff;
     }
 

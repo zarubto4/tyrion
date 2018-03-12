@@ -259,9 +259,11 @@ public class Model_BProgram extends TaggedModel {
 
             cache.put(id, b_program);
         }
-
         // Check Permission
-        b_program.check_read_permission();
+        if(b_program.its_person_operation()) {
+            b_program.check_read_permission();
+        }
+
         return b_program;
     }
 

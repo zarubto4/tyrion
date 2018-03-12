@@ -190,7 +190,10 @@ public class Model_ServerError extends NamedModel {
         Model_ServerError error = find.byId(id);
         if(error == null)  throw new Result_Error_NotFound(Model_ServerError.class);
 
-        error.check_read_permission();
+        // Check Permission
+        if(error.its_person_operation()) {
+            error.check_read_permission();
+        }
         return error;
 
     }

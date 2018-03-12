@@ -89,9 +89,10 @@ public class Model_Processor extends NamedModel {
 
             cache.put(id, processor);
         }
-
         // Check Permission
-        processor.check_read_permission();
+        if(processor.its_person_operation()) {
+            processor.check_read_permission();
+        }
         return processor;
     }
 

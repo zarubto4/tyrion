@@ -790,7 +790,9 @@ public class Model_Product extends NamedModel {
         }
 
         // Check Permission
-        product.check_read_permission();
+        if(product.its_person_operation()) {
+            product.check_read_permission();
+        }
         return product;
     }
 

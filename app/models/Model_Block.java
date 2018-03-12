@@ -312,7 +312,10 @@ public class Model_Block extends TaggedModel {
 
             cache.put(id, block);
         }
-
+        // Check Permission
+        if(block.its_person_operation()) {
+            block.check_read_permission();
+        }
         return block;
     }
 

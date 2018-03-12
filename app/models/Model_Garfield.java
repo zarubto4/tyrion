@@ -163,7 +163,11 @@ public class Model_Garfield  extends NamedModel {
         Model_Garfield garfield = find.byId(id);
         if (garfield == null) throw new Result_Error_NotFound(Model_Garfield.class);
 
-        garfield.check_read_permission();
+        // Check Permission
+        if(garfield.its_person_operation()) {
+            garfield.check_read_permission();
+        }
+
         return garfield;
 
     }

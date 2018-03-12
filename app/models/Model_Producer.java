@@ -89,7 +89,9 @@ public class Model_Producer extends NamedModel {
         }
 
         // Check Permission
-        producer.check_read_permission();
+        if(producer.its_person_operation()) {
+            producer.check_read_permission();
+        }
         return producer;
     }
 

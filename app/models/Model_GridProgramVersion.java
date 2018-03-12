@@ -198,8 +198,11 @@ public class Model_GridProgramVersion extends VersionModel {
 
             cache.put(id, version);
         }
+        // Check Permission
+        if(version.its_person_operation()) {
+            version.check_read_permission();
+        }
 
-        version.check_read_permission();
         return version;
     }
 

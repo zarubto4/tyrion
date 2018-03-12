@@ -66,6 +66,7 @@ public class Model_AuthorizationToken extends BaseModel {
 
         if (cache_person_id == null) {
             return Model_Person.getById(get_person_id());
+
         }
 
         return Model_Person.getById(cache_person_id);
@@ -182,8 +183,12 @@ public class Model_AuthorizationToken extends BaseModel {
     public static Cache<UUID, UUID> cache_token_name; // < TOKEN in UUID; UUID id of Model_AuthorizationToken>
 
     public static Model_AuthorizationToken getById(String id) throws _Base_Result_Exception {
+
+
+
         return getById(UUID.fromString(id));
     }
+
 
     public static Model_AuthorizationToken getById(UUID id) throws _Base_Result_Exception {
         Model_AuthorizationToken token = cache.get(id);
@@ -194,6 +199,10 @@ public class Model_AuthorizationToken extends BaseModel {
             if (token == null) throw new Result_Error_Unauthorized();
 
             cache.put(id, token);
+        }
+        // Check Permission
+        if(token.its_person_operation()) {
+            token.check_read_permission();
         }
 
         return token;
@@ -210,7 +219,6 @@ public class Model_AuthorizationToken extends BaseModel {
 
             cache_token_name.put(token, model.id);
         }
-
         return cache.get(cache_token_name.get(token));
 
     }

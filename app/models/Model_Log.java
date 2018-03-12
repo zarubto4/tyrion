@@ -81,7 +81,12 @@ public class Model_Log extends NamedModel {
     public static Model_Log getById(UUID id) throws _Base_Result_Exception {
         Model_Log board = find.byId(id);
         if (board == null) throw new Result_Error_NotFound(Model_Log.class);
-        board.check_read_permission();
+
+        // Check Permission
+        if(board.its_person_operation()) {
+            board.check_read_permission();
+        }
+
         return board;
     }
 

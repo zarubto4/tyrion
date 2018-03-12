@@ -96,8 +96,10 @@ public class Model_Customer extends BaseModel {
 
         Model_Customer customer = Model_Customer.find.byId(id);
         if (customer == null) throw new Result_Error_NotFound(Model_Customer.class);
-
-        customer.check_read_permission();
+        // Check Permission
+        if(customer.its_person_operation()) {
+            customer.check_read_permission();
+        }
         return customer;
     }
 

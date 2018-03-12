@@ -683,8 +683,10 @@ public class Model_UpdateProcedure extends BaseModel {
 
             cache.put(id, procedure);
         }
-
-        procedure.check_read_permission();
+        // Check Permission
+        if(procedure.its_person_operation()) {
+            procedure.check_read_permission();
+        }
         return procedure;
     }
 
