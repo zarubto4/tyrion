@@ -1216,7 +1216,7 @@ public class Controller_Hardware extends _BaseController {
             Model_BootLoader old_main_not_cached = Model_BootLoader.find.query().where().eq("main_hardware_type.id", boot_loader.hardware_type.id).select("id").findOne();
 
             if (old_main_not_cached != null) {
-                Model_BootLoader old_main = Model_BootLoader.getById(old_main_not_cached.id.toString());
+                Model_BootLoader old_main = Model_BootLoader.getById(old_main_not_cached.id);
                 if (old_main != null) {
                     old_main.main_hardware_type = null;
                     old_main.cache_main_hardware_type_id = null;
@@ -1397,7 +1397,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardware_get_registration_hash(UUID full_id) {
+    public Result hardware_get_registration_hash(String full_id) {
         try {
 
             if(!person().is_admin()) {

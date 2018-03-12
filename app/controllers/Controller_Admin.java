@@ -153,7 +153,7 @@ public class Controller_Admin extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    
+
     public Result serverError_get(@ApiParam(value = "bug_id String path", required = true) UUID bug_id) {
         try {
 

@@ -197,6 +197,10 @@ public class Model_LibraryVersion extends VersionModel {
     @CacheField(value = Model_LibraryVersion.class, duration = 600)
     public static Cache<UUID, Model_LibraryVersion> cache;
 
+    public static Model_LibraryVersion getById(String id) throws _Base_Result_Exception {
+        return getById(UUID.fromString(id));
+    }
+
     public static Model_LibraryVersion getById(UUID id) throws _Base_Result_Exception {
 
         Model_LibraryVersion grid_widget_version = cache.get(id);
