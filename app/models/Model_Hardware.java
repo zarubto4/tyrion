@@ -946,7 +946,13 @@ public class Model_Hardware extends TaggedModel {
     public static void check_mqtt_hardware_connection_validation(WS_Homer homer, WS_Message_Hardware_validation_request request) {
         try {
 
+            System.out.println("check_mqtt_hardware_connection_validation: " + Json.toJson(request) );
             Model_Hardware board = request.get_hardware();
+
+            if(board == null) {
+                logger.debug("Device has not any active or dominant entity in local database");
+                return;
+            }
 
             if (BCrypt.checkpw(request.password, board.mqtt_password) && BCrypt.checkpw(request.user_name, board.mqtt_username)) {
                 homer.send(request.get_result(true));
@@ -2782,6 +2788,7 @@ public class Model_Hardware extends TaggedModel {
 
             cache.put(id, board);
         }
+
         // Check Permission
         if(board.its_person_operation()) {
             board.check_read_permission();
@@ -2790,14 +2797,23 @@ public class Model_Hardware extends TaggedModel {
     }
 
     /**
-     * Specialní vyjímka - vždy vracíme Hardware podle full_id (číslo proceosru) kde
-     * máme dominanci! Tuto metodu výlučn používá část systému obsluhující fyzický hardware.
+     * Specialní vyjímka - vždy vracíme Hardware podle full_id (číslo procesoru) kde
+     * máme dominanci! Tuto metodu výlučně používá část systému obsluhující fyzický hardware.
      * @param fullId
      * @return
      */
     public static Model_Hardware getByFullId(String fullId) {
-        UUID id = (UUID) find.query().where().eq("full_id", fullId).eq("dominant_entity", true).select("id").getId();
-        return  getById(id);
+       logger.trace("getByFullId: {}", fullId);
+       UUID id = find.query().where().eq("full_id", fullId).eq("dominant_entity", true).select("id").findSingleAttribute();
+
+
+        if (id == null){
+            logger.debug("getByFullId: {} Database ID is null");
+            return  null;
+        }
+
+        logger.trace("getByFullId: {} Database ID {}", id.toString());
+        return getById(id);
     }
 
     @JsonIgnore

@@ -9,7 +9,7 @@ public abstract class WS_AbstractMessage_Hardware {
 
  /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger terminal_logger = new Logger(WS_AbstractMessage_Hardware.class);
+    private static final Logger logger = new Logger(WS_AbstractMessage_Hardware.class);
 
  /* VALUE --------------------------------------------------------------------------------------------------------------*/
 
@@ -26,6 +26,11 @@ public abstract class WS_AbstractMessage_Hardware {
 
     @JsonIgnore
     public Model_Hardware get_hardware() {
+        if(full_id == null) {
+            logger.error("get_hardware:: Full ID is null");
+            return null;
+        }
+
         return Model_Hardware.getByFullId(full_id);
     }
 }

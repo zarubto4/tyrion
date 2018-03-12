@@ -30,7 +30,7 @@ public class WS_Message_Online_Change_status {
 
     @JsonProperty public String model;
     @JsonProperty public UUID model_id;
-    @JsonProperty public NetworkStatus status;
+    @JsonProperty public NetworkStatus online_state;
 
 //------------------------------------------------------------------
 
@@ -102,7 +102,7 @@ public class WS_Message_Online_Change_status {
 
         this.model_id = model_id;
         this.model = cls.getSimpleName().replace("Model_", "");
-        this.status = status;
+        this.online_state = status;
 
     }
 
@@ -115,6 +115,6 @@ public class WS_Message_Online_Change_status {
                 .put("message_channel", message_channel)
                 .put("model", model)
                 .put("model_id", model_id.toString())
-                .put("status", status.name());
+                .put("online_state", online_state.name());
     }
 }

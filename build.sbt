@@ -23,6 +23,7 @@ libraryDependencies ++= Seq(
   "org.assertj" % "assertj-core" % "3.6.2" % Test,
   "org.awaitility" % "awaitility" % "2.0.0" % Test,
   "com.myjeeva.digitalocean" % "digitalocean-api-client" % "2.13", // Digital Ocean - Creating Automaticaly Homer Servers
+  "io.minio" % "minio" % "0.2.4", // Minio BLOB storage library - azure-storag opensource alternative
   guice,
   ws
 )
