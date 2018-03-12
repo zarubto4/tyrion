@@ -567,8 +567,10 @@ public class Model_CProgramVersion extends VersionModel {
 
             cache.put(id, version);
         }
-
-        version.check_create_permission();
+        // Check Permission
+        if(version.its_person_operation()) {
+            version.check_read_permission();
+        }
         return version;
     }
 

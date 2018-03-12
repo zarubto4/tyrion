@@ -281,7 +281,11 @@ public class Model_GridProgram extends TaggedModel {
             cache.put(id, m_program);
         }
 
-        m_program.check_read_permission();
+        // Check Permission
+        if(m_program.its_person_operation()) {
+            m_program.check_read_permission();
+        }
+
         return m_program;
     }
 

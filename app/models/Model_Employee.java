@@ -90,7 +90,11 @@ public class Model_Employee extends BaseModel {
         Model_Employee employee = find.byId(id);
         if (employee == null) throw new Result_Error_NotFound(Model_Employee.class);
 
-        employee.check_read_permission();
+        // Check Permission
+        if(employee.its_person_operation()) {
+            employee.check_read_permission();
+        }
+
         return employee;
 
     }

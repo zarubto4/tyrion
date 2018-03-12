@@ -2782,8 +2782,10 @@ public class Model_Hardware extends TaggedModel {
 
             cache.put(id, board);
         }
-
-        board.check_read_permission();
+        // Check Permission
+        if(board.its_person_operation()) {
+            board.check_read_permission();
+        }
         return board;
     }
 

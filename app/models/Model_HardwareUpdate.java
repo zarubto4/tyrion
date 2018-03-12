@@ -730,8 +730,11 @@ public class Model_HardwareUpdate extends BaseModel {
 
             cache.put(id, plan);
         }
+        // Check Permission
+        if(plan.its_person_operation()) {
+            plan.check_read_permission();
+        }
 
-        plan.check_read_permission();
         return plan;
     }
 

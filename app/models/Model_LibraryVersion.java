@@ -212,9 +212,11 @@ public class Model_LibraryVersion extends VersionModel {
 
             cache.put(id, grid_widget_version);
         }
-
         // Check Permission
-        grid_widget_version.check_read_permission();
+        if(grid_widget_version.its_person_operation()) {
+            grid_widget_version.check_read_permission();
+        }
+
         return grid_widget_version;
     }
 

@@ -255,9 +255,10 @@ public class Model_Library extends TaggedModel {
 
             cache.put(id, library);
         }
-
         // Check Permission
-        library.check_read_permission();
+        if(library.its_person_operation()) {
+            library.check_read_permission();
+        }
         return library;
     }
 

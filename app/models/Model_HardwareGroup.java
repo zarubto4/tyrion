@@ -180,8 +180,11 @@ public class Model_HardwareGroup extends NamedModel {
             if (group == null) throw new Result_Error_NotFound(Model_Product.class);
             cache.put(id, group);
         }
+        // Check Permission
+        if(group.its_person_operation()) {
+            group.check_read_permission();
+        }
 
-        group.check_read_permission();
         return group;
     }
 

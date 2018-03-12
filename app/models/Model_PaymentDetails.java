@@ -188,9 +188,12 @@ public class Model_PaymentDetails extends BaseModel {
 
             cache.put(id, paymentDetails);
         }
-
         // Check Permission
-        paymentDetails.check_read_permission();
+        if(paymentDetails.its_person_operation()) {
+            paymentDetails.check_read_permission();
+        }
+
+
         return paymentDetails;
     }
 

@@ -251,8 +251,11 @@ public class Model_Person extends BaseModel {
 
             cache.put(id, person);
         }
+        // Check Permission
+        if(person.its_person_operation()) {
+            person.check_read_permission();
+        }
 
-        person.check_read_permission();
         return person;
     }
 

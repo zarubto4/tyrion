@@ -85,9 +85,11 @@ public class Model_Role extends NamedModel {
         if (role == null) {
             throw new Result_Error_NotFound(Model_Product.class);
         }
-
         // Check Permission
-        role.check_read_permission();
+        if(role.its_person_operation()) {
+            role.check_read_permission();
+
+        }
         return role;
     }
 

@@ -405,8 +405,11 @@ public class Model_HardwareType extends NamedModel {
 
             cache.put(id, hardwareType);
         }
+        // Check Permission
+        if(hardwareType.its_person_operation()) {
+            hardwareType.check_read_permission();
+        }
 
-        hardwareType.check_read_permission();
         return hardwareType;
     }
 

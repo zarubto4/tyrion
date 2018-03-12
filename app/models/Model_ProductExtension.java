@@ -452,6 +452,7 @@ public class Model_ProductExtension extends NamedModel {
 
     public static Model_ProductExtension getById(UUID id) {
         return find.query().where().idEq(id).eq("deleted", false).findOne();
+
     }
 
     public static List<Model_ProductExtension> getByUser(UUID person_id) {

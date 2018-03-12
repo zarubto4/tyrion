@@ -30,7 +30,7 @@ import java.util.*;
 @Entity
 @ApiModel( value = "BootLoader", description = "Model of BootLoader")
 @Table(name="BootLoader")
-public class Model_BootLoader extends NamedModel {
+public class /**/Model_BootLoader extends NamedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -317,9 +317,11 @@ public class Model_BootLoader extends NamedModel {
 
             cache.put(id, bootloader);
         }
-
         // Check Permission
-        bootloader.check_read_permission();
+        if(bootloader.its_person_operation()) {
+            bootloader.check_read_permission();
+        }
+
         return bootloader;
     }
 

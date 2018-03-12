@@ -346,7 +346,10 @@ public class Model_CProgram extends TaggedModel {
 
             cache.put(id, c_program);
         }
-
+        // Check Permission
+        if(c_program.its_person_operation()) {
+            c_program.check_read_permission();
+        }
         c_program.check_create_permission();
         return c_program;
     }

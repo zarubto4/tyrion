@@ -332,8 +332,10 @@ public class Model_Widget extends TaggedModel {
 
             cache.put(id, grid_widget);
         }
-
-        grid_widget.check_read_permission();
+        // Check Permission
+        if(grid_widget.its_person_operation()) {
+            grid_widget.check_read_permission();
+        }
         return grid_widget;
     }
 

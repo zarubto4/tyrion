@@ -836,7 +836,7 @@ public class Model_Project extends TaggedModel {
             if (project == null) throw new Result_Error_NotFound(Model_Project.class);
             cache.put(id, project);
         }
-
+        // Check Permission
         if(project.its_person_operation()) {
             project.check_read_permission();
         }

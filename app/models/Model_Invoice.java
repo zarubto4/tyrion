@@ -336,8 +336,10 @@ public class Model_Invoice extends BaseModel {
 
             cache.put(id, invoice);
         }
-
-        invoice.check_read_permission();
+        // Check Permission
+        if(invoice.its_person_operation()) {
+            invoice.check_read_permission();
+        }
         return invoice;
     }
 

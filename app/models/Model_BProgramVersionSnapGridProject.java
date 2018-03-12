@@ -106,9 +106,10 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
 
             cache.put(id, snapShot);
         }
-
         // Check Permission
-        snapShot.check_read_permission();
+        if(snapShot.its_person_operation()) {
+            snapShot.check_read_permission();
+        }
         return snapShot;
     }
 

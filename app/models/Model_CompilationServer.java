@@ -263,9 +263,11 @@ public class Model_CompilationServer extends BaseModel {
 
             cache.put(id, server);
         }
-
         // Check Permission
-        server.check_read_permission();
+        if(server.its_person_operation()) {
+            server.check_read_permission();
+        }
+
         return server;
     }
 

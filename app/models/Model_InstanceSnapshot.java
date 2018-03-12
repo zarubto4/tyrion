@@ -652,8 +652,11 @@ public class Model_InstanceSnapshot extends BaseModel {
 
             cache.put(id, snapshot);
         }
+        // Check Permission
+        if(snapshot.its_person_operation()) {
+            snapshot.check_read_permission();
+        }
 
-        snapshot.check_read_permission();
         return snapshot;
     }
 

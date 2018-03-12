@@ -440,6 +440,12 @@ public class Model_Notification extends BaseModel {
         if(notification.its_person_operation()) {
             notification.check_read_permission();
         }
+
+        // Check Permission
+        if(notification.its_person_operation()) {
+            notification.check_read_permission();
+        }
+
         return notification;
     }
 
