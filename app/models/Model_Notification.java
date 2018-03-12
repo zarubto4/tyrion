@@ -432,10 +432,6 @@ public class Model_Notification extends BaseModel {
 
     //!!!!! Do not implement Cache!!!
 
-    public static Model_Notification getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Notification getById(UUID id) throws _Base_Result_Exception {
         Model_Notification notification = find.byId(id);
         if(notification == null)  throw new Result_Error_NotFound(Model_Notification.class);

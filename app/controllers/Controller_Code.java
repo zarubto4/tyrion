@@ -126,7 +126,7 @@ public class Controller_Code extends _BaseController {
             @ApiResponse(code = 478, message = "External server side Error",response = Result_ExternalServerSideError.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result compile_c_program_version( @ApiParam(value = "version_id String query", required = true) String version_id ) {
+    public Result compile_c_program_version( @ApiParam(value = "version_id String query", required = true) UUID version_id ) {
         try {
 
             // Ověření objektu
@@ -148,6 +148,7 @@ public class Controller_Code extends _BaseController {
             notes = "Compile code",
             produces = "application/json",
             protocols = "https"
+
     )
     @ApiImplicitParams(
             {
@@ -494,7 +495,7 @@ public class Controller_Code extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result c_program_get(String c_program_id) {
+    public Result c_program_get(UUID c_program_id) {
         try {
 
             // Vyhledám Objekt
@@ -598,7 +599,7 @@ public class Controller_Code extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result c_program_edit(String c_program_id) {
+    public Result c_program_edit(UUID c_program_id) {
         try {
 
             // Get and Validate Object
@@ -624,7 +625,7 @@ public class Controller_Code extends _BaseController {
 
     @ApiOperation(value = "tag CProgram",
             tags = {"C_Program"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -669,7 +670,7 @@ public class Controller_Code extends _BaseController {
 
     @ApiOperation(value = "untag CProgram",
             tags = {"C_Program"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -726,7 +727,7 @@ public class Controller_Code extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result c_program_delete( String c_program_id) {
+    public Result c_program_delete(UUID c_program_id) {
         try {
 
             // Ověření objektu
@@ -771,7 +772,7 @@ public class Controller_Code extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result c_program_version_create(@ApiParam(value = "version_id String query", required = true)  String c_program_id) {
+    public Result c_program_version_create(@ApiParam(value = "version_id String query", required = true)  UUID c_program_id) {
         try {
 
             // Get and Validate Object
@@ -822,7 +823,7 @@ public class Controller_Code extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result c_program_version_get(@ApiParam(value = "version_id String query", required = true)  String version_id) {
+    public Result c_program_version_get(@ApiParam(value = "version_id String query", required = true)  UUID version_id) {
         try {
 
             // Kontrola objekt
@@ -862,7 +863,7 @@ public class Controller_Code extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result c_program_version_edit(@ApiParam(value = "version_id String query",   required = true)  String version_id) {
+    public Result c_program_version_edit(@ApiParam(value = "version_id String query",   required = true)  UUID version_id) {
         try {
 
             // Get and Validate Object
@@ -900,7 +901,7 @@ public class Controller_Code extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result c_program_version_delete(@ApiParam(value = "version_id String query",   required = true)    String version_id) {
+    public Result c_program_version_delete(@ApiParam(value = "version_id String query",   required = true)  UUID version_id) {
         try {
 
             // Ověření objektu
@@ -933,7 +934,7 @@ public class Controller_Code extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result c_program_version_make_public(@ApiParam(value = "version_id String query", required = true)  String version_id) {
+    public Result c_program_version_make_public(@ApiParam(value = "version_id String query", required = true)  UUID version_id) {
         try {
 
             // Kontrola objektu
@@ -1129,7 +1130,7 @@ public class Controller_Code extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Empty.class)
-    public Result c_program_markScheme(@ApiParam(value = "version_id", required = true) String version_id) {
+    public Result c_program_markScheme(@ApiParam(value = "version_id", required = true) UUID version_id) {
         try {
 
             Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);

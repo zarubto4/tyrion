@@ -62,7 +62,7 @@ public class Controller_Security extends _BaseController {
 
     @ApiOperation(value = "check Request Token",
             tags = {"Blocko"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             protocols = "https"
     )

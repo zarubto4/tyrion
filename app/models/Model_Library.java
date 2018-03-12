@@ -245,10 +245,6 @@ public class Model_Library extends TaggedModel {
     @CacheField(value = Model_Library.class, duration = 600)
     public static Cache<UUID, Model_Library> cache;
 
-    public static Model_Library getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Library getById(UUID id) throws _Base_Result_Exception {
 
         Model_Library library = cache.get(id);

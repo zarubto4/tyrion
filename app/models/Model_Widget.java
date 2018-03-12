@@ -322,10 +322,6 @@ public class Model_Widget extends TaggedModel {
     @CacheField(Model_Widget.class)
     public static Cache<UUID, Model_Widget> cache;
 
-    public static Model_Widget getById(String id) throws _Base_Result_Exception{
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Widget getById(UUID id) throws _Base_Result_Exception {
 
         Model_Widget grid_widget = cache.get(id);

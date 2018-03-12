@@ -326,10 +326,6 @@ public class Model_Invoice extends BaseModel {
     @CacheField(value = Model_Invoice.class)
     public static Cache<UUID, Model_Invoice> cache;
 
-    public static Model_Invoice getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Invoice getById(UUID id) throws _Base_Result_Exception {
         Model_Invoice invoice = cache.get(id);
 

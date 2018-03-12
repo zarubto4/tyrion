@@ -740,9 +740,6 @@ public class Model_Instance extends TaggedModel {
     @CacheField(value = Boolean.class, name = "Model_Instance_Status")
     public static Cache<UUID, Boolean> cache_status;
 
-    public static Model_Instance getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
 
     public static Model_Instance getById(UUID id) throws _Base_Result_Exception {
 

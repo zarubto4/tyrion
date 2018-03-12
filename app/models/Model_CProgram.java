@@ -335,10 +335,6 @@ public class Model_CProgram extends TaggedModel {
     
     @CacheField(Model_CProgram.class)
     public static Cache<UUID, Model_CProgram> cache;
-
-    public static Model_CProgram getById(String id) throws _Base_Result_Exception  {
-        return getById(UUID.fromString(id));
-    }
     
     public static Model_CProgram getById(UUID id) throws _Base_Result_Exception  {
 

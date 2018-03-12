@@ -88,10 +88,6 @@ public class Model_Customer extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Customer getById(String id)throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Customer getById(UUID id) throws _Base_Result_Exception {
 
         Model_Customer customer = Model_Customer.find.byId(id);

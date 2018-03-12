@@ -171,10 +171,6 @@ public class Model_HardwareGroup extends NamedModel {
     @CacheField(Model_HardwareGroup.class)
     public static Cache<UUID, Model_HardwareGroup> cache;
 
-    public static Model_HardwareGroup getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_HardwareGroup getById(UUID id) throws _Base_Result_Exception {
 
         Model_HardwareGroup group = cache.get(id);

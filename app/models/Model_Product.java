@@ -773,10 +773,6 @@ public class Model_Product extends NamedModel {
     @CacheField(value = Model_Product.class)
     public static Cache<UUID, Model_Product> cache;
 
-    public static Model_Product getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Product getById(UUID id) throws _Base_Result_Exception  {
 
         Model_Product product = cache.get(id);

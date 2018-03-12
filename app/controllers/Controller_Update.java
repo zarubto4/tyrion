@@ -61,7 +61,7 @@ public class Controller_Update extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result get_Actualization_Procedure(@ApiParam(required = true) String actualization_procedure_id) {
+    public Result get_Actualization_Procedure(@ApiParam(required = true) UUID actualization_procedure_id) {
         try {
 
             // Kontrola objektu
@@ -292,7 +292,7 @@ public class Controller_Update extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result get_Actualization_CProgramUpdatePlan(@ApiParam(required = true) String plan_id) {
+    public Result get_Actualization_CProgramUpdatePlan(@ApiParam(required = true) UUID plan_id) {
         try {
 
             // Kontrola objektu

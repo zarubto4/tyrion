@@ -71,7 +71,7 @@ public class Controller_Grid extends _BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result gridProject_create(String project_id) {
+    public Result gridProject_create(UUID project_id) {
         try {
 
             // Get and Validate Object
@@ -108,7 +108,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result gridProject_get(String grid_project_id) {
+    public Result gridProject_get(UUID grid_project_id) {
         try {
             // Kontrola objektu
             Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
@@ -142,11 +142,11 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result gridProject_update(String grid_project_id) {
+    public Result gridProject_update(UUID grid_project_id) {
         try {
 
             // Get and Validate Object
@@ -169,7 +169,7 @@ public class Controller_Grid extends _BaseController {
 
     @ApiOperation(value = "tag GridProject",
             tags = {"Grid"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -213,7 +213,7 @@ public class Controller_Grid extends _BaseController {
 
     @ApiOperation(value = "untag GridProject",
             tags = {"Grid"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -275,7 +275,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result gridProject_delete(String grid_project_id) {
+    public Result gridProject_delete(UUID grid_project_id) {
         try {
 
             // Kontrola objektu
@@ -304,7 +304,7 @@ public class Controller_Grid extends _BaseController {
     })
     @BodyParser.Of(BodyParser.Empty.class)
     @Security.Authenticated(Authentication.class)
-    public Result gridProject_getInterface(String grid_project_id) {
+    public Result gridProject_getInterface(UUID grid_project_id) {
         try {
 
             // Kontrola objektu
@@ -363,7 +363,7 @@ public class Controller_Grid extends _BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result gridProgram_create(String grid_project_id) {
+    public Result gridProgram_create(UUID grid_project_id) {
         try {
 
             // Get and Validate Object
@@ -399,7 +399,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result gridProgram_get( String grid_program_id) {
+    public Result gridProgram_get( UUID grid_program_id) {
         try {
 
             // Kontrola objektu
@@ -438,7 +438,7 @@ public class Controller_Grid extends _BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result gridProgram_update(String grid_program_id) {
+    public Result gridProgram_update(UUID grid_program_id) {
         try {
 
             // Get and Validate Object
@@ -462,7 +462,7 @@ public class Controller_Grid extends _BaseController {
 
     @ApiOperation(value = "tag GridProgram",
             tags = {"Grid"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -507,7 +507,7 @@ public class Controller_Grid extends _BaseController {
 
     @ApiOperation(value = "untag GridProgram",
             tags = {"Grid"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -561,10 +561,10 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result gridProgram_delete(String grid_program_id) {
+    public Result gridProgram_delete(UUID grid_program_id) {
         try {
 
             // Kontrola objektu
@@ -607,7 +607,7 @@ public class Controller_Grid extends _BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result gridProgramVersion_create( String grid_program_id) {
+    public Result gridProgramVersion_create( UUID grid_program_id) {
         try {
 
             // Get and Validate Object
@@ -652,7 +652,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result gridProgramVersion_get(String version_id) {
+    public Result gridProgramVersion_get(UUID version_id) {
         try {
             // Kontrola objektu
             Model_GridProgramVersion version = Model_GridProgramVersion.getById(version_id);
@@ -690,7 +690,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result gridProgramVersion_update( String version_id) {
+    public Result gridProgramVersion_update( UUID version_id) {
         try {
 
             // Get and Validate Object
@@ -728,7 +728,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Empty.class)
-    public Result gridProgramVersion_delete(String version_id) {
+    public Result gridProgramVersion_delete(UUID version_id) {
         try {
 
             // Získání objektu
@@ -813,7 +813,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result check_identifiactor(String terminal_id) {
+    public Result check_identifiactor(UUID terminal_id) {
         try {
 
             // Get and Validate Object
@@ -1009,7 +1009,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result widget_get(@ApiParam(value = "widget_id String path",   required = true) String grid_widget_id) {
+    public Result widget_get(@ApiParam(value = "widget_id String path",   required = true) UUID grid_widget_id) {
         try {
             // Kontrola objektu
             Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
@@ -1104,7 +1104,7 @@ public class Controller_Grid extends _BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result widget_update(@ApiParam(value = "widget_id String path",   required = true)  String grid_widget_id) {
+    public Result widget_update(@ApiParam(value = "widget_id String path",   required = true)  UUID grid_widget_id) {
         try {
 
             // Get and Validate Object
@@ -1131,7 +1131,7 @@ public class Controller_Grid extends _BaseController {
 
     @ApiOperation(value = "tag Widget",
             tags = {"Widget"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -1177,7 +1177,7 @@ public class Controller_Grid extends _BaseController {
 
     @ApiOperation(value = "untag Widget",
             tags = {"Widget"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -1234,7 +1234,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result widget_delete(@ApiParam(value = "widget_id String path",   required = true)  String grid_widget_id) {
+    public Result widget_delete(@ApiParam(value = "widget_id String path",   required = true)  UUID grid_widget_id) {
         try {
 
             // Kontrola objektu
@@ -1340,7 +1340,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result widget_deactivate(String grid_widget_id) {
+    public Result widget_deactivate(UUID grid_widget_id) {
         try {
 
             // Kontrola objekt
@@ -1373,7 +1373,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result widget_activate(String grid_widget_id) {
+    public Result widget_activate(UUID grid_widget_id) {
         try {
 
             // Kontrola objekt
@@ -1406,7 +1406,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result widget_order_up(@ApiParam(value = "widget_id String path",   required = true) String grid_widget_id) {
+    public Result widget_order_up(@ApiParam(value = "widget_id String path",   required = true) UUID grid_widget_id) {
         try {
 
             // Kontrola objekt
@@ -1437,7 +1437,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result widget_order_down(@ApiParam(value = "widget_id String path",   required = true) String grid_widget_id) {
+    public Result widget_order_down(@ApiParam(value = "widget_id String path",   required = true) UUID grid_widget_id) {
         try {
 
             Model_Widget gridWidget =  Model_Widget.getById(grid_widget_id);
@@ -1469,7 +1469,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result widgetVersion_delete(@ApiParam(value = "grid_widget_version_id String path",   required = true) String grid_widget_version_id) {
+    public Result widgetVersion_delete(@ApiParam(value = "grid_widget_version_id String path",   required = true) UUID grid_widget_version_id) {
         try {
 
             // Kontrola objektu
@@ -1488,7 +1488,7 @@ public class Controller_Grid extends _BaseController {
 
     @ApiOperation(value = "set_As_Main Widget_Version",
             tags = {"Admin-Grid-Widget"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -1507,7 +1507,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result widgetVersion_set_main(String grid_widget_version_id) {
+    public Result widgetVersion_set_main(UUID grid_widget_version_id) {
         try {
 
             // Kontrola objektu
@@ -1552,7 +1552,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result widgetVersion_version_make_public(String grid_widget_version_id) {
+    public Result widgetVersion_version_make_public(UUID grid_widget_version_id) {
         try {
             
             // Kontrola objektu
@@ -1608,7 +1608,7 @@ public class Controller_Grid extends _BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result widgetVersion_create(@ApiParam(value = "widget_id String path",   required = true) String grid_widget_id) {
+    public Result widgetVersion_create(@ApiParam(value = "widget_id String path",   required = true) UUID grid_widget_id) {
         try {
 
             // Get and Validate Object
@@ -1655,7 +1655,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result widgetVersion_get(@ApiParam(value = "grid_widget_version_id String path",   required = true) String grid_widget_version_id) {
+    public Result widgetVersion_get(@ApiParam(value = "grid_widget_version_id String path",   required = true) UUID grid_widget_version_id) {
         try {
             
             // Kontrola objektu
@@ -1698,7 +1698,7 @@ public class Controller_Grid extends _BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
-    public Result widgetVersion_edit(@ApiParam(value = "version_id String path",   required = true) String version_id) {
+    public Result widgetVersion_edit(@ApiParam(value = "version_id String path",   required = true) UUID version_id) {
         try {
 
             // Get and Validate Object
@@ -1750,7 +1750,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result widgetVersion_getAll(@ApiParam(value = "widget_id String path",   required = true) String grid_widget_id) {
+    public Result widgetVersion_getAll(@ApiParam(value = "widget_id String path",   required = true) UUID grid_widget_id) {
         try {
 
             // Kontrola objektu

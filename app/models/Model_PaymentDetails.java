@@ -177,10 +177,6 @@ public class Model_PaymentDetails extends BaseModel {
     @CacheField(value = Model_PaymentDetails.class, duration = CacheField.DayCacheConstant)
     public static Cache<UUID, Model_PaymentDetails> cache;
 
-    public static Model_PaymentDetails getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_PaymentDetails getById(UUID id) throws _Base_Result_Exception {
 
         Model_PaymentDetails paymentDetails = cache.get(id);

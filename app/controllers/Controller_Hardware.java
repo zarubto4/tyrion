@@ -244,7 +244,7 @@ public class Controller_Hardware extends _BaseController {
 
     @ApiOperation(value = "get Bootloader FileRecord",
             tags = {"File", "Garfield"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -276,7 +276,7 @@ public class Controller_Hardware extends _BaseController {
 
     @ApiOperation(value = "get CProgram_Version FileRecord",
             tags = { "File" , "Garfield"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -1090,7 +1090,7 @@ public class Controller_Hardware extends _BaseController {
 
     @ApiOperation(value = "delete Bootloader",
             tags = { "HardwareType"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "text/html",
             protocols = "https"
@@ -1122,7 +1122,7 @@ public class Controller_Hardware extends _BaseController {
 
     @ApiOperation(value = "upload Bootloader File",
             tags = {"Admin-Bootloader"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             protocols = "https"
     )
@@ -1216,7 +1216,7 @@ public class Controller_Hardware extends _BaseController {
             Model_BootLoader old_main_not_cached = Model_BootLoader.find.query().where().eq("main_hardware_type.id", boot_loader.hardware_type.id).select("id").findOne();
 
             if (old_main_not_cached != null) {
-                Model_BootLoader old_main = Model_BootLoader.getById(old_main_not_cached.id.toString());
+                Model_BootLoader old_main = Model_BootLoader.getById(old_main_not_cached.id);
                 if (old_main != null) {
                     old_main.main_hardware_type = null;
                     old_main.cache_main_hardware_type_id = null;
@@ -1812,7 +1812,7 @@ public class Controller_Hardware extends _BaseController {
 
     @ApiOperation(value = "update Board Backup",
             tags = { "Hardware"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https",
@@ -2449,7 +2449,7 @@ public class Controller_Hardware extends _BaseController {
 
     @ApiOperation(value = "tag HardwareRegistration",
             tags = {"HardwareRegistration"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -2494,7 +2494,7 @@ public class Controller_Hardware extends _BaseController {
 
     @ApiOperation(value = "untag HardwareRegistration",
             tags = {"HardwareRegistration"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"

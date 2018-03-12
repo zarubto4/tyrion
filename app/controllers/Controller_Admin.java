@@ -33,6 +33,7 @@ import utilities.update_server.ServerUpdate;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -115,7 +116,7 @@ public class Controller_Admin extends _BaseController {
 
     @ApiOperation(value = "Bugs get all",
             tags = {"Admin-Report"},
-            notes = "",
+            notes = "", //TODO
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -144,7 +145,7 @@ public class Controller_Admin extends _BaseController {
 
     @ApiOperation(value = "Bug get",
             tags = {"Admin-Report"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -156,7 +157,8 @@ public class Controller_Admin extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result serverError_get(@ApiParam(value = "bug_id String path", required = true) String bug_id) {
+
+    public Result serverError_get(@ApiParam(value = "bug_id String path", required = true) UUID bug_id) {
         try {
 
             Model_ServerError error = Model_ServerError.getById(bug_id);
@@ -195,7 +197,7 @@ public class Controller_Admin extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result serverError_addDescription(@ApiParam(value = "bug_id String path", required = true) String bug_id) {
+    public Result serverError_addDescription(@ApiParam(value = "bug_id String path", required = true) UUID bug_id) {
         try {
 
 
@@ -229,7 +231,7 @@ public class Controller_Admin extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result serverError_report(@ApiParam(value = "bug_id String path", required = true) String bug_id) {
+    public Result serverError_report(@ApiParam(value = "bug_id String path", required = true) UUID bug_id) {
         try {
 
             Model_ServerError error = Model_ServerError.getById(bug_id);
@@ -245,7 +247,7 @@ public class Controller_Admin extends _BaseController {
 
     @ApiOperation(value = "Bug delete",
             tags = {"Admin-Report"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "text/html",
             protocols = "https"
@@ -257,7 +259,8 @@ public class Controller_Admin extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result serverError_delete(@ApiParam(value = "bug_id String path", required = true) String bug_id) {
+
+    public Result serverError_delete(@ApiParam(value = "bug_id String path", required = true) UUID bug_id) {
         try {
 
             Model_ServerError error = Model_ServerError.getById(bug_id);
@@ -271,7 +274,7 @@ public class Controller_Admin extends _BaseController {
 
     @ApiOperation(value = "Bug delete all",
             tags = {"Admin-Report"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             consumes = "text/html",
             protocols = "https"
@@ -306,7 +309,7 @@ public class Controller_Admin extends _BaseController {
 
     @ApiOperation(value = "update Server Server_Component",
             tags = {"Admin"},
-            notes = "",
+            notes = "",         //TODO
             produces = "application/json",
             consumes = "text/html",
             protocols = "https"
@@ -378,7 +381,7 @@ public class Controller_Admin extends _BaseController {
 
     @ApiOperation(value = "get server updates",
             tags = {"Admin"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             protocols = "https"
     )

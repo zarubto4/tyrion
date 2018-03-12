@@ -240,10 +240,6 @@ public class Model_Tariff extends NamedModel {
     @CacheField(value = Model_Tariff.class, duration = CacheField.DayCacheConstant)
     @JsonIgnore public static Cache<UUID, Model_Tariff> cache;
 
-    public static Model_Tariff getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Tariff getById(UUID id) throws _Base_Result_Exception {
 
         Model_Tariff tariff = cache.get(id);

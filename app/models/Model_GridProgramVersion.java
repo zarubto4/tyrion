@@ -183,10 +183,6 @@ public class Model_GridProgramVersion extends VersionModel {
     @CacheField(Model_GridProgramVersion.class)
     public static Cache<UUID, Model_GridProgramVersion> cache;
 
-    public static Model_GridProgramVersion getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_GridProgramVersion getById(UUID id) throws _Base_Result_Exception {
 
         Model_GridProgramVersion version = cache.get(id);

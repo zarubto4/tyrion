@@ -231,7 +231,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "tag B_Program",
             tags = {"B_Program"},
-            notes = "",
+            notes = "", //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -276,7 +276,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "untag B_Program",
             tags = {"B_Program"},
-            notes = "",
+            notes = "", //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -553,7 +553,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "create Instance",
             tags = {"Instance"},
-            notes = "",
+            notes = "", //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https",
@@ -614,7 +614,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "get Instance",
             tags = {"Instance"},
-            notes = "",
+            notes = "", //TODO
             produces = "application/json",
             protocols = "https"
     )
@@ -639,7 +639,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "edit Instance",
             tags = {"Instance"},
-            notes = "",
+            notes = "", //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -688,7 +688,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "tag Instance",
             tags = {"Instance"},
-            notes = "",
+            notes = "", //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -733,7 +733,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "untag Instance",
             tags = {"Instance"},
-            notes = "",
+            notes = "", //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -778,7 +778,8 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "remove Instance",
             tags = {"Instance"},
-            notes = "",
+            notes = "", //TODO
+            //TODO
             protocols = "https"
     )
     @ApiResponses({
@@ -803,7 +804,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "create InstanceSnapshot",
             tags = {"Instance"},
-            notes = "",
+            notes = "", //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https",
@@ -854,7 +855,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "get InstanceSnapshot",
             tags = {"Instance"},
-            notes = "",
+            notes = "", //TODO
             produces = "application/json",
             protocols = "https"
     )
@@ -1062,7 +1063,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "update Instance Grid Settings",
             tags = { "Instance"},
-            notes = "",
+            notes = "",         //TODO
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -1209,6 +1210,7 @@ public class Controller_Blocko extends _BaseController {
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
+
     )
     @ApiImplicitParams(
             {
@@ -1274,6 +1276,7 @@ public class Controller_Blocko extends _BaseController {
             notes = "update basic information (name, and description) of the independent Block",
             produces = "application/json",
             protocols = "https"
+
     )
     @ApiImplicitParams(
             {
@@ -1322,10 +1325,11 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "tag Block",
             tags = {"Block"},
-            notes = "",
+            notes = "", //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
+
     )
     @ApiImplicitParams({
             @ApiImplicitParam(
@@ -1367,7 +1371,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "untag Block",
             tags = {"Block"},
-            notes = "",
+            notes = "", //TODO
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -1962,7 +1966,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "setMain BlockVersion",
             tags = {"Admin-Block"},
-            notes = "",
+            notes = "",     //TODO
             produces = "application/json",
             protocols = "https"
     )

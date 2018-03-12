@@ -467,11 +467,11 @@ public class Controller_ExternalServer extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 201, message = "Successfully created",      response = Model_CompilationServer.class),
-            @ApiResponse(code = 400, message = "Invalid body", response = Result_InvalidBody.class),
+            @ApiResponse(code = 201, message = "Successfully created",    response = Model_CompilationServer.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
     @BodyParser.Of(BodyParser.Json.class)
@@ -516,8 +516,8 @@ public class Controller_ExternalServer extends _BaseController {
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Update successfuly",        response = Model_CompilationServer.class),
-            @ApiResponse(code = 400, message = "Object not found",         response = Result_NotFound.class),
-            @ApiResponse(code = 400, message = "Invalid body",   response = Result_InvalidBody.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })

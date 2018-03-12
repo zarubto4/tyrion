@@ -239,10 +239,6 @@ public class Model_Compilation extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Compilation getById(String id) {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Compilation getById(UUID id) {
         return find.byId(id);
     }

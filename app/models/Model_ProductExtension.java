@@ -450,10 +450,6 @@ public class Model_ProductExtension extends NamedModel {
     @CacheField(value = Long.class, maxElements = 300, name = "Model_ProductExtension_Price")
     public static Cache<UUID, Long> cache_price;
 
-    public static Model_ProductExtension getById(String id) {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_ProductExtension getById(UUID id) {
         return find.query().where().idEq(id).eq("deleted", false).findOne();
     }

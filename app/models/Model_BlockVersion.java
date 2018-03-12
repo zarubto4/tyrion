@@ -143,10 +143,6 @@ public class Model_BlockVersion extends VersionModel {
     @CacheField(Model_BlockVersion.class)
     public static Cache<UUID, Model_BlockVersion> cache;
 
-    public static Model_BlockVersion getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_BlockVersion getById(UUID id) throws _Base_Result_Exception {
 
         Model_BlockVersion version = cache.get(id);

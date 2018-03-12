@@ -252,10 +252,6 @@ public class Model_CompilationServer extends BaseModel {
     @CacheField(value = Model_CompilationServer.class, duration = CacheField.DayCacheConstant)
     @JsonIgnore public static Cache<UUID, Model_CompilationServer> cache;
 
-    public static Model_CompilationServer getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_CompilationServer getById(UUID id) throws _Base_Result_Exception {
 
         Model_CompilationServer server = cache.get(id);

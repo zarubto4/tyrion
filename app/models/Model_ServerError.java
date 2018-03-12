@@ -180,10 +180,6 @@ public class Model_ServerError extends NamedModel {
 
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    public static Model_ServerError getById(String id) throws _Base_Result_Exception {
-        return   getById(UUID.fromString(id));
-    }
     
     public static Model_ServerError getById(UUID id) throws _Base_Result_Exception {
 

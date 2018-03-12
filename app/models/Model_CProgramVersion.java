@@ -556,10 +556,6 @@ public class Model_CProgramVersion extends VersionModel {
     @CacheField(value = Model_CProgramVersion.class, duration = 600)
     public static Cache<UUID, Model_CProgramVersion> cache;
 
-    public static Model_CProgramVersion getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_CProgramVersion getById(UUID id) throws _Base_Result_Exception {
 
         Model_CProgramVersion version = cache.get(id);

@@ -72,10 +72,6 @@ public class Model_Producer extends NamedModel {
     @CacheField(value = Model_Producer.class, duration = CacheField.DayCacheConstant)
     public static Cache<UUID, Model_Producer> cache;
 
-    public static Model_Producer getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Producer getById(UUID id) throws _Base_Result_Exception {
 
         Model_Producer producer = cache.get(id);

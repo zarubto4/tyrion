@@ -298,10 +298,6 @@ public class Model_Block extends TaggedModel {
     @CacheField(Model_Block.class)
     public static Cache<UUID, Model_Block> cache;
 
-    public static Model_Block getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
     public static Model_Block getById(UUID id) throws _Base_Result_Exception {
 
         Model_Block block = cache.get(id);

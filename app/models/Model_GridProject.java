@@ -243,10 +243,6 @@ public class Model_GridProject extends TaggedModel {
 
     @CacheField(Model_GridProject.class)
     public static Cache<UUID, Model_GridProject> cache;
-
-    public static Model_GridProject getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
     
     public static Model_GridProject getById(UUID id) throws _Base_Result_Exception {
 
