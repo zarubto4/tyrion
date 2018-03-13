@@ -142,6 +142,7 @@ public class Model_UpdateProcedure extends BaseModel {
         return cache().get(Model_InstanceSnapshot.class);
     }
 
+    @JsonIgnore
     public Model_InstanceSnapshot getInstanceSnapShot() {
         try {
             return Model_InstanceSnapshot.getById(getInstanceSnapshotId());
