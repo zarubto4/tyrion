@@ -36,8 +36,6 @@ public class Model_BlockVersion extends VersionModel {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Cached private UUID cache_block_id;
-
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 
@@ -47,25 +45,20 @@ public class Model_BlockVersion extends VersionModel {
     @JsonIgnore
     public UUID get_block_id() {
 
-        if (cache_block_id == null) {
-
-            Model_Block block = Model_Block.find.query().where().eq("versions.id", id).select("id").findOne();
-            if (block != null) {
-                cache_block_id = block.id;
-            }
+        if (cache().get(Model_Block.class) == null) {
+            cache().add(Model_Block.class, (UUID) Model_Block.find.query().where().eq("versions.id", id).select("id").findSingleAttribute());
         }
 
-        return cache_block_id;
+        return cache().get(Model_Block.class);
     }
 
     @JsonIgnore
     public Model_Block get_block() {
-
-        if (get_block_id() != null) {
-           return Model_Block.getById(cache_block_id);
+        try {
+            return Model_Block.getById(get_block_id());
+        } catch (Exception e) {
+            return null;
         }
-
-        return null;
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -84,7 +77,7 @@ public class Model_BlockVersion extends VersionModel {
             }
         }).start();
 
-        block.cache_version_ids.add(0, id);
+        block.cache().add(this.getClass(), id);
 
     }
 
@@ -117,7 +110,7 @@ public class Model_BlockVersion extends VersionModel {
 
 
         if (get_block() != null) {
-            get_block().cache_version_ids.remove(id);
+            get_block().cache().remove(this.getClass(), id);
         }
 
         return super.delete();

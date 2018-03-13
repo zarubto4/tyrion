@@ -111,6 +111,13 @@ public abstract class BaseModel extends Model {
             }
         }
 
+        public void removeAll(Class c){
+            if(cash_map.containsKey(c)){
+                cash_map.get(c).clear();
+            }
+        }
+
+
         public List<UUID> gets(Class c){
             return cash_map.getOrDefault(c, null);
         }

@@ -51,11 +51,9 @@ public class Model_UpdateProcedure extends BaseModel {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    // For Faster reload
-    @Transient @JsonIgnore @Cached  public Integer cache_procedure_size_all;
-    @Transient @JsonIgnore @Cached  public UUID cache_instance_snapshot_id;
+    @JsonIgnore private Integer size = null;
 
- /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true, value = "Only if type_of_update constant is MANUALLY_RELEASE_MANAGER")
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -89,6 +87,7 @@ public class Model_UpdateProcedure extends BaseModel {
             return null;
         }
     }
+
     @JsonProperty @ApiModelProperty(required = true, value = "Only of type_of_update constant is MANUALLY_RELEASE_MANAGER && firmware_type is BOOTLOADER")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_Bootloader_Update_program bootloader(){
@@ -105,10 +104,6 @@ public class Model_UpdateProcedure extends BaseModel {
         }
     }
 
-
-
-
-
     @JsonProperty @ApiModelProperty(required = true )
     public Enum_Update_group_procedure_state state () {
         return state;
@@ -117,13 +112,11 @@ public class Model_UpdateProcedure extends BaseModel {
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public int procedure_size_all() {
 
-        if (cache_procedure_size_all == null) {
-            cache_procedure_size_all = Model_HardwareUpdate.find.query().where()
-                    .eq("actualization_procedure.id", id)
-                    .findCount();
+        if (size == null) {
+            size = Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).findCount();
         }
 
-        return cache_procedure_size_all;
+        return size;
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
@@ -141,24 +134,23 @@ public class Model_UpdateProcedure extends BaseModel {
 
     @JsonIgnore
     public UUID getInstanceSnapshotId() {
+
+        if (cache().get(Model_InstanceSnapshot.class) == null) {
+            cache().add(Model_InstanceSnapshot.class, (UUID) Model_InstanceSnapshot.find.query().where().eq("procedures.id", id).select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_InstanceSnapshot.class);
+    }
+
+    public Model_InstanceSnapshot getInstanceSnapShot() {
         try {
-            if (cache_instance_snapshot_id == null) {
-                Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.query().where()
-                        .eq("procedures.id", id)
-                        .select("id")
-                        .findOne();
-
-                if (snapshot != null) {
-                    cache_instance_snapshot_id = snapshot.id;
-                }
-            }
-
-            return cache_instance_snapshot_id;
-        } catch (Exception e) {
+            return Model_InstanceSnapshot.getById(getInstanceSnapshotId());
+        }catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
     }
+
     @JsonIgnore
     public void update_state() {
         try {
@@ -301,12 +293,13 @@ public class Model_UpdateProcedure extends BaseModel {
     }
 
 
+
+/* EXECUTION METHODS ----------------------------------------------------------------------------------------------------*/
+
     @JsonIgnore @Transient
     public void execute_update_procedure() {
         Model_Hardware.execute_update_procedure(this);
     }
-
-/* SERVER WEBSOCKET ----------------------------------------------------------------------------------------------------*/
 
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------------*/
@@ -368,10 +361,6 @@ public class Model_UpdateProcedure extends BaseModel {
         logger.internalServerError(new Exception("This object is not legitimate to remove."));
         return false;
     }
-
-
-
-    /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 

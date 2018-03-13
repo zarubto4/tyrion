@@ -49,11 +49,6 @@ public class /**/Model_BootLoader extends NamedModel {
     @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader", fetch = FetchType.LAZY)                 public List<Model_Hardware> hardware = new ArrayList<>();
                  @OneToOne(mappedBy = "boot_loader", cascade = CascadeType.ALL)                    public Model_Blob file;                        // TODO Cachovat - a opravit kde je nevhodná návaznost
 
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Cached public UUID cache_hardware_type_id;
-    @JsonIgnore @Transient @Cached public UUID cache_main_hardware_type_id;
-    @JsonIgnore @Transient @Cached public UUID cache_file_id;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -61,8 +56,8 @@ public class /**/Model_BootLoader extends NamedModel {
     @JsonProperty public String  file_path() {
         try {
 
-            if (cache_file_id != null ) {
-                String link = Model_Blob.cache_public_link.get(cache_file_id);
+            if (cache().get(Model_Blob.class) != null ) {
+                String link = Model_Blob.cache_public_link.get(cache().get(Model_Blob.class));
                 if (link != null) {
                     return link;
                 }
@@ -74,11 +69,11 @@ public class /**/Model_BootLoader extends NamedModel {
             }
 
             String total_link = file.cache_public_link();
-            this.cache_file_id = file.id;
+            cache().add(Model_Blob.class,  file.id );
 
 
             logger.debug("path - total link: {}", total_link);
-            Model_Blob.cache_public_link.put(cache_file_id, total_link);
+            Model_Blob.cache_public_link.put(cache().get(Model_Blob.class), total_link);
 
             // Přesměruji na link
             return total_link;
@@ -92,40 +87,37 @@ public class /**/Model_BootLoader extends NamedModel {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public Model_HardwareType getHardwareType() {
-
-        if (cache_hardware_type_id == null) {
-
-            Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("boot_loaders.id", id).select("id").findOne();
-            if (hardwareType == null) {
-                return null;
-            }
-
-            cache_hardware_type_id = hardwareType.id;
+    public UUID getHardwareTypeId() {
+        if (cache().get(Model_HardwareType.class) == null) {
+            cache().add(Model_HardwareType.class, (UUID) Model_Project.find.query().where().eq("boot_loaders.id", id).select("id").findSingleAttribute());
         }
 
-        return Model_HardwareType.getById(cache_hardware_type_id);
+        return cache().get(Model_HardwareType.class);
+    }
+
+    @JsonIgnore
+    public Model_HardwareType getHardwareType() {
+        try {
+            return Model_HardwareType.getById(getHardwareTypeId());
+        }catch (Exception e) {
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public UUID getMainHardwareTypeId() {
+        if (cache().get(Random.class) == null) { // Záměrně random! Protože potřebuji uložit stejný typ objektu do paměti dvakrát a rozpoznání je jen podle typu třídy
+            cache().add(Random.class, (UUID) Model_Project.find.query().where().eq("main_boot_loader.id", id).select("id").findSingleAttribute());
+        }
+
+        return cache().get(Random.class);
     }
 
     @JsonIgnore
     public Model_HardwareType getMainHardwareType() {
         try {
-
-            if (cache_main_hardware_type_id == null) {
-
-                Model_HardwareType main = Model_HardwareType.find.query().where().eq("main_boot_loader.id", id).select("id").findOne();
-                if (main == null) {
-                    cache_main_hardware_type_id = null;
-                    return null;
-                }
-
-                cache_main_hardware_type_id = main.id;
-            }
-
-            return Model_HardwareType.getById(cache_main_hardware_type_id);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
+            return Model_HardwareType.getById(getMainHardwareTypeId());
+        }catch (Exception e) {
             return null;
         }
     }

@@ -32,10 +32,6 @@ public class Model_WidgetVersion extends VersionModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Widget widget;
 
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Cached private UUID cache_widget_id;
-
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
 
@@ -44,27 +40,20 @@ public class Model_WidgetVersion extends VersionModel {
     @JsonIgnore
     public UUID get_grid_widget_id() throws _Base_Result_Exception {
 
-        if (cache_widget_id == null) {
-
-            Model_Widget widget = Model_Widget.find.query().where().eq("versions.id", id).select("id").findOne();
-            if (widget != null) {
-                cache_widget_id = widget.id;
-            } else {
-                cache_widget_id = null;
-            }
+        if (cache().get(Model_Widget.class) == null) {
+            cache().add(Model_Widget.class, (UUID) Model_Widget.find.query().where().eq("versions.id", id).select("id").findSingleAttribute());
         }
 
-        return cache_widget_id;
+        return cache().get(Model_Widget.class);
     }
 
     @JsonIgnore
     public Model_Widget get_grid_widget() throws _Base_Result_Exception {
-
-        if (get_grid_widget_id() != null) {
-            return Model_Widget.getById(cache_widget_id);
+        try {
+            return Model_Widget.getById(get_grid_widget_id());
+        }catch (Exception e) {
+            return null;
         }
-
-        return null;
     }
 
 
@@ -80,7 +69,7 @@ public class Model_WidgetVersion extends VersionModel {
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, widget.get_project_id(), widget.id));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, widget.getProjectId(), widget.id));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -88,7 +77,7 @@ public class Model_WidgetVersion extends VersionModel {
 
         // Add to Cache
         if (widget != null) {
-            widget.cache_version_ids.add(0, id);
+            widget.cache().add(this.getClass(), id);
         }
     }
 
@@ -102,7 +91,7 @@ public class Model_WidgetVersion extends VersionModel {
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_grid_widget().get_project_id(), get_grid_widget_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_grid_widget().getProjectId(), get_grid_widget_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -120,14 +109,14 @@ public class Model_WidgetVersion extends VersionModel {
 
         // Remove from Cache Cache
         try {
-            get_grid_widget().cache_version_ids.remove(id);
+            get_grid_widget().cache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_grid_widget().get_project_id(), get_grid_widget_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_grid_widget().getProjectId(), get_grid_widget_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }

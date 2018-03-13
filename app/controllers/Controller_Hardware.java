@@ -1219,13 +1219,13 @@ public class Controller_Hardware extends _BaseController {
                 Model_BootLoader old_main = Model_BootLoader.getById(old_main_not_cached.id);
                 if (old_main != null) {
                     old_main.main_hardware_type = null;
-                    old_main.cache_main_hardware_type_id = null;
+                    old_main.cache().removeAll(Random.class);
                     old_main.update();
                 }
             }
 
             boot_loader.main_hardware_type = boot_loader.getHardwareType();
-            boot_loader.cache_main_hardware_type_id =  boot_loader.main_hardware_type.id;
+            boot_loader.cache().add(Random.class, boot_loader.main_hardware_type.id);
             boot_loader.update();
 
             // Update Chache

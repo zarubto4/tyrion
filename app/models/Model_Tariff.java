@@ -71,7 +71,9 @@ public class Model_Tariff extends NamedModel {
         return methods;
     }
 
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Visible only for Administrator with Special Permission") @Transient public Long credit_for_beginning() {
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    @ApiModelProperty("Visible only for Administrator with Special Permission")
+    @Transient public Long credit_for_beginning() {
         try {
             this.check_update_permission();
             return credit_for_beginning;

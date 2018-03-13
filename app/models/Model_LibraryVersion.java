@@ -40,12 +40,6 @@ public class Model_LibraryVersion extends VersionModel {
     @JsonIgnore @ManyToOne  public Model_Library library;
     @JsonIgnore @OneToMany(mappedBy = "example_library", cascade = CascadeType.ALL)  public List<Model_CProgram> examples = new ArrayList<>();
 
-
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Cached private UUID cache_library_id;
-
-
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
     // TODO Cache - Performeance [TZ]!
@@ -83,26 +77,20 @@ public class Model_LibraryVersion extends VersionModel {
     @JsonIgnore
     public UUID get_library_id() throws _Base_Result_Exception {
 
-        if (cache_library_id == null) {
-
-            Model_Library library = Model_Library.find.query().where().eq("versions.id", id).select("id").findOne();
-            if (library != null) {
-                cache_library_id = library.id;
-            } else {
-                throw new Result_Error_NotFound(Model_Library.class);
-            }
+        if (cache().get(Model_Library.class) == null) {
+            cache().add(Model_Library.class, (UUID) Model_Library.find.query().where().eq("versions.id", id).select("id").findSingleAttribute());
         }
 
-        return cache_library_id;
+        return cache().get(Model_Library.class);
     }
 
     @JsonIgnore
     public Model_Library get_library() throws _Base_Result_Exception {
-
-        if (cache_library_id == null) {
-           return Model_Library.getById(get_library_id());
+        try {
+            return Model_Library.getById(get_library_id());
+        }catch (Exception e) {
+            return null;
         }
-        return Model_Library.getById(cache_library_id);
     }
 
 
@@ -116,12 +104,12 @@ public class Model_LibraryVersion extends VersionModel {
         super.save();
 
         new Thread(() -> {
-            EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, library.get_project_id(), library.id));
+            EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, library.getProjectId(), library.id));
         }).start();
 
         // Add to Cache
         if (library != null) {
-            library.cache_version_ids.add(0, id);
+            library.cache().add(this.getClass(), id);
         }
     }
 
@@ -133,7 +121,7 @@ public class Model_LibraryVersion extends VersionModel {
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, get_library().get_project_id(), get_library_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, get_library().getProjectId(), get_library_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -151,14 +139,14 @@ public class Model_LibraryVersion extends VersionModel {
 
         // Remove from Cache
         try {
-            get_library().cache_version_ids.remove(id);
+            get_library().cache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, get_library().get_project_id(), get_library_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, get_library().getProjectId(), get_library_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }

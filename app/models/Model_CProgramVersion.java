@@ -62,10 +62,6 @@ public class Model_CProgramVersion extends VersionModel {
 
     @OneToOne @JsonIgnore  public Model_CProgram default_program;
 
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Cached private UUID cache_c_program_id;
-
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
@@ -148,30 +144,20 @@ public class Model_CProgramVersion extends VersionModel {
     @JsonIgnore
     public UUID get_c_program_id() throws _Base_Result_Exception {
 
-        if (cache_c_program_id == null) {
-
-            Model_CProgram cProgram = Model_CProgram.find.query().where().eq("versions.id", id).select("id").findOne();
-            if (cProgram != null) {
-                cache_c_program_id = cProgram.id;
-            }
+        if (cache().get(Model_CProgram.class) == null) {
+            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("versions.id", id).select("id").findSingleAttribute());
         }
 
-        return cache_c_program_id;
+        return cache().get(Model_CProgram.class);
     }
 
     @JsonIgnore
     public Model_CProgram get_c_program() throws _Base_Result_Exception {
-
-        if (cache_c_program_id == null) {
-            Model_CProgram cProgram = Model_CProgram.find.query().where().eq("versions.id", id).select("id").findOne();
-            cache_c_program_id = cProgram.id;
-        }
-
-        if (cache_c_program_id == null) {
+        try {
+            return Model_CProgram.getById(get_c_program_id());
+        }catch (Exception e) {
             return null;
         }
-
-        return Model_CProgram.getById(cache_c_program_id);
     }
 
 

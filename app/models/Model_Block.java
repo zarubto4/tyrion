@@ -16,6 +16,7 @@ import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
+import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
@@ -45,50 +46,29 @@ public class Model_Block extends TaggedModel {
     @JsonIgnore @OneToMany(mappedBy="block", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     public List<Model_BlockVersion> versions = new ArrayList<>();
 
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Cached private UUID cache_project_id;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_version_ids = new ArrayList<>();
-    @JsonIgnore @Transient @Cached private UUID cache_producer_id;
-
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(value = "Visible only if user has permission to know it", required = false)
     public Model_Person author() throws _Base_Result_Exception {
         try {
-
-            if (author_id != null) {
-                return Model_Person.getById(author_id);
-            }
-
-            return null;
+           return get_author();
         }catch (Exception e){
             logger.internalServerError(e);
             return null;
         }
     }
 
-    @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
-    public UUID producer_id() {
-
-        if (cache_producer_id != null) return cache_producer_id;
-
-        Model_Producer producer = get_producer();
-        if (producer == null) return null;
-
-        return producer.id;
+    @JsonProperty  @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company", required = false)
+    public Swagger_Short_Reference producer(){
+        try {
+            Model_Producer product = get_producer();
+            return new Swagger_Short_Reference(product.id, product.name, product.description);
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
-    @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company")
-    @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
-    public String producer_name() {
-
-        Model_Producer producer = get_producer();
-        if (producer == null) return null;
-
-        return producer.name;
-    }
 
     @JsonProperty @ApiModelProperty(required = true)
     public  List<Model_BlockVersion> versions() {
@@ -105,42 +85,39 @@ public class Model_Block extends TaggedModel {
     @JsonIgnore
     public UUID get_project_id() throws _Base_Result_Exception {
 
-        if (cache_project_id == null) {
-            Model_Project project = Model_Project.find.query().where().eq("blocks.id", id).select("id").findOne();
-            if (project == null) return null;
-            cache_project_id = project.id;
+        if (cache().get(Model_Project.class) == null) {
+            cache().add(Model_Project.class, Model_Project.find.query().where().eq("\"blocks.id\".id", id).select("id").findSingleAttributeList());
         }
 
-        return cache_project_id;
+        return cache().get(Model_Project.class);
+
     }
 
     @JsonIgnore
     public Model_Project get_project() throws _Base_Result_Exception {
 
-        if (cache_project_id == null) {
+        try {
             return Model_Project.getById(get_project_id());
-        }else {
-            return Model_Project.getById(cache_project_id);
+        }catch (Exception e) {
+            return null;
         }
     }
 
     @JsonIgnore
+    public List<UUID> getVersionsId() {
+        if (cache().gets(Model_BlockVersion.class) == null) {
+            cache().add(Model_BlockVersion.class, Model_CProgramVersion.find.query().where().eq("block.id", id).eq("deleted", false).order().desc("created").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_BlockVersion.class);
+    }
+    @JsonIgnore
     public List<Model_BlockVersion> getVersions() {
         try {
 
-            if (cache_version_ids.isEmpty()) {
-
-                List<UUID> uuid_ids  =  Model_BlockVersion.find.query().where().eq("block.id", id).eq("deleted", false).order().desc("created").findIds();
-
-                // Získání seznamu
-                for (UUID uuid_id : uuid_ids) {
-                    cache_version_ids.add(uuid_id);
-                }
-            }
-
             List<Model_BlockVersion> blocko_versions  = new ArrayList<>();
 
-            for (UUID version_id : cache_version_ids) {
+            for (UUID version_id : getVersionsId()) {
                 blocko_versions.add(Model_BlockVersion.getById(version_id));
             }
 
@@ -159,16 +136,24 @@ public class Model_Block extends TaggedModel {
     }
 
     @JsonIgnore
-    public Model_Producer get_producer() {
+    public UUID get_producerId() {
 
-        if (cache_producer_id == null) {
-            Model_Producer producer = Model_Producer.find.query().where().eq("blocks.id", id).select("id").findOne();
-            if (producer == null) return null;
-
-            cache_producer_id = producer.id;
+        if (cache().get(Model_Producer.class) == null) {
+            cache().add(Model_Producer.class, Model_Producer.find.query().where().eq("blocks.id", id).select("id").findSingleAttributeList());
         }
 
-        return Model_Producer.getById(cache_producer_id);
+        return cache().get(Model_Producer.class);
+
+    }
+
+    @JsonIgnore
+    public Model_Producer get_producer() {
+
+        try {
+            return Model_Producer.getById(get_producerId());
+        }catch (Exception e) {
+            return null;
+        }
     }
 
 

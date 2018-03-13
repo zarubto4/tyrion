@@ -43,13 +43,6 @@ public class Model_Library extends TaggedModel {
 
     @JsonIgnore @OneToMany(mappedBy = "library", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("created DESC") public List<Model_LibraryVersion> versions = new ArrayList<>();
 
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Cached public List<UUID> cache_version_ids;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_hardware_type_ids;
-    @JsonIgnore @Transient @Cached private UUID cache_project_id;
-    @JsonIgnore @Transient @Cached private String cache_project_name;
-
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 
@@ -67,40 +60,41 @@ public class Model_Library extends TaggedModel {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public UUID get_project_id() {
+    public UUID getProjectId() {
 
-        if (cache_project_id == null) {
-            Model_Project project = Model_Project.find.query().where().eq("libraries.id", id).select("id").findOne();
-            if (project == null) return null;
-            cache_project_id = project.id;
+        if (cache().get(Model_Project.class) == null) {
+            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("libraries.id", id).select("id").findSingleAttribute());
         }
 
-        return cache_project_id;
+        return cache().get(Model_Project.class);
     }
 
     @JsonIgnore
     public Model_Project get_project() throws _Base_Result_Exception {
 
-        if (cache_project_id == null) {
-            return Model_Project.getById(get_project_id());
-        }else {
-            return Model_Project.getById(cache_project_id);
+        try {
+            return Model_Project.getById(getProjectId());
+        }catch (Exception e) {
+            return null;
         }
+    }
+
+    @JsonIgnore
+    public List<UUID> getVersionIds() {
+        if (cache().gets(Model_LibraryVersion.class) == null) {
+            cache().add(Model_LibraryVersion.class, Model_LibraryVersion.find.query().where().eq("library.id", id).eq("deleted", false).order().desc("created").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_LibraryVersion.class);
     }
 
     @JsonIgnore
     public List<Model_LibraryVersion> getVersions() {
         try {
 
-            if (cache_version_ids == null ||cache_version_ids.isEmpty()) {
-
-                cache_version_ids =  Model_LibraryVersion.find.query().where().eq("library.id", id).eq("deleted", false).order().desc("created").findIds();
-
-            }
-
             List<Model_LibraryVersion> versions  = new ArrayList<>();
 
-            for (UUID version_id : cache_version_ids) {
+            for (UUID version_id : getVersionIds()) {
                 versions.add(Model_LibraryVersion.getById(version_id));
             }
 
@@ -112,27 +106,22 @@ public class Model_Library extends TaggedModel {
         }
     }
 
+
+    @JsonIgnore
+    public List<UUID> getHardwareTypesId() {
+        if (cache().gets(Model_HardwareType.class) == null) {
+            cache().add(Model_HardwareType.class, Model_HardwareType.find.query().where().eq("libraries.id", id).eq("deleted", false).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_HardwareType.class);
+    }
     @JsonIgnore
     public List<Model_HardwareType> getHardwareTypes() {
-
         try {
-
-            if (cache_hardware_type_ids == null) {
-
-                cache_hardware_type_ids = new ArrayList<>();
-
-                List<UUID> hardwareTypes_id =  Model_HardwareType.find.query().where().eq("libraries.id", id).orderBy("UPPER(name) ASC").findIds();
-
-                // Získání seznamu
-                for (UUID id : hardwareTypes_id) {
-                    cache_hardware_type_ids.add(id);
-                }
-
-            }
 
             List<Model_HardwareType> hardwareTypes  = new ArrayList<>();
 
-            for (UUID hardware_type_id : cache_hardware_type_ids) {
+            for (UUID hardware_type_id : getHardwareTypesId()) {
                 hardwareTypes.add(Model_HardwareType.getById(hardware_type_id));
             }
 
@@ -164,7 +153,7 @@ public class Model_Library extends TaggedModel {
 
         logger.debug("update :: Update object Id: " + this.id);
 
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Library.class, get_project_id(), this.id))).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Library.class, getProjectId(), this.id))).start();
 
         //Database Update
         super.update();
@@ -177,7 +166,7 @@ public class Model_Library extends TaggedModel {
         super.delete();
 
         try{
-            Model_Project.getById(get_project_id()).cache().remove(this.getClass(),id);
+            get_project().cache().remove(this.getClass(),id);
         }catch (_Base_Result_Exception exception){
             // Nothing
         }

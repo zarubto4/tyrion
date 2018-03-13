@@ -77,7 +77,6 @@ public class Model_Product extends NamedModel {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Cached public List<UUID> cache_project_ids;
     @JsonIgnore @Transient @Cached public List<UUID> cache_invoices_ids;
     @JsonIgnore @Transient @Cached public List<UUID> cache_extensions_ids;
 
@@ -447,11 +446,12 @@ public class Model_Product extends NamedModel {
 
     @JsonIgnore
     public List<UUID> get_projects_ids() {
-        if (cache_project_ids == null) {
-            cache_project_ids = Model_Project.find.query().where().eq("product.id", this.id).findIds();
+
+        if (cache().gets(Model_Project.class) == null) {
+            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("product.id", id).select("id").findSingleAttribute());
         }
 
-        return cache_project_ids;
+        return cache().gets(Model_Project.class);
     }
 
     @JsonIgnore

@@ -95,7 +95,7 @@ public class Model_CProgram extends TaggedModel {
     @JsonIgnore @Transient public UUID getProjectId() throws _Base_Result_Exception  {
 
         if (cache().get(Model_Project.class) == null) {
-            cache().add(Model_Project.class, Model_Project.find.query().where().eq("c_programs.id", id).select("id").findSingleAttributeList());
+            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("c_programs.id", id).select("id").findSingleAttribute());
         }
 
         return cache().get(Model_Project.class);
@@ -256,7 +256,7 @@ public class Model_CProgram extends TaggedModel {
         throw new Result_Error_PermissionDenied();
 
     }
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
 
         try{
             // Object project not exist so its public program, and user not need read permission
