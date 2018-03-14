@@ -33,7 +33,7 @@ public class Controller_Code extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
-    private static final Logger logger = new Logger(Controller_Hardware.class);
+    private static final Logger logger = new Logger(Controller_Code.class);
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
@@ -177,9 +177,6 @@ public class Controller_Code extends _BaseController {
 
             // Get and Validate Object
             Swagger_C_Program_Version_Update help  = baseFormFactory.formFromRequestWithValidation(Swagger_C_Program_Version_Update.class);
-
-            // Ověření objektu
-            if (help.hardware_type_id == null) return badRequest("hardware_type_id is missing!");
 
             // Ověření objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById(help.hardware_type_id);
