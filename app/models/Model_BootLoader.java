@@ -52,7 +52,9 @@ public class /**/Model_BootLoader extends NamedModel {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public boolean main_bootloader() { return getMainHardwareType() != null;}
+    @JsonProperty public boolean main_bootloader() {
+        return getMainHardwareType() != null;
+    }
     @JsonProperty public String  file_path() {
         try {
 
@@ -69,7 +71,7 @@ public class /**/Model_BootLoader extends NamedModel {
             }
 
             String total_link = file.cache_public_link();
-            cache().add(Model_Blob.class,  file.id );
+            cache().add(Model_Blob.class, file.id);
 
 
             logger.debug("path - total link: {}", total_link);
@@ -89,7 +91,7 @@ public class /**/Model_BootLoader extends NamedModel {
     @JsonIgnore
     public UUID getHardwareTypeId() {
         if (cache().get(Model_HardwareType.class) == null) {
-            cache().add(Model_HardwareType.class, (UUID) Model_Project.find.query().where().eq("boot_loaders.id", id).select("id").findSingleAttribute());
+            cache().add(Model_HardwareType.class, (UUID) Model_HardwareType.find.query().where().eq("boot_loaders.id", id).select("id").findSingleAttribute());
         }
 
         return cache().get(Model_HardwareType.class);
@@ -107,7 +109,7 @@ public class /**/Model_BootLoader extends NamedModel {
     @JsonIgnore
     public UUID getMainHardwareTypeId() {
         if (cache().get(Random.class) == null) { // Záměrně random! Protože potřebuji uložit stejný typ objektu do paměti dvakrát a rozpoznání je jen podle typu třídy
-            cache().add(Random.class, (UUID) Model_Project.find.query().where().eq("main_boot_loader.id", id).select("id").findSingleAttribute());
+            cache().add(Random.class, (UUID) Model_HardwareType.find.query().where().eq("main_boot_loader.id", id).select("id").findSingleAttribute());
         }
 
         return cache().get(Random.class);
@@ -192,7 +194,7 @@ public class /**/Model_BootLoader extends NamedModel {
                         .setImportance(NotificationImportance.LOW)
                         .setLevel(NotificationLevel.WARNING)
                         .setChainType(NotificationType.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
-                        .setNotificationId(plans.get(0).actualization_procedure.id)
+                        .setNotificationId(plans.get(0).getActualizationProcedureId())
                         .setText(new Notification_Text().setText("Attention. I have entered the bootloader update command for Bootloader version "))
                         .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plans.get(0).getBootloader().version_identifier + " "))
                         .setText(new Notification_Text().setText("for " + plans.size() + " devices. "))

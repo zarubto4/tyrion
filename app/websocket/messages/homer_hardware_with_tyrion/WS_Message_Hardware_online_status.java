@@ -37,7 +37,7 @@ public class WS_Message_Hardware_online_status extends WS_AbstractMessage  {
             return false;
         } else if (map.isEmpty()) {
             for (DeviceStatus status : hardware_list) {
-                map.put(status.hardware_id, status);
+                map.put(status.full_id, status);
             }
         }
 
@@ -67,7 +67,7 @@ public class WS_Message_Hardware_online_status extends WS_AbstractMessage  {
 
         public DeviceStatus() {}
 
-        @Constraints.Required  public UUID hardware_id;
+        @Constraints.Required  public UUID full_id;
         public boolean online_status;
 
     }

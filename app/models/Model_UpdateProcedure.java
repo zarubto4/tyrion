@@ -40,7 +40,7 @@ public class Model_UpdateProcedure extends BaseModel {
 
                                                     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_InstanceSnapshot instance; // For updates under instance snapshot records
 
-    @JsonIgnore @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @OrderBy("finished DESC") public List<Model_HardwareUpdate> updates = new ArrayList<>(); // TODO Cache !!!!
+    @JsonIgnore @OneToMany(mappedBy="actualization_procedure", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_HardwareUpdate> updates = new ArrayList<>();
     
     @ApiModelProperty(required = true, value = "UNIX time in ms", dataType = "number")  public Date date_of_planing;
     @ApiModelProperty(required = true, value = "UNIX time in ms", dataType = "number")  public Date date_of_finish;
@@ -51,7 +51,7 @@ public class Model_UpdateProcedure extends BaseModel {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore private Integer size = null;
+    @JsonIgnore @Cached private Integer size = null;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -61,7 +61,7 @@ public class Model_UpdateProcedure extends BaseModel {
         try {
 
             if (type_of_update == UpdateType.MANUALLY_RELEASE_MANAGER) {
-                return updates.get(0).firmware_type;
+                return getUpdates().get(0).firmware_type;
             }
 
             return null;
@@ -77,7 +77,7 @@ public class Model_UpdateProcedure extends BaseModel {
         try {
 
             if(firmware_type() != null && ( firmware_type() == FirmwareType.FIRMWARE || firmware_type() == FirmwareType.BACKUP)) {
-                return updates.get(0).c_program_detail();
+                return getUpdates().get(0).c_program_detail();
             }
 
             return null;
@@ -94,7 +94,7 @@ public class Model_UpdateProcedure extends BaseModel {
         try {
 
             if(firmware_type() != null && firmware_type() == FirmwareType.BOOTLOADER) {
-                return updates.get(0).bootloader_detail();
+                return getUpdates().get(0).bootloader_detail();
             }
             return null;
 
@@ -132,6 +132,31 @@ public class Model_UpdateProcedure extends BaseModel {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Transient public List<UUID> getUpdatesId() {
+        if (cache().gets(Model_HardwareUpdate.class) == null) {
+            cache().add(Model_HardwareUpdate.class, Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).eq("deleted", false).order().asc("date_of_finish").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_HardwareUpdate.class);
+    }
+
+    @JsonIgnore @Transient public List<Model_HardwareUpdate> getUpdates() {
+        try {
+
+            List<Model_HardwareUpdate> list = new ArrayList<>();
+
+            for (UUID id : getUpdatesId() ) {
+                list.add(Model_HardwareUpdate.getById(id));
+            }
+
+            return list;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new ArrayList<>();
+        }
+    }
+
     @JsonIgnore
     public UUID getInstanceSnapshotId() {
 
@@ -150,6 +175,25 @@ public class Model_UpdateProcedure extends BaseModel {
             logger.internalServerError(e);
             return null;
         }
+    }
+
+    @JsonIgnore
+    public UUID get_project_id() {
+       return project_id;
+    }
+
+    @JsonIgnore @Transient
+    public Model_Project get_project() throws _Base_Result_Exception  {
+        return  Model_Project.getById(get_project_id());
+    }
+
+
+
+/* EXECUTION METHODS ----------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Transient
+    public void execute_update_procedure() {
+        Model_Hardware.execute_update_procedure(this);
     }
 
     @JsonIgnore
@@ -219,7 +263,7 @@ public class Model_UpdateProcedure extends BaseModel {
 
                 state = Enum_Update_group_procedure_state.in_progress;
 
-               notification_update_procedure_progress();
+                notification_update_procedure_progress();
 
                 this.update();
             }
@@ -257,17 +301,17 @@ public class Model_UpdateProcedure extends BaseModel {
         logger.trace("cancel_procedure :: operation");
 
         List<Model_HardwareUpdate> list = Model_HardwareUpdate.find.query().where()
-            .eq("actualization_procedure.id",id).where()
+                .eq("actualization_procedure.id",id).where()
                 .disjunction()
-                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
-                    .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
-                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
-                    .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
-                    .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
-                    .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
-                    .add(Expr.isNull("state"))
-            .select("id")
-            .findList();
+                .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
+                .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
+                .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
+                .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
+                .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
+                .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
+                .add(Expr.isNull("state"))
+                .select("id")
+                .findList();
 
         for (Model_HardwareUpdate plan_not_cached : list) {
             Model_HardwareUpdate plan = Model_HardwareUpdate.getById(plan_not_cached.id.toString());
@@ -282,26 +326,6 @@ public class Model_UpdateProcedure extends BaseModel {
 
         this.update();
     }
-
-    @JsonIgnore
-    public UUID get_project_id() {
-       return project_id;
-    }
-
-    @JsonIgnore @Transient
-    public Model_Project get_project() throws _Base_Result_Exception  {
-        return  Model_Project.getById(get_project_id());
-    }
-
-
-
-/* EXECUTION METHODS ----------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient
-    public void execute_update_procedure() {
-        Model_Hardware.execute_update_procedure(this);
-    }
-
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------------*/
 
@@ -382,23 +406,23 @@ public class Model_UpdateProcedure extends BaseModel {
 
                 if (updates.size() == 1) {
 
-                    if (updates.get(0).firmware_type == FirmwareType.FIRMWARE)
+                    if (getUpdates().get(0).firmware_type == FirmwareType.FIRMWARE)
                         notification.setText(new Notification_Text().setText(" for Hardware "))
-                                    .setObject(updates.get(0).getHardware())
+                                    .setObject(getUpdates().get(0).getHardware())
                                     .setText( new Notification_Text().setText(" from Code Editor with Program "))
-                                    .setObject(updates.get(0).c_program_version_for_update.get_c_program())
+                                    .setObject(getUpdates().get(0).c_program_version_for_update.get_c_program())
                                     .setText( new Notification_Text().setText(" version "))
-                                    .setObject(updates.get(0).c_program_version_for_update)
+                                    .setObject(getUpdates().get(0).c_program_version_for_update)
                                     .setText( new Notification_Text().setText("."));
 
-                    else  if (updates.get(0).firmware_type == FirmwareType.BOOTLOADER)
+                    else  if (getUpdates().get(0).firmware_type == FirmwareType.BOOTLOADER)
                         notification.setText(new Notification_Text().setText(" for Hardware "))
-                                .setObject(updates.get(0).getHardware())
-                                .setText( new Notification_Text().setText(" Bootloader version " + updates.get(0).getBootloader().version_identifier))
+                                .setObject(getUpdates().get(0).getHardware())
+                                .setText( new Notification_Text().setText(" Bootloader version " + getUpdates().get(0).getBootloader().version_identifier))
                                 .setText( new Notification_Text().setText("."));
 
                 } else {
-                    notification.setText(new Notification_Text().setText(" for " + updates.size()  + " devices from Code Editor"));
+                    notification.setText(new Notification_Text().setText(" for " + getUpdates().size()  + " devices from Code Editor"));
                 }
 
                 notification.setText(new Notification_Text().setText(" just begun. We will keep you informed about progress."));
@@ -409,13 +433,13 @@ public class Model_UpdateProcedure extends BaseModel {
                 notification.setText(new Notification_Text().setText("Update under Instance "))
                 .setObject(Model_InstanceSnapshot.getById(getInstanceSnapshotId()).instance); // TODO objekt notifikace
 
-                if (updates.size() == 1) {
+                if (getUpdates().size() == 1) {
 
                     notification.setText(new Notification_Text().setText(" with one device "));
-                    notification.setObject(updates.get(0).getHardware());
+                    notification.setObject(getUpdates().get(0).getHardware());
 
                 } else {
-                    notification.setText(new Notification_Text().setText(" with " + updates.size()  + " devices from Blocko Snapshot "));
+                    notification.setText(new Notification_Text().setText(" with " + getUpdates().size()  + " devices from Blocko Snapshot "));
                 }
 
                 notification.setText(new Notification_Text().setText(" just begun. We will keep you informed about progress."));
@@ -473,21 +497,21 @@ public class Model_UpdateProcedure extends BaseModel {
                     Model_Notification notification = new Model_Notification();
 
                     // Single Update
-                    if (this.updates.size() == 1 && (type_of_update == UpdateType.MANUALLY_BY_USER_INDIVIDUAL || type_of_update == UpdateType.MANUALLY_BY_USER_BLOCKO_GROUP)) {
+                    if (this.getUpdates().size() == 1 && (type_of_update == UpdateType.MANUALLY_BY_USER_INDIVIDUAL || type_of_update == UpdateType.MANUALLY_BY_USER_BLOCKO_GROUP)) {
 
                         logger.debug("notification_update_procedure_final_report :: Notification is for single update");
 
                         // Bootloader
-                        if (this.updates.get(0).firmware_type == FirmwareType.BOOTLOADER) {
+                        if (this.getUpdates().get(0).firmware_type == FirmwareType.BOOTLOADER) {
 
                             logger.debug("notification_update_procedure_final_report :: Single Update bootloader");
 
-                            Model_BootLoader.notification_bootloader_procedure_success_information_single(this.updates.get(0));
+                            Model_BootLoader.notification_bootloader_procedure_success_information_single(this.getUpdates().get(0));
                             return;
                         }
 
                         // Backup
-                        if (this.updates.get(0).firmware_type == FirmwareType.BACKUP) {
+                        if (this.getUpdates().get(0).firmware_type == FirmwareType.BACKUP) {
 
                             logger.debug("notification_update_procedure_final_report :: Single Update backup");
                             logger.debug("TODOTOTO TODO TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  TODO  ");
@@ -524,7 +548,7 @@ public class Model_UpdateProcedure extends BaseModel {
                     notification.setText(new Notification_Text().setText("Update Procedure "))
                             .setObject(this)
                             .setText(new Notification_Text().setText(" is complete. \n"))
-                            .setText(new Notification_Text().setText("Number of Total devices for update: " + updates.size() + ". "))
+                            .setText(new Notification_Text().setText("Number of Total devices for update: " + getUpdates().size() + ". "))
                             .setText(new Notification_Text().setText("Successfully updated: " + successfully_updated + ". "));
 
                     if (waiting_for_device != 0) {

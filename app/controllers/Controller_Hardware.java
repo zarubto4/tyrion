@@ -19,6 +19,7 @@ import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Logger;
+import utilities.swagger.Picture2Mb;
 import utilities.swagger.input.*;
 import utilities.swagger.output.*;
 import utilities.swagger.output.filter_results.Swagger_HardwareGroup_List;
@@ -762,12 +763,16 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    @BodyParser.Of(value = BodyParser.Json.class)
+    @BodyParser.Of(value = Picture2Mb.Json.class)
     public Result hardwareType_uploadPicture(UUID hardware_type_id) {
         try {
 
             // Get and Validate Object
             Swagger_BASE64_FILE help = baseFormFactory.formFromRequestWithValidation(Swagger_BASE64_FILE.class);
+
+            final byte[] utf8Bytes = help.file.getBytes("UTF-8");
+            System.out.println("hardwareType_uploadPicture - update picture: size in bits: " + utf8Bytes.length); // prints "11"
+
 
             // Kontrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
@@ -1224,16 +1229,16 @@ public class Controller_Hardware extends _BaseController {
                 }
             }
 
+            System.out.println("bootLoader_markAsMain main: " + boot_loader.getHardwareType().name);
             boot_loader.main_hardware_type = boot_loader.getHardwareType();
-            boot_loader.cache().add(Random.class, boot_loader.main_hardware_type.id);
-            boot_loader.update();
 
-            // Update Chache
-            boot_loader.getHardwareType().cache_main_bootloader_id = boot_loader.id;
+            boot_loader.getHardwareType().cache().removeAll(Random.class);
+            boot_loader.getHardwareType().cache().add(Random.class, boot_loader.id);
+
+            boot_loader.update();
 
             // Vymažu Device Cache
             Model_Hardware.cache.clear();
-
 
             // Vracím Json
             return ok(boot_loader.json());

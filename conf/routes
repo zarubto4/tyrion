@@ -276,16 +276,19 @@ GET       /homer_server_registration_data                               controll
 
 PUT       /homer_server/set_backup/:server_id                           controllers.Controller_ExternalServer.homer_server_set_backup_server(server_id: java.util.UUID)
 PUT       /homer_server/set_main/:server_id                             controllers.Controller_ExternalServer.homer_server_set_main_server(server_id: java.util.UUID)
+PUT       /homer_server/action/restart/:server_id                       controllers.Controller_ExternalServer.homer_server_restart(server_id: java.util.UUID)
+PUT       /homer_server/action/shutdown/:server_id                      controllers.Controller_ExternalServer.homer_server_power_down(server_id: java.util.UUID)
+PUT       /homer_server/action/start/:server_id                         controllers.Controller_ExternalServer.homer_server_power_on(server_id: java.util.UUID)
 
 PUT       /homer_server/:page_number                                    controllers.Controller_ExternalServer.homer_server_by_filter(page_number: Int)
 DELETE    /homer_server/server/:server_id                               controllers.Controller_ExternalServer.homer_server_delete(server_id: java.util.UUID)
 PUT       /homer_server/server/edit/:server_id                          controllers.Controller_ExternalServer.homer_server_edit(server_id: java.util.UUID)
 GET       /homer_server/server/:server_id                               controllers.Controller_ExternalServer.homer_server_get(server_id: java.util.UUID)
 
-#Super Private API (Secured by Server Hash-token)
-GET       /cloud/homer/file/b_program/:b_program_version_id      controllers.Controller_ExternalServer.cloud_file_get_b_program_version(b_program_version_id: java.util.UUID)
-GET       /cloud/homer/file/c_program/:compilation_id            controllers.Controller_ExternalServer.cloud_file_get_c_program_compilation(compilation_id: java.util.UUID)
-GET       /cloud/homer/file/bootloader/:bootloader_version_id    controllers.Controller_ExternalServer.cloud_file_get_bootloader(bootloader_version_id: java.util.UUID)
+#Super PRIVATE!! Dont change that - its required for Homer API (Secured by Server Hash-token)
+GET       /cloud/homer_server/file/b_program/:b_program_version_id      controllers.Controller_ExternalServer.cloud_file_get_b_program_version(b_program_version_id: java.util.UUID)
+GET       /cloud/homer_server/file/c_program/:compilation_id            controllers.Controller_ExternalServer.cloud_file_get_c_program_compilation(compilation_id: java.util.UUID)
+GET       /cloud/homer_server/file/bootloader/:bootloader_version_id    controllers.Controller_ExternalServer.cloud_file_get_bootloader(bootloader_version_id: java.util.UUID)
 
 #Compilation Server
 POST      /compilation_server                                           controllers.Controller_ExternalServer.compilation_server_create()

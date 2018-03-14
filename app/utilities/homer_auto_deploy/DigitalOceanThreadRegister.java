@@ -20,6 +20,8 @@ import websocket.interfaces.WS_Homer;
 
 import java.time.Duration;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 public class DigitalOceanThreadRegister extends Thread {
 
@@ -34,6 +36,7 @@ public class DigitalOceanThreadRegister extends Thread {
 
     private UUID homer_server_id = null;
     private Swagger_BlueOcean registration = null;
+    private Model_HomerServer server;
 
     private Integer attems = 6;
 
@@ -42,6 +45,9 @@ public class DigitalOceanThreadRegister extends Thread {
     public DigitalOceanThreadRegister(Model_HomerServer server, Swagger_BlueOcean registration) {
         this.homer_server_id = server.id;
         this.registration = registration;
+
+        // Set Cache to Deploy state - we add random UUID as a mark that DigitalOceanThreadRegister is in progress
+        server.cache().add(DigitalOceanThreadRegister.class,  UUID.randomUUID());
     }
 
     @Override
@@ -55,12 +61,13 @@ public class DigitalOceanThreadRegister extends Thread {
             logger.trace("run:: Thread Sleep 30 seconds is done! Time to while!");
 
             thr1: while (--attems > 0) {
-
                 try {
+
                     Droplet droplet = DigitalOceanTyrionService.apiClient.getDropletInfo(registration.id);
 
                     if (!droplet.getNetworks().getVersion4Networks().isEmpty()) {
-                        logger.trace("run:: Thread -Perfect - we have Netowrks");
+
+                        logger.trace("run:: Thread -Perfect - we have Networks");
 
                         Network network = droplet.getNetworks().getVersion4Networks().get(0);
                         logger.trace("create_server::    Server URL:    " + network.getIpAddress());
@@ -84,65 +91,76 @@ public class DigitalOceanThreadRegister extends Thread {
                         logger.trace("crate_server:: Try to request Homer Server on url {}", configuration_homer_url);
                         logger.trace("crate_server:: Request Server Configuration will be: {}", json.toString());
 
-                        try {
+                        // Set Attemps to new Value -
+                        this.attems = 20;
+                        thr2: while (--attems > 0) {
+                            try {
 
-                            WSResponse response = ws.url(configuration_homer_url)
-                                    .setRequestTimeout(Duration.ofSeconds(10))
-                                    .post(json.toString())
-                                    .toCompletableFuture()
-                                    .get();
+                                WSResponse response = ws.url(configuration_homer_url)
+                                        .setRequestTimeout(Duration.ofSeconds(5))
+                                        .setBody(json)
+                                        .post(json)
+                                        .toCompletableFuture()
+                                        .get();
 
-                            int status = response.getStatus();
+                                int status = response.getStatus();
 
+                                if (status == 200) {
 
-                            if (status == 200) {
-                                logger.debug("crate_server:: Done! Server is deployed and now we will try to check if its connected to this server!");
+                                    logger.debug("crate_server:: Done! Server is deployed and now we will try to check if its connected to this server!");
 
-                                sleep(10000);
+                                    sleep(10000);
 
-                                // Second While for check if server are connect to Tyrion
-                                attems = 20;
-                                thr2: while(--attems > 0) {
-                                    try {
+                                    // Second While for check if server are connect to Tyrion
+                                    attems = 20;
+                                    thr3: while (--attems > 0) {
 
-                                        logger.trace("crate_server:: Online DigitalOcena Checker Attempt {}", attems);
+                                        try {
 
-                                        if (server.online_state() == NetworkStatus.ONLINE) {
-                                            logger.debug("crate_server::  Amazing -server deployed and running!");
+                                            logger.trace("crate_server:: Online DigitalOcean Checker Attempt {}", attems);
+
+                                            if (server.online_state() == NetworkStatus.ONLINE) {
+                                                logger.debug("crate_server::  Amazing -server deployed and running!");
+                                                server.cache().removeAll(DigitalOceanThreadRegister.class);
+                                                break thr1;
+                                            }
+
+                                            logger.debug("crate_server::  Server is Still Offline!");
+                                            sleep(5000);
+
+                                        } catch (Exception e) {
+                                            logger.internalServerError(e);
                                             break thr1;
                                         }
 
-                                        logger.debug("crate_server::  Server is Still Offline!");
-                                        sleep(5000);
-
-                                    } catch (Exception e) {
-                                        logger.internalServerError(e);
-                                        break thr2;
                                     }
 
+                                    logger.error("crate_server::  After Configuration - server is still Offline! Notification to Slack send.");
+                                    String slack_echo = "Automatic procedure for register and deploy homer server to ConfigSelf Deployed Server has Error! \n";
+                                    slack_echo += "Homer Serve ID: " + homer_server_id + ", Name:" + server.name + "\n";
+                                    slack_echo += "Droplet rul: " + server.server_url + ", Api URL:" + server.server_url + ":" + server.rest_api_port + " <---\n";
+                                    slack_echo += "Tyrion Server Type: " + Server.mode + ", Tyrion URL: " + Server.httpAddress + "\n";
+                                    Slack.post_error(slack_echo);
+                                    server.cache().removeAll(DigitalOceanThreadRegister.class);
+
+                                    break thr1;
+                                } else {
+                                    logger.error("crate_server::  Something is wrong - we have incorect response on Rest Api request");
+                                    logger.error("crate_server::  Response  Head {} and body: ", response.getStatus(), response.getBody());
+
                                 }
-
-                                logger.error("crate_server::  After Configuration - server is still Offline! Notification to Slack send.");
-                                String slack_echo = "Automatic procedure for register and deploy homer server to ConfigSelf Deployed Server has Error! \n";
-                                slack_echo += "Homer Serve ID: " + homer_server_id + ", Name:" + server.name + "\n";
-                                slack_echo += "Droplet rul: " + server.server_url + ", Api URL:" + server.server_url + ":" + server.rest_api_port + " <---\n";
-                                slack_echo += "Tyrion Server Type: " + Server.mode + ", Tyrion URL: " + Server.httpAddress + "\n";
-                                Slack.post_error(slack_echo);
-
-
-                                break thr1;
-                            } else {
-                                logger.error("crate_server::  Something is wrong - we have incorect response on Rest Api request");
-                                logger.error("crate_server::  Response  Head {} and body: ",  response.getStatus(), response.getBody());
-
+                            } catch (ExecutionException e) {
+                                sleep(1000 * 4);
+                                // Nothing
+                            } catch (Exception e) {
+                                logger.internalServerError(e);
                             }
-                        } catch (Exception e) {
-                            logger.internalServerError(e);
+
                         }
 
-
                     } else {
-                        logger.trace("run:: Thread - Still not Networks on Droplet!");
+                        logger.trace("run:: Thread - Still not Networks on Droplet! Time To sleep");
+                        sleep(1000*2);
                     }
                 } catch (Exception e){
                     logger.internalServerError(e);
@@ -152,9 +170,11 @@ public class DigitalOceanThreadRegister extends Thread {
                 sleep(1000 * 10);
             }
 
+            server.cache().removeAll(DigitalOceanThreadRegister.class);
 
         }catch (Exception e){
             logger.error("synchronize_configuration: TimeoutException");
+            server.cache().removeAll(DigitalOceanThreadRegister.class);
             logger.internalServerError(e);
         }
     }

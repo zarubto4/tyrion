@@ -744,10 +744,22 @@ public class Model_Hardware extends TaggedModel {
                     }
 
                     // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
-                    case WS_Message_Hardware_set_settings.message_type     : {logger.warn("WS_Message_Hardware_set_settings: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Hardware_command_execute.message_type  : {logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Hardware_overview.message_type         : {logger.warn("WS_Message_Hardware_overview: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Hardware_change_server.message_type    : {logger.warn("WS_Message_Hardware_change_server: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Hardware_set_settings.message_type: {
+                        logger.warn("WS_Message_Hardware_set_settings: A message with a very high delay has arrived.");
+                        return;
+                    }
+                    case WS_Message_Hardware_command_execute.message_type: {
+                        logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");
+                        return;
+                    }
+                    case WS_Message_Hardware_overview.message_type: {
+                        logger.warn("WS_Message_Hardware_overview: A message with a very high delay has arrived.");
+                        return;
+                    }
+                    case WS_Message_Hardware_change_server.message_type: {
+                        logger.warn("WS_Message_Hardware_change_server: A message with a very high delay has arrived.");
+                        return;
+                    }
 
                     default: {
 
@@ -762,6 +774,9 @@ public class Model_Hardware extends TaggedModel {
                     }
                 }
 
+            }catch (_Base_Result_Exception e) {
+                logger.error("Invalid incoming message");
+                // Nothing
             } catch (Exception e) {
                 if (!json.has("message_type")) {
                     homer.send(json.put("error_message", "Your message not contains message_type").put("error_code", 400));
@@ -928,10 +943,10 @@ public class Model_Hardware extends TaggedModel {
 
             for (WS_Message_Hardware_online_status.DeviceStatus status : report.hardware_list) {
 
-                cache_status.put(status.hardware_id, status.online_status);
+                cache_status.put(status.full_id, status.online_status);
 
                 // Odešlu echo pomocí websocketu do becki
-                Model_Hardware device = getById(status.hardware_id);
+                Model_Hardware device = getById(status.full_id);
 
                 WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, status.online_status, device.project_id());
             }
@@ -1306,20 +1321,20 @@ public class Model_Hardware extends TaggedModel {
         logger.debug("execute_update_plan - start execution of plan: {}", plan.id );
         logger.debug("execute_update_plan - actual state: {} ", plan.state.name());
 
-        if (plan.actualization_procedure.state == Enum_Update_group_procedure_state.complete || plan.actualization_procedure.state == Enum_Update_group_procedure_state.successful_complete ) {
-            logger.debug("execute_update_plan - procedure: {} is done (successful_complete or complete) -> return", plan.actualization_procedure.id);
+        if (plan.getActualizationProcedure().state == Enum_Update_group_procedure_state.complete || plan.getActualizationProcedure().state == Enum_Update_group_procedure_state.successful_complete ) {
+            logger.debug("execute_update_plan - procedure: {} is done (successful_complete or complete) -> return", plan.getActualizationProcedureId());
             return;
         }
 
-        if (plan.actualization_procedure.updates.isEmpty()) {
-            plan.actualization_procedure.state = Enum_Update_group_procedure_state.complete_with_error;
-            plan.actualization_procedure.update();
-            logger.debug("execute_update_plan - procedure: {} is empty -> return" , plan.actualization_procedure.id);
+        if (plan.getActualizationProcedure().getUpdates().isEmpty()) {
+            plan.getActualizationProcedure().state = Enum_Update_group_procedure_state.complete_with_error;
+            plan.getActualizationProcedure().update();
+            logger.debug("execute_update_plan - procedure: {} is empty -> return" , plan.getActualizationProcedureId());
             return;
         }
 
-        plan.actualization_procedure.state = Enum_Update_group_procedure_state.in_progress;
-        plan.actualization_procedure.update();
+        plan.getActualizationProcedure().state = Enum_Update_group_procedure_state.in_progress;
+        plan.getActualizationProcedure().update();
 
         try {
 
@@ -1328,7 +1343,7 @@ public class Model_Hardware extends TaggedModel {
                 plan.error = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message();
                 plan.error_code = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code();
                 plan.update();
-                logger.warn("execute_update_plan - Procedure id:: {} plan {} CProgramUpdatePlan:: Error:: {} Message:: {} Continue Cycle. " , plan.actualization_procedure.id , plan.id, ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code() , ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message());
+                logger.warn("execute_update_plan - Procedure id:: {} plan {} CProgramUpdatePlan:: Error:: {} Message:: {} Continue Cycle. " , plan.getActualizationProcedureId() , plan.id, ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code() , ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message());
                 return;
             }
 
@@ -1339,7 +1354,7 @@ public class Model_Hardware extends TaggedModel {
             }
 
             if (Model_HomerServer.getById(plan.getHardware().connected_server_id).online_state() != NetworkStatus.ONLINE) {
-                logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", plan.actualization_procedure.id , plan.id, Model_HomerServer.getById(plan.getHardware().connected_server_id).name);
+                logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", plan.getActualizationProcedureId() , plan.id, Model_HomerServer.getById(plan.getHardware().connected_server_id).name);
                 plan.state = HardwareUpdateState.HOMER_SERVER_IS_OFFLINE;
                 plan.update();
                 return;
@@ -1370,7 +1385,7 @@ public class Model_Hardware extends TaggedModel {
             return;
         }
 
-        if (procedure.updates.isEmpty()) {
+        if (procedure.getUpdates().isEmpty()) {
             procedure.state = Enum_Update_group_procedure_state.complete_with_error;
             procedure.update();
             logger.debug("execute_update_procedure - procedure: {} is empty -> return" , procedure.id);
@@ -1926,8 +1941,9 @@ public class Model_Hardware extends TaggedModel {
 
             // když je autobackup tak sere pes - změna autobacku je rovnou z devicu
             if (backup_mode) {
-                logger.trace("check_backup - autobacku is true change parameters not allowed!");
-                // Ale mohl bych udělat áznam o tom co tam je - kdyby to nebylo stejné s tím co si myslí tyrion že tam je:
+                logger.trace("check_backup - autobackup is true change parameters not allowed!");
+
+                // Ale mohl bych udělat záznam o tom co tam je - kdyby to nebylo stejné s tím co si myslí tyrion že tam je:
 
                 if (overview.binaries.backup != null && (overview.binaries.backup.build_id == null || !overview.binaries.backup.build_id.equals(""))) {
                     Model_CProgramVersion version_not_cached = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findOne();
@@ -2034,7 +2050,7 @@ public class Model_Hardware extends TaggedModel {
                         plan.state = HardwareUpdateState.NOT_YET_STARTED;
                         plan.count_of_tries++;
                         plan.update();
-                        execute_update_procedure(plan.actualization_procedure);
+                        execute_update_procedure(plan.getActualizationProcedure());
                     }
 
                 } else {
@@ -2044,7 +2060,7 @@ public class Model_Hardware extends TaggedModel {
                     plan.count_of_tries++;
                     plan.update();
 
-                    execute_update_procedure(plan.actualization_procedure);
+                    execute_update_procedure(plan.getActualizationProcedure());
                 }
                 return;
             }
@@ -2124,7 +2140,7 @@ public class Model_Hardware extends TaggedModel {
                     plan.state = HardwareUpdateState.NOT_YET_STARTED;
                     plan.count_of_tries++;
                     plan.update();
-                    execute_update_procedure(plan.actualization_procedure);
+                    execute_update_procedure(plan.getActualizationProcedure());
                 }
 
             } else {
@@ -2134,7 +2150,7 @@ public class Model_Hardware extends TaggedModel {
                 plan.count_of_tries++;
                 plan.update();
 
-                execute_update_procedure(plan.actualization_procedure);
+                execute_update_procedure(plan.getActualizationProcedure());
             }
 
             return;
