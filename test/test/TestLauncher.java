@@ -2,6 +2,7 @@ package utilities.test;
 
 
 import com.google.inject.Inject;
+import io.ebean.enhance.common.SysoutMessageOutput;
 import play.Application;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -60,17 +61,17 @@ public class TestLauncher extends Controller{
             if (os.contains("win")) {
 
                 pr = rt.exec("cmd /c activator \"" + cmd + "\"");
-                System.out.println("Running test on Windows");
+                ServerLogger.trace("launch_test:: Running test on Windows");
 
             } else if (os.contains("mac")) {
 
                 pr = rt.exec("activator \"" + cmd + "\"");
-                System.out.println("Running test on Mac");
+                ServerLogger.trace("launch_test:: Running test on Mac");
 
             } else if ((os.contains("nix"))||(os.contains("nux"))||(os.contains("aix"))) {
 
                 pr = rt.exec("activator \"" + cmd + "\"");
-                System.out.println("Running test on Linux");
+                ServerLogger.trace("launch_test:: Running test on Linux");
 
             } else {
                 return GlobalResult.result_badRequest("This OS is not supported.");
@@ -87,7 +88,7 @@ public class TestLauncher extends Controller{
             outputGobbler.start();
 
             int exitVal = pr.waitfor ();
-            System.out.println("Exited with code " + exitVal);
+            ServerLogger.trace("Exited with code " + exitVal);
 
             return GlobalResult.result_ok("Test was successfully run. See the test log for errors.");
 

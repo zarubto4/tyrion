@@ -586,7 +586,7 @@ public class Controller_Security extends _BaseController {
             }
 
 
-            System.out.println("facebook_oauth_get:: 16. floatingPersonToken.return_url " + floatingPersonToken.return_url);
+            logger.trace("facebook_oauth_get:: 16. floatingPersonToken.return_url " + floatingPersonToken.return_url);
             new Check_Online_Status_after_user_login(person.id).run();
             return redirect(floatingPersonToken.return_url.replace("[_status_]", "success"));
 
