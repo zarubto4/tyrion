@@ -124,7 +124,7 @@ public class Model_Project extends TaggedModel {
             cache().add(Model_Hardware.class, Model_Hardware.find.query().where().eq("project.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_CProgram.class);
+        return cache().gets(Model_Hardware.class);
     }
 
     @JsonIgnore

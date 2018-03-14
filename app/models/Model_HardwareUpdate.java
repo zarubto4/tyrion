@@ -136,8 +136,8 @@ public class Model_HardwareUpdate extends BaseModel {
             bootloader_update_detail.bootloader_id = cached_bootLoader.id;
             bootloader_update_detail.bootloader_name = cached_bootLoader.name;
             bootloader_update_detail.version_identificator = cached_bootLoader.version_identifier;
-            bootloader_update_detail.hardware_type_name = cached_bootLoader.hardware_type.name;
-            bootloader_update_detail.hardware_type_id = cached_bootLoader.hardware_type.id;
+            bootloader_update_detail.hardware_type_name = cached_bootLoader.getHardwareType().name;
+            bootloader_update_detail.hardware_type_id = cached_bootLoader.getHardwareTypeId();
 
             return bootloader_update_detail;
 

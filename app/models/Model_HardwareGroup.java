@@ -37,8 +37,6 @@ public class Model_HardwareGroup extends NamedModel {
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Cached public Integer cache_group_size;
-    @JsonIgnore @Transient @Cached public UUID cache_project_id;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_hardware_type_ids;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -58,25 +56,39 @@ public class Model_HardwareGroup extends NamedModel {
 
     @JsonProperty @ApiModelProperty(required = true)
     public List<Model_HardwareType> hardware_types() {
-        return getHardwareTypes();
+        try {
+            return getHardwareTypes();
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
+
+    //get ids
+    @JsonIgnore
+    public List<UUID> get_HardwareTypesId() {
+
+        if (cache().gets(Model_HardwareType.class) == null) {
+            cache().add(Model_HardwareType.class,  Model_HardwareType.find.query().where().eq("hardware.hardware_groups.id", id).order().desc("created").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_HardwareType.class);
+
+    }
+
+
     @JsonIgnore
     public List<Model_HardwareType> getHardwareTypes() {
+
         try {
 
-            // Cache
-            if (cache_hardware_type_ids == null) {
-                cache_hardware_type_ids = new ArrayList<>();
-                cache_hardware_type_ids = Model_HardwareType.find.query().where().eq("hardware.hardware_groups.id", id).findIds();
-            }
+            List<Model_HardwareType> hardwareTypes  = new ArrayList<>();
 
-            List<Model_HardwareType> hardwareTypes = new ArrayList<>();
-
-            for (UUID hardware_type_id : cache_hardware_type_ids) {
-                hardwareTypes.add(Model_HardwareType.getById(hardware_type_id));
+            for (UUID types : get_HardwareTypesId()) {
+                hardwareTypes.add(Model_HardwareType.getById(types));
             }
 
             return hardwareTypes;
@@ -90,24 +102,53 @@ public class Model_HardwareGroup extends NamedModel {
     @JsonIgnore
     public UUID get_project_id()           {
 
-        if (cache_project_id == null) {
-            Model_Project project = Model_Project.find.query().where().eq("hardware_groups.id", id).select("id").findOne();
-            if (project == null) return null;
-            cache_project_id = project.id;
+        if (cache().get(Model_Project.class) == null) {
+            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("hardware_groups.id", id).select("id").findSingleAttribute());
         }
 
-        return cache_project_id;
+        return cache().get(Model_Project.class);
+
     }
 
     @JsonIgnore @Transient public Model_Project get_project() throws _Base_Result_Exception  {
-        return  Model_Project.getById(get_project_id());
+        try {
+            return Model_Project.getById(get_project_id());
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
-    // TODO teoreticky cachovat?
+
     @JsonIgnore
     public List<UUID> getHardwareIds() {
-        return Model_Hardware.find.query().where().eq("groups.id", id).findIds();
+        if (cache().gets(Model_Hardware.class) == null) {
+            cache().add(Model_Hardware.class,  Model_Hardware.find.query().where().eq("hardware_groups.id", id).order().desc("created").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_Hardware.class);
+
     }
+
+    @JsonIgnore
+    public List<Model_Hardware> getHardware() {
+        try {
+
+            List<Model_Hardware> hardwares = new ArrayList<>();
+
+            for (UUID types : getHardwareIds()) {
+                hardwares.add(Model_Hardware.getById(types));
+            }
+
+            return hardwares;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new ArrayList<>();
+        }
+    }
+
+
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
