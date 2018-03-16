@@ -135,17 +135,6 @@ public class WS_Homer extends WS_Interface {
 
             if (json.get("message_channel").asText().equals(Model_HomerServer.CHANNEL) && json.get("message_type").asText().equals(WS_Message_Check_homer_server_permission.message_type)) {
 
-                /*final Form<WS_Message_Check_homer_server_permission> form = Form.form(WS_Message_Check_homer_server_permission.class).bind(json);
-                if (form.hasErrors()) {
-
-                    logger.trace("verify:: invalid incoming message {}", json);
-                    logger.trace("verify:: response", form.errorsAsJson(Lang.forCode("en-US")).toString());
-
-                    this.send(WS_Message_Invalid_Message.make_request(WS_Message_Check_homer_server_permission.message_type, null).put("message_id", json.get("message_id").asText()));
-
-                    return;
-                }*/// TODO
-
                 Model_HomerServer.approve_validation_for_homer_server(this, baseFormFactory.formFromJsonWithValidation(WS_Message_Check_homer_server_permission.class, json));
 
             } else {

@@ -83,7 +83,7 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
 
                 WS_Message_Hardware_connected connected = new WS_Message_Hardware_connected();
                 connected.status = overview.status;
-                connected.full_id = board.full_id;
+                connected.uuid = board.id;
                 Model_Hardware.device_Connected(connected);
 
             } else {

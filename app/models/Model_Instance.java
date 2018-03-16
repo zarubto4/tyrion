@@ -222,9 +222,9 @@ public class Model_Instance extends TaggedModel {
     }
 
     @JsonIgnore
-    public List<String> getHardwareFullIds() throws _Base_Result_Exception  {
+    public List<UUID> getHardwareIds() throws _Base_Result_Exception  {
 
-        return current_snapshot().getHardwareFullIds();
+        return current_snapshot().getHardwareIds();
     }
 
     @JsonIgnore
@@ -457,7 +457,7 @@ public class Model_Instance extends TaggedModel {
 
     //-- Device IO operations -- //
     @JsonIgnore
-    public WS_Message_Instance_set_hardware set_device_to_instance(List<String> full_ids) {
+    public WS_Message_Instance_set_hardware set_device_to_instance(List<UUID> full_ids) {
         try {
 
             JsonNode json = this.write_with_confirmation(new WS_Message_Instance_set_hardware().make_request(full_ids), 1000*3, 0, 4);
@@ -489,7 +489,7 @@ public class Model_Instance extends TaggedModel {
     public WS_Message_Hardware_overview get_hardware_overview() {
         try {
 
-            ObjectNode json = this.write_with_confirmation( new WS_Message_Hardware_overview().make_request(this.getHardwareFullIds() ), 1000*5, 0, 1);
+            ObjectNode json = this.write_with_confirmation( new WS_Message_Hardware_overview().make_request(this.getHardwareIds() ), 1000*5, 0, 1);
 
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_overview.class, json);
 

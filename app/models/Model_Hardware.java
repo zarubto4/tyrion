@@ -219,7 +219,7 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
-    @JsonProperty
+    @JsonProperty  @ApiModelProperty(value = "Optional. Only if the address is cached", required = false)
     public String ip_address() {
         try {
 
@@ -239,17 +239,22 @@ public class Model_Hardware extends TaggedModel {
     @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_Short_Reference dominant_project_active(){
-        if(dominant_entity) return null;
-        UUID uuid = Model_Project.find.query().where().eq("hardware.id", id).eq("dominant_entity", true).select("id").findSingleAttribute();
-        if(uuid == null) return null;
+        try {
+            if (dominant_entity) return null;
+            UUID uuid = Model_Project.find.query().where().eq("hardware.id", id).eq("dominant_entity", true).select("id").findSingleAttribute();
+            if (uuid == null) return null;
 
-        Model_Project project = Model_Project.getById(uuid);
-        Swagger_Short_Reference reference = new Swagger_Short_Reference(project.id, project.name, project.description);
-        return reference;
+            // Dont Cache IT!!!!!!!!!!!!!!
+            Model_Project project = Model_Project.getById(uuid);
+            return new Swagger_Short_Reference(project.id, project.name, project.description);
+        }catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty
-    @ApiModelProperty(required = false, readOnly = true)
+    @ApiModelProperty(value = "Optional. Only if we have Alert parameters", required = false, readOnly = true)
     public List<BoardAlert> alert_list() {
         try {
 
@@ -323,8 +328,14 @@ public class Model_Hardware extends TaggedModel {
     public Model_HomerServer server() { try { if (connected_server_id == null) return null; return Model_HomerServer.getById(connected_server_id); } catch (Exception e) {logger.internalServerError(e); return null;}}
 
     @JsonProperty @ApiModelProperty(value = "Can be null, if device is not in Instance")
-    public Model_Instance actual_instance() {
-        return get_instance();
+    public Swagger_Short_Reference actual_instance() {
+        try {
+            Model_Instance i = get_instance();
+            return new Swagger_Short_Reference(i.id, i.name, i.description);
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty
@@ -435,7 +446,7 @@ public class Model_Hardware extends TaggedModel {
                     // Začnu zjišťovat stav - v separátním vlákně!
                     new Thread(() -> {
                         try {
-                            write_without_confirmation(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(full_id)));
+                            write_without_confirmation(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(id)));
                         } catch (Exception e) {
                             logger.internalServerError(e);
                         }
@@ -743,6 +754,14 @@ public class Model_Hardware extends TaggedModel {
                         return;
                     }
 
+                    case WS_Message_Hardware_uuid_converter.message_type: {
+
+                        Model_Hardware.convert_hardware_full_id_to_uuid(homer, baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_uuid_converter.class, json));
+                        return;
+                    }
+
+
+
                     // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
                     case WS_Message_Hardware_set_settings.message_type: {
                         logger.warn("WS_Message_Hardware_set_settings: A message with a very high delay has arrived.");
@@ -789,21 +808,18 @@ public class Model_Hardware extends TaggedModel {
     }
 
     @JsonIgnore
-    public String get_full_id() {return full_id;}
+    public UUID get_id() {
+        return id;
+    }
 
     // Kontrola připojení - Echo o připojení
     @JsonIgnore
     public static void device_Connected(WS_Message_Hardware_connected help) {
         try {
 
-            logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.full_id);
+            logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.uuid);
 
-            Model_Hardware device = Model_Hardware.getByFullId(help.full_id);
-
-            if (device == null) {
-                logger.warn("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.full_id);
-                return;
-            }
+            Model_Hardware device = Model_Hardware.getById(help.uuid);
 
             // Aktualizuji cache status online HW
             cache_status.put(device.id, Boolean.TRUE);
@@ -827,7 +843,7 @@ public class Model_Hardware extends TaggedModel {
             }
 
             // Nastavím server_id - pokud nekoresponduje s tím, který má HW v databázi uložený
-            if (help.websocket_identificator != null && ( device.connected_server_id == null || !device.connected_server_id.equals(help.websocket_identificator))) {
+            if (help.websocket_identificator != null && (device.connected_server_id == null || !device.connected_server_id.equals(help.websocket_identificator))) {
                 logger.debug("master_device_Connected:: Changing server id property to {} ", help.websocket_identificator);
                 device.connected_server_id = help.websocket_identificator;
                 device.update();
@@ -839,6 +855,9 @@ public class Model_Hardware extends TaggedModel {
             // který by vyřešil zbytečné dotazování
             device.hardware_firmware_state_check();
 
+        } catch (_Base_Result_Exception e) {
+            logger.warn("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.uuid);
+            return;
         } catch (Exception e) {
             logger.internalServerError(e);
         }
@@ -850,14 +869,14 @@ public class Model_Hardware extends TaggedModel {
         try {
 
 
-            Model_Hardware device =  Model_Hardware.getByFullId(help.full_id);
+            Model_Hardware device =  Model_Hardware.getById(help.uuid);
 
             if (device == null) {
-                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.full_id);
+                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.uuid);
                 return;
             }
 
-            logger.debug("master_device_Disconnected:: Updating device status " +  help.full_id + " on offline ");
+            logger.debug("master_device_Disconnected:: Updating device status " +  help.uuid + " on offline ");
 
             // CHACHE OFFLINE
             cache_status.put(device.id, Boolean.FALSE);
@@ -892,12 +911,12 @@ public class Model_Hardware extends TaggedModel {
     public static void device_auto_backup_start_echo(WS_Message_Hardware_autobackup_making help) {
         try {
 
-            logger.debug("device_auto_backup_echo:: Device send Echo about making backup on device ID:: {} ", help.full_id);
+            logger.debug("device_auto_backup_echo:: Device send Echo about making backup on device ID:: {} ", help.uuid);
 
-            Model_Hardware device = Model_Hardware.getByFullId(help.full_id);
+            Model_Hardware device = Model_Hardware.getById(help.uuid);
 
             if (device == null) {
-                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.full_id);
+                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.uuid);
                 return;
             }
 
@@ -914,16 +933,16 @@ public class Model_Hardware extends TaggedModel {
     public static void device_auto_backup_done_echo(WS_Message_Hardware_autobackup_made help) {
         try {
 
-            logger.debug("device_auto_backup_done_echo:: Device send Echo about backup done on device ID:: {} ", help.full_id);
+            logger.debug("device_auto_backup_done_echo:: Device send Echo about backup done on device ID:: {} ", help.uuid);
 
-            Model_Hardware device = Model_Hardware.getByFullId(help.full_id);
+            Model_Hardware device = Model_Hardware.getById(help.uuid);
 
             if (device == null) {
-                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.full_id);
+                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.uuid);
                 return;
             }
-            Model_CProgramVersion c_program_version = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", help.build_id).select("id").findOne();
-            if (c_program_version == null) throw new Exception("Firmware with build ID = " + help.build_id + " was not found in the database!");
+            Model_CProgramVersion c_program_version = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", help.uuid).select("id").findOne();
+            if (c_program_version == null) throw new Exception("Firmware with build ID = " + help.uuid + " was not found in the database!");
 
             device.actual_backup_c_program_version = c_program_version;
             device.update();
@@ -943,10 +962,10 @@ public class Model_Hardware extends TaggedModel {
 
             for (WS_Message_Hardware_online_status.DeviceStatus status : report.hardware_list) {
 
-                cache_status.put(status.full_id, status.online_status);
+                cache_status.put(status.uuid, status.online_status);
 
                 // Odešlu echo pomocí websocketu do becki
-                Model_Hardware device = getById(status.full_id);
+                Model_Hardware device = getById(status.uuid);
 
                 WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, status.online_status, device.project_id());
             }
@@ -959,6 +978,7 @@ public class Model_Hardware extends TaggedModel {
 
     @JsonIgnore
     public static void check_mqtt_hardware_connection_validation(WS_Homer homer, WS_Message_Hardware_validation_request request) {
+
         try {
 
             logger.debug("check_mqtt_hardware_connection_validation: {} ", Json.toJson(request) );
@@ -966,7 +986,7 @@ public class Model_Hardware extends TaggedModel {
 
             if(board == null) {
                 logger.debug("Device has not any active or dominant entity in local database");
-                homer.send(request.get_result(false));
+                homer.send(request.get_result(false, null));
                 return;
             }
 
@@ -974,23 +994,46 @@ public class Model_Hardware extends TaggedModel {
             logger.debug("check_mqtt_hardware_connection_validation: Device is not null - HW name {} . Pass from Tyrion: {} Name from Tyrion: {} ", board.name, board.mqtt_password, board.mqtt_username);
 
 
+
             if (BCrypt.checkpw(request.password, board.mqtt_password) && BCrypt.checkpw(request.user_name, board.mqtt_username)) {
-                homer.send(request.get_result(true));
+                homer.send(request.get_result(true,  board.id));
             } else {
-                homer.send(request.get_result(false));
+                homer.send(request.get_result(false,  board.id));
             }
 
         } catch (Exception e) {
 
             if(Server.mode == ServerMode.DEVELOPER) {
                 logger.error("check_mqtt_hardware_connection_validation:: Device has not right permission to connect. But this is Dev version of Tyrion. So its allowed.");
-                homer.send(request.get_result(true));
+                homer.send(request.get_result(true, null));
                 return;
             }
 
             logger.internalServerError(e);
-            homer.send(request.get_result(false));
+            homer.send(request.get_result(false, null));
         }
+    }
+
+    @JsonIgnore
+    public static void convert_hardware_full_id_to_uuid(WS_Homer homer, WS_Message_Hardware_uuid_converter request) {
+        try {
+
+            logger.debug("convert_hardware_full_id_to_uuid:: Incomimng Request for Transformation:: ", Json.toJson(request));
+            Model_Hardware board = Model_Hardware.getByFullId(request.full_id);
+
+            if(board == null){
+                logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found!");
+                homer.send(request.get_result_error());
+                return;
+            }
+
+            logger.debug("convert_hardware_full_id_to_uuid:: Device found - Return Success");
+            homer.send(request.get_result(board.id));
+
+        }catch (Exception e){
+            logger.internalServerError(e);
+        }
+
     }
 
     @JsonIgnore
@@ -999,9 +1042,9 @@ public class Model_Hardware extends TaggedModel {
 
             UUID project_id = null;
 
-            for (String full_id : request.full_ids) {
+            for (UUID id : request.uuid_ids) {
 
-                Model_Hardware board =  Model_Hardware.getByFullId(full_id);
+                Model_Hardware board =  Model_Hardware.getById(id);
                 if (board == null) {
                     homer.send(request.get_result(false));
                     return;
@@ -1127,7 +1170,7 @@ public class Model_Hardware extends TaggedModel {
     //-- Online State Hardware  --//
     @JsonIgnore @Transient public WS_Message_Hardware_online_status get_devices_online_state() {
 
-        JsonNode node = write_with_confirmation(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(this.full_id)), 1000 * 5, 0, 2);
+        JsonNode node = write_with_confirmation(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(this.id)), 1000 * 5, 0, 2);
         return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_online_status.class, node);
 
     }
@@ -1135,12 +1178,10 @@ public class Model_Hardware extends TaggedModel {
     //-- Over View Hardware  --//
     @JsonIgnore
     public WS_Message_Hardware_overview_Board get_devices_overview() {
-        JsonNode node = write_with_confirmation(new WS_Message_Hardware_overview().make_request(Collections.singletonList(this.full_id)), 1000 * 5, 0, 2);
+        JsonNode node = write_with_confirmation(new WS_Message_Hardware_overview().make_request(Collections.singletonList(this.id)), 1000 * 5, 0, 2);
         WS_Message_Hardware_overview overview = baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_overview.class, node);
-        return overview.get_device_from_list(this.full_id);
+        return overview.get_device_from_list(this.id);
     }
-
-
 
     // Change Hardware Alias  --//GRID Apps
     @JsonIgnore
@@ -1253,13 +1294,13 @@ public class Model_Hardware extends TaggedModel {
     //-- ADD or Remove // Change Server --//
     @JsonIgnore
     public void device_relocate_server(Model_HomerServer future_server) {
-        JsonNode node = write_with_confirmation(new WS_Message_Hardware_change_server().make_request(future_server, Collections.singletonList(this.full_id)), 1000 * 5, 0, 2);
+        JsonNode node = write_with_confirmation(new WS_Message_Hardware_change_server().make_request(future_server, Collections.singletonList(this.id)), 1000 * 5, 0, 2);
     }
 
     @JsonIgnore
     public WS_Message_Hardware_change_server device_relocate_server(String mqtt_host, String mqtt_port) {
         try {
-            JsonNode node = write_with_confirmation( new WS_Message_Hardware_change_server().make_request(mqtt_host, mqtt_port, Collections.singletonList(this.full_id)), 1000 * 5, 0, 2);
+            JsonNode node = write_with_confirmation( new WS_Message_Hardware_change_server().make_request(mqtt_host, mqtt_port, Collections.singletonList(this.id)), 1000 * 5, 0, 2);
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_change_server.class, node);
 
         } catch (Exception e) {
@@ -2689,11 +2730,11 @@ public class Model_Hardware extends TaggedModel {
 
 
         if (id == null){
-            logger.debug("getByFullId: {} Database ID is null");
+            logger.debug("getByFullId: {} Database ID is null", fullId);
             return  null;
         }
 
-        logger.trace("getByFullId: {} Database ID {}", id.toString());
+        logger.trace("getByFullId: {} Database ID {}", fullId, id.toString());
         return getById(id);
     }
 
