@@ -42,20 +42,10 @@ public class Model_GridProgram extends TaggedModel {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Cached public List<UUID> cache_version_ids = new ArrayList<>();
-    @JsonIgnore @Transient @Cached public UUID cache_grid_project_id = null;
-
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true) public List<Model_GridProgramVersion> program_versions() {
-
-        List<Model_GridProgramVersion> versions = new ArrayList<>();
-
-        for (Model_GridProgramVersion v : get_versions().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())) {
-            versions.add(v);
-        }
-
-        return versions;
+       return get_versions().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList());
     }
 
 
@@ -63,35 +53,31 @@ public class Model_GridProgram extends TaggedModel {
 
     @JsonIgnore @Transient public UUID get_grid_project_id() throws _Base_Result_Exception {
 
-        if (cache_grid_project_id == null) {
-            Model_GridProject project = Model_GridProject.find.query().where().eq("grid_programs.id", id).select("id").findOne();
-            if (project == null) return null;
-            cache_grid_project_id = project.id;
+        if (cache().get(Model_GridProject.class) == null) {
+            cache().add(Model_GridProject.class, (UUID) Model_GridProject.find.query().where().eq("grid_programs.id", id).select("id").findSingleAttribute());
         }
 
-        return cache_grid_project_id;
+        return cache().get(Model_GridProject.class);
     }
 
     @JsonIgnore @Transient public Model_GridProject get_grid_project() throws _Base_Result_Exception  {
         return  Model_GridProject.getById(get_grid_project_id());
     }
 
+    @JsonIgnore @Transient public List<UUID> get_versionsId() {
+        if (cache().gets(Model_GridProgramVersion.class) == null) {
+            cache().add(Model_GridProgramVersion.class,  Model_GridProgramVersion.find.query().where().eq("grid_program.id", id).order().desc("created").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_GridProgramVersion.class);
+    }
+
     @JsonIgnore @Transient public List<Model_GridProgramVersion> get_versions() {
         try {
 
-            if (cache_version_ids.isEmpty()) {
-
-                List<UUID> uuid_ids =  Model_GridProgramVersion.find.query().where().eq("grid_program.id", this.id).order().desc("created").findIds();
-
-                // Získání seznamu
-                for (UUID uuid_id : uuid_ids) {
-                    cache_version_ids.add(uuid_id);
-                }
-            }
-
             List<Model_GridProgramVersion> versions  = new ArrayList<>();
 
-            for (UUID version_id : cache_version_ids) {
+            for (UUID version_id : get_versionsId()) {
                 versions.add(Model_GridProgramVersion.getById(version_id));
             }
 
@@ -140,7 +126,7 @@ public class Model_GridProgram extends TaggedModel {
         }).start();
 
         if (grid_project != null) {
-            grid_project.grid_programs_ids.add(id);
+            grid_project.cache().add(this.getClass(), id);
         }
 
         cache.put(this.id, this);
@@ -169,7 +155,7 @@ public class Model_GridProgram extends TaggedModel {
         super.delete();
 
         try {
-            get_grid_project().grid_programs_ids.remove(id);
+            get_grid_project().cache().remove(this.getClass(), id);
         }catch (_Base_Result_Exception e){
             // Nothing
         }

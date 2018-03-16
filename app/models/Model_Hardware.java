@@ -1,5 +1,6 @@
 package models;
 
+import akka.http.scaladsl.model.headers.LinkParams;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,7 +33,6 @@ import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.input.Swagger_Board_Developer_parameters;
 import utilities.swagger.output.Swagger_Short_Reference;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
-import websocket.ParallelTask;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
@@ -44,7 +44,6 @@ import javax.persistence.*;
 import javax.persistence.Transient;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.concurrent.*;
 
 @Entity
 @ApiModel(value = "Hardware", description = "Model of Hardware")
@@ -139,28 +138,45 @@ public class Model_Hardware extends TaggedModel {
 
     // For Faster reload
     @JsonIgnore @Transient @Cached public Long cache_latest_online;
-    @JsonIgnore @Transient @Cached public UUID cache_hardware_type_id;                        // Type of Board Id
+   /*@JsonIgnore @Transient @Cached public UUID cache_hardware_type_id;    */                   // Type of Board Id
     @JsonIgnore @Transient @Cached public String cache_hardware_type_name;
-    @JsonIgnore @Transient @Cached public UUID cache_producer_id;                             // Producer ID
+  /*  @JsonIgnore @Transient @Cached public UUID cache_producer_id;                             // Producer ID
     @JsonIgnore @Transient @Cached public UUID cache_project_id;                              // Project
     @JsonIgnore @Transient @Cached public UUID cache_actual_boot_loader_id;                   // Bootloader
     @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_id;                     // C Program
     @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_version_id;             // C Program - version
     @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_backup_id;              // Backup
     @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_backup_version_id;      // Backup - version
-    @JsonIgnore @Transient @Cached public UUID cache_harware_update_update_in_progress_bootloader_id;      // HardwareUpdate for bootloade
+    @JsonIgnore @Transient @Cached public UUID cache_harware_update_update_in_progress_bootloader_id;   */  // HardwareUpdate for bootloade
     @JsonIgnore @Transient @Cached public String cache_latest_know_ip_address;
-    @Transient @JsonIgnore @Cached public List<UUID> cache_hardware_groups_ids;
-    @JsonIgnore @Transient @Cached public UUID cache_picture_id;
+  /*  @Transient @JsonIgnore @Cached public List<UUID> cache_hardware_groups_ids;
+    @JsonIgnore @Transient @Cached public UUID cache_picture_id; */
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty public BackupMode backup_mode() { return backup_mode ? BackupMode.AUTO_BACKUP : BackupMode.STATIC_BACKUP;}
-    @JsonProperty public UUID hardware_type_id()                     { try { return cache_hardware_type_id != null ? cache_hardware_type_id : getHardwareType().id;} catch (NullPointerException e) {return  null;}}
-    @JsonProperty public String hardware_type_name()                 { try { return cache_hardware_type_name != null ? cache_hardware_type_name : getHardwareType().name;} catch (NullPointerException e) {return  null;}}
-    @JsonProperty public UUID producer_id()                          { try { return cache_producer_id != null ? cache_producer_id : get_producer().id;} catch (NullPointerException e) {return  null;}}
-    @JsonProperty public String producer_name()                      { try { return get_producer().name; } catch (NullPointerException e) {return  null;}}
-    @JsonProperty public UUID project_id()                           { try { return cache_project_id != null ? cache_project_id : get_project().id; } catch (NullPointerException e) {return  null;}}
+    @JsonProperty public Swagger_Short_Reference hardware_type()                     {
+        try {
+            Model_HardwareType type = this.getHardwareType();
+            return new Swagger_Short_Reference(type.id, type.name, type.description);
+        } catch (NullPointerException e) {return  null;}
+    }
+
+    @JsonProperty public Swagger_Short_Reference producer()                     {
+        try {
+            Model_Producer type = this.get_producer();
+            return new Swagger_Short_Reference(type.id, type.name, type.description);
+        } catch (NullPointerException e) {return  null;}
+    }
+
+    @JsonProperty public Swagger_Short_Reference project()                           {
+        try {
+            Model_Project type  = this.get_project();
+            return new Swagger_Short_Reference(type.id, type.name, type.description);
+        } catch (NullPointerException e) {return  null;}
+    }
+
+
     @JsonProperty public Model_BootLoader actual_bootloader()        {
         try {
             return get_actual_bootloader();
@@ -328,40 +344,39 @@ public class Model_Hardware extends TaggedModel {
     }
 
     @JsonProperty
-    public UUID actual_c_program_id() { return cache_actual_c_program_id != null ? cache_actual_c_program_id : (get_actual_c_program() == null ? null : get_actual_c_program().id);}
+    public Swagger_Short_Reference actual_c_program() {
+        try {
+            Model_CProgram type = this.get_actual_c_program();
+            return new Swagger_Short_Reference(type.id, type.name, type.description);
+        } catch (NullPointerException e) {return  null;}
+    }
+
 
     @JsonProperty
-    public String actual_c_program_name() { return get_actual_c_program() == null ? null : get_actual_c_program().name;}
+    public Swagger_Short_Reference actual_c_program_version() {
+        try {
+            Model_CProgramVersion version = this.get_actual_c_program_version();
+            return new Swagger_Short_Reference(version.id, version.name, version.description);
+        } catch (NullPointerException e) {return  null;}
+    }
+
+    public Swagger_Short_Reference actual_c_program_backup_id() {
+        try{
+            Model_CProgram program = this.get_backup_c_program();
+            return new Swagger_Short_Reference(program.id, program.name, program.description);
+        }catch (NullPointerException e) {return  null;}
+    }
+
+
 
     @JsonProperty
-    public String actual_c_program_description() { return get_actual_c_program() == null ? null :  get_actual_c_program().description;}
+    public Swagger_Short_Reference actual_c_program_backup_version() {
+        try{
+            Model_CProgramVersion version = this.get_backup_c_program_version();
+            return new Swagger_Short_Reference(version.id, version.name, version.description);
+        }catch (NullPointerException e) {return  null;}
 
-    @JsonProperty
-    public UUID actual_c_program_version_id() { return cache_actual_c_program_version_id != null ? cache_actual_c_program_version_id : (get_actual_c_program_version() == null ? null : get_actual_c_program_version().id);}
-
-    @JsonProperty
-    public String actual_c_program_version_name() { return get_actual_c_program_version() == null ? null : get_actual_c_program_version().name;}
-
-    @JsonProperty
-    public String actual_c_program_version_description() {  return get_actual_c_program_version() == null ? null : get_actual_c_program_version().description;}
-
-    @JsonProperty
-    public UUID actual_c_program_backup_id() {  return cache_actual_c_program_backup_id != null ? cache_actual_c_program_backup_id : (get_backup_c_program() == null ? null : get_backup_c_program().id); }
-
-    @JsonProperty
-    public String actual_c_program_backup_name() { return get_backup_c_program() == null ? null : get_backup_c_program().name;}
-
-    @JsonProperty
-    public String actual_c_program_backup_description() { return get_backup_c_program() == null ? null : get_backup_c_program().description;}
-
-    @JsonProperty
-    public UUID actual_c_program_backup_version_id() { return cache_actual_c_program_backup_version_id != null ? cache_actual_c_program_backup_version_id : (get_backup_c_program_version() == null ? null :  get_backup_c_program_version().id) ;}
-
-    @JsonProperty
-    public String actual_c_program_backup_version_name() { return get_backup_c_program_version() == null ? null :  get_backup_c_program_version().name; }
-
-    @JsonProperty
-    public String actual_c_program_backup_version_description() {return get_backup_c_program_version() == null ? null :  get_backup_c_program_version().description;}
+    }
 
     @JsonProperty
     @ApiModelProperty(value = "Value is null, if device status is online")
@@ -498,45 +513,83 @@ public class Model_Hardware extends TaggedModel {
     public Model_HomerServer get_connected_server() { return Model_HomerServer.getById(this.connected_server_id);}
 
     @JsonIgnore
-    public Model_Producer get_producer() {
-
-        if (cache_producer_id == null) {
-
-            Model_Producer producer = Model_Producer.find.query().where().eq("hardware_types.hardware.id", id).select("id").findOne();
-            if (producer == null) return null;
-            cache_producer_id = producer.id;
+    public UUID get_producerId() throws _Base_Result_Exception {
+        if (cache().get(Model_Producer.class) == null) {
+            cache().add(Model_Producer.class, (UUID) Model_Producer.find.query().where().eq("hardware_types.hardware.id", id).select("id").findSingleAttribute());
         }
-
-        return Model_Producer.getById(cache_producer_id);
+        return cache().get(Model_Producer.class);
     }
 
     @JsonIgnore
-    public Model_Instance get_instance() {
+    public Model_Producer get_producer() {
         try {
-            if (connected_instance_id == null) return null;
-            return Model_Instance.getById(connected_instance_id);
+            return Model_Producer.getById(get_producerId());
         } catch (Exception e) {
             return null;
         }
     }
 
+    @JsonIgnore public UUID get_instance_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_Instance.class) == null) {
+            cache().add(Model_Instance.class, (UUID) Model_Instance.find.query().where().eq("project.hardware.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_Instance.class);
+    }
+
+
     @JsonIgnore
-    public Model_CProgram get_actual_c_program(){
+    public Model_Instance get_instance() throws _Base_Result_Exception{
         try {
-            if (cache_actual_c_program_id == null) {
-                Model_CProgram program = Model_CProgram.find.query().where().eq("versions.c_program_version_boards.id", id).select("id").findOne();
-                if (program == null) return null;
-                cache_actual_c_program_id = program.id;
-            }
-            return Model_CProgram.getById(cache_actual_c_program_id);
-        }catch (Exception e){
+            return Model_Instance.getById(get_instance_id());
+        }catch (Exception e) {
             return null;
         }
     }
 
+
+    @JsonIgnore public UUID get_actual_c_program_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_CProgram.class) == null) {
+            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type.hardware.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_CProgram.class);
+    }
+
+
     @JsonIgnore
-    public Model_CProgramVersion get_actual_c_program_version(){
+    public Model_CProgram get_actual_c_program() throws _Base_Result_Exception{
+
         try {
+            return Model_CProgram.getById(get_actual_c_program_id());
+        }catch (Exception e) {
+            return null;
+        }
+
+    }
+
+    @JsonIgnore public UUID get_actual_c_program_version_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_CProgramVersion.class) == null) {                                                         //propertyName
+            cache().add(Model_CProgramVersion.class, (UUID) Model_CProgramVersion.find.query().where().eq("hardware_type.hardware.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_CProgramVersion.class);
+    }
+
+    @JsonIgnore
+    public Model_CProgramVersion get_actual_c_program_version()throws _Base_Result_Exception {
+
+        try {
+            return Model_CProgramVersion.getById(get_actual_c_program_version_id());
+        }catch (Exception e) {
+            return null;
+        }
+
+
+        /*  try {
             if (cache_actual_c_program_version_id == null) {
                 Model_CProgramVersion version = Model_CProgramVersion.find.query().where().eq("c_program_version_boards.id", id).select("id").findOne();
                 if (version == null) throw new Result_Error_NotFound(Model_CProgramVersion.class);
@@ -545,128 +598,134 @@ public class Model_Hardware extends TaggedModel {
             return Model_CProgramVersion.getById(cache_actual_c_program_version_id);
         }catch (Exception e){
             return null;
+        }*/
+    }
+
+    @JsonIgnore public UUID get_actual_bootloader_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_BootLoader.class) == null) {                                                         //propertyName
+            cache().add(Model_BootLoader.class, (UUID) Model_BootLoader.find.query().where().eq("hardware.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
         }
+
+        return cache().get(Model_BootLoader.class);
     }
 
     @JsonIgnore
-    public Model_BootLoader get_actual_bootloader() {
+    public Model_BootLoader get_actual_bootloader()throws _Base_Result_Exception  {
+
         try {
-
-            if (cache_actual_boot_loader_id == null) {
-                Model_BootLoader bootLoader = Model_BootLoader.find.query().where().eq("hardware.id", id).select("id").findOne();
-                if (bootLoader == null) return null;
-                cache_actual_boot_loader_id = bootLoader.id;
-            }
-
-            return Model_BootLoader.getById(cache_actual_boot_loader_id);
-
-        }catch (Exception e){
+            return Model_BootLoader.getById(get_actual_bootloader_id());
+        }catch (Exception e) {
             return null;
         }
+
+    }
+
+    @JsonIgnore public UUID get_backup_c_program_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_CProgram.class) == null) {                                                         //propertyName
+            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_default.hardware.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_CProgram.class);
     }
 
     @JsonIgnore
     public Model_CProgram get_backup_c_program() {
-        try {
-            if (cache_actual_c_program_backup_id == null) {
-                Model_CProgram program = Model_CProgram.find.query().where().eq("versions.c_program_version_backup_boards.id", id).select("id").findOne();
-                if (program == null) return null;
-                cache_actual_c_program_backup_id = program.id;
-            }
 
-            return Model_CProgram.getById(cache_actual_c_program_backup_id);
-        } catch (Exception e){
+        try {
+            return Model_CProgram.getById(get_backup_c_program_id());
+        }catch (Exception e) {
             return null;
         }
+
+    }
+
+    @JsonIgnore public UUID get_backup_c_program_version_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_CProgramVersion.class) == null) {                                                         //property name
+            cache().add(Model_CProgramVersion.class, (UUID) Model_CProgramVersion.find.query().where().eq("c_program_version_boards.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_CProgramVersion.class);
     }
 
     @JsonIgnore
     public Model_CProgramVersion get_backup_c_program_version() {
+
         try {
-            if (cache_actual_c_program_backup_version_id == null) {
-                Model_CProgramVersion version = Model_CProgramVersion.find.query().where().eq("c_program_version_backup_boards.id", id).select("id").findOne();
-                if (version == null) return null;
-                cache_actual_c_program_backup_version_id = version.id;
-            }
-
-            return Model_CProgramVersion.getById(cache_actual_c_program_backup_version_id);
-
-        }catch (Exception e){
+            return Model_CProgramVersion.getById(get_backup_c_program_version_id());
+        }catch (Exception e) {
             return null;
         }
+
     }
 
-    @JsonIgnore
-    public Model_HardwareType getHardwareType() {
-        try {
-            if (cache_hardware_type_id == null) {
-                Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("hardware.id", id).select("id").select("name").findOne();
-                if (hardwareType == null) return null;
-                cache_hardware_type_id = hardwareType.id;
-                cache_hardware_type_name = hardwareType.name;
-            }
+    @JsonIgnore public UUID getHardwareType_id() throws _Base_Result_Exception {
 
-            return Model_HardwareType.getById(cache_hardware_type_id);
-        }catch (Exception e){
-            return null;
+        if (cache().get(Model_HardwareType.class) == null) {
+            cache().add(Model_HardwareType.class, (UUID) Model_HardwareType.find.query().where().eq("hardware.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
         }
+
+        return cache().get(Model_HardwareType.class);
     }
 
     @JsonIgnore
-    public Model_Project get_project() {
+    public Model_HardwareType getHardwareType() throws _Base_Result_Exception {
         try {
-            if (cache_project_id == null) {
-                return Model_Project.getById(get_project_id());
-            }
-
-            return Model_Project.getById(cache_project_id);
-        }catch (Exception e){
-            return  null;
-        }
-    }
-
-    @JsonIgnore
-    public UUID get_project_id() {
-        try {
-
-            if (cache_project_id == null) {
-                Model_Project project = Model_Project.find.query().where().eq("hardware.id", id).select("id").findOne();
-                if (project == null) throw new Result_Error_NotFound(Model_Project.class);
-                cache_project_id = project.id;
-            }
-
-            return cache_project_id;
+            return Model_HardwareType.getById(getHardwareType_id());
         }catch (Exception e) {
             return null;
         }
     }
 
     @JsonIgnore
-    public List<Model_HardwareGroup> get_hardware_groups() {
+    public UUID get_project_id()throws _Base_Result_Exception {
 
-        if (cache_hardware_groups_ids == null) {
-            get_hardware_group_ids();
+        if (cache().get(Model_Project.class) == null) {
+            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("hardware.id", id).select("id").findSingleAttribute());
         }
 
-        List<Model_HardwareGroup> groups = new ArrayList<>();
+        return cache().get(Model_Project.class);
 
-        for(UUID group_id : cache_hardware_groups_ids) {
-            groups.add(Model_HardwareGroup.getById(group_id));
-        }
-
-        return groups;
     }
 
     @JsonIgnore
-    public List<UUID> get_hardware_group_ids() {
+    public Model_Project get_project() throws _Base_Result_Exception {
+        try {
+            return Model_Project.getById(get_project_id());
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 
-        if (cache_hardware_groups_ids == null) {
+    @JsonIgnore
+    public List<UUID> get_hardware_group_ids() throws _Base_Result_Exception{
 
-            List<UUID> group_ids = Model_HardwareGroup.find.query().where().eq("hardware.id", id).select("id").findIds();
-            this.cache_hardware_groups_ids = group_ids;
-            return cache_hardware_groups_ids;
-        } else {
-            return cache_hardware_groups_ids;
+        if (cache().gets(Model_HardwareGroup.class) == null) {
+            cache().add(Model_HardwareGroup.class,  Model_HardwareGroup.find.query().where().eq("hardware.id", id).order().desc("created").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_HardwareGroup.class);
+
+    }
+
+    @JsonIgnore
+    public List<Model_HardwareGroup> get_hardware_groups() throws _Base_Result_Exception{
+        try {
+
+            List<Model_HardwareGroup> groups  = new ArrayList<>();
+
+            for (UUID group_id : get_hardware_group_ids()) {
+                groups.add(Model_HardwareGroup.getById(group_id));
+            }
+
+            return groups;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new ArrayList<>();
         }
     }
 
@@ -1915,6 +1974,9 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
+    // Používáme protože nemáme rezervní klíč pro cachoání backup c program verze v lokální chache
+    private class Model_CProgramVersionFakeBackup {}
+
     @JsonIgnore
     private void check_backup(WS_Message_Hardware_overview_Board overview) {
         try {
@@ -1934,9 +1996,11 @@ public class Model_Hardware extends TaggedModel {
                     if (version_not_cached != null) {
                         logger.debug("check_backup:: Ještě nebyla přiřazena žádná Backup verze k HW v Tyrionovi - ale program se podařilo najít");
                         Model_CProgramVersion cached_version = Model_CProgramVersion.getById(version_not_cached.id);
+
+
+
                         this.actual_backup_c_program_version = cached_version;
-                        this.cache_actual_c_program_backup_id = cached_version.get_c_program().id;
-                        this.cache_actual_c_program_backup_version_id = cached_version.id;
+                        this.cache().add(Model_CProgramVersionFakeBackup.class, cached_version.get_c_program().id);
                         this.update();
                     }
                 }
@@ -1964,7 +2028,9 @@ public class Model_Hardware extends TaggedModel {
                     if (version_not_cached != null) {
                         logger.debug("check_backup:: Ještě nebyla přiřazena žádná Backup verze k HW v Tyrionovi - ale program se podařilo najít");
                         Model_CProgramVersion cached_version = Model_CProgramVersion.getById(version_not_cached.id);
+
                         this.actual_backup_c_program_version = cached_version;
+
                         this.cache_actual_c_program_backup_id = cached_version.get_c_program().id;
                         this.cache_actual_c_program_backup_version_id = cached_version.id;
                         this.update();

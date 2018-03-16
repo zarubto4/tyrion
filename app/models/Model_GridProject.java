@@ -39,9 +39,6 @@ public class Model_GridProject extends TaggedModel {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Cached private UUID cache_project_id;
-    @JsonIgnore @Transient @Cached public List<UUID> grid_programs_ids = new ArrayList<>();
-
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true) public List<Model_GridProgram> m_programs() { return getGridPrograms();}
@@ -50,22 +47,21 @@ public class Model_GridProject extends TaggedModel {
 
 /* GET SQL PARAMETER - CACHE OBJECTS ------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
+    public List<UUID> getGrid_programs_ids() {
+        if (cache().get(Model_GridProgram.class) == null) {
+            cache().add(Model_GridProgram.class, (UUID) Model_GridProgram.find.query().where().eq("grid_project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+        }
+
+        return cache().gets(Model_GridProgram.class);
+    }
+
     @JsonIgnore public List<Model_GridProgram> getGridPrograms() {
-        try {
-
-            if (grid_programs_ids.isEmpty()) {
-
-                List<UUID> uuids =  Model_GridProgram.find.query().where().eq("grid_project.id", id).orderBy("UPPER(name) ASC").findIds();
-
-                // Získání seznamu
-                for (UUID uuid : uuids) {
-                    grid_programs_ids.add(uuid);
-                }
-            }
+    try {
 
             List<Model_GridProgram> gridPrograms  = new ArrayList<>();
 
-            for (UUID version_id : grid_programs_ids) {
+            for (UUID version_id : getGrid_programs_ids()) {
                 gridPrograms.add(Model_GridProgram.getById(version_id));
             }
 
@@ -79,13 +75,11 @@ public class Model_GridProject extends TaggedModel {
 
     @JsonIgnore @Transient public UUID get_project_id() throws _Base_Result_Exception {
 
-        if (cache_project_id == null) {
-            Model_Project project = Model_Project.find.query().where().eq("grid_projects.id", id).select("id").findOne();
-            if (project == null) return null;
-            cache_project_id = project.id;
+        if (cache().get(Model_Project.class) == null) {
+            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("grid_projects.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
         }
 
-        return cache_project_id;
+        return cache().get(Model_Project.class);
     }
 
     @JsonIgnore @Transient public Model_Project get_project() throws _Base_Result_Exception  {

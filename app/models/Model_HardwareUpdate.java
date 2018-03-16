@@ -71,16 +71,18 @@ public class Model_HardwareUpdate extends BaseModel {
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Cached public UUID cache_actualization_procedure_id;
-    @JsonIgnore @Transient @Cached public UUID cache_hardware_id;
+  /*@JsonIgnore @Transient @Cached public UUID cache_hardware_id;
     @JsonIgnore @Transient @Cached public UUID cache_c_program_version_id;
     @JsonIgnore @Transient @Cached public UUID cache_bootloader_id;
-
+*/
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = false, readOnly = true)
     public UpdateType type_of_update () {
        return actualization_procedure.type_of_update;
     }
+
+
 
     @JsonProperty @ApiModelProperty(required = false, readOnly = true)
     public UUID actualization_procedure_id() {
@@ -90,7 +92,6 @@ public class Model_HardwareUpdate extends BaseModel {
         }
         return cache_actualization_procedure_id;
     }
-
 
     @JsonProperty
     public Date date_of_planing() {
@@ -160,36 +161,45 @@ public class Model_HardwareUpdate extends BaseModel {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+//TODO dodělat procedure_id??
+
+    @JsonIgnore public UUID getHardware_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_Hardware.class) == null) {
+            cache().add(Model_Hardware.class, (UUID) Model_Hardware.find.query().where().eq("updates.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_Hardware.class);
+    }
+
     @JsonIgnore
-    public Model_Hardware getHardware() {
+    public Model_Hardware getHardware()throws _Base_Result_Exception {
 
-        if (cache_hardware_id != null) {
-            return Model_Hardware.getById(cache_hardware_id);
+        try {
+            return Model_Hardware.getById(getHardware_id());
+        }catch (Exception e) {
+            return null;
+        }
+    }
+
+    @JsonIgnore public UUID getBootloader_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_BootLoader.class) == null) {
+            cache().add(Model_BootLoader.class, (UUID) Model_BootLoader.find.query().where().eq("updates.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
         }
 
-        Model_Hardware hardware_not_cached = Model_Hardware.find.query().where().eq("registration.updates.id", id).select("id").findOne();
-        if (hardware_not_cached != null) {
-            cache_hardware_id = hardware_not_cached.id;
-            return getHardware();
-        }
-
-        return null;
+        return cache().get(Model_BootLoader.class);
     }
 
     @JsonIgnore
     public Model_BootLoader getBootloader() {
 
-        if (cache_bootloader_id != null) {
-            return Model_BootLoader.getById(cache_bootloader_id);
+        try {
+            return Model_BootLoader.getById(getBootloader_id());
+        }catch (Exception e) {
+            return null;
         }
 
-        Model_BootLoader bootloader_not_cached = Model_BootLoader.find.query().where().eq("updates.id", id).select("id").findOne();
-        if (bootloader_not_cached != null) {
-            cache_bootloader_id = bootloader_not_cached.id;
-            return getBootloader();
-        }
-
-        return null;
     }
 
     @JsonIgnore
@@ -257,7 +267,9 @@ public class Model_HardwareUpdate extends BaseModel {
 
         // set Cache Parameter
         if (c_program_version_for_update != null) {
+
             cache_c_program_version_id = c_program_version_for_update.id;
+
         }
 
         // set Cache Parameter

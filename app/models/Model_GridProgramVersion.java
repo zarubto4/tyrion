@@ -41,8 +41,6 @@ public class Model_GridProgramVersion extends VersionModel {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Cached private UUID cache_grid_program_id;
-
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
 
@@ -73,28 +71,24 @@ public class Model_GridProgramVersion extends VersionModel {
     @JsonIgnore
     public UUID get_grid_program_id() throws _Base_Result_Exception {
 
-        if (cache_grid_program_id == null) {
 
-            Model_GridProgram grid_program = Model_GridProgram.find.query().where().eq("versions.id", id).select("id").findOne();
-            if (grid_program != null) {
-                cache_grid_program_id = grid_program.id;
-            } else {
-                throw new Result_Error_NotFound(Model_Library.class);
-            }
+        if (cache().get(Model_GridProgram.class) == null) {
+            cache().add(Model_GridProgram.class, (UUID) Model_GridProgram.find.query().where().eq("versions.id", id).select("id").findSingleAttribute());
         }
 
-        return cache_grid_program_id;
+        return cache().get(Model_GridProgram.class);
     }
 
     @JsonIgnore
     public Model_GridProgram get_grid_program() throws _Base_Result_Exception {
 
-        if (cache_grid_program_id == null) {
-           return Model_GridProgram.getById(get_grid_program_id());
+        try {
+            return Model_GridProgram.getById(get_grid_program_id());
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
         }
-        return Model_GridProgram.getById(cache_grid_program_id);
     }
-
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -112,7 +106,7 @@ public class Model_GridProgramVersion extends VersionModel {
             }
         }).start();
 
-        grid_program.cache_version_ids.add(0, id);
+        grid_program.cache().add(this.getClass(), id);
 
     }
 
@@ -138,7 +132,7 @@ public class Model_GridProgramVersion extends VersionModel {
 
         // Remove from Cache
         try {
-            get_grid_program().cache_version_ids.remove(id);
+            get_grid_program().cache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }

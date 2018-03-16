@@ -62,17 +62,12 @@ public class Model_HardwareType extends NamedModel {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Cached private UUID cache_producer_id;
-    @JsonIgnore @Transient @Cached private UUID cache_processor_id;
-    @JsonIgnore @Transient @Cached public  String cache_picture_link;
-    @JsonIgnore @Transient @Cached public  UUID cache_main_bootloader_id;
 
-    @JsonIgnore @Transient @Cached public  UUID cache_main_c_program_version_id;    // Výchozí defaault firmware chache
-    @JsonIgnore @Transient @Cached public  UUID cache_main_c_program_id;
-    @JsonIgnore @Transient @Cached public  UUID cache_test_program_version_id;      // testovací firmware chache
-    @JsonIgnore @Transient @Cached public  UUID cache_test_c_program_id;
+    @JsonIgnore @Transient @Cached public  String cache_picture_link;
+    /*@JsonIgnore @Transient @Cached public  UUID cache_main_bootloader_id;
+    @JsonIgnore @Transient @Cached public  UUID cache_test_c_program_id; */
     @JsonIgnore @Transient @Cached public  List<Swagger_CompilationLibrary> cache_library_list; // Záměrně není pole definované!
-    @JsonIgnore @Transient @Cached public  List<UUID> cache_bootloaders_id; // Záměrně není pole definované!
+    @JsonIgnore @Transient @Cached public  List<UUID> cache_bootloaders_id; // Záměrně není pole definované! */
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -216,64 +211,63 @@ public class Model_HardwareType extends NamedModel {
         return Model_BootLoader.find.query().where().eq("hardware_type.id",id).findList();
     }
 
+    @JsonIgnore public UUID get_producer_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_Producer.class) == null) {
+            cache().add(Model_Producer.class, (UUID) Model_Producer.find.query().where().eq("hardware_types.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_Producer.class);
+    }
+
     @JsonIgnore
     public Model_Producer get_producer() {
+
         try {
-
-            if (cache_producer_id == null) {
-                Model_Producer producer = Model_Producer.find.query().where().eq("hardware_types.id", id).select("id").findOne();
-                cache_producer_id = producer.id;
-            }
-
-            return Model_Producer.getById(cache_producer_id);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
+            return Model_Producer.getById(get_producer_id());
+        }catch (Exception e) {
             return null;
         }
+    }
+
+    @JsonIgnore public UUID get_processor_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_Processor.class) == null) {
+            cache().add(Model_Processor.class, (UUID) Model_Processor.find.query().where().eq("hardware_types.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_Processor.class);
     }
 
     @JsonIgnore
     public Model_Processor get_processor() {
 
         try {
-
-            if (cache_processor_id == null) {
-                Model_Processor processor = Model_Processor.find.query().where().eq("hardware_types.id", id).select("id").findOne();
-                cache_processor_id = processor.id;
-            }
-
-            return Model_Processor.getById(cache_processor_id);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
+            return Model_Processor.getById(get_processor_id());
+        }catch (Exception e) {
             return null;
         }
+    }
+
+    @JsonIgnore public UUID get_main_c_program_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_CProgram.class) == null) {
+            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_default.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_CProgram.class);
     }
 
     @JsonIgnore
     public Model_CProgram get_main_c_program() {
 
         try {
-
-            if (cache_main_c_program_id == null) {
-                Model_CProgram c_program = Model_CProgram.find.query().where().eq("hardware_type_default.id", id).select("id").findOne();
-                cache_main_c_program_id = c_program.id;
-            }
-
-            if (cache_main_c_program_id != null) {
-
-                return Model_CProgram.getById(cache_main_c_program_id);
-            } else {
-                logger.error("get_main_c_program: cache_main_c_program_id is null!");
-                return null;
-            }
-
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
+            return Model_CProgram.getById(get_main_c_program_id());
+        }catch (Exception e) {
             return null;
         }
+
+
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/

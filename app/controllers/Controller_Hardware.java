@@ -2728,7 +2728,8 @@ public class Controller_Hardware extends _BaseController {
                             board.get_hardware_group_ids().add(group.id);
                             board.hardware_groups.add(group);
                             group.cache_group_size += 1;
-                            if (group.cache_hardware_type_ids == null) {
+                            //if (group.cache_hardware_type_ids == null) {
+                            if (group.cache. == null) {
                                 group.cache_hardware_type_ids = new ArrayList<>();
                             }
                             if(!group.cache_hardware_type_ids.contains(board.hardware_type_id())){

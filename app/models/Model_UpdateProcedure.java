@@ -285,12 +285,21 @@ public class Model_UpdateProcedure extends BaseModel {
 
     @JsonIgnore
     public UUID get_project_id() {
-       return project_id;
+        if (cache().get(Model_Project.class) == null) {
+            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("procedures.id", id).select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_Project.class);
     }
 
     @JsonIgnore @Transient
-    public Model_Project get_project() throws _Base_Result_Exception  {
-        return  Model_Project.getById(get_project_id());
+    public Model_Project get_project() throws _Base_Result_Exception {
+        try {
+            return Model_Project.getById(get_project_id());
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
 
