@@ -18,10 +18,7 @@ import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
-import utilities.document_db.document_objects.DM_Board_BackupIncident;
-import utilities.document_db.document_objects.DM_Board_Bootloader_DefaultConfig;
-import utilities.document_db.document_objects.DM_Board_Connect;
-import utilities.document_db.document_objects.DM_Board_Disconnected;
+import utilities.document_db.document_objects.*;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.errors.Exceptions.*;
@@ -32,7 +29,6 @@ import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.input.Swagger_Board_Developer_parameters;
 import utilities.swagger.output.Swagger_Short_Reference;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
-import websocket.ParallelTask;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
@@ -44,7 +40,6 @@ import javax.persistence.*;
 import javax.persistence.Transient;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.concurrent.*;
 
 @Entity
 @ApiModel(value = "Hardware", description = "Model of Hardware")
@@ -331,6 +326,7 @@ public class Model_Hardware extends TaggedModel {
     public Swagger_Short_Reference actual_instance() {
         try {
             Model_Instance i = get_instance();
+            if(i == null) return null;
             return new Swagger_Short_Reference(i.id, i.name, i.description);
         }catch (Exception e){
             logger.internalServerError(e);
@@ -446,7 +442,7 @@ public class Model_Hardware extends TaggedModel {
                     // Začnu zjišťovat stav - v separátním vlákně!
                     new Thread(() -> {
                         try {
-                            write_without_confirmation(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(id)));
+                            device_online_synchronization_ask();
                         } catch (Exception e) {
                             logger.internalServerError(e);
                         }
@@ -720,7 +716,7 @@ public class Model_Hardware extends TaggedModel {
 
                     case WS_Message_Hardware_online_status.message_type: {
 
-                        Model_Hardware.device_online_synchronization(baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_online_status.class, json));
+                        Model_Hardware.device_online_synchronization_echo(baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_online_status.class, json));
                         return;
                     }
 
@@ -955,9 +951,10 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
+
     // žádost void o synchronizaci online stavu
     @JsonIgnore
-    public static void device_online_synchronization(WS_Message_Hardware_online_status report) {
+    public static void device_online_synchronization_echo(WS_Message_Hardware_online_status report) {
         try {
 
             for (WS_Message_Hardware_online_status.DeviceStatus status : report.hardware_list) {
@@ -1183,6 +1180,24 @@ public class Model_Hardware extends TaggedModel {
         return overview.get_device_from_list(this.id);
     }
 
+    @JsonIgnore
+    public void device_online_synchronization_ask() {
+        try {
+
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(id)), 1000 * 5, 0, 2);
+            WS_Message_Hardware_online_status status = baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_online_status.class, node);
+
+            if(status.status.equals("error")) {
+                logger.warn("device_online_synchronization_ask: Status Error", node);
+            }else {
+                device_online_synchronization_echo(status);
+            }
+
+        }catch (Exception e){
+            logger.internalServerError(e);
+        }
+    }
+
     // Change Hardware Alias  --//GRID Apps
     @JsonIgnore
     public WS_Message_Hardware_set_settings set_alias(String alias) {
@@ -1309,6 +1324,29 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
+    @JsonIgnore
+    public WS_Message_Hardware_uuid_converter_cleaner device_converted_id_clean_remove_from_server() {
+        try {
+            JsonNode node = write_with_confirmation( new WS_Message_Hardware_uuid_converter_cleaner().make_request(null, this.id, this.full_id), 1000 * 5, 0, 2);
+            return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_uuid_converter_cleaner.class, node);
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new WS_Message_Hardware_uuid_converter_cleaner();
+        }
+    }
+
+    @JsonIgnore
+    public WS_Message_Hardware_uuid_converter_cleaner device_converted_id_clean_switch_on_server(UUID old_id) {
+        try {
+            JsonNode node = write_with_confirmation( new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.id, old_id, this.full_id), 1000 * 5, 0, 2);
+            return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_uuid_converter_cleaner.class, node);
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new WS_Message_Hardware_uuid_converter_cleaner();
+        }
+    }
 
 
     //-- Set AutoBackup  --//
@@ -2486,6 +2524,16 @@ public class Model_Hardware extends TaggedModel {
         }).start();
     }
 
+    public void make_log_deactivated() {
+        new Thread(() -> {
+            try {
+                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Dactivated.make_request(this.id), null, true);
+            } catch (DocumentClientException e) {
+                logger.internalServerError(e);
+            }
+        }).start();
+    }
+
     public void make_log_backup_arrise_change() {
         new Thread(() -> {
             try {
@@ -2731,7 +2779,7 @@ public class Model_Hardware extends TaggedModel {
 
         if (id == null){
             logger.debug("getByFullId: {} Database ID is null", fullId);
-            return  null;
+            return null;
         }
 
         logger.trace("getByFullId: {} Database ID {}", fullId, id.toString());

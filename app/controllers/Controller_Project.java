@@ -754,13 +754,12 @@ public class Controller_Project extends _BaseController {
 
             // log Hard disconection
             if(hardware.online_state() == NetworkStatus.ONLINE) {
-                hardware.make_log_disconnect();
+                hardware.make_log_deactivated();
                 // If device is online, restart it. So Device will connect immediately and it will find probably a new activated alternative of Device
-                hardware.execute_command(BoardCommand.RESTART, true);
+                hardware.device_converted_id_clean_remove_from_server();
             }
 
             Model_Hardware.cache_status.remove(hardware.id);
-
 
             return ok(hardware.json());
 
