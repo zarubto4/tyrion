@@ -1400,19 +1400,19 @@ public class Model_Hardware extends TaggedModel {
         logger.debug("execute_update_plan - start execution of plan: {}", plan.id );
         logger.debug("execute_update_plan - actual state: {} ", plan.state.name());
 
-        if (plan.getActualizationProcedure().state == Enum_Update_group_procedure_state.complete || plan.getActualizationProcedure().state == Enum_Update_group_procedure_state.successful_complete ) {
+        if (plan.getActualizationProcedure().state == Enum_Update_group_procedure_state.COMPLETE || plan.getActualizationProcedure().state == Enum_Update_group_procedure_state.SUCCESSFULLY_COMPLETE ) {
             logger.debug("execute_update_plan - procedure: {} is done (successful_complete or complete) -> return", plan.getActualizationProcedureId());
             return;
         }
 
         if (plan.getActualizationProcedure().getUpdates().isEmpty()) {
-            plan.getActualizationProcedure().state = Enum_Update_group_procedure_state.complete_with_error;
+            plan.getActualizationProcedure().state = Enum_Update_group_procedure_state.COMPLETE_WITH_ERROR;
             plan.getActualizationProcedure().update();
             logger.debug("execute_update_plan - procedure: {} is empty -> return" , plan.getActualizationProcedureId());
             return;
         }
 
-        plan.getActualizationProcedure().state = Enum_Update_group_procedure_state.in_progress;
+        plan.getActualizationProcedure().state = Enum_Update_group_procedure_state.IN_PROGRESS;
         plan.getActualizationProcedure().update();
 
         try {
@@ -1459,19 +1459,19 @@ public class Model_Hardware extends TaggedModel {
         logger.debug("execute_update_procedure - start execution of procedure: {}", procedure.id );
         logger.debug("execute_update_procedure - actual state: {} ", procedure.state.name());
 
-        if (procedure.state == Enum_Update_group_procedure_state.complete || procedure.state == Enum_Update_group_procedure_state.successful_complete ) {
+        if (procedure.state == Enum_Update_group_procedure_state.COMPLETE || procedure.state == Enum_Update_group_procedure_state.SUCCESSFULLY_COMPLETE ) {
             logger.debug("execute_update_procedure - procedure: {} is done (successful_complete or complete) -> return", procedure.id);
             return;
         }
 
         if (procedure.getUpdates().isEmpty()) {
-            procedure.state = Enum_Update_group_procedure_state.complete_with_error;
+            procedure.state = Enum_Update_group_procedure_state.COMPLETE_WITH_ERROR;
             procedure.update();
             logger.debug("execute_update_procedure - procedure: {} is empty -> return" , procedure.id);
             return;
         }
 
-        procedure.state = Enum_Update_group_procedure_state.in_progress;
+        procedure.state = Enum_Update_group_procedure_state.IN_PROGRESS;
         procedure.update();
 
         List<Model_HardwareUpdate> plans = Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", procedure.id)
@@ -2281,7 +2281,7 @@ public class Model_Hardware extends TaggedModel {
 
         Model_UpdateProcedure procedure = new Model_UpdateProcedure();
         procedure.project_id = board_for_update.get(0).hardware.project_id();
-        procedure.state = Enum_Update_group_procedure_state.not_start_yet;
+        procedure.state = Enum_Update_group_procedure_state.NOT_START_YET;
         procedure.type_of_update = type_of_update;
 
         procedure.save();

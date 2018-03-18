@@ -219,7 +219,7 @@ public class Model_UpdateProcedure extends BaseModel {
                 logger.trace("update_state :: All updates are successfully complete (complete == all) ");
 
                 date_of_finish = new Date();
-                state = Enum_Update_group_procedure_state.successful_complete;
+                state = Enum_Update_group_procedure_state.SUCCESSFULLY_COMPLETE;
 
                 new Thread(this::notification_update_procedure_complete).start();
 
@@ -244,7 +244,7 @@ public class Model_UpdateProcedure extends BaseModel {
                 logger.trace("update_state :: All updates are complete (complete + canceled + override) == all ");
 
                 date_of_finish = new Date();
-                state = Enum_Update_group_procedure_state.complete;
+                state = Enum_Update_group_procedure_state.COMPLETE;
 
                 new Thread(this::notification_update_procedure_complete).start();
 
@@ -261,7 +261,7 @@ public class Model_UpdateProcedure extends BaseModel {
 
                 logger.trace("update_state :: This Actualization procedure is set to \"in_progess\" state");
 
-                state = Enum_Update_group_procedure_state.in_progress;
+                state = Enum_Update_group_procedure_state.IN_PROGRESS;
 
                 notification_update_procedure_progress();
 
@@ -283,7 +283,7 @@ public class Model_UpdateProcedure extends BaseModel {
                 logger.debug("update_state :: All updates are complete (critical_error + override + canceled + complete + not_updated) == all But with Errors!");
 
                 date_of_finish = new Date();
-                state = Enum_Update_group_procedure_state.complete_with_error;
+                state = Enum_Update_group_procedure_state.COMPLETE_WITH_ERROR;
                 this.update();
                 return;
             }
@@ -321,7 +321,7 @@ public class Model_UpdateProcedure extends BaseModel {
             }
         }
 
-        state = Enum_Update_group_procedure_state.canceled;
+        state = Enum_Update_group_procedure_state.CANCELED;
         date_of_finish = new Date();
 
         this.update();
@@ -340,7 +340,7 @@ public class Model_UpdateProcedure extends BaseModel {
         }
 
         // State is always not_start_yet on begging
-        this.state = Enum_Update_group_procedure_state.not_start_yet;
+        this.state = Enum_Update_group_procedure_state.NOT_START_YET;
 
         // Save Object
         super.save();
@@ -464,7 +464,7 @@ public class Model_UpdateProcedure extends BaseModel {
                 new Thread(() -> {
                     logger.debug("notification_update_procedure_progress :: operation ");
 
-                    if (state == Enum_Update_group_procedure_state.complete || state == Enum_Update_group_procedure_state.successful_complete || state == Enum_Update_group_procedure_state.complete_with_error) {
+                    if (state == Enum_Update_group_procedure_state.COMPLETE || state == Enum_Update_group_procedure_state.SUCCESSFULLY_COMPLETE || state == Enum_Update_group_procedure_state.COMPLETE_WITH_ERROR) {
                         logger.warn("notification_update_procedure_progress ::  called inappropriately (complete) !!!!");
                         return;
                     }
@@ -591,7 +591,7 @@ public class Model_UpdateProcedure extends BaseModel {
                         return;
                     }
 
-                    if (state == Enum_Update_group_procedure_state.successful_complete) {
+                    if (state == Enum_Update_group_procedure_state.SUCCESSFULLY_COMPLETE) {
                         notification.setText(new Notification_Text().setText("Update Procedure "))
                                 .setObject(this)
                                 .setText(new Notification_Text().setText(" is complete."));
@@ -607,7 +607,7 @@ public class Model_UpdateProcedure extends BaseModel {
 
                 // Možná tady zauvažovat o progressu?? TYRION-599
 
-                if (state == Enum_Update_group_procedure_state.successful_complete) {
+                if (state == Enum_Update_group_procedure_state.SUCCESSFULLY_COMPLETE) {
 
                     notification.setText( new Notification_Text().setText("Update Procedure "))
                             .setObject(this)
@@ -619,7 +619,7 @@ public class Model_UpdateProcedure extends BaseModel {
                     return;
                 }
 
-                if (state == Enum_Update_group_procedure_state.complete) {
+                if (state == Enum_Update_group_procedure_state.COMPLETE) {
 
                     notification.setText( new Notification_Text().setText("Update Procedure "))
                                 .setObject(this)

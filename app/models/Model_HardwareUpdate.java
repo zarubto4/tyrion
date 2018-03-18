@@ -296,7 +296,7 @@ public class Model_HardwareUpdate extends BaseModel {
 
         Model_UpdateProcedure procedure = getActualizationProcedure();
         if (procedure != null) {
-            if (procedure.state == Enum_Update_group_procedure_state.not_start_yet || procedure.state == Enum_Update_group_procedure_state.in_progress) {
+            if (procedure.state == Enum_Update_group_procedure_state.NOT_START_YET || procedure.state == Enum_Update_group_procedure_state.IN_PROGRESS) {
 
                 if (this.state == HardwareUpdateState.OBSOLETE
                         || this.state == HardwareUpdateState.COMPLETE
