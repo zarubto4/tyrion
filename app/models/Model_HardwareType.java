@@ -18,6 +18,7 @@ import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.swagger.input.Swagger_CompilationLibrary;
+import utilities.swagger.output.Swagger_Short_Reference;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -71,10 +72,23 @@ public class Model_HardwareType extends NamedModel {
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty public String producer_name() { return get_producer().name;}
-    @JsonProperty public UUID producer_id() { return cache_producer_id != null ? cache_producer_id : get_producer().id;}
-    @JsonProperty public String processor_name() { return get_processor().name;}
-    @JsonProperty public UUID processor_id() { return cache_processor_id != null ? cache_processor_id : get_processor().id;}
+    public Swagger_Short_Reference producer() {
+        try {
+            Model_Producer type = this.get_producer();
+            return new Swagger_Short_Reference(type.id, type.name, type.description);
+        } catch (NullPointerException e) {return  null;}
+    }
+
+    public Swagger_Short_Reference processor() {
+        try {
+            Model_Processor type = this.get_processor();
+            return new Swagger_Short_Reference(type.id, type.name, type.description);
+        } catch (NullPointerException e) {return  null;}
+    }
+
+//????
+    @JsonProperty public UUID processor_id() { return processor().id != null ? processor().id : get_processor().id;}
+
 
     @JsonProperty
     public String picture_link() {
@@ -99,23 +113,26 @@ public class Model_HardwareType extends NamedModel {
     }
 
 
-    @JsonProperty
-    public Model_BootLoader main_boot_loader() {
-        try {
+    @JsonIgnore public UUID get_main_boot_loader_id() throws _Base_Result_Exception {
 
-            if (cache_main_bootloader_id == null) {
-                Model_BootLoader main = Model_BootLoader.find.query().where().eq("main_hardware_type.id", id).select("id").findOne();
-                if (main == null) return null;
-                cache_main_bootloader_id = main.id;
-            }
-
-            return Model_BootLoader.getById(cache_main_bootloader_id);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
+        if (cache().get(Model_BootLoader.class) == null) {
+            cache().add(Model_BootLoader.class, (UUID) Model_BootLoader.find.query().where().eq("main_hardware_type.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
         }
+
+        return cache().get(Model_BootLoader.class);
     }
+
+
+    @JsonProperty
+        public Model_BootLoader main_boot_loader() throws _Base_Result_Exception{
+            try {
+                return Model_BootLoader.getById(get_main_boot_loader_id());
+            }catch (Exception e) {
+                return null;
+            }
+        }
+
+
 
     @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<Model_BootLoader> boot_loaders() {
@@ -150,14 +167,21 @@ public class Model_HardwareType extends NamedModel {
         }
     }
 
+
     @JsonProperty @ApiModelProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public Model_CProgram main_c_program() {
         try {
+            return Model_CProgram.getById(get_main_c_program_id());
+        }catch (Exception e) {
+            return null;
+        }
+
+       /* try {
 
             if (cache_main_c_program_id == null) {
                 Model_CProgram c_program = Model_CProgram.find.query().where().eq("hardware_type_default.id", id).select("id").findOne();
                 if (c_program == null) return null;
-                cache_main_c_program_id = c_program.id;
+                //cache_main_c_program_id = c_program.id;
             }
 
             return Model_CProgram.getById(cache_main_c_program_id);
@@ -165,29 +189,29 @@ public class Model_HardwareType extends NamedModel {
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
-        }
+        }*/
     }
 
     // Záměrně - kvuli dokumentaci a přehledu v Becki - nemá žádný podstatný vliv než jen umožnit vypsat přehled
-    @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Model_CProgram main_test_c_program() {
-        try {
 
-            if (!test_c_program_edit_permission()) return null;
+    @JsonIgnore public UUID get_main_test_c_programe_id() throws _Base_Result_Exception {
 
-            if (cache_test_c_program_id == null) {
-                Model_CProgram c_program = Model_CProgram.find.query().where().eq("hardware_type_test.id", id).select("id").findOne();
-                if (c_program == null) return null;
-                cache_test_c_program_id = c_program.id;
-            }
-
-            return Model_CProgram.getById(cache_test_c_program_id);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
+        if (cache().get(Model_CProgram.class) == null) {
+            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_test.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
         }
+
+        return cache().get(Model_CProgram.class);
     }
+
+
+    @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Model_CProgram main_test_c_program() throws _Base_Result_Exception {
+            try {
+                return Model_CProgram.getById(get_main_test_c_programe_id());
+            } catch (Exception e) {
+                return null;
+            }
+        }
 
     // Záměrně - kvuli dokumentaci a přehledu v Becki - nemá žádný podstatný vliv než jen umožnit vypsat přehled
     @Transient @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)

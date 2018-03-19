@@ -1229,7 +1229,8 @@ public class Controller_Hardware extends _BaseController {
             boot_loader.update();
 
             // Update Chache
-            boot_loader.getHardwareType().cache_main_bootloader_id = boot_loader.id;
+            boot_loader.cache().add(Model_BootLoader.class, boot_loader.id);
+           // boot_loader.getHardwareType().cache_main_bootloader_id = boot_loader.id;
 
             // Vymažu Device Cache
             Model_Hardware.cache.clear();
@@ -2729,7 +2730,7 @@ public class Controller_Hardware extends _BaseController {
                             board.hardware_groups.add(group);
                             group.cache_group_size += 1;
                             //if (group.cache_hardware_type_ids == null) {
-                            if (group.cache. == null) {
+                            if (group.cache_hardware_type_ids == null) {
                                 group.cache_hardware_type_ids = new ArrayList<>();
                             }
                             if(!group.cache_hardware_type_ids.contains(board.hardware_type_id())){

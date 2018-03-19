@@ -185,12 +185,15 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
+  //  private class Model_harware_update_update_in_progress_bootloader {}
+
     @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Model_BootLoader bootloader_update_in_progress() {
         try {
 
-           if(cache_harware_update_update_in_progress_bootloader_id != null) {
+
+               if(cache_harware_update_update_in_progress_bootloader_id != null) {
 
                Model_HardwareUpdate plan_not_cached = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id).eq("firmware_type", FirmwareType.BOOTLOADER.name())
                        .disjunction()
@@ -360,7 +363,7 @@ public class Model_Hardware extends TaggedModel {
         } catch (NullPointerException e) {return  null;}
     }
 
-    public Swagger_Short_Reference actual_c_program_backup_id() {
+    public Swagger_Short_Reference actual_c_program_backup() {
         try{
             Model_CProgram program = this.get_backup_c_program();
             return new Swagger_Short_Reference(program.id, program.name, program.description);
@@ -852,7 +855,7 @@ public class Model_Hardware extends TaggedModel {
             // Aktualizuji cache status online HW
             cache_status.put(device.id, Boolean.TRUE);
 
-            if (device.project_id() == null) {
+            if (device.project().id == null) {
                 logger.warn("device_Connected - hardware {} is not in project", device.id);
             }
 
@@ -866,8 +869,8 @@ public class Model_Hardware extends TaggedModel {
             }
 
             // Standartní synchronizace s Becki - že je device online - pokud někdo na frotnendu (uživatel) poslouchá
-            if (device.project_id() != null) {
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, true, device.project_id());
+            if (device.project().id != null) {
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, true, device.project().id);
             }
 
             // Nastavím server_id - pokud nekoresponduje s tím, který má HW v databázi uložený
@@ -912,8 +915,8 @@ public class Model_Hardware extends TaggedModel {
 
 
             // Standartní synchronizace
-            if (device.project_id() != null) {
-                    WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, false, device.project_id());
+            if (device.project().id != null) {
+                    WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, false, device.project().id);
             }
 
             if (device.developer_kit) {
@@ -992,7 +995,7 @@ public class Model_Hardware extends TaggedModel {
                 // Odešlu echo pomocí websocketu do becki
                 Model_Hardware device = getById(status.hardware_id);
 
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, status.online_status, device.project_id());
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, status.online_status, device.project().id);
             }
 
         } catch (Exception e) {
@@ -1051,8 +1054,8 @@ public class Model_Hardware extends TaggedModel {
                     return;
                 }
 
-                if (project_id != null  && project_id.equals(board.project_id())) continue;
-                if (project_id != null && !project_id.equals(board.project_id())) project_id = null;
+                if (project_id != null  && project_id.equals(board.project().id)) continue;
+                if (project_id != null && !project_id.equals(board.project().id)) project_id = null;
 
                 // P5edpokládá se že project_id bude u všech desek stejné - tak se podle toho bude taky kontrolovat
                 if (project_id == null) {
@@ -1062,7 +1065,7 @@ public class Model_Hardware extends TaggedModel {
                         return;
                     }
 
-                    Model_Project project = Model_Project.find.query().where().eq("participants.person.id", person.id).eq("id", board.project_id()).findOne();
+                    Model_Project project = Model_Project.find.query().where().eq("participants.person.id", person.id).eq("id", board.project().id).findOne();
 
                     if (project == null) {
                         homer.send(request.get_result(false));
@@ -1600,7 +1603,7 @@ public class Model_Hardware extends TaggedModel {
                 return;
             }
 
-            if (project_id() == null) {
+            if (project().id == null) {
                 logger.debug("hardware_firmware_state_check device id:: {} - No project - synchronize is not allowed.", this.id);
                 return;
             }
@@ -1746,6 +1749,8 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
+
+
     /**
      * Pokud máme odchylku od databáze na hardwaru, to jest nesedí firmware_build_id na hW s tím co říká databáze
      * @param overview object of WS_Message_Hardware_overview_Board
@@ -1821,8 +1826,10 @@ public class Model_Hardware extends TaggedModel {
                         logger.debug("check_firmware verze se shodují - tím pádem je procedura dokončená a uzavírám");
 
                         this.actual_c_program_version = plan.c_program_version_for_update;
-                        this.cache_actual_c_program_version_id = plan.c_program_version_for_update.id;
-                        this.cache_actual_c_program_id = plan.c_program_version_for_update.get_c_program().id;
+
+                        this.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
+                        this.cache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
+
                         this.update();
 
                         logger.debug("check_firmware - up to date, procedure is done");
@@ -1879,10 +1886,11 @@ public class Model_Hardware extends TaggedModel {
                         // Přemapovat hardware
                         actual_c_program_version = get_backup_c_program_version();
 
-                        this.cache_actual_c_program_id = actual_c_program_version.id;                     // C Program
-                        this.cache_actual_c_program_version_id = actual_c_program_version.id;
-                        this.cache_actual_c_program_backup_id = actual_c_program_version.id;              // Backup
-                        this.cache_actual_c_program_backup_version_id = actual_c_program_version.id;
+                        this.cache().add(Model_CProgram.class, actual_c_program_version.id);                // C Program
+                        this.cache().add(Model_CProgramVersion.class, actual_c_program_version.id);
+
+                        this.cache().add(Model_CProgramFakeBackup.class, actual_c_program_version.id);      // Backup
+                        this.cache().add(Model_CProgramVersionFakeBackup.class, actual_c_program_version.id);
 
                         this.update();
 
@@ -1934,13 +1942,18 @@ public class Model_Hardware extends TaggedModel {
                     logger.debug("check_firmware - hardware is brand new, but already has required firmware");
 
                     this.actual_c_program_version = getHardwareType().get_main_c_program().default_main_version;
-                    this.cache_actual_c_program_id = getHardwareType().get_main_c_program().id;
-                    this.cache_actual_c_program_version_id = getHardwareType().get_main_c_program().default_main_version.id;
+
+
+                    this.cache().add(Model_CProgram.class, getHardwareType().get_main_c_program().id);
+                    this.cache().add(Model_CProgramVersion.class, getHardwareType().get_main_c_program().default_main_version.id);
+
+                    this.cache().add(Model_CProgramVersionFakeBackup.class, getHardwareType().get_main_c_program().default_main_version.id);
 
 
                     this.actual_backup_c_program_version = getHardwareType().get_main_c_program().default_main_version; // Udělám rovnou zálohu, protože taková by tam měla být
-                    this.cache_actual_c_program_backup_id = getHardwareType().get_main_c_program().id;
-                    this.cache_actual_c_program_backup_version_id = getHardwareType().get_main_c_program().default_main_version.id;
+
+                    this.cache().add(Model_CProgramFakeBackup.class, getHardwareType().get_main_c_program().id);
+                    this.cache().add(Model_CProgramVersionFakeBackup.class, getHardwareType().get_main_c_program().default_main_version.id);
                     this.update();
                     return;
                 }
@@ -1976,6 +1989,10 @@ public class Model_Hardware extends TaggedModel {
 
     // Používáme protože nemáme rezervní klíč pro cachoání backup c program verze v lokální chache
     private class Model_CProgramVersionFakeBackup {}
+    private class Model_CProgramFakeBackup {}
+
+
+
 
     @JsonIgnore
     private void check_backup(WS_Message_Hardware_overview_Board overview) {
@@ -2030,10 +2047,10 @@ public class Model_Hardware extends TaggedModel {
                         Model_CProgramVersion cached_version = Model_CProgramVersion.getById(version_not_cached.id);
 
                         this.actual_backup_c_program_version = cached_version;
-
-                        this.cache_actual_c_program_backup_id = cached_version.get_c_program().id;
-                        this.cache_actual_c_program_backup_version_id = cached_version.id;
+                        this.cache().add(Model_CProgramFakeBackup.class, cached_version.get_c_program().id);
+                        this.cache().add(Model_CProgramVersionFakeBackup.class, cached_version.id);
                         this.update();
+
                     } else {
                         logger.warn("check_backup:: Nastal stav, kdy mám statický backup, Tyrion v databázi nic nemá a ani se mi nepodařilo najít program (build_id)"
                                 + "který by byl kompatibilní. Což je trochu problém. Uvidíme co nabízí update procedury. \n" +
@@ -2181,7 +2198,8 @@ public class Model_Hardware extends TaggedModel {
                     plan.update();
 
                     this.actual_boot_loader = plan.getBootloader();
-                    this.cache_actual_boot_loader_id = plan.getBootloader().id;
+                    this.cache().add(Model_BootLoader.class, plan.getBootloader().id);
+                    //this.cache_actual_boot_loader_id = plan.getBootloader().id;
                     update();
 
                 } else {
@@ -2221,8 +2239,10 @@ public class Model_Hardware extends TaggedModel {
                 return;
             }
 
+
+
             if (getHardwareType().main_boot_loader() == null) {
-                logger.error("check_bootloader::Main Bootloader for Type Of Board {} is not set for update device {}", this.hardware_type_name(), this.id);
+                logger.error("check_bootloader::Main Bootloader for Type Of Board {} is not set for update device {}", this.hardware_type().name, this.id);
                 return;
             }
 
@@ -2251,7 +2271,7 @@ public class Model_Hardware extends TaggedModel {
         }
 
         Model_UpdateProcedure procedure = new Model_UpdateProcedure();
-        procedure.project_id = board_for_update.get(0).hardware.project_id();
+        procedure.project_id = board_for_update.get(0).hardware.project().id;
         procedure.state = Enum_Update_group_procedure_state.not_start_yet;
         procedure.type_of_update = type_of_update;
 
@@ -2317,7 +2337,7 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public void notification_board_connect() {
         new Thread(() -> {
-            if (project_id() == null) return;
+            if (project().id == null) return;
 
             try {
                 new Model_Notification()
@@ -2326,7 +2346,7 @@ public class Model_Hardware extends TaggedModel {
                         .setText(new Notification_Text().setText("Device " + this.id))
                         .setObject(this)
                         .setText(new Notification_Text().setText(" has just connected"))
-                        .send_under_project(project_id());
+                        .send_under_project(project().id);
 
             } catch (Exception e) {
                 logger.internalServerError(e);
@@ -2337,7 +2357,7 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public void notification_board_disconnect() {
         new Thread(() -> {
-            if (project_id() == null) return;
+            if (project().id == null) return;
             try {
 
                 new Model_Notification()
@@ -2346,7 +2366,7 @@ public class Model_Hardware extends TaggedModel {
                     .setText(  new Notification_Text().setText("Device" + this.id ))
                     .setObject(this)
                     .setText( new Notification_Text().setText(" has disconnected."))
-                    .send_under_project(project_id());
+                    .send_under_project(project().id);
 
             } catch (Exception e) {
                 logger.internalServerError(e);
@@ -2359,7 +2379,7 @@ public class Model_Hardware extends TaggedModel {
         new Thread(() -> {
 
             // Pokud to není yoda ale device tak neupozorňovat v notifikaci, že je deska offline - zbytečné zatížení
-            if (project_id() == null) return;
+            if (project().id == null) return;
 
             try {
 
@@ -2375,7 +2395,7 @@ public class Model_Hardware extends TaggedModel {
                         .setText(new Notification_Text().setText(". But stay calm. The hardware has successfully restarted and uploaded a backup version. " +
                                 "This can cause a data collision in your Blocko Program, but you have the chance to fix the firmware. " +
                                 "Incorrect version of Firmware has been flagged as unreliable."))
-                        .send_under_project(project_id());
+                        .send_under_project(project().id);
 
             } catch (Exception e) {
                 logger.internalServerError(e);
@@ -2387,7 +2407,7 @@ public class Model_Hardware extends TaggedModel {
     public void notification_board_not_databased_version() {
         new Thread(() -> {
 
-            if (project_id() == null) return;
+            if (project().id == null) return;
 
             try {
 
@@ -2403,7 +2423,7 @@ public class Model_Hardware extends TaggedModel {
                         .setText(new Notification_Text().setText("You do not have to do anything. Have a nice day."))
                         .setNewLine()
                         .setText(new Notification_Text().setText("Byzance"))
-                        .send_under_project(project_id());
+                        .send_under_project(project().id);
 
 
 
@@ -2637,7 +2657,7 @@ public class Model_Hardware extends TaggedModel {
 
 
     @JsonIgnore   public boolean first_connect_permission() {
-        return project_id() == null;
+        return project().id == null;
     }
 
     public enum Permission {Hardware_create, Hardware_read, Hardware_update, Hardware_edit, Hardware_delete}
@@ -2674,7 +2694,8 @@ public class Model_Hardware extends TaggedModel {
         //Cache Update
         cache.replace(this.id, this);
 
-        if (project_id() != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Hardware.class, project_id(), this.id))).start();
+
+        if (project().id != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, project().id, this.id))).start();
 
         //Database Update
         super.update();

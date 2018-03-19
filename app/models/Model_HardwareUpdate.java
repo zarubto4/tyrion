@@ -70,8 +70,8 @@ public class Model_HardwareUpdate extends BaseModel {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Cached public UUID cache_actualization_procedure_id;
-  /*@JsonIgnore @Transient @Cached public UUID cache_hardware_id;
+   /* @JsonIgnore @Transient @Cached public UUID cache_actualization_procedure_id;
+     @JsonIgnore @Transient @Cached public UUID cache_hardware_id;
     @JsonIgnore @Transient @Cached public UUID cache_c_program_version_id;
     @JsonIgnore @Transient @Cached public UUID cache_bootloader_id;
 */
@@ -85,6 +85,27 @@ public class Model_HardwareUpdate extends BaseModel {
 
 
     @JsonProperty @ApiModelProperty(required = false, readOnly = true)
+     public UUID get_actualization_procedure_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_UpdateProcedure.class) == null) {
+            cache().add(Model_UpdateProcedure.class, (UUID) Model_UpdateProcedure.find.query().where().eq("updates.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_UpdateProcedure.class);
+    }
+
+    @JsonProperty @ApiModelProperty(required = false, readOnly = true)
+    public Model_UpdateProcedure get_actualization_procedure()throws _Base_Result_Exception {
+
+        try {
+            return Model_UpdateProcedure.getById(getHardware_id());
+        }catch (Exception e) {
+            return null;
+        }
+    }
+
+/*
+    @JsonProperty @ApiModelProperty(required = false, readOnly = true)
     public UUID actualization_procedure_id() {
         if (cache_actualization_procedure_id == null) {
             Model_UpdateProcedure procedure_not_cached = Model_UpdateProcedure.find.query().where().eq("updates.id", id).select("id").findOne();
@@ -92,6 +113,9 @@ public class Model_HardwareUpdate extends BaseModel {
         }
         return cache_actualization_procedure_id;
     }
+*/
+
+
 
     @JsonProperty
     public Date date_of_planing() {
@@ -161,7 +185,7 @@ public class Model_HardwareUpdate extends BaseModel {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-//TODO dodělat procedure_id??
+
 
     @JsonIgnore public UUID getHardware_id() throws _Base_Result_Exception {
 
@@ -263,18 +287,18 @@ public class Model_HardwareUpdate extends BaseModel {
         if (this.state == null) this.state = HardwareUpdateState.NOT_YET_STARTED;
 
         // Set Cache parameter
-        cache_hardware_id = hardware.id;
+        cache().add(Model_Hardware.class,  hardware.id );
+
 
         // set Cache Parameter
         if (c_program_version_for_update != null) {
-
-            cache_c_program_version_id = c_program_version_for_update.id;
+            cache().add(Model_CProgramVersion.class,  c_program_version_for_update.id );
 
         }
 
         // set Cache Parameter
         if (bootloader != null) {
-            cache_bootloader_id = bootloader.id;
+            cache().add(Model_BootLoader.class,  bootloader.id );
         }
 
 
@@ -288,7 +312,7 @@ public class Model_HardwareUpdate extends BaseModel {
 
         super.update();
 
-        Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(actualization_procedure_id());
+        Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(get_actualization_procedure_id());
         if (procedure != null) {
             if (procedure.state == Enum_Update_group_procedure_state.not_start_yet || procedure.state == Enum_Update_group_procedure_state.in_progress) {
 
@@ -319,6 +343,9 @@ public class Model_HardwareUpdate extends BaseModel {
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER--------------------------------------------------------------------------*/
+
+    private class Model_CProgramFakeBackup {}
+    private class Model_CProgramVersionFakeBackup {}
 
     @JsonIgnore @Transient
     public static void update_procedure_progress(WS_Message_Hardware_UpdateProcedure_Progress report) {
@@ -580,21 +607,24 @@ public class Model_HardwareUpdate extends BaseModel {
                             logger.debug("update_procedure_progress: required by update: {} ",  plan.c_program_version_for_update.compilation.firmware_build_id);
 
                             hardware.actual_c_program_version = plan.c_program_version_for_update;
-                            hardware.cache_actual_c_program_id = plan.c_program_version_for_update.get_c_program().id;
-                            hardware.cache_actual_c_program_version_id = plan.c_program_version_for_update.id;
+
+                            hardware.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
+                            hardware.cache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
                             hardware.update();
 
                         } else if (plan.firmware_type == FirmwareType.BOOTLOADER) {
 
                             hardware.actual_boot_loader = plan.getBootloader();
-                            hardware.cache_actual_boot_loader_id = plan.getBootloader().id;
+
+                            hardware.cache().add(Model_BootLoader.class, plan.getBootloader().id);
                             hardware.update();
 
                         } else if (plan.firmware_type == FirmwareType.BACKUP) {
 
                             hardware.actual_backup_c_program_version = plan.c_program_version_for_update;
-                            hardware.cache_actual_c_program_backup_id = plan.c_program_version_for_update.get_c_program().id;
-                            hardware.cache_actual_c_program_backup_version_id = plan.c_program_version_for_update.id;
+
+                            hardware.cache().add(Model_CProgramFakeBackup.class, plan.c_program_version_for_update.get_c_program().id);
+                            hardware.cache().add(Model_CProgramVersionFakeBackup.class, plan.c_program_version_for_update.id);
                             hardware.update();
 
                             hardware.make_log_backup_arrise_change();
@@ -673,19 +703,21 @@ public class Model_HardwareUpdate extends BaseModel {
                         if (plan.firmware_type == FirmwareType.FIRMWARE) {
 
                             hardware.actual_c_program_version = plan.c_program_version_for_update;
-                            hardware.cache_actual_c_program_id = plan.c_program_version_for_update.get_c_program().id;
-                            hardware.cache_actual_c_program_version_id = plan.c_program_version_for_update.id;
+
+                            hardware.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
+                            hardware.cache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
                             hardware.update();
 
                         } else if (plan.firmware_type == FirmwareType.BOOTLOADER) {
 
                             hardware.actual_boot_loader = plan.getBootloader();
-                            hardware.cache_actual_boot_loader_id = plan.getBootloader().id;
+                            hardware.cache().add(Model_BootLoader.class, plan.getBootloader().id);
                             hardware.update();
 
                         } else if (plan.firmware_type == FirmwareType.BACKUP) {
-                            hardware.cache_actual_c_program_backup_id =plan.c_program_version_for_update.get_c_program().id;
-                            hardware.cache_actual_c_program_backup_version_id = plan.c_program_version_for_update.id;
+
+                            hardware.cache().add(Model_CProgramFakeBackup.class, plan.c_program_version_for_update.get_c_program().id);
+                            hardware.cache().add(Model_CProgramVersionFakeBackup.class, plan.c_program_version_for_update.id);
                             hardware.update();
 
                             hardware.make_log_backup_arrise_change();
