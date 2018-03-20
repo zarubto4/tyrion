@@ -171,27 +171,19 @@ public class Model_Hardware extends TaggedModel {
 
            if(cache_harware_update_update_in_progress_bootloader_id != null) {
 
-               Model_HardwareUpdate plan_not_cached = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id).eq("firmware_type", FirmwareType.BOOTLOADER.name())
+               cache_harware_update_update_in_progress_bootloader_id = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
                        .disjunction()
-                       .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
-                       .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
-                       .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
-                       .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
-                       .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
-                       .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
+                           .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
+                           .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
+                           .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
+                           .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
+                           .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
+                           .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
                        .endJunction()
                        .eq("firmware_type", FirmwareType.BOOTLOADER)
-                       .le("actualization_procedure.date_of_planing", new Date())
-                       .order().desc("actualization_procedure.date_of_planing")
                        .select("id")
                        .setMaxRows(1)
-                       .findOne();
-
-
-               if (plan_not_cached != null) {
-                   cache_harware_update_update_in_progress_bootloader_id = plan_not_cached.getBootloader().id;
-               }
-
+                       .findSingleAttribute();
            }
 
            if(cache_harware_update_update_in_progress_bootloader_id == null) return null;

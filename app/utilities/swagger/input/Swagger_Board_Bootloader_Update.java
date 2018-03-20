@@ -17,7 +17,7 @@ public class Swagger_Board_Bootloader_Update {
     public List<UUID> device_ids = new ArrayList<>();
 
     @Constraints.Required
-    @ApiModelProperty(hidden = true, required = false, value = "If bootloader_is empty, system will used latest version")
+    @ApiModelProperty(required = false, value = "If bootloader_is empty, system will used latest recommended version")
     public UUID bootloader_id;
 
 }

@@ -20,9 +20,13 @@ public class WS_Message_Homer_Hardware_list extends WS_AbstractMessage {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Valid public List<WS_Message_Homer_Hardware_Pair> list = new ArrayList<>();
+    @Valid
+    public List<WS_Message_Homer_Hardware_Pair> list = new ArrayList<>();
 
     public class WS_Message_Homer_Hardware_Pair {
+
+        public WS_Message_Homer_Hardware_Pair() {}
+
         @Constraints.Required  public String full_id;
         @Constraints.Required  public UUID uuid;
     }

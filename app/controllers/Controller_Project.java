@@ -674,6 +674,7 @@ public class Controller_Project extends _BaseController {
                     group.hardware.add(hardware);
 
                     hardware.hardware_groups.add(group);
+                    if(hardware.cache_hardware_groups_ids == null) hardware.cache_hardware_groups_ids = new ArrayList<>();
                     hardware.cache_hardware_groups_ids.add(group.id);
                 }
             }
