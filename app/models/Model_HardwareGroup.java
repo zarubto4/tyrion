@@ -13,6 +13,7 @@ import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
+import utilities.swagger.output.Swagger_Short_Reference;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -57,8 +58,14 @@ public class Model_HardwareGroup extends NamedModel {
     }
 
     @JsonProperty @ApiModelProperty(required = true)
-    public List<Model_HardwareType> hardware_types() {
-        return getHardwareTypes();
+    public List<Swagger_Short_Reference> hardware_types() {
+        List<Swagger_Short_Reference> short_references = new ArrayList<>();
+
+        for(Model_HardwareType type : getHardwareTypes()){
+            short_references.add(new Swagger_Short_Reference(type.id, type.name, type.description));
+        }
+
+        return short_references;
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
