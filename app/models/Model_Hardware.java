@@ -1282,7 +1282,7 @@ public class Model_Hardware extends TaggedModel {
                     if (field.getType().getSimpleName().toLowerCase().equals(Integer.class.getSimpleName().toLowerCase())) {
 
                         try {
-                            System.out.println("Jaká je integer value:: " + help.integer_value);
+
                             field.set(configuration, help.integer_value);
                             this.update_bootloader_configuration(configuration);
 

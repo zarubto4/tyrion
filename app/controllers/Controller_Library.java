@@ -711,8 +711,6 @@ public class Controller_Library extends _BaseController {
 
             if (help.decision) {
 
-                System.out.println("help.decision je true!!!");
-
                 // Odkomentuj až odzkoušíš že emaily jsou hezky naformátované - můžeš totiž Verzi hodnotit pořád dokola!!
                 version_old.approval_state = Approval.APPROVED;
                 version_old.update();
