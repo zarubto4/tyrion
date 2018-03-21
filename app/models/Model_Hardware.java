@@ -949,8 +949,9 @@ public class Model_Hardware extends TaggedModel {
     public static void device_online_synchronization_echo(WS_Message_Hardware_online_status report) {
         try {
 
+            logger.warn("device_online_synchronization_echo");
             for (WS_Message_Hardware_online_status.DeviceStatus status : report.hardware_list) {
-
+                logger.warn("device_online_synchronization_echo: Status {} state  {}", status.uuid, status.online_status);
                 cache_status.put(status.uuid, status.online_status);
 
                 // Odešlu echo pomocí websocketu do becki
@@ -1329,7 +1330,7 @@ public class Model_Hardware extends TaggedModel {
     }
 
     @JsonIgnore
-    public WS_Message_Hardware_uuid_converter_cleaner device_converted_id_clean_switch_on_server(UUID old_id) {
+    public WS_Message_Hardware_uuid_converter_cleaner device_converted_id_clean_switch_on_server(String old_id) {
         try {
             JsonNode node = write_with_confirmation( new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.id, old_id, this.full_id), 1000 * 5, 0, 2);
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_uuid_converter_cleaner.class, node);
@@ -1622,7 +1623,7 @@ public class Model_Hardware extends TaggedModel {
                 return;
             }
 
-            if (!report.online_state) {
+            if (!report.online_status) {
                 logger.debug("hardware_firmware_state_check - device is offline");
                 return;
             }
@@ -1682,6 +1683,7 @@ public class Model_Hardware extends TaggedModel {
 
         // Uložení do Cache paměti // PORT je synchronizován v následujícím for cyklu
         if (cache_latest_know_ip_address == null || !cache_latest_know_ip_address.equals(overview.ip)) {
+            logger.warn("check_settings nastavuju jí do cache ");
             cache_latest_know_ip_address = overview.ip;
         }
 
@@ -1695,7 +1697,7 @@ public class Model_Hardware extends TaggedModel {
         // Kontrola Skupin Hardware Groups - To není synchronizace s HW ale s Instancí HW na Homerovi
         for(UUID hardware_group_id : get_hardware_group_ids()) {
             // Pokud neobsahuje přidám - ale abych si ušetřil čas - nastavím rovnou celý seznam - Homer si s tím poradí
-            if (!overview.hardware_group_ids.contains(hardware_group_id)) {
+            if (overview.hardware_group_ids == null || overview.hardware_group_ids.isEmpty() || !overview.hardware_group_ids.contains(hardware_group_id)) {
                 set_hardware_groups_on_hardware(get_hardware_group_ids(), Enum_type_of_command.SET);
                 break;
             }
@@ -2785,7 +2787,7 @@ public class Model_Hardware extends TaggedModel {
 
         if (status == null) {
 
-            logger.debug("is_online - online status is not in cache: {}", id);
+            logger.debug("c: {}", id);
             try {
 
                 WS_Message_Hardware_online_status result = get_devices_online_state();

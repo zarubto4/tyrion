@@ -321,6 +321,11 @@ public class Model_HomerServer extends TaggedModel {
 
                 switch (json.get("message_type").asText()) {
 
+                    case "tyrion_ping": {
+                        // Dont do nothing - Its just a ping for taking a connection
+                        return;
+                    }
+
                     case WS_Message_Check_homer_server_permission.message_type: {
 
                         approve_validation_for_homer_server(homer, baseFormFactory.formFromJsonWithValidation(WS_Message_Check_homer_server_permission.class, json));
@@ -465,32 +470,54 @@ public class Model_HomerServer extends TaggedModel {
                 return;
             }
 
+            Model_AuthorizationToken model_token = null;
+
+            // Zjistím, zda v Cache už token není Pokud není - vyhledám Token objekt a ověřím jeho platnost
+            if (!Model_Person.token_cache.containsKey(UUID.fromString(message.client_token))) {
+
+                model_token = Model_AuthorizationToken.find.query().where().eq("token", message.client_token).findOne();
+                if (model_token == null || !model_token.isValid()) {
+                    logger.warn("validate_incoming_user_connection_to_hardware_logger:: Token::" + message.client_token + " is not t is no longer valid according time");
+                    ws_homer.send(message.get_result(false));
+                    return;
+                }
+
+                try {
+                    model_token.get_person();
+                    Model_Person.token_cache.put(UUID.fromString(message.client_token), model_token.get_person_id());
+                } catch (Exception e){
+                    logger.warn("getUsername:: Model_FloatingPersonToken not contains Person!");
+                    ws_homer.send(message.get_result(false));
+                    return;
+                }
+            }
+
+            Model_Person person = Model_Person.getById(Model_Person.token_cache.get(UUID.fromString(message.client_token)));
+
+            if(person == null) {
+                logger.warn("validate_incoming_user_connection_to_hardware_logger:: person is null!");
+                ws_homer.send(message.get_result(false));
+                return;
+            }
+
            // Permition for everyone!
            if (server.server_type == HomerType.PUBLIC || server.server_type == HomerType.BACKUP || server.server_type == HomerType.MAIN) {
-
-               // Zjistím, zda v Cache už token není Pokud není - vyhledám Token objekt a ověřím jeho platnost
-               if (!Model_Person.token_cache.containsKey(UUID.fromString(message.client_token))) {
-
-                   Model_AuthorizationToken model_token = Model_AuthorizationToken.find.query().where().eq("token", message.client_token).findOne();
-                   if (model_token == null || !model_token.isValid()) {
-                       logger.warn("validate_incoming_user_connection_to_hardware_logger:: Token::" + message.client_token + " is not t is no longer valid according time");
-                       ws_homer.send(message.get_result(false));
-                       return;
-                   }
-
-                   try {
-                       model_token.get_person();
-                       Model_Person.token_cache.put(UUID.fromString(message.client_token), model_token.get_person_id());
-                   } catch (Exception e){
-                       logger.warn("getUsername:: Model_FloatingPersonToken not contains Person!");
-                   }
-               }
 
                logger.trace("validate_incoming_user_connection_to_hardware_logger:: validation true for token {}", message.client_token);
                ws_homer.send(message.get_result(true));
 
+           // Kontrola oprávnění k serveru navíc
            } else {
-               logger.internalServerError(new BadAttributeValueExpException("Dopíče není zde dořešen privátní server!!! "));
+
+                if(Model_Project.find.query().where().eq("servers.id", server.id).eq("participants.person.id", person.id).select("id").findOne() != null) {
+                    logger.trace("validate_incoming_user_connection_to_hardware_logger:: Private Server Find fot this Person");
+                    ws_homer.send(message.get_result(true));
+                    return;
+                }else {
+                    logger.warn("validate_incoming_user_connection_to_hardware_logger:: Private Server NOT Find fot this Person");
+                    ws_homer.send(message.get_result(false));
+                    return;
+                }
            }
 
         } catch (Exception e) {

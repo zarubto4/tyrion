@@ -5,7 +5,6 @@ import play.i18n.Lang;
 import play.libs.Json;
 import utilities.enums.ExtensionType;
 import utilities.model.BaseModel;
-import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_online_status;
 
 
 public interface Configuration {

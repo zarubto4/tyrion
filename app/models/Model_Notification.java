@@ -11,7 +11,6 @@ import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.enums.*;
 import utilities.errors.Exceptions.Result_Error_NotFound;
-import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -56,11 +55,11 @@ public class Model_Notification extends BaseModel {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = true, example = "notification")            @JsonProperty public static final String messageType = "notification";              //TODO DB na message_type
-    @ApiModelProperty(required = true, example = WS_Portal.CHANNEL) @JsonProperty public static final String messageChannel = WS_Portal.CHANNEL; //TODO DB na message_channel
+    @ApiModelProperty(required = true, example = "notification")    @Transient @JsonProperty public static final String message_type = "notification";
+    @ApiModelProperty(required = true, example = WS_Portal.CHANNEL) @Transient @JsonProperty public static final String message_channel = WS_Portal.CHANNEL;
 
-    @JsonProperty @ApiModelProperty(required = true) public String message_type() { return messageType;}
-    @JsonProperty @ApiModelProperty(required = true) public String message_channel() { return messageChannel;}
+    @JsonProperty @ApiModelProperty(required = true) public String message_type() { return message_type;}
+    @JsonProperty @ApiModelProperty(required = true) public String message_channel() { return message_channel;}
 
     @JsonProperty @ApiModelProperty(required = true)
     public List<Swagger_Notification_Element> notification_body() {

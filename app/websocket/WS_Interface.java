@@ -121,14 +121,14 @@ public abstract class WS_Interface extends AbstractActor {
             }
 
             if (json.has("message_id")) {
-                logger.trace("onMessage - message contains message ID: {}", json.get("message_id"));
+                // logger.trace("onMessage - message contains message ID: {}", json.get("message_id"));
 
                 UUID id = UUID.fromString(json.get("message_id").asText());
 
-                logger.trace("onMessage - message UUID: {}", id.toString());
+                // logger.trace("onMessage - message UUID: {}", id.toString());
 
                 if (messageBuffer.containsKey(id)) {
-                    logger.trace("onMessage - its message from buffer");
+                    // logger.trace("onMessage - its message from buffer");
                     messageBuffer.get(id).resolve(json);
                     messageBuffer.remove(id);
                 } else {

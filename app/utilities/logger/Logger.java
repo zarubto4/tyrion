@@ -11,7 +11,7 @@ public class Logger {
     public void trace(String message, Object... args) {
         ServerLogger.trace(cls, message, args);}
     public void info (String message, Object... args) {
-        ServerLogger.info (cls, message, args);}
+        ServerLogger.info(cls, message, args);}
     public void debug(String message, Object... args) {
         ServerLogger.debug(cls, message, args);}
     public void warn (String message, Object... args) {

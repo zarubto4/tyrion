@@ -6,6 +6,7 @@ import models.Model_HomerServer;
 import play.data.validation.Constraints;
 import play.libs.Json;
 import websocket.messages.common.abstract_class.WS_AbstractMessage;
+import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Message_Homer_Hardware_ID_UUID_Pair;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -21,15 +22,8 @@ public class WS_Message_Homer_Hardware_list extends WS_AbstractMessage {
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
     @Valid
-    public List<WS_Message_Homer_Hardware_Pair> list = new ArrayList<>();
+    public List<WS_Message_Homer_Hardware_ID_UUID_Pair> list = new ArrayList<>();
 
-    public class WS_Message_Homer_Hardware_Pair {
-
-        public WS_Message_Homer_Hardware_Pair() {}
-
-        @Constraints.Required  public String full_id;
-        @Constraints.Required  public UUID uuid;
-    }
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 

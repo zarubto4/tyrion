@@ -7,6 +7,7 @@ import utilities.logger.Logger;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_connected;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_overview_Board;
+import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Message_Homer_Hardware_ID_UUID_Pair;
 import websocket.messages.homer_with_tyrion.WS_Message_Homer_Hardware_list;
 
 import java.util.List;
@@ -45,7 +46,7 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                 return;
             }
 
-            List<WS_Message_Homer_Hardware_list.WS_Message_Homer_Hardware_Pair> device_ids_on_server = message_homer_hardware_list.list;
+            List<WS_Message_Homer_Hardware_ID_UUID_Pair> device_ids_on_server = message_homer_hardware_list.list;
             logger.info("4. Number of registered or connected Devices on Server:: {} ", device_ids_on_server.size());
             check_device_on_server(device_ids_on_server);
 
@@ -56,9 +57,9 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
         }
     }
 
-    public void check_device_on_server(List<WS_Message_Homer_Hardware_list.WS_Message_Homer_Hardware_Pair> full_ids_on_server) {
+    public void check_device_on_server(List<WS_Message_Homer_Hardware_ID_UUID_Pair> full_ids_on_server) {
 
-        for (WS_Message_Homer_Hardware_list.WS_Message_Homer_Hardware_Pair pair : full_ids_on_server) {
+        for (WS_Message_Homer_Hardware_ID_UUID_Pair pair : full_ids_on_server) {
             try {
 
                 Model_Hardware board = Model_Hardware.getByFullId(pair.full_id);
@@ -69,8 +70,16 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                     continue;
                 }
 
+                // Homer server neměl spojení s Tyrionem a tak dočasně přiřadil uuid jako full id - proto hned zaměním
+                if(pair.uuid.length() < 25) {
+                    logger.warn("check_device_on_server:: Device: ID: {} there is a  same full ID: {} as a UUID {} from Server", board.id, pair.full_id, pair.full_id);
+                    logger.warn("check_device_on_server:: Device: ID: {} Its required change pair on homer server", board.id);
+                    board.device_converted_id_clean_switch_on_server(pair.uuid);
+                    continue;
+                }
+
                 // Zařízení má přiřazenou jinou UUID k Full ID než by měl mít
-                if(!board.id.equals(pair.uuid)) {
+                if(!board.id.equals(UUID.fromString(pair.uuid))) {
                     logger.warn("check_device_on_server:: Device: ID: {} there is a mistake with pair with full ID: {} and UUID {} from Server", board.id, pair.full_id, pair.full_id);
                     logger.warn("check_device_on_server:: Device: ID: {} Its required change pair on homer server!", board.id);
                     board.device_converted_id_clean_switch_on_server(pair.uuid);
@@ -93,7 +102,7 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                 WS_Message_Hardware_overview_Board overview = board.get_devices_overview();
 
                 if (overview.status.equals("success")) {
-                    logger.trace("check_device_on_server:: Device: ID: {} Status HW je {}", board.id, overview.online_state);
+                    logger.trace("check_device_on_server:: Device: ID: {} Status HW je {}", board.id, overview.online_status);
 
                     WS_Message_Hardware_connected connected = new WS_Message_Hardware_connected();
                     connected.status = overview.status;

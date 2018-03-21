@@ -64,7 +64,7 @@ public class WS_Portal {
 
                     switch (json.get("message_type").asText()) {
 
-                        case Model_Notification.messageType: {
+                        case Model_Notification.message_type: {
                             becki_notification_confirmation_from_becki(ws, json);
                             return;
                         }    // Becki poslala odpověď, že dostala notifikaci

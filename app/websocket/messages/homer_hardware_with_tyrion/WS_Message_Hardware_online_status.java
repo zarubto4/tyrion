@@ -67,7 +67,7 @@ public class WS_Message_Hardware_online_status extends WS_AbstractMessage  {
         public DeviceStatus() {}
 
         @Constraints.Required  public UUID uuid;
-        public boolean online_status;
+        @Constraints.Required  public boolean online_status;
 
     }
 

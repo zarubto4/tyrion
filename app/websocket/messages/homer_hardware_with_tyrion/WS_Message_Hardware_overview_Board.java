@@ -14,7 +14,7 @@ public class WS_Message_Hardware_overview_Board {
     public WS_Message_Hardware_overview_Board() {}
 
     @Constraints.Required public UUID uuid;
-    @Constraints.Required public boolean online_state;
+    @Constraints.Required public boolean online_status;
     @Constraints.Required public String mac;
                           public List<UUID> hardware_group_ids;
 
