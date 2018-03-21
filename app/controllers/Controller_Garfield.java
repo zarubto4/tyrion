@@ -228,7 +228,7 @@ public class Controller_Garfield extends _BaseController {
             // TODO tady je potřeba pohlídat online tiskárny - tiskne se na prvním garfieldovy - to není uplně super cool věc
             // Zrovna mě ale nenapadá jak v rozumném čase doprogramovat řešení lépe - snad jen pomocí selektoru tiskáren???
             // Tím pádem bude potřeba mít tiskárny trochu lépe pošéfované
-            List<UUID> garfields_id = Model_Garfield.find.query().where().eq("hardware_type_id", hardware.hardware_type_id()).findIds();
+            List<UUID> garfields_id = Model_Garfield.find.query().where().eq("hardware_type_id", hardware.getHardwareType_id()).findIds();
             if (garfields_id.isEmpty()) {
                 logger.error("print_label:: garfields for this type of hardware not found");
                 return notFound("Garfield for this type of hardware not found");

@@ -47,9 +47,9 @@ public class Model_HardwareUpdate extends BaseModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                       @JsonIgnore @ManyToOne() public Model_UpdateProcedure actualization_procedure;    // TODO CACHE
+                                 @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_UpdateProcedure actualization_procedure;
 
-                                            @ApiModelProperty(required = true, 
+                                            @ApiModelProperty(required = true,
                                                     value = "UNIX time in ms",
                                                     example = "1466163478925")  public Date date_of_finish;
 
@@ -211,7 +211,6 @@ public class Model_HardwareUpdate extends BaseModel {
         }
     }
 
-    }
 
     @JsonIgnore
     public Swagger_UpdatePlan_brief_for_homer get_brief_for_update_homer_server() {
@@ -321,6 +320,8 @@ public class Model_HardwareUpdate extends BaseModel {
 
         cache.put(id, this);
     }
+
+
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 

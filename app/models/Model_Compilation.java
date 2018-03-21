@@ -231,7 +231,7 @@ public class Model_Compilation extends BaseModel {
                         .setText(new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
                         .setObject(this)
                         .setText(new Notification_Text().setText(" from Program "))
-                        .setObject(this.version.c_program)
+                        .setObject(this.version.get_c_program())
                         .send(_BaseController.person());
             } catch (Exception e) {
                 logger.internalServerError(e);

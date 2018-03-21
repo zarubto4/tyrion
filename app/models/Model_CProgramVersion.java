@@ -53,7 +53,7 @@ public class Model_CProgramVersion extends VersionModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                                                   public Model_CProgram c_program;  // TODO - tady je hooodně návazností
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                                                   public Model_CProgram c_program;
     @JsonIgnore @OneToOne(mappedBy="version", cascade = CascadeType.ALL)                                             public Model_Compilation compilation; // TODO dá se cachovat
 
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version", fetch = FetchType.LAZY)                              public List<Model_Hardware> c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
@@ -96,8 +96,6 @@ public class Model_CProgramVersion extends VersionModel {
         }
         return null;
     }
-
-
 
     @JsonProperty @ApiModelProperty(value = "Program", required = false)
     public Swagger_C_Program_Version program() {
@@ -526,7 +524,7 @@ public class Model_CProgramVersion extends VersionModel {
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public String get_path() {
-        return  c_program.get_path() + "/version/" + this.id;
+        return  get_c_program().get_path() + "/version/" + this.id;
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/

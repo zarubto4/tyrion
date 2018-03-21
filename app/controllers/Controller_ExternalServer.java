@@ -897,9 +897,10 @@ public class Controller_ExternalServer extends _BaseController {
 
 
             // Separace na Container a Blob
-            int slash = bootLoader.file.path.indexOf("/");
-            String container_name = bootLoader.file.path.substring(0,slash);
-            String real_file_path = bootLoader.file.path.substring(slash+1);
+            //int slash = bootLoader.file.path.indexOf("/");
+            int slash = bootLoader.file_path().indexOf("/");
+            String container_name = bootLoader.file_path().substring(0,slash);
+            String real_file_path = bootLoader.file_path().substring(slash+1);
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 

@@ -21,7 +21,7 @@ public class ServerLogger extends Controller {
 
 /* CLASS LOGGER --------------------------------------------------------------------------------------------------------*/
 
-    public static void trace(String log_message) {logger.trace(t_class, log_message, args);}
+    public static void trace (Class<?> t_class, String log_message, Object... args){logger.trace (t_class, log_message, args);}
     public static void info (Class<?> t_class, String log_message, Object... args) {logger.info (t_class, log_message, args);}
     public static void debug(Class<?> t_class, String log_message, Object... args) {logger.debug(t_class, log_message, args);}
     public static void warn (Class<?> t_class, String log_message, Object... args) {logger.warn (t_class, log_message, args);}

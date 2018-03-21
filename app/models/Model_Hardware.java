@@ -135,31 +135,19 @@ public class Model_Hardware extends TaggedModel {
 
     // For Faster reload
     @JsonIgnore @Transient @Cached public Long cache_latest_online;
-   /*@JsonIgnore @Transient @Cached public UUID cache_hardware_type_id;    */                   // Type of Board Id
-    @JsonIgnore @Transient @Cached public String cache_hardware_type_name;
-  /*  @JsonIgnore @Transient @Cached public UUID cache_producer_id;                             // Producer ID
-    @JsonIgnore @Transient @Cached public UUID cache_project_id;                              // Project
-    @JsonIgnore @Transient @Cached public UUID cache_actual_boot_loader_id;                   // Bootloader
-    @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_id;                     // C Program
-    @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_version_id;             // C Program - version
-    @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_backup_id;              // Backup
-    @JsonIgnore @Transient @Cached public UUID cache_actual_c_program_backup_version_id;      // Backup - version
-    @JsonIgnore @Transient @Cached public UUID cache_harware_update_update_in_progress_bootloader_id;   */  // HardwareUpdate for bootloade
     @JsonIgnore @Transient @Cached public String cache_latest_know_ip_address;
-  /*  @Transient @JsonIgnore @Cached public List<UUID> cache_hardware_groups_ids;
-    @JsonIgnore @Transient @Cached public UUID cache_picture_id; */
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty public BackupMode backup_mode() { return backup_mode ? BackupMode.AUTO_BACKUP : BackupMode.STATIC_BACKUP;}
-    @JsonProperty public Swagger_Short_Reference hardware_type()                     {
+    @JsonProperty public Swagger_Short_Reference hardware_type() {
         try {
             Model_HardwareType type = this.getHardwareType();
             return new Swagger_Short_Reference(type.id, type.name, type.description);
         } catch (NullPointerException e) {return  null;}
     }
 
-    @JsonProperty public Swagger_Short_Reference producer()                     {
+    @JsonProperty public Swagger_Short_Reference producer()  {
         try {
             Model_Producer type = this.get_producer();
             return new Swagger_Short_Reference(type.id, type.name, type.description);
@@ -173,7 +161,6 @@ public class Model_Hardware extends TaggedModel {
         } catch (NullPointerException e) {return  null;}
     }
 
-
     @JsonProperty public Model_BootLoader actual_bootloader()        {
         try {
             return get_actual_bootloader();
@@ -182,17 +169,16 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
-  //  private class Model_harware_update_update_in_progress_bootloader {}
+
 
     @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Model_BootLoader bootloader_update_in_progress() {
         try {
 
+               if(cache().get(Model_harware_update_update_in_progress_bootloader.class) != null) {
 
-               if(cache_harware_update_update_in_progress_bootloader_id != null) {
-
-               cache_harware_update_update_in_progress_bootloader_id = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
+                   cache().add(Model_harware_update_update_in_progress_bootloader.class, (UUID) Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
                        .disjunction()
                            .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
                            .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
@@ -204,12 +190,12 @@ public class Model_Hardware extends TaggedModel {
                        .eq("firmware_type", FirmwareType.BOOTLOADER)
                        .select("id")
                        .setMaxRows(1)
-                       .findSingleAttribute();
+                       .findSingleAttribute() ) ;
            }
 
-           if(cache_harware_update_update_in_progress_bootloader_id == null) return null;
+           if(cache().get(Model_harware_update_update_in_progress_bootloader.class) == null) return null;
 
-           return Model_BootLoader.getById(cache_harware_update_update_in_progress_bootloader_id);
+           return Model_BootLoader.getById(cache().get(Model_harware_update_update_in_progress_bootloader.class));
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -218,6 +204,7 @@ public class Model_Hardware extends TaggedModel {
     }
 
     @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public Model_BootLoader available_latest_bootloader()  {
         try {
             return getHardwareType().main_boot_loader();
@@ -227,7 +214,9 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
-    @JsonProperty  @ApiModelProperty(value = "Optional. Only if the address is cached", required = false)
+    @JsonProperty
+    @ApiModelProperty(value = "Optional. Only if the address is cached", required = false)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String ip_address() {
         try {
 
@@ -364,14 +353,13 @@ public class Model_Hardware extends TaggedModel {
         } catch (NullPointerException e) {return  null;}
     }
 
+    @JsonProperty
     public Swagger_Short_Reference actual_c_program_backup() {
         try{
             Model_CProgram program = this.get_backup_c_program();
             return new Swagger_Short_Reference(program.id, program.name, program.description);
         }catch (NullPointerException e) {return  null;}
     }
-
-
 
     @JsonProperty
     public Swagger_Short_Reference actual_c_program_backup_version() {
@@ -473,11 +461,14 @@ public class Model_Hardware extends TaggedModel {
     }
 
     @JsonProperty @ApiModelProperty(required = true)
-    public List<Model_HardwareGroup> hardware_groups() {
+    public List<Swagger_Short_Reference> hardware_groups() {
         try {
-            List<Model_HardwareGroup> l = new ArrayList<>();
-            for (Model_HardwareGroup m : get_hardware_groups())
-                l.add(m);
+            List<Swagger_Short_Reference> l = new ArrayList<>();
+
+            for (Model_HardwareGroup m : get_hardware_groups()) {
+                l.add(new Swagger_Short_Reference(m.id, m.name, m.description));
+            }
+
             return l;
         }catch (Exception e){
             logger.internalServerError(e);
@@ -489,16 +480,15 @@ public class Model_Hardware extends TaggedModel {
     public String picture_link() {
         try {
 
-            if ( cache_picture_id == null) {
-
+            if ( this.cache().get(Model_Blob.class) == null) {
                 Model_Blob fileRecord = Model_Blob.find.query().where().eq("hardware.id",id).select("id").findOne();
                 if (fileRecord != null) {
-                    cache_picture_id =  fileRecord.id;
+                    this.cache().add(Model_Blob.class,  fileRecord.id);
                 }
             }
 
-            if (cache_picture_id != null) {
-                Model_Blob record = Model_Blob.getById(cache_picture_id);
+            if (this.cache().get(Model_Blob.class) != null) {
+                Model_Blob record = Model_Blob.getById(this.cache().get(Model_Blob.class));
                 if (record != null) {
                     return record.getPublicDownloadLink(300);
                 }
@@ -533,7 +523,8 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
-    @JsonIgnore public UUID get_instance_id() throws _Base_Result_Exception {
+    @JsonIgnore
+    public UUID get_instance_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_Instance.class) == null) {
             cache().add(Model_Instance.class, (UUID) Model_Instance.find.query().where().eq("project.hardware.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
@@ -541,7 +532,6 @@ public class Model_Hardware extends TaggedModel {
 
         return cache().get(Model_Instance.class);
     }
-
 
     @JsonIgnore
     public Model_Instance get_instance() throws _Base_Result_Exception{
@@ -552,8 +542,8 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
-
-    @JsonIgnore public UUID get_actual_c_program_id() throws _Base_Result_Exception {
+    @JsonIgnore
+    public UUID get_actual_c_program_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_CProgram.class) == null) {
             cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type.hardware.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
@@ -561,7 +551,6 @@ public class Model_Hardware extends TaggedModel {
 
         return cache().get(Model_CProgram.class);
     }
-
 
     @JsonIgnore
     public Model_CProgram get_actual_c_program() throws _Base_Result_Exception{
@@ -574,7 +563,8 @@ public class Model_Hardware extends TaggedModel {
 
     }
 
-    @JsonIgnore public UUID get_actual_c_program_version_id() throws _Base_Result_Exception {
+    @JsonIgnore
+    public UUID get_actual_c_program_version_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_CProgramVersion.class) == null) {                                                         //propertyName
             cache().add(Model_CProgramVersion.class, (UUID) Model_CProgramVersion.find.query().where().eq("hardware_type.hardware.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
@@ -605,7 +595,8 @@ public class Model_Hardware extends TaggedModel {
         }*/
     }
 
-    @JsonIgnore public UUID get_actual_bootloader_id() throws _Base_Result_Exception {
+    @JsonIgnore
+    public UUID get_actual_bootloader_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_BootLoader.class) == null) {                                                         //propertyName
             cache().add(Model_BootLoader.class, (UUID) Model_BootLoader.find.query().where().eq("hardware.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
@@ -625,7 +616,8 @@ public class Model_Hardware extends TaggedModel {
 
     }
 
-    @JsonIgnore public UUID get_backup_c_program_id() throws _Base_Result_Exception {
+    @JsonIgnore
+    public UUID get_backup_c_program_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_CProgram.class) == null) {                                                         //propertyName
             cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_default.hardware.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
@@ -645,7 +637,8 @@ public class Model_Hardware extends TaggedModel {
 
     }
 
-    @JsonIgnore public UUID get_backup_c_program_version_id() throws _Base_Result_Exception {
+    @JsonIgnore
+    public UUID get_backup_c_program_version_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_CProgramVersion.class) == null) {                                                         //property name
             cache().add(Model_CProgramVersion.class, (UUID) Model_CProgramVersion.find.query().where().eq("c_program_version_boards.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
@@ -665,7 +658,8 @@ public class Model_Hardware extends TaggedModel {
 
     }
 
-    @JsonIgnore public UUID getHardwareType_id() throws _Base_Result_Exception {
+    @JsonIgnore
+    public UUID getHardwareType_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_HardwareType.class) == null) {
             cache().add(Model_HardwareType.class, (UUID) Model_HardwareType.find.query().where().eq("hardware.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
@@ -1007,7 +1001,6 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
-
     // žádost void o synchronizaci online stavu
     @JsonIgnore
     public static void device_online_synchronization_echo(WS_Message_Hardware_online_status report) {
@@ -1027,7 +1020,6 @@ public class Model_Hardware extends TaggedModel {
             logger.internalServerError(e);
         }
     }
-
 
     @JsonIgnore
     public static void check_mqtt_hardware_connection_validation(WS_Homer homer, WS_Message_Hardware_validation_request request) {
@@ -1218,7 +1210,7 @@ public class Model_Hardware extends TaggedModel {
         server.write_without_confirmation(message_id, json);
     }
 
-    /* Commands ----------------------------------------------------------------------------------------------*/
+/* Commands ----------------------------------------------------------------------------------------------*/
 
     //-- Online State Hardware  --//
     @JsonIgnore @Transient public WS_Message_Hardware_online_status get_devices_online_state() {
@@ -1837,8 +1829,6 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
-
-
     /**
      * Pokud máme odchylku od databáze na hardwaru, to jest nesedí firmware_build_id na hW s tím co říká databáze
      * @param overview object of WS_Message_Hardware_overview_Board
@@ -2074,13 +2064,6 @@ public class Model_Hardware extends TaggedModel {
             logger.internalServerError(e);
         }
     }
-
-    // Používáme protože nemáme rezervní klíč pro cachoání backup c program verze v lokální chache
-    private class Model_CProgramVersionFakeBackup {}
-    private class Model_CProgramFakeBackup {}
-
-
-
 
     @JsonIgnore
     private void check_backup(WS_Message_Hardware_overview_Board overview) {
@@ -2360,7 +2343,7 @@ public class Model_Hardware extends TaggedModel {
         }
 
         Model_UpdateProcedure procedure = new Model_UpdateProcedure();
-        procedure.project_id = board_for_update.get(0).hardware.project_id();
+        procedure.project_id = board_for_update.get(0).hardware.get_project_id();
         procedure.state = Enum_Update_group_procedure_state.NOT_START_YET;
         procedure.type_of_update = type_of_update;
 
@@ -2624,6 +2607,13 @@ public class Model_Hardware extends TaggedModel {
         }).start();
     }
 
+/* HELPER CLASS  ----------------------------------------------------------------------------------------------------------*/
+
+    // Používáme protože nemáme rezervní klíč pro cachoání backup c program verze v lokální chache
+    private abstract class Model_CProgramVersionFakeBackup {}
+    private abstract class Model_CProgramFakeBackup {}
+    private abstract class Model_harware_update_update_in_progress_bootloader {}
+
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
@@ -2760,8 +2750,6 @@ public class Model_Hardware extends TaggedModel {
     }
 
     public enum Permission {Hardware_create, Hardware_read, Hardware_update, Hardware_edit, Hardware_delete}
-
-
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -2910,4 +2898,5 @@ public class Model_Hardware extends TaggedModel {
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Finder<UUID, Model_Hardware> find = new Finder<>(Model_Hardware.class);
+
 }

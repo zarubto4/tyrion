@@ -20,6 +20,7 @@ public class Model_HardwareFeature extends NamedModel {
 
     private static final Logger logger = new Logger(Model_HardwareFeature.class);
 
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @ManyToMany(fetch = FetchType.LAZY) @JsonIgnore public List<Model_HardwareType> hardware_types = new ArrayList<>();
