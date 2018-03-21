@@ -245,7 +245,7 @@ public class Controller_Update extends _BaseController {
                     if (!bootLoader.hardware_type.id.equals(hardwareType.id)) badRequest("Invalid type of Bootloader for HardwareType");
                 }
 
-                List<UUID> uuid_ids = Model_Hardware.find.query().where().eq("group.id", group.id).eq("hardware.hardware_type.id", hardwareType.id).findIds();
+                List<UUID> uuid_ids = Model_Hardware.find.query().where().eq("hardware_groups.id", group.id).eq("hardware_type.id", hardwareType.id).findIds();
 
                 for (UUID uuid_id : uuid_ids) {
                     Model_Hardware hardware = Model_Hardware.getById(uuid_id);

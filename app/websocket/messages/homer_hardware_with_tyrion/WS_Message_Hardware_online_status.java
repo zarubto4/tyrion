@@ -30,14 +30,14 @@ public class WS_Message_Hardware_online_status extends WS_AbstractMessage  {
      *
      * Slower for a small number of elements - significantly faster for a large number of elements.
      */
-    @JsonIgnore HashMap<UUID,DeviceStatus> map = new HashMap<>();
+    @JsonIgnore HashMap<UUID, DeviceStatus> map = new HashMap<>();
     public boolean is_device_online(UUID device_id) {
 
         if (map.isEmpty() && hardware_list.isEmpty()) {
             return false;
         } else if (map.isEmpty()) {
             for (DeviceStatus status : hardware_list) {
-                map.put(status.hardware_id, status);
+                map.put(status.uuid, status);
             }
         }
 
@@ -50,13 +50,12 @@ public class WS_Message_Hardware_online_status extends WS_AbstractMessage  {
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public ObjectNode make_request(List<String> full_ids) {
+    public ObjectNode make_request(List<UUID> ids) {
 
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
         request.put("message_channel", Model_Hardware.CHANNEL);
-        request.set("full_ids", Json.toJson(full_ids) );
-
+        request.set("uuid_ids", Json.toJson(ids) );
         return request;
     }
 
@@ -67,7 +66,7 @@ public class WS_Message_Hardware_online_status extends WS_AbstractMessage  {
 
         public DeviceStatus() {}
 
-        @Constraints.Required  public UUID hardware_id;
+        @Constraints.Required  public UUID uuid;
         public boolean online_status;
 
     }

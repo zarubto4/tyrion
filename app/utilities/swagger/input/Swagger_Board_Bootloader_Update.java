@@ -16,7 +16,8 @@ public class Swagger_Board_Bootloader_Update {
     @ApiModelProperty(value = "Must be unique!!!, The hardware_id must have 20 hexadecimal characters!, It can combination of master devices and others", required = true)
     public List<UUID> device_ids = new ArrayList<>();
 
-    @ApiModelProperty(hidden = true, required = false, value = "If bootloader_is empty, system will used latest version")
+    @Constraints.Required
+    @ApiModelProperty(required = false, value = "If bootloader_is empty, system will used latest recommended version")
     public UUID bootloader_id;
 
 }

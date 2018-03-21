@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.DocumentClientException;
+import com.myjeeva.digitalocean.pojo.Droplet;
 import controllers._BaseController;
 import controllers.Controller_WebSocket;
 import io.ebean.Finder;
@@ -27,6 +28,9 @@ import utilities.errors.Exceptions.Result_Error_Bad_request;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
+import utilities.homer_auto_deploy.DigitalOceanTyrionService;
+import utilities.homer_auto_deploy.models.common.Swagger_ExternalService;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.model.TaggedModel;
@@ -83,12 +87,6 @@ public class Model_HomerServer extends TaggedModel {
 
     @JsonIgnore @OneToMany(mappedBy = "server_main", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Instance> instances = new ArrayList<>();
 
-
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Cached private UUID cache_project_id;
-
-
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true)
@@ -119,25 +117,49 @@ public class Model_HomerServer extends TaggedModel {
         }
     }
 
+    @ApiModelProperty(required = false, readOnly = true, value = "Visible only when server is in deployment state")
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Boolean deployment_in_progress() {
+        try {
+
+            if (cache().get(DigitalOceanThreadRegister.class) != null) {
+               return true;
+            }
+
+            return null;
+
+        }catch (Exception e){
+            return null;
+        }
+    }
+
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public UUID get_project_id() throws _Base_Result_Exception  {
 
-    if (cache_project_id == null) {
-        Model_Project project = Model_Project.find.query().where().eq("servers.id", id).select("id").findOne();
-        if (project == null) return null;
-        cache_project_id = project.id;
-    }
+        if (cache().get(Model_Project.class) == null) {
+            cache().add(Model_Project.class, Model_Project.find.query().where().eq("servers.id", id).select("id").findSingleAttributeList());
+        }
 
-    return cache_project_id;
-}
+        return cache().get(Model_Project.class);
+
+    }
 
     @JsonIgnore @Transient public Model_Project get_project() throws _Base_Result_Exception  {
-        return  Model_Project.getById(get_project_id());
+        try {
+            return Model_Project.getById(get_project_id());
+        }catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
+    @JsonIgnore @Transient public Swagger_ExternalService external_settings() {
+        if(json_additional_parameter == null ) return null;
+        return baseFormFactory.formFromJsonWithValidation(Swagger_ExternalService.class, Json.parse(json_additional_parameter));
+    }
 
-/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+    /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     @Override
@@ -180,6 +202,15 @@ public class Model_HomerServer extends TaggedModel {
     public boolean delete() {
 
         logger.debug("delete::Delete object Id: {}",  this.id);
+
+        try {
+            if (external_settings() != null) {
+                DigitalOceanTyrionService.remove(this);
+            }
+        } catch (Exception e) {
+            logger.internalServerError(e);
+        }
+
         return super.delete();
     }
 

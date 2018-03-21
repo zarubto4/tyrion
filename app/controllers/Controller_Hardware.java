@@ -19,6 +19,7 @@ import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Logger;
+import utilities.swagger.Picture2Mb;
 import utilities.swagger.input.*;
 import utilities.swagger.output.*;
 import utilities.swagger.output.filter_results.Swagger_HardwareGroup_List;
@@ -762,12 +763,16 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    @BodyParser.Of(value = BodyParser.Json.class)
+    @BodyParser.Of(value = Picture2Mb.Json.class)
     public Result hardwareType_uploadPicture(UUID hardware_type_id) {
         try {
 
             // Get and Validate Object
             Swagger_BASE64_FILE help = baseFormFactory.formFromRequestWithValidation(Swagger_BASE64_FILE.class);
+
+            final byte[] utf8Bytes = help.file.getBytes("UTF-8");
+            System.out.println("hardwareType_uploadPicture - update picture: size in bits: " + utf8Bytes.length); // prints "11"
+
 
             // Kontrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
@@ -1224,17 +1229,16 @@ public class Controller_Hardware extends _BaseController {
                 }
             }
 
+            System.out.println("bootLoader_markAsMain main: " + boot_loader.getHardwareType().name);
             boot_loader.main_hardware_type = boot_loader.getHardwareType();
-            boot_loader.cache().add(Random.class, boot_loader.main_hardware_type.id);
-            boot_loader.update();
 
-            // Update Chache
-            boot_loader.cache().add(Model_BootLoader.class, boot_loader.id);
-           // boot_loader.getHardwareType().cache_main_bootloader_id = boot_loader.id;
+            boot_loader.getHardwareType().cache().removeAll(Random.class);
+            boot_loader.getHardwareType().cache().add(Random.class, boot_loader.id);
+
+            boot_loader.update();
 
             // Vymažu Device Cache
             Model_Hardware.cache.clear();
-
 
             // Vracím Json
             return ok(boot_loader.json());
@@ -1470,7 +1474,7 @@ public class Controller_Hardware extends _BaseController {
 
             // Odzkouším -zda už není registrovaný v centárlní autoritě!
             if (Model_HardwareRegistrationEntity.check_if_value_is_registered(help.full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
-                System.out.println("hardware_create_garfield:: Hardware is already registred in Central authority");
+                logger.trace("hardware_create_garfield:: Hardware is already registred in Central authority");
             } else {
 
             }
@@ -1708,10 +1712,10 @@ public class Controller_Hardware extends _BaseController {
                         WS_Message_Hardware_set_settings settings =  board.set_hardware_configuration_parameter(help);
                         return ok(Json.toJson(board));
                     } catch (IllegalArgumentException e) {
-                        System.out.println("IllegalArgumentException" + e.getMessage());
+                        logger.trace("IllegalArgumentException" + e.getMessage());
                         return badRequest(e.getMessage());
                     } catch (Exception e) {
-                        System.out.println("Exception" + e.getMessage());
+                        logger.trace("Exception" + e.getMessage());
                         return badRequest(e.getMessage());
                     }
                 }
@@ -2152,14 +2156,14 @@ public class Controller_Hardware extends _BaseController {
             // Get and Validate Object
             Swagger_Board_Server_Redirect help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_Server_Redirect.class);
 
-            System.out.println("hardware_redirect_to_server:: Příjem zprávy:: " + Json.toJson(help));
+            logger.trace("hardware_redirect_to_server:: Příjem zprávy:: " + Json.toJson(help));
 
             Model_Hardware board = Model_Hardware.getById(hardware_id);
 
             // Jedná se o přesměrování na server v rámci stejné hierarchie - na server co mám v DB
             if (help.server_id != null) {
 
-                System.out.println("Bude se přesměrovávat z databáze");
+                logger.trace("hardware_redirect_to_server:: Bude se přesměrovávat z databáze");
 
                 Model_HomerServer server = Model_HomerServer.getById(help.server_id);
                 board.device_relocate_server(server);
@@ -2343,9 +2347,8 @@ public class Controller_Hardware extends _BaseController {
     public Result hardware_check(String registration_hash, UUID project_id) {
         try {
 
-            System.out.println("registration_hash: "+  registration_hash);
-            System.out.println("project_id: " + project_id.toString());
-
+            logger.trace("hardware_check:: Registration_hash: "+  registration_hash);
+            logger.trace("hardware_check:: Project_id: {}", project_id.toString());
 
             Swagger_Board_Registration_Status status = new Swagger_Board_Registration_Status();
 

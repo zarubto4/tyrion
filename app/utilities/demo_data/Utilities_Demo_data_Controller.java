@@ -24,7 +24,7 @@ public class Utilities_Demo_data_Controller extends _BaseController {
     public Result test() {
         try {
 
-            System.out.println("Demo_Data_Controller :: test :: start");
+            terminal_logger.trace("test:: Demo_Data_Controller :: test :: start");
 
             return ok();
 
@@ -56,7 +56,7 @@ public class Utilities_Demo_data_Controller extends _BaseController {
     public Result garfield() {
         try {
 
-            System.out.println("garfield()");
+            terminal_logger.trace("garfield:: garfield()");
 
             if (Model_Garfield.find.query().where().eq("name", "Garfield").findOne() != null)
                 return badRequest("Its Already done!");

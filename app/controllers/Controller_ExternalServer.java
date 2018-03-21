@@ -134,7 +134,7 @@ public class Controller_ExternalServer extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "create Homer_Server Manualy",
+    @ApiOperation(value = "create Homer_Server Manually",
             tags = {"External-Server"},
             notes = "Create new Homer_Server - private or public",
             produces = "application/json",
@@ -443,6 +443,99 @@ public class Controller_ExternalServer extends _BaseController {
 
         } catch (Exception e) {
            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "shut_down Homer_Server",
+            tags = {"External-Server"},
+            notes = "Shut Down Virtual Homer_Server if its supported",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result homer_server_power_down(UUID homer_server_id) {
+        try {
+
+            // Kontrola objektu
+            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+
+            server.check_update_permission();
+
+            DigitalOceanTyrionService.powerOff(server);
+
+            // Vrácení potvrzení
+            return ok();
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "start Homer_Server",
+            tags = {"External-Server"},
+            notes = "Start Virtual Homer_Server machine if its supported",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result homer_server_power_on(UUID homer_server_id) {
+        try {
+
+            // Kontrola objektu
+            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+
+            server.check_update_permission();
+
+            DigitalOceanTyrionService.powerOn(server);
+
+            // Vrácení potvrzení
+            return ok();
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "restart Homer_Server",
+            tags = {"External-Server"},
+            notes = "Restart Virtual Homer_Server machine if its supported",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result homer_server_restart(UUID homer_server_id) {
+        try {
+
+            // Kontrola objektu
+            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+
+            server.check_update_permission();
+
+            DigitalOceanTyrionService.restartServer(server);
+
+            // Vrácení potvrzení
+            return ok();
+
+        } catch (Exception e) {
+            return controllerServerError(e);
         }
     }
 

@@ -458,7 +458,7 @@ public class Model_CProgramVersion extends VersionModel {
                     this.compilation.status = CompilationStatus.SUCCESS;
                     this.compilation.build_url = compilation.build_url;
                     this.compilation.firmware_build_id = compilation.build_id;
-                    this.compilation.virtual_input_output = compilation.interface_code.toString();
+                    this.compilation.virtual_input_output = compilation.interface_code;
                     this.compilation.firmware_build_datetime = new Date();
                     this.compilation.update();
 

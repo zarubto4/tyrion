@@ -28,13 +28,13 @@ public class WS_Message_Hardware_set_hardware_groups extends WS_AbstractMessage 
     @JsonIgnore
     public  ObjectNode make_request(List<Model_Hardware> devices, List<UUID> group_ids, Enum_type_of_command command_type) {
 
-        List<String> hardware_ids = devices.stream().map(Model_Hardware::get_full_id).collect(Collectors.toList());
+        List<UUID> hardware_ids = devices.stream().map(Model_Hardware::get_id).collect(Collectors.toList());
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
         request.put("message_channel", Model_Hardware.CHANNEL);
-        request.set("full_ids", Json.toJson(hardware_ids) );
+        request.set("uuids_ids", Json.toJson(hardware_ids) );
         request.put("hardware_group_id", Json.toJson(group_ids));
         request.put("command_type", command_type.name() );
 

@@ -20,15 +20,14 @@ import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
-import utilities.swagger.output.Swagger_Bootloader_Update_program;
-import utilities.swagger.output.Swagger_C_Program_Update_program;
-import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
-import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer_BinaryComponent;
+import utilities.swagger.output.*;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -58,7 +57,7 @@ public class Model_HardwareUpdate extends BaseModel {
               @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public FirmwareType firmware_type;          // Typ Firmwaru
 
                                                                                 // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
-    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                 public Model_CProgramVersion c_program_version_for_update; // C_program k aktualizaci
+    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)               public Model_CProgramVersion c_program_version_for_update; // C_program k aktualizaci
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_BootLoader bootloader;                      // Když nahrávám Firmware
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_Blob binary_file;                     // Soubor, když firmware nahrává uživatel sám mimo flow
 
@@ -68,63 +67,31 @@ public class Model_HardwareUpdate extends BaseModel {
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public String error;
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public Integer error_code;
 
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-   /* @JsonIgnore @Transient @Cached public UUID cache_actualization_procedure_id;
-     @JsonIgnore @Transient @Cached public UUID cache_hardware_id;
-    @JsonIgnore @Transient @Cached public UUID cache_c_program_version_id;
-    @JsonIgnore @Transient @Cached public UUID cache_bootloader_id;
-*/
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = false, readOnly = true)
     public UpdateType type_of_update () {
-       return actualization_procedure.type_of_update;
+       return getActualizationProcedure().type_of_update;
     }
 
-
-
-    @JsonProperty @ApiModelProperty(required = false, readOnly = true)
-     public UUID get_actualization_procedure_id() throws _Base_Result_Exception {
-
-        if (cache().get(Model_UpdateProcedure.class) == null) {
-            cache().add(Model_UpdateProcedure.class, (UUID) Model_UpdateProcedure.find.query().where().eq("updates.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
-        }
-
-        return cache().get(Model_UpdateProcedure.class);
-    }
-
-    @JsonProperty @ApiModelProperty(required = false, readOnly = true)
-    public Model_UpdateProcedure get_actualization_procedure()throws _Base_Result_Exception {
-
+    @JsonProperty  @ApiModelProperty(readOnly = true, required = false)
+    public UUID actualization_procedure_id(){
         try {
-            return Model_UpdateProcedure.getById(getHardware_id());
-        }catch (Exception e) {
+            return getActualizationProcedureId();
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
 
-/*
-    @JsonProperty @ApiModelProperty(required = false, readOnly = true)
-    public UUID actualization_procedure_id() {
-        if (cache_actualization_procedure_id == null) {
-            Model_UpdateProcedure procedure_not_cached = Model_UpdateProcedure.find.query().where().eq("updates.id", id).select("id").findOne();
-            cache_actualization_procedure_id = procedure_not_cached.id;
-        }
-        return cache_actualization_procedure_id;
-    }
-*/
-
-
-
     @JsonProperty
     public Date date_of_planing() {
-        return actualization_procedure.date_of_planing;
+        return getActualizationProcedure().date_of_planing;
     }
 
     @JsonProperty
     public Date created() {
-        return actualization_procedure.created;
+        return getActualizationProcedure().created;
     }
 
     @ApiModelProperty(required = false, value = "Is visible only if update is for Firmware or Backup")
@@ -186,43 +153,63 @@ public class Model_HardwareUpdate extends BaseModel {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
 
+    @JsonIgnore
+    public UUID getHardwareId() {
 
-    @JsonIgnore public UUID getHardware_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_Hardware.class) == null) {
-            cache().add(Model_Hardware.class, (UUID) Model_Hardware.find.query().where().eq("updates.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+            cache().add(Model_Hardware.class, (UUID) Model_Hardware.find.query().where().eq("updates.id", id).select("id").findSingleAttribute());
         }
 
         return cache().get(Model_Hardware.class);
+
     }
 
     @JsonIgnore
-    public Model_Hardware getHardware()throws _Base_Result_Exception {
-
+    public Model_Hardware getHardware() {
         try {
-            return Model_Hardware.getById(getHardware_id());
+            return Model_Hardware.getById(getHardwareId());
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public UUID getActualizationProcedureId() {
+
+        if (cache().get(Model_UpdateProcedure.class) == null) {
+            cache().add(Model_UpdateProcedure.class, (UUID) Model_UpdateProcedure.find.query().where().eq("updates.id", id).select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_UpdateProcedure.class);
+    }
+
+    @JsonIgnore
+    public Model_UpdateProcedure getActualizationProcedure() {
+        try {
+            return Model_UpdateProcedure.getById(getActualizationProcedureId());
         }catch (Exception e) {
             return null;
         }
     }
 
-    @JsonIgnore public UUID getBootloader_id() throws _Base_Result_Exception {
-
+    @JsonIgnore
+    public UUID getBootloaderId() {
         if (cache().get(Model_BootLoader.class) == null) {
-            cache().add(Model_BootLoader.class, (UUID) Model_BootLoader.find.query().where().eq("updates.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+            cache().add(Model_BootLoader.class, (UUID) Model_BootLoader.find.query().where().eq("updates.id", id).select("id").findSingleAttribute());
         }
-
         return cache().get(Model_BootLoader.class);
     }
 
     @JsonIgnore
     public Model_BootLoader getBootloader() {
-
         try {
-            return Model_BootLoader.getById(getBootloader_id());
+            return Model_BootLoader.getById(getBootloaderId());
         }catch (Exception e) {
             return null;
         }
+    }
 
     }
 
@@ -231,16 +218,16 @@ public class Model_HardwareUpdate extends BaseModel {
         try {
 
             Swagger_UpdatePlan_brief_for_homer brief_for_homer = new Swagger_UpdatePlan_brief_for_homer();
-            brief_for_homer.update_procedure_id = actualization_procedure.id.toString();
+            brief_for_homer.update_procedure_id = getActualizationProcedureId().toString();
             brief_for_homer.hardware_update_id = id.toString();
-            brief_for_homer.hardware_ids.add(getHardware().id);
+            brief_for_homer.full_ids.add(getHardware().full_id);
 
             Swagger_UpdatePlan_brief_for_homer_BinaryComponent binary = new Swagger_UpdatePlan_brief_for_homer_BinaryComponent();
             binary.firmware_type = firmware_type;
 
             brief_for_homer.binary = binary;
 
-            if (actualization_procedure.type_of_update == UpdateType.MANUALLY_BY_USER_INDIVIDUAL) {
+            if (getActualizationProcedure().type_of_update == UpdateType.MANUALLY_BY_USER_INDIVIDUAL) {
                 brief_for_homer.progress_subscribe = true;
             }
 
@@ -287,20 +274,17 @@ public class Model_HardwareUpdate extends BaseModel {
         if (this.state == null) this.state = HardwareUpdateState.NOT_YET_STARTED;
 
         // Set Cache parameter
-        cache().add(Model_Hardware.class,  hardware.id );
-
+        cache().add(Model_Hardware.class, hardware.id);
 
         // set Cache Parameter
         if (c_program_version_for_update != null) {
-            cache().add(Model_CProgramVersion.class,  c_program_version_for_update.id );
-
+            cache().add(Model_CProgramVersion.class, c_program_version_for_update.id);
         }
 
         // set Cache Parameter
         if (bootloader != null) {
-            cache().add(Model_BootLoader.class,  bootloader.id );
+            cache().add(Model_BootLoader.class, bootloader.id);
         }
-
 
         super.save();
 
@@ -312,9 +296,9 @@ public class Model_HardwareUpdate extends BaseModel {
 
         super.update();
 
-        Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(get_actualization_procedure_id());
+        Model_UpdateProcedure procedure = getActualizationProcedure();
         if (procedure != null) {
-            if (procedure.state == Enum_Update_group_procedure_state.not_start_yet || procedure.state == Enum_Update_group_procedure_state.in_progress) {
+            if (procedure.state == Enum_Update_group_procedure_state.NOT_START_YET || procedure.state == Enum_Update_group_procedure_state.IN_PROGRESS) {
 
                 if (this.state == HardwareUpdateState.OBSOLETE
                         || this.state == HardwareUpdateState.COMPLETE
@@ -377,16 +361,16 @@ public class Model_HardwareUpdate extends BaseModel {
 
                 notification
                         .setChainType(NotificationType.CHAIN_END)
-                        .setNotificationId(plan.actualization_procedure.id)
+                        .setNotificationId(plan.getActualizationProcedureId())
                         .setImportance(NotificationImportance.LOW)
                         .setLevel(NotificationLevel.ERROR);
 
                 notification.setText(new Notification_Text().setText("Update of Procedure "))
-                        .setObject(plan.actualization_procedure)
+                        .setObject(plan.getActualizationProcedure())
                         .setText(new Notification_Text().setText(". Transfer firmware to device "))
                         .setObject(plan.getHardware())
                         .setText(new Notification_Text().setText(" failed. Error Code " + report.error_code + "."))
-                        .send_under_project(plan.actualization_procedure.get_project_id());
+                        .send_under_project(plan.getActualizationProcedure().get_project_id());
 
 
                 return;
@@ -405,16 +389,16 @@ public class Model_HardwareUpdate extends BaseModel {
 
                         notification
                                 .setChainType(NotificationType.CHAIN_START)
-                                .setNotificationId(plan.actualization_procedure.id)
+                                .setNotificationId(plan.getActualizationProcedureId())
                                 .setImportance(NotificationImportance.LOW)
                                 .setLevel(NotificationLevel.INFO);
 
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
-                                .setObject(plan.actualization_procedure)
+                                .setObject(plan.getActualizationProcedure())
                                 .setText(new Notification_Text().setText(". Transfer firmware to device "))
                                 .setObject(plan.getHardware())
                                 .setText(new Notification_Text().setText(" start."))
-                                .send_under_project(plan.actualization_procedure.get_project_id());
+                                .send_under_project(plan.getActualizationProcedure().get_project_id());
 
                         return;
                     } catch (Exception e) {
@@ -430,16 +414,16 @@ public class Model_HardwareUpdate extends BaseModel {
 
                         notification
                                 .setChainType(NotificationType.CHAIN_UPDATE)
-                                .setNotificationId(plan.actualization_procedure.id)
+                                .setNotificationId(plan.getActualizationProcedureId())
                                 .setImportance(NotificationImportance.LOW)
                                 .setLevel(NotificationLevel.INFO);
 
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
-                                .setObject(plan.actualization_procedure)
+                                .setObject(plan.getActualizationProcedure())
                                 .setText(new Notification_Text().setText(". Transfer firmware to "))
                                 .setObject(plan.getHardware())
                                 .setText(new Notification_Text().setText(" firmware file  was transferred and stored in memory."))
-                                .send_under_project(plan.actualization_procedure.get_project_id());
+                                .send_under_project(plan.getActualizationProcedure().get_project_id());
 
                         return;
                     } catch (Exception e) {
@@ -457,16 +441,16 @@ public class Model_HardwareUpdate extends BaseModel {
 
                         notification
                                 .setChainType(NotificationType.CHAIN_UPDATE)
-                                .setNotificationId(plan.actualization_procedure.id)
+                                .setNotificationId(plan.getActualizationProcedureId())
                                 .setImportance(NotificationImportance.LOW)
                                 .setLevel(NotificationLevel.INFO);
 
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
-                                .setObject(plan.actualization_procedure)
+                                .setObject(plan.getActualizationProcedure())
                                 .setText(new Notification_Text().setText(". Transfer firmware to "))
                                 .setObject(plan.getHardware())
                                 .setText(new Notification_Text().setText(" progress:: " + report.percentage_progress + "%"))
-                                .send_under_project(plan.actualization_procedure.get_project_id());
+                                .send_under_project(plan.getActualizationProcedure().get_project_id());
 
                         return;
 
@@ -484,17 +468,17 @@ public class Model_HardwareUpdate extends BaseModel {
 
                         notification
                                 .setChainType(NotificationType.CHAIN_UPDATE)
-                                .setNotificationId(plan.actualization_procedure.id)
+                                .setNotificationId(plan.getActualizationProcedureId())
                                 .setImportance(NotificationImportance.LOW)
                                 .setLevel(NotificationLevel.INFO);
 
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
-                                .setObject(plan.actualization_procedure)
+                                .setObject(plan.getActualizationProcedure())
                                 .setText(new Notification_Text().setText(". We are making backup on hardware "))
                                 .setObject(plan.getHardware())
                                 .setText(new Notification_Text().setText("finished:: " + report.percentage_progress + "%"))
                                 .setText(new Notification_Text().setText("Flash Memory Erasing..."))
-                                .send_under_project(plan.actualization_procedure.get_project_id());
+                                .send_under_project(plan.getActualizationProcedure().get_project_id());
 
                         return;
 
@@ -512,17 +496,17 @@ public class Model_HardwareUpdate extends BaseModel {
 
                         notification
                                 .setChainType(NotificationType.CHAIN_UPDATE)
-                                .setNotificationId(plan.actualization_procedure.id)
+                                .setNotificationId(plan.getActualizationProcedureId())
                                 .setImportance(NotificationImportance.LOW)
                                 .setLevel(NotificationLevel.INFO);
 
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
-                                .setObject(plan.actualization_procedure)
+                                .setObject(plan.getActualizationProcedure())
                                 .setText(new Notification_Text().setText(". We are making backup on hardware "))
                                 .setObject(plan.getHardware())
                                 .setText(new Notification_Text().setText("finished:: " + report.percentage_progress + "%"))
                                 .setText(new Notification_Text().setText("Flash Memory Erased"))
-                                .send_under_project(plan.actualization_procedure.get_project_id());
+                                .send_under_project(plan.getActualizationProcedure().get_project_id());
 
                         return;
 
@@ -539,17 +523,17 @@ public class Model_HardwareUpdate extends BaseModel {
 
                     notification
                             .setChainType(NotificationType.CHAIN_UPDATE)
-                            .setNotificationId(plan.actualization_procedure.id)
+                            .setNotificationId(plan.getActualizationProcedureId())
                             .setImportance(NotificationImportance.LOW)
                             .setLevel(NotificationLevel.INFO);
 
                     notification.setText(new Notification_Text().setText("Update of Procedure "))
-                            .setObject(plan.actualization_procedure)
+                            .setObject(plan.getActualizationProcedure())
                             .setText(new Notification_Text().setText(". Transfer firmware to "))
                             .setObject(plan.getHardware())
                             .setText(new Notification_Text().setText(" finished:: " + report.percentage_progress + "%"))
                             .setText(new Notification_Text().setText("The device is just rebooting."))
-                            .send_under_project(plan.actualization_procedure.get_project_id());
+                            .send_under_project(plan.getActualizationProcedure().get_project_id());
 
                     return;
                 }
@@ -562,17 +546,17 @@ public class Model_HardwareUpdate extends BaseModel {
 
                     notification
                             .setChainType(NotificationType.CHAIN_UPDATE)
-                            .setNotificationId(plan.actualization_procedure.id)
+                            .setNotificationId(plan.getActualizationProcedureId())
                             .setImportance(NotificationImportance.LOW)
                             .setLevel(NotificationLevel.INFO);
 
                     notification.setText(new Notification_Text().setText("Update of Procedure "))
-                            .setObject(plan.actualization_procedure)
+                            .setObject(plan.getActualizationProcedure())
                             .setText(new Notification_Text().setText(". Transfer firmware to "))
                             .setObject(plan.getHardware())
                             .setText(new Notification_Text().setText(" finished:: " + report.percentage_progress + "%"))
                             .setText(new Notification_Text().setText("Device Restarted successfully - system check all registers"))
-                            .send_under_project(plan.actualization_procedure.get_project_id());
+                            .send_under_project(plan.getActualizationProcedure().get_project_id());
 
                     return;
                 }
@@ -585,15 +569,15 @@ public class Model_HardwareUpdate extends BaseModel {
 
                         notification
                                 .setChainType(NotificationType.CHAIN_END)
-                                .setNotificationId(plan.actualization_procedure.id)
+                                .setNotificationId(plan.getActualizationProcedureId())
                                 .setImportance(NotificationImportance.LOW)
                                 .setLevel(NotificationLevel.INFO);
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
-                                .setObject(plan.actualization_procedure)
+                                .setObject(plan.getActualizationProcedure())
                                 .setText(new Notification_Text().setText(". Transfer firmware to "))
                                 .setObject(plan.getHardware())
                                 .setText(new Notification_Text().setText(" successfully done."))
-                                .send_under_project(plan.actualization_procedure.get_project_id());
+                                .send_under_project(plan.getActualizationProcedure().get_project_id());
 
 
                         logger.debug("update_procedure_progress - procedure {} is UPDATE_DONE", plan.id);
@@ -682,16 +666,16 @@ public class Model_HardwareUpdate extends BaseModel {
 
                         notification
                                 .setChainType(NotificationType.INDIVIDUAL)
-                                .setNotificationId(plan.actualization_procedure.id)
+                                .setNotificationId(plan.getActualizationProcedureId())
                                 .setImportance(NotificationImportance.LOW)
                                 .setLevel(NotificationLevel.INFO);
 
                         notification.setText(new Notification_Text().setText("Update of Procedure "))
-                                .setObject(plan.actualization_procedure)
+                                .setObject(plan.getActualizationProcedure())
                                 .setText(new Notification_Text().setText(" to Hardware "))
                                 .setObject(plan.getHardware())
                                 .setText(new Notification_Text().setText(" is done. The required firmware on the device is already running."))
-                                .send_under_project(plan.actualization_procedure.get_project_id());
+                                .send_under_project(plan.getActualizationProcedure().get_project_id());
 
                         logger.error("update_procedure_progress - procedure {} is ALREADY_SAME", plan.id);
 
@@ -746,12 +730,13 @@ public class Model_HardwareUpdate extends BaseModel {
 
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.UpdateProcedure_read.name())) return;
-        getHardware().get_project().check_read_permission();
+        getHardware().check_read_permission();
     }
 
-    @JsonIgnore @java.beans.Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @java.beans.Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @java.beans.Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    // Not Required - Supported directly only by Tyrion
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { }
 
     public enum Permission { UpdateProcedure_read, UpdateProcedure_edit }
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/

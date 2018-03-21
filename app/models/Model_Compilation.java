@@ -17,7 +17,9 @@ import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
+import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.*;
@@ -130,7 +132,14 @@ public class Model_Compilation extends BaseModel {
         logger.debug("update :: Update object Id: {}",  this.id);
 
         // Call notification about model update
-        //new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_CProgram.class, version.get_c_program().project_id(), version.get_c_program().id))).start();
+        new Thread(() -> {
+            try {
+                EchoHandler.addToQueue(new WSM_Echo( Model_CProgram.class, version.get_c_program().getProjectId(), version.get_c_program_id()));
+            } catch (_Base_Result_Exception e) {
+                // Nothing
+            }
+        }).start();
+
 
         super.update();
     }

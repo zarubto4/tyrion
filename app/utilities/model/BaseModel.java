@@ -84,36 +84,72 @@ public abstract class BaseModel extends Model {
         private HashMap<Class, List<UUID>> cash_map = new HashMap<>();
 
         public void add(Class c, List<UUID> ids){
-            if(!cash_map.containsKey(c)){
-                cash_map.put(c, ids);
-            }else {
-                cash_map.get(c).addAll(ids);
+            try {
+                if (ids != null) {
+                    if (!cash_map.containsKey(c)) {
+                        cash_map.put(c, ids);
+                    } else {
+                        if (cash_map.get(c) != null) {
+                            cash_map.get(c).addAll(ids);
+                        } else {
+                            cash_map.put(c, ids);
+                        }
+
+                    }
+                }
+            }catch (Exception e){
+                // Nothing
             }
         }
 
         public void add(Class c, UUID id){
-            if(!cash_map.containsKey(c)){
-                cash_map.put(c, Collections.singletonList(id));
-            }else {
-                cash_map.get(c).add(id);
+            try {
+                if (id != null) {
+                    if (!cash_map.containsKey(c)) {
+                        cash_map.put(c, Collections.singletonList(id));
+                    } else {
+                        if (cash_map.get(c) != null) {
+                            cash_map.get(c).add(id);
+                        } else {
+                            cash_map.put(c, Collections.singletonList(id));
+                        }
+                    }
+                }
+            } catch (Exception e){
+                // Nothing
             }
         }
 
         public void remove(Class c, List<UUID> ids){
-            if(cash_map.containsKey(c)){
-                cash_map.get(c).removeAll(ids);
+            try {
+                if(ids != null) {
+                    if (cash_map.containsKey(c)) {
+                        cash_map.get(c).removeAll(ids);
+                    }
+                }
+            } catch (Exception e){
+                // Nothing
             }
         }
 
         public void remove(Class c, UUID id){
-            if(cash_map.containsKey(c)){
-                cash_map.get(c).remove(id);
+            try {
+                if(id != null)
+                if(cash_map.containsKey(c)){
+                    cash_map.get(c).remove(id);
+                }
+            } catch (Exception e){
+                // Nothing
             }
         }
 
         public void removeAll(Class c){
-            if(cash_map.containsKey(c)){
-                cash_map.get(c).clear();
+            try {
+                if (cash_map.containsKey(c)) {
+                    cash_map.get(c).clear();
+                }
+            } catch (Exception e){
+                // Nothing
             }
         }
 
@@ -123,14 +159,18 @@ public abstract class BaseModel extends Model {
         }
 
         public UUID get(Class c){
-            if(cash_map.containsKey(c)){
-               List<UUID> list = cash_map.get(c);
-               if(!list.isEmpty()){
-                   return list.get(0);
-               }
-            }
+            try {
+                if (cash_map.containsKey(c)) {
+                    List<UUID> list = cash_map.get(c);
+                    if (!list.isEmpty()) {
+                        return list.get(0);
+                    }
+                }
 
-            return null;
+                return null;
+            }catch (Exception e) {
+                return null;
+            }
         }
 
     }

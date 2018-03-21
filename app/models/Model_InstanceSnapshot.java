@@ -193,7 +193,7 @@ public class Model_InstanceSnapshot extends BaseModel {
 
 
     @JsonIgnore
-    public List<String> getHardwareFullIds() throws _Base_Result_Exception {
+    public List<UUID> getHardwareIds() throws _Base_Result_Exception {
         // TODO - Vylouskat z Jsonu Snapshotu instance
         throw new Result_Error_NotSupportedException();
     }
@@ -296,7 +296,7 @@ public class Model_InstanceSnapshot extends BaseModel {
         try {
 
             // Seznam - který by na instanci měl běžet!
-            List<String> hardware_ids_required_by_instance = getHardwareFullIds();
+            List<UUID> hardware_ids_required_by_instance = getHardwareIds();
 
             // Přidat nový otisk hardwaru
             if (!hardware_ids_required_by_instance.isEmpty()) {

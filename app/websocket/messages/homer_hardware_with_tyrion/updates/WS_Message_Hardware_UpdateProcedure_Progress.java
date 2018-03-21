@@ -20,7 +20,7 @@ public class WS_Message_Hardware_UpdateProcedure_Progress extends WS_AbstractMes
 
     @Constraints.Required public String phase;
 
-    @Constraints.Required public String hardware_id = null;
+    @Constraints.Required public String full_id = null;
 
 
     public Enum_HardwareHomerUpdate_state get_phase() {

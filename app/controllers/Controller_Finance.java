@@ -1146,18 +1146,18 @@ public class Controller_Finance extends _BaseController {
             payment_details.refresh();
 
             if (payment_details.isComplete()) {
-                System.out.println("payment_details.isComplete()");
+                logger.trace("product_create:: payment_details.isComplete()");
             }
 
             if (payment_details.isCompleteCompany()) {
-                System.out.println("payment_details.isCompleteCompany()");
-                System.out.println("payment_details::" + Json.toJson(payment_details).toString());
+                logger.trace("product_create:: payment_details.isCompleteCompany()");
+                logger.trace("product_create:: payment_details::" + Json.toJson(payment_details).toString());
 
             }
 
 
             if (product.fakturoid_subject_id == null) {
-                System.out.println("fakturoid_subject_id == null");
+                logger.trace("product_create:: fakturoid_subject_id == null");
             }
 
 
@@ -1217,9 +1217,6 @@ public class Controller_Finance extends _BaseController {
     })
     public Result product_getAll() {
         try {
-
-            // TODO udělat short variantu!
-
             // Kontrola objektu
             List<Model_Product> products = Model_Product.getByOwner(personId());
 

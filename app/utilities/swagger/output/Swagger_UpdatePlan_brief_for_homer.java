@@ -17,7 +17,7 @@ public class Swagger_UpdatePlan_brief_for_homer {
     // @JsonProperty public Enum_Update_type_of_update type_of_update;
 
     @JsonProperty
-    public List<UUID> hardware_ids = new ArrayList<>();       // Lze updatovat víc zařízení stejným frimwarem - Podpora do budocna když nebude třeba sledovat každý update zvlášť
+    public List<String> full_ids = new ArrayList<>();       // Lze updatovat víc zařízení stejným frimwarem - Podpora do budocna když nebude třeba sledovat každý update zvlášť
                                                                             // tracking_id pak nemá smysl a řídí se vše jen podle tracking_group_id.
 
     @JsonProperty

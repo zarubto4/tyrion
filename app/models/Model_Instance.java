@@ -222,9 +222,9 @@ public class Model_Instance extends TaggedModel {
     }
 
     @JsonIgnore
-    public List<String> getHardwareFullIds() throws _Base_Result_Exception  {
+    public List<UUID> getHardwareIds() throws _Base_Result_Exception  {
 
-        return current_snapshot().getHardwareFullIds();
+        return current_snapshot().getHardwareIds();
     }
 
     @JsonIgnore
@@ -457,7 +457,7 @@ public class Model_Instance extends TaggedModel {
 
     //-- Device IO operations -- //
     @JsonIgnore
-    public WS_Message_Instance_set_hardware set_device_to_instance(List<String> full_ids) {
+    public WS_Message_Instance_set_hardware set_device_to_instance(List<UUID> full_ids) {
         try {
 
             JsonNode json = this.write_with_confirmation(new WS_Message_Instance_set_hardware().make_request(full_ids), 1000*3, 0, 4);
@@ -489,7 +489,7 @@ public class Model_Instance extends TaggedModel {
     public WS_Message_Hardware_overview get_hardware_overview() {
         try {
 
-            ObjectNode json = this.write_with_confirmation( new WS_Message_Hardware_overview().make_request(this.getHardwareFullIds() ), 1000*5, 0, 1);
+            ObjectNode json = this.write_with_confirmation( new WS_Message_Hardware_overview().make_request(this.getHardwareIds() ), 1000*5, 0, 1);
 
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_overview.class, json);
 
@@ -540,7 +540,7 @@ public class Model_Instance extends TaggedModel {
             // Pokud je terminall null - nikdy se uživatel nepřihlásit a nevytvořil se o tom záznam - ale to stále neznamená že není možno povolit přístup
             if (terminal == null) {
 
-                System.out.println("terminal == null");
+                logger.trace("cloud_verification_token_GRID:: terminal == null");
                 // Najít c configuráku token
 
                 Swagger_InstanceSnapShotConfiguration settings = this.current_snapshot().settings();
@@ -579,31 +579,31 @@ public class Model_Instance extends TaggedModel {
                 switch (program.snapshot_settings) {
 
                     case PUBLIC: {
-                        System.out.println("Je to plnohodnotně public");
+
                         homer.send(help.get_result(true));
                         return;
                     }
 
                     case PROJECT: {
-                        System.out.println("Pouze pro registrované v projektu ale jekilož neexistuje přihlášení nelze připojit???");
+
                         homer.send(help.get_result(false));
                         return;
                     }
 
                     case TESTING:{
-                        System.out.println("Grid se snaží připojit na něco co není instancí!");
+
                         homer.send(help.get_result(false));
                         return;
                     }
 
                     default: {
-                        System.out.println("parameter.snapshot_settings() default parameter!! return FALSE");
+
                         homer.send(help.get_result(false));
                     }
                 }
             } else {
 
-                System.out.println("terminal != null");
+                logger.trace("cloud_verification_token_GRID:: terminal != null");
                 logger.debug("cloud_verification_token_GRID::  Person id:: {}", terminal.person.id);
                 logger.debug("cloud_verification_token_GRID::  Person mail:: {}", terminal.person.email);
                 logger.debug("cloud_verification_token_GRID::  Instance ID:: {} ", help.instance_id);
@@ -611,27 +611,27 @@ public class Model_Instance extends TaggedModel {
 
 
                 if (terminal.person == null) {
-                   System.out.println("Person is null");
+                   logger.trace("cloud_verification_token_GRID:: Person is null");
                    logger.debug("cloud_verification_token:: Grid_Terminal object has not own Person - its probably public - Trying to find Instance");
 
                    if ( Model_Instance.find.query().where().eq("id", help.instance_id).eq("actual_instance.version.public_version", true).findCount() > 0) {
-                       System.out.println("Permission found");
+                       logger.trace("cloud_verification_token_GRID:: Permission found");
                        homer.send(help.get_result(true));
                    } else {
-                       System.out.println("Permission not found");
+                       logger.trace("cloud_verification_token_GRID:: Permission not found");
                        homer.send(help.get_result(false));
                    }
 
                 } else {
-                    System.out.println("Person is not null!");
+                    logger.trace("cloud_verification_token_GRID:: Person is not null!");
                     logger.debug("cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
                     if ( Model_Instance.find.query().where().eq("id", help.instance_id)
                             .or(Expr.eq("b_program.project.participants.person.id", terminal.person.id), Expr.eq("actual_instance.version.public_version", true))
                             .findCount() > 0) {
-                        System.out.println("Permission found");
+                        logger.trace("cloud_verification_token_GRID:: Permission found");
                         homer.send(help.get_result(true));
                     } else {
-                        System.out.println("Permission not found");
+                        logger.trace("cloud_verification_token_GRID:: Permission not found");
                         homer.send(help.get_result(false));
                     }
                 }

@@ -19,10 +19,7 @@ import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
-import utilities.document_db.document_objects.DM_Board_BackupIncident;
-import utilities.document_db.document_objects.DM_Board_Bootloader_DefaultConfig;
-import utilities.document_db.document_objects.DM_Board_Connect;
-import utilities.document_db.document_objects.DM_Board_Disconnected;
+import utilities.document_db.document_objects.*;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.errors.Exceptions.*;
@@ -195,27 +192,19 @@ public class Model_Hardware extends TaggedModel {
 
                if(cache_harware_update_update_in_progress_bootloader_id != null) {
 
-               Model_HardwareUpdate plan_not_cached = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id).eq("firmware_type", FirmwareType.BOOTLOADER.name())
+               cache_harware_update_update_in_progress_bootloader_id = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
                        .disjunction()
-                       .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
-                       .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
-                       .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
-                       .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
-                       .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
-                       .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
+                           .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
+                           .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
+                           .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
+                           .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
+                           .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
+                           .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
                        .endJunction()
                        .eq("firmware_type", FirmwareType.BOOTLOADER)
-                       .le("actualization_procedure.date_of_planing", new Date())
-                       .order().desc("actualization_procedure.date_of_planing")
                        .select("id")
                        .setMaxRows(1)
-                       .findOne();
-
-
-               if (plan_not_cached != null) {
-                   cache_harware_update_update_in_progress_bootloader_id = plan_not_cached.getBootloader().id;
-               }
-
+                       .findSingleAttribute();
            }
 
            if(cache_harware_update_update_in_progress_bootloader_id == null) return null;
@@ -238,7 +227,7 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
-    @JsonProperty
+    @JsonProperty  @ApiModelProperty(value = "Optional. Only if the address is cached", required = false)
     public String ip_address() {
         try {
 
@@ -258,17 +247,22 @@ public class Model_Hardware extends TaggedModel {
     @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_Short_Reference dominant_project_active(){
-        if(dominant_entity) return null;
-        UUID uuid = Model_Project.find.query().where().eq("hardware.id", id).eq("dominant_entity", true).select("id").findSingleAttribute();
-        if(uuid == null) return null;
+        try {
+            if (dominant_entity) return null;
+            UUID uuid = Model_Project.find.query().where().eq("hardware.id", id).eq("dominant_entity", true).select("id").findSingleAttribute();
+            if (uuid == null) return null;
 
-        Model_Project project = Model_Project.getById(uuid);
-        Swagger_Short_Reference reference = new Swagger_Short_Reference(project.id, project.name, project.description);
-        return reference;
+            // Dont Cache IT!!!!!!!!!!!!!!
+            Model_Project project = Model_Project.getById(uuid);
+            return new Swagger_Short_Reference(project.id, project.name, project.description);
+        }catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty
-    @ApiModelProperty(required = false, readOnly = true)
+    @ApiModelProperty(value = "Optional. Only if we have Alert parameters", required = false, readOnly = true)
     public List<BoardAlert> alert_list() {
         try {
 
@@ -342,8 +336,15 @@ public class Model_Hardware extends TaggedModel {
     public Model_HomerServer server() { try { if (connected_server_id == null) return null; return Model_HomerServer.getById(connected_server_id); } catch (Exception e) {logger.internalServerError(e); return null;}}
 
     @JsonProperty @ApiModelProperty(value = "Can be null, if device is not in Instance")
-    public Model_Instance actual_instance() {
-        return get_instance();
+    public Swagger_Short_Reference actual_instance() {
+        try {
+            Model_Instance i = get_instance();
+            if(i == null) return null;
+            return new Swagger_Short_Reference(i.id, i.name, i.description);
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty
@@ -453,7 +454,7 @@ public class Model_Hardware extends TaggedModel {
                     // Začnu zjišťovat stav - v separátním vlákně!
                     new Thread(() -> {
                         try {
-                            write_without_confirmation(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(full_id)));
+                            device_online_synchronization_ask();
                         } catch (Exception e) {
                             logger.internalServerError(e);
                         }
@@ -771,7 +772,7 @@ public class Model_Hardware extends TaggedModel {
 
                     case WS_Message_Hardware_online_status.message_type: {
 
-                        Model_Hardware.device_online_synchronization(baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_online_status.class, json));
+                        Model_Hardware.device_online_synchronization_echo(baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_online_status.class, json));
                         return;
                     }
 
@@ -805,11 +806,31 @@ public class Model_Hardware extends TaggedModel {
                         return;
                     }
 
+                    case WS_Message_Hardware_uuid_converter.message_type: {
+
+                        Model_Hardware.convert_hardware_full_id_to_uuid(homer, baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_uuid_converter.class, json));
+                        return;
+                    }
+
+
+
                     // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
-                    case WS_Message_Hardware_set_settings.message_type     : {logger.warn("WS_Message_Hardware_set_settings: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Hardware_command_execute.message_type  : {logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Hardware_overview.message_type         : {logger.warn("WS_Message_Hardware_overview: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Hardware_change_server.message_type    : {logger.warn("WS_Message_Hardware_change_server: A message with a very high delay has arrived.");return;}
+                    case WS_Message_Hardware_set_settings.message_type: {
+                        logger.warn("WS_Message_Hardware_set_settings: A message with a very high delay has arrived.");
+                        return;
+                    }
+                    case WS_Message_Hardware_command_execute.message_type: {
+                        logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");
+                        return;
+                    }
+                    case WS_Message_Hardware_overview.message_type: {
+                        logger.warn("WS_Message_Hardware_overview: A message with a very high delay has arrived.");
+                        return;
+                    }
+                    case WS_Message_Hardware_change_server.message_type: {
+                        logger.warn("WS_Message_Hardware_change_server: A message with a very high delay has arrived.");
+                        return;
+                    }
 
                     default: {
 
@@ -824,6 +845,9 @@ public class Model_Hardware extends TaggedModel {
                     }
                 }
 
+            }catch (_Base_Result_Exception e) {
+                logger.error("Invalid incoming message");
+                // Nothing
             } catch (Exception e) {
                 if (!json.has("message_type")) {
                     homer.send(json.put("error_message", "Your message not contains message_type").put("error_code", 400));
@@ -836,21 +860,18 @@ public class Model_Hardware extends TaggedModel {
     }
 
     @JsonIgnore
-    public String get_full_id() {return full_id;}
+    public UUID get_id() {
+        return id;
+    }
 
     // Kontrola připojení - Echo o připojení
     @JsonIgnore
     public static void device_Connected(WS_Message_Hardware_connected help) {
         try {
 
-            logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.full_id);
+            logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.uuid);
 
-            Model_Hardware device = Model_Hardware.getByFullId(help.full_id);
-
-            if (device == null) {
-                logger.warn("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.full_id);
-                return;
-            }
+            Model_Hardware device = Model_Hardware.getById(help.uuid);
 
             // Aktualizuji cache status online HW
             cache_status.put(device.id, Boolean.TRUE);
@@ -874,7 +895,7 @@ public class Model_Hardware extends TaggedModel {
             }
 
             // Nastavím server_id - pokud nekoresponduje s tím, který má HW v databázi uložený
-            if (help.websocket_identificator != null && ( device.connected_server_id == null || !device.connected_server_id.equals(help.websocket_identificator))) {
+            if (help.websocket_identificator != null && (device.connected_server_id == null || !device.connected_server_id.equals(help.websocket_identificator))) {
                 logger.debug("master_device_Connected:: Changing server id property to {} ", help.websocket_identificator);
                 device.connected_server_id = help.websocket_identificator;
                 device.update();
@@ -886,6 +907,9 @@ public class Model_Hardware extends TaggedModel {
             // který by vyřešil zbytečné dotazování
             device.hardware_firmware_state_check();
 
+        } catch (_Base_Result_Exception e) {
+            logger.warn("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.uuid);
+            return;
         } catch (Exception e) {
             logger.internalServerError(e);
         }
@@ -897,14 +921,14 @@ public class Model_Hardware extends TaggedModel {
         try {
 
 
-            Model_Hardware device =  Model_Hardware.getByFullId(help.full_id);
+            Model_Hardware device =  Model_Hardware.getById(help.uuid);
 
             if (device == null) {
-                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.full_id);
+                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.uuid);
                 return;
             }
 
-            logger.debug("master_device_Disconnected:: Updating device status " +  help.full_id + " on offline ");
+            logger.debug("master_device_Disconnected:: Updating device status " +  help.uuid + " on offline ");
 
             // CHACHE OFFLINE
             cache_status.put(device.id, Boolean.FALSE);
@@ -939,12 +963,12 @@ public class Model_Hardware extends TaggedModel {
     public static void device_auto_backup_start_echo(WS_Message_Hardware_autobackup_making help) {
         try {
 
-            logger.debug("device_auto_backup_echo:: Device send Echo about making backup on device ID:: {} ", help.full_id);
+            logger.debug("device_auto_backup_echo:: Device send Echo about making backup on device ID:: {} ", help.uuid);
 
-            Model_Hardware device = Model_Hardware.getByFullId(help.full_id);
+            Model_Hardware device = Model_Hardware.getById(help.uuid);
 
             if (device == null) {
-                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.full_id);
+                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.uuid);
                 return;
             }
 
@@ -961,16 +985,16 @@ public class Model_Hardware extends TaggedModel {
     public static void device_auto_backup_done_echo(WS_Message_Hardware_autobackup_made help) {
         try {
 
-            logger.debug("device_auto_backup_done_echo:: Device send Echo about backup done on device ID:: {} ", help.full_id);
+            logger.debug("device_auto_backup_done_echo:: Device send Echo about backup done on device ID:: {} ", help.uuid);
 
-            Model_Hardware device = Model_Hardware.getByFullId(help.full_id);
+            Model_Hardware device = Model_Hardware.getById(help.uuid);
 
             if (device == null) {
-                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.full_id);
+                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.uuid);
                 return;
             }
-            Model_CProgramVersion c_program_version = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", help.build_id).select("id").findOne();
-            if (c_program_version == null) throw new Exception("Firmware with build ID = " + help.build_id + " was not found in the database!");
+            Model_CProgramVersion c_program_version = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", help.uuid).select("id").findOne();
+            if (c_program_version == null) throw new Exception("Firmware with build ID = " + help.uuid + " was not found in the database!");
 
             device.actual_backup_c_program_version = c_program_version;
             device.update();
@@ -983,17 +1007,18 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
+
     // žádost void o synchronizaci online stavu
     @JsonIgnore
-    public static void device_online_synchronization(WS_Message_Hardware_online_status report) {
+    public static void device_online_synchronization_echo(WS_Message_Hardware_online_status report) {
         try {
 
             for (WS_Message_Hardware_online_status.DeviceStatus status : report.hardware_list) {
 
-                cache_status.put(status.hardware_id, status.online_status);
+                cache_status.put(status.uuid, status.online_status);
 
                 // Odešlu echo pomocí websocketu do becki
-                Model_Hardware device = getById(status.hardware_id);
+                Model_Hardware device = getById(status.uuid);
 
                 WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, status.online_status, device.project().id);
             }
@@ -1006,6 +1031,7 @@ public class Model_Hardware extends TaggedModel {
 
     @JsonIgnore
     public static void check_mqtt_hardware_connection_validation(WS_Homer homer, WS_Message_Hardware_validation_request request) {
+
         try {
 
             logger.debug("check_mqtt_hardware_connection_validation: {} ", Json.toJson(request) );
@@ -1013,7 +1039,7 @@ public class Model_Hardware extends TaggedModel {
 
             if(board == null) {
                 logger.debug("Device has not any active or dominant entity in local database");
-                homer.send(request.get_result(false));
+                homer.send(request.get_result(false, null));
                 return;
             }
 
@@ -1021,23 +1047,46 @@ public class Model_Hardware extends TaggedModel {
             logger.debug("check_mqtt_hardware_connection_validation: Device is not null - HW name {} . Pass from Tyrion: {} Name from Tyrion: {} ", board.name, board.mqtt_password, board.mqtt_username);
 
 
+
             if (BCrypt.checkpw(request.password, board.mqtt_password) && BCrypt.checkpw(request.user_name, board.mqtt_username)) {
-                homer.send(request.get_result(true));
+                homer.send(request.get_result(true,  board.id));
             } else {
-                homer.send(request.get_result(false));
+                homer.send(request.get_result(false,  board.id));
             }
 
         } catch (Exception e) {
 
             if(Server.mode == ServerMode.DEVELOPER) {
                 logger.error("check_mqtt_hardware_connection_validation:: Device has not right permission to connect. But this is Dev version of Tyrion. So its allowed.");
-                homer.send(request.get_result(true));
+                homer.send(request.get_result(true, null));
                 return;
             }
 
             logger.internalServerError(e);
-            homer.send(request.get_result(false));
+            homer.send(request.get_result(false, null));
         }
+    }
+
+    @JsonIgnore
+    public static void convert_hardware_full_id_to_uuid(WS_Homer homer, WS_Message_Hardware_uuid_converter request) {
+        try {
+
+            logger.debug("convert_hardware_full_id_to_uuid:: Incomimng Request for Transformation:: ", Json.toJson(request));
+            Model_Hardware board = Model_Hardware.getByFullId(request.full_id);
+
+            if(board == null){
+                logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found!");
+                homer.send(request.get_result_error());
+                return;
+            }
+
+            logger.debug("convert_hardware_full_id_to_uuid:: Device found - Return Success");
+            homer.send(request.get_result(board.id));
+
+        }catch (Exception e){
+            logger.internalServerError(e);
+        }
+
     }
 
     @JsonIgnore
@@ -1046,9 +1095,9 @@ public class Model_Hardware extends TaggedModel {
 
             UUID project_id = null;
 
-            for (String full_id : request.full_ids) {
+            for (UUID id : request.uuid_ids) {
 
-                Model_Hardware board =  Model_Hardware.getByFullId(full_id);
+                Model_Hardware board =  Model_Hardware.getById(id);
                 if (board == null) {
                     homer.send(request.get_result(false));
                     return;
@@ -1174,7 +1223,7 @@ public class Model_Hardware extends TaggedModel {
     //-- Online State Hardware  --//
     @JsonIgnore @Transient public WS_Message_Hardware_online_status get_devices_online_state() {
 
-        JsonNode node = write_with_confirmation(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(this.full_id)), 1000 * 5, 0, 2);
+        JsonNode node = write_with_confirmation(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(this.id)), 1000 * 5, 0, 2);
         return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_online_status.class, node);
 
     }
@@ -1182,12 +1231,28 @@ public class Model_Hardware extends TaggedModel {
     //-- Over View Hardware  --//
     @JsonIgnore
     public WS_Message_Hardware_overview_Board get_devices_overview() {
-        JsonNode node = write_with_confirmation(new WS_Message_Hardware_overview().make_request(Collections.singletonList(this.full_id)), 1000 * 5, 0, 2);
+        JsonNode node = write_with_confirmation(new WS_Message_Hardware_overview().make_request(Collections.singletonList(this.id)), 1000 * 5, 0, 2);
         WS_Message_Hardware_overview overview = baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_overview.class, node);
-        return overview.get_device_from_list(this.full_id);
+        return overview.get_device_from_list(this.id);
     }
 
+    @JsonIgnore
+    public void device_online_synchronization_ask() {
+        try {
 
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(id)), 1000 * 5, 0, 2);
+            WS_Message_Hardware_online_status status = baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_online_status.class, node);
+
+            if(status.status.equals("error")) {
+                logger.warn("device_online_synchronization_ask: Status Error", node);
+            }else {
+                device_online_synchronization_echo(status);
+            }
+
+        }catch (Exception e){
+            logger.internalServerError(e);
+        }
+    }
 
     // Change Hardware Alias  --//GRID Apps
     @JsonIgnore
@@ -1281,7 +1346,7 @@ public class Model_Hardware extends TaggedModel {
                     if (field.getType().getSimpleName().toLowerCase().equals(Integer.class.getSimpleName().toLowerCase())) {
 
                         try {
-                            System.out.println("Jaká je integer value:: " + help.integer_value);
+
                             field.set(configuration, help.integer_value);
                             this.update_bootloader_configuration(configuration);
 
@@ -1300,13 +1365,13 @@ public class Model_Hardware extends TaggedModel {
     //-- ADD or Remove // Change Server --//
     @JsonIgnore
     public void device_relocate_server(Model_HomerServer future_server) {
-        JsonNode node = write_with_confirmation(new WS_Message_Hardware_change_server().make_request(future_server, Collections.singletonList(this.full_id)), 1000 * 5, 0, 2);
+        JsonNode node = write_with_confirmation(new WS_Message_Hardware_change_server().make_request(future_server, Collections.singletonList(this.id)), 1000 * 5, 0, 2);
     }
 
     @JsonIgnore
     public WS_Message_Hardware_change_server device_relocate_server(String mqtt_host, String mqtt_port) {
         try {
-            JsonNode node = write_with_confirmation( new WS_Message_Hardware_change_server().make_request(mqtt_host, mqtt_port, Collections.singletonList(this.full_id)), 1000 * 5, 0, 2);
+            JsonNode node = write_with_confirmation( new WS_Message_Hardware_change_server().make_request(mqtt_host, mqtt_port, Collections.singletonList(this.id)), 1000 * 5, 0, 2);
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_change_server.class, node);
 
         } catch (Exception e) {
@@ -1315,6 +1380,29 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
+    @JsonIgnore
+    public WS_Message_Hardware_uuid_converter_cleaner device_converted_id_clean_remove_from_server() {
+        try {
+            JsonNode node = write_with_confirmation( new WS_Message_Hardware_uuid_converter_cleaner().make_request(null, this.id, this.full_id), 1000 * 5, 0, 2);
+            return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_uuid_converter_cleaner.class, node);
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new WS_Message_Hardware_uuid_converter_cleaner();
+        }
+    }
+
+    @JsonIgnore
+    public WS_Message_Hardware_uuid_converter_cleaner device_converted_id_clean_switch_on_server(UUID old_id) {
+        try {
+            JsonNode node = write_with_confirmation( new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.id, old_id, this.full_id), 1000 * 5, 0, 2);
+            return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_uuid_converter_cleaner.class, node);
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new WS_Message_Hardware_uuid_converter_cleaner();
+        }
+    }
 
 
     //-- Set AutoBackup  --//
@@ -1368,20 +1456,20 @@ public class Model_Hardware extends TaggedModel {
         logger.debug("execute_update_plan - start execution of plan: {}", plan.id );
         logger.debug("execute_update_plan - actual state: {} ", plan.state.name());
 
-        if (plan.actualization_procedure.state == Enum_Update_group_procedure_state.complete || plan.actualization_procedure.state == Enum_Update_group_procedure_state.successful_complete ) {
-            logger.debug("execute_update_plan - procedure: {} is done (successful_complete or complete) -> return", plan.actualization_procedure.id);
+        if (plan.getActualizationProcedure().state == Enum_Update_group_procedure_state.COMPLETE || plan.getActualizationProcedure().state == Enum_Update_group_procedure_state.SUCCESSFULLY_COMPLETE ) {
+            logger.debug("execute_update_plan - procedure: {} is done (successful_complete or complete) -> return", plan.getActualizationProcedureId());
             return;
         }
 
-        if (plan.actualization_procedure.updates.isEmpty()) {
-            plan.actualization_procedure.state = Enum_Update_group_procedure_state.complete_with_error;
-            plan.actualization_procedure.update();
-            logger.debug("execute_update_plan - procedure: {} is empty -> return" , plan.actualization_procedure.id);
+        if (plan.getActualizationProcedure().getUpdates().isEmpty()) {
+            plan.getActualizationProcedure().state = Enum_Update_group_procedure_state.COMPLETE_WITH_ERROR;
+            plan.getActualizationProcedure().update();
+            logger.debug("execute_update_plan - procedure: {} is empty -> return" , plan.getActualizationProcedureId());
             return;
         }
 
-        plan.actualization_procedure.state = Enum_Update_group_procedure_state.in_progress;
-        plan.actualization_procedure.update();
+        plan.getActualizationProcedure().state = Enum_Update_group_procedure_state.IN_PROGRESS;
+        plan.getActualizationProcedure().update();
 
         try {
 
@@ -1390,7 +1478,7 @@ public class Model_Hardware extends TaggedModel {
                 plan.error = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message();
                 plan.error_code = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code();
                 plan.update();
-                logger.warn("execute_update_plan - Procedure id:: {} plan {} CProgramUpdatePlan:: Error:: {} Message:: {} Continue Cycle. " , plan.actualization_procedure.id , plan.id, ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code() , ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message());
+                logger.warn("execute_update_plan - Procedure id:: {} plan {} CProgramUpdatePlan:: Error:: {} Message:: {} Continue Cycle. " , plan.getActualizationProcedureId() , plan.id, ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code() , ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message());
                 return;
             }
 
@@ -1401,7 +1489,7 @@ public class Model_Hardware extends TaggedModel {
             }
 
             if (Model_HomerServer.getById(plan.getHardware().connected_server_id).online_state() != NetworkStatus.ONLINE) {
-                logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", plan.actualization_procedure.id , plan.id, Model_HomerServer.getById(plan.getHardware().connected_server_id).name);
+                logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", plan.getActualizationProcedureId() , plan.id, Model_HomerServer.getById(plan.getHardware().connected_server_id).name);
                 plan.state = HardwareUpdateState.HOMER_SERVER_IS_OFFLINE;
                 plan.update();
                 return;
@@ -1427,19 +1515,19 @@ public class Model_Hardware extends TaggedModel {
         logger.debug("execute_update_procedure - start execution of procedure: {}", procedure.id );
         logger.debug("execute_update_procedure - actual state: {} ", procedure.state.name());
 
-        if (procedure.state == Enum_Update_group_procedure_state.complete || procedure.state == Enum_Update_group_procedure_state.successful_complete ) {
+        if (procedure.state == Enum_Update_group_procedure_state.COMPLETE || procedure.state == Enum_Update_group_procedure_state.SUCCESSFULLY_COMPLETE ) {
             logger.debug("execute_update_procedure - procedure: {} is done (successful_complete or complete) -> return", procedure.id);
             return;
         }
 
-        if (procedure.updates.isEmpty()) {
-            procedure.state = Enum_Update_group_procedure_state.complete_with_error;
+        if (procedure.getUpdates().isEmpty()) {
+            procedure.state = Enum_Update_group_procedure_state.COMPLETE_WITH_ERROR;
             procedure.update();
             logger.debug("execute_update_procedure - procedure: {} is empty -> return" , procedure.id);
             return;
         }
 
-        procedure.state = Enum_Update_group_procedure_state.in_progress;
+        procedure.state = Enum_Update_group_procedure_state.IN_PROGRESS;
         procedure.update();
 
         List<Model_HardwareUpdate> plans = Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", procedure.id)
@@ -2005,8 +2093,9 @@ public class Model_Hardware extends TaggedModel {
 
             // když je autobackup tak sere pes - změna autobacku je rovnou z devicu
             if (backup_mode) {
-                logger.trace("check_backup - autobacku is true change parameters not allowed!");
-                // Ale mohl bych udělat áznam o tom co tam je - kdyby to nebylo stejné s tím co si myslí tyrion že tam je:
+                logger.trace("check_backup - autobackup is true change parameters not allowed!");
+
+                // Ale mohl bych udělat záznam o tom co tam je - kdyby to nebylo stejné s tím co si myslí tyrion že tam je:
 
                 if (overview.binaries.backup != null && (overview.binaries.backup.build_id == null || !overview.binaries.backup.build_id.equals(""))) {
                     Model_CProgramVersion version_not_cached = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findOne();
@@ -2117,7 +2206,7 @@ public class Model_Hardware extends TaggedModel {
                         plan.state = HardwareUpdateState.NOT_YET_STARTED;
                         plan.count_of_tries++;
                         plan.update();
-                        execute_update_procedure(plan.actualization_procedure);
+                        execute_update_procedure(plan.getActualizationProcedure());
                     }
 
                 } else {
@@ -2127,7 +2216,7 @@ public class Model_Hardware extends TaggedModel {
                     plan.count_of_tries++;
                     plan.update();
 
-                    execute_update_procedure(plan.actualization_procedure);
+                    execute_update_procedure(plan.getActualizationProcedure());
                 }
                 return;
             }
@@ -2208,7 +2297,7 @@ public class Model_Hardware extends TaggedModel {
                     plan.state = HardwareUpdateState.NOT_YET_STARTED;
                     plan.count_of_tries++;
                     plan.update();
-                    execute_update_procedure(plan.actualization_procedure);
+                    execute_update_procedure(plan.getActualizationProcedure());
                 }
 
             } else {
@@ -2218,7 +2307,7 @@ public class Model_Hardware extends TaggedModel {
                 plan.count_of_tries++;
                 plan.update();
 
-                execute_update_procedure(plan.actualization_procedure);
+                execute_update_procedure(plan.getActualizationProcedure());
             }
 
             return;
@@ -2271,8 +2360,8 @@ public class Model_Hardware extends TaggedModel {
         }
 
         Model_UpdateProcedure procedure = new Model_UpdateProcedure();
-        procedure.project_id = board_for_update.get(0).hardware.project().id;
-        procedure.state = Enum_Update_group_procedure_state.not_start_yet;
+        procedure.project_id = board_for_update.get(0).hardware.project_id();
+        procedure.state = Enum_Update_group_procedure_state.NOT_START_YET;
         procedure.type_of_update = type_of_update;
 
         procedure.save();
@@ -2509,6 +2598,16 @@ public class Model_Hardware extends TaggedModel {
         new Thread(() -> {
             try {
                 Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Disconnected.make_request(this.id), null, true);
+            } catch (DocumentClientException e) {
+                logger.internalServerError(e);
+            }
+        }).start();
+    }
+
+    public void make_log_deactivated() {
+        new Thread(() -> {
+            try {
+                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Dactivated.make_request(this.id), null, true);
             } catch (DocumentClientException e) {
                 logger.internalServerError(e);
             }
@@ -2760,11 +2859,11 @@ public class Model_Hardware extends TaggedModel {
 
 
         if (id == null){
-            logger.debug("getByFullId: {} Database ID is null");
-            return  null;
+            logger.debug("getByFullId: {} Database ID is null", fullId);
+            return null;
         }
 
-        logger.trace("getByFullId: {} Database ID {}", id.toString());
+        logger.trace("getByFullId: {} Database ID {}", fullId, id.toString());
         return getById(id);
     }
 

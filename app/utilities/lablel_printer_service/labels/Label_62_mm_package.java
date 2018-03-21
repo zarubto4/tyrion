@@ -175,9 +175,9 @@ public class Label_62_mm_package {
 
 
             SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
-            System.out.println("časový formát:: " + board.created);
+
             Long long_created = Long.parseLong(board.created);
-            System.out.println("časový formát long_created:: " + long_created);
+
             Date date_c = new Date(long_created);
             String date = DATE_FORMAT.format(date_c);
 

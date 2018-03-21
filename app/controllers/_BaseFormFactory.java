@@ -142,7 +142,6 @@ public class _BaseFormFactory extends FormFactory {
             }
 
             throw new Result_Error_InvalidBody(bind.errorsAsJson());
-
         }
 
         return bind.get();

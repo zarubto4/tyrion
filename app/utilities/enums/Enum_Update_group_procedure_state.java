@@ -10,31 +10,31 @@ public enum Enum_Update_group_procedure_state {
 
     // Stav kdy je procedura považována za trvale ukončenou!
     @ApiModelProperty(value = " State where all inner procedures was absolutely successful" )
-    @EnumValue("successful_complete")
-    successful_complete,
+    @EnumValue("SUCCESSFULLY_COMPLETE")
+    SUCCESSFULLY_COMPLETE,
 
     // Stav kdy je procedura považována za trvale ukončenou!
     @ApiModelProperty(value = " State where all inner procedures was successfully OR overwritten with newer version" )
-    @EnumValue("complete")
-    complete,
+    @EnumValue("COMPLETE")
+    COMPLETE,
 
     @ApiModelProperty(value = " State like \"complete\" but some update plans had Error" )
-    @EnumValue("complete_with_error")
-    complete_with_error,
+    @EnumValue("COMPLETE_WITH_ERROR")
+    COMPLETE_WITH_ERROR,
 
     // Stav kdy je procedura považována za trvale ukončenou!
     @ApiModelProperty(value = " State where user canceled procedure, but remember that some update plans might be already made (had some state) " )
-    @EnumValue("canceled")
-    canceled,
+    @EnumValue("CANCELED")
+    CANCELED,
 
     // Proces probíhá - němělo by do něj být zasahováno!
     @ApiModelProperty(value = " State where procedure is in progress")
-    @EnumValue("in_progress")
-    in_progress,
+    @EnumValue("IN_PROGRESS")
+    IN_PROGRESS,
 
     //Proces ještě nezačal!!!
     @ApiModelProperty(value = " State where procedure is in progress")
-    @EnumValue("not_start_yet")
-    not_start_yet,
+    @EnumValue("NOT_START_YET")
+    NOT_START_YET,
 
 }

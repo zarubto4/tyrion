@@ -39,7 +39,7 @@ public class DigitalOceanTyrionService {
 
     @Inject public static _BaseFormFactory baseFormFactory; // Its Required to set this in Server.class Component
     @Inject public static Config configuration; // Its Required to set this in Server.class Component
-    public static  DigitalOcean apiClient = new DigitalOceanClient( "42b67cd7450e5301121fb85f34d6ce39f86f7665c496e9f324c8b0dcb0ff3cfa");
+    public static  DigitalOcean apiClient = new DigitalOceanClient( "2521a027f6120a471fa1187060cc56b58e6a42dbd3e56406606488d9e2d7c07f");
 
     /**
      * Holds person connection tokens and ids
@@ -64,7 +64,7 @@ public class DigitalOceanTyrionService {
             logger.trace("create_server::     Image Slug: " + snapshot.getSlug());
             logger.trace("create_server::     Image id:   " + snapshot.getId());
 
-            if(snapshot.getName().equals("homer-server-default-defaut-image")) {
+            if(snapshot.getName().equals("homer-server-default-image")) {
                 logger.trace("create_server::  Done! We found required snapshot!");
                 target_snapshot = snapshot;
                 break;
@@ -132,13 +132,8 @@ public class DigitalOceanTyrionService {
         newDroplet.setEnableIpv6(Boolean.TRUE);
         newDroplet.setEnablePrivateNetworking(Boolean.FALSE);
 
-        Random random = new Random();
-        List<Key> keys = new ArrayList<Key>();
-        keys.add(new Key(abs(random.nextInt())));
-        keys.add(new Key(abs(random.nextInt())));
-        newDroplet.setKeys(keys);
-
         logger.trace("create_server::Time to add Tags");
+
         // Add Tags
         List<String> tags = new ArrayList<>();
         tags.add(homer_server.id.toString());
@@ -204,13 +199,35 @@ public class DigitalOceanTyrionService {
                 logger.trace("check_status::    Server URL:    " + network.getIpAddress());
             }
         }
-
     }
 
-    public static void shutdownServer(Model_HomerServer homerServer) throws RequestUnsuccessfulException, DigitalOceanException {
+    public static void powerOff(Model_HomerServer homerServer) throws RequestUnsuccessfulException, DigitalOceanException {
+        Swagger_ExternalService service = homerServer.external_settings();
+        if(service != null) {
+            apiClient.powerOffDroplet(service.blue_ocean_config.id);
+        }
+    }
 
-        Integer droplet_id = 321415263; // TODO get from Homer_Server Config!
-        apiClient.shutdownDroplet(droplet_id);
+
+    public static void powerOn(Model_HomerServer homerServer) throws RequestUnsuccessfulException, DigitalOceanException {
+        Swagger_ExternalService service = homerServer.external_settings();
+        if(service != null) {
+            apiClient.powerOnDroplet( service.blue_ocean_config.id);
+        }
+    }
+
+    public static void restartServer(Model_HomerServer homerServer) throws RequestUnsuccessfulException, DigitalOceanException {
+        Swagger_ExternalService service = homerServer.external_settings();
+        if(service != null) {
+            apiClient.rebootDroplet( service.blue_ocean_config.id);
+        }
+    }
+
+    public static void remove(Model_HomerServer homerServer) throws RequestUnsuccessfulException, DigitalOceanException {
+        Swagger_ExternalService service = homerServer.external_settings();
+        if(service != null) {
+            apiClient.deleteDroplet(service.blue_ocean_config.id);
+        }
     }
 
 
@@ -245,7 +262,8 @@ public class DigitalOceanTyrionService {
             logger.trace("get_data::     Price Hourly:  " + size.getPriceHourly());
             logger.trace("get_data::     Price Monthly: " + size.getPriceMonthly());
             logger.trace("get_data::     Memory Size:   " + size.getMemorySizeInMb());
-            logger.trace("get_data::     Disk Size:     " + size.getVirutalCpuCount());
+            logger.trace("get_data::     Processors:    " + size.getVirutalCpuCount());
+            logger.trace("get_data::     Disk Size:     " + size.getDiskSize());
 
             Swagger_ServerRegistration_FormData_ServerSize server_size = new Swagger_ServerRegistration_FormData_ServerSize();
             server_size.slug = size.getSlug();
