@@ -257,12 +257,21 @@ public class Model_Notification extends BaseModel {
                 break;
             }
 
-            case "ActualizationProcedure" : {
+            case "UpdateProcedure" : {
                 Model_UpdateProcedure actualizationProcedure = (Model_UpdateProcedure) object;
                 element.name = class_name;
                 element.text = actualizationProcedure.id.toString().substring(0,12);
                 element.id = actualizationProcedure.id;
                 element.project_id = actualizationProcedure.get_project_id();
+                break;
+            }
+
+            case "HardwareUpdate" : {
+                Model_HardwareUpdate hardwareUpdate = (Model_HardwareUpdate) object;
+                element.name = class_name;
+                element.text = hardwareUpdate.id.toString().substring(0,12);
+                element.id = hardwareUpdate.id;
+                element.project_id = hardwareUpdate.getActualizationProcedure().get_project_id();
                 break;
             }
 

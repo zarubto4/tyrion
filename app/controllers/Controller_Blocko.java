@@ -844,6 +844,8 @@ public class Controller_Blocko extends _BaseController {
             // TODO do something with help.interfaces (update hardware, save it somewhere, tell homer which hw is in instance)
 
             Model_InstanceSnapshot snapshot = new Model_InstanceSnapshot();
+            snapshot.name = help.name;
+            snapshot.description = help.description;
             snapshot.b_program_version = version;
             snapshot.instance = instance;
             snapshot.program = Model_Blob.upload(help.snapshot, "snapshot.json", snapshot.get_path() );
@@ -855,6 +857,57 @@ public class Controller_Blocko extends _BaseController {
             return controllerServerError(e);
         }
     }
+
+
+    @ApiOperation(value = "edit InstanceSnapshot",
+            tags = {"Instance"},
+            notes = "", //TODO
+            produces = "application/json",
+            consumes = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_NameAndDescription",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Successfully updated",      response = Model_InstanceSnapshot.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result instanceSnapshot_udpate(UUID snapshot_id) {
+        try {
+
+            // Get and Validate Object
+            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+
+            // Kontrola objektu
+            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
+
+            snapshot.name = help.name;
+            snapshot.description = help.description;
+            snapshot.update();
+
+            return ok(snapshot.json());
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+
+
 
     @ApiOperation(value = "get InstanceSnapshot",
             tags = {"Instance"},

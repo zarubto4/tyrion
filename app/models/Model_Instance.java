@@ -53,11 +53,23 @@ public class Model_Instance extends TaggedModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BProgram b_program; // Only first reference!
 
-    @OneToMany(mappedBy = "instance", cascade = CascadeType.ALL) @OrderBy("created DESC")
-    public List<Model_InstanceSnapshot> snapshots = new ArrayList<>();
+    @OneToMany(mappedBy = "instance", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_InstanceSnapshot> snapshots = new ArrayList<>();
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
+
+
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<Model_InstanceSnapshot> snapshots(){
+        try {
+
+            return getSnapShots();
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_Short_Reference b_program(){
@@ -95,7 +107,6 @@ public class Model_Instance extends TaggedModel {
         }
         return null;
     }
-
 
     @JsonProperty @ApiModelProperty(required = true)
     public NetworkStatus online_state() {
@@ -237,6 +248,37 @@ public class Model_Instance extends TaggedModel {
         return cache().get(Model_HomerServer.class);
 
     }
+
+
+    @JsonIgnore
+    public List<UUID> getSnapShotsIds() throws _Base_Result_Exception  {
+
+        if (cache().gets(Model_InstanceSnapshot.class) == null) {
+            cache().add(Model_InstanceSnapshot.class,  Model_InstanceSnapshot.find.query().where().eq("instance.id", id).order().desc("created").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_InstanceSnapshot.class);
+
+    }
+
+    @JsonIgnore
+    public List<Model_InstanceSnapshot> getSnapShots() throws _Base_Result_Exception {
+        try {
+
+            List<Model_InstanceSnapshot> list = new ArrayList<>();
+
+            for (UUID id : getSnapShotsIds() ) {
+                list.add(Model_InstanceSnapshot.getById(id));
+            }
+
+            return list;
+
+        }catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
 
     @JsonIgnore
     public Model_HomerServer getHomerServer() {

@@ -562,6 +562,9 @@ create table instancesnapshot (
   created                       timestamptz,
   updated                       timestamptz,
   removed                       timestamptz,
+  name                          varchar(255),
+  description                   TEXT,
+  author_id                     uuid,
   deployed                      timestamptz,
   stopped                       timestamptz,
   instance_id                   uuid,
@@ -571,6 +574,12 @@ create table instancesnapshot (
   deleted                       boolean default false not null,
   constraint uq_instancesnapshot_program_id unique (program_id),
   constraint pk_instancesnapshot primary key (id)
+);
+
+create table instancesnapshot_tag (
+  instance_snapshot_id          uuid not null,
+  tag_id                        uuid not null,
+  constraint pk_instancesnapshot_tag primary key (instance_snapshot_id,tag_id)
 );
 
 create table invitation (
@@ -1274,6 +1283,12 @@ create index ix_instancesnapshot_b_program_version_id on instancesnapshot (b_pro
 
 alter table instancesnapshot add constraint fk_instancesnapshot_program_id foreign key (program_id) references blob (id) on delete restrict on update restrict;
 
+alter table instancesnapshot_tag add constraint fk_instancesnapshot_tag_instancesnapshot foreign key (instance_snapshot_id) references instancesnapshot (id) on delete restrict on update restrict;
+create index ix_instancesnapshot_tag_instancesnapshot on instancesnapshot_tag (instance_snapshot_id);
+
+alter table instancesnapshot_tag add constraint fk_instancesnapshot_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
+create index ix_instancesnapshot_tag_tag on instancesnapshot_tag (tag_id);
+
 alter table invitation add constraint fk_invitation_owner_id foreign key (owner_id) references person (id) on delete restrict on update restrict;
 create index ix_invitation_owner_id on invitation (owner_id);
 
@@ -1603,6 +1618,12 @@ drop index if exists ix_instancesnapshot_b_program_version_id;
 
 alter table if exists instancesnapshot drop constraint if exists fk_instancesnapshot_program_id;
 
+alter table if exists instancesnapshot_tag drop constraint if exists fk_instancesnapshot_tag_instancesnapshot;
+drop index if exists ix_instancesnapshot_tag_instancesnapshot;
+
+alter table if exists instancesnapshot_tag drop constraint if exists fk_instancesnapshot_tag_tag;
+drop index if exists ix_instancesnapshot_tag_tag;
+
 alter table if exists invitation drop constraint if exists fk_invitation_owner_id;
 drop index if exists ix_invitation_owner_id;
 
@@ -1790,6 +1811,8 @@ drop table if exists instance cascade;
 drop table if exists instance_tag cascade;
 
 drop table if exists instancesnapshot cascade;
+
+drop table if exists instancesnapshot_tag cascade;
 
 drop table if exists invitation cascade;
 

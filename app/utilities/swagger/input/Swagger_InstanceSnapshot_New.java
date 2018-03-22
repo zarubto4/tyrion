@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @ApiModel(value = "InstanceSnapshot_New")
-public class Swagger_InstanceSnapshot_New {
+public class Swagger_InstanceSnapshot_New extends Swagger_NameAndDescription{
 
     @Constraints.Required
     public UUID instance_id;

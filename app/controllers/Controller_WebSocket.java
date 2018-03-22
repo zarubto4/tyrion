@@ -224,7 +224,14 @@ public class Controller_WebSocket extends _BaseController {
 
                 logger.trace("portal - incoming connection: {}", token);
 
-                Model_Person person = Model_Person.getById(tokenCache.get(token));
+                UUID user_token = tokenCache.get(token);
+                if(user_token == null) {
+                    logger.warn("portal - incoming connection: {} not recognized and pair with Person. ", token);
+                    return CompletableFuture.completedFuture(F.Either.Left(forbidden("Token not found!")));
+                }
+
+
+                Model_Person person = Model_Person.getById(user_token);
 
                 if (sameOriginCheck(request)) {
 

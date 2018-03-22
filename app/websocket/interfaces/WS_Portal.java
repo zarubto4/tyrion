@@ -129,7 +129,8 @@ public class WS_Portal {
 
             logger.trace("becki_subscribe_notification:: Subscribe Token: {}", subscribe_notifications.single_connection_token);
             logger.trace("becki_subscribe_notification:: All In Map Token size: {}", this.all_person_connections.size());
-                    ws.notification_subscriber = true;
+
+            ws.notification_subscriber = true;
 
             Model_Project.becki_person_id_subscribe(person_id);
 
@@ -147,6 +148,7 @@ public class WS_Portal {
             WS_Message_UnSubscribe_Notifications un_subscribe_notifications = baseFormFactory.formFromJsonWithValidation(ws, WS_Message_UnSubscribe_Notifications.class, json);
 
             logger.trace("becki_subscribe_notification:: UNSubscribe Token: {}", un_subscribe_notifications.single_connection_token);
+
             ws.notification_subscriber = false;
 
             Model_Project.becki_person_id_unsubscribe(person_id);

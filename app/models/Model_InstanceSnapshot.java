@@ -21,6 +21,7 @@ import utilities.enums.*;
 import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.model.TaggedModel;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.input.Swagger_GridWidgetVersion_GridApp_source;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfiguration;
@@ -45,7 +46,7 @@ import java.util.UUID;
 @Entity
 @ApiModel(value = "InstanceSnapshot", description = "Model of InstanceSnapshot")
 @Table(name="InstanceSnapshot")
-public class Model_InstanceSnapshot extends BaseModel {
+public class Model_InstanceSnapshot extends TaggedModel {
 
     /**
      * _BaseFormFactory
@@ -66,7 +67,7 @@ public class Model_InstanceSnapshot extends BaseModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Instance instance;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BProgramVersion b_program_version;
-    @JsonIgnore @OneToOne  public Model_Blob program;
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)  public Model_Blob program;
     @JsonIgnore @OneToMany(fetch = FetchType.LAZY) public List<Model_UpdateProcedure> procedures = new ArrayList<>();
 
     /**

@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @ApiModel(description = "",
         value = "Instance_New")
-public class Swagger_Instance_New extends Swagger_NameAndDesc_ProjectIdRequired{
+public class Swagger_Instance_New extends Swagger_NameAndDesc_ProjectIdRequired {
 
     @ApiModelProperty(required = true) @Constraints.Required public UUID b_program_id;
     @ApiModelProperty(required = true) @Constraints.Required public UUID main_server_id;
