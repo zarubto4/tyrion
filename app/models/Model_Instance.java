@@ -127,7 +127,7 @@ public class Model_Instance extends TaggedModel {
         // který následně vrací latest know online
         try {
 
-            if ((Model_HomerServer.getById(server_id()) != null) && Model_HomerServer.getById(server_id()).online_state() == NetworkStatus.ONLINE) {
+            if ((Model_HomerServer.getById(getServer_id()) != null) && Model_HomerServer.getById(getServer_id()).online_state() == NetworkStatus.ONLINE) {
 
                 if (cache_status.containsKey(id)) {
                     return cache_status.get(id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
@@ -165,7 +165,7 @@ public class Model_Instance extends TaggedModel {
 
     @JsonProperty @ApiModelProperty(required = true)
     public NetworkStatus server_online_state() throws _Base_Result_Exception  {
-        return Model_HomerServer.getById(server_id()).online_state();
+        return Model_HomerServer.getById(getServer_id()).online_state();
     }
 
     @JsonProperty @ApiModelProperty(required = true)
@@ -175,9 +175,9 @@ public class Model_Instance extends TaggedModel {
             if (current_snapshot() != null) {
 
                 if (Server.mode == ServerMode.DEVELOPER) {
-                    return "ws://" + Model_HomerServer.getById(server_id()).server_url + ":" + Model_HomerServer.getById(server_id()).web_view_port + "/" + id + "/#token";
+                    return "ws://" + Model_HomerServer.getById(getServer_id()).server_url + ":" + Model_HomerServer.getById(getServer_id()).web_view_port + "/" + id + "/#token";
                 } else {
-                    return "wss://" + Model_HomerServer.getById(server_id()).server_url + ":" + Model_HomerServer.getById(server_id()).web_view_port + "/" + id + "/#token";
+                    return "wss://" + Model_HomerServer.getById(getServer_id()).server_url + ":" + Model_HomerServer.getById(getServer_id()).web_view_port + "/" + id + "/#token";
                 }
             }
             return null;
@@ -239,13 +239,20 @@ public class Model_Instance extends TaggedModel {
     }
 
     @JsonIgnore
-    public UUID server_id() {
+    public UUID getServer_id() {
 
         if (cache().get(Model_HomerServer.class) == null) {
             cache().add(Model_HomerServer.class, Model_HomerServer.find.query().where().eq("instances.id", id).select("id").findSingleAttributeList());
         }
 
         return cache().get(Model_HomerServer.class);
+
+    }
+
+    @JsonIgnore
+    public Model_HomerServer getServer() {
+
+        return Model_HomerServer.getById(getServer_id());
 
     }
 
@@ -283,7 +290,7 @@ public class Model_Instance extends TaggedModel {
     @JsonIgnore
     public Model_HomerServer getHomerServer() {
         try {
-            return Model_HomerServer.getById(server_id());
+            return Model_HomerServer.getById(getServer_id());
         }catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -413,7 +420,7 @@ public class Model_Instance extends TaggedModel {
     public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries) {
 
         // Response with Error Message
-        if (this.server_id() == null) {
+        if (this.getServer_id() == null) {
 
             ObjectNode request = Json.newObject();
             request.put("message_type", json.get("message_type").asText());
@@ -426,10 +433,10 @@ public class Model_Instance extends TaggedModel {
             return request;
         }
 
-        Model_HomerServer server = Model_HomerServer.getById(this.server_id());
+        Model_HomerServer server = Model_HomerServer.getById(this.getServer_id());
         if (server == null) {
 
-            logger.internalServerError(new Exception("write_with_confirmation:: Instance " + id + ". Server id " + this.server_id() + " not exist!"));
+            logger.internalServerError(new Exception("write_with_confirmation:: Instance " + id + ". Server id " + this.getServer_id() + " not exist!"));
 
             ObjectNode request = Json.newObject();
             request.put("message_type", json.get("message_type").asText());
@@ -450,7 +457,7 @@ public class Model_Instance extends TaggedModel {
     @JsonIgnore
     private void write_without_confirmation(ObjectNode json) {
 
-        Model_HomerServer server = Model_HomerServer.getById(this.server_id());
+        Model_HomerServer server = Model_HomerServer.getById(this.getServer_id());
         if (server == null) {
 
             logger.internalServerError(new Exception("write_without_confirmation:: Instance " + id + " server not found"));
@@ -467,11 +474,11 @@ public class Model_Instance extends TaggedModel {
     @JsonIgnore
     public void write_without_confirmation(String message_id, ObjectNode json) {
 
-        if (this.server_id() == null) {
+        if (this.getServer_id() == null) {
             return;
         }
 
-        Model_HomerServer server = Model_HomerServer.getById(this.server_id());
+        Model_HomerServer server = Model_HomerServer.getById(this.getServer_id());
 
         if (server == null) {
             logger.internalServerError(new Exception("write_without_confirmation:: Instance " + id + " server not found"));
@@ -531,7 +538,7 @@ public class Model_Instance extends TaggedModel {
     public WS_Message_Hardware_overview get_hardware_overview() {
         try {
 
-            ObjectNode json = this.write_with_confirmation( new WS_Message_Hardware_overview().make_request(this.getHardwareIds() ), 1000*5, 0, 1);
+            ObjectNode json = this.write_with_confirmation( new WS_Message_Hardware_overview().make_request(this.getHardwareIds()), 1000*5, 0, 1);
 
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_overview.class, json);
 
@@ -559,7 +566,7 @@ public class Model_Instance extends TaggedModel {
             this.update();
         }
 
-        Model_HomerServer server = Model_HomerServer.getById(server_id());
+        Model_HomerServer server = Model_HomerServer.getById(getServer_id());
         if (server == null) {
             return;
         }

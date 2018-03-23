@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -20,6 +21,8 @@ public class Swagger_InstanceSnapshot_New extends Swagger_NameAndDescription{
     @Constraints.Required
     public String snapshot;
 
+
+    @Valid
     public List<Interface> interfaces = new ArrayList<>();
 
     public static class Interface {
@@ -27,10 +30,10 @@ public class Swagger_InstanceSnapshot_New extends Swagger_NameAndDescription{
         public Interface() {}
 
         @Constraints.Required
-        public String target_id; // Have to be string, because it could be device FULL_ID or HW group id
+        public UUID target_id; // Device ID or HW group ID
 
         @Constraints.Required
-        public UUID interface_id; // Id of the C program
+        public UUID interface_id; // Id of the C program version!
 
         @Constraints.Required
         @ApiModelProperty(required = true, allowableValues = "group, hardware")

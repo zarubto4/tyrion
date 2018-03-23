@@ -77,7 +77,8 @@ public class Model_Role extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    // TODO Cache
+    // TODO Cache jako v ostatních cache objektech [MARTIN TODO]
+    // Kouknise jak se cachuje třeba BPRogram
 
     public static Model_Role getById(UUID id) throws _Base_Result_Exception {
 

@@ -22,11 +22,9 @@ import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.model.TaggedModel;
+import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Text;
-import utilities.swagger.input.Swagger_GridWidgetVersion_GridApp_source;
-import utilities.swagger.input.Swagger_InstanceSnapShotConfiguration;
-import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationFile;
-import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationProgram;
+import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
 import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_hardware;
@@ -38,6 +36,7 @@ import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 
 import javax.persistence.*;
 import javax.validation.Valid;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -68,7 +67,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Instance instance;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BProgramVersion b_program_version;
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY)  public Model_Blob program;
-    @JsonIgnore @OneToMany(fetch = FetchType.LAZY) public List<Model_UpdateProcedure> procedures = new ArrayList<>();
+    @JsonIgnore @OneToMany(fetch = FetchType.LAZY) public List<Model_UpdateProcedure> procedures = new ArrayList<>(); // Reálně zde je uložena jen jedna, pokud byla instance nasazena víckrát, vždy se tvoří nový aktualizační plán! Pak jich tu je víc než jedna
 
     /**
      * Here we collect everything additional settings for Snapshot.
@@ -135,9 +134,10 @@ public class Model_InstanceSnapshot extends TaggedModel {
     }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "only if snapshot is main")
-    public String program(){
+    public Swagger_InstanceSnapshot_New program(){
         try {
-            if (program != null) return program.get_fileRecord_from_Azure_inString();
+
+            if (program != null) return  baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapshot_New.class, Json.parse( program.get_fileRecord_from_Azure_inString()));
 
             return null;
 
@@ -195,14 +195,30 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
     @JsonIgnore
     public List<UUID> getHardwareIds() throws _Base_Result_Exception {
-        // TODO - Vylouskat z Jsonu Snapshotu instance
-        throw new Result_Error_NotSupportedException();
+        List<UUID> list = new ArrayList<>();
+
+        for (Swagger_InstanceSnapshot_New.Interface interface_hw : this.program().interfaces) {
+
+            if(interface_hw.type.equals("hardware")) {
+                list.add(interface_hw.target_id);
+            }
+        }
+
+        return list;
     }
 
     @JsonIgnore
     public List<UUID> getHardwareGroupseIds() throws _Base_Result_Exception {
-        // TODO - Vylouskat z Jsonu Snapshotu instance
-        throw new Result_Error_NotSupportedException();
+        List<UUID> list = new ArrayList<>();
+
+        for (Swagger_InstanceSnapshot_New.Interface interface_hw : this.program().interfaces) {
+
+            if(interface_hw.type.equals("group")) {
+                list.add(interface_hw.target_id);
+            }
+        }
+
+        return list;
     }
 
     @JsonIgnore
@@ -212,9 +228,39 @@ public class Model_InstanceSnapshot extends TaggedModel {
     }
 
 
-/* Actions --------------------------------------------------------------------------------------------------------*/
+    @JsonIgnore
+    public List<UUID> getUpdateProcedureIds() {
+
+        if (cache().gets(Model_UpdateProcedure.class) == null) {
+            cache().add(Model_UpdateProcedure.class, Model_UpdateProcedure.find.query().where().eq("instance.id", id).orderBy("created").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_UpdateProcedure.class);
+    }
+
+    @JsonIgnore
+    public List<Model_UpdateProcedure> getUpdateProcedure() {
+        try {
+
+            List<Model_UpdateProcedure> list = new ArrayList<>();
+
+            for (UUID id : getUpdateProcedureIds() ) {
+                list.add(Model_UpdateProcedure.getById(id));
+            }
+
+            return list;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new ArrayList<>();
+        }
+    }
+
+
+    /* Actions --------------------------------------------------------------------------------------------------------*/
 
     public void deploy() {
+        Model_Person person = its_person_operation() ? _BaseController.person() : null;
         new Thread(() -> {
 
             try {
@@ -230,6 +276,12 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
                 if (get_instance().server_online_state() != NetworkStatus.ONLINE) {
                     logger.debug("deploy - server is offline, it is not possible to continue");
+                    instance.current_snapshot_id = this.id;
+                    instance.update();
+
+                    if(person != null) {
+                        notification_instance_set_wait_for_server(person);
+                    }
                     return;
                 }
 
@@ -275,8 +327,24 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 Model_Instance.cache_status.put(get_instance_id(), true);
                 WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, get_instance_id(), true, this.get_instance().getProjectId());
 
-                // Step 4
-                // TODO this.create_actualization_hardware_request();
+                // Only if there are hardware for update
+                if(program().interfaces.size() > 0) {
+
+                    // Step 5
+                    logger.trace("deploy - instance {}, step 5 - Deploy Hardware ", get_instance_id());
+                    Model_UpdateProcedure procedure = this.create_actualization_hardware_request();
+
+                    if (procedure == null) {
+                        logger.error("deploy - instance {}, step 5 - Error - Unsuccessful creating of Update Procedure");
+                        return;
+                    }
+
+                    // Step 6
+                    logger.trace("deploy - instance {}, step 6 - Start wtih Update ", get_instance_id());
+                    procedure.execute_update_procedure();
+
+                }
+
 
             }catch (Exception e) {
                 logger.internalServerError(e);
@@ -346,6 +414,76 @@ public class Model_InstanceSnapshot extends TaggedModel {
         }
     }
 
+    @JsonIgnore
+    public Model_UpdateProcedure create_actualization_hardware_request(){
+        try {
+
+            Model_UpdateProcedure procedure = new Model_UpdateProcedure();
+            procedure.type_of_update = UpdateType.MANUALLY_BY_USER_BLOCKO_GROUP;
+            procedure.project_id = get_instance().getProjectId();
+            procedure.instance = this;
+
+            if (deployed != null) {
+                // Planed
+                procedure.date_of_planing = deployed;
+            } else {
+                // Immediately
+                procedure.date_of_planing = new Date();
+            }
+
+            for (Swagger_InstanceSnapshot_New.Interface interface_hw : this.program().interfaces) {
+
+                Model_CProgramVersion version = Model_CProgramVersion.getById(interface_hw.interface_id);
+
+                //IF Group
+                if(interface_hw.type.equals("group")) {
+
+                    Model_HardwareGroup group = Model_HardwareGroup.getById(interface_hw.target_id);
+
+                    List<UUID> uuid_ids = Model_Hardware.find.query().where().eq("hardware_groups.id", group.id).select("id").findIds();
+
+                    for (UUID uuid_id : uuid_ids) {
+                        Model_Hardware hardware = Model_Hardware.getById(uuid_id);
+
+                        Model_HardwareUpdate plan = new Model_HardwareUpdate();
+                        plan.hardware = hardware;
+                        plan.firmware_type = FirmwareType.FIRMWARE;
+                        plan.state = HardwareUpdateState.NOT_YET_STARTED;
+                        plan.c_program_version_for_update = version;
+                        procedure.updates.add(plan);
+                    }
+
+                }
+
+                //If Independent Hardware
+                if(interface_hw.type.equals("hardware")) {
+
+                    Model_Hardware hardware = Model_Hardware.getById(interface_hw.target_id);
+                    Model_HardwareUpdate plan = new Model_HardwareUpdate();
+                    plan.hardware = hardware;
+                    plan.firmware_type = FirmwareType.FIRMWARE;
+                    plan.state = HardwareUpdateState.NOT_YET_STARTED;
+                    plan.c_program_version_for_update = version;
+                    procedure.updates.add(plan);
+
+                }
+            }
+
+
+            procedure.save();
+
+            // Cache Operation
+            cache().gets(Model_UpdateProcedure.class);
+            cache().add(Model_UpdateProcedure.class, procedure.id);
+
+            return procedure;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
 
@@ -353,7 +491,30 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-    public void notification_instance_start_upload() {
+    /**
+     * Saved Snap Shot as default, but server is offline, so it will be uploaded as soon as possible.
+     */
+    public void notification_instance_set_wait_for_server(Model_Person person) {
+        try {
+
+            new Model_Notification()
+                    .setImportance(NotificationImportance.LOW)
+                    .setLevel(NotificationLevel.INFO)
+                    .setText( new Notification_Text().setText("Snapshot is Set as default. But "))
+                    .setObject(get_instance().getServer())
+                    .setText( new Notification_Text().setText("is"))
+                    .setText( new Notification_Text().setText("offline").setBoldText().setColor(Becki_color.byzance_red))
+                    .setText( new Notification_Text().setText("."))
+                    .setNewLine()
+                    .setText( new Notification_Text().setText("Immediately after server reconnect, We will deploy it on server."))
+                    .send(person);
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+        }
+    }
+
+    public void notification_instance_start_upload(Model_Person person) {
         try {
 
             new Model_Notification()
@@ -364,14 +525,14 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     .setObject(this.get_b_program_version())
                     .setText( new Notification_Text().setText(" from Blocko program "))
                     .setObject(this.get_b_program_version().get_b_program())
-                    .send(_BaseController.person());
+                    .send(person);
 
         } catch (Exception e) {
             logger.internalServerError(e);
         }
     }
 
-    public void notification_instance_successful_upload() {
+    public void notification_instance_successful_upload(Model_Person person) {
         try {
 
             new Model_Notification()
@@ -381,14 +542,14 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     .setObject(this.get_b_program_version())
                     .setText(new Notification_Text().setText(" from Blocko program "))
                     .setObject(this.get_b_program_version().get_b_program())
-                    .send_under_project(this.get_instance().getProjectId());
+                    .send(person);
 
         } catch (Exception e) {
             logger.internalServerError(e);
         }
     }
 
-    public void notification_instance_unsuccessful_upload(String reason) {
+    public void notification_instance_unsuccessful_upload(String reason, Model_Person person) {
         try {
 
             new Model_Notification()
@@ -404,7 +565,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     .setText( new Notification_Text().setText(" from Blocko program "))
                     .setObject(this.get_b_program_version().get_b_program())
                     .setText( new Notification_Text().setText(". Server will try to do that as soon as possible."))
-                    .send_under_project(this.get_instance().getProjectId());
+                    .send(person);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -472,7 +633,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
             case PUBLIC: {
 
-                summary.grid_app_url += Model_HomerServer.getById(instance.server_id()).get_Grid_APP_URL() + instance.id + "/" + collection.grid_project_id + "/"  + program.connection_token;
+                summary.grid_app_url += Model_HomerServer.getById(instance.getServer_id()).get_Grid_APP_URL() + instance.id + "/" + collection.grid_project_id + "/"  + program.connection_token;
                 summary.grid_program = Model_GridProgramVersion.getById(program.grid_program_version_id).file.get_fileRecord_from_Azure_inString();
                 summary.grid_project_id = collection.grid_project_id;
                 summary.grid_program_id = program.grid_program_id;
@@ -505,7 +666,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 terminal.person = person;
                 terminal.save();
 
-                summary.grid_app_url += Model_HomerServer.getById(instance.server_id()).get_Grid_APP_URL() + instance.id + "/" + collection.grid_project_id + "/" + terminal.terminal_token;
+                summary.grid_app_url += Model_HomerServer.getById(instance.getServer_id()).get_Grid_APP_URL() + instance.id + "/" + collection.grid_project_id + "/" + terminal.terminal_token;
                 summary.grid_program = Model_GridProgramVersion.getById(program.grid_program_version_id).file.get_fileRecord_from_Azure_inString();
                 summary.grid_project_id = collection.grid_project_id;
                 summary.grid_program_id = program.grid_program_id;

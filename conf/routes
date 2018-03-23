@@ -234,8 +234,8 @@ PUT       /instance/grid_app/:snapshot_id                               controll
 
 #InstanceSnapshot
 POST      /instance/snapshot                                            controllers.Controller_Blocko.instanceSnapshot_create
-GET       /instance/snapshot/:snapshot_id                               controllers.Controller_Blocko.instanceSnapshot_get(snapshot_id: java.util.UUID)
-PUT       /instance/snapshot/:snapshot_id                               controllers.Controller_Blocko.instanceSnapshot_udpate(snapshot_id: java.util.UUID)
+GET       /instance/snapshot/get/:snapshot_id                           controllers.Controller_Blocko.instanceSnapshot_get(snapshot_id: java.util.UUID)
+PUT       /instance/snapshot/update/:snapshot_id                        controllers.Controller_Blocko.instanceSnapshot_udpate(snapshot_id: java.util.UUID)
 PUT       /instance/snapshot/deploy                                     controllers.Controller_Blocko.instanceSnapshot_deploy()
 PUT       /instance/snapshot/shutdown/:snapshot_id                      controllers.Controller_Blocko.instanceSnapshot_shutdown(snapshot_id: java.util.UUID)
 DELETE    /instance/snapshot/:snapshot_id                               controllers.Controller_Blocko.instanceSnapshot_delete(snapshot_id: java.util.UUID)

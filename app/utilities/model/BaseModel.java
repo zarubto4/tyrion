@@ -303,7 +303,7 @@ public abstract class BaseModel extends Model {
     /**
      * Method finds the cache field in the class
      * and if present it puts or replaces the value in the cache.
-     * TODO measure performance impact
+     * TODO measure performance impact LEVEL: HARD  TIME: LONGTERM
      */
     @SuppressWarnings("unchecked")
     private void cacheCleaner() {
@@ -334,7 +334,7 @@ public abstract class BaseModel extends Model {
      * This method should be called when object is no longer fresh
      * and it should be removed from the cache. It finds the cache field
      * and if present it removes this object from it.
-     * TODO measure performance impact
+     * TODO measure performance impact LEVEL: HARD  TIME: LONGTERM
      */
     @SuppressWarnings("unchecked")
     private void evict() {
@@ -360,7 +360,7 @@ public abstract class BaseModel extends Model {
     /**
      * This method should be called when object is no longer fresh
      * and inner caches should be reloaded. It sets null all fields
-     * that are only cached. TODO measure performance impact
+     * that are only cached. TODO measure performance impact LEVEL: HARD  TIME: LONGTERM
      */
     public void invalidate() {
         long start = System.currentTimeMillis();

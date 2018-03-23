@@ -71,7 +71,7 @@ public class WS_ConfirmationThread implements Supplier<ObjectNode> {
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null; // TODO maybe some error?
+            return null;
         }
     }
 

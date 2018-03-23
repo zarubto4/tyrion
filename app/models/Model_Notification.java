@@ -210,7 +210,15 @@ public class Model_Notification extends BaseModel {
                 element.name = class_name;
                 element.id = bProgram.id;
                 element.text = bProgram.name;
-                element.project_id = bProgram.project != null ? bProgram.project.id : null;
+                element.project_id = bProgram.project != null ? bProgram.getProjectId() : null;
+                break;
+            }
+            case "HomerServer" : {
+                Model_HomerServer server = (Model_HomerServer)object;
+                element.name = class_name;
+                element.id = server.id;
+                element.text = server.name;
+                element.project_id = server.project != null ? server.get_project_id() : null;
                 break;
             }
             case "CProgramVersion" : {

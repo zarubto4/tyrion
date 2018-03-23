@@ -173,7 +173,7 @@ public class WS_Homer extends WS_Interface {
                 service = Executors.newSingleThreadExecutor();
 
                 // Kontrola nastavení
-                Synchronize_Homer_Synchronize_Settings synchronize_homer_synchronize_settings = new Synchronize_Homer_Synchronize_Settings(this);   // TODO - čeká na Homer Config APP
+                Synchronize_Homer_Synchronize_Settings synchronize_homer_synchronize_settings = new Synchronize_Homer_Synchronize_Settings(this);   // TODO - čeká na Homer Config APP  LEVEL: HARD  TIME: LONGTERM
 
                 // Kontrola instancí
                 Synchronize_Homer_Instance_after_connection synchronize_homer_instance_after_connection = new Synchronize_Homer_Instance_after_connection(this);

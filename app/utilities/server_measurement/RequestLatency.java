@@ -32,7 +32,7 @@ public class RequestLatency {
      */
     public static void count_end(String request, String path, Long time){
 
-        System.out.println("count_end:: Request: " + request + ":: path: \"" + path + "\" time: " + time);
+        logger.trace("count_end:: Request: " + request + ":: path: \"" + path + "\" time: " + time);
 
         if (!requests.containsKey(request)){
             requests.put(request, new ArrayList<Long>());

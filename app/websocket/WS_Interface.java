@@ -121,6 +121,7 @@ public abstract class WS_Interface extends AbstractActor {
             }
 
             if (json.has("message_id")) {
+
                 // logger.trace("onMessage - message contains message ID: {}", json.get("message_id"));
 
                 UUID id = UUID.fromString(json.get("message_id").asText());
@@ -132,7 +133,6 @@ public abstract class WS_Interface extends AbstractActor {
                     messageBuffer.get(id).resolve(json);
                     messageBuffer.remove(id);
                 } else {
-
                     logger.trace("onMessage - its not message from Buffer - set to onMessage in some WS_Interface");
                     this.onMessage(json);
                 }
@@ -145,7 +145,10 @@ public abstract class WS_Interface extends AbstractActor {
         } catch (Exception e) {
             logger.internalServerError(e);
 
-            // TODO error response?
+            ObjectNode json = Json.newObject();
+            json.put("error", "invalid message");
+            json.put("error_log", e.getMessage());
+            this.send(json);
         }
     }
 

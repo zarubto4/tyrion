@@ -972,7 +972,9 @@ public class Controller_Blocko extends _BaseController {
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(help.snapshot_id);
 
             // If upload time is "future"
-            if (help.upload_time != null) {
+            if (help.upload_time != null && help.upload_time != 0L) {
+
+                logger.trace("instanceSnapshot_deploy:: Deploy Snapshot by Time");
 
                 // Genereate Future Time
                 Date future = new Date(help.upload_time);
@@ -985,6 +987,8 @@ public class Controller_Blocko extends _BaseController {
                 scheduler.scheduleInstanceDeployment(snapshot);
 
             } else {
+
+                logger.trace("instanceSnapshot_deploy:: Deploy Snapshot Immediately");
 
                 // Deploy immediately!
                 snapshot.deployed = new Date();

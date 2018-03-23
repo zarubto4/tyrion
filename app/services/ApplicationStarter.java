@@ -28,9 +28,7 @@ import utilities.scheduler.SchedulerController;
  */
 @Singleton
 public class ApplicationStarter {
-
-    // TODO Upravit https://youtrack.byzance.cz/youtrack/issue/TYRION-611
-
+    
     private final Clock clock;
     private final ApplicationLifecycle appLifecycle;
     private final Config configuration;

@@ -13,7 +13,7 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.concurrent.CompletionStage;
 
-// TODO make it work [LEXA]
+// TODO make it work [LEXA] LEVEL: HARD  TIME: LONGTERM
 public class YouTrack {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

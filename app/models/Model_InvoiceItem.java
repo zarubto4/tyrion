@@ -23,7 +23,7 @@ public class Model_InvoiceItem extends BaseModel {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
 
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                       public Model_Invoice invoice;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                       public Model_Invoice invoice;    // TODO Cache jako v ostatních cache objektech [MARTIN TODO] - jestli to někde někdo blbě nevolá
 
                                                                          public String name; // Jméno položky
                                                                          public Long   quantity; // Počet položek
@@ -46,16 +46,16 @@ public class Model_InvoiceItem extends BaseModel {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @Transient public Long vat = (long) 21000;  // TODO je to hardcodované - Asi b bylo lepší to přenést na nějakou proměnou v Configu!
+    @Transient public Long vat = (long) 21000;  // TODO je to hardcodované - Asi b bylo lepší to přenést na nějakou proměnou v Configu! LEVEL: HARD  TIME: LONGTERM
 
-    @JsonIgnore
+    @JsonIgnore     // TODO Cache jako v ostatních cache objektech [MARTIN TODO]
     public UUID get_invoice_id() throws _Base_Result_Exception {
 
         if (cache_invoice_id == null) {
 
-            Model_Widget widget = Model_Widget.find.query().where().eq("versions.id", id).select("id").findOne(); // TODO won't work
-            if (widget != null) {
-                cache_invoice_id = widget.id;
+            Model_Invoice invoice = Model_Invoice.find.query().where().eq("invoice_items.id", id).select("id").findOne();
+            if (invoice != null) {
+                cache_invoice_id = invoice.id;
             } else {
                 cache_invoice_id = null;
             }
@@ -64,7 +64,7 @@ public class Model_InvoiceItem extends BaseModel {
         return cache_invoice_id;
     }
 
-    @JsonIgnore
+    @JsonIgnore    // TODO Cache jako v ostatních cache objektech [MARTIN TODO]
     public Model_Invoice get_invoice() throws _Base_Result_Exception {
 
         if (get_invoice_id() != null) {

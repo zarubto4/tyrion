@@ -42,7 +42,7 @@ public class Model_LibraryVersion extends VersionModel {
 
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
-    // TODO Cache - Performeance [TZ]!
+    // TODO Cache - Performeance [TZ]! LEVEL: HARD  TIME: LONGTERM
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public List<Swagger_Short_Reference> c_rpogram_examples(){
         try {
@@ -57,7 +57,7 @@ public class Model_LibraryVersion extends VersionModel {
         }
     }
 
-    // TODO Cache - Performeance [TZ]!
+    // TODO Cache - Performeance [TZ]! LEVEL: HARD  TIME: LONGTERM
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public List<Swagger_Library_Record> files(){
         try {
