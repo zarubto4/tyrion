@@ -32,13 +32,15 @@ public class Swagger_Board_New_Garfield implements Constraints.Validatable<List<
 
                 List<ValidationError> errors = new ArrayList<>();
 
-                if (!full_id.matches("^[0-9A-F]+$")) {
+                if (full_id != null) {
+                        if (!full_id.matches("^[0-9A-F]+$")) {
 
-                        errors.add(new ValidationError("full_id","Full ID can contain only hex characters."));
-                }
+                                errors.add(new ValidationError("full_id","Full ID can contain only hex characters."));
+                        }
 
-                if (full_id.length() != 24) {
-                        errors.add(new ValidationError("full_id","Full ID must have 24 characters."));
+                        if (full_id.length() != 24) {
+                                errors.add(new ValidationError("full_id","Full ID must have 24 characters."));
+                        }
                 }
 
                 return errors.isEmpty() ? null : errors;
