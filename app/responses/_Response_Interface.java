@@ -2,8 +2,9 @@ package responses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
-public abstract class _Response_Interface {
+public abstract class _Response_Interface extends _Swagger_Abstract_Default {
 
     @JsonIgnore public String message;
     @JsonIgnore public String state;

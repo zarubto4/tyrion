@@ -23,6 +23,7 @@ import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Invoice_FullDetails;
 import utilities.swagger.output.Swagger_ProductExtension_Type;
 import utilities.swagger.output.Swagger_Product_Active;
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,7 +109,7 @@ public class Controller_Finance extends _BaseController {
             
             tariff.save();
 
-            return created(Json.toJson(tariff));
+            return created(tariff);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -169,7 +170,7 @@ public class Controller_Finance extends _BaseController {
 
             tariff.update();
 
-            return ok(tariff.json());
+            return ok(tariff);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -342,7 +343,7 @@ public class Controller_Finance extends _BaseController {
 
             Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
           
-            return ok(Json.toJson(tariff));
+            return ok(tariff);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -407,7 +408,7 @@ public class Controller_Finance extends _BaseController {
             
             extension.save();
 
-            return ok(Json.toJson(extension));
+            return ok(extension);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -434,7 +435,7 @@ public class Controller_Finance extends _BaseController {
             // Kontrola objektu
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
             
-            return ok(Json.toJson(extension));
+            return ok(extension);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -503,7 +504,7 @@ public class Controller_Finance extends _BaseController {
 
             extension.update();
 
-            return ok(Json.toJson(extension));
+            return ok(extension);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -538,7 +539,7 @@ public class Controller_Finance extends _BaseController {
 
             extension.update();
 
-            return ok(Json.toJson(extension));
+            return ok(extension);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -573,7 +574,7 @@ public class Controller_Finance extends _BaseController {
 
             extension.update();
 
-            return ok(extension.json());
+            return ok(extension);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -681,7 +682,7 @@ public class Controller_Finance extends _BaseController {
 
             extension.save();
 
-            return created(Json.toJson(extension));
+            return created(extension);
 
         } catch (IllegalStateException e) {
             return badRequest("Illegal or not Valid Config");
@@ -753,7 +754,7 @@ public class Controller_Finance extends _BaseController {
 
             extension.update();
 
-            return ok(Json.toJson(extension));
+            return ok(extension);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -954,7 +955,7 @@ public class Controller_Finance extends _BaseController {
                 }
 
             }
-            return ok(Json.toJson(types));
+            return ok(types);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1194,7 +1195,7 @@ public class Controller_Finance extends _BaseController {
 
             product.refresh();
 
-            return created(Json.toJson(product));
+            return created(product);
 
         } catch (Exception e) {
             Ebean.endTransaction();
@@ -1221,7 +1222,7 @@ public class Controller_Finance extends _BaseController {
             List<Model_Product> products = Model_Product.getByOwner(personId());
 
             // Vrácení seznamu
-            return ok(Json.toJson(products));
+            return ok(products); // todo
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1248,7 +1249,7 @@ public class Controller_Finance extends _BaseController {
             Model_Product product = Model_Product.getById(product_id);
 
             // Vrácení seznamu
-            return ok(Json.toJson(product));
+            return ok(product);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1297,7 +1298,7 @@ public class Controller_Finance extends _BaseController {
             product.update();
 
             // Vrácení objektu
-            return  ok(Json.toJson(product));
+            return  ok(product);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1341,7 +1342,7 @@ public class Controller_Finance extends _BaseController {
             product.notificationDeactivation();
 
             // Vrácení potvrzení
-            return ok(Json.toJson(product));
+            return ok(product);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1380,7 +1381,7 @@ public class Controller_Finance extends _BaseController {
             product.notificationActivation();
 
             // Vrácení potvrzení
-            return ok(product.json());
+            return ok(product);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1445,7 +1446,7 @@ public class Controller_Finance extends _BaseController {
             }
 
             // Return serialized object
-            return  ok(invoice.json());
+            return  ok(invoice);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1557,7 +1558,7 @@ public class Controller_Finance extends _BaseController {
             payment_details.save();
 
             // Vrácení objektu
-            return created(Json.toJson(payment_details));
+            return created(payment_details);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1655,7 +1656,7 @@ public class Controller_Finance extends _BaseController {
             payment_details.product.update();
 
             // Vrácení objektu
-            return  ok(Json.toJson(payment_details));
+            return  ok(payment_details);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1689,7 +1690,7 @@ public class Controller_Finance extends _BaseController {
             }
 
             // Vrácení objektu
-            return ok( Json.toJson(products));
+            return ok(products);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1765,7 +1766,7 @@ public class Controller_Finance extends _BaseController {
             help.invoice = invoice;
             help.invoice_items = Model_InvoiceItem.find.query().where().eq("invoice.id", invoice_id).findList();
 
-            return ok(Json.toJson(help));
+            return ok(help);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1839,7 +1840,7 @@ public class Controller_Finance extends _BaseController {
             invoice = goPay.singlePayment("First Payment", invoice.product, invoice);
 
             // Vrácení ID s možností uhrazení
-            return ok(Json.toJson(invoice));
+            return ok(invoice);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -2056,7 +2057,7 @@ public class Controller_Finance extends _BaseController {
             customer.fakturoid_subject_id = fakturoid.create_subject(details);
             customer.update();
 
-            return created(Json.toJson(customer));
+            return created(customer);
         } catch (IllegalArgumentException e) {
             return badRequest("Payment details are invalid.");
         } catch (Exception e) {
@@ -2080,7 +2081,7 @@ public class Controller_Finance extends _BaseController {
 
             List<Model_Customer> customers = Model_Customer.find.query().where().eq("employees.person.id", _BaseController.personId()).eq("payment_details.company_account", true).findList();
 
-            return ok(Json.toJson(customers));
+            return ok(customers);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -2142,7 +2143,7 @@ public class Controller_Finance extends _BaseController {
             if (!fakturoid.update_subject(details))
                 return badRequest("Payment details are invalid.");
 
-            return ok(Json.toJson(customer));
+            return ok(customer);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -2197,7 +2198,7 @@ public class Controller_Finance extends _BaseController {
 
             customer.refresh();
 
-            return ok(Json.toJson(customer));
+            return ok(customer);
 
         } catch (Exception e) {
             return controllerServerError(e);

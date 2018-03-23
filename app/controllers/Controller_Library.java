@@ -97,7 +97,7 @@ public class Controller_Library extends _BaseController {
             library.save();
 
             // Vracím objekt
-            return created(library.json());
+            return created(library);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -176,7 +176,7 @@ public class Controller_Library extends _BaseController {
             library_new.refresh();
 
             // Vracím Objekt
-            return ok(library_new.json());
+            return ok(library_new);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -204,7 +204,7 @@ public class Controller_Library extends _BaseController {
             Model_Library library = Model_Library.getById(library_id);
 
             // Vrácneí objektu
-            return ok(library.json());
+            return ok(library);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -272,7 +272,7 @@ public class Controller_Library extends _BaseController {
             Swagger_Library_List result = new Swagger_Library_List(query,page_number);
 
             // Vrácneí objektu
-            return ok(Json.toJson(result));
+            return ok(result);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -322,7 +322,7 @@ public class Controller_Library extends _BaseController {
             library.update();
 
             // Vrácení objektu
-            return ok(Json.toJson(library));
+            return ok(library);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -366,7 +366,7 @@ public class Controller_Library extends _BaseController {
             library.addTags(help.tags);
 
             // Vrácení objektu
-            return ok(library.json());
+            return ok(library);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -410,7 +410,7 @@ public class Controller_Library extends _BaseController {
             library.removeTags(help.tags);
 
             // Vrácení objektu
-            return ok(library.json());
+            return ok(library);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -503,7 +503,7 @@ public class Controller_Library extends _BaseController {
             library.refresh();
 
             // Vracím vytvořený objekt
-            return created(Json.toJson(version));
+            return created(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -532,7 +532,7 @@ public class Controller_Library extends _BaseController {
             Model_LibraryVersion version = Model_LibraryVersion.getById(version_id);
 
             // Vracím Objekt
-            return ok(Json.toJson(version));
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -582,7 +582,7 @@ public class Controller_Library extends _BaseController {
             version.update();
 
             // Vrácení objektu
-            return ok(Json.toJson(version));
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);

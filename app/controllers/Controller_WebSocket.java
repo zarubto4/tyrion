@@ -131,7 +131,7 @@ public class Controller_WebSocket extends _BaseController {
                 Swagger_Websocket_Token swagger_websocket_token = new Swagger_Websocket_Token();
                 swagger_websocket_token.websocket_token = token;
 
-                return ok(Json.toJson(swagger_websocket_token));
+                return ok(swagger_websocket_token);
 
         } catch (Exception e) {
             return controllerServerError(e);
