@@ -43,8 +43,6 @@ public class Model_GridProgramVersion extends VersionModel {
 
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
-
-
     @JsonProperty @Transient public String program_version() {
         try {
 
@@ -64,7 +62,6 @@ public class Model_GridProgramVersion extends VersionModel {
             return null;
         }
     }
-
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -156,8 +153,9 @@ public class Model_GridProgramVersion extends VersionModel {
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public String get_path() {
-        if(grid_program != null) {
-            return grid_program.get_path() + "/version/" + this.id;
+        if(get_grid_program() != null) {
+            return get_grid_program().get_path() + "/version/" + this.id;
+
         }else {
             return get_grid_program().get_path() + "/version/" + this.id;
         }

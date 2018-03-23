@@ -515,7 +515,7 @@ public class Model_Hardware extends TaggedModel {
     }
 
     @JsonIgnore
-    public Model_Producer get_producer() {
+    public Model_Producer get_producer()throws _Base_Result_Exception{
         try {
             return Model_Producer.getById(get_producerId());
         } catch (Exception e) {
@@ -627,7 +627,7 @@ public class Model_Hardware extends TaggedModel {
     }
 
     @JsonIgnore
-    public Model_CProgram get_backup_c_program() {
+    public Model_CProgram get_backup_c_program()throws _Base_Result_Exception {
 
         try {
             return Model_CProgram.getById(get_backup_c_program_id());
@@ -729,8 +729,8 @@ public class Model_Hardware extends TaggedModel {
 
     @JsonIgnore
     public boolean update_boot_loader_required() {
-        if (getHardwareType().main_boot_loader == null || get_actual_bootloader() == null) return true;
-        return (!this.getHardwareType().main_boot_loader.id.equals(get_actual_bootloader().id));
+        if (getHardwareType().main_boot_loader() == null || get_actual_bootloader() == null) return true;
+        return (!this.getHardwareType().get_main_boot_loader_id().equals(get_actual_bootloader_id()));
     }
 
 /* JSON IGNORE  --------------------------------------------------------------------------------------------------------*/
@@ -1591,7 +1591,7 @@ public class Model_Hardware extends TaggedModel {
                 }
 
                 if (Model_HomerServer.getById(plan.getHardware().connected_server_id).online_state() != NetworkStatus.ONLINE) {
-                    logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id, Model_HomerServer.getById(plan.hardware.connected_server_id).name);
+                    logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id, Model_HomerServer.getById(plan.getHardware().connected_server_id).name);
                     plan.state = HardwareUpdateState.HOMER_SERVER_IS_OFFLINE;
                     plan.update();
                     continue;

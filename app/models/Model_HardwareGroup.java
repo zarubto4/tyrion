@@ -170,7 +170,7 @@ public class Model_HardwareGroup extends NamedModel {
 
         logger.debug("delete: Delete object Id: {} ", this.id);
 
-        this.hardware.clear();
+        this.getHardware().clear();
         this.deletePermanent();
 
         try {

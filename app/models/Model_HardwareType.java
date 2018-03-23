@@ -65,8 +65,6 @@ public class Model_HardwareType extends NamedModel {
 
 
     @JsonIgnore @Transient @Cached public  String cache_picture_link;
-    /*@JsonIgnore @Transient @Cached public  UUID cache_main_bootloader_id;
-    @JsonIgnore @Transient @Cached public  UUID cache_test_c_program_id; */
     @JsonIgnore @Transient @Cached public  List<Swagger_CompilationLibrary> cache_library_list; // Záměrně není pole definované!
     @JsonIgnore @Transient @Cached public  List<UUID> cache_bootloaders_id; // Záměrně není pole definované! */
 

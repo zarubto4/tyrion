@@ -219,8 +219,8 @@ public class Model_CProgram extends TaggedModel {
     public String get_path() {
 
         // C_Program is Private registred under Project
-        if (project != null) {
-            return project.getPath() + "/c-programs/" + this.id;
+        if (getProject() != null) {
+            return getProject().getPath() + "/c-programs/" + this.id;
         } else {
 
             if(getProjectId() == null) {

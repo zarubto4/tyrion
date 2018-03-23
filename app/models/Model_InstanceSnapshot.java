@@ -76,7 +76,7 @@ public class Model_InstanceSnapshot extends BaseModel {
      *
      * SnapShotConfiguration Object!!!!
      */
-    @JsonIgnore @Column(columnDefinition = "TEXT") public String json_additional_parameter;  // DB dokument - smožností rozšíření na cokoliv
+    @JsonIgnore @Column(columnDefinition = "TEXT") public String json_additional_parameter;  // DB dokument - s možností rozšíření na cokoliv
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -243,7 +243,7 @@ public class Model_InstanceSnapshot extends BaseModel {
                 // Instance status
                 if (!instanceStatus.status) {
                     // Vytvořím Instanci
-                    WS_Message_Homer_Instance_add result_instance = get_instance().server_main.add_instance(instance);
+                    WS_Message_Homer_Instance_add result_instance = get_instance().server_main.add_instance(get_instance());
                     if (!result_instance.status.equals("success")) {
                         logger.internalServerError(new Exception("Failed to add Instance. ErrorCode: " + result_instance.error_code + ". Error: " + result_instance.error));
                         return;

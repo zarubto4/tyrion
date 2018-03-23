@@ -195,7 +195,7 @@ public class Model_Notification extends BaseModel {
                 element.name = class_name;
                 element.id = hardware.id;
                 element.text = hardware.name;
-                element.project_id = hardware.project_id();
+                element.project_id = hardware.project.id;
                 break;
             }
             case "CProgram" : {

@@ -58,7 +58,7 @@ public class Model_Compilation extends BaseModel {
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-    public UUID blob_id() {
+    public UUID blob_id()throws _Base_Result_Exception {
         if (cache().get(Model_Blob.class) == null) {
             cache().add(Model_Blob.class, (UUID) Model_Blob.find.query().where().eq("version.id", id).select("id").findSingleAttribute());
         }
@@ -67,7 +67,7 @@ public class Model_Compilation extends BaseModel {
     }
 
 @JsonIgnore
-    public Model_Blob blob() {
+    public Model_Blob blob()throws _Base_Result_Exception{
     try {
         return Model_Blob.getById(blob_id());
     } catch (Exception e) {

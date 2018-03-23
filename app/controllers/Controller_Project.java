@@ -671,7 +671,7 @@ public class Controller_Project extends _BaseController {
                     Model_HardwareGroup group = Model_HardwareGroup.getById(group_id);
                     group.check_update_permission();
 
-                    group.hardware.add(hardware);
+                    group.getHardware().add(hardware);
 
                     hardware.hardware_groups.add(group);
 
