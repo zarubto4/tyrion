@@ -285,6 +285,8 @@ public class Controller_WebSocket extends _BaseController {
     private boolean sameOriginCheck(Http.RequestHeader rh) {
         final Optional<String> origin = rh.header("Origin");
 
+        return true;
+        /*
         if (! origin.isPresent()) {
             logger.error("originCheck: rejecting request because no Origin header found");
             return false;
@@ -294,6 +296,7 @@ public class Controller_WebSocket extends _BaseController {
             logger.error("originCheck: rejecting request because Origin header value " + origin + " is not in the same origin");
             return false;
         }
+        */
     }
 
     private boolean originMatches(String origin) {
