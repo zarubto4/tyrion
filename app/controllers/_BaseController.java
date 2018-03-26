@@ -13,6 +13,7 @@ import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 import utilities.model.BaseModel;
+import utilities.model.JsonSerializer;
 import utilities.server_measurement.RequestLatency;
 import utilities.swagger.input.Swagger_Project_New;
 import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
@@ -29,7 +30,7 @@ import java.util.UUID;
  * This class provides some common API for Tyrion REST Controller.
  * Creates results with given content.
  */
-public abstract class _BaseController {
+public abstract class _BaseController{
 
 // LOGGER ##############################################################################################################
 
@@ -148,6 +149,9 @@ public abstract class _BaseController {
         return Controller.created(object.json());
     }
 
+    public static Result created(_Swagger_Abstract_Default object) {
+        return Controller.created(object.json());
+    }
 // OK JSON! - 200 ######################################################################################################
 
     /**
@@ -155,13 +159,11 @@ public abstract class _BaseController {
      *
      * @return 200 result
      */
-
     public static Result ok() {
         return Controller.ok(Json.toJson(new Result_Ok()));
     }
 
-
-    public static Result ok(List <BaseModel> objects) {
+    public static Result ok(List <? extends JsonSerializer> objects){
         check_latency();
         return Controller.ok(Json.toJson(objects)); // TODO tato metoda je nesystemová a list by neměl v tyrionovi být - Oprava TZ!
     }
@@ -187,7 +189,6 @@ public abstract class _BaseController {
         check_latency();
         return Controller.ok(object.json());
     }
-
 
 
     /**

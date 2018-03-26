@@ -395,7 +395,7 @@ public class Model_CProgramVersion extends VersionModel {
 
                 Result_CompilationListError result_compilationListError = new Result_CompilationListError();
                 result_compilationListError.errors = compilation.build_errors;
-                return _BaseController.ok(Json.toJson(result_compilationListError));
+                return _BaseController.ok(result_compilationListError);
             }
 
             // Toto už regulérní zpráva není  - něco se posralo!

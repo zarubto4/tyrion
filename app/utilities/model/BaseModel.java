@@ -35,7 +35,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 @MappedSuperclass
-public abstract class BaseModel extends Model {
+public abstract class BaseModel  extends Model implements JsonSerializer {
 
     @Inject public static _BaseFormFactory baseFormFactory; // Its Required to set this in Server.class Component
 

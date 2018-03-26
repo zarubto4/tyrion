@@ -130,7 +130,7 @@ public class Controller_Admin extends _BaseController {
     public Result serverError_getAll() {
         try {
 
-            if(!person().is_admin()) {
+                if(!person().is_admin()) {
                 return forbidden();
             }
 

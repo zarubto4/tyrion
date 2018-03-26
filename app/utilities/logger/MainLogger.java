@@ -75,10 +75,14 @@ public class MainLogger {
         for (String group : groups) {
             try {
 
-                group = group.replaceAll("\\s+","");
+                System.out.println("PRacuji se skupinou: " + group);
+                group = group.replaceAll("\\s+",""); // CO D2L8 TENTO REGEX????? TO NEV9M ALE ZJISTIM
 
                 // Get List of all Groups!
                 ArrayList<String> list = (ArrayList<String>) configuration.getStringList("logger.groups." + group);
+
+                System.out.println("    A tato skupina obsahuje prvky: " + list);
+
 
                 String group_config = list.get(0);
 
@@ -162,24 +166,11 @@ public class MainLogger {
         if (list_of_objects_for_logging.containsKey( t_class.getSimpleName() )) {
 
             LogLevel log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).logLevel;
+            Color color = list_of_objects_for_logging.get(t_class.getSimpleName()).color;
 
             if (log_level == LogLevel.TRACE) {
 
                 logger.trace(t_class.getSimpleName() + "::" + log_message, args);
-            }
-        }
-    }
-
-    public void info(Class<?> t_class, String log_message, Object... args) {
-
-        if (list_of_objects_for_logging.containsKey( t_class.getSimpleName() )) {
-
-            LogLevel log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).logLevel;
-
-            if (log_level == LogLevel.TRACE || log_level == LogLevel.INFO) {
-
-                logger.info(t_class.getSimpleName() + "::" + log_message, args);
-
             }
         }
     }
@@ -190,9 +181,25 @@ public class MainLogger {
 
             LogLevel log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).logLevel;
 
-            if (log_level == LogLevel.TRACE || log_level == LogLevel.INFO || log_level == LogLevel.DEBUG) {
+            if (log_level == LogLevel.INFO || log_level == LogLevel.DEBUG) {
 
+                // Dostat sem barvičku
                 logger.debug(t_class.getSimpleName() + "::" + log_message, args);
+
+            }
+        }
+    }
+
+
+    public void info(Class<?> t_class, String log_message, Object... args) {
+
+        if (list_of_objects_for_logging.containsKey( t_class.getSimpleName() )) {
+
+            LogLevel log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).logLevel;
+
+            if (log_level == LogLevel.INFO) {
+
+                logger.info(t_class.getSimpleName() + "::" + log_message, args);
 
             }
         }
@@ -204,7 +211,7 @@ public class MainLogger {
 
             LogLevel log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).logLevel;
 
-            if (log_level == LogLevel.TRACE || log_level == LogLevel.INFO || log_level == LogLevel.DEBUG || log_level == LogLevel.WARN || log_level == LogLevel.ERROR) {
+            if (log_level == LogLevel.WARN || log_level == LogLevel.ERROR) {
 
                 logger.warn(t_class.getSimpleName() + "::" + log_message, args);
 

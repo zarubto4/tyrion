@@ -456,7 +456,7 @@ public class Controller_Finance extends _BaseController {
     public Result productExtension_getAll() {
         try {
 
-            return ok(Json.toJson(Model_ProductExtension.getByUser(personId())));
+            return ok(Model_ProductExtension.getByUser(personId()));
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -981,11 +981,11 @@ public class Controller_Finance extends _BaseController {
             // Pokud má uživatel oprávnění vracím upravený SQL
             if (person().has_permission(Model_Tariff.Permission.Tariff_update.name())) {
 
-                return ok(Json.toJson(Model_Tariff.find.query().where().order().asc("order_position").findList()));
+                return ok(Model_Tariff.find.query().where().order().asc("order_position").findList());
 
             } else {
 
-                return ok(Json.toJson(Model_Tariff.find.query().where().eq("active", true).order().asc("order_position").findList()));
+                return ok(Model_Tariff.find.query().where().eq("active", true).order().asc("order_position").findList());
 
             }
 
