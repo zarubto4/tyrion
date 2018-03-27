@@ -671,11 +671,12 @@ public class Controller_Project extends _BaseController {
                     Model_HardwareGroup group = Model_HardwareGroup.getById(group_id);
                     group.check_update_permission();
 
-                    group.hardware.add(hardware);
+                    group.getHardware().add(hardware);
 
                     hardware.hardware_groups.add(group);
-                    if(hardware.cache_hardware_groups_ids == null) hardware.cache_hardware_groups_ids = new ArrayList<>();
-                    hardware.cache_hardware_groups_ids.add(group.id);
+
+                    if(hardware.cache().get(Model_HardwareGroup.class) == null)  hardware.cache().add(Model_HardwareGroup.class,  new ArrayList<>()) ;
+                    hardware.cache().add(Model_HardwareGroup.class, (group.id));
                 }
             }
 

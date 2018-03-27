@@ -70,7 +70,6 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
     @JsonIgnore @Override  @Transient public void check_read_permission() throws _Base_Result_Exception  {
         if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProject_read.name())) return;
         grid_project.check_update_permission();
-
     }
 
     @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception {

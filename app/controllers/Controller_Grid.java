@@ -447,7 +447,7 @@ public class Controller_Grid extends _BaseController {
             // Kontrola objektu
             Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
 
-            if (gridProgram.grid_project == null) return badRequest("You cannot change program on version");
+            if (gridProgram.get_grid_project() == null) return badRequest("You cannot change program on version");
 
             gridProgram.description = help.description;
             gridProgram.name        = help.name;

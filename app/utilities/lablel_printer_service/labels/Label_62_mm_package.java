@@ -39,7 +39,7 @@ public class Label_62_mm_package {
         this.print_type = print_type;
 
         Model_CProgramVersion test_version = print_type.test_program.default_main_version;
-        Model_CProgramVersion production_version = print_type.main_c_program.default_main_version;
+        Model_CProgramVersion production_version = print_type.get_main_c_program().default_main_version;
 
         if (test_version == null) {
             terminal_logger.error("Label_62_mm_package:: Test Firmware is not set");
@@ -189,7 +189,7 @@ public class Label_62_mm_package {
 
 
         Model_CProgramVersion test_version = print_type.test_program.default_main_version;
-        Model_CProgramVersion production_version = print_type.main_c_program.default_main_version;
+        Model_CProgramVersion production_version = print_type.get_main_c_program().default_main_version;
 
             Paragraph p_test_version = new Paragraph("FW Test Version: ", bold);
                       p_test_version.add(new Chunk(test_version != null ? test_version.name : "Not Tracked ", regular));

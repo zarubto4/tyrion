@@ -58,10 +58,23 @@ public class Model_Compilation extends BaseModel {
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public Model_Blob blob() {
-        return Model_Blob.find.query().where().eq("version.id", version.id).eq("name", "firmware.bin").findOne();
+    public UUID blob_id()throws _Base_Result_Exception {
+        if (cache().get(Model_Blob.class) == null) {
+            cache().add(Model_Blob.class, (UUID) Model_Blob.find.query().where().eq("version.id", id).select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_Blob.class);
     }
+
+@JsonIgnore
+    public Model_Blob blob()throws _Base_Result_Exception{
+    try {
+        return Model_Blob.getById(blob_id());
+    } catch (Exception e) {
+        logger.internalServerError(e);
+        return null;
+    }
+}
 
     @JsonProperty
     public String file_path() {
@@ -218,7 +231,7 @@ public class Model_Compilation extends BaseModel {
                         .setText(new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
                         .setObject(this)
                         .setText(new Notification_Text().setText(" from Program "))
-                        .setObject(this.version.c_program)
+                        .setObject(this.version.get_c_program())
                         .send(_BaseController.person());
             } catch (Exception e) {
                 logger.internalServerError(e);

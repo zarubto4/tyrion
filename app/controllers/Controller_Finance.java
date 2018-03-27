@@ -1836,7 +1836,7 @@ public class Controller_Finance extends _BaseController {
             if ( invoice.status.equals(PaymentStatus.PAID)) return badRequest("Invoice is already paid");
 
             // vyvolání nové platby ale bez vytváření faktury nebo promofaktury
-            invoice = goPay.singlePayment("First Payment", invoice.product, invoice);
+            invoice = goPay.singlePayment("First Payment", invoice.getProduct(), invoice);
 
             // Vrácení ID s možností uhrazení
             return ok(Json.toJson(invoice));
@@ -2186,7 +2186,7 @@ public class Controller_Finance extends _BaseController {
             for (Model_Person person : Model_Person.find.query().where().in("email", help.mails).findList()) {
 
                 // Abych nepřidával ty co už tam jsou
-                if (customer.employees.stream().anyMatch(employee -> employee.person.id.equals(person.id))) continue;
+                if (customer.employees.stream().anyMatch(employee -> employee.get_person_id().equals(person.id))) continue;
 
                 Model_Employee employee = new Model_Employee();
                 employee.person     = person;

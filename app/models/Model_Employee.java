@@ -38,13 +38,26 @@ public class Model_Employee extends BaseModel {
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
+    public UUID get_person_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_Person.class) == null) {
+            cache().add(Model_Person.class, (UUID) Model_Person.find.query().where().eq("employees.id", id).select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_Person.class);
+    }
+
     @Transient @JsonIgnore
     public Model_Person get_person() {
 
-        Model_Person person = Model_Person.find.query().where().eq("employees.id", id).select("id").findOne();
-        return Model_Person.getById(person.id);
-    }
+        try {
+            return Model_Person.getById(get_person_id());
+        } catch (Exception e) {
+            return null;
 
+        }
+    }
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -59,25 +72,24 @@ public class Model_Employee extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Employee_read.name())) return;
-        if(person.id.equals(_BaseController.person().id)) return;
-        customer.check_read_permission();
-    }
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Employee_crate.name())) return;
         if(person.id.equals(_BaseController.person().id)) return;
         customer.check_update_permission();
     }
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Permission.Employee_read.name())) return;
+        if(get_person_id().equals(_BaseController.person().id)) return;
+        customer.check_read_permission();
+    }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Employee_update.name())) return;
-        if(person.id.equals(_BaseController.person().id)) return;
+        if(get_person_id().equals(_BaseController.person().id)) return;
         customer.check_update_permission();
     }
-
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Employee_delete.name())) return;
-        if(person.id.equals(_BaseController.person().id)) return;
+        if(get_person_id().equals(_BaseController.person().id)) return;
         customer.check_delete_permission();
     }
 

@@ -124,13 +124,13 @@ public class Fakturoid extends Controller {
             fakturoid_invoice.proforma = true;
             fakturoid_invoice.partial_proforma = false;
 
-            if (invoice.product.fakturoid_subject_id == null) {
+            if (invoice.getProduct().fakturoid_subject_id == null) {
 
                 logger.internalServerError(new NullPointerException("Fakturoid subject id was null. Should not happen. Product ID = " + invoice.getProduct().id));
 
                 // Pokud ne tak ho vytvořím
                 invoice.getProduct().fakturoid_subject_id = create_subject(invoice.getProduct().payment_details);
-                if (invoice.product.fakturoid_subject_id == null) return null;
+                if (invoice.getProduct().fakturoid_subject_id == null) return null;
                 invoice.getProduct().update();
             }
 

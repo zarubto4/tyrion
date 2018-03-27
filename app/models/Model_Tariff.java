@@ -55,8 +55,8 @@ public class Model_Tariff extends NamedModel {
                             public String awesome_icon;
                 @JsonIgnore public String labels_json;
 
-   @JsonIgnore @OneToMany(mappedBy="tariff_included", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC")  public List<Model_ProductExtension> extensions_included = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="tariff_optional", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  @OrderBy("order_position ASC") public List<Model_ProductExtension> extensions_optional = new ArrayList<>();
+   @JsonIgnore @OneToMany(mappedBy="tariff_included", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_ProductExtension> extensions_included = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="tariff_optional", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_ProductExtension> extensions_optional = new ArrayList<>();
 
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/

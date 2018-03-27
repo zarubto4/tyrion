@@ -306,16 +306,16 @@ public class Model_Invoice extends BaseModel {
     }
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Invoice_read.name())) return;
-        product.customer.check_read_permission();
+        getProduct().customer.check_read_permission();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Invoice_update.name())) return;
-        product.customer.check_read_permission();
+        getProduct().customer.check_read_permission();
     }
 
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Invoice_delete.name())) return;
-        product.customer.check_read_permission();
+        getProduct().customer.check_read_permission();
     }
 
 

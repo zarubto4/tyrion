@@ -1218,7 +1218,7 @@ public class Controller_Hardware extends _BaseController {
             if (boot_loader.file == null) return badRequest("Required bootloader object with file");
             if (boot_loader.getMainHardwareType() != null) return badRequest("Bootloader is Already Main");
 
-            Model_BootLoader old_main_not_cached = Model_BootLoader.find.query().where().eq("main_hardware_type.id", boot_loader.hardware_type.id).select("id").findOne();
+            Model_BootLoader old_main_not_cached = Model_BootLoader.find.query().where().eq("main_hardware_type.id", boot_loader.getHardwareTypeId()).select("id").findOne();
 
             if (old_main_not_cached != null) {
                 Model_BootLoader old_main = Model_BootLoader.getById(old_main_not_cached.id);
@@ -2306,7 +2306,8 @@ public class Controller_Hardware extends _BaseController {
 
             // Úprava stavu
             board.is_active = false;
-            board.cache_project_id = null;
+
+            board.cache().removeAll(Model_Project.class);
 
             // Uložení do databáze
             board.update();
@@ -2752,11 +2753,13 @@ public class Controller_Hardware extends _BaseController {
                             board.get_hardware_group_ids().add(group.id);
                             board.hardware_groups.add(group);
                             group.cache_group_size += 1;
-                            if (group.cache_hardware_type_ids == null) {
-                                group.cache_hardware_type_ids = new ArrayList<>();
+
+                            if (group.cache().get(Model_HardwareType.class) == null) {
+                                 group.cache().add(Model_HardwareType.class,  new ArrayList<>());
                             }
-                            if(!group.cache_hardware_type_ids.contains(board.hardware_type_id())){
-                                group.cache_hardware_type_ids.add(board.hardware_type_id());
+
+                            if(!group.cache().gets(Model_HardwareType.class).contains(board.getHardwareType_id())){
+                                    group.cache().add(Model_HardwareType.class, board.getHardwareType_id());
                             }
                         }
                     }
@@ -2772,7 +2775,7 @@ public class Controller_Hardware extends _BaseController {
                         Model_HardwareGroup group = Model_HardwareGroup.getById(board_group_id);
                         board.hardware_groups.remove(group);
                         group.cache_group_size -= 1;
-                        group.cache_hardware_type_ids = null; // Clean cache
+                        group.cache().removeAll(Model_HardwareType.class);  // Clean cache
                         it.remove();
                     }
 
@@ -2786,7 +2789,7 @@ public class Controller_Hardware extends _BaseController {
 
                             board.hardware_groups.remove(group);
                             group.cache_group_size -= 1;
-                            group.cache_hardware_type_ids = null;// Clean cache
+                            group.cache().removeAll(Model_HardwareType.class);
                             it.remove();
                         }
                     }
@@ -2804,7 +2807,7 @@ public class Controller_Hardware extends _BaseController {
                 for (UUID board_id: help.group_synchro.hardware_ids) {
                     Model_Hardware board = Model_Hardware.getById(board_id);
 
-                    board.cache_hardware_groups_ids.add(help.group_synchro.group_id);
+                    board.cache().add(Model_HardwareGroup.class, help.group_synchro.group_id);
                     board.hardware_groups.add(group);
 
                 }

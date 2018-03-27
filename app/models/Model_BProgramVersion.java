@@ -87,12 +87,12 @@ public class Model_BProgramVersion extends VersionModel {
         super.save();
 
         new Thread(() -> {
-            EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, b_program.getProjectId(), b_program.id));
+            EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, get_b_program().getProjectId(), get_b_program_id()));
         }).start();
 
         // Add to Cache
-        if (b_program != null) {
-            b_program.cache().add(this.getClass(), id);
+        if (get_b_program() != null) {
+            get_b_program().cache().add(this.getClass(), id);
         }
     }
 
@@ -146,8 +146,8 @@ public class Model_BProgramVersion extends VersionModel {
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public String get_path() {
-        if(b_program != null) {
-            return b_program.get_path() + "/version/" + this.id;
+        if(get_b_program() != null) {
+            return get_b_program().get_path() + "/version/" + this.id;
         }else {
             return get_b_program().get_path() + "/version/" + this.id;
         }
