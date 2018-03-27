@@ -5,6 +5,7 @@ import io.ebean.Ebean;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
+import play.data.validation.Constraints;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -830,25 +831,23 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result instanceSnapshot_create() {
+    public Result instanceSnapshot_create(UUID instance_id) {
         try {
 
             // Get and Validate Object
             Swagger_InstanceSnapshot_New help = baseFormFactory.formFromRequestWithValidation(Swagger_InstanceSnapshot_New.class);
 
             // Kontrola objektu
-            Model_Instance instance = Model_Instance.getById(help.instance_id);
+            Model_Instance instance = Model_Instance.getById(instance_id);
 
             Model_BProgramVersion version = Model_BProgramVersion.getById(help.version_id);
-
-            // TODO do something with help.interfaces (update hardware, save it somewhere, tell homer which hw is in instance)
 
             Model_InstanceSnapshot snapshot = new Model_InstanceSnapshot();
             snapshot.name = help.name;
             snapshot.description = help.description;
             snapshot.b_program_version = version;
             snapshot.instance = instance;
-            snapshot.program = Model_Blob.upload(help.snapshot, "snapshot.json", snapshot.get_path() );
+            snapshot.program = Model_Blob.upload(help.json().toString(), "snapshot.json", snapshot.get_path() );
             snapshot.save();
 
             return created(snapshot.json());

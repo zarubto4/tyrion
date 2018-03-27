@@ -42,7 +42,7 @@ public class WS_Message_Hardware_uuid_converter extends WS_AbstractMessage {
         result.put("message_id", message_id);
         result.put("full_id", full_id);
         result.put("status" , "error");
-        result.put("status" , "Device not found or without dominance entity");
+        result.put("error_message" , "Device not found or without dominance entity");
         return result;
 
     }

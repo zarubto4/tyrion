@@ -71,6 +71,10 @@ public class WS_Homer extends WS_Interface {
 
             switch (json.get("message_channel").asText()) {
 
+                case "ping": {
+                    return;
+                }
+
                 case Model_Hardware.CHANNEL: {    // Komunikace mezi Hardware a Tyrionem
                     Model_Hardware.Messages(this, json);
                     return;

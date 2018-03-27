@@ -98,14 +98,18 @@ public class Model_Instance extends TaggedModel {
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public Model_InstanceSnapshot current_snapshot() throws _Base_Result_Exception  {
-
-        if (this.current_snapshot_id != null) {
-            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(this.current_snapshot_id);
-            if (snapshot != null) {
-                return snapshot;
+        try {
+            if (this.current_snapshot_id != null) {
+                Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(this.current_snapshot_id);
+                if (snapshot != null) {
+                    return snapshot;
+                }
             }
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
         }
-        return null;
     }
 
     @JsonProperty @ApiModelProperty(required = true)
@@ -303,8 +307,6 @@ public class Model_Instance extends TaggedModel {
     @Override
     public void save() {
 
-        logger.debug("save - saving to database, id: {}", this.id);
-
         super.save();
 
         if (project != null) {
@@ -336,10 +338,8 @@ public class Model_Instance extends TaggedModel {
     public boolean delete() {
 
         logger.debug("delete - deleting from database, id: {} ", this.id);
-        
-        this.deleted = true;
-        super.update();
 
+        super.delete();
 
         try {
             getProject().cache().remove(this.getClass(), id);

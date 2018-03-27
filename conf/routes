@@ -233,7 +233,7 @@ PUT       /instance/filter/:page_number                                 controll
 PUT       /instance/grid_app/:snapshot_id                               controllers.Controller_Blocko.instance_change_settings_grid_App(snapshot_id: java.util.UUID)
 
 #InstanceSnapshot
-POST      /instance/snapshot                                            controllers.Controller_Blocko.instanceSnapshot_create
+POST      /instance/snapshot/:instance_id                                controllers.Controller_Blocko.instanceSnapshot_create(instance_id: java.util.UUID)
 GET       /instance/snapshot/get/:snapshot_id                           controllers.Controller_Blocko.instanceSnapshot_get(snapshot_id: java.util.UUID)
 PUT       /instance/snapshot/update/:snapshot_id                        controllers.Controller_Blocko.instanceSnapshot_udpate(snapshot_id: java.util.UUID)
 PUT       /instance/snapshot/deploy                                     controllers.Controller_Blocko.instanceSnapshot_deploy()

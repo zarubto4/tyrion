@@ -4,10 +4,11 @@ package utilities.swagger.input;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 @ApiModel(description = "Json Model with name and description",
           value = "NameAndDescription")
-public class Swagger_NameAndDescription {
+public class Swagger_NameAndDescription extends _Swagger_Abstract_Default {
 
     @Constraints.Required
     @Constraints.MinLength(value = 2, message = "The name must have at least 2 characters")

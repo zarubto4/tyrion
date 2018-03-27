@@ -1995,6 +1995,12 @@ public class Controller_Hardware extends _BaseController {
             }
 
             if (help.projects != null && !help.projects.isEmpty()) {
+
+                // Permissin check
+                for(UUID uuid_project: help.projects) {
+                    Model_Project.getById(uuid_project);
+                }
+
                 query.where().in("project.id", help.projects);
             }
 
@@ -2004,6 +2010,20 @@ public class Controller_Hardware extends _BaseController {
 
             if (help.processors != null) {
                 query.where().in("hardware_type.processor.id", help.processors);
+            }
+
+            if (help.instance_snapshots != null) {
+                for(UUID uuid_snapshot : help.instance_snapshots) {
+                    Model_InstanceSnapshot snaphshot = Model_InstanceSnapshot.getById(uuid_snapshot);
+                    query.where().in("id", snaphshot.getHardwareIds());
+                }
+            }
+
+            if (help.hardware_groups_id != null) {
+                for(UUID uuid_snapshot : help.hardware_groups_id) {
+                    Model_HardwareGroup.getById(uuid_snapshot);
+                }
+                query.where().in("hardware_groups.id", help.hardware_groups_id);
             }
 
             // From date

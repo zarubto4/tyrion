@@ -54,7 +54,7 @@ public class WS_Portal {
 
     public void onMessage(WS_PortalSingle ws, ObjectNode json) {
        
-        logger.trace("onMessage:: {} :: Incoming message: {} ", person_id,  json.toString() );
+        logger.trace("onMessage:: {} :: CHANNEL :: {} Incoming message: {} ", person_id, json.get("message_channel").asText(),  json.toString() );
 
         if(json.has("message_channel")) {
 
@@ -63,6 +63,10 @@ public class WS_Portal {
                 case WS_Portal.CHANNEL: {
 
                     switch (json.get("message_type").asText()) {
+
+                        case "ping": {
+                            return;
+                        }
 
                         case Model_Notification.message_type: {
                             becki_notification_confirmation_from_becki(ws, json);
@@ -79,13 +83,15 @@ public class WS_Portal {
 
                         default: {
                             logger.warn("onMessage:: {} :: Incoming message on message_channel \"becki\" has not unknown message_type!!!! Message:: {}", person_id,  json.toString());
-
+                            return;
                         }
                     }
                 }
 
                 // Podpora Garfielda - Přeposílání mezi Websockety
                 case Model_Garfield.CHANNEL: {
+
+                    logger.trace("onMessage:: Incoming message: Garfield: Server receive message");
 
                     // Není komu co zasílat - zahazuji - Je připojen jen tento kanál
                     if (all_person_connections.size() < 2) {
@@ -97,11 +103,13 @@ public class WS_Portal {
                         all_person_connections.get(key).send(json);
                     }
 
+                    return;
+
                 }
 
                 case Model_HomerServer.CHANNEL: {
-                    logger.warn("onMessage:: Incoming message: Tyrion: Server receive message: ");
-                    logger.warn("onMessage:: Incoming message: Tyrion: Server don't know what to do!");
+                    logger.warn("onMessage:: Incoming message: Tyrion: Server receive message.");
+                    logger.warn("onMessage:: Incoming message: Tyrion: Server don't know what to do for message:: {} ", json);
                     return;
                 }
 

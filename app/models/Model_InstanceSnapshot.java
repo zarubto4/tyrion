@@ -25,6 +25,8 @@ import utilities.model.TaggedModel;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.input.*;
+import utilities.swagger.output.Swagger_InstanceSnapshot_JsonFile;
+import utilities.swagger.output.Swagger_InstanceSnapshot_JsonFile_Interface;
 import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
 import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_hardware;
@@ -134,14 +136,26 @@ public class Model_InstanceSnapshot extends TaggedModel {
     }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "only if snapshot is main")
-    public Swagger_InstanceSnapshot_New program(){
+    public Swagger_InstanceSnapshot_JsonFile program(){
         try {
 
-            if (program != null) return  baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapshot_New.class, Json.parse( program.get_fileRecord_from_Azure_inString()));
+            if (program != null) return  baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapshot_JsonFile.class, Json.parse( program.get_fileRecord_from_Azure_inString()));
 
             return null;
 
         }catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "only if snapshot is main")
+    public List<Model_UpdateProcedure>  updates() throws _Base_Result_Exception {
+        try {
+
+            return getUpdateProcedure();
+
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -197,7 +211,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
     public List<UUID> getHardwareIds() throws _Base_Result_Exception {
         List<UUID> list = new ArrayList<>();
 
-        for (Swagger_InstanceSnapshot_New.Interface interface_hw : this.program().interfaces) {
+        for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.program().interfaces) {
 
             if(interface_hw.type.equals("hardware")) {
                 list.add(interface_hw.target_id);
@@ -211,7 +225,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
     public List<UUID> getHardwareGroupseIds() throws _Base_Result_Exception {
         List<UUID> list = new ArrayList<>();
 
-        for (Swagger_InstanceSnapshot_New.Interface interface_hw : this.program().interfaces) {
+        for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.program().interfaces) {
 
             if(interface_hw.type.equals("group")) {
                 list.add(interface_hw.target_id);
@@ -431,7 +445,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 procedure.date_of_planing = new Date();
             }
 
-            for (Swagger_InstanceSnapshot_New.Interface interface_hw : this.program().interfaces) {
+            for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.program().interfaces) {
 
                 Model_CProgramVersion version = Model_CProgramVersion.getById(interface_hw.interface_id);
 
@@ -759,8 +773,49 @@ public class Model_InstanceSnapshot extends TaggedModel {
         @Valid public String version_id;
     }
 
+/* JSON Override  Method -----------------------------------------------------------------------------------------*/
 
-/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+    @Override
+    public void save() {
+        super.save();
+
+        this.instance.cache().add(this.getClass(), this.id);
+        cache.put(this.id, this);
+    }
+
+    @Override
+    public void update() {
+
+        logger.debug("update - updating in database, id: {}",  this.id);
+
+        super.update();
+    }
+
+    @Override
+    public boolean delete() {
+
+        logger.debug("delete - deleting from database, id: {} ", this.id);
+
+        super.delete();
+
+        if(get_instance().current_snapshot_id.equals(this.id)) {
+            get_instance().current_snapshot_id = null;
+            get_instance().update();
+            get_instance().stop();
+        }
+
+        get_instance().cache().remove(this.getClass(), this.id);
+
+        if (cache.containsKey(this.id)) {
+            cache.remove(this.id);
+        }
+
+        return false;
+    }
+
+
+
+    /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
     public String get_path() {

@@ -26,11 +26,11 @@ public class Swagger_Board_Filter {
     @ApiModelProperty(value = "List of processor.id", required = false)
     public List<UUID> processors;
 
-    @ApiModelProperty(value = "List of instance.id", required = false)
-    public List<UUID> instances;
-
     @ApiModelProperty(value = "List of instance_snapshot.id", required = false)
     public List<UUID> instance_snapshots;
+
+    @ApiModelProperty(value = "List of hardware_group.id", required = false)
+    public List<UUID>  hardware_groups_id;
 
     @ApiModelProperty(value = "Unix in millis - created - start_time", required = false)
     public Date start_time;
