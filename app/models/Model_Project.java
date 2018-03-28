@@ -21,6 +21,7 @@ import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.swagger.output.Swagger_ProjectStats;
 import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
@@ -56,7 +57,7 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Instance>              instances       = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HomerServer>           servers         = new ArrayList<>();
 
-    @JsonIgnore @Transient @Cached public ProjectStats project_stats;
+    @JsonIgnore @Transient public Swagger_ProjectStats project_stats;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -485,23 +486,9 @@ public class Model_Project extends TaggedModel {
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 
-
-    @ApiModel(value = "ProjectStats", description = "Model of Project Statistic - Its Asynchronous Object created after all values in project are cached.")
-    private class ProjectStats {
-        @ApiModelProperty(required = true) @JsonProperty() public int hardware;
-        @ApiModelProperty(required = true) @JsonProperty() public int b_programs;
-        @ApiModelProperty(required = true) @JsonProperty() public int c_programs;
-        @ApiModelProperty(required = true) @JsonProperty() public int libraries;
-        @ApiModelProperty(required = true) @JsonProperty() public int grid_projects;
-        @ApiModelProperty(required = true) @JsonProperty() public int hardware_groups;
-        @ApiModelProperty(required = true) @JsonProperty() public int widgets;
-        @ApiModelProperty(required = true) @JsonProperty() public int blocks;
-        @ApiModelProperty(required = true) @JsonProperty() public int instances;
-    }
-
     @JsonProperty @ApiModelProperty(required = false, value = "Its Asynchronous Cached Value and it visible only, when system has cached everything. " +
             "If not, the system automatically searches for all data in a special thread, and when it gets it, it sends them to the client via Websocket. ")
-    public ProjectStats project_stats(){
+    public Swagger_ProjectStats project_stats(){
 
         if(getProduct().active){
             return null;
@@ -514,7 +501,7 @@ public class Model_Project extends TaggedModel {
         new Thread(() -> {
             try {
 
-                ProjectStats project_stats = new ProjectStats();
+                Swagger_ProjectStats project_stats = new Swagger_ProjectStats();
                 project_stats.hardware = getHardware().size();
                 project_stats.b_programs = getBPrograms().size();
                 project_stats.c_programs = getCPrograms().size();

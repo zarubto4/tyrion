@@ -224,8 +224,7 @@ public class MainLogger {
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
-    public class Log_Pair{
-
+    public static class Log_Pair {
         public String name;
         public LogLevel logLevel;
         public Color color;
