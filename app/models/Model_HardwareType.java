@@ -109,7 +109,6 @@ public class Model_HardwareType extends NamedModel {
     @JsonProperty
     public Model_BootLoader main_boot_loader() {
             try {
-                System.out.println("main_boot_loader HW Type ID: {} " + this.id);
                 return get_main_boot_loader();
             }catch (Exception e) {
                 return null;
@@ -274,18 +273,15 @@ public class Model_HardwareType extends NamedModel {
 
     @JsonIgnore
     public UUID get_main_boot_loader_id() throws _Base_Result_Exception {
-
         if (cache().get(Model_BootLoader.class) == null) {
             cache().add(Model_BootLoader.class, (UUID) Model_BootLoader.find.query().where().eq("main_hardware_type.id", id).select("id").findSingleAttribute());
         }
-        System.out.println("get_main_boot_loader_id bootloader ID: {} " + cache().get(Model_BootLoader.class) );
         return cache().get(Model_BootLoader.class);
     }
 
     @JsonIgnore
     public Model_BootLoader get_main_boot_loader() throws _Base_Result_Exception {
         try {
-            System.out.println("get_main_boot_loader HW Type ID: {} " + this.id);
             return Model_BootLoader.getById(get_main_boot_loader_id());
         }catch (Exception e) {
             return null;

@@ -413,11 +413,11 @@ public class Model_HomerServer extends TaggedModel {
     public static void approve_validation_for_homer_server(WS_Homer ws_homer, WS_Message_Check_homer_server_permission message) {
         try {
 
-            logger.warn("approve_validation_for_homer_server:: message.hash_token {}", message.hash_token);
+            logger.debug("approve_validation_for_homer_server:: message.hash_token {}", message.hash_token);
 
             Model_HomerServer server = Model_HomerServer.getById(ws_homer.id);
-            logger.warn("approve_validation_for_homer_server:: Server ID {}, Server Name: {}", server.id, server.name);
-            logger.warn("approve_validation_for_homer_server:: server.hash_token {}", server.hash_certificate);
+            logger.debug("approve_validation_for_homer_server:: Server ID {}, Server Name: {}", server.id, server.name);
+            logger.debug("approve_validation_for_homer_server:: server.hash_token {}", server.hash_certificate);
 
             if (message.hash_token.equals(server.hash_certificate)) {
 
@@ -477,7 +477,7 @@ public class Model_HomerServer extends TaggedModel {
 
                 model_token = Model_AuthorizationToken.find.query().where().eq("token", message.client_token).findOne();
                 if (model_token == null || !model_token.isValid()) {
-                    logger.warn("validate_incoming_user_connection_to_hardware_logger:: Token::" + message.client_token + " is not t is no longer valid according time");
+                    logger.info("validate_incoming_user_connection_to_hardware_logger:: Token::" + message.client_token + " is not t is no longer valid according time");
                     ws_homer.send(message.get_result(false));
                     return;
                 }
@@ -486,7 +486,7 @@ public class Model_HomerServer extends TaggedModel {
                     model_token.get_person();
                     Model_Person.token_cache.put(UUID.fromString(message.client_token), model_token.get_person_id());
                 } catch (Exception e){
-                    logger.warn("getUsername:: Model_FloatingPersonToken not contains Person!");
+                    logger.error("getUsername:: Model_FloatingPersonToken not contains Person!");
                     ws_homer.send(message.get_result(false));
                     return;
                 }

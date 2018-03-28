@@ -142,10 +142,10 @@ public class Model_Hardware extends TaggedModel {
 
     @JsonProperty public Swagger_Short_Reference hardware_type() {
         try {
-            logger.error("hardware_type:: HW ID  hardware_type_dsafsdffsadsafdfads {}", this.id);
+
             Model_HardwareType type = this.getHardwareTypeCache();
-            logger.error("hardware_type:: Dokončil jsem HW ID {}", this.id);
             return new Swagger_Short_Reference(type.id, type.name, type.description);
+
         } catch (NullPointerException e) {return  null;}
     }
 
@@ -207,7 +207,6 @@ public class Model_Hardware extends TaggedModel {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Model_BootLoader available_latest_bootloader()  {
         try {
-            logger.error("available_latest_bootloader:: HW ID {}", this.id);
             return getHardwareTypeCache().main_boot_loader();
         }catch (Exception e) {
             logger.internalServerError(e);
@@ -255,19 +254,15 @@ public class Model_Hardware extends TaggedModel {
     public List<BoardAlert> alert_list() {
         try {
 
-            logger.error("alert_list:: HW ID {}", this.id);
-
             List<BoardAlert> list = new ArrayList<>();
 
             Model_BootLoader available_latest_bootloader = available_latest_bootloader();
-            logger.error("alert_list:: available_latest_bootloader HW ID {}", this.id);
+
             Model_BootLoader actual_bootloader = actual_bootloader();
-            logger.error("alert_list:: actual_bootloader HW ID {}", this.id);
 
             if (( available_latest_bootloader != null && actual_bootloader == null) || ( available_latest_bootloader != null  && !actual_bootloader.id.equals(available_latest_bootloader.id) )) list.add(BoardAlert.BOOTLOADER_REQUIRED);
-            logger.error("alert_list:: Done HW ID ........... {}", this.id);
-
             return list;
+
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
@@ -660,14 +655,12 @@ public class Model_Hardware extends TaggedModel {
         if (cache().get(Model_HardwareType.class) == null) {
             cache().add(Model_HardwareType.class, (UUID) Model_HardwareType.find.query().where().eq("hardware.id", id).select("id").findSingleAttribute());
         }
-        logger.error("getHardwareTypeCache Hw ID: {} getHardwareType_id {}",  this.id, cache().get(Model_HardwareType.class));
         return cache().get(Model_HardwareType.class);
     }
 
     @JsonIgnore
     public Model_HardwareType getHardwareTypeCache() throws _Base_Result_Exception {
         try {
-            logger.error("getHardwareTypeCache Hw ID: {} a getHardwareTypeCache:: ID: {} ", this.id, getHardwareTypeCache_id());
             return Model_HardwareType.getById(getHardwareTypeCache_id());
         }catch (Exception e) {
             e.printStackTrace();
@@ -731,7 +724,6 @@ public class Model_Hardware extends TaggedModel {
 
     @JsonIgnore
     public boolean update_boot_loader_required() {
-        logger.error("update_boot_loader_required:: HW ID {}", this.id);
         if (getHardwareTypeCache().main_boot_loader() == null || get_actual_bootloader() == null) return true;
         return (!this.getHardwareTypeCache().get_main_boot_loader_id().equals(get_actual_bootloader_id()));
     }
@@ -917,6 +909,9 @@ public class Model_Hardware extends TaggedModel {
     public static void device_Disconnected(WS_Message_Hardware_disconnected help) {
         try {
 
+            if (help.uuid == null) {
+                return;
+            }
 
             Model_Hardware device =  Model_Hardware.getById(help.uuid);
 
@@ -1008,7 +1003,6 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public static void device_online_synchronization_echo(WS_Message_Hardware_online_status report) {
         try {
-
             logger.warn("device_online_synchronization_echo");
             for (WS_Message_Hardware_online_status.DeviceStatus status : report.hardware_list) {
                 logger.warn("device_online_synchronization_echo: Status {} state  {}", status.uuid, status.online_status);
@@ -2831,13 +2825,11 @@ public class Model_Hardware extends TaggedModel {
 
     public static Model_Hardware getById(UUID id) throws _Base_Result_Exception {
 
-        logger.error("getById Hw ID: {} ", id);
-
         Model_Hardware board = cache.get(id);
         if (board == null) {
 
             board = find.byId(id);
-            if (board == null) throw new Result_Error_NotFound(Model_Widget.class);
+            if (board == null) throw new Result_Error_NotFound(Model_Hardware.class);
 
             cache.put(id, board);
         }

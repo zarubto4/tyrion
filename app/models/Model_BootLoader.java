@@ -53,10 +53,9 @@ public class /**/Model_BootLoader extends NamedModel {
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty public boolean main_bootloader() {
-        // return getMainHardwareType() != null;
-
-        return false;
+         return getMainHardwareType() != null;
     }
+
     @JsonProperty public String  file_path() {
         try {
 
@@ -131,6 +130,7 @@ public class /**/Model_BootLoader extends NamedModel {
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
     // Bootloader
+    @JsonIgnore
     public static void notification_bootloader_procedure_first_information_single(Model_HardwareUpdate plan) {
         try {
 
@@ -160,6 +160,7 @@ public class /**/Model_BootLoader extends NamedModel {
     }
 
     // Bootloader
+    @JsonIgnore
     public static void notification_bootloader_procedure_success_information_single(Model_HardwareUpdate plan) {
         try {
 
@@ -181,6 +182,7 @@ public class /**/Model_BootLoader extends NamedModel {
         }
     }
 
+    @JsonIgnore
     public static void notification_bootloader_procedure_first_information_list(List<Model_HardwareUpdate> plans) {
         try {
 

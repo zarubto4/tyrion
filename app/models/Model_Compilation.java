@@ -134,6 +134,7 @@ public class Model_Compilation extends BaseModel {
         // Call notification about model update
         new Thread(() -> {
             try {
+
                 EchoHandler.addToQueue(new WSM_Echo( Model_CProgram.class, version.get_c_program().getProjectId(), version.get_c_program_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing

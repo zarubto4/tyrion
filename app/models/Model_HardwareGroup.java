@@ -136,6 +136,7 @@ public class Model_HardwareGroup extends NamedModel {
     public List<Model_Hardware> getHardware() {
         try {
 
+            System.out.println("Model_HArdwaareGroup: getHardware()");
             List<Model_Hardware> hardwares = new ArrayList<>();
 
             for (UUID types : getHardwareIds()) {

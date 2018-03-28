@@ -18,7 +18,7 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(Synchronize_Homer_Unresolved_Updates.class);
+    private static final Logger logger = new Logger(Synchronize_Homer_Hardware_after_connection.class);
 
 /*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
@@ -67,6 +67,7 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                 // Device je autorizován pro připojení, ale není k němu aktuálně žádná aktivní virtual entita
                 // s nastavenou dominancí
                 if (board == null) {
+                    logger.info("check_device_on_server:: Device: Full ID: {} not found in database by getByFullId", pair.full_id);
                     continue;
                 }
 

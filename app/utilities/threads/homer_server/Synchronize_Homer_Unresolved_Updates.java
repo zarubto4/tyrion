@@ -4,6 +4,8 @@ import io.ebean.Expr;
 import io.ebean.PagedList;
 import models.Model_HardwareUpdate;
 import models.Model_HomerServer;
+import play.libs.Json;
+import play.mvc.BodyParser;
 import utilities.enums.HardwareUpdateState;
 import utilities.logger.Logger;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
@@ -17,7 +19,7 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger terminal_logger = new Logger(Synchronize_Homer_Unresolved_Updates.class);
+    private static final Logger logger = new Logger(Synchronize_Homer_Unresolved_Updates.class);
 
 /*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
@@ -32,11 +34,11 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
     @Override
     public void run() {
 
-        terminal_logger.debug("Synchronize_Homer_Unresolved_Updates:: Independent Thread under server:: " + homer.id + " started");
+        logger.debug("Synchronize_Homer_Unresolved_Updates:: Independent Thread under server:: " + homer.id + " started");
 
         try {
 
-            terminal_logger.debug("5. Spouštím Sycnhronizační proceduru Synchronize_Homer_Unresolved_Updates");
+            logger.debug("5. Spouštím Sycnhronizační proceduru Synchronize_Homer_Unresolved_Updates");
 
             int page = 0;
             int page_size = 100;
@@ -69,9 +71,12 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
                 if (!tasks.isEmpty()) {
 
                     WS_Message_Hardware_UpdateProcedure_Command result = Model_HomerServer.getById(homer.id).update_devices_firmware(tasks);
-                    if (!result.status.equals("success")) {
-                        terminal_logger.internalServerError(new Exception("Result status was not 'success'"));
+                    if (result.status.equals("success")) {
+                        // Nothing
+                    } else {
+                        logger.error("Result status was not 'success':: result: {}", Json.toJson(result));
                     }
+
                 }
 
                 // Pokud je počet stránek shodný
@@ -81,7 +86,7 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
 
             }
         } catch (Exception e) {
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 }

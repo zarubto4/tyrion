@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.Model_Hardware;
 import models.Model_Widget;
+import play.libs.Json;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,6 @@ public class Swagger_Hardware_List extends _Swagger_Filter_Common {
         List<UUID> ids = query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findIds();
 
         for (UUID id :ids) {
-            System.out.println("Swagger_Hardware_List: ADD HArdware ID" + id);
             this.content.add(Model_Hardware.getById(id));
         }
 

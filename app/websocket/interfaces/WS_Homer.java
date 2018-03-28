@@ -57,7 +57,7 @@ public class WS_Homer extends WS_Interface {
     @Override
     public void onMessage(ObjectNode json) {
 
-        logger.trace("onMessage - {} {}" + json.toString());
+        logger.trace("onMessage - {}",  json.toString());
 
         if (!authorized) {
 
@@ -179,11 +179,13 @@ public class WS_Homer extends WS_Interface {
                 // Kontrola nastavení
                 Synchronize_Homer_Synchronize_Settings synchronize_homer_synchronize_settings = new Synchronize_Homer_Synchronize_Settings(this);   // TODO - čeká na Homer Config APP  LEVEL: HARD  TIME: LONGTERM
 
+                // Kontrola HW
+                Synchronize_Homer_Hardware_after_connection synchronize_homer_hardware_after_connection = new Synchronize_Homer_Hardware_after_connection(this);
+
                 // Kontrola instancí
                 Synchronize_Homer_Instance_after_connection synchronize_homer_instance_after_connection = new Synchronize_Homer_Instance_after_connection(this);
 
-                // Kontrola HW
-                Synchronize_Homer_Hardware_after_connection synchronize_homer_hardware_after_connection = new Synchronize_Homer_Hardware_after_connection(this);
+
 
                 // Kontrola Updatů
                 Synchronize_Homer_Unresolved_Updates synchronize_homer_unresolved_updates = new Synchronize_Homer_Unresolved_Updates(this);

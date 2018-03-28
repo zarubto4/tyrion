@@ -57,11 +57,11 @@ public class Model_HardwareUpdate extends BaseModel {
               @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public FirmwareType firmware_type;          // Typ Firmwaru
 
                                                                                 // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
-    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)               public Model_CProgramVersion c_program_version_for_update; // C_program k aktualizaci
+    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                 public Model_CProgramVersion c_program_version_for_update; // C_program k aktualizaci
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_BootLoader bootloader;                      // Když nahrávám Firmware
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_Blob binary_file;                     // Soubor, když firmware nahrává uživatel sám mimo flow
 
-                                                @Enumerated(EnumType.STRING)    public HardwareUpdateState state;
+                                                   @Enumerated(EnumType.STRING) public HardwareUpdateState state;
                                                                     @JsonIgnore public Integer count_of_tries;                         // Počet celkovbých pokusu doručit update (změny z wait to progres atd..
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public String error;
@@ -140,8 +140,15 @@ public class Model_HardwareUpdate extends BaseModel {
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public Model_Hardware hardware() {
-        return getHardware();
+    public Swagger_Short_Reference hardware() {
+        try {
+
+            Model_Hardware hardware = getHardware();
+            return new Swagger_Short_Reference(hardware.id, hardware.name, hardware.description);
+
+        }catch (Exception e) {
+            return null;
+        }
     }
 
     @ApiModelProperty(required = false, value = "Is visible only if user send own binary file ( OR state for c_program_detail)")
@@ -344,8 +351,11 @@ public class Model_HardwareUpdate extends BaseModel {
 
             Model_HardwareUpdate plan = Model_HardwareUpdate.getById(report.tracking_id);
             if (plan == null) {
+                logger.error("update_procedure_progress :: Plan is null Return null NullPointerException");
                 throw new NullPointerException("Plan id" + report.tracking_id + " not found!");
             }
+
+            logger.warn("update_procedure_progress :: {} Progress: {}", plan.id);
 
 
             // Pokud se vrátí fáze špatně - ukončuji celý update
@@ -377,14 +387,13 @@ public class Model_HardwareUpdate extends BaseModel {
                 return;
             }
 
+            logger.warn("update_procedure_progress :: Checking phase: Phase {} ", phase);
             // Fáze jsou volány jen tehdá, když má homer instrukce je zasílat
             switch (phase) {
 
                 case PHASE_UPLOAD_START: {
                     try {
                         logger.debug("update_procedure_progress - procedure {} is PHASE_UPLOAD_START", plan.id);
-
-
 
                         Model_Notification notification = new Model_Notification();
 
@@ -566,6 +575,8 @@ public class Model_HardwareUpdate extends BaseModel {
                 case PHASE_UPDATE_DONE: {
                     try {
 
+                        logger.warn("update_procedure_progress :: UPDATE DONE :: for Hardware: {} ", plan.getHardware().name);
+
                         Model_Notification notification = new Model_Notification();
 
                         notification
@@ -585,6 +596,8 @@ public class Model_HardwareUpdate extends BaseModel {
 
 
                         Model_Hardware hardware = plan.getHardware();
+
+                        logger.warn("update_procedure_progress :: UPDATE DONE :: plan.firmware_type  ", plan.firmware_type);
 
                         if (plan.firmware_type == FirmwareType.FIRMWARE) {
 
@@ -688,7 +701,8 @@ public class Model_HardwareUpdate extends BaseModel {
                         if (plan.firmware_type == FirmwareType.FIRMWARE) {
 
                             hardware.actual_c_program_version = plan.c_program_version_for_update;
-
+                            hardware.cache().removeAll(Model_CProgram.class);
+                            hardware.cache().removeAll(Model_CProgramVersion.class);
                             hardware.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
                             hardware.cache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
                             hardware.update();
@@ -696,11 +710,14 @@ public class Model_HardwareUpdate extends BaseModel {
                         } else if (plan.firmware_type == FirmwareType.BOOTLOADER) {
 
                             hardware.actual_boot_loader = plan.getBootloader();
+                            hardware.cache().removeAll(Model_BootLoader.class);
                             hardware.cache().add(Model_BootLoader.class, plan.getBootloader().id);
                             hardware.update();
 
                         } else if (plan.firmware_type == FirmwareType.BACKUP) {
 
+                            hardware.cache().removeAll(Model_CProgramFakeBackup.class);
+                            hardware.cache().removeAll(Model_CProgramVersionFakeBackup.class);
                             hardware.cache().add(Model_CProgramFakeBackup.class, plan.c_program_version_for_update.get_c_program().id);
                             hardware.cache().add(Model_CProgramVersionFakeBackup.class, plan.c_program_version_for_update.id);
                             hardware.update();

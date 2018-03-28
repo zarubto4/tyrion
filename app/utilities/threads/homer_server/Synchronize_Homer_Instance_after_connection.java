@@ -89,16 +89,13 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
         // Vylistuji si seznam instnancí, které by měli běžet na serveru
 
         // Přidám všechny reálné instance, které mají běžet.
-        List<UUID> instances_in_database_for_upload = Model_Instance.find.query().where()
+        return Model_Instance.find.query().where()
                 .eq("server_main.id", homer.id)
                 .eq("deleted", false)
                 .isNotNull("current_snapshot_id")
                 .select("id")
                 .findSingleAttributeList();
 
-        logger.error("required_instance_on_server:: Requested Instances: {} ", instances_in_database_for_upload);
-
-        return instances_in_database_for_upload;
     }
 
     private List<UUID> actual_on_server() throws InterruptedException{

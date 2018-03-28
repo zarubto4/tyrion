@@ -495,7 +495,7 @@ public abstract class _BaseController {
                 RequestLatency.count_end( (String) Http.Context.current().args.get("tyrion_response_measurement_method"), (String) Http.Context.current().args.get("tyrion_response_measurement_path"), ( new Date().getTime() - (long) Http.Context.current().args.get("tyrion_response_measurement_time")));
             }
         }catch (Exception e){
-            logger.internalServerError(e);
+            // nothing !
         }
     }
 

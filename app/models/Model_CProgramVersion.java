@@ -178,7 +178,7 @@ public class Model_CProgramVersion extends VersionModel {
 
         // Add to Cache
         if (c_program != null) {
-            c_program.cache().add(this.getClass(), id);
+            c_program.cache().add(Model_CProgramVersion.class, id);
         }
     }
 
