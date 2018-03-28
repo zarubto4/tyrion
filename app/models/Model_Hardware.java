@@ -689,7 +689,11 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public Model_Project get_project() throws _Base_Result_Exception {
         try {
-            return Model_Project.getById(get_project_id());
+            if (get_project_id() != null) {
+                return Model_Project.getById(get_project_id());
+            } else {
+                return null;
+            }
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -2786,8 +2790,11 @@ public class Model_Hardware extends TaggedModel {
         //Cache Update
         cache.replace(this.id, this);
 
-
-        if (project().id != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, project().id, this.id))).start();
+        if (get_project() != null) {
+            if (get_project().id != null) {
+                new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project().id, this.id))).start();
+            }
+        }
 
         //Database Update
         super.update();
