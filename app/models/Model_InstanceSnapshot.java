@@ -246,7 +246,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
     public List<UUID> getUpdateProcedureIds() {
 
         if (cache().gets(Model_UpdateProcedure.class) == null) {
-            cache().add(Model_UpdateProcedure.class, Model_UpdateProcedure.find.query().where().eq("instance.id", id).orderBy("created").select("id").findSingleAttributeList());
+            cache().add(Model_UpdateProcedure.class, Model_UpdateProcedure.find.query().where().eq("instance.id", id).orderBy("created desc").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_UpdateProcedure.class);
@@ -512,12 +512,8 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 }
             }
 
-
-            procedure.save();
-
             // Cache Operation
-            cache().gets(Model_UpdateProcedure.class);
-            cache().add(Model_UpdateProcedure.class, procedure.id);
+            procedure.save();
 
             return procedure;
 

@@ -888,26 +888,31 @@ public class Controller_ExternalServer extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    @Security.Authenticated(AuthenticationHomer.class)
+    // @Security.Authenticated(AuthenticationHomer.class)
     public Result cloud_file_get_bootloader(UUID bootloader_id) {
         try {
+
+
+            logger.error("cloud_file_get_bootloader - download id: {}", bootloader_id);
 
             // Získám soubor
             Model_BootLoader bootLoader = Model_BootLoader.getById(bootloader_id);
 
+            logger.error("cloud_file_get_bootloader - Bootloader: {}", bootLoader.version_identifier);
+            logger.error("cloud_file_get_bootloader - File Path: {}",  bootLoader.file.path);
 
-            // Separace na Container a Blob
-            //int slash = bootLoader.file.path.indexOf("/");
-            int slash = bootLoader.file_path().indexOf("/");
-            String container_name = bootLoader.file_path().substring(0,slash);
-            String real_file_path = bootLoader.file_path().substring(slash+1);
+            int slash = bootLoader.file.path.indexOf("/");
+            String container_name = bootLoader.file.path.substring(0,slash);
+            String real_file_path = bootLoader.file.path.substring(slash+1);
+
+            logger.error("cloud_file_get_bootloader - Container Name {} real_file_path {} ", container_name, real_file_path );
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 
             // Create Policy
             Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
             cal.setTime(new Date());
-            cal.add(Calendar.SECOND, 30);
+            cal.add(Calendar.DATE, 250);
 
             SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
             policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
@@ -917,7 +922,7 @@ public class Controller_ExternalServer extends _BaseController {
 
             String total_link = blob.getUri().toString() + "?" + sas;
 
-            logger.debug("cloud_file_get_bootloader_version - download link: {}", total_link);
+            logger.error("cloud_file_get_bootloader_version - download link: {}", total_link);
 
             // Přesměruji na link
             return redirect(total_link);

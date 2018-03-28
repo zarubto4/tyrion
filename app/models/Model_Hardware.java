@@ -549,7 +549,7 @@ public class Model_Hardware extends TaggedModel {
     public UUID get_actual_c_program_id() {
 
         if (cache().get(Model_CProgram.class) == null) {
-            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type.hardware.id", id).select("id").findSingleAttribute());
+            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("versions.c_program_version_boards.id", id).select("id").findSingleAttribute());
         }
 
         return cache().get(Model_CProgram.class);
@@ -569,8 +569,8 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public UUID get_actual_c_program_version_id(){
 
-        if (cache().get(Model_CProgramVersion.class) == null) {                                                         //propertyName
-            cache().add(Model_CProgramVersion.class, (UUID) Model_CProgramVersion.find.query().where().eq("hardware_type.hardware.id", id).select("id").findSingleAttribute());
+        if (cache().get(Model_CProgramVersion.class) == null) {
+            cache().add(Model_CProgramVersion.class, (UUID) Model_CProgramVersion.find.query().where().eq("c_program_version_boards.id", id).select("id").findSingleAttribute());
         }
 
         return cache().get(Model_CProgramVersion.class);
@@ -578,7 +578,6 @@ public class Model_Hardware extends TaggedModel {
 
     @JsonIgnore
     public Model_CProgramVersion get_actual_c_program_version(){
-
         try {
             return Model_CProgramVersion.getById(get_actual_c_program_version_id());
         }catch (Exception e) {
@@ -610,8 +609,8 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public UUID get_backup_c_program_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_CProgram.class) == null) {                                                         //propertyName
-            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_default.hardware.id", id).select("id").findSingleAttribute());
+        if (cache().get(Model_CProgram.class) == null) {
+            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("versions.c_program_version_backup_boards.id", id).select("id").findSingleAttribute());
         }
 
         return cache().get(Model_CProgram.class);
@@ -1003,17 +1002,12 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public static void device_online_synchronization_echo(WS_Message_Hardware_online_status report) {
         try {
-            logger.warn("device_online_synchronization_echo");
             for (WS_Message_Hardware_online_status.DeviceStatus status : report.hardware_list) {
-                logger.warn("device_online_synchronization_echo: Status {} state  {}", status.uuid, status.online_status);
                 cache_status.put(status.uuid, status.online_status);
-
                 // Odešlu echo pomocí websocketu do becki
                 Model_Hardware device = getById(status.uuid);
-
                 WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, status.online_status, device.project().id);
             }
-
         } catch (Exception e) {
             logger.internalServerError(e);
         }
@@ -1188,7 +1182,8 @@ public class Model_Hardware extends TaggedModel {
     }
 
     // Metoda překontroluje odeslání a pak předává objektu - zpráva plave skrze program
-    @JsonIgnore public void write_without_confirmation(String message_id, ObjectNode json) {
+    @JsonIgnore
+    public void write_without_confirmation(String message_id, ObjectNode json) {
 
         if (this.connected_server_id == null) {
             return;
@@ -1230,12 +1225,14 @@ public class Model_Hardware extends TaggedModel {
     public void device_online_synchronization_ask() {
         try {
 
+            logger.trace("device_online_synchronization_ask:: Making Request");
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(id)), 1000 * 5, 0, 2);
             WS_Message_Hardware_online_status status = baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_online_status.class, node);
 
             if(status.status.equals("error")) {
                 logger.warn("device_online_synchronization_ask: Status Error", node);
             }else {
+                logger.trace("device_online_synchronization_ask:: Making Request - Response Success");
                 device_online_synchronization_echo(status);
             }
 
@@ -1290,7 +1287,6 @@ public class Model_Hardware extends TaggedModel {
 
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_hardware_groups().make_request(Collections.singletonList(this), hardware_groups_ids, command), 1000 * 5, 0, 2);
 
-            System.err.println("WS_Message_Hardware_set_hardware_groups:" + node.toString());
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_hardware_groups.class, node);
 
         } catch (Exception e) {
@@ -1660,6 +1656,7 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public void hardware_firmware_state_check() {
         try {
+            logger.debug("hardware_firmware_state_check procedure");
 
             WS_Message_Hardware_overview_Board report = get_devices_overview();
 
@@ -1673,7 +1670,7 @@ public class Model_Hardware extends TaggedModel {
             }
 
             if (!report.status.equals("success")) {
-                logger.warn("hardware_firmware_state_check: WS_Help_Hardware_board_overview something is wrong on device {}" , this.id);
+                logger.error("hardware_firmware_state_check: WS_Help_Hardware_board_overview something is wrong on device {}" , this.id);
                 return;
             }
 
@@ -1838,25 +1835,25 @@ public class Model_Hardware extends TaggedModel {
      */
     @JsonIgnore
     private void check_firmware(WS_Message_Hardware_overview_Board overview) {
-
         try {
+
             // Pokud uživatel nechce DB synchronizaci ingoruji
             if (!this.database_synchronize) {
-                logger.trace("check_firmware - database_synchronize is forbidden - change parameters not allowed!");
+                logger.trace("check_firmware: Device id: {} : database_synchronize is forbidden - change parameters not allowed!", this.id);
                 return;
             }
 
             if (get_actual_c_program_version() == null) {
-                logger.trace("check_firmware -: Actual firmware by DB not recognized :: ", overview.binaries.firmware.build_id);
+                logger.trace("check_firmware: Device id: {} : Actual firmware by DB not recognized :: {}", this.id, overview.binaries.firmware.build_id);
             }
 
             if (overview.binaries.firmware == null) {
-                logger.error("check_firmware -: overview.binaries.firmware is null!!");
+                logger.error("check_firmware: Device id: {} : overview.binaries.firmware is null!!", this.id);
                 return;
             }
 
             if (overview.binaries.firmware.build_id == null || overview.binaries.firmware.build_id.equals("")) {
-                logger.error("check_firmware -: overview.binaries.firmware.build_id is null");
+                logger.error("check_firmware: Device id: {} : overview.binaries.firmware.build_id is null", this.id);
                 return;
             }
 
@@ -1881,6 +1878,7 @@ public class Model_Hardware extends TaggedModel {
             // Ale jestli mám udpate firmwaru a backupu pak k tomu dojít nesmí!
             // Poměrně krkolomné řešení a HNUS kod - ale chyba je výjmečná a stává se jen sporadicky těsně před nebo po restartu serveru
             if (firmware_plans.size() > 1) {
+                logger.debug("check_firmware: Device id: {} : there is more than one active firmware_plans. Its time to override it!", this.id);
                 for (int i = 1; i < firmware_plans.size(); i++) {
                     firmware_plans.get(i).state = HardwareUpdateState.OBSOLETE;
                     firmware_plans.get(i).update();
@@ -1889,7 +1887,7 @@ public class Model_Hardware extends TaggedModel {
 
             if (!firmware_plans.isEmpty()) {
 
-                logger.debug("existují nedokončené procedury");
+                logger.debug("check_firmware: Device id: {} : existují nedokončené procedury", this.id);
 
                 Model_HardwareUpdate plan = firmware_plans.get(0);
 
@@ -1898,14 +1896,14 @@ public class Model_Hardware extends TaggedModel {
                 // Mám shodu firmwaru oproti očekávánemů
                 if (get_actual_c_program_version() != null) {
 
-                    logger.debug("Firmware:: Co aktuálně je na HW podle Tyriona??:: {}", get_actual_c_program_version().compilation.firmware_build_id);
-                    logger.debug("Firmware:: Co aktuálně je na HW podle Homera??:: {}", overview.binaries.firmware.build_id);
-                    logger.debug("Firmware:: Co očekává nedokončená procedura??:: {}", plan.c_program_version_for_update.compilation.firmware_build_id);
+                    logger.debug("Firmware:: Device id: {} :  Co aktuálně je na HW podle Tyriona??:: CProgram Name {} Version Name {} Build Id {} ", this.id, get_actual_c_program_version().get_c_program().name, get_actual_c_program_version().name,  get_actual_c_program_version().compilation.firmware_build_id);
+                    logger.debug("Firmware:: Device id: {} :  Co aktuálně je na HW podle Homera??:: {}", this.id, overview.binaries.firmware.build_id);
+                    logger.debug("Firmware:: Device id: {} :  Co očekává nedokončená procedura??:: CProgram Name {} Version Name {} Build Id {} ", this.id, plan.c_program_version_for_update.get_c_program().name, plan.c_program_version_for_update.name, plan.c_program_version_for_update.compilation.firmware_build_id);
 
                     // Verze se rovnají
                     if (overview.binaries.firmware.build_id.equals(plan.c_program_version_for_update.compilation.firmware_build_id)) {
-                        logger.debug("check_firmware verze se shodují - tím pádem je procedura dokončená a uzavírám");
 
+                        logger.debug("check_firmware:: Device id: {} : verze se shodují - tím pádem je procedura dokončená a uzavírám", this.id);
                         this.actual_c_program_version = plan.c_program_version_for_update;
 
                         this.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
@@ -1913,7 +1911,7 @@ public class Model_Hardware extends TaggedModel {
 
                         this.update();
 
-                        logger.debug("check_firmware - up to date, procedure is done");
+                        logger.debug("check_firmware:: Device id: {} : - up to date, procedure is done", this.id);
                         plan.state = HardwareUpdateState.COMPLETE;
                         plan.date_of_finish = new Date();
                         plan.update();
@@ -1939,14 +1937,18 @@ public class Model_Hardware extends TaggedModel {
                 }
 
                 return;
+            } else {
+                logger.debug("check_firmware:: Device id: {}  Neexistují nedokončené procedury", this.id);
             }
+
+            logger.debug("check_firmware:: Device id: {} Totální přehled v Json: \n {} \n", this.id, Json.toJson(this).toString());
 
             // Nemám Updaty - ale verze se neshodují
             if (get_actual_c_program_version() != null && firmware_plans.isEmpty()) {
 
                 logger.debug("check_firmware - no update procedures found, but versions are not equal");
-                logger.debug("check_firmware - current firmware according to Tyrion: {}", get_actual_c_program_version().compilation.firmware_build_id);
-                logger.debug("check_firmware - current firmware according to Homer: {}", overview.binaries.firmware.build_id);
+                logger.debug("check_firmware - current firmware according to Tyrion: C_Program Name {} Version {} build_id {} ", get_actual_c_program_version().get_c_program().name, get_actual_c_program_version().name, get_actual_c_program_version().compilation.firmware_build_id);
+                logger.debug("check_firmware - current firmware according to Homer: C_Program Name {} Version {} build_id {} ", overview.binaries.firmware.usr_name, overview.binaries.firmware.usr_version, overview.binaries.firmware.build_id);
 
                 if (!get_actual_c_program_version().compilation.firmware_build_id.equals(overview.binaries.firmware.build_id)) {
                     // Na HW není to co by na něm mělo být.
@@ -2009,7 +2011,7 @@ public class Model_Hardware extends TaggedModel {
             // Set Defualt Program protože žádný teď nemáš
             if (get_actual_c_program_version() == null && firmware_plans.isEmpty()) {
 
-                logger.debug("check_firmware - Actual firmware_id is not recognized by the DB - Device has not firmware from Tyrion");
+                logger.debug("check_firmware - Actual firmware_id is not recognized by the DB - Device has not firmware required by Tyrion");
                 logger.debug("check_firmware - Tyrion will try to find Default C Program Main Version for this type of hardware. If is it set, Tyrion will update device to starting state");
 
                 // Ověřím - jestli nemám nově nahraný firmware na Hardwaru (to je ten co je teď výcohí firmware pro aktuální typ hardwaru)
@@ -2020,21 +2022,28 @@ public class Model_Hardware extends TaggedModel {
                         && overview.binaries.firmware.build_id.equals(getHardwareTypeCache().get_main_c_program().default_main_version.compilation.firmware_build_id)
                         ) {
 
-                    logger.debug("check_firmware - hardware is brand new, but already has required firmware");
+                    logger.debug("check_firmware - hardware is brand new, but already has required default hardware type firmware");
 
+                    // SET MAIN
                     this.actual_c_program_version = getHardwareTypeCache().get_main_c_program().default_main_version;
 
+                    // Clean Cache
+                    this.cache().removeAll(Model_CProgram.class);
+                    this.cache().removeAll(Model_CProgramVersion.class);
 
                     this.cache().add(Model_CProgram.class, getHardwareTypeCache().get_main_c_program().id);
                     this.cache().add(Model_CProgramVersion.class, getHardwareTypeCache().get_main_c_program().default_main_version.id);
 
-                    this.cache().add(Model_CProgramVersionFakeBackup.class, getHardwareTypeCache().get_main_c_program().default_main_version.id);
-
-
+                    // SET BACKUP
                     this.actual_backup_c_program_version = getHardwareTypeCache().get_main_c_program().default_main_version; // Udělám rovnou zálohu, protože taková by tam měla být
+
+                    // Clean Cache
+                    this.cache().removeAll(Model_CProgramFakeBackup.class);
+                    this.cache().removeAll(Model_CProgramVersionFakeBackup.class);
 
                     this.cache().add(Model_CProgramFakeBackup.class, getHardwareTypeCache().get_main_c_program().id);
                     this.cache().add(Model_CProgramVersionFakeBackup.class, getHardwareTypeCache().get_main_c_program().default_main_version.id);
+
                     this.update();
                     return;
                 }

@@ -601,7 +601,7 @@ public class Model_HardwareUpdate extends BaseModel {
 
                         if (plan.firmware_type == FirmwareType.FIRMWARE) {
 
-                            logger.debug("update_procedure_progress: firmware:: on HW now:: {} ",  hardware.get_actual_c_program_version().compilation.firmware_build_id);
+                            logger.debug("update_procedure_progress: firmware:: on HW now:: {} ",  hardware.get_actual_c_program_version() == null ? " nothing by DB" : hardware.get_actual_c_program_version().compilation.firmware_build_id);
                             logger.debug("update_procedure_progress: required by update: {} ",  plan.c_program_version_for_update.compilation.firmware_build_id);
 
                             hardware.actual_c_program_version = plan.c_program_version_for_update;

@@ -25,7 +25,7 @@ public class AuthenticationHomer extends Security.Authenticator {
             if (WS_Homer.token_cache.containsKey(token)) {
                 return token;
             }
-            logger.trace("getUsername - cannot find homer by token");
+            logger.error("getUsername - cannot find homer by token");
         }
 
         return null;

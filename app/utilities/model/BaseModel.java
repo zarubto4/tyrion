@@ -468,6 +468,11 @@ public abstract class BaseModel extends Model {
     @JsonProperty
     public boolean update_permission(){
         try{
+
+            if(!its_person_operation()) {
+               return true;
+            }
+
             check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
             return true;
@@ -484,6 +489,11 @@ public abstract class BaseModel extends Model {
     @JsonProperty
     public boolean delete_permission(){
         try{
+
+            if(!its_person_operation()) {
+                return true;
+            }
+
             check_delete_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
             return true;

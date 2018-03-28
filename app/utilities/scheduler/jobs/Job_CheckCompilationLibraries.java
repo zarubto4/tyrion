@@ -140,6 +140,11 @@ public class Job_CheckCompilationLibraries implements Job {
                         }
 
 
+                        if(release.tag_name == null) {
+                            logger.error("check_version_thread:: Release is Damaged: {} ", Json.toJson(release).toString());
+                            continue;
+                        }
+
                         // Ignorujeme všechny tagy, které se týkají bootloader
                         // ZDe mohou přibýt další ignore filtry
                         if (release.tag_name.contains("bootloader") || release.tag_name.toLowerCase().contains("bootloader")) {

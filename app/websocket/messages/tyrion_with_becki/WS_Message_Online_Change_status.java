@@ -66,20 +66,18 @@ public class WS_Message_Online_Change_status {
 
                 List<UUID> list = Model_Project.get_project_becki_person_ids_list(project_id);
 
+                // This stupid thins is for java.util.ConcurrentModificationException
                 List<UUID> toUnsubscribe = new ArrayList<>();
 
                 ObjectNode json_message =  message.make_request();
 
                 for (UUID person_id : list) {
-
                     try {
 
                         // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
                         if (Controller_WebSocket.portals.containsKey(person_id)) {
-
                             WS_Portal portal = Controller_WebSocket.portals.get(person_id);
                             portal.send(json_message);
-
                         } else {
                             toUnsubscribe.add(person_id);
                         }
@@ -89,6 +87,7 @@ public class WS_Message_Online_Change_status {
                     }
                 }
 
+                // This stupid thins is for java.util.ConcurrentModificationException
                 toUnsubscribe.forEach(Model_Project::becki_person_id_unsubscribe);
 
             } catch (Exception e) {
