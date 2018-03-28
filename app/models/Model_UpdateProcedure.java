@@ -353,6 +353,14 @@ public class Model_UpdateProcedure extends BaseModel {
             new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_UpdateProcedure.class, get_project_id(), this.id))).start();
         }
 
+        if(instance != null) {
+            instance.cache().add(this.getClass(), this.id);
+            // Call notification about model update
+            if (get_project_id() != null) {
+                new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Instance.class, get_project_id(), this.instance.get_instance_id()))).start();
+            }
+        }
+
         // If immidietly
         if (date_of_planing == null || date_of_planing.getTime() < new Date().getTime()) {
 

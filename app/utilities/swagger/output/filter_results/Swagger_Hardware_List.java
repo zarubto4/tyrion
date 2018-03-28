@@ -28,7 +28,8 @@ public class Swagger_Hardware_List extends _Swagger_Filter_Common {
         List<UUID> ids = query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findIds();
 
         for (UUID id :ids) {
-            this.content.add( Model_Hardware.getById(id));
+            System.out.println("Swagger_Hardware_List: ADD HArdware ID" + id);
+            this.content.add(Model_Hardware.getById(id));
         }
 
         this.total   = query.findCount();

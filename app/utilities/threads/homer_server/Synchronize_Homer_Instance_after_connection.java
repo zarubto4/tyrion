@@ -96,6 +96,8 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
                 .select("id")
                 .findSingleAttributeList();
 
+        logger.error("required_instance_on_server:: Requested Instances: {} ", instances_in_database_for_upload);
+
         return instances_in_database_for_upload;
     }
 

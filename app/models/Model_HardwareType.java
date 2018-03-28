@@ -63,13 +63,12 @@ public class Model_HardwareType extends NamedModel {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-
-    @JsonIgnore @Transient @Cached public  String cache_picture_link;
-    @JsonIgnore @Transient @Cached public  List<Swagger_CompilationLibrary> cache_library_list; // Záměrně není pole definované!
-    @JsonIgnore @Transient @Cached public  List<UUID> cache_bootloaders_id; // Záměrně není pole definované! */
+    @JsonIgnore @Transient @Cached public String cache_picture_link; // Není klasický Cache objekt!!!
+    @JsonIgnore @Transient @Cached public List<Swagger_CompilationLibrary> cache_library_list; // Není klasický Cache objekt nejde standartně cachovat!!!
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
+    @JsonProperty
     public Swagger_Short_Reference producer() {
         try {
             Model_Producer type = this.get_producer();
@@ -77,16 +76,13 @@ public class Model_HardwareType extends NamedModel {
         } catch (NullPointerException e) {return  null;}
     }
 
+    @JsonProperty
     public Swagger_Short_Reference processor() {
         try {
             Model_Processor type = this.get_processor();
             return new Swagger_Short_Reference(type.id, type.name, type.description);
         } catch (NullPointerException e) {return  null;}
     }
-
-//????
-    @JsonProperty public UUID processor_id() { return processor().id != null ? processor().id : get_processor().id;}
-
 
     @JsonProperty
     public String picture_link() {
@@ -110,54 +106,22 @@ public class Model_HardwareType extends NamedModel {
         return cache_library_list;
     }
 
-
-    @JsonIgnore public UUID get_main_boot_loader_id() throws _Base_Result_Exception {
-
-        if (cache().get(Model_BootLoader.class) == null) {
-            cache().add(Model_BootLoader.class, (UUID) Model_BootLoader.find.query().where().eq("main_hardware_type.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
-        }
-
-        return cache().get(Model_BootLoader.class);
-    }
-
-
     @JsonProperty
-        public Model_BootLoader main_boot_loader() throws _Base_Result_Exception{
+    public Model_BootLoader main_boot_loader() {
             try {
-                return Model_BootLoader.getById(get_main_boot_loader_id());
+                System.out.println("main_boot_loader HW Type ID: {} " + this.id);
+                return get_main_boot_loader();
             }catch (Exception e) {
                 return null;
             }
-        }
-
+    }
 
 
     @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<Model_BootLoader> boot_loaders() {
         try {
 
-            if (cache_bootloaders_id == null) {
-
-                List<UUID> uuid_ids = Model_BootLoader.find.query().where().eq("hardware_type.id", id).order().desc("name").findIds();
-                cache_bootloaders_id = new ArrayList<>();
-
-                // Získání seznamu
-                for (UUID uuid_id : uuid_ids) {
-                    cache_bootloaders_id.add(uuid_id);
-                }
-            }
-
-            if (cache_bootloaders_id.isEmpty()) {
-                return new ArrayList<>();
-            }
-
-            List<Model_BootLoader> bootLoaders = new ArrayList<>();
-
-            for (UUID bootLoader_id : cache_bootloaders_id) {
-                bootLoaders.add(Model_BootLoader.getById(bootLoader_id));
-            }
-
-            return bootLoaders;
+            return get_bootloaders();
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -190,29 +154,17 @@ public class Model_HardwareType extends NamedModel {
         }*/
     }
 
-    // Záměrně - kvuli dokumentaci a přehledu v Becki - nemá žádný podstatný vliv než jen umožnit vypsat přehled
-
-    @JsonIgnore public UUID get_main_test_c_programe_id() throws _Base_Result_Exception {
-
-        if (cache().get(Model_CProgram.class) == null) {
-            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_test.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
-        }
-
-        return cache().get(Model_CProgram.class);
-    }
-
-
     @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Model_CProgram main_test_c_program() throws _Base_Result_Exception {
+    public Model_CProgram main_test_c_program() {
             try {
-                return Model_CProgram.getById(get_main_test_c_programe_id());
+                return get_main_test_c_program();
             } catch (Exception e) {
                 return null;
             }
-        }
+    }
 
     // Záměrně - kvuli dokumentaci a přehledu v Becki - nemá žádný podstatný vliv než jen umožnit vypsat přehled
-    @Transient @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<Model_HardwareBatch> batchs () {
         try {
 
@@ -233,10 +185,38 @@ public class Model_HardwareType extends NamedModel {
         return Model_BootLoader.find.query().where().eq("hardware_type.id",id).findList();
     }
 
-    @JsonIgnore public UUID get_producer_id() throws _Base_Result_Exception {
+    @JsonIgnore // Pouze Pro synchronizaci s GitHubem - musí obsahovat i smazané
+    public List<UUID> get_bootloaders_id() {
+
+        if (cache().gets(Model_BootLoader.class) == null) {
+            cache().add(Model_BootLoader.class,  Model_BootLoader.find.query().where().eq("hardware_type.id", id).order().desc("name").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_BootLoader.class);
+    }
+
+    @JsonIgnore
+    public List<Model_BootLoader> get_bootloaders() {
+        try {
+
+            List<Model_BootLoader> list = new ArrayList<>();
+
+            for (UUID id : get_bootloaders_id() ) {
+                list.add(Model_BootLoader.getById(id));
+            }
+
+            return list;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new ArrayList<>();
+        }
+    }
+
+    @JsonIgnore
+    public UUID get_producer_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_Producer.class) == null) {
-            cache().add(Model_Producer.class, (UUID) Model_Producer.find.query().where().eq("hardware_types.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+            cache().add(Model_Producer.class, (UUID) Model_Producer.find.query().where().eq("hardware_types.id", id).select("id").findSingleAttribute());
         }
 
         return cache().get(Model_Producer.class);
@@ -252,10 +232,11 @@ public class Model_HardwareType extends NamedModel {
         }
     }
 
-    @JsonIgnore public UUID get_processor_id() throws _Base_Result_Exception {
+    @JsonIgnore
+    public UUID get_processor_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_Processor.class) == null) {
-            cache().add(Model_Processor.class, (UUID) Model_Processor.find.query().where().eq("hardware_types.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+            cache().add(Model_Processor.class, (UUID) Model_Processor.find.query().where().eq("hardware_types.id", id).select("id").findSingleAttribute());
         }
 
         return cache().get(Model_Processor.class);
@@ -271,10 +252,51 @@ public class Model_HardwareType extends NamedModel {
         }
     }
 
-    @JsonIgnore public UUID get_main_c_program_id() throws _Base_Result_Exception {
+    @JsonIgnore
+    public UUID get_main_test_c_program_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_CProgram.class) == null) {
-            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_default.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_test.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_CProgram.class);
+    }
+
+    @JsonIgnore
+    public Model_CProgram get_main_test_c_program() {
+        try {
+            return Model_CProgram.getById(get_main_test_c_program_id());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
+    @JsonIgnore
+    public UUID get_main_boot_loader_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_BootLoader.class) == null) {
+            cache().add(Model_BootLoader.class, (UUID) Model_BootLoader.find.query().where().eq("main_hardware_type.id", id).select("id").findSingleAttribute());
+        }
+        System.out.println("get_main_boot_loader_id bootloader ID: {} " + cache().get(Model_BootLoader.class) );
+        return cache().get(Model_BootLoader.class);
+    }
+
+    @JsonIgnore
+    public Model_BootLoader get_main_boot_loader() throws _Base_Result_Exception {
+        try {
+            System.out.println("get_main_boot_loader HW Type ID: {} " + this.id);
+            return Model_BootLoader.getById(get_main_boot_loader_id());
+        }catch (Exception e) {
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public UUID get_main_c_program_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_CProgram.class) == null) {
+            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_default.id", id).select("id").findSingleAttribute());
         }
 
         return cache().get(Model_CProgram.class);

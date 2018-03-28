@@ -345,16 +345,20 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 if(program().interfaces.size() > 0) {
 
                     // Step 5
-                    logger.trace("deploy - instance {}, step 5 - Deploy Hardware ", get_instance_id());
+                    logger.trace("deploy - instance {}, step 5 - Override all previous update procedures in this snapshot ", get_instance_id());
+
+                    this.override_all_actualization_hardware_request();
+
+                    logger.trace("deploy - instance {}, step 6 - Deploy Hardware ", get_instance_id());
                     Model_UpdateProcedure procedure = this.create_actualization_hardware_request();
 
                     if (procedure == null) {
-                        logger.error("deploy - instance {}, step 5 - Error - Unsuccessful creating of Update Procedure");
+                        logger.error("deploy - instance {}, step 6 - Error - Unsuccessful creating of Update Procedure");
                         return;
                     }
 
                     // Step 6
-                    logger.trace("deploy - instance {}, step 6 - Start wtih Update ", get_instance_id());
+                    logger.trace("deploy - instance {}, step 7 - Start wtih Update ", get_instance_id());
                     procedure.execute_update_procedure();
 
                 }
@@ -425,6 +429,31 @@ public class Model_InstanceSnapshot extends TaggedModel {
         } catch (Exception e) {
             logger.internalServerError(e);
             return new WS_Message_Instance_set_program();
+        }
+    }
+
+    @JsonIgnore
+    public void override_all_actualization_hardware_request(){
+        for(Model_UpdateProcedure procedure : getUpdateProcedure()) {
+
+            if (procedure.state == Enum_Update_group_procedure_state.CANCELED) {
+                continue;
+            }
+
+            procedure.date_of_finish = new Date();
+            if(procedure.state !=  Enum_Update_group_procedure_state.COMPLETE && procedure.state != Enum_Update_group_procedure_state.SUCCESSFULLY_COMPLETE) {
+                procedure.state = Enum_Update_group_procedure_state.CANCELED;
+            }
+
+            procedure.update();
+
+            for(Model_HardwareUpdate update : procedure.getUpdates()) {
+                if(update.state != HardwareUpdateState.COMPLETE) {
+                    update.state = HardwareUpdateState.OBSOLETE;
+                }
+
+                update.update();
+            }
         }
     }
 

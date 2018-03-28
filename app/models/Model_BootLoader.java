@@ -43,17 +43,19 @@ public class /**/Model_BootLoader extends NamedModel {
 
     @JsonIgnore @OneToMany(mappedBy="bootloader",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareUpdate> updates = new ArrayList<>();
 
-    @JsonIgnore  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)                 public Model_HardwareType hardware_type;       // TODO Cachovat - a opravit kde je nevhodná návaznost
+    @JsonIgnore  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)                 public Model_HardwareType hardware_type;
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY)                                                  public Model_HardwareType main_hardware_type;
 
     @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader", fetch = FetchType.LAZY)                 public List<Model_Hardware> hardware = new ArrayList<>();
-                 @OneToOne(mappedBy = "boot_loader", cascade = CascadeType.ALL)                    public Model_Blob file;                        // TODO Cachovat - a opravit kde je nevhodná návaznost
+                 @OneToOne(mappedBy = "boot_loader", cascade = CascadeType.ALL)                    public Model_Blob file;
 
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty public boolean main_bootloader() {
-        return getMainHardwareType() != null;
+        // return getMainHardwareType() != null;
+
+        return false;
     }
     @JsonProperty public String  file_path() {
         try {
@@ -223,7 +225,7 @@ public class /**/Model_BootLoader extends NamedModel {
 
         if (getHardwareType() != null) {
             getHardwareType().boot_loaders();
-            getHardwareType().cache_bootloaders_id.add(id);
+            getHardwareType().cache().add(this.getClass(), id);
         }
         cache.put(id, this);
     }
@@ -240,7 +242,7 @@ public class /**/Model_BootLoader extends NamedModel {
         logger.debug("delete :: Delete object Id: {} ", this.id);
 
         if (getHardwareType() != null) {
-            getHardwareType().cache_bootloaders_id.remove(id);
+            getHardwareType().cache().remove(this.getClass(), id);
         }
 
         cache.remove(id);

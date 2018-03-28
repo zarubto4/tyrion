@@ -2758,8 +2758,8 @@ public class Controller_Hardware extends _BaseController {
                                  group.cache().add(Model_HardwareType.class,  new ArrayList<>());
                             }
 
-                            if(!group.cache().gets(Model_HardwareType.class).contains(board.getHardwareType_id())){
-                                    group.cache().add(Model_HardwareType.class, board.getHardwareType_id());
+                            if(!group.cache().gets(Model_HardwareType.class).contains(board.getHardwareTypeCache_id())){
+                                    group.cache().add(Model_HardwareType.class, board.getHardwareTypeCache_id());
                             }
                         }
                     }

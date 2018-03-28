@@ -74,7 +74,7 @@ public class Model_HardwareGroup extends NamedModel {
     public List<UUID> get_HardwareTypesId() {
 
         if (cache().gets(Model_HardwareType.class) == null) {
-            cache().add(Model_HardwareType.class,  Model_HardwareType.find.query().where().eq("hardware.hardware_groups.id", id).order().desc("created").select("id").findSingleAttributeList());
+            cache().add(Model_HardwareType.class,  Model_HardwareType.find.query().where().eq("hardware.hardware_groups.id", id).select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_HardwareType.class);

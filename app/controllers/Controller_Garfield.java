@@ -3,8 +3,6 @@ package controllers;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.*;
-import play.data.Form;
-import play.data.FormFactory;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -16,7 +14,6 @@ import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.lablel_printer_service.printNodeModels.Printer;
 import utilities.logger.Logger;
-import utilities.swagger.input.Swagger_Bug_Description;
 import utilities.swagger.input.Swagger_Garfield_Edit;
 import utilities.swagger.input.Swagger_Garfield_New;
 
@@ -228,7 +225,7 @@ public class Controller_Garfield extends _BaseController {
             // TODO tady je potřeba pohlídat online tiskárny - tiskne se na prvním garfieldovy - to není uplně super cool věc
             // Zrovna mě ale nenapadá jak v rozumném čase doprogramovat řešení lépe - snad jen pomocí selektoru tiskáren???
             // Tím pádem bude potřeba mít tiskárny trochu lépe pošéfované
-            List<UUID> garfields_id = Model_Garfield.find.query().where().eq("hardware_type_id", hardware.getHardwareType_id()).findIds();
+            List<UUID> garfields_id = Model_Garfield.find.query().where().eq("hardware_type_id", hardware.getHardwareTypeCache_id()).findIds();
             if (garfields_id.isEmpty()) {
                 logger.error("print_label:: garfields for this type of hardware not found");
                 return notFound("Garfield for this type of hardware not found");
@@ -242,14 +239,14 @@ public class Controller_Garfield extends _BaseController {
             // Label 62 mm
             try {
                 // Test for creating - Controlling all prerequisites and requirements
-                new Label_62_mm_package(entity, batch, hardware.getHardwareType(), garfield);
+                new Label_62_mm_package(entity, batch, hardware.getHardwareTypeCache(), garfield);
             } catch (IllegalArgumentException e) {
                 logger.error("print_label:: Label_62_mm_package printer info Error, " + e.getMessage());
                 return badRequest("Something is wrong: " + e.getMessage());
             }
 
             // Label 62 mm
-            Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(entity, batch, hardware.getHardwareType(), garfield);
+            Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(entity, batch, hardware.getHardwareTypeCache(), garfield);
             api.printFile(garfield.print_sticker_id, 1, "Garfield Print Label", label_62_mmPackage.get_label(), null);
 
             // Label qith QR kode on Ethernet connector
