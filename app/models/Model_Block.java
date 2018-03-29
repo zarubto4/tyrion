@@ -106,7 +106,7 @@ public class Model_Block extends TaggedModel {
     @JsonIgnore
     public List<UUID> getVersionsId() {
         if (cache().gets(Model_BlockVersion.class) == null) {
-            cache().add(Model_BlockVersion.class, Model_CProgramVersion.find.query().where().eq("block.id", id).eq("deleted", false).order().desc("created").select("id").findSingleAttributeList());
+            cache().add(Model_BlockVersion.class, Model_BlockVersion.find.query().where().eq("block.id", id).eq("deleted", false).select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_BlockVersion.class);

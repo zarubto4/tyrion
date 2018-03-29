@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-if [ -v CERTPATH ] ; then
+if ! [ -v CERTPATH ] ; then
     echo " !! CERTPATH environment variable must be defined !!"
     exit 1
 fi
 
-if [ -v CERTPASS ] ; then
+if ! [ -v CERTPASS ] ; then
     echo " !! CERTPASS environment variable must be defined !!"
     exit 1
 fi

@@ -1,6 +1,7 @@
 package utilities.scheduler.jobs;
 
 
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import models.Model_HomerServer;
 import org.quartz.Job;
@@ -39,6 +40,7 @@ public class Job_UpdateServer implements Job {
     private WSClient ws;
     private Config config;
 
+    @Inject
     public Job_UpdateServer(WSClient ws, Config config) {
         this.ws = ws;
         this.config = config;

@@ -112,7 +112,7 @@ public class Model_Widget extends TaggedModel {
     @JsonIgnore
     public List<UUID> get_versionsId() {
         if (cache().gets(Model_WidgetVersion.class) == null) {
-            cache().add(Model_WidgetVersion.class, Model_CProgramVersion.find.query().where().eq("widget.id", id).eq("deleted", false).order().desc("created").select("id").findSingleAttributeList());
+            cache().add(Model_WidgetVersion.class, Model_WidgetVersion.find.query().where().eq("widget.id", id).eq("deleted", false).select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_WidgetVersion.class);

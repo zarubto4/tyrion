@@ -80,7 +80,7 @@ public class Model_BProgram extends TaggedModel {
     public List<UUID> getVersionsIds() {
 
         if (cache().gets(Model_BProgramVersion.class) == null) {
-            cache().add(Model_BProgramVersion.class,  Model_BProgramVersion.find.query().where().eq("b_program.id", id).order().desc("created").select("id").findSingleAttributeList());
+            cache().add(Model_BProgramVersion.class,  Model_BProgramVersion.find.query().where().eq("b_program.id", id).select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_BProgramVersion.class);
