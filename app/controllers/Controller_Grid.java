@@ -87,7 +87,7 @@ public class Controller_Grid extends _BaseController {
 
             gridProject.save();
 
-            return created(gridProject.json());
+            return created(gridProject);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -113,7 +113,7 @@ public class Controller_Grid extends _BaseController {
             // Kontrola objektu
             Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
 
-            return ok(gridProject.json());
+            return ok(gridProject);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -160,7 +160,7 @@ public class Controller_Grid extends _BaseController {
 
             gridProject.update();
             
-            return ok(gridProject.json());
+            return ok(gridProject);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -204,7 +204,7 @@ public class Controller_Grid extends _BaseController {
             gridProject.addTags(help.tags);
 
             // Vrácení objektu
-            return ok(gridProject.json());
+            return ok(gridProject);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -248,7 +248,7 @@ public class Controller_Grid extends _BaseController {
             gridProject.removeTags(help.tags);
 
             // Vrácení objektu
-            return ok(gridProject.json());
+            return ok(gridProject);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -326,7 +326,7 @@ public class Controller_Grid extends _BaseController {
                 m_project_interface.accessible_interface.add(m_program_interface);
             }
 
-            return ok(Json.toJson(m_project_interface));
+            return ok(m_project_interface);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -379,7 +379,7 @@ public class Controller_Grid extends _BaseController {
             
             gridProgram.save();
 
-            return created(gridProgram.json());
+            return created(gridProgram);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -405,7 +405,7 @@ public class Controller_Grid extends _BaseController {
             // Kontrola objektu
             Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
 
-            return ok(gridProgram.json());
+            return ok(gridProgram);
             
         } catch (Exception e) {
             return controllerServerError(e);
@@ -454,7 +454,7 @@ public class Controller_Grid extends _BaseController {
 
             gridProgram.update();
 
-            return ok(gridProgram.json());
+            return ok(gridProgram);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -498,7 +498,7 @@ public class Controller_Grid extends _BaseController {
             gridProgram.addTags(help.tags);
 
             // Vrácení objektu
-            return ok(gridProgram.json());
+            return ok(gridProgram);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -543,7 +543,7 @@ public class Controller_Grid extends _BaseController {
             gridProgram.removeTags(help.tags);
 
             // Vrácení objektu
-            return ok(gridProgram.json());
+            return ok(gridProgram);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -631,7 +631,7 @@ public class Controller_Grid extends _BaseController {
             version.file = Model_Blob.upload(content.toString(), "grid_program.json" , gridProgram.get_path());
             version.update();
 
-            return created(gridProgram.json());
+            return created(gridProgram);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -658,7 +658,7 @@ public class Controller_Grid extends _BaseController {
             Model_GridProgramVersion version = Model_GridProgramVersion.getById(version_id);
 
             // Vrácení objektu
-            return ok(version.json());
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -706,7 +706,7 @@ public class Controller_Grid extends _BaseController {
             // Update
             version.update();
 
-            return ok(version.json());
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -783,7 +783,7 @@ public class Controller_Grid extends _BaseController {
 
             Swagger_Mobile_Connection_Summary result = instance.current_snapshot().get_connection_summary(grid_program_id,ctx());
 
-            return ok(Json.toJson(result));
+            return ok(result);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -829,14 +829,14 @@ public class Controller_Grid extends _BaseController {
                 terminal.device_type = help.device_type;
                 terminal.save();
 
-                return ok(Json.toJson(terminal));
+                return ok(terminal);
 
             } else {
 
                 terminal.ws_permission = true;
                 terminal.m_program_access = true;
                 terminal.update();
-                return ok(terminal.json());
+                return ok(terminal);
             }
 
         } catch (Exception e) {
@@ -904,7 +904,7 @@ public class Controller_Grid extends _BaseController {
 
             terminal.save();
 
-            return created(Json.toJson(terminal));
+            return created(terminal);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -975,7 +975,7 @@ public class Controller_Grid extends _BaseController {
             Model_WidgetVersion scheme = Model_WidgetVersion.find.query().where().eq("publish_type", ProgramType.DEFAULT_VERSION.name()).findOne();
 
             // Kontrola objektu
-            if (scheme == null) return created( Json.toJson(widget) );
+            if (scheme == null) return created(widget);
 
             // Vytvoření objektu první verze
             Model_WidgetVersion gridWidgetVersion = new Model_WidgetVersion();
@@ -988,7 +988,7 @@ public class Controller_Grid extends _BaseController {
             gridWidgetVersion.save();
 
             // Vrácení objektu
-            return created(widget.json());
+            return created(widget);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1016,7 +1016,7 @@ public class Controller_Grid extends _BaseController {
             if (gridWidget == null) return notFound("GridWidget widget_id not found");
 
             // Vrácení objektu
-            return ok(Json.toJson(gridWidget));
+            return ok(gridWidget);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1071,7 +1071,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_GridWidget_List result = new Swagger_GridWidget_List(query, page_number);
 
             // Vrácení výsledku
-            return ok(Json.toJson(result));
+            return ok(result);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1121,7 +1121,7 @@ public class Controller_Grid extends _BaseController {
             widget.update();
 
             // Vrácení objektu
-            return ok(Json.toJson(widget));
+            return ok(widget);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1168,7 +1168,7 @@ public class Controller_Grid extends _BaseController {
             widget.addTags(help.tags);
 
             // Vrácení objektu
-            return ok(widget.json());
+            return ok(widget);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1213,7 +1213,7 @@ public class Controller_Grid extends _BaseController {
             widget.removeTags(help.tags);
 
             // Vrácení objektu
-            return ok(widget.json());
+            return ok(widget);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1318,7 +1318,7 @@ public class Controller_Grid extends _BaseController {
             grid_widget_new.refresh();
 
             // Vracím Objekt
-            return ok(Json.toJson(grid_widget_new));
+            return ok(grid_widget_new);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1632,7 +1632,7 @@ public class Controller_Grid extends _BaseController {
             version.save();
 
             // Vrácení objektu
-            return created(Json.toJson(gridWidget));
+            return created(gridWidget);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1662,7 +1662,7 @@ public class Controller_Grid extends _BaseController {
             Model_WidgetVersion version = Model_WidgetVersion.getById(grid_widget_version_id);
        
             // Vrácení objektu
-            return ok(version.json());
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1718,7 +1718,7 @@ public class Controller_Grid extends _BaseController {
             version.update();
 
             // Vrácení objektu
-            return ok(Json.toJson(version));
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1757,7 +1757,7 @@ public class Controller_Grid extends _BaseController {
             Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
 
             // Vrácení objektu
-            return ok(Json.toJson(gridWidget.versions));
+            return ok(gridWidget.versions);
 
         } catch (Exception e) {
             return controllerServerError(e);

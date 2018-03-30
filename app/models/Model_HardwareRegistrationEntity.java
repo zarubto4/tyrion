@@ -21,6 +21,7 @@ import utilities.errors.Exceptions.Result_Error_Registration_Fail;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
 import utilities.logger.Logger;
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.io.IOException;
 import java.util.Date;
@@ -36,7 +37,7 @@ import static controllers._BaseController.person;
  *
  * Není supportováno delete!
  */
-public class Model_HardwareRegistrationEntity {
+public class Model_HardwareRegistrationEntity extends _Swagger_Abstract_Default {
 
     /**
      * _BaseFormFactory

@@ -95,7 +95,7 @@ public class Controller_Blocko extends _BaseController {
             bProgram.save();
 
             // Vrácení objektu
-            return created(bProgram.json());
+            return created(bProgram);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -121,7 +121,7 @@ public class Controller_Blocko extends _BaseController {
             // Kontrola objektu
             Model_BProgram bProgram = Model_BProgram.getById(b_program_id);
 
-            return ok(bProgram.json());
+            return ok(bProgram);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -172,7 +172,7 @@ public class Controller_Blocko extends _BaseController {
             Swagger_B_Program_List result = new Swagger_B_Program_List(query, page_number);
 
             // Vrácení výsledku
-            return ok(result.json());
+            return ok(result);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -223,7 +223,7 @@ public class Controller_Blocko extends _BaseController {
             b_program.update();
 
             // Vrácení objektu
-            return ok(b_program.json());
+            return ok(b_program);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -268,7 +268,7 @@ public class Controller_Blocko extends _BaseController {
             bProgram.addTags(help.tags);
 
             // Vrácení objektu
-            return ok(bProgram.json());
+            return ok(bProgram);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -313,7 +313,7 @@ public class Controller_Blocko extends _BaseController {
             bProgram.removeTags(help.tags);
 
             // Vrácení objektu
-            return ok(bProgram.json());
+            return ok(bProgram);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -434,7 +434,7 @@ public class Controller_Blocko extends _BaseController {
             version.update();
 
             // Vrácení objektu
-            return ok(version.json());
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -461,7 +461,7 @@ public class Controller_Blocko extends _BaseController {
             Model_BProgramVersion version = Model_BProgramVersion.getById(version_id);
 
             // Vrácení objektu
-            return ok(version.json());
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -606,7 +606,7 @@ public class Controller_Blocko extends _BaseController {
 
             instance.save();
 
-            return created(instance.json());
+            return created(instance);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -631,7 +631,7 @@ public class Controller_Blocko extends _BaseController {
 
             Model_Instance instance = Model_Instance.getById(instance_id);
 
-            return ok(instance.json());
+            return ok(instance);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -680,7 +680,7 @@ public class Controller_Blocko extends _BaseController {
             // Update Objektu
             instance.update();
 
-            return ok(instance.json());
+            return ok(instance);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -725,7 +725,7 @@ public class Controller_Blocko extends _BaseController {
             instance.addTags(help.tags);
 
             // Vrácení objektu
-            return ok(instance.json());
+            return ok(instance);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -770,7 +770,7 @@ public class Controller_Blocko extends _BaseController {
             instance.removeTags(help.tags);
 
             // Vrácení objektu
-            return ok(instance.json());
+            return ok(instance);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -850,7 +850,7 @@ public class Controller_Blocko extends _BaseController {
             snapshot.program = Model_Blob.upload(help.json().toString(), "snapshot.json", snapshot.get_path() );
             snapshot.save();
 
-            return created(snapshot.json());
+            return created(snapshot);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -898,7 +898,7 @@ public class Controller_Blocko extends _BaseController {
             snapshot.description = help.description;
             snapshot.update();
 
-            return ok(snapshot.json());
+            return ok(snapshot);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -926,7 +926,7 @@ public class Controller_Blocko extends _BaseController {
 
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
 
-            return ok(snapshot.json());
+            return ok(snapshot);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1113,7 +1113,7 @@ public class Controller_Blocko extends _BaseController {
             Swagger_Instance_List result = new Swagger_Instance_List(query, page_number);
 
             // Vracím seznam
-            return ok(result.json());
+            return ok(result);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1162,7 +1162,7 @@ public class Controller_Blocko extends _BaseController {
             snapshot_settings.update();
 
             // Vracím Objekt
-            return ok(snapshot_settings.json());
+            return ok(snapshot_settings);
 
         } catch (IllegalArgumentException e) {
 
@@ -1243,7 +1243,7 @@ public class Controller_Blocko extends _BaseController {
             Model_BlockVersion scheme = Model_BlockVersion.get_scheme();
 
             // Kontrola objektu
-            if (scheme == null) return created(block.json());
+            if (scheme == null) return created(block);
 
             // Vytvoření objektu první verze
             Model_BlockVersion blockoBlockVersion = new Model_BlockVersion();
@@ -1256,7 +1256,7 @@ public class Controller_Blocko extends _BaseController {
             blockoBlockVersion.save();
 
             // Vrácení objektu
-            return created(block.json());
+            return created(block);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1323,7 +1323,7 @@ public class Controller_Blocko extends _BaseController {
             blockNew.save();
 
             // Vracím Objekt
-            return ok(blockNew.json());
+            return ok(blockNew);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1374,7 +1374,7 @@ public class Controller_Blocko extends _BaseController {
             block.update();
 
             // Vrácení objektu
-            return ok(block.json());
+            return ok(block);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1421,7 +1421,7 @@ public class Controller_Blocko extends _BaseController {
             block.addTags(help.tags);
 
             // Vrácení objektu
-            return ok(block.json());
+            return ok(block);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1466,7 +1466,7 @@ public class Controller_Blocko extends _BaseController {
             block.removeTags(help.tags);
 
             // Vrácení objektu
-            return ok(block.json());
+            return ok(block);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1493,7 +1493,7 @@ public class Controller_Blocko extends _BaseController {
             Model_Block block = Model_Block.getById(block_id);
          
             // Vrácení objektu
-            return ok(block.json());
+            return ok(block);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1547,7 +1547,7 @@ public class Controller_Blocko extends _BaseController {
             Swagger_Block_List result = new Swagger_Block_List(query, page_number);
 
             // Vrácení výsledku
-            return ok(result.json());
+            return ok(result);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1870,7 +1870,7 @@ public class Controller_Blocko extends _BaseController {
             version.save();
 
             // Vrácení objektu
-            return created(block.json());
+            return created(block);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1898,7 +1898,7 @@ public class Controller_Blocko extends _BaseController {
             Model_BlockVersion version = Model_BlockVersion.getById(version_id);
           
             // Vrácení objektu
-            return ok(version.json());
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1952,7 +1952,7 @@ public class Controller_Blocko extends _BaseController {
             version.update();
 
             // Vrácení objektu
-            return ok(version.json());
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -2016,7 +2016,7 @@ public class Controller_Blocko extends _BaseController {
             version.update();
 
             // Vrácení výsledku
-            return ok(version.json());
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);

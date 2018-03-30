@@ -3,13 +3,14 @@ package utilities.swagger.output;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.NotificationAction;
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
 @ApiModel(description = "Json Model for notification buttons",
         value = "Notification_Button")
-public class Swagger_Notification_Button {
+public class Swagger_Notification_Button extends _Swagger_Abstract_Default {
 
     @ApiModelProperty(required =  true) public String text;
     @ApiModelProperty(required =  true) @Enumerated(EnumType.STRING) public NotificationAction action;

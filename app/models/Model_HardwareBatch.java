@@ -22,6 +22,7 @@ import utilities.errors.Exceptions.Result_Error_Bad_request;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import javax.persistence.*;
 import java.io.IOException;
@@ -33,7 +34,7 @@ import java.util.UUID;
 import static com.mongodb.client.model.Filters.eq;
 
 @ApiModel(description = "Model of Production Batch  ", value = "HardwareBatch")
-public class Model_HardwareBatch {
+public class Model_HardwareBatch extends _Swagger_Abstract_Default {
 
     /**
      * _BaseFormFactory

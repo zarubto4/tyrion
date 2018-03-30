@@ -107,7 +107,7 @@ public class Controller_Admin extends _BaseController {
 
             report.bugs_reported = Model_ServerError.find.query().findCount();
 
-            return ok(Json.toJson(report));
+            return ok(report);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -130,13 +130,13 @@ public class Controller_Admin extends _BaseController {
     public Result serverError_getAll() {
         try {
 
-            if(!person().is_admin()) {
+                if(!person().is_admin()) {
                 return forbidden();
             }
 
             List<Model_ServerError> errors = Model_ServerError.find.all();
 
-            return ok(Json.toJson(errors));
+            return ok(errors);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -163,7 +163,7 @@ public class Controller_Admin extends _BaseController {
 
             Model_ServerError error = Model_ServerError.getById(bug_id);
 
-            return ok(Json.toJson(error));
+            return ok(error);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -210,7 +210,7 @@ public class Controller_Admin extends _BaseController {
             error.description = help.description;
             error.update();
 
-            return ok(Json.toJson(error));
+            return ok(error);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -239,7 +239,7 @@ public class Controller_Admin extends _BaseController {
             error.youtrack_url = youTrack.report(error);
             error.update();
 
-            return ok(Json.toJson(error));
+            return ok(error);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -499,7 +499,7 @@ public class Controller_Admin extends _BaseController {
 
             logger.debug("server_getUpdates - got releases");
 
-            return ok(Json.toJson(updates));
+            return ok(updates);
         } catch (Exception e) {
             return controllerServerError(e);
         }

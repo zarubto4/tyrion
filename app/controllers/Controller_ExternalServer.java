@@ -70,7 +70,7 @@ public class Controller_ExternalServer extends _BaseController {
             Swagger_ServerRegistration_FormData data = DigitalOceanTyrionService.get_data();
 
             // Vrácení objektu
-            return ok(Json.toJson(data));
+            return ok(data);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -127,7 +127,7 @@ public class Controller_ExternalServer extends _BaseController {
             DigitalOceanTyrionService.create_server(server, help.size_slug, help.region_slug);
 
             // Vrácení objektu
-            return created(Json.toJson(server));
+            return created(server);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -194,7 +194,7 @@ public class Controller_ExternalServer extends _BaseController {
             new SelfDeployedThreadRegister(server).start();
 
             // Vrácení objektu
-            return created(server.json());
+            return created(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -232,7 +232,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.server_type = HomerType.MAIN;
             server.update();
 
-            return ok(server.json());
+            return ok(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -270,7 +270,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.server_type = HomerType.BACKUP;
             server.update();
 
-            return ok(server.json());
+            return ok(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -326,7 +326,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.update();
 
             // Vrácení objektu
-            return ok(server.json());
+            return ok(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -381,7 +381,7 @@ public class Controller_ExternalServer extends _BaseController {
             Swagger_HomerServer_List result = new Swagger_HomerServer_List(query, page_number);
 
             // Vrácení seznamu
-            return ok(result.json());
+            return ok(result);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -409,7 +409,7 @@ public class Controller_ExternalServer extends _BaseController {
             Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
 
             // Vrácení objektu
-            return ok(server.json());
+            return ok(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -583,7 +583,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.save();
 
             // Vracím objekt
-            return created(server.json());
+            return created(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -632,7 +632,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.update();
 
             // Vrátím objekt
-            return ok(server.json());
+            return ok(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -656,7 +656,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Vracím Objekty
-            return ok(Json.toJson(Model_CompilationServer.find.all()));
+            return ok(Model_CompilationServer.find.all());
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -685,7 +685,7 @@ public class Controller_ExternalServer extends _BaseController {
             Model_CompilationServer server = Model_CompilationServer.getById(compilation_server_id);
       
             // Vracím odpověď
-            return ok(server.json());
+            return ok(server);
 
         } catch (Exception e) {
            return controllerServerError(e);

@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.*;
 import utilities.logger.Logger;
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.UUID;
 
 @ApiModel(description = "Json Model for Blocko in Becki for accessible hardware and firmware versions",
         value = "Boards_For_Blocko")
-public class Swagger_Boards_For_Blocko {
+public class Swagger_Boards_For_Blocko extends _Swagger_Abstract_Default {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 

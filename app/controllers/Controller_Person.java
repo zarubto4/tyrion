@@ -18,6 +18,7 @@ import utilities.enums.NotificationAction;
 import utilities.logger.Logger;
 import utilities.notifications.NotificationActionHandler;
 import utilities.swagger.input.*;
+import utilities.swagger.output.Swagger_Compilation_Ok;
 import utilities.swagger.output.Swagger_Entity_Validation_Out;
 
 import java.time.Duration;
@@ -380,7 +381,7 @@ public class Controller_Person extends _BaseController {
         try {
 
             Model_Person person = Model_Person.getById(person_id);
-            return ok(Json.toJson(person));
+            return ok(person);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -597,7 +598,7 @@ public class Controller_Person extends _BaseController {
 
             person.update();
 
-            return ok(person.json());
+            return ok(person);
 
          } catch (Exception e) {
             return controllerServerError(e);
@@ -621,7 +622,7 @@ public class Controller_Person extends _BaseController {
     public  Result person_getAllConnections() {
         try {
 
-           return ok(Json.toJson( Model_AuthorizationToken.find.query().where().eq("person.id",  personId()).findList() ));
+           return ok(Model_AuthorizationToken.find.query().where().eq("person.id",  personId()).findList() );
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -691,7 +692,7 @@ public class Controller_Person extends _BaseController {
                     if (Model_Person.getByEmail(help.value) == null) {
 
                         validation.valid = true;
-                        return ok(Json.toJson(validation));
+                        return ok(validation);
                     }
 
                     validation.valid = false;
@@ -704,7 +705,7 @@ public class Controller_Person extends _BaseController {
                     if (Model_Person.find.query().where().ieq("nick_name", help.value).findOne() == null) {
 
                         validation.valid = true;
-                        return ok(Json.toJson(validation));
+                        return ok(validation);
                     }
 
                     validation.valid = false;
@@ -738,21 +739,21 @@ public class Controller_Person extends _BaseController {
                             } catch (Exception e) {
                                 // do nothing
                             }
-                            return ok(Json.toJson(validation));
+                            return ok(validation);
                         }
 
                     } catch (RuntimeException e) {
 
                         validation.message = "vat_number is not valid or could not be found";
                         validation.valid = false;
-                        return  ok(Json.toJson(validation));
+                        return  ok(validation);
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
                         validation.valid = false;
                         validation.message = "vat_number is not valid or could not be found";
 
-                        return  ok(Json.toJson(validation));
+                        return  ok(validation);
                     }
 
                     break;
@@ -761,7 +762,7 @@ public class Controller_Person extends _BaseController {
                 default:return badRequest("Key does not exist, use only {mail, nick_name or vat_number}");
             }
 
-            return ok(Json.toJson(validation));
+            return ok(validation);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1087,7 +1088,8 @@ public class Controller_Person extends _BaseController {
                 return badRequest("There is no picture to remove.");
             }
 
-            return ok("Picture successfully removed");
+            return ok(new Result_Ok("Picture successfully removed"));
+
         } catch (Exception e) {
             return controllerServerError(e);
         }

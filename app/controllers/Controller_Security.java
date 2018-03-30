@@ -112,7 +112,7 @@ public class Controller_Security extends _BaseController {
                 result.available_requests = FinancialPermission.checkRestApiRequest(snapshot.getProduct(), snapshot.id);
             }
 
-            return ok(Json.toJson(result));
+            return ok(result);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -189,7 +189,7 @@ public class Controller_Security extends _BaseController {
             swagger_login_token.auth_token = token.token;
 
             // Odesílám odpověď
-            return ok(Json.toJson(swagger_login_token));
+            return ok(swagger_login_token);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -231,7 +231,7 @@ public class Controller_Security extends _BaseController {
 
             result.permissions = permissions;
 
-            return ok(Json.toJson(result));
+            return ok(result);
 
 
         } catch (Exception e) {
@@ -662,7 +662,7 @@ public class Controller_Security extends _BaseController {
 
             logger.debug("GitHub  request for login:: response:: {}", Json.toJson(result));
 
-            return ok(Json.toJson(result));
+            return ok(result);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -728,7 +728,7 @@ public class Controller_Security extends _BaseController {
             result.redirect_url = service.getAuthorizationUrl();
             result.auth_token = floatingPersonToken.token;
 
-            return ok(Json.toJson(result));
+            return ok(result);
 
         } catch (Exception e) {
             return controllerServerError(e);

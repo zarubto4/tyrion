@@ -63,7 +63,7 @@ public class Controller_Notification extends _BaseController {
 
         Swagger_Notification_List result = new Swagger_Notification_List(query, page_number);
 
-        return ok(Json.toJson(result));
+        return ok(result);
 
      } catch (Exception e) {
        return controllerServerError(e);

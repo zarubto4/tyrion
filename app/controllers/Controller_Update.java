@@ -68,7 +68,7 @@ public class Controller_Update extends _BaseController {
             Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(actualization_procedure_id);
 
             // Vrácení objektu
-            return ok(Json.toJson(procedure));
+            return ok(procedure);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -126,7 +126,7 @@ public class Controller_Update extends _BaseController {
             Swagger_ActualizationProcedure_List result = new Swagger_ActualizationProcedure_List(query,page_number);
 
             // Vrácení objektu
-            return ok(result.json());
+            return ok(result);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -155,7 +155,7 @@ public class Controller_Update extends _BaseController {
 
             procedure.cancel_procedure();
 
-            return ok(Json.toJson(procedure));
+            return ok(procedure);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -269,7 +269,7 @@ public class Controller_Update extends _BaseController {
 
             procedure.save();
 
-            return created(procedure.json());
+            return created(procedure);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -299,7 +299,7 @@ public class Controller_Update extends _BaseController {
             Model_HardwareUpdate plan = Model_HardwareUpdate.getById(plan_id);
 
             // Vrácení objektu
-            return ok(plan.json());
+            return ok(plan);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -392,7 +392,7 @@ public class Controller_Update extends _BaseController {
             Swagger_ActualizationProcedureTask_List result = new Swagger_ActualizationProcedureTask_List(query, page_number);
 
             // Vrácení objektu
-            return ok(Json.toJson(result));
+            return ok(result);
 
         } catch (Exception e) {
             return controllerServerError(e);

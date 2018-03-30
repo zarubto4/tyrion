@@ -95,7 +95,7 @@ public class Controller_Hardware extends _BaseController {
             processor.save();
 
             // Vracím objekt
-            return created(Json.toJson(processor));
+            return created(processor);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -123,7 +123,7 @@ public class Controller_Hardware extends _BaseController {
             Model_Processor processor = Model_Processor.getById(processor_id);
    
             // Vracím objekt
-            return ok(processor.json());
+            return ok(processor);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -150,7 +150,7 @@ public class Controller_Hardware extends _BaseController {
            List<Model_Processor> processors = Model_Processor.find.query().where().eq("deleted", false).order().asc("name").findList();
 
             // Vracím seznam objektů
-           return ok(Json.toJson(processors));
+           return ok(processors);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -202,7 +202,7 @@ public class Controller_Hardware extends _BaseController {
             processor.update();
 
             // Vracím upravený objekt
-            return ok(processor.json());
+            return ok(processor);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -268,7 +268,7 @@ public class Controller_Hardware extends _BaseController {
             content.file_in_base64 = boot_loader.file.get_fileRecord_from_Azure_inString();
 
             // Vracím content
-            return ok(Json.toJson(content));
+            return ok(content);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -301,7 +301,7 @@ public class Controller_Hardware extends _BaseController {
             content.file_in_base64 = version.compilation.blob.get_fileRecord_from_Azure_inString();
 
             // Vracím content
-            return ok(Json.toJson(content));
+            return ok(content);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -351,7 +351,7 @@ public class Controller_Hardware extends _BaseController {
             producer.save();
 
             // Vracím objekt
-            return created(producer.json());
+            return created(producer);
             
         } catch (Exception e) {
             return controllerServerError(e);
@@ -401,7 +401,7 @@ public class Controller_Hardware extends _BaseController {
             producer.update();
 
             // Vrácení objektu
-            return ok(producer.json());
+            return ok(producer);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -429,7 +429,7 @@ public class Controller_Hardware extends _BaseController {
             List<Model_Producer> producers = Model_Producer.find.query().where().eq("deleted", false).order().asc("name").findList();
 
             // Vrácení seznamu
-            return ok(Json.toJson(producers));
+            return ok(producers);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -457,7 +457,7 @@ public class Controller_Hardware extends _BaseController {
             Model_Producer producer = Model_Producer.getById(producer_id);
 
             // Vrácneí objektu
-            return ok(producer.json());
+            return ok(producer);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -575,7 +575,7 @@ public class Controller_Hardware extends _BaseController {
 
             hardwareType.refresh();
 
-            return created(hardwareType.json());
+            return created(hardwareType);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -636,7 +636,7 @@ public class Controller_Hardware extends _BaseController {
             hardwareType.update();
 
             // Vrácení změny
-            return ok(hardwareType.json());
+            return ok(hardwareType);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -705,7 +705,7 @@ public class Controller_Hardware extends _BaseController {
             }
 
             // Vrácení seznamu
-            return ok(Json.toJson(hardwareTypes));
+            return ok(hardwareTypes);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -733,7 +733,7 @@ public class Controller_Hardware extends _BaseController {
             Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
 
             // Vrácení validity objektu
-            return ok(hardwareType.json());
+            return ok(hardwareType);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -884,7 +884,7 @@ public class Controller_Hardware extends _BaseController {
             // Uložení objektu do DB
             batch.save();
 
-            return created(Json.toJson(batch));
+            return created(batch);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -983,7 +983,7 @@ public class Controller_Hardware extends _BaseController {
             // Uložení objektu do DB
             batch.update();
 
-            return ok(Json.toJson(batch));
+            return ok(batch);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1039,7 +1039,7 @@ public class Controller_Hardware extends _BaseController {
             boot_loader.save();
 
             // Vracím seznam
-            return ok(Json.toJson(boot_loader));
+            return ok(boot_loader);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1086,7 +1086,7 @@ public class Controller_Hardware extends _BaseController {
 
             boot_loader.update();
 
-            return ok(Json.toJson(boot_loader));
+            return ok(boot_loader);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1118,7 +1118,7 @@ public class Controller_Hardware extends _BaseController {
 
             boot_loader.delete();
 
-            return ok(Json.toJson(boot_loader));
+            return ok(boot_loader);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1188,7 +1188,7 @@ public class Controller_Hardware extends _BaseController {
             boot_loader.refresh();
 
             // Vracím seznam
-            return ok(boot_loader.json());
+            return ok(boot_loader);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1241,7 +1241,7 @@ public class Controller_Hardware extends _BaseController {
             Model_Hardware.cache.clear();
 
             // Vracím Json
-            return ok(boot_loader.json());
+            return ok(boot_loader);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1381,7 +1381,7 @@ public class Controller_Hardware extends _BaseController {
             hardware.save();
 
             // Vracím seznam zařízení k registraci
-            return created(hardware.json());
+            return created(hardware);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1419,7 +1419,7 @@ public class Controller_Hardware extends _BaseController {
             hash.hash = hw.hash_for_adding;
 
             // Vracím seznam zařízení k registraci
-            return ok(Json.toJson(hash));
+            return ok(hash);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1575,7 +1575,7 @@ public class Controller_Hardware extends _BaseController {
                 result.full_id = registration_of_hardware.full_id;
                 result.configuration = configuration;
 
-                return created(Json.toJson(result));
+                return created(result);
             }else {
                 logger.error("hardware_create_garfield:: Error not supported type of board - device is not connectible to internet!");
                 return badRequest("hardware_create_garfield:: Error not supported type of board - device is not connectible to internet!");
@@ -1636,7 +1636,7 @@ public class Controller_Hardware extends _BaseController {
             hardware.set_alias(hardware.name);
 
             // Vrácení upravenéh objektu
-            return ok(Json.toJson(hardware));
+            return ok(hardware);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1710,7 +1710,7 @@ public class Controller_Hardware extends _BaseController {
 
                     try {
                         WS_Message_Hardware_set_settings settings =  board.set_hardware_configuration_parameter(help);
-                        return ok(Json.toJson(board));
+                        return ok(board);
                     } catch (IllegalArgumentException e) {
                         logger.trace("IllegalArgumentException" + e.getMessage());
                         return badRequest(e.getMessage());
@@ -1723,7 +1723,7 @@ public class Controller_Hardware extends _BaseController {
             }
 
             // Vrácení upravenéh objektu
-            return ok(Json.toJson(board));
+            return ok(board);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -2040,7 +2040,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_Hardware_List result = new Swagger_Hardware_List(query, page_number);
 
             // Vracím seznam
-            return ok(Json.toJson(result));
+            return ok(result);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -2106,7 +2106,7 @@ public class Controller_Hardware extends _BaseController {
             hardware.picture = Model_Blob.upload(parts[1], dataType[0], file_name , file_path);
             hardware.update();
 
-            return ok(hardware.json());
+            return ok(hardware);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -2140,7 +2140,7 @@ public class Controller_Hardware extends _BaseController {
             pss.mqtt_password = mqtt_password_not_hashed;
             pss.mqtt_username = mqtt_username_not_hashed;
 
-            return ok(Json.toJson(pss));
+            return ok(pss);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -2313,7 +2313,7 @@ public class Controller_Hardware extends _BaseController {
             board.update();
 
             // Vrácení objektu
-            return ok(Json.toJson(board));
+            return ok(board);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -2342,7 +2342,7 @@ public class Controller_Hardware extends _BaseController {
             Model_Hardware board = Model_Hardware.getById(hardware_id);
 
             // vrácení objektu
-            return ok(board.json());
+            return ok(board);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -2376,7 +2376,7 @@ public class Controller_Hardware extends _BaseController {
             // It better to calid only full id (26 chars)
             if(registration_hash.length() != 26){
                 status.status = BoardRegistrationStatus.NOT_EXIST;
-                return ok(Json.toJson(status));
+                return ok(status);
             }
 
             // Kontrola projektu
@@ -2387,20 +2387,20 @@ public class Controller_Hardware extends _BaseController {
 
             if (hardware == null) {
                 status.status = BoardRegistrationStatus.NOT_EXIST;
-                return ok(Json.toJson(status));
+                return ok(status);
             }
 
             if(hardware.state != null && hardware.state.equals("PERMANENTLY_DISABLED")) {
                 status.status = BoardRegistrationStatus.PERMANENTLY_DISABLED;
-                return ok(Json.toJson(status));
+                return ok(status);
             }
 
             if(Model_Hardware.find.query().where().eq("full_id", hardware.full_id).eq("project.id", project_id).findCount() < 1) {
                 status.status = BoardRegistrationStatus.CAN_REGISTER;
-                return ok(Json.toJson(status));
+                return ok(status);
             }else {
                 status.status = BoardRegistrationStatus.ALREADY_REGISTERED_IN_YOUR_ACCOUNT;
-                return ok(Json.toJson(status));
+                return ok(status);
             }
 
         } catch (Exception e) {
@@ -2510,7 +2510,7 @@ public class Controller_Hardware extends _BaseController {
             hardware.addTags(help.tags);
 
             // Vrácení objektu
-            return ok(hardware.json());
+            return ok(hardware);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -2555,7 +2555,7 @@ public class Controller_Hardware extends _BaseController {
             hardware.removeTags(help.tags);
 
             // Vrácení objektu
-            return ok(hardware.json());
+            return ok(hardware);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -2610,7 +2610,7 @@ public class Controller_Hardware extends _BaseController {
             group.save();
 
             // Vracím seznam
-            return ok(Json.toJson(group));
+            return ok(group);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -2661,7 +2661,7 @@ public class Controller_Hardware extends _BaseController {
 
             group.update();
 
-            return ok(Json.toJson(group));
+            return ok(group);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -2867,7 +2867,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_HardwareGroup_List result = new Swagger_HardwareGroup_List(query, page_number);
 
             // Vrácení výsledku
-            return ok(result.json());
+            return ok(result);
 
 
         } catch (Exception e) {
@@ -2896,7 +2896,7 @@ public class Controller_Hardware extends _BaseController {
             Model_HardwareGroup group = Model_HardwareGroup.getById(group_id);
 
             // Vrácení validity objektu
-            return ok(group.json());
+            return ok(group);
 
         } catch (Exception e) {
             return controllerServerError(e);

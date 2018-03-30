@@ -133,7 +133,7 @@ public class Controller_Code extends _BaseController {
             Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
 
             // Odpovím předchozí kompilací
-            if (version.compilation != null) return ok(Json.toJson(new Swagger_Compilation_Ok()));
+            if (version.compilation != null) return ok(new Swagger_Compilation_Ok());
 
             return version.compile_program_procedure();
 
@@ -224,7 +224,7 @@ public class Controller_Code extends _BaseController {
                 Swagger_Compilation_Server_CompilationResult result = new Swagger_Compilation_Server_CompilationResult();
                 result.interface_code = compilation_result.interface_code;
 
-                return ok(Json.toJson(result));
+                return ok(result);
             }
 
             // Kompilace nebyla úspěšná a tak vracím obsah neuspěšné kompilace
@@ -386,7 +386,7 @@ public class Controller_Code extends _BaseController {
                 version.compile_program_thread(hardwareType.get_main_c_program().default_main_version.compilation.firmware_version_lib);
             }
 
-            return created(c_program.json());
+            return created(c_program);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -462,7 +462,7 @@ public class Controller_Code extends _BaseController {
             c_program_new.refresh();
 
             // Vracím Objekt
-            return ok(c_program_new.json());
+            return ok(c_program_new);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -490,7 +490,7 @@ public class Controller_Code extends _BaseController {
             Model_CProgram c_program = Model_CProgram.getById(c_program_id);
 
             // Vracím Objekt
-            return ok(c_program.json());
+            return ok(c_program);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -554,7 +554,7 @@ public class Controller_Code extends _BaseController {
             Swagger_C_Program_List result = new Swagger_C_Program_List(query,page_number);
 
             // Vrácení výsledku
-            return ok(result.json());
+            return ok(result);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -604,7 +604,7 @@ public class Controller_Code extends _BaseController {
             c_program.update();
 
             // Vrácení objektu
-            return ok(Json.toJson(c_program));
+            return ok(c_program);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -649,7 +649,7 @@ public class Controller_Code extends _BaseController {
             cProgram.addTags(help.tags);
 
             // Vrácení objektu
-            return ok(cProgram.json());
+            return ok(cProgram);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -694,7 +694,7 @@ public class Controller_Code extends _BaseController {
             cProgram.removeTags(help.tags);
 
             // Vrácení objektu
-            return ok(cProgram.json());
+            return ok(cProgram);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -789,7 +789,7 @@ public class Controller_Code extends _BaseController {
             version.compile_program_thread(help.library_compilation_version);
 
             // Vracím vytvořený objekt
-            return created(version.json());
+            return created(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -818,7 +818,7 @@ public class Controller_Code extends _BaseController {
             Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
 
             // Vracím Objekt
-            return ok(version.json());
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -868,7 +868,7 @@ public class Controller_Code extends _BaseController {
             version.update();
 
             // Vrácení objektu
-            return ok(Json.toJson(version));
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1144,7 +1144,7 @@ public class Controller_Code extends _BaseController {
             version.get_c_program().refresh();
 
             // Vracím Json
-            return ok(Json.toJson(version.get_c_program()));
+            return ok(version.get_c_program());
 
         } catch (Exception e) {
             return controllerServerError(e);
