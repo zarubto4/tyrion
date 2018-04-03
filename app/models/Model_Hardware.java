@@ -18,7 +18,7 @@ import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
-import utilities.document_db.document_objects.*;
+import utilities.document_mongo_db.document_objects.*;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.errors.Exceptions.*;
@@ -383,33 +383,43 @@ public class Model_Hardware extends TaggedModel {
                 return cache_latest_online;
             }
 
-            List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(),"SELECT * FROM root r  WHERE r.hardware_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
+            new Thread(() -> {
+                try {
 
-            logger.debug("last_online: number of retrieved documents = {}", documents.size());
+                    List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(),"SELECT * FROM root r  WHERE r.hardware_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
 
-            if (documents.size() > 0) {
+                    logger.debug("last_online: number of retrieved documents = {}", documents.size());
 
-                DM_Board_Disconnected record;
+                    if (documents.size() > 0) {
 
-                if (documents.size() > 1) {
+                        DM_Board_Disconnected record;
 
-                    logger.debug("last_online: more than 1 record, finding latest record");
-                    record = documents.stream().max(Comparator.comparingLong(document -> document.toObject(DM_Board_Disconnected.class).time)).get().toObject(DM_Board_Disconnected.class);
+                        if (documents.size() > 1) {
 
-                } else {
+                            logger.debug("last_online: more than 1 record, finding latest record");
+                            record = documents.stream().max(Comparator.comparingLong(document -> document.toObject(DM_Board_Disconnected.class).time)).get().toObject(DM_Board_Disconnected.class);
 
-                    logger.debug("last_online: result = {}", documents.get(0).toJson());
+                        } else {
 
-                    record = documents.get(0).toObject(DM_Board_Disconnected.class);
+                            logger.debug("last_online: result = {}", documents.get(0).toJson());
+
+                            record = documents.get(0).toObject(DM_Board_Disconnected.class);
+                        }
+
+                        logger.debug("last_online: hardware_id: {}", record.hardware_id);
+
+                        cache_latest_online = new Date(record.time).getTime();
+
+                        EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project().id, this.id));
+
+                    }
+
+                } catch (Exception e) {
+                    logger.internalServerError(e);
                 }
+            }).start();
 
-                logger.debug("last_online: hardware_id: {}", record.hardware_id);
-
-                cache_latest_online = new Date(record.time).getTime();
-                return cache_latest_online;
-            }
-
-            return Long.MAX_VALUE;
+            return Long.MIN_VALUE;
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -1391,7 +1401,6 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
-
     //-- Set AutoBackup  --//
     @JsonIgnore
     public WS_Message_Hardware_set_settings set_auto_backup() {
@@ -1633,7 +1642,7 @@ public class Model_Hardware extends TaggedModel {
             // Priority false - pokud má hardware v ukolníčk předchozí úkony, tento se zařadí do fronty
             // true - všechny přeskočí - muže se stát že pak některé stratí smysl a platnost a homer je zahodí
 
-            JsonNode node = write_with_confirmation(new WS_Message_Hardware_command_execute().make_request(this.id, command, priority), 1000 * 5, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_command_execute().make_request(Collections.singletonList(this.id), command, priority), 1000 * 5, 0, 2);
 
             // Execute Command
             baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_command_execute.class, node);
@@ -2403,6 +2412,10 @@ public class Model_Hardware extends TaggedModel {
             else if (firmware_type == FirmwareType.BOOTLOADER) {
                 plan.bootloader = b_pair.bootLoader;
                 plan.state = HardwareUpdateState.NOT_YET_STARTED;
+            }
+
+            if(!b_pair.hardware.database_synchronize) {
+                plan.state = HardwareUpdateState.PROHIBITED_BY_CONFIG;
             }
 
             plan.save();

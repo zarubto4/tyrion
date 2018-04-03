@@ -25,7 +25,12 @@ public class Swagger_ServerUpdate implements Constraints.Validatable<List<Valida
 
         List<ValidationError> errors = new ArrayList<>();
 
-        if (update_time < new Date().getTime() + 5000) {
+        // If 0 - its required do it immidietly!!!
+        if(update_time != null && update_time == 0L) {
+            update_time = new Date().getTime() + 5200;
+        }
+
+        if (update_time != null && update_time < new Date().getTime() + 5000) {
             errors.add(new ValidationError("update_time","Must be time in the future"));
         }
 

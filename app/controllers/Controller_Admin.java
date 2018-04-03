@@ -8,6 +8,9 @@ import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.swagger.annotations.*;
 import models.*;
+import org.quartz.JobKey;
+import org.quartz.Trigger;
+import org.quartz.impl.matchers.GroupMatcher;
 import play.Environment;
 import play.data.Form;
 import play.data.FormFactory;
@@ -31,6 +34,7 @@ import utilities.update_server.GitHub_Release;
 import utilities.update_server.ServerUpdate;
 
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -307,6 +311,36 @@ public class Controller_Admin extends _BaseController {
 
 // UPDATE SERVER #######################################################################################################
 
+    @ApiOperation(value = "remove Server Update Server_Component",
+            tags = {"Admin"},
+            notes = "",         //TODO
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result server_scheduleUpdate_remove() {
+        try {
+            List<Trigger> triggers = this.scheduler.get_Job("update-server");
+
+            for(Trigger trigger : triggers) {
+
+                scheduler.scheduler.unscheduleJob(trigger.getKey());
+                scheduler.scheduler.deleteJob(trigger.getJobKey());
+            }
+
+           return ok();
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
     @ApiOperation(value = "update Server Server_Component",
             tags = {"Admin"},
             notes = "",         //TODO
@@ -432,6 +466,14 @@ public class Controller_Admin extends _BaseController {
             logger.debug("server_getUpdates - number of releases {}", releases.size());
 
             Swagger_ServerUpdates updates = new Swagger_ServerUpdates();
+
+            this.scheduler.show_all_jobs();
+            List<Trigger> triggers =this.scheduler.get_Job("update-server");
+
+            for(Trigger trigger : triggers) {
+                updates.schedule_release = trigger.getDescription();
+                updates.schedule_release_time =  trigger.getNextFireTime();
+            }
 
             releases.stream().filter(release -> {
 

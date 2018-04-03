@@ -168,11 +168,6 @@ public class Model_Instance extends TaggedModel {
     }
 
     @JsonProperty @ApiModelProperty(required = true)
-    public NetworkStatus server_online_state() throws _Base_Result_Exception  {
-        return Model_HomerServer.getById(getServer_id()).online_state();
-    }
-
-    @JsonProperty @ApiModelProperty(required = true)
     public String instance_remote_url() {
         try {
 

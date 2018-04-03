@@ -16,6 +16,7 @@ import responses.Result_InternalServerError;
 import responses.Result_NotFound;
 import responses.Result_Unauthorized;
 import utilities.authentication.Authentication;
+import utilities.enums.CompilationStatus;
 import utilities.enums.HardwareUpdateState;
 import utilities.enums.FirmwareType;
 import utilities.enums.UpdateType;
@@ -236,6 +237,9 @@ public class Controller_Update extends _BaseController {
 
                 if (firmware_type == FirmwareType.FIRMWARE || firmware_type == FirmwareType.BACKUP) {
                     c_program_version = Model_CProgramVersion.getById(hardware_type_settings.c_program_version_id);
+                    if(c_program_version.status() != CompilationStatus.SUCCESS) {
+                        return badRequest("Selected Version is not succesfully compiled and restored. Its not possible to make a update procedure with it");
+                    }
                 }
 
                 Model_BootLoader bootLoader = null;
@@ -262,6 +266,11 @@ public class Controller_Update extends _BaseController {
                     if (firmware_type == FirmwareType.BOOTLOADER) {
                         plan.bootloader = bootLoader;
                     }
+
+                    if(!hardware.database_synchronize) {
+                        plan.state = HardwareUpdateState.PROHIBITED_BY_CONFIG;
+                    }
+
 
                     procedure.updates.add(plan);
                 }

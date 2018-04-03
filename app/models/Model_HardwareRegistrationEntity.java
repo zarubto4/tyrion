@@ -4,11 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoClientURI;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
 import io.swagger.annotations.ApiModelProperty;
@@ -21,7 +16,7 @@ import utilities.errors.Exceptions.Result_Error_Registration_Fail;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
 import utilities.logger.Logger;
-import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
+import utilities.model.MongoModel;
 
 import java.io.IOException;
 import java.util.Date;
@@ -37,7 +32,7 @@ import static controllers._BaseController.person;
  *
  * Není supportováno delete!
  */
-public class Model_HardwareRegistrationEntity extends _Swagger_Abstract_Default {
+public class Model_HardwareRegistrationEntity extends MongoModel {
 
     /**
      * _BaseFormFactory
@@ -53,17 +48,13 @@ public class Model_HardwareRegistrationEntity extends _Swagger_Abstract_Default 
     public static final String COLLECTION_NAME = "hardware-registration-authority";
     /**
      *  Static Constant - Here qe are not used classic Database Model, but External Mongo DB
-     */
+    */
 
-
-    public static MongoCollection<Document> collection() {
-
-        MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://production-byzance-cosmos:PbimpRkWXhUrGBwRtLaR19B6NbffCgzklSfSVtHThFzMn6keUENJ9Hm50TZZgtqVOGesgbtCWLaC3yd6ENhoew==@production-byzance-cosmos.documents.azure.com:10255/?ssl=true&replicaSet=globaldb"));
-        MongoDatabase database = mongoClient.getDatabase("hardware-registration-authority-database");
-        MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
-
-        return collection;
+    public String get_collection_name(){
+        return COLLECTION_NAME;
     }
+
+
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String full_id;
@@ -132,7 +123,7 @@ public class Model_HardwareRegistrationEntity extends _Swagger_Abstract_Default 
 
             // Create Document - Save Document
             Document document = Document.parse(Json.toJson(this).toString());
-            collection() .insertOne(document);
+            collection(COLLECTION_NAME).insertOne(document);
 
 
         } catch (Exception e){
@@ -150,7 +141,7 @@ public class Model_HardwareRegistrationEntity extends _Swagger_Abstract_Default 
             baseFormFactory.formFromJsonWithValidation(Model_HardwareRegistrationEntity.class, json);
 
             Document document = Document.parse(Json.toJson(this).toString());
-            collection() .updateOne( eq("full_id", full_id), new Document("$set", document));
+            collection(COLLECTION_NAME).updateOne( eq("full_id", full_id), new Document("$set", document));
 
         } catch (Exception e){
             logger.internalServerError(e);
@@ -198,7 +189,7 @@ public class Model_HardwareRegistrationEntity extends _Swagger_Abstract_Default 
         // Kontroluji Device ID
         BasicDBObject whereQuery = new BasicDBObject();
         whereQuery.put(type.name() ,value);
-        Document device_id_already_registered = collection() .find(whereQuery).first();
+        Document device_id_already_registered = collection(COLLECTION_NAME).find(whereQuery).first();
 
         if (device_id_already_registered != null) {
             return true;
@@ -218,7 +209,7 @@ public class Model_HardwareRegistrationEntity extends _Swagger_Abstract_Default 
 
         BasicDBObject whereQuery_board_id = new BasicDBObject();
         whereQuery_board_id.put(Enum_Hardware_Registration_DB_Key.full_id.name(), full_id);
-        Document device = collection() .find(whereQuery_board_id).first();
+        Document device = collection(COLLECTION_NAME).find(whereQuery_board_id).first();
 
         if(device == null) {
             return null;
@@ -235,7 +226,7 @@ public class Model_HardwareRegistrationEntity extends _Swagger_Abstract_Default 
 
             BasicDBObject whereQuery_board_id = new BasicDBObject();
             whereQuery_board_id.put("hash_for_adding", hash);
-            Document device = collection() .find(whereQuery_board_id).first();
+            Document device = collection(COLLECTION_NAME).find(whereQuery_board_id).first();
 
             if(device == null) {
                 return null;
@@ -256,7 +247,7 @@ public class Model_HardwareRegistrationEntity extends _Swagger_Abstract_Default 
 
             BasicDBObject whereQuery_board_id = new BasicDBObject();
             whereQuery_board_id.put("mac_address", mac_address);
-            Document device = collection() .find(whereQuery_board_id).first();
+            Document device = collection(COLLECTION_NAME).find(whereQuery_board_id).first();
 
             if(device == null) {
                 return null;

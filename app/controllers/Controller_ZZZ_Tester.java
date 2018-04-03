@@ -1,21 +1,15 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.bson.Document;
 import play.mvc.Result;
 import utilities.logger.Logger;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.mongodb.client.model.Filters.eq;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_ZZZ_Tester extends _BaseController {

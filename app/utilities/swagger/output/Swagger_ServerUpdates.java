@@ -6,6 +6,7 @@ import utilities.swagger.input.Swagger_GitHubReleases;
 import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @ApiModel(description = "Json Model with available server updates",
@@ -15,4 +16,8 @@ public class Swagger_ServerUpdates extends _Swagger_Abstract_Default {
     public String current = "v" + Server.version;
 
     public List<Swagger_GitHubReleases> releases = new ArrayList<>();
+
+    public String schedule_release;
+    public Date schedule_release_time;
+
 }

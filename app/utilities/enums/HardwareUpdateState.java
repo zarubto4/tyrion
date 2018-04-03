@@ -19,6 +19,9 @@ public enum HardwareUpdateState {
     // Proces ještě nezačal
     @ApiModelProperty(value = " State where system is installing new firmware to hardware. Its not possible terminate this procedure in this time")  @EnumValue("NOT_YET_STARTED") NOT_YET_STARTED,
 
+    // Proces ještě nezačal
+    @ApiModelProperty(value = "Prohibited by configuration on hardware, probably the Database Synchronization is on OFF!")  @EnumValue("PROHIBITED_BY_CONFIG") PROHIBITED_BY_CONFIG,
+
     // Proces probíhá - němělo by do něj být zasahováno!
     @ApiModelProperty(value = " State where system is installing new firmware to hardware. Its not possible terminate this procedure in this time")  @EnumValue("IN_PROGRESS") IN_PROGRESS,
 

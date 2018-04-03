@@ -17,7 +17,8 @@ import utilities.model.JsonSerializer;
 import utilities.server_measurement.RequestLatency;
 import utilities.swagger.input.Swagger_Project_New;
 import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
-
+import play.data.validation.ValidationError;
+import javax.validation.ValidationException;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -30,7 +31,7 @@ import java.util.UUID;
  * This class provides some common API for Tyrion REST Controller.
  * Creates results with given content.
  */
-public abstract class _BaseController{
+public abstract class _BaseController {
 
 // LOGGER ##############################################################################################################
 

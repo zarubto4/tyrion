@@ -10,7 +10,7 @@ import play.libs.Json;
 import play.mvc.*;
 import responses.*;
 import utilities.authentication.Authentication;
-import utilities.document_db.document_objects.DM_Board_Bootloader_DefaultConfig;
+import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;

@@ -76,7 +76,7 @@ public class Model_GridProject extends TaggedModel {
     @JsonIgnore @Transient public UUID get_project_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_Project.class) == null) {
-            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("grid_projects.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("grid_projects.id", id).select("id").findSingleAttribute());
         }
 
         return cache().get(Model_Project.class);

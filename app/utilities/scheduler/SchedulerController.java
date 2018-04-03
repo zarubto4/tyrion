@@ -5,6 +5,7 @@ import com.google.inject.Singleton;
 import models.Model_UpdateProcedure;
 import models.Model_InstanceSnapshot;
 import org.quartz.*;
+import org.quartz.impl.matchers.GroupMatcher;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
@@ -15,9 +16,8 @@ import utilities.logger.Logger;
 import utilities.scheduler.jobs.*;
 import utilities.update_server.ServerUpdate;
 
+import java.util.*;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Set;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
@@ -38,7 +38,7 @@ public class SchedulerController {
         this.scheduler = scheduler;
     }
 
-    private Scheduler scheduler;
+    public Scheduler scheduler;
 
     /**
      * Method looks into utilities.scheduler.jobs package and finds all classes
@@ -135,6 +135,48 @@ public class SchedulerController {
         }
     }
 
+    public void show_all_jobs() throws SchedulerException {
+
+        for (String groupName : scheduler.getJobGroupNames()) {
+
+            for (JobKey jobKey : scheduler.getJobKeys(GroupMatcher.jobGroupEquals(groupName))) {
+
+                String jobName = jobKey.getName();
+                String jobGroup = jobKey.getGroup();
+
+                //get job's trigger
+                List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobKey);
+
+                for(Trigger trigger : triggers) {
+                    Date nextFireTime = triggers.get(0).getNextFireTime();
+                    System.out.println("[jobName] : " + jobName + " [groupName] : " + jobGroup + " - " + nextFireTime);
+                }
+            }
+        }
+    }
+
+    /**
+     * Return Trigger Job where jobKey_sub_part is a part of name of Scheduler Job
+     * For example "update-instance-" return list of all jobs waiting for running
+     *
+     * @param jobKey_sub_part
+     * @return
+     * @throws SchedulerException
+     */
+    public List<Trigger> get_Job(String jobKey_sub_part) throws SchedulerException {
+        List<Trigger> triggers_jobs = new ArrayList<>();
+        for (String groupName : scheduler.getJobGroupNames()) {
+            for (JobKey jobKey : scheduler.getJobKeys(GroupMatcher.jobGroupEquals(groupName))) {
+
+                if(jobKey.getName().contains(jobKey_sub_part)){
+                    triggers_jobs.add(scheduler.getTriggersOfJob(jobKey).get(0));
+                }
+            }
+        }
+
+        return triggers_jobs;
+    }
+
     /**
      * Schedules a new job to be executed on the given date. Job will be executed only once and uploads blocko to homer.
      * @param snapshot of instance to upload to cloud.
@@ -190,7 +232,7 @@ public class SchedulerController {
             }
 
             this.scheduler.scheduleJob(newJob(Job_UpdateServer.class).withIdentity(JobKey.jobKey(name)).usingJobData(data).build(),
-                    newTrigger().withIdentity(name + "-key").startNow().withSchedule(toCron(new Date(update.time))).build()); // Spuštění na základě data
+                    newTrigger().withIdentity(name + "-key").withDescription(update.version).startNow().withSchedule(toCron(new Date(update.time))).build()); // Spuštění na základě data
 
         } catch (Exception e) {
             logger.internalServerError(e);

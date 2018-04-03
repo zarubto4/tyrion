@@ -4,8 +4,7 @@ import com.google.inject.Inject;
 import com.microsoft.azure.storage.blob.CloudAppendBlob;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
-import io.ebean.Ebean;
-import io.ebean.Query;
+import io.ebean.*;
 import io.swagger.annotations.*;
 import models.*;
 import play.libs.Json;
@@ -17,6 +16,7 @@ import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.authentication.AuthenticationHomer;
 import utilities.enums.CompilationStatus;
+import utilities.enums.HardwareUpdateState;
 import utilities.enums.HomerType;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.homer_auto_deploy.DigitalOceanTyrionService;
@@ -368,14 +368,27 @@ public class Controller_ExternalServer extends _BaseController {
             Query<Model_HomerServer> query = Ebean.find(Model_HomerServer.class);
 
             query.orderBy("UPPER(name) ASC");
+            query.orderBy("project.id");
             query.where().eq("deleted", false);
 
+            ExpressionList<Model_HomerServer> list = query.where();
+
+            // Junction!!! START ---------------------------------------------------------------------------------------
+
+            Junction<Model_HomerServer> junction = list.disjunction();
+
             if (!help.server_types.isEmpty()) {
-                query.where().in("server_type", help.server_types);
+                junction.add(Expr.in("server_type", help.server_types));
             }
+
             if (help.project_id != null) {
-                query.where().eq("project.id", help.project_id);
+                Model_Project.getById(help.project_id);
+                junction.add(Expr.eq("project.id", help.project_id));
             }
+
+            junction.endJunction();
+
+            // Junction!!! END ------------------------------------------------------------------------------------------
 
             // Vyvoření odchozího JSON
             Swagger_HomerServer_List result = new Swagger_HomerServer_List(query, page_number);

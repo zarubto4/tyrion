@@ -123,7 +123,11 @@ public class Model_UpdateProcedure extends BaseModel {
     public int procedure_size_complete () {
         return  Model_HardwareUpdate.find.query().where()
                 .eq("actualization_procedure.id", id).where()
-                .eq("state", HardwareUpdateState.COMPLETE)
+                .disjunction()
+                    .add(Expr.eq("state", HardwareUpdateState.COMPLETE))
+                    .add(Expr.eq("state", HardwareUpdateState.PROHIBITED_BY_CONFIG))
+                    .add(Expr.eq("state", HardwareUpdateState.OBSOLETE))
+                .endJunction()
                 .findCount();
     }
 
