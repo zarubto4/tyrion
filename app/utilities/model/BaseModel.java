@@ -90,7 +90,7 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
                         cash_map.put(c, ids);
                     } else {
                         if (cash_map.get(c) != null) {
-                            cash_map.get(c).addAll(ids);
+                            cash_map.get(c).addAll(0, ids);
                         } else {
                             cash_map.put(c, ids);
                         }
@@ -109,7 +109,7 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
                         cash_map.put(c, Collections.singletonList(id));
                     } else {
                         if (cash_map.get(c) != null) {
-                            cash_map.get(c).add(id);
+                            cash_map.get(c).add(0, id);
                         } else {
                             cash_map.put(c, Collections.singletonList(id));
                         }

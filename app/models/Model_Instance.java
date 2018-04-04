@@ -690,7 +690,9 @@ public class Model_Instance extends TaggedModel {
     public void cloud_verification_token_WEBVIEW(WS_Homer homer, WS_Message_WebView_token_verification help) {
         try {
 
-            logger.debug("cloud_verification_token:: WebView  Checking Token");
+            logger.error("cloud_verification_token:: WebView  Checking Token");
+            logger.error("cloud_verification_token:: Homer server: {}", homer.id);
+            logger.error("cloud_verification_token:: WS_Message_WebView_token_verification", Json.toJson(help));
 
             Model_AuthorizationToken floatingPersonToken = Model_AuthorizationToken.find.query().where().eq("token", help.token).findOne();
 
@@ -704,11 +706,32 @@ public class Model_Instance extends TaggedModel {
 
 
             // Kontola operávnění ke konkrétní instanci??
-            if (Model_Instance.find.query().where().eq("id", help.instance_id).eq("b_program.project.participants.person.id", floatingPersonToken.get_person_id()).findCount() > 0) {
-                homer.send(help.get_result(true));
-            } else {
-                homer.send(help.get_result(false));
+            Model_HomerServer server = Model_HomerServer.getById(homer.id);
+
+            // Veřejný server
+            if(server.server_type == HomerType.PUBLIC || server.server_type == HomerType.MAIN || server.server_type == HomerType.BACKUP) {
+
+                if (Model_Instance.find.query().where().eq("id", help.instance_id).eq("b_program.project.participants.person.id", floatingPersonToken.get_person_id()).findCount() > 0) {
+                    homer.send(help.get_result(true));
+                } else {
+                    homer.send(help.get_result(false));
+                }
+
+            // Provátní server
+            }else {
+
+                if(Model_Project.find.query().where().eq("servers.id", server.id).eq("participants.person.id", floatingPersonToken.get_person_id()).select("id").findOne() != null) {
+                    logger.trace("validate_incoming_user_connection_to_hardware_logger:: Private Server Find fot this Person");
+                    homer.send(help.get_result(true));
+
+                }else {
+                    logger.warn("validate_incoming_user_connection_to_hardware_logger:: Private Server NOT Find fot this Person");
+                    homer.send(help.get_result(false));
+
+                }
+
             }
+
 
         } catch (Exception e) {
             logger.internalServerError(e);

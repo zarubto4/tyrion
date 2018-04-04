@@ -181,7 +181,7 @@ public class MainLogger {
 
             LogLevel log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).logLevel;
 
-            if (log_level == LogLevel.INFO || log_level == LogLevel.DEBUG) {
+            if (log_level == LogLevel.TRACE || log_level == LogLevel.DEBUG) {
 
                 // Dostat sem barvičku
                 logger.debug(t_class.getSimpleName() + "::" + log_message, args);
@@ -197,7 +197,7 @@ public class MainLogger {
 
             LogLevel log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).logLevel;
 
-            if (log_level == LogLevel.INFO) {
+            if (log_level == LogLevel.TRACE || log_level == LogLevel.DEBUG || log_level == LogLevel.INFO) {
 
                 logger.info(t_class.getSimpleName() + "::" + log_message, args);
 
@@ -211,7 +211,7 @@ public class MainLogger {
 
             LogLevel log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).logLevel;
 
-            if (log_level == LogLevel.WARN || log_level == LogLevel.ERROR) {
+            if (log_level == LogLevel.TRACE || log_level == LogLevel.DEBUG || log_level == LogLevel.INFO || log_level == LogLevel.WARN || log_level == LogLevel.ERROR) {
 
                 logger.warn(t_class.getSimpleName() + "::" + log_message, args);
 

@@ -1304,16 +1304,23 @@ public class Controller_Hardware extends _BaseController {
             }
 
             if (!hardware_for_update.isEmpty()) {
+                logger.trace("bootLoader_manualUpdate hardware_for_update is not Empty");
                 new Thread(() -> {
                     try {
 
+
                         Model_UpdateProcedure procedure = Model_Hardware.create_update_procedure(FirmwareType.BOOTLOADER, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, hardware_for_update);
+
+                        logger.warn("Thread: New Procedure {} ", procedure.id);
                         procedure.execute_update_procedure();
+                        logger.warn("Thread: New Procedure was Executed");
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
                     }
                 }).start();
+            }else {
+                logger.error("bootLoader_manualUpdate hardware_for_update is Empty");
             }
 
 

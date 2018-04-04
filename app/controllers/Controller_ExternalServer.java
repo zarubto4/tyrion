@@ -906,19 +906,19 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
 
-            logger.error("cloud_file_get_bootloader - download id: {}", bootloader_id);
+            logger.trace("cloud_file_get_bootloader - download id: {}", bootloader_id);
 
             // Získám soubor
             Model_BootLoader bootLoader = Model_BootLoader.getById(bootloader_id);
 
-            logger.error("cloud_file_get_bootloader - Bootloader: {}", bootLoader.version_identifier);
-            logger.error("cloud_file_get_bootloader - File Path: {}",  bootLoader.file.path);
+            logger.trace("cloud_file_get_bootloader - Bootloader: {}", bootLoader.version_identifier);
+            logger.trace("cloud_file_get_bootloader - File Path: {}",  bootLoader.file.path);
 
             int slash = bootLoader.file.path.indexOf("/");
             String container_name = bootLoader.file.path.substring(0,slash);
             String real_file_path = bootLoader.file.path.substring(slash+1);
 
-            logger.error("cloud_file_get_bootloader - Container Name {} real_file_path {} ", container_name, real_file_path );
+            logger.trace("cloud_file_get_bootloader - Container Name {} real_file_path {} ", container_name, real_file_path );
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 
@@ -935,7 +935,7 @@ public class Controller_ExternalServer extends _BaseController {
 
             String total_link = blob.getUri().toString() + "?" + sas;
 
-            logger.error("cloud_file_get_bootloader_version - download link: {}", total_link);
+            logger.trace("cloud_file_get_bootloader_version - download link: {}", total_link);
 
             // Přesměruji na link
             return redirect(total_link);

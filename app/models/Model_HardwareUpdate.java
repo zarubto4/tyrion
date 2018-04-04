@@ -606,20 +606,30 @@ public class Model_HardwareUpdate extends BaseModel {
 
                             hardware.actual_c_program_version = plan.c_program_version_for_update;
 
+                            hardware.cache().removeAll(Model_CProgram.class);
+                            hardware.cache().removeAll(Model_CProgramVersion.class);
+
                             hardware.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
                             hardware.cache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
                             hardware.update();
 
                         } else if (plan.firmware_type == FirmwareType.BOOTLOADER) {
 
-                            hardware.actual_boot_loader = plan.getBootloader();
+                            hardware.cache().removeAll(Model_Hardware.Model_hardware_update_update_in_progress_bootloader.class);
+                            hardware.cache().removeAll(Model_BootLoader.class);
 
-                            hardware.cache().add(Model_BootLoader.class, plan.getBootloader().id);
+                            hardware.actual_boot_loader = plan.getBootloader();
                             hardware.update();
+
+                            hardware.cache().add(Model_BootLoader.class, plan.getBootloaderId());
+
 
                         } else if (plan.firmware_type == FirmwareType.BACKUP) {
 
                             hardware.actual_backup_c_program_version = plan.c_program_version_for_update;
+
+                            hardware.cache().removeAll(Model_CProgramFakeBackup.class);
+                            hardware.cache().removeAll(Model_CProgramVersionFakeBackup.class);
 
                             hardware.cache().add(Model_CProgramFakeBackup.class, plan.c_program_version_for_update.get_c_program().id);
                             hardware.cache().add(Model_CProgramVersionFakeBackup.class, plan.c_program_version_for_update.id);
@@ -710,6 +720,7 @@ public class Model_HardwareUpdate extends BaseModel {
                         } else if (plan.firmware_type == FirmwareType.BOOTLOADER) {
 
                             hardware.actual_boot_loader = plan.getBootloader();
+                            hardware.cache().removeAll(Model_Hardware.Model_hardware_update_update_in_progress_bootloader.class);
                             hardware.cache().removeAll(Model_BootLoader.class);
                             hardware.cache().add(Model_BootLoader.class, plan.getBootloader().id);
                             hardware.update();

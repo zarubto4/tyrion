@@ -197,6 +197,7 @@ public class Model_UpdateProcedure extends BaseModel {
 
     @JsonIgnore @Transient
     public void execute_update_procedure() {
+        logger.warn("execute_update_procedure()");
         Model_Hardware.execute_update_procedure(this);
     }
 

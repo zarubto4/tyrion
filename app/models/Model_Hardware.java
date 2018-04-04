@@ -176,9 +176,9 @@ public class Model_Hardware extends TaggedModel {
     public Model_BootLoader bootloader_update_in_progress() {
         try {
 
-               if(cache().get(Model_harware_update_update_in_progress_bootloader.class) != null) {
 
-                   cache().add(Model_harware_update_update_in_progress_bootloader.class, (UUID) Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
+               if(cache().get(Model_hardware_update_update_in_progress_bootloader.class) == null) {
+                  UUID update_id = (UUID) Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
                        .disjunction()
                            .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
                            .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
@@ -190,12 +190,16 @@ public class Model_Hardware extends TaggedModel {
                        .eq("firmware_type", FirmwareType.BOOTLOADER)
                        .select("id")
                        .setMaxRows(1)
-                       .findSingleAttribute() ) ;
+                       .findSingleAttribute();
+                   if(update_id != null) {
+                       System.out.println("Model_hardware_update_update_in_progress_bootloader Model_HardwareUpdate: state:: " +  Model_HardwareUpdate.getById(update_id).state);
+                       cache().add(Model_hardware_update_update_in_progress_bootloader.class, Model_HardwareUpdate.getById(update_id).getBootloaderId());
+                   }
            }
 
-           if(cache().get(Model_harware_update_update_in_progress_bootloader.class) == null) return null;
+           if(cache().get(Model_hardware_update_update_in_progress_bootloader.class) == null) return null;
 
-           return Model_BootLoader.getById(cache().get(Model_harware_update_update_in_progress_bootloader.class));
+           return Model_BootLoader.getById(cache().get(Model_hardware_update_update_in_progress_bootloader.class));
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -1519,7 +1523,7 @@ public class Model_Hardware extends TaggedModel {
         if (procedure.getUpdates().isEmpty()) {
             procedure.state = Enum_Update_group_procedure_state.COMPLETE_WITH_ERROR;
             procedure.update();
-            logger.debug("execute_update_procedure - procedure: {} is empty -> return" , procedure.id);
+            logger.error("execute_update_procedure - procedure: {} is empty -> return" , procedure.id);
             return;
         }
 
@@ -1955,13 +1959,12 @@ public class Model_Hardware extends TaggedModel {
             // Nemám Updaty - ale verze se neshodují
             if (get_actual_c_program_version() != null && firmware_plans.isEmpty()) {
 
-                logger.debug("check_firmware - no update procedures found, but versions are not equal");
                 logger.debug("check_firmware - current firmware according to Tyrion: C_Program Name {} Version {} build_id {} ", get_actual_c_program_version().get_c_program().name, get_actual_c_program_version().name, get_actual_c_program_version().compilation.firmware_build_id);
                 logger.debug("check_firmware - current firmware according to Homer: C_Program Name {} Version {} build_id {} ", overview.binaries.firmware.usr_name, overview.binaries.firmware.usr_version, overview.binaries.firmware.build_id);
 
                 if (!get_actual_c_program_version().compilation.firmware_build_id.equals(overview.binaries.firmware.build_id)) {
                     // Na HW není to co by na něm mělo být.
-
+                    logger.debug("check_firmware - no update procedures found, but versions are not equal");
                     logger.debug("check_firmware - Different firmware versions versus database");
 
                     if (get_backup_c_program_version() != null && get_backup_c_program_version().compilation.firmware_build_id.equals(overview.binaries.bootloader.build_id)) {
@@ -2423,6 +2426,10 @@ public class Model_Hardware extends TaggedModel {
 
         procedure.refresh();
 
+        if(procedure.getUpdates().isEmpty()){
+            logger.error("create_update_procedure: Update List is Empty!!!");
+        }
+
         return procedure;
     }
 
@@ -2635,9 +2642,9 @@ public class Model_Hardware extends TaggedModel {
 /* HELPER CLASS  ----------------------------------------------------------------------------------------------------------*/
 
     // Používáme protože nemáme rezervní klíč pro cachoání backup c program verze v lokální chache
-    private abstract class Model_CProgramVersionFakeBackup {}
-    private abstract class Model_CProgramFakeBackup {}
-    private abstract class Model_harware_update_update_in_progress_bootloader {}
+    public abstract class Model_CProgramVersionFakeBackup {}
+    public abstract class Model_CProgramFakeBackup {}
+    public abstract class Model_hardware_update_update_in_progress_bootloader {}
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
