@@ -192,7 +192,7 @@ public class Controller_WebSocket extends _BaseController {
 
                         WS_Message_Ping_compilation_server result = compiler.ping();
 
-                        logger.trace("compiler:: Error::{}" , result.error );
+                        logger.trace("compiler:: Error::{} {}" , result.error , result.error_message);
                         if(!result.status.equals("success") && !result.error.equals("Missing field code.")){
                             logger.error("compiler - ping failed, removing previous connection");
                             compilers.get(compiler.id).close();

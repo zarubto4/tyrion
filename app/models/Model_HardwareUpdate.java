@@ -359,12 +359,12 @@ public class Model_HardwareUpdate extends BaseModel {
 
 
             // Pokud se vrátí fáze špatně - ukončuji celý update
-            if (report.error != null || report.error_code != null) {
+            if (report.error_message != null || report.error_code != null) {
                 logger.warn("update_procedure_progress  Update Fail! Device ID: {}, update procedure: {}", plan.getHardware().id, plan.id);
 
                 plan.state = HardwareUpdateState.CRITICAL_ERROR;
                 plan.error_code = report.error_code;
-                plan.error = report.error;
+                plan.error = report.error + report.error_message;
                 plan.update();
                 Model_UpdateProcedure.getById(report.tracking_group_id).change_state(plan, plan.state);
 

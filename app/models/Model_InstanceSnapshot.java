@@ -132,7 +132,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
             if (this.json_additional_parameter != null) {
                 return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapShotConfiguration.class, Json.parse(this.json_additional_parameter));
             } else {
-                if (this.instance.current_snapshot_id.equals(this.id)) {
+                if (this.get_instance().current_snapshot_id != null && this.get_instance().current_snapshot_id.equals(this.id)) {
                     Swagger_InstanceSnapShotConfiguration configuration = new Swagger_InstanceSnapShotConfiguration();
 
                     for (Model_BProgramVersionSnapGridProject grid_project_snapshots : b_program_version.grid_project_snapshots) {
@@ -312,19 +312,20 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
             try {
                 // Step 1
-                logger.debug("deploy - begin");
+                logger.debug("deploy - begin - step 1");
                 if (this.get_instance().current_snapshot_id != null && !this.get_instance().current_snapshot_id.equals(this.id)) {
                     logger.debug("deploy - stop previous running snapshot");
                     Model_InstanceSnapshot previous = getById(this.get_instance().current_snapshot_id);
                     if (previous != null) {
-                        previous.stop();
+                        this.get_instance().current_snapshot_id = null;
+                        this.update();
                     }
                 }
 
                 if (get_instance().getServer().online_state() != NetworkStatus.ONLINE) {
                     logger.debug("deploy - server is offline, it is not possible to continue");
-                    instance.current_snapshot_id = this.id;
-                    instance.update();
+                    get_instance().current_snapshot_id = this.id;
+                    get_instance().update();
 
                     if(person != null) {
                         notification_instance_set_wait_for_server(person);
@@ -345,7 +346,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     // Vytvořím Instanci
                     WS_Message_Homer_Instance_add result_instance = get_instance().server_main.add_instance(get_instance());
                     if (!result_instance.status.equals("success")) {
-                        logger.internalServerError(new Exception("Failed to add Instance. ErrorCode: " + result_instance.error_code + ". Error: " + result_instance.error));
+                        logger.internalServerError(new Exception("Failed to add Instance. ErrorCode: " + result_instance.error_code + ". Error: " + result_instance.error + result_instance.error_message));
                         return;
                     }
                 }
@@ -402,13 +403,6 @@ public class Model_InstanceSnapshot extends TaggedModel {
             }
 
         }).start();
-    }
-
-    public void stop() throws _Base_Result_Exception {
-        check_update_permission();
-
-        // TODO notifikace
-        get_instance().stop();
     }
 
     @JsonIgnore

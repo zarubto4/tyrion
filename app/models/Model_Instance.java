@@ -318,7 +318,7 @@ public class Model_Instance extends TaggedModel {
     @Override
     public void update() {
 
-        logger.debug("update - updating in database, id: {}",  this.id);
+        logger.trace("update - updating in database, id: {}",  this.id);
 
         super.update();
 
@@ -553,10 +553,9 @@ public class Model_Instance extends TaggedModel {
     public void stop() {
 
         cache_status.put(this.id, false);
-        WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, true, getProjectId());
+        WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, false, getProjectId());
 
         if (current_snapshot() != null) {
-            current_snapshot().stop();
             this.current_snapshot_id = null;
             this.update();
         }
@@ -567,6 +566,8 @@ public class Model_Instance extends TaggedModel {
         }
 
         server.remove_instance(Collections.singletonList(id));
+
+        // TODO notifikace??
     }
 
     //-- Verification --//

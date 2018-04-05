@@ -803,6 +803,33 @@ public class Controller_Blocko extends _BaseController {
         }
     }
 
+    @ApiOperation(value = "shutdown Instance",
+            tags = {"Instance"},
+            notes = "stop instance of blocko and remove from cloud.",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result instance_shutdown(UUID instance_id) {
+        try {
+
+            Model_Instance instance = Model_Instance.getById(instance_id);
+
+            instance.stop();
+
+            return ok();
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
     @ApiOperation(value = "create InstanceSnapshot",
             tags = {"Instance"},
             notes = "", //TODO
@@ -991,6 +1018,9 @@ public class Controller_Blocko extends _BaseController {
 
                 // Deploy immediately!
                 snapshot.deployed = new Date();
+                snapshot.get_instance().current_snapshot_id = snapshot.id;
+                snapshot.get_instance().update();
+                snapshot.update();
                 snapshot.deploy();
             }
 
@@ -1004,32 +1034,7 @@ public class Controller_Blocko extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "shutdown InstanceSnapshot",
-            tags = {"Instance"},
-            notes = "stop instance of blocko and remove from cloud.",
-            produces = "application/json",
-            protocols = "https"
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result instanceSnapshot_shutdown(UUID snapshot_id) {
-        try {
 
-            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
-          
-            snapshot.stop();
-
-            return ok();
-
-        } catch (Exception e) {
-            return controllerServerError(e);
-        }
-    }
 
     @ApiOperation(value = "delete InstanceSnapshot",
             tags = {"Instance"},
