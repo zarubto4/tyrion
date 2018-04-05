@@ -227,9 +227,24 @@ public class Model_Hardware extends TaggedModel {
             if (cache_latest_know_ip_address != null) {
                 return cache_latest_know_ip_address;
             } else {
+
+                new Thread(() -> {
+                    try {
+                        WS_Message_Hardware_overview_Board overview_board = this.get_devices_overview();
+
+                        if(overview_board.status.equals("success")) {
+                            cache_latest_know_ip_address = overview_board.ip;
+                        }
+
+                        EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project().id, this.id));
+
+                    } catch (Exception e) {
+                        logger.internalServerError(e);
+                    }
+                }).start();
+
                 return null;
             }
-
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -378,7 +393,8 @@ public class Model_Hardware extends TaggedModel {
     }
 
     @JsonProperty
-    @ApiModelProperty(value = "Value is null, if device status is online")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @ApiModelProperty(value = "Value is missing, if device status is online")
     public Long latest_online() {
         if (online_state() == NetworkStatus.ONLINE) return null;
         try {

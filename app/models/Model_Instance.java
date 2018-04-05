@@ -108,6 +108,8 @@ public class Model_Instance extends TaggedModel {
             return null;
         } catch (Exception e) {
             logger.internalServerError(e);
+            this.current_snapshot_id = null;
+            this.update();
             return null;
         }
     }
@@ -691,9 +693,9 @@ public class Model_Instance extends TaggedModel {
     public void cloud_verification_token_WEBVIEW(WS_Homer homer, WS_Message_WebView_token_verification help) {
         try {
 
-            logger.error("cloud_verification_token:: WebView  Checking Token");
-            logger.error("cloud_verification_token:: Homer server: {}", homer.id);
-            logger.error("cloud_verification_token:: WS_Message_WebView_token_verification", Json.toJson(help));
+            logger.debug("cloud_verification_token:: WebView  Checking Token");
+            logger.debug("cloud_verification_token:: Homer server: {}", homer.id);
+            logger.debug("cloud_verification_token:: WS_Message_WebView_token_verification", Json.toJson(help));
 
             Model_AuthorizationToken floatingPersonToken = Model_AuthorizationToken.find.query().where().eq("token", help.token).findOne();
 

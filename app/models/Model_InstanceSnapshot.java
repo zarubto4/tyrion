@@ -82,9 +82,6 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Cached private UUID cache_version_id;
-    @JsonIgnore @Transient @Cached private UUID cache_instance_id;
-
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -198,45 +195,36 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
     @JsonIgnore
     public Model_BProgramVersion get_b_program_version() throws _Base_Result_Exception {
-
-        if (cache_version_id == null) {
-            return Model_BProgramVersion.getById(get_b_program_version_id());
-        }else {
-            return Model_BProgramVersion.getById(cache_version_id);
-        }
+        return Model_BProgramVersion.getById(get_b_program_version_id());
     }
 
     @JsonIgnore
     public UUID get_b_program_version_id() throws _Base_Result_Exception {
 
-        if (cache_version_id == null) {
+        if (cache().gets(Model_BProgramVersion.class) == null) {
             Model_BProgramVersion version = Model_BProgramVersion.find.query().where().eq("instances.id", id).select("id").findOne();
             if (version == null) throw new Result_Error_NotFound(Model_BProgramVersion.class);
-            cache_version_id = version.id;
+            cache().add(Model_BProgramVersion.class, version.id);
         }
 
-        return cache_version_id;
+        return cache().get(Model_BProgramVersion.class);
     }
 
     @JsonIgnore
     public Model_Instance get_instance() throws _Base_Result_Exception  {
-        if (cache_instance_id == null) {
-            return Model_Instance.getById(get_instance_id());
-        }else {
-            return Model_Instance.getById(cache_instance_id);
-        }
+        return Model_Instance.getById(get_instance_id());
     }
 
     @JsonIgnore
     public UUID get_instance_id() throws _Base_Result_Exception {
 
-        if (cache_instance_id == null) {
+        if (cache().gets(Model_Instance.class) == null) {
             Model_Instance instance = Model_Instance.find.query().where().eq("snapshots.id", id).select("id").findOne();
             if (instance == null) throw new Result_Error_NotFound(Model_Instance.class);
-            cache_instance_id = instance.id;
+            cache().add(Model_Instance.class, instance.id);
         }
 
-        return cache_instance_id;
+        return cache().get(Model_Instance.class);
     }
 
 
@@ -384,18 +372,11 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     this.override_all_actualization_hardware_request();
 
                     logger.trace("deploy - instance {}, step 6 - Deploy Hardware ", get_instance_id());
-                    Model_UpdateProcedure procedure = this.create_actualization_hardware_request();
-
-                    if (procedure == null) {
-                        logger.error("deploy - instance {}, step 6 - Error - Unsuccessful creating of Update Procedure");
-                        return;
-                    }
-
-                    // Step 6
-                    logger.trace("deploy - instance {}, step 7 - Start wtih Update ", get_instance_id());
-                    procedure.execute_update_procedure();
+                    this.create_and_start_actualization_hardware_request();
 
                 }
+
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, get_instance_id(), true, get_instance().getProjectId());
 
 
             }catch (Exception e) {
@@ -485,9 +466,10 @@ public class Model_InstanceSnapshot extends TaggedModel {
     }
 
     @JsonIgnore
-    public Model_UpdateProcedure create_actualization_hardware_request(){
+    public void create_and_start_actualization_hardware_request(){
         try {
 
+            logger.trace("create_actualization_hardware_request");
             Model_UpdateProcedure procedure = new Model_UpdateProcedure();
             procedure.type_of_update = UpdateType.MANUALLY_BY_USER_BLOCKO_GROUP;
             procedure.project_id = get_instance().getProjectId();
@@ -501,6 +483,13 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 procedure.date_of_planing = new Date();
             }
 
+
+            logger.trace("create_actualization_hardware_request:: Check Interface: Size " + this.program().interfaces.size());
+
+            if (this.program().interfaces.size() == 0){
+                logger.trace("create_actualization_hardware_request:: Interface list is EMPTY!");
+            }
+
             for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.program().interfaces) {
 
                 Model_CProgramVersion version = Model_CProgramVersion.getById(interface_hw.interface_id);
@@ -508,6 +497,8 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 //IF Group
                 if(interface_hw.type.equals("group")) {
 
+                    logger.trace("create_actualization_hardware_request:: interface_hw type: group ");
+                    logger.trace("create_actualization_hardware_request:: interface_hw type: group:  " + interface_hw.target_id);
                     Model_HardwareGroup group = Model_HardwareGroup.getById(interface_hw.target_id);
 
                     List<UUID> uuid_ids = Model_Hardware.find.query().where().eq("hardware_groups.id", group.id).select("id").findIds();
@@ -525,6 +516,10 @@ public class Model_InstanceSnapshot extends TaggedModel {
                         }
 
                         plan.c_program_version_for_update = version;
+                        plan.actualization_procedure = procedure;
+
+
+                        logger.trace("create_actualization_hardware_request:: interface_hw type: group plan created:  " + plan.id);
                         procedure.updates.add(plan);
                     }
 
@@ -532,6 +527,8 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
                 //If Independent Hardware
                 if(interface_hw.type.equals("hardware")) {
+
+                    logger.trace("create_actualization_hardware_request:: interface_hw type: hardware:  " + interface_hw.target_id);
 
                     Model_Hardware hardware = Model_Hardware.getById(interface_hw.target_id);
                     Model_HardwareUpdate plan = new Model_HardwareUpdate();
@@ -544,19 +541,29 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     }
 
                     plan.c_program_version_for_update = version;
+                    plan.actualization_procedure = procedure;
+
+
+                    logger.trace("create_actualization_hardware_request:: interface_hw type: hardware plan created:  " + plan.id);
                     procedure.updates.add(plan);
 
                 }
             }
 
-            // Cache Operation
+          //  logger.trace("create_actualization_hardware_request:: Procedure Update After Interface Cycle ");
+          //  logger.trace("create_actualization_hardware_request:: KOLIK MÁM UPDATES V LISTU?  " + procedure.updates.size());
+
+
+            this.getUpdateProcedureIds();
+
+            // When Save - Do it immediately!
             procedure.save();
 
-            return procedure;
+            // Add to cache
+            cache().add(Model_UpdateProcedure.class, procedure.id);
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
         }
     }
 
@@ -860,7 +867,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
         super.delete();
 
-        if(get_instance().current_snapshot_id.equals(this.id)) {
+        if(get_instance().current_snapshot_id != null && get_instance().current_snapshot_id.equals(this.id)) {
             get_instance().current_snapshot_id = null;
             get_instance().update();
             get_instance().stop();
@@ -922,6 +929,9 @@ public class Model_InstanceSnapshot extends TaggedModel {
     public static Cache<UUID, Model_InstanceSnapshot> cache;
 
     public static Model_InstanceSnapshot getById(UUID id) throws _Base_Result_Exception {
+
+        System.out.println("Model_InstanceSnapshot getById: " + id );
+
         Model_InstanceSnapshot snapshot = cache.get(id);
         if (snapshot == null) {
 

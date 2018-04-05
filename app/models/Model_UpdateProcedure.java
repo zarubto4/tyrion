@@ -137,8 +137,29 @@ public class Model_UpdateProcedure extends BaseModel {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public List<UUID> getUpdatesId() {
+
+        // TODO všechny  System.out.println odstranit
+        System.out.println("Model_UpdateProcedure:: getUpdatesId");
+        System.out.println("Model_UpdateProcedure:: getUpdatesId:: actualization_procedure.id: " + id );
+
+        System.out.println("Model_UpdateProcedure:: getUpdatesId:: Co jsem našel bez sort?:" + Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).select("id").findSingleAttributeList());
+        System.out.println("Model_UpdateProcedure:: getUpdatesId:: Co jsem našel se  sort?:" + Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).order().asc("date_of_finish").select("id").findSingleAttributeList());
+        System.out.println("Model_UpdateProcedure:: getUpdatesId:: Co jsem našel se  sort2?:" + Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).orderBy("date_of_finish").select("id").findSingleAttributeList());
+
         if (cache().gets(Model_HardwareUpdate.class) == null) {
-            cache().add(Model_HardwareUpdate.class, Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).eq("deleted", false).order().asc("date_of_finish").select("id").findSingleAttributeList());
+            System.out.println("Model_UpdateProcedure:: getUpdatesId cache je prázdná! Hledám");
+            System.out.println("Model_UpdateProcedure:: Co ukládám do Cache Paměti:: " + Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).select("id").findSingleAttributeList());
+
+            cache().add( Model_HardwareUpdate.class, Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).select("id").findSingleAttributeList());
+
+
+            System.out.println("Model_UpdateProcedure:: co jsem uložit? " +  cache().gets(Model_HardwareUpdate.class));
+        }
+
+        System.out.println("Model_UpdateProcedure:: co vracím? : " + cache().gets(Model_HardwareUpdate.class));
+
+        if(cache().gets(Model_HardwareUpdate.class).isEmpty()) {
+            System.out.println("Model_UpdateProcedure:: getUpdatesId:: žádný jsem nenašel v cache paěti ");
         }
 
         return cache().gets(Model_HardwareUpdate.class);
@@ -349,6 +370,8 @@ public class Model_UpdateProcedure extends BaseModel {
 
         // Save Object
         super.save();
+
+        super.refresh();
 
         // Cache
         cache.put(this.id, this);

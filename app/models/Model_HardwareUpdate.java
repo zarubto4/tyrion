@@ -684,31 +684,32 @@ public class Model_HardwareUpdate extends BaseModel {
                 case ALREADY_SAME: {
                     try {
 
-                        logger.error("update_procedure_progress - procedure {} is ALREADY_SAME", plan.id);
+                        logger.trace("update_procedure_progress - procedure {} is ALREADY_SAME", plan.id);
 
-                        Model_Notification notification = new Model_Notification();
+                        if ( plan.getActualizationProcedure().type_of_update == UpdateType.MANUALLY_BY_USER_INDIVIDUAL) {
+                            Model_Notification notification = new Model_Notification();
 
-                        notification
-                                .setChainType(NotificationType.INDIVIDUAL)
-                                .setNotificationId(plan.getActualizationProcedureId())
-                                .setImportance(NotificationImportance.LOW)
-                                .setLevel(NotificationLevel.INFO);
+                            notification
+                                    .setChainType(NotificationType.INDIVIDUAL)
+                                    .setNotificationId(plan.getActualizationProcedureId())
+                                    .setImportance(NotificationImportance.LOW)
+                                    .setLevel(NotificationLevel.INFO);
 
-                        notification.setText(new Notification_Text().setText("Update of Procedure "))
-                                .setObject(plan.getActualizationProcedure())
-                                .setText(new Notification_Text().setText(" to Hardware "))
-                                .setObject(plan.getHardware())
-                                .setText(new Notification_Text().setText(" is done. The required firmware on the device is already running."))
-                                .send_under_project(plan.getActualizationProcedure().get_project_id());
+                            notification.setText(new Notification_Text().setText("Update of Procedure "))
+                                    .setObject(plan.getActualizationProcedure())
+                                    .setText(new Notification_Text().setText(" to Hardware "))
+                                    .setObject(plan.getHardware())
+                                    .setText(new Notification_Text().setText(" is done. The required firmware on the device is already running."))
+                                    .send_under_project(plan.getActualizationProcedure().get_project_id());
 
-                        logger.error("update_procedure_progress - procedure {} is ALREADY_SAME", plan.id);
+                        }
 
                         plan.state = HardwareUpdateState.COMPLETE;
                         plan.update();
 
                         Model_Hardware hardware = plan.getHardware();
 
-                        if (plan.firmware_type == FirmwareType.FIRMWARE) {
+                        if (plan.firmware_type == FirmwareType.FIRMWARE &&  !hardware.get_actual_c_program_version_id().equals(plan.c_program_version_for_update.id)) {
 
                             hardware.actual_c_program_version = plan.c_program_version_for_update;
                             hardware.cache().removeAll(Model_CProgram.class);
@@ -725,7 +726,7 @@ public class Model_HardwareUpdate extends BaseModel {
                             hardware.cache().add(Model_BootLoader.class, plan.getBootloader().id);
                             hardware.update();
 
-                        } else if (plan.firmware_type == FirmwareType.BACKUP) {
+                        } else if (plan.firmware_type == FirmwareType.BACKUP && !hardware.get_backup_c_program_version_id().equals(plan.c_program_version_for_update.id)) {
 
                             hardware.cache().removeAll(Model_CProgramFakeBackup.class);
                             hardware.cache().removeAll(Model_CProgramVersionFakeBackup.class);

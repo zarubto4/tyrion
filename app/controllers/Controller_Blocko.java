@@ -874,7 +874,7 @@ public class Controller_Blocko extends _BaseController {
             snapshot.description = help.description;
             snapshot.b_program_version = version;
             snapshot.instance = instance;
-            snapshot.program = Model_Blob.upload(help.json().toString(), "snapshot.json", snapshot.get_path() );
+            snapshot.program = Model_Blob.upload(help.json().toString(), "snapshot.json", snapshot.get_path());
             snapshot.save();
 
             return created(snapshot);
