@@ -656,7 +656,7 @@ public class Controller_Person extends _BaseController {
 
     @ApiOperation(value = "validation Entity",
             tags = {"Person"},
-            notes = "for cyclical validation during registration, key contains 'mail' or 'nick_name'. Or can be used for 'vat_number' as a key.",
+            notes = "for cyclical validation during registration, key contains 'email' or 'nick_name'. Or can be used for 'vat_number' as a key.",
             produces = "application/json",
             protocols = "https"
     )
@@ -687,7 +687,7 @@ public class Controller_Person extends _BaseController {
 
             switch (help.key) {
 
-                case "wmail":{
+                case "email":{
                     if (Model_Person.getByEmail(help.value) == null) {
 
                         validation.valid = true;
@@ -758,7 +758,7 @@ public class Controller_Person extends _BaseController {
                     break;
                 }
 
-                default:return badRequest("Key does not exist, use only {mail, nick_name or vat_number}");
+                default:return badRequest("Key does not exist, use only {email, nick_name or vat_number}");
             }
 
             return ok(Json.toJson(validation));

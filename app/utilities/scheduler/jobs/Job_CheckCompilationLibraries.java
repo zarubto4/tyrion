@@ -174,9 +174,9 @@ public class Job_CheckCompilationLibraries implements Job {
                         Matcher matcher = pattern.matcher(release.tag_name);
 
                         if (matcher.matches()) {
-                            logger.info("check_version_thread:: Code Library Version TAG name {} match regex", release.tag_name);
+                            logger.debug("check_version_thread:: Code Library Version TAG name {} match regex", release.tag_name);
                         } else {
-                            logger.warn("check_version_thread:: Code Library Version  TAG name {} not match regex {} ", release.tag_name, pattern.pattern());
+                            logger.debug("check_version_thread:: Code Library Version  TAG name {} not match regex {} ", release.tag_name, pattern.pattern());
                             continue;
                         }
 

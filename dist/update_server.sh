@@ -33,7 +33,7 @@ cd ./$NEWSERVER
 
 # Run instance of new verion
 echo " == Starting new server =="
-./start_server.sh
+start_https.sh
 
 # Go one level below current instance
 cd ..
@@ -43,7 +43,7 @@ echo " == Sleeping for 30s to wait for server to start =="
 sleep 30
 
 # Then request it
-RESPONSE=$(curl -w "%{http_code}" -o "" --silent --connect-timeout 60 "http://0.0.0.0:9000")
+RESPONSE=$(curl -w "%{http_code}" -o "" --silent --connect-timeout 60 "http://0.0.0.0:443")
 case $RESPONSE in
         200|201|400|404)
                 echo " == Server started properly =="
@@ -64,7 +64,7 @@ case $RESPONSE in
 
                 # Run instance of last version
                 echo " == Starting previous server =="
-                ./start_server.sh
+                start_https.sh
 
                 # Go back down
                 cd ..
