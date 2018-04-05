@@ -4,8 +4,7 @@ import com.google.inject.Inject;
 import com.microsoft.azure.storage.blob.CloudAppendBlob;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
-import io.ebean.Ebean;
-import io.ebean.Query;
+import io.ebean.*;
 import io.swagger.annotations.*;
 import models.*;
 import play.libs.Json;
@@ -17,6 +16,7 @@ import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.authentication.AuthenticationHomer;
 import utilities.enums.CompilationStatus;
+import utilities.enums.HardwareUpdateState;
 import utilities.enums.HomerType;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.homer_auto_deploy.DigitalOceanTyrionService;
@@ -70,7 +70,7 @@ public class Controller_ExternalServer extends _BaseController {
             Swagger_ServerRegistration_FormData data = DigitalOceanTyrionService.get_data();
 
             // Vrácení objektu
-            return ok(Json.toJson(data));
+            return ok(data);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -127,7 +127,7 @@ public class Controller_ExternalServer extends _BaseController {
             DigitalOceanTyrionService.create_server(server, help.size_slug, help.region_slug);
 
             // Vrácení objektu
-            return created(Json.toJson(server));
+            return created(server);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -194,7 +194,7 @@ public class Controller_ExternalServer extends _BaseController {
             new SelfDeployedThreadRegister(server).start();
 
             // Vrácení objektu
-            return created(server.json());
+            return created(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -232,7 +232,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.server_type = HomerType.MAIN;
             server.update();
 
-            return ok(server.json());
+            return ok(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -270,7 +270,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.server_type = HomerType.BACKUP;
             server.update();
 
-            return ok(server.json());
+            return ok(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -326,7 +326,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.update();
 
             // Vrácení objektu
-            return ok(server.json());
+            return ok(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -368,20 +368,33 @@ public class Controller_ExternalServer extends _BaseController {
             Query<Model_HomerServer> query = Ebean.find(Model_HomerServer.class);
 
             query.orderBy("UPPER(name) ASC");
+            query.orderBy("project.id");
             query.where().eq("deleted", false);
 
+            ExpressionList<Model_HomerServer> list = query.where();
+
+            // Junction!!! START ---------------------------------------------------------------------------------------
+
+            Junction<Model_HomerServer> junction = list.disjunction();
+
             if (!help.server_types.isEmpty()) {
-                query.where().in("server_type", help.server_types);
+                junction.add(Expr.in("server_type", help.server_types));
             }
+
             if (help.project_id != null) {
-                query.where().eq("project.id", help.project_id);
+                Model_Project.getById(help.project_id);
+                junction.add(Expr.eq("project.id", help.project_id));
             }
+
+            junction.endJunction();
+
+            // Junction!!! END ------------------------------------------------------------------------------------------
 
             // Vyvoření odchozího JSON
             Swagger_HomerServer_List result = new Swagger_HomerServer_List(query, page_number);
 
             // Vrácení seznamu
-            return ok(result.json());
+            return ok(result);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -409,7 +422,7 @@ public class Controller_ExternalServer extends _BaseController {
             Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
 
             // Vrácení objektu
-            return ok(server.json());
+            return ok(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -583,7 +596,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.save();
 
             // Vracím objekt
-            return created(server.json());
+            return created(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -632,7 +645,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.update();
 
             // Vrátím objekt
-            return ok(server.json());
+            return ok(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -656,7 +669,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Vracím Objekty
-            return ok(Json.toJson(Model_CompilationServer.find.all()));
+            return ok(Model_CompilationServer.find.all());
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -685,7 +698,7 @@ public class Controller_ExternalServer extends _BaseController {
             Model_CompilationServer server = Model_CompilationServer.getById(compilation_server_id);
       
             // Vracím odpověď
-            return ok(server.json());
+            return ok(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -893,19 +906,19 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
 
-            logger.error("cloud_file_get_bootloader - download id: {}", bootloader_id);
+            logger.trace("cloud_file_get_bootloader - download id: {}", bootloader_id);
 
             // Získám soubor
             Model_BootLoader bootLoader = Model_BootLoader.getById(bootloader_id);
 
-            logger.error("cloud_file_get_bootloader - Bootloader: {}", bootLoader.version_identifier);
-            logger.error("cloud_file_get_bootloader - File Path: {}",  bootLoader.file.path);
+            logger.trace("cloud_file_get_bootloader - Bootloader: {}", bootLoader.version_identifier);
+            logger.trace("cloud_file_get_bootloader - File Path: {}",  bootLoader.file.path);
 
             int slash = bootLoader.file.path.indexOf("/");
             String container_name = bootLoader.file.path.substring(0,slash);
             String real_file_path = bootLoader.file.path.substring(slash+1);
 
-            logger.error("cloud_file_get_bootloader - Container Name {} real_file_path {} ", container_name, real_file_path );
+            logger.trace("cloud_file_get_bootloader - Container Name {} real_file_path {} ", container_name, real_file_path );
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 
@@ -922,7 +935,7 @@ public class Controller_ExternalServer extends _BaseController {
 
             String total_link = blob.getUri().toString() + "?" + sas;
 
-            logger.error("cloud_file_get_bootloader_version - download link: {}", total_link);
+            logger.trace("cloud_file_get_bootloader_version - download link: {}", total_link);
 
             // Přesměruji na link
             return redirect(total_link);

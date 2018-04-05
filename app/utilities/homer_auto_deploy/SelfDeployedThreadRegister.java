@@ -12,6 +12,7 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
 import utilities.enums.NetworkStatus;
+import utilities.enums.ServerMode;
 import utilities.homer_auto_deploy.models.service.Swagger_BlueOcean;
 import utilities.logger.Logger;
 import utilities.slack.Slack;
@@ -53,6 +54,7 @@ public class SelfDeployedThreadRegister extends Thread {
             json.put("server_identification", server.connection_identifier);
             json.put("token_hash", server.hash_certificate);
             json.put("tyrion_url", Server.clearAddress);
+            json.put("wss", Server.mode != ServerMode.DEVELOPER);
             json.put("url", server.server_url);
 
             logger.trace("create_server::  Default Homer Server Port is 3000");

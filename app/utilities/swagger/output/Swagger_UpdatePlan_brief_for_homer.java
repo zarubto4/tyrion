@@ -2,6 +2,7 @@ package utilities.swagger.output;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.UUID;
 
 @ApiModel(description = "Private",
            value = "UpdatePlan_brief_for_homer")
-public class Swagger_UpdatePlan_brief_for_homer {
+public class Swagger_UpdatePlan_brief_for_homer extends _Swagger_Abstract_Default {
 
     @JsonProperty(value = "tracking_group_id") public String update_procedure_id;  // Procedure ID
     @JsonProperty(value = "tracking_id")       public String hardware_update_id;    // Task ID

@@ -12,14 +12,19 @@ import responses.*;
 import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
+import utilities.model.BaseModel;
+import utilities.model.JsonSerializer;
 import utilities.server_measurement.RequestLatency;
 import utilities.swagger.input.Swagger_Project_New;
-
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
+import play.data.validation.ValidationError;
+import javax.validation.ValidationException;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -141,10 +146,13 @@ public abstract class _BaseController {
      * @param json to send
      * @return 201 result
      */
-    public static Result created(JsonNode json) {
-        return Controller.created(json);
+    public static Result created(BaseModel object) {
+        return Controller.created(object.json());
     }
 
+    public static Result created(_Swagger_Abstract_Default object) {
+        return Controller.created(object.json());
+    }
 // OK JSON! - 200 ######################################################################################################
 
     /**
@@ -152,21 +160,37 @@ public abstract class _BaseController {
      *
      * @return 200 result
      */
-
     public static Result ok() {
         return Controller.ok(Json.toJson(new Result_Ok()));
+    }
+
+    public static Result ok(List <? extends JsonSerializer> objects){
+        check_latency();
+        return Controller.ok(Json.toJson(objects)); // TODO tato metoda je nesystemová a list by neměl v tyrionovi být - Oprava TZ!
     }
 
     /**
      * Creates a result with the code 200 and provided json as the body.
      *
-     * @param json JsonNode serialized object
+     * @param object BaseModel serialized object
      * @return 200 result ok with json
      */
-    public static Result ok(JsonNode json) {
+    public static Result ok(BaseModel object) {
         check_latency();
-        return Controller.ok(json);
+        return Controller.ok(object.json());
     }
+
+    /**
+     * Creates a result with the code 200 and provided json as the body.
+     *
+     * @param object _Swagger_Abstract_Default serialized object
+     * @return 200 result ok with json
+     */
+    public static Result ok(_Swagger_Abstract_Default object) {
+        check_latency();
+        return Controller.ok(object.json());
+    }
+
 
     /**
      * Creates an ok result with given message.

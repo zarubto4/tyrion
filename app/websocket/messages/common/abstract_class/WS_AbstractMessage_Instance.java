@@ -24,8 +24,9 @@ public abstract class WS_AbstractMessage_Instance {
                            public UUID instance_id;
                            public String status = "error";
 
-    public String error  = null;
-    public Integer error_code = null;
+    public String error          = null;  // Historický
+    public String error_message  = null;  // Podporovaný
+    public Integer error_code    = null;
 
     @JsonIgnore @Transient public Model_Instance get_instance() {
 

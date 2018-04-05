@@ -8,6 +8,9 @@ import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.swagger.annotations.*;
 import models.*;
+import org.quartz.JobKey;
+import org.quartz.Trigger;
+import org.quartz.impl.matchers.GroupMatcher;
 import play.Environment;
 import play.data.Form;
 import play.data.FormFactory;
@@ -31,6 +34,7 @@ import utilities.update_server.GitHub_Release;
 import utilities.update_server.ServerUpdate;
 
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -107,7 +111,7 @@ public class Controller_Admin extends _BaseController {
 
             report.bugs_reported = Model_ServerError.find.query().findCount();
 
-            return ok(Json.toJson(report));
+            return ok(report);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -130,13 +134,13 @@ public class Controller_Admin extends _BaseController {
     public Result serverError_getAll() {
         try {
 
-            if(!person().is_admin()) {
+                if(!person().is_admin()) {
                 return forbidden();
             }
 
             List<Model_ServerError> errors = Model_ServerError.find.all();
 
-            return ok(Json.toJson(errors));
+            return ok(errors);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -163,7 +167,7 @@ public class Controller_Admin extends _BaseController {
 
             Model_ServerError error = Model_ServerError.getById(bug_id);
 
-            return ok(Json.toJson(error));
+            return ok(error);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -210,7 +214,7 @@ public class Controller_Admin extends _BaseController {
             error.description = help.description;
             error.update();
 
-            return ok(Json.toJson(error));
+            return ok(error);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -239,7 +243,7 @@ public class Controller_Admin extends _BaseController {
             error.youtrack_url = youTrack.report(error);
             error.update();
 
-            return ok(Json.toJson(error));
+            return ok(error);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -306,6 +310,36 @@ public class Controller_Admin extends _BaseController {
     }
 
 // UPDATE SERVER #######################################################################################################
+
+    @ApiOperation(value = "remove Server Update Server_Component",
+            tags = {"Admin"},
+            notes = "",         //TODO
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result server_scheduleUpdate_remove() {
+        try {
+            List<Trigger> triggers = this.scheduler.get_Job("update-server");
+
+            for(Trigger trigger : triggers) {
+
+                scheduler.scheduler.unscheduleJob(trigger.getKey());
+                scheduler.scheduler.deleteJob(trigger.getJobKey());
+            }
+
+           return ok();
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
 
     @ApiOperation(value = "update Server Server_Component",
             tags = {"Admin"},
@@ -433,6 +467,14 @@ public class Controller_Admin extends _BaseController {
 
             Swagger_ServerUpdates updates = new Swagger_ServerUpdates();
 
+            this.scheduler.show_all_jobs();
+            List<Trigger> triggers =this.scheduler.get_Job("update-server");
+
+            for(Trigger trigger : triggers) {
+                updates.schedule_release = trigger.getDescription();
+                updates.schedule_release_time =  trigger.getNextFireTime();
+            }
+
             releases.stream().filter(release -> {
 
                 if (release.draft || release.prerelease || release.assets.stream().noneMatch(asset -> asset.name.equals("dist.zip"))) {
@@ -499,7 +541,7 @@ public class Controller_Admin extends _BaseController {
 
             logger.debug("server_getUpdates - got releases");
 
-            return ok(Json.toJson(updates));
+            return ok(updates);
         } catch (Exception e) {
             return controllerServerError(e);
         }

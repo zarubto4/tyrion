@@ -226,6 +226,7 @@ POST      /instance                                                     controll
 DELETE    /instance/:instance_id                                        controllers.Controller_Blocko.instance_delete(instance_id: java.util.UUID)
 GET       /instance/:instance_id                                        controllers.Controller_Blocko.instance_get(instance_id: java.util.UUID)
 PUT       /instance/:instance_id                                        controllers.Controller_Blocko.instance_update(instance_id: java.util.UUID)
+PUT       /instance/shutdown/:instance_id                               controllers.Controller_Blocko.instance_shutdown(instance_id: java.util.UUID)
 PUT       /instance/tags/add                                            controllers.Controller_Blocko.instance_addTags
 PUT       /instance/tags/remove                                         controllers.Controller_Blocko.instance_removeTags
 
@@ -237,7 +238,7 @@ POST      /instance/snapshot/:instance_id                                control
 GET       /instance/snapshot/get/:snapshot_id                           controllers.Controller_Blocko.instanceSnapshot_get(snapshot_id: java.util.UUID)
 PUT       /instance/snapshot/update/:snapshot_id                        controllers.Controller_Blocko.instanceSnapshot_udpate(snapshot_id: java.util.UUID)
 PUT       /instance/snapshot/deploy                                     controllers.Controller_Blocko.instanceSnapshot_deploy()
-PUT       /instance/snapshot/shutdown/:snapshot_id                      controllers.Controller_Blocko.instanceSnapshot_shutdown(snapshot_id: java.util.UUID)
+
 DELETE    /instance/snapshot/:snapshot_id                               controllers.Controller_Blocko.instanceSnapshot_delete(snapshot_id: java.util.UUID)
 
 #Blocks
@@ -436,6 +437,7 @@ GET       /file/cprogram_version/:version_id                            controll
 GET       /grid_project/interface/:grid_project_id                      controllers.Controller_Grid.gridProject_getInterface(grid_project_id: java.util.UUID)
 
 POST      /grid_project/:project_id                                     controllers.Controller_Grid.gridProject_create(project_id: java.util.UUID)
+GET       /grid_project/filter/:page_number                             controllers.Controller_Grid.gridProject_get_filterByFilter(page_number: Int)
 GET       /grid_project/:grid_project_id                                controllers.Controller_Grid.gridProject_get(grid_project_id: java.util.UUID)
 PUT       /grid_project/:grid_project_id                                controllers.Controller_Grid.gridProject_update(grid_project_id: java.util.UUID)
 PUT       /grid_project/tags/add                                        controllers.Controller_Grid.gridProject_addTags
@@ -527,6 +529,7 @@ DELETE    /admin/bug                                                    controll
 DELETE    /admin/bug/:bug_id                                            controllers.Controller_Admin.serverError_delete(bug_id: java.util.UUID)
 PUT       /admin/bug/report/:bug_id                                     controllers.Controller_Admin.serverError_report(bug_id: java.util.UUID)
 
-POST      /admin/update                                                 controllers.Controller_Admin.server_scheduleUpdate()
-GET       /admin/update                                                 controllers.Controller_Admin.server_getUpdates()
+POST      /admin/tyrion/update                                          controllers.Controller_Admin.server_scheduleUpdate()
+DELETE    /admin/tyrion/update                                          controllers.Controller_Admin.server_scheduleUpdate_remove()
+GET       /admin/tyrion/update                                          controllers.Controller_Admin.server_getUpdates()
 

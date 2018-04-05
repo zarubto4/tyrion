@@ -15,8 +15,8 @@ import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheField;
-import utilities.document_db.document_objects.DM_CompilationServer_Connect;
-import utilities.document_db.document_objects.DM_CompilationServer_Disconnect;
+import utilities.document_mongo_db.document_objects.DM_CompilationServer_Connect;
+import utilities.document_mongo_db.document_objects.DM_CompilationServer_Disconnect;
 import utilities.enums.CompilationStatus;
 import utilities.enums.NetworkStatus;
 import utilities.errors.ErrorCode;
@@ -27,7 +27,6 @@ import utilities.model.BaseModel;
 import utilities.threads.compilator_server.Compilation_After_BlackOut;
 import utilities.logger.Logger;
 import websocket.WS_Message;
-import websocket.interfaces.WS_Compiler;
 import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
 import websocket.messages.compilator_with_tyrion.WS_Message_Ping_compilation_server;
 

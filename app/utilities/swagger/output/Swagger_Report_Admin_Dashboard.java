@@ -1,10 +1,11 @@
 package utilities.swagger.output;
 
 import io.swagger.annotations.ApiModel;
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 
 @ApiModel(value = "Report_Admin_Dashboard")
-public class Swagger_Report_Admin_Dashboard {
+public class Swagger_Report_Admin_Dashboard extends _Swagger_Abstract_Default {
 
     public Integer person_registration;
     public Integer project_created;

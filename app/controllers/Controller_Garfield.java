@@ -81,7 +81,7 @@ public class Controller_Garfield extends _BaseController {
             garfield.update();
 
             // Vrácení objektu
-            return ok(garfield.json());
+            return ok(garfield);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -134,7 +134,7 @@ public class Controller_Garfield extends _BaseController {
 
             garfield.save();
 
-            return ok(garfield.json());
+            return ok(garfield);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -191,7 +191,7 @@ public class Controller_Garfield extends _BaseController {
             Model_Garfield garfield = Model_Garfield.getById(garfield_id);
 
             // Vrácení objektu
-            return ok(Json.toJson(garfield));
+            return ok(garfield);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -284,7 +284,7 @@ public class Controller_Garfield extends _BaseController {
             List<Model_Garfield> garfield_s = Model_Garfield.find.query().where().orderBy("UPPER(name) ASC").findList();
 
             // Vrácení objektu
-            return ok(Json.toJson(garfield_s));
+            return ok(garfield_s);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -320,7 +320,7 @@ public class Controller_Garfield extends _BaseController {
             Printer printer =  Printer_Api.get_printer(printer_id);
 
             // Vrácení objektu
-            return ok(Json.toJson(printer));
+            return ok(printer);
 
         } catch (Exception e) {
             return controllerServerError(e);

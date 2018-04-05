@@ -16,6 +16,7 @@ import responses.Result_InternalServerError;
 import responses.Result_NotFound;
 import responses.Result_Unauthorized;
 import utilities.authentication.Authentication;
+import utilities.enums.CompilationStatus;
 import utilities.enums.HardwareUpdateState;
 import utilities.enums.FirmwareType;
 import utilities.enums.UpdateType;
@@ -68,7 +69,7 @@ public class Controller_Update extends _BaseController {
             Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(actualization_procedure_id);
 
             // Vrácení objektu
-            return ok(Json.toJson(procedure));
+            return ok(procedure);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -126,7 +127,7 @@ public class Controller_Update extends _BaseController {
             Swagger_ActualizationProcedure_List result = new Swagger_ActualizationProcedure_List(query,page_number);
 
             // Vrácení objektu
-            return ok(result.json());
+            return ok(result);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -155,7 +156,7 @@ public class Controller_Update extends _BaseController {
 
             procedure.cancel_procedure();
 
-            return ok(Json.toJson(procedure));
+            return ok(procedure);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -236,6 +237,9 @@ public class Controller_Update extends _BaseController {
 
                 if (firmware_type == FirmwareType.FIRMWARE || firmware_type == FirmwareType.BACKUP) {
                     c_program_version = Model_CProgramVersion.getById(hardware_type_settings.c_program_version_id);
+                    if(c_program_version.status() != CompilationStatus.SUCCESS) {
+                        return badRequest("Selected Version is not succesfully compiled and restored. Its not possible to make a update procedure with it");
+                    }
                 }
 
                 Model_BootLoader bootLoader = null;
@@ -263,13 +267,18 @@ public class Controller_Update extends _BaseController {
                         plan.bootloader = bootLoader;
                     }
 
+                    if(!hardware.database_synchronize) {
+                        plan.state = HardwareUpdateState.PROHIBITED_BY_CONFIG;
+                    }
+
+
                     procedure.updates.add(plan);
                 }
             }
 
             procedure.save();
 
-            return created(procedure.json());
+            return created(procedure);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -299,7 +308,7 @@ public class Controller_Update extends _BaseController {
             Model_HardwareUpdate plan = Model_HardwareUpdate.getById(plan_id);
 
             // Vrácení objektu
-            return ok(plan.json());
+            return ok(plan);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -392,7 +401,7 @@ public class Controller_Update extends _BaseController {
             Swagger_ActualizationProcedureTask_List result = new Swagger_ActualizationProcedureTask_List(query, page_number);
 
             // Vrácení objektu
-            return ok(Json.toJson(result));
+            return ok(result);
 
         } catch (Exception e) {
             return controllerServerError(e);

@@ -18,7 +18,7 @@ import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
-import utilities.document_db.document_objects.*;
+import utilities.document_mongo_db.document_objects.*;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.errors.Exceptions.*;
@@ -176,9 +176,9 @@ public class Model_Hardware extends TaggedModel {
     public Model_BootLoader bootloader_update_in_progress() {
         try {
 
-               if(cache().get(Model_harware_update_update_in_progress_bootloader.class) != null) {
 
-                   cache().add(Model_harware_update_update_in_progress_bootloader.class, (UUID) Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
+               if(cache().get(Model_hardware_update_update_in_progress_bootloader.class) == null) {
+                  UUID update_id = (UUID) Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
                        .disjunction()
                            .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
                            .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
@@ -190,12 +190,16 @@ public class Model_Hardware extends TaggedModel {
                        .eq("firmware_type", FirmwareType.BOOTLOADER)
                        .select("id")
                        .setMaxRows(1)
-                       .findSingleAttribute() ) ;
+                       .findSingleAttribute();
+                   if(update_id != null) {
+                       System.out.println("Model_hardware_update_update_in_progress_bootloader Model_HardwareUpdate: state:: " +  Model_HardwareUpdate.getById(update_id).state);
+                       cache().add(Model_hardware_update_update_in_progress_bootloader.class, Model_HardwareUpdate.getById(update_id).getBootloaderId());
+                   }
            }
 
-           if(cache().get(Model_harware_update_update_in_progress_bootloader.class) == null) return null;
+           if(cache().get(Model_hardware_update_update_in_progress_bootloader.class) == null) return null;
 
-           return Model_BootLoader.getById(cache().get(Model_harware_update_update_in_progress_bootloader.class));
+           return Model_BootLoader.getById(cache().get(Model_hardware_update_update_in_progress_bootloader.class));
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -383,33 +387,43 @@ public class Model_Hardware extends TaggedModel {
                 return cache_latest_online;
             }
 
-            List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(),"SELECT * FROM root r  WHERE r.hardware_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
+            new Thread(() -> {
+                try {
 
-            logger.debug("last_online: number of retrieved documents = {}", documents.size());
+                    List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(),"SELECT * FROM root r  WHERE r.hardware_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
 
-            if (documents.size() > 0) {
+                    logger.debug("last_online: number of retrieved documents = {}", documents.size());
 
-                DM_Board_Disconnected record;
+                    if (documents.size() > 0) {
 
-                if (documents.size() > 1) {
+                        DM_Board_Disconnected record;
 
-                    logger.debug("last_online: more than 1 record, finding latest record");
-                    record = documents.stream().max(Comparator.comparingLong(document -> document.toObject(DM_Board_Disconnected.class).time)).get().toObject(DM_Board_Disconnected.class);
+                        if (documents.size() > 1) {
 
-                } else {
+                            logger.debug("last_online: more than 1 record, finding latest record");
+                            record = documents.stream().max(Comparator.comparingLong(document -> document.toObject(DM_Board_Disconnected.class).time)).get().toObject(DM_Board_Disconnected.class);
 
-                    logger.debug("last_online: result = {}", documents.get(0).toJson());
+                        } else {
 
-                    record = documents.get(0).toObject(DM_Board_Disconnected.class);
+                            logger.debug("last_online: result = {}", documents.get(0).toJson());
+
+                            record = documents.get(0).toObject(DM_Board_Disconnected.class);
+                        }
+
+                        logger.debug("last_online: hardware_id: {}", record.hardware_id);
+
+                        cache_latest_online = new Date(record.time).getTime();
+
+                        EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project().id, this.id));
+
+                    }
+
+                } catch (Exception e) {
+                    logger.internalServerError(e);
                 }
+            }).start();
 
-                logger.debug("last_online: hardware_id: {}", record.hardware_id);
-
-                cache_latest_online = new Date(record.time).getTime();
-                return cache_latest_online;
-            }
-
-            return Long.MAX_VALUE;
+            return Long.MIN_VALUE;
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -1391,7 +1405,6 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
-
     //-- Set AutoBackup  --//
     @JsonIgnore
     public WS_Message_Hardware_set_settings set_auto_backup() {
@@ -1510,7 +1523,7 @@ public class Model_Hardware extends TaggedModel {
         if (procedure.getUpdates().isEmpty()) {
             procedure.state = Enum_Update_group_procedure_state.COMPLETE_WITH_ERROR;
             procedure.update();
-            logger.debug("execute_update_procedure - procedure: {} is empty -> return" , procedure.id);
+            logger.error("execute_update_procedure - procedure: {} is empty -> return" , procedure.id);
             return;
         }
 
@@ -1633,7 +1646,7 @@ public class Model_Hardware extends TaggedModel {
             // Priority false - pokud má hardware v ukolníčk předchozí úkony, tento se zařadí do fronty
             // true - všechny přeskočí - muže se stát že pak některé stratí smysl a platnost a homer je zahodí
 
-            JsonNode node = write_with_confirmation(new WS_Message_Hardware_command_execute().make_request(this.id, command, priority), 1000 * 5, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_command_execute().make_request(Collections.singletonList(this.id), command, priority), 1000 * 5, 0, 2);
 
             // Execute Command
             baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_command_execute.class, node);
@@ -1946,13 +1959,12 @@ public class Model_Hardware extends TaggedModel {
             // Nemám Updaty - ale verze se neshodují
             if (get_actual_c_program_version() != null && firmware_plans.isEmpty()) {
 
-                logger.debug("check_firmware - no update procedures found, but versions are not equal");
                 logger.debug("check_firmware - current firmware according to Tyrion: C_Program Name {} Version {} build_id {} ", get_actual_c_program_version().get_c_program().name, get_actual_c_program_version().name, get_actual_c_program_version().compilation.firmware_build_id);
                 logger.debug("check_firmware - current firmware according to Homer: C_Program Name {} Version {} build_id {} ", overview.binaries.firmware.usr_name, overview.binaries.firmware.usr_version, overview.binaries.firmware.build_id);
 
                 if (!get_actual_c_program_version().compilation.firmware_build_id.equals(overview.binaries.firmware.build_id)) {
                     // Na HW není to co by na něm mělo být.
-
+                    logger.debug("check_firmware - no update procedures found, but versions are not equal");
                     logger.debug("check_firmware - Different firmware versions versus database");
 
                     if (get_backup_c_program_version() != null && get_backup_c_program_version().compilation.firmware_build_id.equals(overview.binaries.bootloader.build_id)) {
@@ -2405,10 +2417,18 @@ public class Model_Hardware extends TaggedModel {
                 plan.state = HardwareUpdateState.NOT_YET_STARTED;
             }
 
+            if(!b_pair.hardware.database_synchronize) {
+                plan.state = HardwareUpdateState.PROHIBITED_BY_CONFIG;
+            }
+
             plan.save();
         }
 
         procedure.refresh();
+
+        if(procedure.getUpdates().isEmpty()){
+            logger.error("create_update_procedure: Update List is Empty!!!");
+        }
 
         return procedure;
     }
@@ -2622,9 +2642,9 @@ public class Model_Hardware extends TaggedModel {
 /* HELPER CLASS  ----------------------------------------------------------------------------------------------------------*/
 
     // Používáme protože nemáme rezervní klíč pro cachoání backup c program verze v lokální chache
-    private abstract class Model_CProgramVersionFakeBackup {}
-    private abstract class Model_CProgramFakeBackup {}
-    private abstract class Model_harware_update_update_in_progress_bootloader {}
+    public abstract class Model_CProgramVersionFakeBackup {}
+    public abstract class Model_CProgramFakeBackup {}
+    public abstract class Model_hardware_update_update_in_progress_bootloader {}
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 

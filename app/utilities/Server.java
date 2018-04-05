@@ -13,7 +13,8 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import utilities.cache.ServerCache;
-import utilities.document_db.DocumentDB;
+import utilities.document_mongo_db.DocumentDB;
+import utilities.document_mongo_db.MongoDB;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
 import utilities.grid_support.utils.IP_Founder;
@@ -133,6 +134,7 @@ public class Server {
         }
 
         DocumentDB.init();
+        MongoDB.init();
 
         setBaseForm();
         setConfigurationInjectorForNonStaticClass();
@@ -190,16 +192,16 @@ public class Server {
             grid_app_main_url       = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":8888";
         }
 
-        // Nastavení pro Tyrion Adresy
-        if(httpAddress == null) httpAddress = "http://" + configuration.getString("server." + mode);
-        if(wsAddress == null)   wsAddress   = "ws://" + configuration.getString("server." + mode);
+        // Nastavení pro Tyrion Adresy - pokud není developer je automaticky wss a httms
+        if(httpAddress == null) httpAddress = "https://" + configuration.getString("server." + mode);
+        if(wsAddress == null)   wsAddress   = "wss://" + configuration.getString("server." + mode);
         if(clearAddress == null)   clearAddress  = configuration.getString("server." + mode);
 
         // Nastavení adresy, kde běží Grid APP
         if(grid_app_main_url == null) grid_app_main_url = "https://" + configuration.getString("Grid_App." + mode + ".mainUrl");
 
         // Nastavení pro Becki Adresy
-        if(becki_mainUrl == null) becki_mainUrl           = "http://" + configuration.getString("Becki." + mode + ".mainUrl");
+        if(becki_mainUrl == null) becki_mainUrl           = "https://" + configuration.getString("Becki." + mode + ".mainUrl");
 
         // Swagger URL Redirect - Actual Rest Api docu
         link_api_swagger = "http://swagger.byzance.cz/?url=" + httpAddress + "/swagger.json";

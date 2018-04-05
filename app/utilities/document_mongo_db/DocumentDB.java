@@ -1,15 +1,11 @@
-package utilities.document_db;
+package utilities.document_mongo_db;
 
 import com.google.inject.Inject;
 import com.microsoft.azure.documentdb.DocumentCollection;
 import com.microsoft.azure.documentdb.RequestOptions;
 import com.typesafe.config.Config;
-import controllers._BaseFormFactory;
-import play.Configuration;
-import play.libs.ws.WSClient;
 import utilities.Server;
 import utilities.logger.Logger;
-import utilities.scheduler.SchedulerController;
 
 import java.util.List;
 

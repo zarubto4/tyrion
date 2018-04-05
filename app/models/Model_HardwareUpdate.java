@@ -359,12 +359,12 @@ public class Model_HardwareUpdate extends BaseModel {
 
 
             // Pokud se vrátí fáze špatně - ukončuji celý update
-            if (report.error != null || report.error_code != null) {
+            if (report.error_message != null || report.error_code != null) {
                 logger.warn("update_procedure_progress  Update Fail! Device ID: {}, update procedure: {}", plan.getHardware().id, plan.id);
 
                 plan.state = HardwareUpdateState.CRITICAL_ERROR;
                 plan.error_code = report.error_code;
-                plan.error = report.error;
+                plan.error = report.error + report.error_message;
                 plan.update();
                 Model_UpdateProcedure.getById(report.tracking_group_id).change_state(plan, plan.state);
 
@@ -606,20 +606,30 @@ public class Model_HardwareUpdate extends BaseModel {
 
                             hardware.actual_c_program_version = plan.c_program_version_for_update;
 
+                            hardware.cache().removeAll(Model_CProgram.class);
+                            hardware.cache().removeAll(Model_CProgramVersion.class);
+
                             hardware.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
                             hardware.cache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
                             hardware.update();
 
                         } else if (plan.firmware_type == FirmwareType.BOOTLOADER) {
 
-                            hardware.actual_boot_loader = plan.getBootloader();
+                            hardware.cache().removeAll(Model_Hardware.Model_hardware_update_update_in_progress_bootloader.class);
+                            hardware.cache().removeAll(Model_BootLoader.class);
 
-                            hardware.cache().add(Model_BootLoader.class, plan.getBootloader().id);
+                            hardware.actual_boot_loader = plan.getBootloader();
                             hardware.update();
+
+                            hardware.cache().add(Model_BootLoader.class, plan.getBootloaderId());
+
 
                         } else if (plan.firmware_type == FirmwareType.BACKUP) {
 
                             hardware.actual_backup_c_program_version = plan.c_program_version_for_update;
+
+                            hardware.cache().removeAll(Model_CProgramFakeBackup.class);
+                            hardware.cache().removeAll(Model_CProgramVersionFakeBackup.class);
 
                             hardware.cache().add(Model_CProgramFakeBackup.class, plan.c_program_version_for_update.get_c_program().id);
                             hardware.cache().add(Model_CProgramVersionFakeBackup.class, plan.c_program_version_for_update.id);
@@ -710,6 +720,7 @@ public class Model_HardwareUpdate extends BaseModel {
                         } else if (plan.firmware_type == FirmwareType.BOOTLOADER) {
 
                             hardware.actual_boot_loader = plan.getBootloader();
+                            hardware.cache().removeAll(Model_Hardware.Model_hardware_update_update_in_progress_bootloader.class);
                             hardware.cache().removeAll(Model_BootLoader.class);
                             hardware.cache().add(Model_BootLoader.class, plan.getBootloader().id);
                             hardware.update();

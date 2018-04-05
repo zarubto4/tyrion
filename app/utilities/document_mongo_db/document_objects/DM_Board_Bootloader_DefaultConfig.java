@@ -1,4 +1,4 @@
-package utilities.document_db.document_objects;
+package utilities.document_mongo_db.document_objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;

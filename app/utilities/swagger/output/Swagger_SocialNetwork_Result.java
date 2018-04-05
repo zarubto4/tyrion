@@ -2,12 +2,13 @@ package utilities.swagger.output;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.util.UUID;
 
 @ApiModel(description = "Json Model for new Basic Login throw the social networks",
         value = "Social_Login")
-public class Swagger_SocialNetwork_Result {
+public class Swagger_SocialNetwork_Result extends _Swagger_Abstract_Default {
     @ApiModelProperty(readOnly = true, allowableValues = "Facebook,GitHub" )
     public String type;
 

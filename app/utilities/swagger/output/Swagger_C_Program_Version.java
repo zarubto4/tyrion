@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.swagger.input.Swagger_Library_Library_Version_pair;
 import utilities.swagger.input.Swagger_Library_Record;
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.List;
 
 @ApiModel(description = "Json Model for Version of C_program",
         value = "C_Program_Version_Program")
-public class Swagger_C_Program_Version {
+public class Swagger_C_Program_Version extends _Swagger_Abstract_Default {
 
     @ApiModelProperty(required = false, readOnly = true )
     public String main;

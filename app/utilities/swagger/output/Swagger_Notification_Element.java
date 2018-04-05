@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.NotificationElement;
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -12,7 +13,7 @@ import java.util.UUID;
 
 @ApiModel(description = "Json Model for notification body elements",
         value = "Notification_Element")
-public class Swagger_Notification_Element {
+public class Swagger_Notification_Element extends _Swagger_Abstract_Default {
 
     public Swagger_Notification_Element() {}
 

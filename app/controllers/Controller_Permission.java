@@ -123,7 +123,7 @@ public class Controller_Permission extends _BaseController {
         try {
 
             List<Model_Permission> permissions = Model_Permission.find.query().where().orderBy("UPPER(name) ASC").findList();
-            return ok(Json.toJson(permissions));
+            return ok(permissions);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -168,7 +168,7 @@ public class Controller_Permission extends _BaseController {
             permission.description = help.description;
             permission.update();
 
-            return ok(Json.toJson(permission));
+            return ok(permission);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -223,7 +223,7 @@ public class Controller_Permission extends _BaseController {
 
             securityRole.update();
 
-            return ok(securityRole.json());
+            return ok(securityRole);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -305,7 +305,7 @@ public class Controller_Permission extends _BaseController {
 
             securityRole.save();
 
-            return created(Json.toJson(securityRole));
+            return created(securityRole);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -380,7 +380,7 @@ public class Controller_Permission extends _BaseController {
 
             role.update();
 
-            return ok(role.json());
+            return ok(role);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -407,7 +407,7 @@ public class Controller_Permission extends _BaseController {
             // Kontrola objektu
             Model_Role role = Model_Role.getById(role_id);
 
-            return ok(role.json());
+            return ok(role);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -469,7 +469,7 @@ public class Controller_Permission extends _BaseController {
             securityRole.update();
 
 
-            return ok(Json.toJson(securityRole));
+            return ok(securityRole);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -525,7 +525,7 @@ public class Controller_Permission extends _BaseController {
         try {
 
             List<Model_Role> roles = Model_Role.find.query().orderBy("UPPER(name) ASC").findList();
-            return ok(Json.toJson(roles));
+            return ok(roles);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -559,7 +559,7 @@ public class Controller_Permission extends _BaseController {
             system_access.roles = person.roles;
             system_access.permissions = person.permissions;
 
-            return ok(Json.toJson(system_access));
+            return ok(system_access);
 
         } catch (Exception e) {
             return controllerServerError(e);

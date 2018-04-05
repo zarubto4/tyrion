@@ -97,7 +97,7 @@ public class Controller_Project extends _BaseController {
             project.refresh();
 
             // Vrácení objektu
-            return created(project.json());
+            return created(project);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -122,7 +122,7 @@ public class Controller_Project extends _BaseController {
         try {
 
             // Vrácení seznamu
-            return ok(Json.toJson(person().get_user_access_projects()));
+            return ok(person().get_user_access_projects());
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -150,7 +150,7 @@ public class Controller_Project extends _BaseController {
             Model_Project project = Model_Project.getById(project_id);
 
             // Vraácení objektu
-            return ok(project.json());
+            return ok(project);
 
          } catch (Exception e) {
             return controllerServerError(e);
@@ -238,7 +238,7 @@ public class Controller_Project extends _BaseController {
             project.update();
 
             // Vrácení změny
-            return ok(project.json());
+            return ok(project);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -365,7 +365,7 @@ public class Controller_Project extends _BaseController {
             project.cache_refresh();
 
             // Vrácení objektu
-            return ok(project.json());
+            return ok(project);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -420,7 +420,7 @@ public class Controller_Project extends _BaseController {
             // Odeslání notifikace uživateli
             project.notification_project_participant_change_status(participant);
 
-            return ok(Json.toJson(participant));
+            return ok(participant);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -501,7 +501,7 @@ public class Controller_Project extends _BaseController {
             project.refresh();
 
             // Vrácení objektu
-            return ok(project.json());
+            return ok(project);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -546,7 +546,7 @@ public class Controller_Project extends _BaseController {
             project.addTags(help.tags);
 
             // Vrácení objektu
-            return ok(project.json());
+            return ok(project);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -593,7 +593,7 @@ public class Controller_Project extends _BaseController {
             project.removeTags(help.tags);
 
             // Vrácení objektu
-            return ok(project.json());
+            return ok(project);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -692,7 +692,7 @@ public class Controller_Project extends _BaseController {
             project.cache().add(Model_Hardware.class, hardware.id);
 
 
-            return created(hardware.json());
+            return created(hardware);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -763,7 +763,7 @@ public class Controller_Project extends _BaseController {
 
             Model_Hardware.cache_status.remove(hardware.id);
 
-            return ok(hardware.json());
+            return ok(hardware);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -798,7 +798,7 @@ public class Controller_Project extends _BaseController {
             hardware.is_online_get_from_cache();
 
 
-            return ok(hardware.json());
+            return ok(hardware);
 
         } catch (Exception e) {
             return controllerServerError(e);

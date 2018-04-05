@@ -13,7 +13,9 @@ public class Swagger_InstanceSnapShotConfigurationProgram {
 
     @Constraints.Required public UUID grid_program_version_id;
     @Constraints.Required public UUID grid_program_id;
-    @Constraints.Required public String connection_token;      // Token, pomocí kterého se vrátí konkrétní aplikace s podporou propojení na websocket
+
+    // Model_BProgramVersionSnapGridProjectProgram.id je connection_token!!!!!
+    @Constraints.Required public UUID connection_token;      // Token, pomocí kterého se vrátí konkrétní aplikace s podporou propojení na websocket
     @Constraints.Required public GridAccess snapshot_settings; // Typ Aplikace
 
     @JsonProperty

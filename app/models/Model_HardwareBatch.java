@@ -1,27 +1,21 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoClientURI;
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
-import com.mongodb.client.MongoDatabase;
 import controllers._BaseFormFactory;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.bson.Document;
 import play.data.validation.Constraints;
 import play.libs.Json;
-import responses.Result_NotFound;
 import utilities.errors.Exceptions.Result_Error_Bad_request;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
+import utilities.model.MongoModel;
 
 import javax.persistence.*;
 import java.io.IOException;
@@ -33,7 +27,7 @@ import java.util.UUID;
 import static com.mongodb.client.model.Filters.eq;
 
 @ApiModel(description = "Model of Production Batch  ", value = "HardwareBatch")
-public class Model_HardwareBatch {
+public class Model_HardwareBatch  extends MongoModel {
 
     /**
      * _BaseFormFactory
@@ -42,25 +36,10 @@ public class Model_HardwareBatch {
 
     public static final String COLLECTION_NAME = "batch-registration-authority";
 
-    /**
-     *  Static Constant - Here qe are not used classic Database Model, but External Mongo DB
-    private MongoClientOptions.Builder builder = new MongoClientOptions.Builder();
-    private MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://production-byzance-cosmos:PbimpRkWXhUrGBwRtLaR19B6NbffCgzklSfSVtHThFzMn6keUENJ9Hm50TZZgtqVOGesgbtCWLaC3yd6ENhoew==@production-byzance-cosmos.documents.azure.com:10255/?ssl=true&replicaSet=globaldb"));
-    private MongoDatabase database = mongoClient.getDatabase("hardware-registration-authority-database");
-    private MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
-    */
-    public static MongoCollection<Document> collection(){
-
-
-        MongoClientOptions.Builder builder = new MongoClientOptions.Builder();
-        builder.maxConnectionIdleTime(60 * 1000 * 60);//set the max wait time in (ms) - Houres
-        MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://production-byzance-cosmos:PbimpRkWXhUrGBwRtLaR19B6NbffCgzklSfSVtHThFzMn6keUENJ9Hm50TZZgtqVOGesgbtCWLaC3yd6ENhoew==@production-byzance-cosmos.documents.azure.com:10255/?ssl=true&replicaSet=globaldb"));
-        MongoDatabase database = mongoClient.getDatabase("hardware-registration-authority-database");
-        MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
-
-        return collection;
-
+    public String get_collection_name(){
+        return COLLECTION_NAME;
     }
+
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
     private static final Logger logger = new Logger(Model_HardwareBatch.class);
@@ -193,7 +172,7 @@ public class Model_HardwareBatch {
 
             // Create Document - Save Document
             Document document = Document.parse(Json.toJson(this).toString());
-            collection().insertOne(document);
+            collection(COLLECTION_NAME).insertOne(document);
 
 
 
@@ -212,7 +191,7 @@ public class Model_HardwareBatch {
             baseFormFactory.formFromJsonWithValidation(Model_HardwareBatch.class, json);
 
             Document document = Document.parse(Json.toJson(this).toString());
-            collection().updateOne( eq("batch_id", batch_id), new Document("$set", document));
+            collection(COLLECTION_NAME).updateOne( eq("batch_id", batch_id), new Document("$set", document));
 
 
         } catch (Exception e){
@@ -223,7 +202,7 @@ public class Model_HardwareBatch {
 
 
     public void delete() {
-        collection().deleteOne(eq("batch_id", batch_id));
+        collection(COLLECTION_NAME).deleteOne(eq("batch_id", batch_id));
     }
 
 /* HELP Methods --------------------------------------------------------------------------------------------------------*/
@@ -288,7 +267,7 @@ public class Model_HardwareBatch {
         query.put("batch_id", id);
         query.put("deleted", false);
 
-        Document document = collection().find(query).first();
+        Document document = collection(COLLECTION_NAME).find(query).first();
 
         if(document == null) {
             throw new Result_Error_NotFound(Model_HardwareBatch.class);
@@ -310,7 +289,7 @@ public class Model_HardwareBatch {
             query.put("compiler_target_name", compiler_target_name);
             query.put("deleted", false);
 
-            MongoCursor<Document> cursor = collection().find(query).iterator();
+            MongoCursor<Document> cursor = collection(COLLECTION_NAME).find(query).iterator();
 
 
             List<Model_HardwareBatch> batches = new ArrayList<>();

@@ -23,8 +23,8 @@ public enum ErrorCode {
 
 
     // ----- Update status ----
-    @EnumValue("NEW_VERSION_DOESNT_MATCH")        NEW_VERSION_DOESNT_MATCH( 501, "Version not match with required"),
-    @EnumValue("NUMBER_OF_ATTEMPTS_EXCEEDED")     NUMBER_OF_ATTEMPTS_EXCEEDED( 502, "Number of attempts exceeded"),
+    @EnumValue("NEW_VERSION_DOESNT_MATCH")        NEW_VERSION_DOESNT_MATCH( 984, "Version not match with required"),
+    @EnumValue("NUMBER_OF_ATTEMPTS_EXCEEDED")     NUMBER_OF_ATTEMPTS_EXCEEDED( 987, "Number of attempts exceeded"),
 
     // ---- Tyrion status ------
     @EnumValue("TYRION_IS_OFFLINE")               TYRION_IS_OFFLINE( 300, "Tyrion is offline"),

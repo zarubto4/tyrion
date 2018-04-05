@@ -61,12 +61,9 @@ public class Model_Block extends TaggedModel {
     @JsonProperty  @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company", required = false)
     public Swagger_Short_Reference producer(){
         try {
-            if (get_producer() != null) {
-                Model_Producer product = get_producer();
-                return new Swagger_Short_Reference(product.id, product.name, product.description);
-            } else {
-                return null;
-            }
+            Model_Producer product = get_producer();
+            if(product == null) return null;
+            return new Swagger_Short_Reference(product.id, product.name, product.description);
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;

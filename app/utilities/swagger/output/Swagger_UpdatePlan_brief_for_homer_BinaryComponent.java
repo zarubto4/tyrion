@@ -4,12 +4,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import utilities.enums.FirmwareType;
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.util.Date;
 
 @ApiModel(description = "Private",
         value = "UpdatePlan_brief_for_homer_BinaryComponent")
-public class Swagger_UpdatePlan_brief_for_homer_BinaryComponent {
+public class Swagger_UpdatePlan_brief_for_homer_BinaryComponent extends _Swagger_Abstract_Default {
 
 
     @JsonProperty

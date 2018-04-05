@@ -3,6 +3,7 @@ package controllers;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import io.ebean.Ebean;
+import io.ebean.ExpressionList;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
@@ -18,7 +19,9 @@ import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_M_Program_Interface;
 import utilities.swagger.output.Swagger_M_Project_Interface;
 import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
+import utilities.swagger.output.filter_results.Swagger_GridProjectList;
 import utilities.swagger.output.filter_results.Swagger_GridWidget_List;
+import utilities.swagger.output.filter_results.Swagger_Hardware_List;
 
 import java.util.*;
 
@@ -41,7 +44,7 @@ public class Controller_Grid extends _BaseController {
 
 ///###################################################################################################################*/
 
-    @ApiOperation(value = "Create M_Project",
+    @ApiOperation(value = "Create GridProject",
             tags = {"Grid"},
             notes = "GridProject is package for GridPrograms -> presupposition is that you need more control terminal for your IoT project. " +
                     "Different screens for family members, for employee etc.. But of course - you can used that for only one GridProgram",
@@ -87,7 +90,7 @@ public class Controller_Grid extends _BaseController {
 
             gridProject.save();
 
-            return created(gridProject.json());
+            return created(gridProject);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -113,14 +116,76 @@ public class Controller_Grid extends _BaseController {
             // Kontrola objektu
             Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
 
-            return ok(gridProject.json());
+            return ok(gridProject);
 
         } catch (Exception e) {
             return controllerServerError(e);
         }
     }
 
-    @ApiOperation(value = "edit M_Project",
+    @ApiOperation(value = "get GridProject by Filter",
+            tags = {"Grid"},
+            notes = "get GridProject by filter parameters",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_Grid_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_GridProjectList.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result gridProject_get_filterByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n. For first call, use 1 (first page of list)", required = true)  int page_number) {
+        try {
+
+            // Get and Validate Object
+            Swagger_Grid_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Grid_Filter.class);
+
+            // Získání všech objektů a následné filtrování podle vlastníka
+            Query<Model_GridProject> query = Ebean.find(Model_GridProject.class);
+
+            query.orderBy("UPPER(name) ASC");
+            query.orderBy("project.id");
+            query.where().eq("deleted", false);
+
+            ExpressionList<Model_GridProject> list = query.where();
+
+
+            if (help.project_ids != null && !help.project_ids.isEmpty()) {
+
+                // Permissin check
+                for(UUID uuid_project: help.project_ids) {
+                    Model_Project.getById(uuid_project);
+                }
+
+                query.where().in("project.id", help.project_ids);
+            }
+
+
+
+            Swagger_GridProjectList result = new Swagger_GridProjectList(query, page_number);
+
+            return ok(result);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "edit GridProject",
             tags = {"Grid"},
             notes = "edit basic information in M_Project by query = grid_project_id",
             produces = "application/json",
@@ -160,7 +225,7 @@ public class Controller_Grid extends _BaseController {
 
             gridProject.update();
             
-            return ok(gridProject.json());
+            return ok(gridProject);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -204,7 +269,7 @@ public class Controller_Grid extends _BaseController {
             gridProject.addTags(help.tags);
 
             // Vrácení objektu
-            return ok(gridProject.json());
+            return ok(gridProject);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -248,14 +313,14 @@ public class Controller_Grid extends _BaseController {
             gridProject.removeTags(help.tags);
 
             // Vrácení objektu
-            return ok(gridProject.json());
+            return ok(gridProject);
 
         } catch (Exception e) {
             return controllerServerError(e);
         }
     }
     
-    @ApiOperation(value = "delete M_Project",
+    @ApiOperation(value = "delete GridProject",
             tags = {"Grid"},
             notes = "remove M_Project by query = grid_project_id",
             produces = "application/json",
@@ -326,7 +391,7 @@ public class Controller_Grid extends _BaseController {
                 m_project_interface.accessible_interface.add(m_program_interface);
             }
 
-            return ok(Json.toJson(m_project_interface));
+            return ok(m_project_interface);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -379,7 +444,7 @@ public class Controller_Grid extends _BaseController {
             
             gridProgram.save();
 
-            return created(gridProgram.json());
+            return created(gridProgram);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -405,7 +470,7 @@ public class Controller_Grid extends _BaseController {
             // Kontrola objektu
             Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
 
-            return ok(gridProgram.json());
+            return ok(gridProgram);
             
         } catch (Exception e) {
             return controllerServerError(e);
@@ -454,7 +519,7 @@ public class Controller_Grid extends _BaseController {
 
             gridProgram.update();
 
-            return ok(gridProgram.json());
+            return ok(gridProgram);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -498,7 +563,7 @@ public class Controller_Grid extends _BaseController {
             gridProgram.addTags(help.tags);
 
             // Vrácení objektu
-            return ok(gridProgram.json());
+            return ok(gridProgram);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -543,7 +608,7 @@ public class Controller_Grid extends _BaseController {
             gridProgram.removeTags(help.tags);
 
             // Vrácení objektu
-            return ok(gridProgram.json());
+            return ok(gridProgram);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -631,7 +696,7 @@ public class Controller_Grid extends _BaseController {
             version.file = Model_Blob.upload(content.toString(), "grid_program.json" , gridProgram.get_path());
             version.update();
 
-            return created(gridProgram.json());
+            return created(gridProgram);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -658,7 +723,7 @@ public class Controller_Grid extends _BaseController {
             Model_GridProgramVersion version = Model_GridProgramVersion.getById(version_id);
 
             // Vrácení objektu
-            return ok(version.json());
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -706,7 +771,7 @@ public class Controller_Grid extends _BaseController {
             // Update
             version.update();
 
-            return ok(version.json());
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -783,7 +848,7 @@ public class Controller_Grid extends _BaseController {
 
             Swagger_Mobile_Connection_Summary result = instance.current_snapshot().get_connection_summary(grid_program_id,ctx());
 
-            return ok(Json.toJson(result));
+            return ok(result);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -829,14 +894,14 @@ public class Controller_Grid extends _BaseController {
                 terminal.device_type = help.device_type;
                 terminal.save();
 
-                return ok(Json.toJson(terminal));
+                return ok(terminal);
 
             } else {
 
                 terminal.ws_permission = true;
                 terminal.m_program_access = true;
                 terminal.update();
-                return ok(terminal.json());
+                return ok(terminal);
             }
 
         } catch (Exception e) {
@@ -904,7 +969,7 @@ public class Controller_Grid extends _BaseController {
 
             terminal.save();
 
-            return created(Json.toJson(terminal));
+            return created(terminal);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -975,7 +1040,7 @@ public class Controller_Grid extends _BaseController {
             Model_WidgetVersion scheme = Model_WidgetVersion.find.query().where().eq("publish_type", ProgramType.DEFAULT_VERSION.name()).findOne();
 
             // Kontrola objektu
-            if (scheme == null) return created( Json.toJson(widget) );
+            if (scheme == null) return created(widget);
 
             // Vytvoření objektu první verze
             Model_WidgetVersion gridWidgetVersion = new Model_WidgetVersion();
@@ -988,7 +1053,7 @@ public class Controller_Grid extends _BaseController {
             gridWidgetVersion.save();
 
             // Vrácení objektu
-            return created(widget.json());
+            return created(widget);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1016,7 +1081,7 @@ public class Controller_Grid extends _BaseController {
             if (gridWidget == null) return notFound("GridWidget widget_id not found");
 
             // Vrácení objektu
-            return ok(Json.toJson(gridWidget));
+            return ok(gridWidget);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1071,7 +1136,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_GridWidget_List result = new Swagger_GridWidget_List(query, page_number);
 
             // Vrácení výsledku
-            return ok(Json.toJson(result));
+            return ok(result);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1121,7 +1186,7 @@ public class Controller_Grid extends _BaseController {
             widget.update();
 
             // Vrácení objektu
-            return ok(Json.toJson(widget));
+            return ok(widget);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1168,7 +1233,7 @@ public class Controller_Grid extends _BaseController {
             widget.addTags(help.tags);
 
             // Vrácení objektu
-            return ok(widget.json());
+            return ok(widget);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1213,7 +1278,7 @@ public class Controller_Grid extends _BaseController {
             widget.removeTags(help.tags);
 
             // Vrácení objektu
-            return ok(widget.json());
+            return ok(widget);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1318,7 +1383,7 @@ public class Controller_Grid extends _BaseController {
             grid_widget_new.refresh();
 
             // Vracím Objekt
-            return ok(Json.toJson(grid_widget_new));
+            return ok(grid_widget_new);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1632,7 +1697,7 @@ public class Controller_Grid extends _BaseController {
             version.save();
 
             // Vrácení objektu
-            return created(Json.toJson(gridWidget));
+            return created(gridWidget);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1662,7 +1727,7 @@ public class Controller_Grid extends _BaseController {
             Model_WidgetVersion version = Model_WidgetVersion.getById(grid_widget_version_id);
        
             // Vrácení objektu
-            return ok(version.json());
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1718,7 +1783,7 @@ public class Controller_Grid extends _BaseController {
             version.update();
 
             // Vrácení objektu
-            return ok(Json.toJson(version));
+            return ok(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1757,7 +1822,7 @@ public class Controller_Grid extends _BaseController {
             Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
 
             // Vrácení objektu
-            return ok(Json.toJson(gridWidget.versions));
+            return ok(gridWidget.versions);
 
         } catch (Exception e) {
             return controllerServerError(e);
