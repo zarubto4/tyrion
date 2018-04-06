@@ -391,6 +391,10 @@ public class Model_InstanceSnapshot extends TaggedModel {
             // Seznam - který by na instanci měl běžet!
             List<UUID> hardware_ids_required_by_instance = getHardwareIds();
 
+            hardware_ids_required_by_instance.addAll(
+                    Model_Hardware.find.query().where().in("hardware_groups.id", getHardwareGroupseIds()).select("id").findSingleAttribute()
+            );
+
             // Přidat nový otisk hardwaru
             if (!hardware_ids_required_by_instance.isEmpty()) {
                 return get_instance().set_device_to_instance(hardware_ids_required_by_instance);
