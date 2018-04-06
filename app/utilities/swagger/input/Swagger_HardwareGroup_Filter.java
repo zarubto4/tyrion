@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @ApiModel(description = "Json Model for Hardware Group Filter List ",
           value = "HardwareGroup_Filter")
-public class Swagger_HardwareGroup_Filter {
+public class Swagger_HardwareGroup_Filter extends _Swagger_filter_parameter {
 
     @ApiModelProperty(required = true)
     public UUID project_id;

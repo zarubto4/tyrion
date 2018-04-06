@@ -7,7 +7,7 @@ import java.util.UUID;
 
 @ApiModel(description = "Json Model for getting Block Filter List",
         value = "Block_Filter")
-public class Swagger_Block_Filter {
+public class Swagger_Block_Filter extends _Swagger_filter_parameter{
 
     @ApiModelProperty(required = false, value = "Include only if you want to get Blocks of given project")
     public UUID project_id;

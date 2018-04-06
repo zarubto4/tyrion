@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @ApiModel(description = "Json Model for ActualizationProcedureTask Filter",
         value = "ActualizationProcedureTask_Filter")
-public class Swagger_ActualizationProcedureTask_Filter {
+public class Swagger_ActualizationProcedureTask_Filter extends _Swagger_filter_parameter{
 
 
     @ApiModelProperty(required = false,  readOnly = true) public List<UUID> hardware_ids = new ArrayList<>();

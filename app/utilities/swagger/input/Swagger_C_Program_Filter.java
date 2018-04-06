@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @ApiModel(description = "Json Model for getting C_Program Filter List",
         value = "C_Program_Filter")
-public class Swagger_C_Program_Filter {
+public class Swagger_C_Program_Filter extends _Swagger_filter_parameter{
 
     @ApiModelProperty(required = false, value = "Include only if you want to get C_Programs of given project")
     public UUID project_id;

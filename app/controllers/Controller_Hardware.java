@@ -2044,7 +2044,7 @@ public class Controller_Hardware extends _BaseController {
             }
 
             // Vytvářím seznam podle stránky
-            Swagger_Hardware_List result = new Swagger_Hardware_List(query, page_number);
+            Swagger_Hardware_List result = new Swagger_Hardware_List(query, page_number, help);
 
             // Vracím seznam
             return ok(result);
@@ -2871,7 +2871,7 @@ public class Controller_Hardware extends _BaseController {
             }
 
             // Vyvoření odchozího JSON
-            Swagger_HardwareGroup_List result = new Swagger_HardwareGroup_List(query, page_number);
+            Swagger_HardwareGroup_List result = new Swagger_HardwareGroup_List(query, page_number, help);
 
             // Vrácení výsledku
             return ok(result);

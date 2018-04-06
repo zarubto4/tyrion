@@ -551,7 +551,7 @@ public class Controller_Code extends _BaseController {
             }
 
             // Vyvoření odchozího JSON
-            Swagger_C_Program_List result = new Swagger_C_Program_List(query,page_number);
+            Swagger_C_Program_List result = new Swagger_C_Program_List(query,page_number,help);
 
             // Vrácení výsledku
             return ok(result);

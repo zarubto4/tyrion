@@ -169,7 +169,7 @@ public class Controller_Blocko extends _BaseController {
             }
 
             // Vytvoření odchozího JSON
-            Swagger_B_Program_List result = new Swagger_B_Program_List(query, page_number);
+            Swagger_B_Program_List result = new Swagger_B_Program_List(query, page_number, help);
 
             // Vrácení výsledku
             return ok(result);
@@ -1115,7 +1115,7 @@ public class Controller_Blocko extends _BaseController {
             }
 
             // Vytvářím seznam podle stránky
-            Swagger_Instance_List result = new Swagger_Instance_List(query, page_number);
+            Swagger_Instance_List result = new Swagger_Instance_List(query, page_number, help);
 
             // Vracím seznam
             return ok(result);
@@ -1549,7 +1549,7 @@ public class Controller_Blocko extends _BaseController {
             }
 
             // Vytvoření odchozího JSON
-            Swagger_Block_List result = new Swagger_Block_List(query, page_number);
+            Swagger_Block_List result = new Swagger_Block_List(query, page_number,help);
 
             // Vrácení výsledku
             return ok(result);
