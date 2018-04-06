@@ -350,8 +350,16 @@ public class Model_Hardware extends TaggedModel {
     public Swagger_Short_Reference actual_instance() {
         try {
             Model_Instance i = get_instance();
-            if(i == null) return null;
-            return new Swagger_Short_Reference(i.id, i.name, i.description);
+
+            if(i != null){
+                Swagger_Short_Reference instance = new Swagger_Short_Reference(i.id, i.name, i.description);
+                instance.online_state = i.online_state();
+                return instance;
+
+            }
+
+            return null;
+
         }catch (Exception e){
             logger.internalServerError(e);
             return null;
@@ -365,7 +373,6 @@ public class Model_Hardware extends TaggedModel {
             return new Swagger_Short_Reference(type.id, type.name, type.description);
         } catch (NullPointerException e) {return  null;}
     }
-
 
     @JsonProperty
     public Swagger_Short_Reference actual_c_program_version() {
@@ -557,19 +564,14 @@ public class Model_Hardware extends TaggedModel {
     }
 
     @JsonIgnore
-    public UUID get_instance_id() {
-
-        if (cache().get(Model_Instance.class) == null) {
-            cache().add(Model_Instance.class, (UUID) Model_Instance.find.query().where().eq("project.hardware.id", id).select("id").findSingleAttribute());
-        }
-
-        return cache().get(Model_Instance.class);
-    }
-
-    @JsonIgnore
     public Model_Instance get_instance(){
         try {
-            return Model_Instance.getById(get_instance_id());
+
+            if(connected_instance_id != null) {
+                return Model_Instance.getById(connected_instance_id);
+            }
+
+            return null;
         }catch (Exception e) {
             return null;
         }
@@ -1577,6 +1579,13 @@ public class Model_Hardware extends TaggedModel {
 
                 if (plan.count_of_tries == null) {
                     plan.count_of_tries = 0;
+                }
+
+
+                if(!plan.getHardware().database_synchronize) {
+                    plan.state = HardwareUpdateState.PROHIBITED_BY_CONFIG;
+                    plan.update();
+                    continue;
                 }
 
                 // Pokud HW nemá nastavený Backup Mode - nastaví se

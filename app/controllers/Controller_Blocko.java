@@ -884,7 +884,6 @@ public class Controller_Blocko extends _BaseController {
         }
     }
 
-
     @ApiOperation(value = "edit InstanceSnapshot",
             tags = {"Instance"},
             notes = "", //TODO
@@ -931,9 +930,6 @@ public class Controller_Blocko extends _BaseController {
             return controllerServerError(e);
         }
     }
-
-
-
 
     @ApiOperation(value = "get InstanceSnapshot",
             tags = {"Instance"},
@@ -1033,8 +1029,6 @@ public class Controller_Blocko extends _BaseController {
             return controllerServerError(e);
         }
     }
-
-
 
     @ApiOperation(value = "delete InstanceSnapshot",
             tags = {"Instance"},

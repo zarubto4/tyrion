@@ -558,6 +558,17 @@ public class Model_Instance extends TaggedModel {
         WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, false, getProjectId());
 
         if (current_snapshot() != null) {
+
+            for(UUID hw_id : current_snapshot().getHardwareIds()) {
+                try {
+
+                    Model_Hardware hardware = Model_Hardware.getById(hw_id);
+                    hardware.connected_instance_id = null;
+                    hardware.update();
+
+                }catch (Exception e){}
+            }
+
             this.current_snapshot_id = null;
             this.update();
         }

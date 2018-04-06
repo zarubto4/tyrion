@@ -227,7 +227,6 @@ public class Model_InstanceSnapshot extends TaggedModel {
         return cache().get(Model_Instance.class);
     }
 
-
     @JsonIgnore
     public List<UUID> getHardwareIds() throws _Base_Result_Exception {
         List<UUID> list = new ArrayList<>();
@@ -261,7 +260,6 @@ public class Model_InstanceSnapshot extends TaggedModel {
         return this.get_instance().getProject().getProduct();
 
     }
-
 
     @JsonIgnore
     public List<UUID> getUpdateProcedureIds() {
@@ -505,6 +503,8 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
                     for (UUID uuid_id : uuid_ids) {
                         Model_Hardware hardware = Model_Hardware.getById(uuid_id);
+                        hardware.connected_instance_id = this.get_instance_id();
+                        hardware.update();
 
                         Model_HardwareUpdate plan = new Model_HardwareUpdate();
                         plan.hardware = hardware;
@@ -531,6 +531,10 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     logger.trace("create_actualization_hardware_request:: interface_hw type: hardware:  " + interface_hw.target_id);
 
                     Model_Hardware hardware = Model_Hardware.getById(interface_hw.target_id);
+
+                    hardware.connected_instance_id = this.get_instance_id();
+                    hardware.update();
+
                     Model_HardwareUpdate plan = new Model_HardwareUpdate();
                     plan.hardware = hardware;
                     plan.firmware_type = FirmwareType.FIRMWARE;
@@ -865,11 +869,8 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
         logger.debug("delete - deleting from database, id: {} ", this.id);
 
-        super.delete();
 
         if(get_instance().current_snapshot_id != null && get_instance().current_snapshot_id.equals(this.id)) {
-            get_instance().current_snapshot_id = null;
-            get_instance().update();
             get_instance().stop();
         }
 
@@ -878,6 +879,8 @@ public class Model_InstanceSnapshot extends TaggedModel {
         if (cache.containsKey(this.id)) {
             cache.remove(this.id);
         }
+
+        super.delete();
 
         return false;
     }
