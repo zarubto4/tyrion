@@ -1,3 +1,4 @@
+
 # --- !Ups
 
 create table authorizationtoken (
@@ -490,7 +491,7 @@ create table hardwareupdate (
   error_code                    integer,
   deleted                       boolean default false not null,
   constraint ck_hardwareupdate_firmware_type check ( firmware_type in ('BACKUP','FIRMWARE','BOOTLOADER','WIFI')),
-  constraint ck_hardwareupdate_state check ( state in ('NOT_YET_STARTED','PROHIBITED_BY_CONFIG','NOT_UPDATED','INSTANCE_INACCESSIBLE','WAITING_FOR_DEVICE','OBSOLETE','CRITICAL_ERROR','IN_PROGRESS','COMPLETE','CANCELED','BIN_FILE_MISSING','HOMER_SERVER_IS_OFFLINE','HOMER_SERVER_NEVER_CONNECTED')),
+  constraint ck_hardwareupdate_state check ( state in ('NOT_YET_STARTED','IN_PROGRESS','NOT_UPDATED','COMPLETE','INSTANCE_INACCESSIBLE','WAITING_FOR_DEVICE','CANCELED','BIN_FILE_MISSING','OBSOLETE','HOMER_SERVER_IS_OFFLINE','CRITICAL_ERROR','HOMER_SERVER_NEVER_CONNECTED')),
   constraint pk_hardwareupdate primary key (id)
 );
 

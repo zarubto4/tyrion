@@ -13,8 +13,9 @@ fi
 if [ -e ./RUNNING_PID ] ; then
     echo " == Found previous PID - trying to kill it =="
     kill $(cat ./RUNNING_PID)
+    rm -rf ./RUNNING_PID
 fi
 
-echo " == Starting new instance of Tyrion =="
+echo " == Starting new instance of Tyrion (https) =="
 chmod +x ./bin/tyrion
 ./bin/tyrion -Dhttp.port=disabled -Dhttps.port=443 -Dplay.server.https.keyStore.path=$CERTPATH/keyStore.jks -Dplay.server.https.keyStore.password=$CERTPASS 2>&1 >> server.log &
