@@ -75,14 +75,10 @@ public class MainLogger {
         for (String group : groups) {
             try {
 
-                System.out.println("PRacuji se skupinou: " + group);
                 group = group.replaceAll("\\s+",""); // CO D2L8 TENTO REGEX????? TO NEV9M ALE ZJISTIM
 
                 // Get List of all Groups!
                 ArrayList<String> list = (ArrayList<String>) configuration.getStringList("logger.groups." + group);
-
-                System.out.println("    A tato skupina obsahuje prvky: " + list);
-
 
                 String group_config = list.get(0);
 

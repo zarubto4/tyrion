@@ -1,6 +1,6 @@
 name := """tyrion"""
 
-version := "2.0.2"
+version := "2.0.5"
 
 packageName in Universal := "v" + version.value
 
@@ -9,7 +9,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
 scalaVersion := "2.12.2"
 
 libraryDependencies ++= Seq(
-  "org.postgresql" % "postgresql" % "9.4-1201-jdbc4",
+  "org.postgresql" % "postgresql" % "42.2.2",
   "com.microsoft.azure" % "azure-storage" % "6.1.0",
   "com.microsoft.azure" % "azure-documentdb" % "1.15.1",
   "com.mandrillapp.wrapper.lutung" % "lutung" % "0.0.8",
@@ -24,6 +24,7 @@ libraryDependencies ++= Seq(
   "org.awaitility" % "awaitility" % "2.0.0" % Test,
   "com.myjeeva.digitalocean" % "digitalocean-api-client" % "2.13", // Digital Ocean - Creating Automaticaly Homer Servers
   "io.minio" % "minio" % "0.2.4", // Minio BLOB storage library - azure-storag opensource alternative
+  evolutions,
   guice,
   ws
 )

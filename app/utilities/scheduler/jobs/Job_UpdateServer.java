@@ -138,9 +138,9 @@ public class Job_UpdateServer implements Job {
 
                         logger.trace("update_server_thread: File downloaded, run update script");
 
-                        Process proc = Runtime.getRuntime().exec("./update_server.sh " + jobData.getString("version") + " 2>&1 > ./update.log");
+                        Runtime.getRuntime().exec("./update_server.sh " + jobData.getString("version") + " 2>&1 > ./update.log &");
 
-                        BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+                        /*BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
                         String line;
                         while ((line = in.readLine()) != null) {
                             logger.info("update_server_thread: Process output: {}", line);
@@ -161,7 +161,7 @@ public class Job_UpdateServer implements Job {
 
                         if (exitCode != 0) {
                             logger.internalServerError(new Exception("Process exited with non-zero code " + exitCode + ". Errors:\n" + err_log.toString()));
-                        }
+                        }*/
 
                         break;
                     }
