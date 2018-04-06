@@ -288,7 +288,7 @@ PUT       /homer_server/server/edit/:server_id                          controll
 GET       /homer_server/server/:server_id                               controllers.Controller_ExternalServer.homer_server_get(server_id: java.util.UUID)
 
 #Super PRIVATE!! Dont change that - its required for Homer API (Secured by Server Hash-token)
-GET       /cloud/homer_server/file/b_program/:b_program_version_id      controllers.Controller_ExternalServer.cloud_file_get_b_program_version(b_program_version_id: java.util.UUID)
+GET       /cloud/homer_server/file/snapshot_programs/:snapshot_id       controllers.Controller_ExternalServer.cloud_file_get_b_program_version(snapshot_id: java.util.UUID)
 GET       /cloud/homer_server/file/c_program/:compilation_id            controllers.Controller_ExternalServer.cloud_file_get_c_program_compilation(compilation_id: java.util.UUID)
 GET       /cloud/homer_server/file/bootloader/:bootloader_version_id    controllers.Controller_ExternalServer.cloud_file_get_bootloader(bootloader_version_id: java.util.UUID)
 

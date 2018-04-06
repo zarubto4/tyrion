@@ -755,16 +755,16 @@ public class Controller_ExternalServer extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(AuthenticationHomer.class)
-    public Result cloud_file_get_b_program_version(UUID b_program_version_id) {
+    public Result cloud_file_get_b_program_version(UUID snapshot_id) {
         try {
 
             // Získám soubor
-            Model_BProgramVersion version = Model_BProgramVersion.getById(b_program_version_id);
+            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
 
             // Separace na Container a Blob
-            int slash = version.file.path.indexOf("/");
-            String container_name = version.file.path.substring(0,slash);
-            String real_file_path = version.file.path.substring(slash+1);
+            int slash = snapshot.program.path.indexOf("/");
+            String container_name = snapshot.program.path.substring(0,slash);
+            String real_file_path = snapshot.program.path.substring(slash+1);
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 

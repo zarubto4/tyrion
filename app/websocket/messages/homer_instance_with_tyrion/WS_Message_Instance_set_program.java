@@ -31,11 +31,11 @@ public class WS_Message_Instance_set_program extends WS_AbstractMessage_Instance
         Model_BProgramVersion version = snapshot.get_b_program_version();
 
         Instance_Update_Request update = new Instance_Update_Request();
-        update.instance_id = snapshot.instance.id;
+        update.instance_id = snapshot.get_instance_id();
         update.snapshot_id = snapshot.id;
         update.program_version_id = version.id;
         update.program_version_name = version.name;
-        update.b_program_id = version.get_b_program().id;
+        update.b_program_id = version.get_b_program_id();
         update.b_program_name = version.get_b_program().name;
         request_list.add(update);
 
@@ -59,7 +59,6 @@ public class WS_Message_Instance_set_program extends WS_AbstractMessage_Instance
 
         public UUID b_program_id;
         public String b_program_name;
-
 
     }
 
