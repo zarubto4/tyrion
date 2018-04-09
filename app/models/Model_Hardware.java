@@ -2396,8 +2396,6 @@ public class Model_Hardware extends TaggedModel {
         procedure.state = Enum_Update_group_procedure_state.NOT_START_YET;
         procedure.type_of_update = type_of_update;
 
-        procedure.save();
-
         for (WS_Help_Hardware_Pair b_pair : board_for_update) {
 
             List<Model_HardwareUpdate> obsolete = Model_HardwareUpdate.find.query()
@@ -2446,10 +2444,12 @@ public class Model_Hardware extends TaggedModel {
                 plan.state = HardwareUpdateState.PROHIBITED_BY_CONFIG;
             }
 
-            plan.save();
+            procedure.updates.add(plan);
+
         }
 
-        procedure.refresh();
+        procedure.save();
+
 
         if(procedure.getUpdates().isEmpty()){
             logger.error("create_update_procedure: Update List is Empty!!!");

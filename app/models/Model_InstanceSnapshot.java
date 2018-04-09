@@ -29,6 +29,7 @@ import utilities.swagger.output.Swagger_InstanceSnapshot_JsonFile;
 import utilities.swagger.output.Swagger_InstanceSnapshot_JsonFile_Interface;
 import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
 import utilities.swagger.output.Swagger_Short_Reference;
+import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Message_Homer_Hardware_ID_UUID_Pair;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_hardware;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_status;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_program;
@@ -390,14 +391,32 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
             // Seznam - který by na instanci měl běžet!
             List<UUID> hardware_ids_required_by_instance = getHardwareIds();
+            List<UUID> group_hardware_ids_required_by_instance = Model_Hardware.find.query().where().in("hardware_groups.id", getHardwareGroupseIds()).select("id").findSingleAttributeList();
 
-            hardware_ids_required_by_instance.addAll(
-                    Model_Hardware.find.query().where().in("hardware_groups.id", getHardwareGroupseIds()).select("id").findSingleAttribute()
-            );
+            hardware_ids_required_by_instance.addAll(group_hardware_ids_required_by_instance);
+
+            List<WS_Message_Homer_Hardware_ID_UUID_Pair> hardwares = new ArrayList<>();
+
+
+            for(UUID uuid: hardware_ids_required_by_instance) {
+                try {
+
+                    Model_Hardware hw = Model_Hardware.getById(uuid);
+
+                    WS_Message_Homer_Hardware_ID_UUID_Pair pair = new WS_Message_Homer_Hardware_ID_UUID_Pair();
+                    pair.full_id = hw.full_id;
+                    pair.uuid = hw.id.toString(); // Must be string!
+
+                    hardwares.add(pair);
+
+                }catch (Exception e){
+                    logger.internalServerError(e);
+                }
+            }
 
             // Přidat nový otisk hardwaru
-            if (!hardware_ids_required_by_instance.isEmpty()) {
-                return get_instance().set_device_to_instance(hardware_ids_required_by_instance);
+            if (!hardwares.isEmpty()) {
+                return get_instance().set_device_to_instance(hardwares);
             } else {
                 WS_Message_Instance_set_hardware result = new WS_Message_Instance_set_hardware();
                 result.status = "success";

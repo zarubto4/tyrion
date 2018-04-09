@@ -642,6 +642,8 @@ public class Model_HardwareUpdate extends BaseModel {
                         plan.date_of_finish = new Date();
                         plan.update();
 
+                        EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, hardware.get_project_id(), hardware.id));
+
                         return;
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -735,7 +737,11 @@ public class Model_HardwareUpdate extends BaseModel {
                             hardware.update();
 
                             hardware.make_log_backup_arrise_change();
+                        } else {
+                            logger.error("update_procedure_progress: plan.firmware_type not recognized!");
                         }
+
+                        EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, hardware.get_project_id(), hardware.id));
 
                         return;
                     } catch (Exception e) {

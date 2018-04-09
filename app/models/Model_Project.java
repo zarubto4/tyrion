@@ -64,8 +64,22 @@ public class Model_Project extends TaggedModel {
     @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Short_Reference product(){
         try {
+
             Model_Product product = getProduct();
-            return new Swagger_Short_Reference(product.id, product.name, product.description);
+            if (product != null) {
+                product.check_read_permission();
+                return new Swagger_Short_Reference(product.id, product.name, product.description);
+            } else {
+                return null;
+            }
+
+
+        } catch (Result_Error_PermissionDenied e) {
+            return null;
+
+        } catch (_Base_Result_Exception e) {
+            return null;
+
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -87,30 +101,36 @@ public class Model_Project extends TaggedModel {
      * @return Model_ProjectParticipant[]
      */
     @JsonProperty @ApiModelProperty(required = true) public List<Model_ProjectParticipant> participants() {
+        try {
 
-        List<Model_ProjectParticipant> project_participants = new ArrayList<>(this.participants);
+            List<Model_ProjectParticipant> project_participants = new ArrayList<>(this.participants);
 
-        for (Model_Invitation invitation : invitations) {
+            for (Model_Invitation invitation : invitations) {
 
-            Model_Person person = Model_Person.getByEmail(invitation.email);
+                Model_Person person = Model_Person.getByEmail(invitation.email);
 
-            Model_ProjectParticipant project_participant = new Model_ProjectParticipant();
+                Model_ProjectParticipant project_participant = new Model_ProjectParticipant();
 
-            if (person != null) {
+                if (person != null) {
 
-                project_participant.person = person;
-            } else {
-                project_participant.user_email = invitation.email;
+                    project_participant.person = person;
+                } else {
+                    project_participant.user_email = invitation.email;
+                }
+
+                project_participant.state = ParticipantStatus.INVITED;
+
+                if (!project_participants.contains(project_participant)) {
+                    project_participants.add(project_participant);
+                }
             }
 
-            project_participant.state = ParticipantStatus.INVITED;
+            return project_participants;
 
-            if (!project_participants.contains(project_participant)) {
-                project_participants.add(project_participant);
-            }
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return new ArrayList<>();
         }
-
-        return project_participants;
     }
 
 
@@ -235,7 +255,7 @@ public class Model_Project extends TaggedModel {
     public List<UUID> getGridProjectsIds() {
 
         if (cache().gets(Model_GridProject.class) == null) {
-            cache().add(Model_GridProject.class, Model_BProgram.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+            cache().add(Model_GridProject.class, Model_GridProject.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_GridProject.class);
@@ -384,7 +404,8 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore
     public Model_Product getProduct() {
         try {
-            return Model_Product.getById(getProductId());
+            return Model_Product.getByIdWithoutPermission(getProductId());
+
         }catch (Exception e) {
             logger.internalServerError(e);
             return null;

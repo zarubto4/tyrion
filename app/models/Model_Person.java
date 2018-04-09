@@ -106,9 +106,12 @@ public class Model_Person extends BaseModel {
     @JsonIgnore
     public List<Model_Project> get_user_access_projects() {
 
+        System.out.println("get_user_access_projects()");
+
         // Chache Add Projects
         if (cache_project_ids.isEmpty()) {
             // Získání seznamu
+            System.out.println("get_user_access_projects() cache_project_ids.isEmpty()");
             cache_project_ids = Model_Project.find.query().where().eq("participants.person.id", id).findIds();
         }
 
@@ -117,6 +120,7 @@ public class Model_Person extends BaseModel {
         for (UUID project_id : cache_project_ids) {
             try {
                 Model_Project project = Model_Project.getById(project_id);
+                System.out.println("get_user_access_projects() GetProject:: " + project.name);
                 projects.add(project);
             }catch (_Base_Result_Exception e){
                 // Nothing

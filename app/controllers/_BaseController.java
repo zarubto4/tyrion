@@ -143,7 +143,7 @@ public abstract class _BaseController {
     /**
      * Creates result created. Body of this result is some object itself instead of classic result json.
      *
-     * @param json to send
+     * @param object of BaseModel to send
      * @return 201 result
      */
     public static Result created(BaseModel object) {

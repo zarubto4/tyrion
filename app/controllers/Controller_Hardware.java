@@ -1804,8 +1804,7 @@ public class Controller_Hardware extends _BaseController {
                 new Thread(() -> {
                     try {
 
-                        Model_UpdateProcedure procedure = Model_Hardware.create_update_procedure(FirmwareType.FIRMWARE, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, b_pairs);
-                        procedure.execute_update_procedure();
+                        Model_Hardware.create_update_procedure(FirmwareType.FIRMWARE, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, b_pairs);
 
                     } catch (Exception e) {
                         logger.internalServerError(e);

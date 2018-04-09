@@ -26,6 +26,7 @@ import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationProgram;
 import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.*;
+import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Message_Homer_Hardware_ID_UUID_Pair;
 import websocket.messages.homer_instance_with_tyrion.verification.WS_Message_Grid_token_verification;
 import websocket.messages.homer_instance_with_tyrion.verification.WS_Message_WebView_token_verification;
 import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
@@ -503,10 +504,10 @@ public class Model_Instance extends TaggedModel {
 
     //-- Device IO operations -- //
     @JsonIgnore
-    public WS_Message_Instance_set_hardware set_device_to_instance(List<UUID> full_ids) {
+    public WS_Message_Instance_set_hardware set_device_to_instance(List<WS_Message_Homer_Hardware_ID_UUID_Pair> hardwares) {
         try {
 
-            JsonNode json = this.write_with_confirmation(new WS_Message_Instance_set_hardware().make_request(full_ids), 1000*3, 0, 4);
+            JsonNode json = this.write_with_confirmation(new WS_Message_Instance_set_hardware().make_request(hardwares), 1000*3, 0, 4);
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Instance_set_hardware.class, json);
 
         } catch (Exception e) {

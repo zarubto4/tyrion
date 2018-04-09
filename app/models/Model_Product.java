@@ -778,7 +778,6 @@ public class Model_Product extends NamedModel {
         Model_Product product = cache.get(id);
 
         if (product == null) {
-
             product = Model_Product.find.byId(id);
             if (product == null) throw new Result_Error_NotFound(Model_Product.class);
 
@@ -786,11 +785,29 @@ public class Model_Product extends NamedModel {
         }
 
         // Check Permission
+
         if(product.its_person_operation()) {
             product.check_read_permission();
         }
+
         return product;
     }
+
+    public static Model_Product getByIdWithoutPermission(UUID id) throws _Base_Result_Exception  {
+
+        Model_Product product = cache.get(id);
+
+        if (product == null) {
+
+            product = Model_Product.find.byId(id);
+            if (product == null) throw new Result_Error_NotFound(Model_Product.class);
+
+            cache.put(id, product);
+        }
+
+        return product;
+    }
+
 
     public static Model_Product getByInvoice(UUID invoice_id) throws _Base_Result_Exception  {
         return find.query().where().eq("invoices.id", invoice_id).findOne();

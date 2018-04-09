@@ -120,11 +120,11 @@ public class Controller_Project extends _BaseController {
     })
     public Result project_getByUser() {
         try {
-
             // Vrácení seznamu
             return ok(person().get_user_access_projects());
 
         } catch (Exception e) {
+            e.printStackTrace();
             return controllerServerError(e);
         }
     }

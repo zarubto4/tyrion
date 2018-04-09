@@ -87,7 +87,7 @@ public class Model_Block extends TaggedModel {
     public UUID get_project_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_Project.class) == null) {
-            cache().add(Model_Project.class, Model_Project.find.query().where().eq("\"blocks.id\".id", id).select("id").findSingleAttributeList());
+            cache().add(Model_Project.class, Model_Project.find.query().where().eq("blocks.id", id).select("id").findSingleAttributeList());
         }
 
         return cache().get(Model_Project.class);
