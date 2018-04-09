@@ -132,25 +132,11 @@ public class Model_HardwareType extends NamedModel {
     @JsonProperty @ApiModelProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public Model_CProgram main_c_program() {
         try {
-            return Model_CProgram.getById(get_main_c_program_id());
+            return get_main_c_program();
         }catch (Exception e) {
             return null;
         }
 
-       /* try {
-
-            if (cache_main_c_program_id == null) {
-                Model_CProgram c_program = Model_CProgram.find.query().where().eq("hardware_type_default.id", id).select("id").findOne();
-                if (c_program == null) return null;
-                //cache_main_c_program_id = c_program.id;
-            }
-
-            return Model_CProgram.getById(cache_main_c_program_id);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }*/
     }
 
     @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -254,11 +240,11 @@ public class Model_HardwareType extends NamedModel {
     @JsonIgnore
     public UUID get_main_test_c_program_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_CProgram.class) == null) {
-            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_test.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+        if (cache().get(Model_CProgram_Test_FakeClass.class) == null) {
+            cache().add(Model_CProgram_Test_FakeClass.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_test.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_CProgram.class);
+        return cache().get(Model_CProgram_Test_FakeClass.class);
     }
 
     @JsonIgnore
@@ -347,6 +333,11 @@ public class Model_HardwareType extends NamedModel {
             throw new NullPointerException();
         }
     }
+
+/* HELPER CLASS  ----------------------------------------------------------------------------------------------------------*/
+
+    // Používáme protože nemáme rezervní klíč pro cachoání backup c program verze v lokální chache
+    public abstract class Model_CProgram_Test_FakeClass {}
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 

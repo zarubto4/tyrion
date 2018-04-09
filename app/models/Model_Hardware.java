@@ -2802,7 +2802,7 @@ public class Model_Hardware extends TaggedModel {
     }
 
 
-    @JsonIgnore   public boolean first_connect_permission() {
+    @JsonIgnore @Transient public boolean first_connect_permission() {
         return project().id == null;
     }
 
