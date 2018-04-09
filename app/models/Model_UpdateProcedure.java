@@ -65,6 +65,9 @@ public class Model_UpdateProcedure extends BaseModel {
             }
 
             return null;
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         }catch (Exception e){
             logger.internalServerError(e);
             return null;
@@ -82,6 +85,9 @@ public class Model_UpdateProcedure extends BaseModel {
 
             return null;
 
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         }catch (Exception e){
             logger.internalServerError(e);
             return null;
@@ -98,6 +104,9 @@ public class Model_UpdateProcedure extends BaseModel {
             }
             return null;
 
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         }catch (Exception e){
             logger.internalServerError(e);
             return null;
@@ -106,17 +115,35 @@ public class Model_UpdateProcedure extends BaseModel {
 
     @JsonProperty @ApiModelProperty(required = true )
     public Enum_Update_group_procedure_state state () {
+        try{
+
+
         return state;
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public int procedure_size_all() {
+    public Integer procedure_size_all() {
+        try {
+            if (size == null) {
+                size = Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).findCount();
+            }
 
-        if (size == null) {
-            size = Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).findCount();
+            return size;
+
+        }catch (_Base_Result_Exception e){
+                //nothing
+                return null;
+        }catch (Exception e){
+                logger.internalServerError(e);
+                return null;
         }
-
-        return size;
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)

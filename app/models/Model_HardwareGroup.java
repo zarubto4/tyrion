@@ -42,16 +42,20 @@ public class Model_HardwareGroup extends NamedModel {
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true)
-    public int size() {
+    public Integer size() {
         try {
             if (cache_group_size == null) {
                 cache_group_size = Model_Hardware.find.query().where().eq("hardware_groups.id", this.id).findCount();
             }
 
             return cache_group_size;
+
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         }catch (Exception e) {
             logger.internalServerError(e);
-            return -1;
+            return null;
         }
     }
 

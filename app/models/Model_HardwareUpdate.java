@@ -71,13 +71,24 @@ public class Model_HardwareUpdate extends BaseModel {
 
     @JsonProperty @ApiModelProperty(required = false, readOnly = true)
     public UpdateType type_of_update () {
-       return getActualizationProcedure().type_of_update;
+        try {
+            return getActualizationProcedure().type_of_update;
+        } catch (_Base_Result_Exception e) {
+            //nothing
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty  @ApiModelProperty(readOnly = true, required = false)
     public UUID actualization_procedure_id(){
         try {
             return getActualizationProcedureId();
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -86,12 +97,28 @@ public class Model_HardwareUpdate extends BaseModel {
 
     @JsonProperty
     public Date date_of_planing() {
-        return getActualizationProcedure().date_of_planing;
+        try{
+            return getActualizationProcedure().date_of_planing;
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty
     public Date created() {
-        return getActualizationProcedure().created;
+        try{
+            return getActualizationProcedure().created;
+        }catch(_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch(Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @ApiModelProperty(required = false, value = "Is visible only if update is for Firmware or Backup")
@@ -109,6 +136,9 @@ public class Model_HardwareUpdate extends BaseModel {
 
             return c_program_detail;
 
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -133,6 +163,9 @@ public class Model_HardwareUpdate extends BaseModel {
 
             return bootloader_update_detail;
 
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -146,7 +179,11 @@ public class Model_HardwareUpdate extends BaseModel {
             Model_Hardware hardware = getHardware();
             return new Swagger_Short_Reference(hardware.id, hardware.name, hardware.description);
 
-        }catch (Exception e) {
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -154,7 +191,15 @@ public class Model_HardwareUpdate extends BaseModel {
     @ApiModelProperty(required = false, value = "Is visible only if user send own binary file ( OR state for c_program_detail)")
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
     public Model_Blob binary_file_detail() {
-        return binary_file;
+        try{
+            return binary_file;
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

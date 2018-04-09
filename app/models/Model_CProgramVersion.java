@@ -66,35 +66,77 @@ public class Model_CProgramVersion extends VersionModel {
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public CompilationStatus status(){
-        return  compilation != null ? compilation.status : CompilationStatus.UNDEFINED;
+        try {
+            return compilation != null ? compilation.status : CompilationStatus.UNDEFINED;
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public String compilation_version(){
-        return  compilation != null ? compilation.firmware_version_lib : CompilationStatus.UNDEFINED.name();
+       try{
+          return  compilation != null ? compilation.firmware_version_lib : CompilationStatus.UNDEFINED.name();
+       } catch (_Base_Result_Exception e){
+           //nothing
+           return null;
+       }catch (Exception e){
+           logger.internalServerError(e);
+           return null;
+       }
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true, value = "Value can be empty, Server cannot guarantee that. External documentation: " + Model_Compilation.virtual_input_output_docu)
     public String virtual_input_output(){
+        try{
         if(compilation != null) return compilation.virtual_input_output;
         else return null;
+    } catch (_Base_Result_Exception e){
+        //nothing
+        return null;
+    }catch (Exception e){
+        logger.internalServerError(e);
+        return null;
+    }
     }
 
     @JsonProperty @ApiModelProperty(required = false, readOnly = true, value = "Link for download file in Binary (Not in Base64). Its ready to manual Upload. Only if \"status\" == \"SUCCESS\"")
-    public String download_link_bin_file(){
-        if(status() == CompilationStatus.SUCCESS) {
-            return compilation.file_path();
-        }else {
+    public String download_link_bin_file() {
+        try {
+            if (status() == CompilationStatus.SUCCESS) {
+                return compilation.file_path();
+            } else {
+                return null;
+            }
+
+        } catch (_Base_Result_Exception e) {
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
 
     @JsonProperty @ApiModelProperty(value = "Visible only for Administrator with Special Permission", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean main_mark(){
+        try{
         if(default_program != null){
             return true;
         }
         return null;
+
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty @ApiModelProperty(value = "Program", required = false)
@@ -130,7 +172,10 @@ public class Model_CProgramVersion extends VersionModel {
 
             return c_program_versions;
 
-        } catch (Exception e) {
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
             logger.internalServerError(e);
             return null;
         }

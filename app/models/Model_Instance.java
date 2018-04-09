@@ -65,6 +65,9 @@ public class Model_Instance extends TaggedModel {
 
             return getSnapShots();
 
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -78,6 +81,9 @@ public class Model_Instance extends TaggedModel {
             Model_BProgram program = get_BProgram();
             return new Swagger_Short_Reference(program.id, program.name, program.description);
 
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -87,9 +93,10 @@ public class Model_Instance extends TaggedModel {
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public Model_HomerServer server(){
         try {
-
             return getHomerServer();
-
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -105,6 +112,10 @@ public class Model_Instance extends TaggedModel {
                     return snapshot;
                 }
             }
+            return null;
+
+        } catch (_Base_Result_Exception e){
+            //nothing
             return null;
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -138,30 +149,33 @@ public class Model_Instance extends TaggedModel {
                 }
 
                 //else {
-                    // Začnu zjišťovat stav - v separátním vlákně! Po strátě spojení se serverem nebo po načítání se někde opomělo změnit stav na online proto
-                    // je podmínka zakomentovaná aby se to ověřovalo vždy
-                    // TODO ASAP ošetřit!!!!
-                    new Thread(() -> {
-                        try {
+                // Začnu zjišťovat stav - v separátním vlákně! Po strátě spojení se serverem nebo po načítání se někde opomělo změnit stav na online proto
+                // je podmínka zakomentovaná aby se to ověřovalo vždy
+                // TODO ASAP ošetřit!!!!
+                new Thread(() -> {
+                    try {
 
-                            WS_Message_Instance_status status = get_instance_status();
+                        WS_Message_Instance_status status = get_instance_status();
 
-                            if (status.status.equals("success")) cache_status.put(id, status.get_status(id).status);
-                            WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, status.get_status(id).status, getProjectId());
+                        if (status.status.equals("success")) cache_status.put(id, status.get_status(id).status);
+                        WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, status.get_status(id).status, getProjectId());
 
-                        } catch (Exception e) {
-                            logger.internalServerError(e);
-                        }
-                    }).start();
+                    } catch (Exception e) {
+                        logger.internalServerError(e);
+                    }
+                }).start();
 
-                    return NetworkStatus.SYNCHRONIZATION_IN_PROGRESS;
+                return NetworkStatus.SYNCHRONIZATION_IN_PROGRESS;
                 //}
 
             } else {
                 return NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
             }
+
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
-            
             // Záměrný Exception - Občas se nedosynchronizuje Cach - ale system stejnak po zvalidování dorovná stav
            return NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
         }
@@ -180,7 +194,9 @@ public class Model_Instance extends TaggedModel {
                 }
             }
             return null;
-
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;

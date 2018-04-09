@@ -45,7 +45,16 @@ public class Model_GridProgram extends TaggedModel {
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true) public List<Model_GridProgramVersion> program_versions() {
-       return get_versions().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList());
+        try{
+            return get_versions().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList());
+
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
 

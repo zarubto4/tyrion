@@ -88,7 +88,15 @@ public class Model_HomerServer extends TaggedModel {
     @ApiModelProperty(required = true, readOnly = true)
     @JsonProperty
     public NetworkStatus online_state() {
-        return Controller_WebSocket.homers.containsKey(id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
+        try{
+            return Controller_WebSocket.homers.containsKey(id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @ApiModelProperty(required = false, readOnly = true)
@@ -97,7 +105,11 @@ public class Model_HomerServer extends TaggedModel {
         try {
             check_update_permission();
             return connection_identifier;
-        }catch (Exception e){
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -108,7 +120,11 @@ public class Model_HomerServer extends TaggedModel {
         try {
             check_update_permission();
             return hash_certificate;
-        }catch (Exception e){
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -124,7 +140,11 @@ public class Model_HomerServer extends TaggedModel {
 
             return null;
 
-        }catch (Exception e){
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }

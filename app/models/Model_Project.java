@@ -66,8 +66,11 @@ public class Model_Project extends TaggedModel {
         try {
             Model_Product product = getProduct();
             return new Swagger_Short_Reference(product.id, product.name, product.description);
+
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
-            logger.internalServerError(e);
             return null;
         }
     }
@@ -76,8 +79,11 @@ public class Model_Project extends TaggedModel {
     public boolean active(){
         try {
             return getProduct().active;
+
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return false;
         } catch (Exception e) {
-            logger.internalServerError(e);
             return false;
         }
     }
@@ -86,10 +92,12 @@ public class Model_Project extends TaggedModel {
      * Making List of Model_ProjectParticipant from Model_ProjectParticipant and also from all invitations!
      * @return Model_ProjectParticipant[]
      */
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_ProjectParticipant> participants() {
+    @JsonProperty @ApiModelProperty(required = true)
+    public List<Model_ProjectParticipant> participants() {
 
         List<Model_ProjectParticipant> project_participants = new ArrayList<>(this.participants);
 
+        try{
         for (Model_Invitation invitation : invitations) {
 
             Model_Person person = Model_Person.getByEmail(invitation.email);
@@ -111,6 +119,12 @@ public class Model_Project extends TaggedModel {
         }
 
         return project_participants;
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 
@@ -516,6 +530,7 @@ public class Model_Project extends TaggedModel {
 
             } catch (_Base_Result_Exception e) {
                 // Nothing
+
             }
         }).start();
 

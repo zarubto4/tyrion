@@ -94,6 +94,9 @@ public class Model_InstanceSnapshot extends TaggedModel {
             Model_BProgramVersion b_program_version = get_b_program_version();
             return new Swagger_Short_Reference(b_program_version.id, b_program_version.name, b_program_version.description);
 
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -107,6 +110,9 @@ public class Model_InstanceSnapshot extends TaggedModel {
             Model_BProgramVersion b_program_version = get_b_program_version();
             return new Swagger_Short_Reference(b_program_version.get_b_program().id, b_program_version.get_b_program().name, b_program_version.get_b_program().description);
 
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -120,6 +126,9 @@ public class Model_InstanceSnapshot extends TaggedModel {
             Model_BProgramVersion b_program_version = get_b_program_version();
             return b_program_version.grid_project_snapshots;
 
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -160,6 +169,9 @@ public class Model_InstanceSnapshot extends TaggedModel {
             }
 
             return null;
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             this.json_additional_parameter = null;
@@ -171,11 +183,13 @@ public class Model_InstanceSnapshot extends TaggedModel {
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "only if snapshot is main")
     public Swagger_InstanceSnapshot_JsonFile program(){
         try {
-
-            if (program != null) return  baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapshot_JsonFile.class, Json.parse( program.get_fileRecord_from_Azure_inString()));
+            if (program != null)
+                return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapshot_JsonFile.class, Json.parse(program.get_fileRecord_from_Azure_inString()));
 
             return null;
-
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         }catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -185,9 +199,10 @@ public class Model_InstanceSnapshot extends TaggedModel {
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "only if snapshot is main")
     public List<Model_UpdateProcedure>  updates() throws _Base_Result_Exception {
         try {
-
             return getUpdateProcedure();
-
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;

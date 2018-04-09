@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.Cached;
 import utilities.enums.Currency;
 import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
 import javax.persistence.*;
@@ -19,7 +20,7 @@ import java.util.UUID;
 public class Model_InvoiceItem extends BaseModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
-
+private static final Logger logger = new Logger(Model_InvoiceItem.class);
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
 
@@ -38,12 +39,45 @@ public class Model_InvoiceItem extends BaseModel {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient public String vat_rate() {  return vat.toString(); }
+    @JsonProperty @Transient public String vat_rate() {
+        try {
 
-    @JsonProperty @Transient public Double unit_price_without_vat() { return  ((double) (unit_price  - (unit_price * (vat / (100 + vat))))) / 1000;}
 
-    @JsonProperty public Double unit_price() { return ((double) unit_price);}
+            return vat.toString();
 
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonProperty @Transient public Double unit_price_without_vat() {
+        try {
+            return ((double) (unit_price - (unit_price * (vat / (100 + vat))))) / 1000;
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonProperty public Double unit_price() {
+        try {
+            return ((double) unit_price);
+
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @Transient public Long vat = (long) 21000;  // TODO je to hardcodované - Asi b bylo lepší to přenést na nějakou proměnou v Configu! LEVEL: HARD  TIME: LONGTERM

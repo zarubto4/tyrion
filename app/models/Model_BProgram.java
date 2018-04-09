@@ -44,7 +44,9 @@ public class Model_BProgram extends TaggedModel {
         try {
 
             return getVersions().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList());
-
+        } catch(_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();

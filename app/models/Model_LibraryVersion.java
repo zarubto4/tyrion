@@ -51,6 +51,9 @@ public class Model_LibraryVersion extends VersionModel {
                 pairs.add(new Swagger_Short_Reference(cProgram.id, cProgram.name, cProgram.description));
             }
             return pairs;
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e){
             logger.internalServerError(e);
             return null;
@@ -66,11 +69,16 @@ public class Model_LibraryVersion extends VersionModel {
             return baseFormFactory.formFromJsonWithValidation(Swagger_Library_File_Load.class, json).files;
 
 
-        } catch (Exception e){
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+
+        }catch (Exception e){
             logger.internalServerError(e);
             return null;
         }
     }
+
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
