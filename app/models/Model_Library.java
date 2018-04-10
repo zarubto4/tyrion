@@ -48,13 +48,21 @@ public class Model_Library extends TaggedModel {
 
     @JsonProperty
     public List<Model_LibraryVersion> versions() {
+        try {
+            List<Model_LibraryVersion> versions = new ArrayList<>();
+            for (Model_LibraryVersion version : this.getVersions()) {
+                versions.add(version);
+            }
 
-        List<Model_LibraryVersion> versions = new ArrayList<>();
-        for (Model_LibraryVersion version : this.getVersions()) {
-            versions.add(version);
+            return versions;
+        } catch (_Base_Result_Exception e) {
+            //nothing
+            return null;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
         }
-
-        return versions;
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

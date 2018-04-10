@@ -51,7 +51,10 @@ public class Model_Block extends TaggedModel {
     @JsonProperty @ApiModelProperty(value = "Visible only if user has permission to know it", required = false)
     public Model_Person author() throws _Base_Result_Exception {
         try {
-           return get_author();
+            return get_author();
+        }catch(_Base_Result_Exception e){
+            //nothing
+            return null;
         }catch (Exception e){
             logger.internalServerError(e);
             return null;
@@ -64,6 +67,9 @@ public class Model_Block extends TaggedModel {
             Model_Producer producer = get_producer();
             if (producer == null) return null;
             return new Swagger_Short_Reference(producer.id, producer.name, producer.description);
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -73,12 +79,29 @@ public class Model_Block extends TaggedModel {
 
     @JsonProperty @ApiModelProperty(required = true)
     public  List<Model_BlockVersion> versions() {
-        return getVersions();
+        try {
+            return getVersions();
+
+        }catch(_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch(Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty(required = false) @ApiModelProperty(required = false, value = "Only for Community Administrator") @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean active() {
+        try{
         return publish_type == ProgramType.PUBLIC ? true : null;
+        }catch(_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch(Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/

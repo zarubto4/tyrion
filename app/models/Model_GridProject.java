@@ -41,7 +41,17 @@ public class Model_GridProject extends TaggedModel {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_GridProgram> m_programs() { return getGridPrograms();}
+    @JsonProperty @ApiModelProperty(required = true) public List<Model_GridProgram> m_programs() {
+        try{
+            return getGridPrograms();
+        } catch (_Base_Result_Exception e){
+             //nothing
+            return null;
+         }catch (Exception e){
+             logger.internalServerError(e);
+             return null;
+        }
+    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

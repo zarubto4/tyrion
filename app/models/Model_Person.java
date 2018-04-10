@@ -91,14 +91,22 @@ public class Model_Person extends BaseModel {
 
     @JsonProperty @ApiModelProperty(required = true)
     public String picture_link() {
+        try{
+                if (this.alternative_picture_link != null && alternative_picture_link.contains("http")) {
+                cache_picture_link = alternative_picture_link;  // Its probably link from GitHub or profile picture from facebook
+            }
+            else if (picture != null) {
+                cache_picture_link = picture.get_file_path_for_direct_download();
+            }
+            return cache_picture_link;
+         }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
 
-        if (this.alternative_picture_link != null && alternative_picture_link.contains("http")) {
-            cache_picture_link = alternative_picture_link;  // Its probably link from GitHub or profile picture from facebook
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
         }
-        else if (picture != null) {
-            cache_picture_link = picture.get_file_path_for_direct_download();
-        }
-        return cache_picture_link;
     }
 
 /* JSON IGNORE VALUES --------------------------------------------------------------------------------------------------*/

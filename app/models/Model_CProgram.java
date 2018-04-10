@@ -58,6 +58,9 @@ public class Model_CProgram extends TaggedModel {
         try {
             Model_HardwareType type = getHardwareType();
             return new Swagger_Short_Reference(type.id, type.name, type.description);
+        } catch (_Base_Result_Exception e) {
+            // nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -68,7 +71,9 @@ public class Model_CProgram extends TaggedModel {
         try {
 
             return getVersions().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList());
-
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
@@ -84,7 +89,11 @@ public class Model_CProgram extends TaggedModel {
 
             return default_main_version;
 
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         }catch (Exception e){
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -301,7 +310,10 @@ public class Model_CProgram extends TaggedModel {
     @JsonProperty @Transient @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
         try {
             // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if(_BaseController.person().has_permission(Permission.C_Program_community_publishing_permission.name())) return true;
+            if (_BaseController.person().has_permission(Permission.C_Program_community_publishing_permission.name()))
+                return true;
+            return null;
+        }catch (_Base_Result_Exception e){
             return null;
         } catch (Exception e){
             return null;

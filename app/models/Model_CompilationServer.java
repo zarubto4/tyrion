@@ -56,8 +56,18 @@ public class Model_CompilationServer extends BaseModel {
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, readOnly = true) @JsonProperty
+
     public NetworkStatus online_state() {
+        try{
         return Controller_WebSocket.compilers.containsKey(this.id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
+
+        } catch (_Base_Result_Exception e) {
+            // nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @ApiModelProperty(required = false, readOnly = true)
@@ -66,7 +76,11 @@ public class Model_CompilationServer extends BaseModel {
         try {
             check_update_permission();
             return connection_identifier;
-        }catch (Exception e){
+        } catch (_Base_Result_Exception e) {
+            // nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -77,7 +91,12 @@ public class Model_CompilationServer extends BaseModel {
         try {
             check_update_permission();
             return hash_certificate;
-        }catch (Exception e){
+
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }

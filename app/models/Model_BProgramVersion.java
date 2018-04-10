@@ -48,9 +48,19 @@ public class Model_BProgramVersion extends VersionModel {
     public String program() {
         // TODO Hodně náročné na stahování do Cahce - Nejlépe takový objekt na linky, že sám sebe zahodí po vypršení platnosti
         // Myslím, že jsem ho někde programoval!
-        Model_Blob blob = Model_Blob.find.query().where().eq("b_program_version.id", id).eq("name", "blocko.json").findOne();
-        if (blob != null) return blob.get_fileRecord_from_Azure_inString();
-        return null;
+        try {
+
+            Model_Blob blob = Model_Blob.find.query().where().eq("b_program_version.id", id).eq("name", "blocko.json").findOne();
+            if (blob != null) return blob.get_fileRecord_from_Azure_inString();
+            return null;
+
+        } catch (_Base_Result_Exception e) {
+            // nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

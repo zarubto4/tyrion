@@ -81,7 +81,6 @@ public class Model_Project extends TaggedModel {
             return null;
 
         } catch (Exception e) {
-            logger.internalServerError(e);
             return null;
         }
     }
@@ -90,8 +89,11 @@ public class Model_Project extends TaggedModel {
     public boolean active(){
         try {
             return getProduct().active;
+
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return false;
         } catch (Exception e) {
-            logger.internalServerError(e);
             return false;
         }
     }
@@ -100,34 +102,36 @@ public class Model_Project extends TaggedModel {
      * Making List of Model_ProjectParticipant from Model_ProjectParticipant and also from all invitations!
      * @return Model_ProjectParticipant[]
      */
-    @JsonProperty @ApiModelProperty(required = true) public List<Model_ProjectParticipant> participants() {
-        try {
-
+    @JsonProperty @ApiModelProperty(required = true)
+    public List<Model_ProjectParticipant> participants() {
+        try{
             List<Model_ProjectParticipant> project_participants = new ArrayList<>(this.participants);
 
             for (Model_Invitation invitation : invitations) {
 
-                Model_Person person = Model_Person.getByEmail(invitation.email);
+                    Model_Person person = Model_Person.getByEmail(invitation.email);
 
-                Model_ProjectParticipant project_participant = new Model_ProjectParticipant();
+                    Model_ProjectParticipant project_participant = new Model_ProjectParticipant();
 
-                if (person != null) {
+                    if (person != null) {
 
-                    project_participant.person = person;
-                } else {
-                    project_participant.user_email = invitation.email;
+                        project_participant.person = person;
+                    } else {
+                        project_participant.user_email = invitation.email;
+                    }
+
+                    project_participant.state = ParticipantStatus.INVITED;
+
+                    if (!project_participants.contains(project_participant)) {
+                        project_participants.add(project_participant);
+                    }
                 }
-
-                project_participant.state = ParticipantStatus.INVITED;
-
-                if (!project_participants.contains(project_participant)) {
-                    project_participants.add(project_participant);
-                }
-            }
 
             return project_participants;
-
-        }catch (Exception e){
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return new ArrayList<>();
+        } catch (Exception e){
             logger.internalServerError(e);
             return new ArrayList<>();
         }
@@ -537,6 +541,7 @@ public class Model_Project extends TaggedModel {
 
             } catch (_Base_Result_Exception e) {
                 // Nothing
+
             }
         }).start();
 

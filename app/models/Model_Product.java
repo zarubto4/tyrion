@@ -84,9 +84,18 @@ public class Model_Product extends NamedModel {
 
     @ApiModelProperty(required = true) @JsonProperty
     public List<Model_Invoice> invoices() {
+        try{
+            if (this.invoices == null || this.invoices.isEmpty()) this.invoices =  Model_Invoice.find.query().where().eq("product.id", this.id).order().desc("created").findList();
+            return invoices;
 
-        if (this.invoices == null || this.invoices.isEmpty()) this.invoices =  Model_Invoice.find.query().where().eq("product.id", this.id).order().desc("created").findList();
-        return invoices;
+        }catch (_Base_Result_Exception e){
+            logger.internalServerError(e);
+            return null;
+
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @ApiModelProperty(required = false)

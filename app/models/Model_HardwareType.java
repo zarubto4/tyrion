@@ -68,12 +68,18 @@ public class Model_HardwareType extends NamedModel {
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty
+    @JsonProperty @ApiModelProperty(value = "Only if user have permission for this object")
     public Swagger_Short_Reference producer() {
         try {
             Model_Producer type = this.get_producer();
             return new Swagger_Short_Reference(type.id, type.name, type.description);
-        } catch (NullPointerException e) {return  null;}
+        } catch (_Base_Result_Exception e) {
+            // nothing
+            return null;
+        } catch (Exception e) {
+            this.logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty
@@ -81,7 +87,14 @@ public class Model_HardwareType extends NamedModel {
         try {
             Model_Processor type = this.get_processor();
             return new Swagger_Short_Reference(type.id, type.name, type.description);
-        } catch (NullPointerException e) {return  null;}
+
+        } catch (_Base_Result_Exception e) {
+            // nothing
+            return null;
+        } catch (NullPointerException e) {
+           this.logger.internalServerError(e);
+           return null;
+        }
     }
 
     @JsonProperty
@@ -95,6 +108,9 @@ public class Model_HardwareType extends NamedModel {
 
             return cache_picture_link;
 
+        } catch (_Base_Result_Exception e) {
+            // nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -103,14 +119,29 @@ public class Model_HardwareType extends NamedModel {
 
     @JsonProperty
     public List<Swagger_CompilationLibrary> supported_libraries() {
+       try {
+
+
         return cache_library_list;
+    }  catch (_Base_Result_Exception e) {
+        // nothing
+        return null;
+    } catch (Exception e) {
+        logger.internalServerError(e);
+        return null;
+        }
     }
 
     @JsonProperty
     public Model_BootLoader main_boot_loader() {
             try {
                 return get_main_boot_loader();
-            }catch (Exception e) {
+
+            } catch(_Base_Result_Exception e){
+                //nothing
+                return null;
+            } catch (Exception e) {
+                logger.internalServerError(e);
                 return null;
             }
     }
@@ -122,6 +153,9 @@ public class Model_HardwareType extends NamedModel {
 
             return get_bootloaders();
 
+        } catch(_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
@@ -133,7 +167,11 @@ public class Model_HardwareType extends NamedModel {
     public Model_CProgram main_c_program() {
         try {
             return get_main_c_program();
-        }catch (Exception e) {
+
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
             return null;
         }
 
@@ -143,7 +181,12 @@ public class Model_HardwareType extends NamedModel {
     public Model_CProgram main_test_c_program() {
             try {
                 return get_main_test_c_program();
+
+            } catch(_Base_Result_Exception e){
+               //nothing
+               return null;
             } catch (Exception e) {
+                logger.internalServerError(e);
                 return null;
             }
     }
@@ -155,7 +198,9 @@ public class Model_HardwareType extends NamedModel {
 
             if (!test_c_program_edit_permission()) return null;
             return Model_HardwareBatch.getByTypeOfBoardId(this.compiler_target_name);
-
+        } catch(_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -212,7 +257,7 @@ public class Model_HardwareType extends NamedModel {
 
         try {
             return Model_Producer.getById(get_producer_id());
-        }catch (Exception e) {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -232,7 +277,7 @@ public class Model_HardwareType extends NamedModel {
 
         try {
             return Model_Processor.getById(get_processor_id());
-        }catch (Exception e) {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -269,7 +314,7 @@ public class Model_HardwareType extends NamedModel {
     public Model_BootLoader get_main_boot_loader() throws _Base_Result_Exception {
         try {
             return Model_BootLoader.getById(get_main_boot_loader_id());
-        }catch (Exception e) {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -289,7 +334,7 @@ public class Model_HardwareType extends NamedModel {
 
         try {
             return Model_CProgram.getById(get_main_c_program_id());
-        }catch (Exception e) {
+        } catch (Exception e) {
             return null;
         }
 
@@ -368,7 +413,7 @@ public class Model_HardwareType extends NamedModel {
         try {
             if (_BaseController.person().has_permission(Permission.HardwareType_bootloader.name())) return true;
             return null;
-        }catch (_Base_Result_Exception e){
+        } catch (_Base_Result_Exception e){
             return null;
         }
     }
@@ -379,7 +424,7 @@ public class Model_HardwareType extends NamedModel {
         try {
             if (_BaseController.person().has_permission(Permission.HardwareType_c_program_edit_permission.name())) return true;
             return null;
-        }catch (_Base_Result_Exception e){
+        } catch (_Base_Result_Exception e){
             return null;
         }
     }
@@ -390,7 +435,7 @@ public class Model_HardwareType extends NamedModel {
         try {
             if (_BaseController.person().has_permission(Permission.HardwareType_test_c_program_edit_permission.name())) return true;
             return null;
-        }catch (_Base_Result_Exception e){
+        } catch (_Base_Result_Exception e){
             return null;
         }
     }
@@ -401,7 +446,7 @@ public class Model_HardwareType extends NamedModel {
         try {
             if (_BaseController.person().has_permission(Permission.HardwareType_test_c_program_edit_permission.name())) return true;
             return null;
-        }catch (_Base_Result_Exception e){
+        } catch (_Base_Result_Exception e){
             return null;
         }
     }

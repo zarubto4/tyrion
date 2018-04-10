@@ -57,7 +57,10 @@ public class Model_GridProgramVersion extends VersionModel {
 
             return  null;
 
-        } catch (Exception e) {
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
             logger.internalServerError(e);
             return null;
         }

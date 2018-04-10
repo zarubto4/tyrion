@@ -58,7 +58,10 @@ public class Model_Garfield  extends NamedModel {
             if (hardware_type_id != null) return Model_HardwareType.getById(hardware_type_id);
             return null;
 
-        } catch (Exception e) {
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
             logger.internalServerError(e);
             return null;
         }
@@ -71,7 +74,10 @@ public class Model_Garfield  extends NamedModel {
             if (producer_id != null) return Model_Producer.getById(producer_id);
             return null;
 
-        } catch (Exception e) {
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
             logger.internalServerError(e);
             return null;
         }

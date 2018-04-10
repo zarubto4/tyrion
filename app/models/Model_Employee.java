@@ -33,7 +33,15 @@ public class Model_Employee extends BaseModel {
 
     @JsonProperty
     public Model_Person person() {
+        try{
         return this.get_person();
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/

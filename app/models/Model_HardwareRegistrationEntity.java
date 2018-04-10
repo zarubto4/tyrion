@@ -88,6 +88,7 @@ public class Model_HardwareRegistrationEntity extends MongoModel {
 
     @JsonIgnore
     public Model_HardwareBatch get_batch() {
+
         return null;
     }
 

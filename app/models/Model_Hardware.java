@@ -138,7 +138,19 @@ public class Model_Hardware extends TaggedModel {
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public BackupMode backup_mode() { return backup_mode ? BackupMode.AUTO_BACKUP : BackupMode.STATIC_BACKUP;}
+    @JsonProperty public BackupMode backup_mode() {
+        try{
+
+            return backup_mode ? BackupMode.AUTO_BACKUP : BackupMode.STATIC_BACKUP;
+
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
+            this.logger.internalServerError(e);
+            return null;
+        }
+    }
 
     @JsonProperty public Swagger_Short_Reference hardware_type() {
         try {
@@ -146,28 +158,50 @@ public class Model_Hardware extends TaggedModel {
             Model_HardwareType type = this.getHardwareTypeCache();
             return new Swagger_Short_Reference(type.id, type.name, type.description);
 
-        } catch (NullPointerException e) {return  null;}
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e){
+            this.logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty public Swagger_Short_Reference producer() {
         try {
             Model_Producer type = this.get_producer();
             return new Swagger_Short_Reference(type.id, type.name, type.description);
-        } catch (NullPointerException e) {return  null;}
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e){
+            this.logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty public Swagger_Short_Reference project() {
         try {
             Model_Project type  = this.get_project();
             return new Swagger_Short_Reference(type.id, type.name, type.description);
-        } catch (NullPointerException e) {return  null;}
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
+            this.logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty public Model_BootLoader actual_bootloader() {
         try {
             return get_actual_bootloader();
-        } catch (NullPointerException e) {
-            return  null;
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
+            this.logger.internalServerError(e);
+            return null;
         }
     }
 
@@ -177,30 +211,33 @@ public class Model_Hardware extends TaggedModel {
         try {
 
 
-               if(cache().get(Model_hardware_update_update_in_progress_bootloader.class) == null) {
-                  UUID update_id = (UUID) Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
-                       .disjunction()
-                           .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
-                           .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
-                           .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
-                           .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
-                           .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
-                           .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
-                       .endJunction()
-                       .eq("firmware_type", FirmwareType.BOOTLOADER)
-                       .select("id")
-                       .setMaxRows(1)
-                       .findSingleAttribute();
-                   if(update_id != null) {
-                       System.out.println("Model_hardware_update_update_in_progress_bootloader Model_HardwareUpdate: state:: " +  Model_HardwareUpdate.getById(update_id).state);
-                       cache().add(Model_hardware_update_update_in_progress_bootloader.class, Model_HardwareUpdate.getById(update_id).getBootloaderId());
-                   }
-           }
+            if (cache().get(Model_hardware_update_update_in_progress_bootloader.class) == null) {
+                UUID update_id = (UUID) Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
+                        .disjunction()
+                        .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
+                        .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
+                        .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
+                        .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
+                        .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
+                        .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
+                        .endJunction()
+                        .eq("firmware_type", FirmwareType.BOOTLOADER)
+                        .select("id")
+                        .setMaxRows(1)
+                        .findSingleAttribute();
+                if (update_id != null) {
+                    System.out.println("Model_hardware_update_update_in_progress_bootloader Model_HardwareUpdate: state:: " + Model_HardwareUpdate.getById(update_id).state);
+                    cache().add(Model_hardware_update_update_in_progress_bootloader.class, Model_HardwareUpdate.getById(update_id).getBootloaderId());
+                }
+            }
 
-           if(cache().get(Model_hardware_update_update_in_progress_bootloader.class) == null) return null;
+            if (cache().get(Model_hardware_update_update_in_progress_bootloader.class) == null) return null;
 
-           return Model_BootLoader.getById(cache().get(Model_hardware_update_update_in_progress_bootloader.class));
+            return Model_BootLoader.getById(cache().get(Model_hardware_update_update_in_progress_bootloader.class));
 
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null; // Raději true než false aby to uživatel neodpálil další update
@@ -212,6 +249,9 @@ public class Model_Hardware extends TaggedModel {
     public Model_BootLoader available_latest_bootloader()  {
         try {
             return getHardwareTypeCache().main_boot_loader();
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         }catch (Exception e) {
             logger.internalServerError(e);
             return null; // Raději true než false aby to uživatel neodpálil další update
@@ -262,6 +302,10 @@ public class Model_Hardware extends TaggedModel {
             // Dont Cache IT!!!!!!!!!!!!!!
             Model_Project project = Model_Project.getById(uuid);
             return new Swagger_Short_Reference(project.id, project.name, project.description);
+
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         }catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -279,9 +323,13 @@ public class Model_Hardware extends TaggedModel {
 
             Model_BootLoader actual_bootloader = actual_bootloader();
 
-            if (( available_latest_bootloader != null && actual_bootloader == null) || ( available_latest_bootloader != null  && !actual_bootloader.id.equals(available_latest_bootloader.id) )) list.add(BoardAlert.BOOTLOADER_REQUIRED);
+            if ((available_latest_bootloader != null && actual_bootloader == null) || (available_latest_bootloader != null && !actual_bootloader.id.equals(available_latest_bootloader.id)))
+                list.add(BoardAlert.BOOTLOADER_REQUIRED);
             return list;
 
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
@@ -291,10 +339,19 @@ public class Model_Hardware extends TaggedModel {
     @JsonProperty
     @ApiModelProperty(required = false, readOnly = true, value = "Basic alerts for potential collisions when deploying or updating new programs")
     public BoardUpdateCollision collision(){
-        if (connected_instance_id == null) {
-            return BoardUpdateCollision.NO_COLLISION;
-        } else {
-            return BoardUpdateCollision.ALREADY_IN_INSTANCE;
+        try{
+            if (connected_instance_id == null) {
+                return BoardUpdateCollision.NO_COLLISION;
+            } else {
+                return BoardUpdateCollision.ALREADY_IN_INSTANCE;
+            }
+
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
         }
     }
 
@@ -315,6 +372,9 @@ public class Model_Hardware extends TaggedModel {
 
             return config;
 
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -337,6 +397,9 @@ public class Model_Hardware extends TaggedModel {
 
             return c_program_plans;
 
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
@@ -344,7 +407,17 @@ public class Model_Hardware extends TaggedModel {
     }
 
     @JsonProperty
-    public Model_HomerServer server() { try { if (connected_server_id == null) return null; return Model_HomerServer.getById(connected_server_id); } catch (Exception e) {logger.internalServerError(e); return null;}}
+    public Model_HomerServer server() {
+        try{
+            if (connected_server_id == null) return null; return Model_HomerServer.getById(connected_server_id);
+
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;}
+    }
 
     @JsonProperty @ApiModelProperty(value = "Can be null, if device is not in Instance")
     public Swagger_Short_Reference actual_instance() {
@@ -359,7 +432,9 @@ public class Model_Hardware extends TaggedModel {
             }
 
             return null;
-
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         }catch (Exception e){
             logger.internalServerError(e);
             return null;
@@ -371,7 +446,13 @@ public class Model_Hardware extends TaggedModel {
         try {
             Model_CProgram type = this.get_actual_c_program();
             return new Swagger_Short_Reference(type.id, type.name, type.description);
-        } catch (NullPointerException e) {return  null;}
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty
@@ -379,7 +460,13 @@ public class Model_Hardware extends TaggedModel {
         try {
             Model_CProgramVersion version = this.get_actual_c_program_version();
             return new Swagger_Short_Reference(version.id, version.name, version.description);
-        } catch (NullPointerException e) {return  null;}
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty
@@ -387,7 +474,13 @@ public class Model_Hardware extends TaggedModel {
         try{
             Model_CProgram program = this.get_backup_c_program();
             return new Swagger_Short_Reference(program.id, program.name, program.description);
-        }catch (NullPointerException e) {return  null;}
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty
@@ -395,7 +488,13 @@ public class Model_Hardware extends TaggedModel {
         try{
             Model_CProgramVersion version = this.get_backup_c_program_version();
             return new Swagger_Short_Reference(version.id, version.name, version.description);
-        }catch (NullPointerException e) {return  null;}
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
 
     }
 
@@ -413,7 +512,7 @@ public class Model_Hardware extends TaggedModel {
             new Thread(() -> {
                 try {
 
-                    List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(),"SELECT * FROM root r  WHERE r.hardware_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
+                    List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(), "SELECT * FROM root r  WHERE r.hardware_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
 
                     logger.debug("last_online: number of retrieved documents = {}", documents.size());
 
@@ -448,6 +547,8 @@ public class Model_Hardware extends TaggedModel {
 
             return Long.MIN_VALUE;
 
+        }catch (_Base_Result_Exception e){
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -459,7 +560,7 @@ public class Model_Hardware extends TaggedModel {
     public NetworkStatus online_state() {
         try {
 
-            if(!dominant_entity) {
+            if (!dominant_entity) {
                 return NetworkStatus.FREEZED;
                 // Pokud FREEZED tak bych měl vrátit i kde je Hardware Aktivní pro Becki!
             }
@@ -494,6 +595,9 @@ public class Model_Hardware extends TaggedModel {
                 return NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
             }
 
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return NetworkStatus.OFFLINE;
@@ -510,6 +614,10 @@ public class Model_Hardware extends TaggedModel {
             }
 
             return l;
+
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         }catch (Exception e){
             logger.internalServerError(e);
             return null;
@@ -534,6 +642,10 @@ public class Model_Hardware extends TaggedModel {
                 }
             }
 
+            return null;
+
+        } catch (_Base_Result_Exception e){
+            //nothing
             return null;
         } catch (Exception e) {
             logger.internalServerError(e);

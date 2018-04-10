@@ -58,8 +58,31 @@ public class Model_Notification extends BaseModel {
     @ApiModelProperty(required = true, example = "notification")    @Transient @JsonProperty public static final String message_type = "notification";
     @ApiModelProperty(required = true, example = WS_Portal.CHANNEL) @Transient @JsonProperty public static final String message_channel = WS_Portal.CHANNEL;
 
-    @JsonProperty @ApiModelProperty(required = true) public String message_type() { return message_type;}
-    @JsonProperty @ApiModelProperty(required = true) public String message_channel() { return message_channel;}
+    @JsonProperty @ApiModelProperty(required = true) public String message_type() {
+        try {
+            return message_type;
+        } catch (_Base_Result_Exception e) {
+          //nothing
+            return null;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonProperty @ApiModelProperty(required = true) public String message_channel() {
+        try{
+            return message_channel;
+    }catch (_Base_Result_Exception e){
+        //nothing
+        return null;
+
+    }catch (Exception e){
+        logger.internalServerError(e);
+        return null;
+    }
+    }
 
     @JsonProperty @ApiModelProperty(required = true)
     public List<Swagger_Notification_Element> notification_body() {

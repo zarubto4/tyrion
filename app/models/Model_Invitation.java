@@ -40,7 +40,17 @@ public class Model_Invitation extends BaseModel {
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true)
-    public Model_Person invited_person() {return Model_Person.find.query().where().eq("email", this.email).findOne();}
+    public Model_Person invited_person() {
+        try {
+            return Model_Person.find.query().where().eq("email", this.email).findOne();
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 

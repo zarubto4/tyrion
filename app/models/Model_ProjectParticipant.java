@@ -30,10 +30,41 @@ public class Model_ProjectParticipant extends BaseModel {
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true) public UUID id()            { if (person == null) return null; return person.id;}
-    @JsonProperty @ApiModelProperty(required = true) public String email()        { if (person == null) return this.user_email; return person.email;}
-    @JsonProperty @ApiModelProperty(required = true) public String full_name()   { if (person == null) return "Unregistered user"; return person.full_name();}
+    @JsonProperty @ApiModelProperty(required = true)
+    public UUID id() {
+        try{
+            if (person == null) return null; return person.id;
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    @JsonProperty @ApiModelProperty(required = true)
+    public String email() {
+        try {
+            if (person == null) return this.user_email;
+            return person.email;
+        } catch (_Base_Result_Exception e) {
+            //nothing
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
+    @JsonProperty @ApiModelProperty(required = true)
+    public String full_name() {
+        try{
+            if (person == null) return "Unregistered user"; return person.full_name();
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient  public String user_email;
