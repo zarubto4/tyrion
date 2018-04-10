@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @ApiModel(description = "Json Model for getting GridWidget Filter List",
         value = "GridWidget_Filter")
-public class Swagger_GridWidget_Filter {
+public class Swagger_GridWidget_Filter extends _Swagger_filter_parameter{
 
     @ApiModelProperty(required = false, value = "Include only if you want to get Widgets of given project")
     public UUID project_id;

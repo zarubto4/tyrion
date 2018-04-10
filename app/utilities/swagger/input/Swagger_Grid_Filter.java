@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @ApiModel(description = "Json Model for Filtering Grids Apps",
           value = "Grid_Filter")
-public class Swagger_Grid_Filter {
+public class Swagger_Grid_Filter extends _Swagger_filter_parameter{
 
     @ApiModelProperty(value = "List of project.id", required = false)
     public List<UUID> project_ids;

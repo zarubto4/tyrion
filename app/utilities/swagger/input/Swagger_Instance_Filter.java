@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @ApiModel(description = "",
         value = "Instance_Filter")
-public class Swagger_Instance_Filter {
+public class Swagger_Instance_Filter extends _Swagger_filter_parameter{
 
     @ApiModelProperty(required = false) public UUID project_id;
     @ApiModelProperty(required = false) public List<UUID> server_unique_ids = new ArrayList<>();

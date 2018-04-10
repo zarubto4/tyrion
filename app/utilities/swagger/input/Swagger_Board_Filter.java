@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @ApiModel(description = "Json Model for Filtering Boards",
           value = "Board_filter")
-public class Swagger_Board_Filter {
+public class Swagger_Board_Filter extends _Swagger_filter_parameter{
 
     @ApiModelProperty(value = "List of hardware_type.id", required = false)
     public List<UUID> hardware_type_ids;

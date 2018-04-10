@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import models.Model_Hardware;
 import models.Model_Widget;
 import play.libs.Json;
+import utilities.swagger.input._Swagger_filter_parameter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,19 +23,19 @@ public class Swagger_Hardware_List extends _Swagger_Filter_Common {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
-    public Swagger_Hardware_List(Query<Model_Hardware> query , int page_number) {
+    public Swagger_Hardware_List(Query<Model_Hardware> query , int page_number, _Swagger_filter_parameter filter) {
 
         if (page_number < 1) page_number = 1;
 
-        List<UUID> ids = query.setFirstRow((page_number - 1) * 25).setMaxRows(25).findIds();
+        List<UUID> ids = query.setFirstRow((page_number - 1) * filter.count_on_page).setMaxRows(filter.count_on_page).findIds();
 
         for (UUID id :ids) {
             this.content.add(Model_Hardware.getById(id));
         }
 
         this.total   = query.findCount();
-        this.from   = (page_number - 1) * 25;
-        this.to     = (page_number - 1) * 25 + content.size();
-        this.pages = (total / 25);
+        this.from   = (page_number - 1) * filter.count_on_page;
+        this.to     = (page_number - 1) * filter.count_on_page + content.size();
+        this.pages = (total / filter.count_on_page);
     }
 }

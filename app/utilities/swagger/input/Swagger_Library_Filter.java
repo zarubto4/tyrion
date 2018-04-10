@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @ApiModel(description = "Json Model for getting Library Filter List",
         value = "Library_Filter")
-public class Swagger_Library_Filter {
+public class Swagger_Library_Filter extends _Swagger_filter_parameter{
 
     @ApiModelProperty(required = false)
     public UUID project_id;

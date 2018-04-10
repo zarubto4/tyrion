@@ -176,7 +176,7 @@ public class Controller_Grid extends _BaseController {
 
 
 
-            Swagger_GridProjectList result = new Swagger_GridProjectList(query, page_number);
+            Swagger_GridProjectList result = new Swagger_GridProjectList(query, page_number, help);
 
             return ok(result);
 
@@ -1133,7 +1133,7 @@ public class Controller_Grid extends _BaseController {
             }
 
             // Vytvoření odchozího JSON
-            Swagger_GridWidget_List result = new Swagger_GridWidget_List(query, page_number);
+            Swagger_GridWidget_List result = new Swagger_GridWidget_List(query, page_number, help);
 
             // Vrácení výsledku
             return ok(result);
