@@ -9,65 +9,76 @@ echo "  | |  '.  /  )  ' /  _| |_ ))__(( |  \ |    _) \  | _)    | |  | \/ | | '
 echo "  )_(   /_(   |_()_\ )_____(\____/ )_()_(   )____) )___(   )_(  )____( )_(   "
 echo ""
 
+echo "This script will take you through the installation process."
+
 function check_cmd {
     if ! command -v $1 &>/dev/null; then
         local DOINSTALL
         while [[ -z $DOINSTALL || ($DOINSTALL != "Y" && $DOINSTALL != "N") ]] ; do
-            read -p "Python is required for the installation and none was detected. Would you like to install it? [Y/N] " DOINSTALL
+            read -p "$1 is required for the installation and none was detected. Would you like to install it? [Y/N] " DOINSTALL
         done
         if [ $DOINSTALL == "Y" ]; then
             apt-get --yes --force-yes install $1
         else
-            echo " !! Manually install $1 and then run the script again !!"
+            echo " !! Manually install $1 and then run the script again. !!"
             exit 1
         fi
-        apt-get --yes --force-yes install $1
     fi
 }
 
-check_cmd python
-
-if ! command -v python &>/dev/null; then
-
-    while [[ -z $INSTALLPYTHON || ($INSTALLPYTHON != "Y" && $INSTALLPYTHON != "N") ]] ; do
-        read -p "Python is required for the installation and none was detected. Would you like to install it? [Y/N] " INSTALLPYTHON
+function prompt {
+    local PROMPTRESULT
+    while [[ -z $PROMPTRESULT ]] ; do
+        read -p "$1" PROMPTRESULT
     done
 
-    if [ $INSTALLPYTHON == "Y" ]; then
-        apt-get --yes --force-yes install python
-        apt-get --yes --force-yes install pip
+    echo "$PROMPTRESULT"
+}
+
+function prompt_yn {
+    local PROMPTRESULT
+    while [[ -z $PROMPTRESULT || ($PROMPTRESULT != "Y" && $PROMPTRESULT != "N") ]] ; do
+        read -p "$1" PROMPTRESULT
+    done
+
+    echo "$PROMPTRESULT"
+}
+
+function prompt_save {
+    local PROMPTRESULT=$(prompt "$2")
+    echo "$1=\"$PROMPTRESULT\"" >> /etc/environment
+    echo "$PROMPTRESULT"
+}
+
+echo "Checking prerequisites."
+
+check_cmd python
+check_cmd letsencrypt
+
+# Check if requests module is installed
+python -c "import requests"
+
+# Exit if python script failed
+if [ $? -ne 0 ] ; then
+    check_cmd pip
+
+    DOINSTALLREQUESTS=$(prompt_yn "'requests' python module is required for the installation and none was detected. Would you like to install it? [Y/N] ")
+    if [ $DOINSTALLREQUESTS == "Y" ]; then
         pip install requests
     else
-        echo " !! Manually install python and then run the script again !!"
+        echo " !! Manually install 'requests' python module (run 'pip install requests') and then run the script again. !!"
         exit 1
     fi
-
-else
-    python -c "import requests"
-
-    if ! command -v pip &>/dev/null; then
-        apt-get --yes --force-yes install pip
-    fi
-
-    pip install requests
 fi
 
-echo " == Setup new Tyrion server =="
+echo "Prerequisites are met, everything is good to go."
 
 # Create the installation folder
 mkdir tyrion
 cd ./tyrion
 
-echo "This script will take you through the installation process."
-
-while [[ -z $ACCESS_TOKEN ]] ; do
-    read -p "Enter the GitHub access token to download the release of the server: " ACCESS_TOKEN
-done
-
-while [[ -z $LATEST || ($LATEST != "Y" && $LATEST != "N") ]] ; do
-    read -p "Would you like to download the latest release? [Y/N] " LATEST
-done
-
+ACCESS_TOKEN=$(prompt "Enter the GitHub access token to download the release of the server: ")
+LATEST=$(prompt_yn "Would you like to download the latest release? [Y/N] ")
 
 if [ $LATEST == "N" ]; then
     while [[ -z $TAG ]] ; do
@@ -78,8 +89,9 @@ else
     DOWNLOAD_URL="https://api.github.com/repos/ByzanceIoT/tyrion/releases/latest"
 fi
 
-# python ./download_release_asset.py $DOWNLOAD_URL $ACCESS_TOKEN
+echo "Downloading (may take a while) ..."
 
+# Python script for downloading
 python - $DOWNLOAD_URL $ACCESS_TOKEN <<END
 import sys
 import requests
@@ -110,7 +122,7 @@ for index, asset in enumerate(release['assets']):
          print 'Cannot found any asset named dist.zip'
          sys.exit(1)
 
-headers2 = {'Authorization': 'token ' + config['api_key'], 'Accept': 'application/octet-stream'}
+headers2 = {'Authorization': 'token ' + sys.argv[2], 'Accept': 'application/octet-stream'}
 package = requests.get(asset_url, headers = headers2)
 
 with open('dist.zip', 'w') as fd:
@@ -132,7 +144,11 @@ if ! [ -e ./dist.zip ] ; then
     exit 1
 fi
 
-unzip ./dist.zip
+echo "Downloaded successfully. Unzipping ..."
+
+unzip -q ./dist.zip
+
+echo "Unzipped successfully."
 
 # Add current working directory (installation directory) to environment variable
 echo "TYRIONROOT=\"$(pwd)\"" >> /etc/environment
@@ -155,52 +171,28 @@ cp ./$CURRENTSERVER/reload_certificate.sh ./reload_certificate.sh
 chmod +x ./start.sh
 chmod +x ./reload_certificate.sh
 
-while [[ -z $SECRETKEY ]] ; do
-    read -p "Enter a strong application secret: " SECRETKEY
+while [[ -z $SERVERMODE || ($SERVERMODE != "DEVELOPER" && $SERVERMODE != "STAGE" && $SERVERMODE != "PRODUCTION") ]] ; do
+    read -p "Choose server mode? [DEVELOPER/STAGE/PRODUCTION] " SERVERMODE
 done
 
-echo "SECRETKEY=\"$SECRETKEY\"" >> /etc/environment
+echo "SERVERMODE=\"$SERVERMODE\"" >> /etc/environment
 
-while [[ -z $DATABASEURL ]] ; do
-    read -p "Enter an URL of a database which the server will be connecting to in format 'jdbc:postgresql://{url}:{port}/{name}': " DATABASEURL
-done
+SECRETKEY=$(prompt_save "SECRETKEY" "Enter a strong application secret: ")
+DATABASEURL=$(prompt_save "DATABASEURL" "Enter an URL of a database which the server will be connecting to in format 'jdbc:postgresql://{url}:{port}/{name}': ")
+DATABASEUSR=$(prompt_save "DATABASEUSR" "Enter the database username which the server will use to log in: ")
+DATABASEPASS=$(prompt_save "DATABASEPASS" "Enter the database password which the server will use to log in: ")
 
-echo "DATABASEURL=\"$DATABASEURL\"" >> /etc/environment
-
-while [[ -z $DATABASEUSR ]] ; do
-    read -p "Enter the database username which the server will use to log in: " DATABASEUSR
-done
-
-echo "DATABASEUSR=\"$DATABASEUSR\"" >> /etc/environment
-
-while [[ -z $DATABASEPASS ]] ; do
-    read -p "Enter the database password which the server will use to log in: " DATABASEPASS
-done
-
-echo "DATABASEPASS=\"$DATABASEPASS\"" >> /etc/environment
-
-while [[ -z $SECURED || ($SECURED != "Y" && $SECURED != "N") ]] ; do
-    read -p "Will the server use an SSL certificate? [Y/N] " SECURED
-done
-
+SECURED=$(prompt_yn "Will the server use an SSL certificate? [Y/N] ")
 echo "SECURED=\"$SECURED\"" >> /etc/environment
 
 if [ $SECURED == "Y" ]; then
-    while [[ -z $DOMAIN ]] ; do
-        read -p "Enter the server domain name (without protocol): " DOMAIN
-    done
 
+    DOMAIN=$(prompt "Enter the server domain name (without protocol): ")
     echo "CERTPATH=\"/etc/letsencrypt/live/$DOMAIN\"" >> /etc/environment
 
-    while [[ -z $CERTPASS ]] ; do
-        read -p "Enter the password for the certificate: " $CERTPASS
-    done
+    CERTPASS=$(prompt_save "CERTPASS" "Enter the password for the certificate: ")
 
-    echo "CERTPASS=\"$CERTPASS\"" >> /etc/environment
-
-    while [[ -z $CERTNOW || ($CERTNOW != "Y" && $CERTNOW != "N") ]] ; do
-        read -p "Would you like to obtain the certificate right now? [Y/N] " CERTNOW
-    done
+    CERTNOW=$(prompt_yn "Would you like to obtain the certificate right now? [Y/N] ")
 
     if [ $CERTNOW == "Y" ]; then
         # Obtain certificate
@@ -220,9 +212,7 @@ fi
 crontab ./TEMPCRON
 rm -rf ./TEMPCRON
 
-while [[ -z $RESTART || ($RESTART != "Y" && $RESTART != "N") ]] ; do
-    read -p "Restart is required for changes to take effect. Restart now? [Y/N] " RESTART
-done
+RESTART=$(prompt_yn "Restart is required for changes to take effect. Restart now? [Y/N] ")
 
 if [ $RESTART == "Y" ]; then
     reboot
