@@ -225,7 +225,12 @@ public class Controller_Finance_TariffExtension extends _BaseController {
         }
     }
 
-
+    @ApiOperation(value = "deactivate Tariff_Extension",
+            tags = {"Admin-Tariff"},
+            notes = "deactivate Tariff Extension",
+            produces = "application/json",
+            protocols = "https"
+    )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
