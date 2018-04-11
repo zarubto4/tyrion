@@ -133,7 +133,7 @@ public class Model_Instance extends TaggedModel {
         // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
         if (current_snapshot() == null) {
 
-            if (snapshots.isEmpty()) {
+            if (getSnapShots().isEmpty()) {
                 return NetworkStatus.NOT_YET_FIRST_CONNECTED;
             } else {
                 return NetworkStatus.SHUT_DOWN;

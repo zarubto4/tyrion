@@ -210,7 +210,7 @@ public class Model_HardwareUpdate extends BaseModel {
 
 
         if (cache().get(Model_Hardware.class) == null) {
-            cache().add(Model_Hardware.class, (UUID) Model_Hardware.find.query().where().eq("updates.id", id).select("id").findSingleAttribute());
+            cache().add(Model_Hardware.class, (UUID) Model_Hardware.find.query().where().eq("updates.id", id).ne("deleted", true).select("id").findSingleAttribute());
         }
 
         return cache().get(Model_Hardware.class);
@@ -231,7 +231,8 @@ public class Model_HardwareUpdate extends BaseModel {
     public UUID getActualizationProcedureId() {
 
         if (cache().get(Model_UpdateProcedure.class) == null) {
-            cache().add(Model_UpdateProcedure.class, (UUID) Model_UpdateProcedure.find.query().where().eq("updates.id", id).select("id").findSingleAttribute());
+            System.out.println("getActualizationProcedureId:: " +  Model_UpdateProcedure.find.query().where().eq("updates.id", id).ne("deleted", true).select("id").findSingleAttribute());
+            cache().add(Model_UpdateProcedure.class, (UUID) Model_UpdateProcedure.find.query().where().eq("updates.id", id).ne("deleted", true).select("id").findSingleAttribute());
         }
 
         return cache().get(Model_UpdateProcedure.class);
@@ -242,6 +243,7 @@ public class Model_HardwareUpdate extends BaseModel {
         try {
             return Model_UpdateProcedure.getById(getActualizationProcedureId());
         }catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -249,7 +251,7 @@ public class Model_HardwareUpdate extends BaseModel {
     @JsonIgnore
     public UUID getBootloaderId() {
         if (cache().get(Model_BootLoader.class) == null) {
-            cache().add(Model_BootLoader.class, (UUID) Model_BootLoader.find.query().where().eq("updates.id", id).select("id").findSingleAttribute());
+            cache().add(Model_BootLoader.class, (UUID) Model_BootLoader.find.query().where().eq("updates.id", id).ne("deleted", true).select("id").findSingleAttribute());
         }
         return cache().get(Model_BootLoader.class);
     }
@@ -259,6 +261,7 @@ public class Model_HardwareUpdate extends BaseModel {
         try {
             return Model_BootLoader.getById(getBootloaderId());
         }catch (Exception e) {
+            // No Log Expeption!
             return null;
         }
     }
@@ -277,6 +280,9 @@ public class Model_HardwareUpdate extends BaseModel {
             binary.firmware_type = firmware_type;
 
             brief_for_homer.binary = binary;
+
+            logger.debug("get_brief_for_update_homer_server:: getActualizationProcedure: ID:  {} ", getActualizationProcedureId());
+            logger.debug("get_brief_for_update_homer_server:: getActualizationProcedure: Type Of Update:  {} ", getActualizationProcedure().type_of_update );
 
             if (getActualizationProcedure().type_of_update == UpdateType.MANUALLY_BY_USER_INDIVIDUAL) {
                 brief_for_homer.progress_subscribe = true;
@@ -301,7 +307,7 @@ public class Model_HardwareUpdate extends BaseModel {
                 binary.program_version_name = cached_bootLoader.version_identifier.length() > 32 ? cached_bootLoader.version_identifier.substring(0, 32) : cached_bootLoader.version_identifier;
                 binary.time_stamp           = cached_bootLoader.created;
             } else {
-                logger.internalServerError(new IllegalAccessException("Unsupported type of Enum_Firmware_type or not set firmware_type in Model_CProgramUpdatePlan"));
+                logger.internalServerError(new IllegalAccessException("get_brief_for_update_homer_server:: nsupported type of Enum_Firmware_type or not set firmware_type in Model_CProgramUpdatePlan"));
                 binary.download_id = binary_file.path;
                 binary.build_id = "TODO"; // TODO ???
             }
@@ -371,6 +377,14 @@ public class Model_HardwareUpdate extends BaseModel {
 
 
         cache.put(id, this);
+    }
+
+    @JsonIgnore @Override
+    public boolean delete() {
+        this.state = HardwareUpdateState.CANCELED;
+        super.update();
+
+        return true;
     }
 
 

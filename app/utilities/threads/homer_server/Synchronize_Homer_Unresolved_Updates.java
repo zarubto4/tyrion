@@ -56,6 +56,7 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
                             .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
                             .add(Expr.isNull("state"))
                         .endJunction()
+                        .ne("deleted", true)
                         .setFirstRow(page)
                         .setMaxRows(page_size)
                             .findPagedList();

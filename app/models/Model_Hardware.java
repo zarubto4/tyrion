@@ -272,6 +272,11 @@ public class Model_Hardware extends TaggedModel {
                     try {
                         WS_Message_Hardware_overview_Board overview_board = this.get_devices_overview();
 
+                        if(overview_board.error_message != null && overview_board.error_message.equals("ERROR_HARDWARE_COMMAND_OFFLINE_DEVICE")) {
+                            cache_latest_know_ip_address = "";
+                            return;
+                        }
+
                         if(overview_board.status.equals("success")) {
                             cache_latest_know_ip_address = overview_board.ip;
                         }
