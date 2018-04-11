@@ -36,7 +36,7 @@ public class Model_TariffExtension extends NamedModel {
        @JoinTable(name = "tariff_extensions_included")
        @JsonIgnore @ManyToMany(mappedBy="extensions_included", fetch = FetchType.LAZY)  public List<Model_Tariff> tariffs_included = new ArrayList<>();
 
-       @JoinTable(name = "tariff_extensions_recomended")
+       @JoinTable(name = "tariff_extensions_recommended")
        @JsonIgnore @ManyToMany(mappedBy="extensions_recommended", fetch = FetchType.LAZY)  public List<Model_Tariff> tariffs_recommended = new ArrayList<>();
 
 

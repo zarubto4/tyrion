@@ -26,6 +26,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @ApiModel(value = "Tariff", description = "Model of Tariff")
@@ -59,7 +60,7 @@ public class Model_Tariff extends NamedModel {
     @JoinTable(name = "tariff_extensions_included")
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_TariffExtension> extensions_included = new ArrayList<>();
 
-    @JoinTable(name = "tariff_extensions_recomended")
+    @JoinTable(name = "tariff_extensions_recommended")
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_TariffExtension> extensions_recommended = new ArrayList<>();
 
 
@@ -112,25 +113,27 @@ public class Model_Tariff extends NamedModel {
         }
     }
 
-//    @JsonProperty
-//    public List<Model_ProductExtension> extensions_included() {
-//        try {
-//            this.check_update_permission();
-//            return Model_ProductExtension.find.query().where().eq("tariff_included.id", id).orderBy("order_position").findList();
-//        } catch (_Base_Result_Exception e){
-//            return Model_ProductExtension.find.query().where().eq("tariff_included.id", id).eq("active", true).orderBy("order_position").findList();
-//        }
-//    }
-//
-//    @JsonProperty
-//    public List<Model_ProductExtension> extensions_optional() {
-//        try {
-//            this.check_update_permission();
-//            return  Model_ProductExtension.find.query().where().eq("tariff_optional.id", id).orderBy("order_position").findList();
-//        } catch (_Base_Result_Exception e){
-//            return  Model_ProductExtension.find.query().where().eq("tariff_optional.id", id).eq("active", true).orderBy("order_position").findList();
-//        }
-//    }
+    @JsonProperty
+    public List<Model_TariffExtension> extensions_included() {
+        // TODO order
+        try {
+            this.check_update_permission();
+            return extensions_included;
+        } catch (_Base_Result_Exception e){
+            return extensions_included.stream().filter(ex -> ex.active).collect(Collectors.toList());
+        }
+    }
+
+    @JsonProperty
+    public List<Model_TariffExtension> extensions_recommended() {
+        // TODO order
+        try {
+            this.check_update_permission();
+            return extensions_recommended;
+        } catch (_Base_Result_Exception e){
+            return extensions_recommended.stream().filter(ex -> ex.active).collect(Collectors.toList());
+        }
+    }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
