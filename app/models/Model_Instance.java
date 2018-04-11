@@ -442,6 +442,7 @@ public class Model_Instance extends TaggedModel {
 
             ObjectNode request = Json.newObject();
             request.put("message_type", json.get("message_type").asText());
+            request.put("status", "error");
             request.put("message_channel", Model_Instance.CHANNEL);
             request.put("error_code", ErrorCode.HOMER_SERVER_NOT_SET_FOR_INSTANCE.error_code());
             request.put("error_message", ErrorCode.HOMER_SERVER_NOT_SET_FOR_INSTANCE.error_message());
@@ -458,6 +459,7 @@ public class Model_Instance extends TaggedModel {
 
             ObjectNode request = Json.newObject();
             request.put("message_type", json.get("message_type").asText());
+            request.put("status", "error");
             request.put("message_channel", Model_Instance.CHANNEL);
             request.put("error_code", ErrorCode.HOMER_NOT_EXIST.error_code());
             request.put("error_message", ErrorCode.HOMER_NOT_EXIST.error_message());
@@ -817,7 +819,6 @@ public class Model_Instance extends TaggedModel {
 
     public static Model_Instance getById(UUID id) throws _Base_Result_Exception {
 
-        System.out.println("Model_Instance::getById:: "+ id);
         Model_Instance instance = cache.get(id);
         if (instance == null) {
 

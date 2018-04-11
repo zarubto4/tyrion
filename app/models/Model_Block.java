@@ -46,6 +46,8 @@ public class Model_Block extends TaggedModel {
     @JsonIgnore @OneToMany(mappedBy="block", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     public List<Model_BlockVersion> versions = new ArrayList<>();
 
+    @JsonIgnore public UUID original_id; // KDyž se vytvoří kopie nebo se publikuje program, zde se uloží původní ID pro pozdější párování
+
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(value = "Visible only if user has permission to know it", required = false)

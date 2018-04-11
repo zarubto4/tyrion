@@ -68,9 +68,14 @@ public abstract class VersionModel extends NamedModel {
 
     @JsonProperty @ApiModelProperty("Visible only for Administrator with permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
         try {
-            if(_BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return true;
+
+            if(_BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) {
+                return true;
+            }
+
             return null;
         }catch (Exception e){
+            logger.internalServerError(e);
             return null;
         }
     }

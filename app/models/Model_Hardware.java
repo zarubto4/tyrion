@@ -272,16 +272,14 @@ public class Model_Hardware extends TaggedModel {
                     try {
                         WS_Message_Hardware_overview_Board overview_board = this.get_devices_overview();
 
-                        if(overview_board.error_message != null && overview_board.error_message.equals("ERROR_HARDWARE_COMMAND_OFFLINE_DEVICE")) {
-                            cache_latest_know_ip_address = "";
-                            return;
-                        }
+                        System.out.println("WS_Message_Hardware_overview_Board:: " + Json.toJson(overview_board));
 
                         if(overview_board.status.equals("success")) {
                             cache_latest_know_ip_address = overview_board.ip;
+                            EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project().id, this.id));
                         }
 
-                        EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project().id, this.id));
+
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -1278,6 +1276,7 @@ public class Model_Hardware extends TaggedModel {
             logger.warn("write_with_confirmation- Try to send request on Hardware, but connected_server_id is empty!");
             ObjectNode request = Json.newObject();
             request.put("message_type", json.get("message_type").asText());
+            request.put("status", "error");
             request.put("message_channel", Model_Hardware.CHANNEL);
             request.put("error_code", ErrorCode.HOMER_SERVER_NOT_SET_FOR_HARDWARE.error_code());
             request.put("error_message", ErrorCode.HOMER_SERVER_NOT_SET_FOR_HARDWARE.error_message());
@@ -1297,6 +1296,7 @@ public class Model_Hardware extends TaggedModel {
 
             ObjectNode request = Json.newObject();
             request.put("message_type", json.get("message_type").asText());
+            request.put("status", "error");
             request.put("message_channel", Model_Hardware.CHANNEL);
             request.put("error_code", ErrorCode.HOMER_NOT_EXIST.error_code());
             request.put("error_message", ErrorCode.HOMER_NOT_EXIST.error_message());
@@ -1366,8 +1366,17 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public WS_Message_Hardware_overview_Board get_devices_overview() {
         JsonNode node = write_with_confirmation(new WS_Message_Hardware_overview().make_request(Collections.singletonList(this.id)), 1000 * 5, 0, 2);
-        WS_Message_Hardware_overview overview = baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_overview.class, node);
-        return overview.get_device_from_list(this.id);
+
+        if(node.get("status").asText().equals("success")) {
+            WS_Message_Hardware_overview overview = baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_overview.class, node);
+            return overview.get_device_from_list(this.id);
+        }else {
+            WS_Message_Hardware_overview_Board overview = new WS_Message_Hardware_overview_Board();
+            overview.status = node.get("status").asText();
+            overview.error_message = node.get("error_message").asText();
+            overview.error_code = node.get("error_code").asInt();
+            return overview;
+        }
     }
 
     @JsonIgnore

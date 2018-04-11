@@ -1930,6 +1930,7 @@ public class Controller_Finance extends _BaseController {
             // TODO - Chybí navázání na fakturoid - smazání faktury (nějaký proces?)
            
             //Fakturoid_Controller.fakturoid_delete()
+            logger.error("invoice_delete: Not Supported");
             throw new Result_Error_NotSupportedException();
             
 
@@ -1955,6 +1956,7 @@ public class Controller_Finance extends _BaseController {
 
         try {
             // TODO invoice_synchronizeFakturoid
+            logger.error("invoice_synchronizeFakturoid: Not Supported");
             throw new Result_Error_NotSupportedException();
 
         } catch (Exception e) {
@@ -1980,6 +1982,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // TODO invoice_set_as_paid
+            logger.error("invoice_set_as_paid: Not Supported");
             throw new Result_Error_NotSupportedException();
          
         } catch (Exception e) {

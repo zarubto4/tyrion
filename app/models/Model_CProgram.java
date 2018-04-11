@@ -51,6 +51,8 @@ public class Model_CProgram extends TaggedModel {
     @JsonIgnore @OneToOne(mappedBy = "default_program", cascade = CascadeType.ALL) public Model_CProgramVersion default_main_version;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                 public Model_LibraryVersion example_library;          // Program je příklad pro použití knihovny
 
+    @JsonIgnore public UUID original_id; // KDyž se vytvoří kopie nebo se publikuje program, zde se uloží původní ID pro pozdější párování
+
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true)
@@ -310,12 +312,14 @@ public class Model_CProgram extends TaggedModel {
     @JsonProperty @Transient @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
         try {
             // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(Permission.C_Program_community_publishing_permission.name()))
+            if (_BaseController.person().has_permission(Permission.C_Program_community_publishing_permission.name())) {
                 return true;
+            }
             return null;
         }catch (_Base_Result_Exception e){
             return null;
         } catch (Exception e){
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -333,7 +337,7 @@ public class Model_CProgram extends TaggedModel {
         if (c_program == null) {
 
             c_program = find.byId(id);
-            if (c_program == null) throw new Result_Error_NotFound(Model_Product.class);
+            if (c_program == null) throw new Result_Error_NotFound(Model_CProgram.class);
 
             cache.put(id, c_program);
         }

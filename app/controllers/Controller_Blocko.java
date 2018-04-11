@@ -1782,16 +1782,21 @@ public class Controller_Blocko extends _BaseController {
                 private_block_version.approval_state = Approval.APPROVED;
                 private_block_version.update();
 
-                Model_Block block = Model_Block.find.query().where().eq("id",block_old.id.toString() + "_public_copy").findOne(); // TODO won't work
+                UUID block_previous_id = Model_Block.find.query().where().eq("original_id", block_old.id).select("id").findSingleAttribute();
 
-                if (block == null) {
+                Model_Block block = null;
+
+                if (block_previous_id == null) {
                     // Vytvoření objektu
                     block = new Model_Block();
+                    block.original_id = block_old.id;
                     block.name = help.program_name;
                     block.description = help.program_description;
                     block.author_id = private_block_version.get_block().get_author().id;
                     block.publish_type = ProgramType.PUBLIC;
                     block.save();
+                } else {
+                    block = Model_Block.getById(block_previous_id);
                 }
 
                 // Vytvoření objektu

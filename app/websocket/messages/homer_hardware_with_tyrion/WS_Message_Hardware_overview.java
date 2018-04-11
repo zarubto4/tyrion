@@ -37,11 +37,9 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
         // System.out.println("WS_Message_Hardware_overview get_device_from_list " +  hardware_id);
 
         if (map.isEmpty() && hardware_list.isEmpty()) {
-            // System.out.println("WS_Message_Hardware_overview: Seznam je prázdný :( " +  hardware_id);
+             System.out.println("WS_Message_Hardware_overview: Seznam je prázdný :( ");
             return null;
         } else if (map.isEmpty()) {
-
-            // System.out.println("WS_Message_Hardware_overview: Message status: " + super.status);
 
             for (WS_Message_Hardware_overview_Board status : hardware_list) {
                 status.status = super.status;

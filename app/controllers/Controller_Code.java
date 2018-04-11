@@ -999,16 +999,20 @@ public class Controller_Code extends _BaseController {
                 version_old.update();
 
 
-                Model_CProgram c_program = Model_CProgram.find.byId(c_program_old.id); // + "_public_copy"); // TODO
+                UUID c_program_previous_id = Model_CProgram.find.query().where().eq("original_id", c_program_old.id).select("id").findSingleAttribute();
 
-                if (c_program == null) {
+                Model_CProgram c_program = null;
+
+                if (c_program_previous_id == null) {
                     c_program = new Model_CProgram();
-                    // c_program.id = c_program_old.id + "_public_copy"; TODO
+                    c_program.original_id = c_program_old.id;
                     c_program.name = help.program_name;
                     c_program.description = help.program_description;
                     c_program.hardware_type = c_program_old.hardware_type;
                     c_program.publish_type  = ProgramType.PUBLIC;
                     c_program.save();
+                }else {
+                    c_program = Model_CProgram.getById(c_program_previous_id);
                 }
 
                 Model_CProgramVersion version = new Model_CProgramVersion();
@@ -1016,7 +1020,7 @@ public class Controller_Code extends _BaseController {
                 version.description      = help.version_description;
                 version.c_program        = c_program;
                 version.publish_type     = ProgramType.PUBLIC;
-                version.author_id           = version_old.author_id;
+                version.author_id        = version_old.author_id;
 
                 // Zkontroluji oprávnění
                 version.save();

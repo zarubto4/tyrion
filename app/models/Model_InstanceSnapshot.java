@@ -972,8 +972,6 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
     public static Model_InstanceSnapshot getById(UUID id) throws _Base_Result_Exception {
 
-        System.out.println("Model_InstanceSnapshot getById: " + id );
-
         Model_InstanceSnapshot snapshot = cache.get(id);
         if (snapshot == null) {
 

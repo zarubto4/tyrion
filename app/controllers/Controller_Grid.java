@@ -1880,16 +1880,22 @@ public class Controller_Grid extends _BaseController {
                 privateGridWidgetVersion.approval_state = Approval.APPROVED;
                 privateGridWidgetVersion.update();
 
-                Model_Widget widget = Model_Widget.find.query().where().eq("id",widget_old.id.toString() + "_public_copy").findOne(); // TODO won't work
 
-                if (widget == null) {
+                UUID widget_previous_id = Model_Widget.find.query().where().eq("original_id", widget_old.id).select("id").findSingleAttribute();
+
+                Model_Widget widget = null;
+
+                if (widget_previous_id == null) {
                     // Vytvoření objektu
                     widget = new Model_Widget();
+                    widget.original_id = widget_old.id;
                     widget.name = help.program_name;
                     widget.description = help.program_description;
                     widget.author_id = privateGridWidgetVersion.get_grid_widget().get_author().id;
                     widget.publish_type = ProgramType.PUBLIC;
                     widget.save();
+                } else {
+                    widget = Model_Widget.getById(widget_previous_id);
                 }
 
                 // Vytvoření objektu

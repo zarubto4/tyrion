@@ -53,10 +53,26 @@ public class Model_ValidationToken extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException();}
+    @JsonIgnore @javax.persistence.Transient
+    @Override public void check_read_permission()   throws _Base_Result_Exception {
+        logger.error("check_read_permission: Not Supported");
+        throw new Result_Error_NotSupportedException();
+    }
+    @JsonIgnore @javax.persistence.Transient
+    @Override public void check_create_permission() throws _Base_Result_Exception {
+        logger.error("check_create_permission: Not Supported");
+        throw new Result_Error_NotSupportedException();
+    }
+    @JsonIgnore @javax.persistence.Transient
+    @Override public void check_update_permission() throws _Base_Result_Exception {
+        logger.error("check_update_permission: Not Supported");
+        throw new Result_Error_NotSupportedException();
+    }
+    @JsonIgnore @javax.persistence.Transient
+    @Override public void check_delete_permission() throws _Base_Result_Exception {
+        logger.error("check_delete_permission: Not Supported");
+        throw new Result_Error_NotSupportedException();
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
