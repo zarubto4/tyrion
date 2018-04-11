@@ -5,21 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.inject.Inject;
 import controllers._BaseFormFactory;
-import org.json.JSONObject;
-import org.json.XML;
-import org.w3c.dom.Document;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
-import utilities.lablel_printer_service.Printer_Api;
 import utilities.logger.Logger;
-import websocket.messages.homer_with_tyrion.configuration.WS_Message_Homer_Get_homer_server_configuration;
 
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
 
 public class Controller_Things_Mobile {
 
@@ -42,7 +36,7 @@ public class Controller_Things_Mobile {
      * Je nutné se přispůsobit jejich požadavkům podle application/x-www-form-urlencoded
      *
      */
-    private class KeyStore {
+    public static class KeyStore {
 
         public KeyStore(String key, String values[]){
             this.key = key;
