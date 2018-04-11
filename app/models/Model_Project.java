@@ -588,7 +588,7 @@ public class Model_Project extends TaggedModel {
 
     @JsonIgnore @Override public boolean delete() {
         logger.debug("delete - deleting from database, id: {} ", this.id);
-        this.delete();
+        super.delete();
 
         getProduct().cache().remove(this.getClass(), id);
         return false;
@@ -635,6 +635,7 @@ public class Model_Project extends TaggedModel {
 
         // Přidávám do listu false a vracím false
         _BaseController.person().cache_permission("project_update_" + id, false);
+        logger.error("Project: check_update_permission Error");
         throw new Result_Error_PermissionDenied();
     }
 

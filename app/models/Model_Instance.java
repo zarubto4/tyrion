@@ -279,7 +279,7 @@ public class Model_Instance extends TaggedModel {
     public List<UUID> getSnapShotsIds() throws _Base_Result_Exception  {
 
         if (cache().gets(Model_InstanceSnapshot.class) == null) {
-            cache().add(Model_InstanceSnapshot.class,  Model_InstanceSnapshot.find.query().where().eq("instance.id", id).select("id").findSingleAttributeList());
+            cache().add(Model_InstanceSnapshot.class,  Model_InstanceSnapshot.find.query().where().ne("deleted", true).eq("instance.id", id).select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_InstanceSnapshot.class);
@@ -293,7 +293,11 @@ public class Model_Instance extends TaggedModel {
             List<Model_InstanceSnapshot> list = new ArrayList<>();
 
             for (UUID id : getSnapShotsIds() ) {
-                list.add(Model_InstanceSnapshot.getById(id));
+                try {
+                    list.add(Model_InstanceSnapshot.getById(id));
+                } catch (Exception e){
+                    logger.error("getSnapShots: ID {} nenalezeno", id);
+                }
             }
 
             return list;
@@ -565,7 +569,9 @@ public class Model_Instance extends TaggedModel {
     //-- Helper Commands --//
     @JsonIgnore
     public void deploy() {
-        current_snapshot().deploy();
+        if(current_snapshot() != null) {
+            current_snapshot().deploy();
+        }
     }
 
     @JsonIgnore
@@ -811,6 +817,7 @@ public class Model_Instance extends TaggedModel {
 
     public static Model_Instance getById(UUID id) throws _Base_Result_Exception {
 
+        System.out.println("Model_Instance::getById:: "+ id);
         Model_Instance instance = cache.get(id);
         if (instance == null) {
 

@@ -142,7 +142,6 @@ public class Model_LibraryVersion extends VersionModel {
 
         logger.debug("delete::Delete object Id: {}",  this.id);
 
-        this.deleted = true;
         super.update();
 
         // Remove from Cache

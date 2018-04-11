@@ -14,7 +14,7 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
-// TODO zkontrolovat jestli funguje korektně [TOM]
+
 public class Printer_Api {
 
     // Logger

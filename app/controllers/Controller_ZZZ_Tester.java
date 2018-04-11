@@ -5,6 +5,7 @@ import com.typesafe.config.Config;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import play.mvc.Result;
+import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.logger.Logger;
 
 import java.util.regex.Matcher;
@@ -72,7 +73,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test2() {
         try {
 
-
+            new Controller_Things_Mobile().test_of_all_apis();
 
            return ok();
 

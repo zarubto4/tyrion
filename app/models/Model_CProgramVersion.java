@@ -248,8 +248,7 @@ public class Model_CProgramVersion extends VersionModel {
 
         logger.debug("delete::Delete object Id: {}",  this.id);
 
-        this.deleted = true;
-        super.update();
+        super.delete();
 
         // Add to Cache
         try {

@@ -61,19 +61,6 @@ public class _Model_ExampleModelName extends BaseModel {
 
         logger.debug("delete: Delete object Id: {} ", this.id);
 
-        // Case 1.1 :: We delete the object
-        super.delete();
-
-        // Case 1.2 :: After Update - we send notification to frontend (Only if it is desirable)
-        //new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( _Model_ExampleModelName.class, "project.id", "model.id"))).start();
-
-
-        // Case 2.1 :: We delete the object with change of ORM parameter  @JsonIgnore  public boolean deleted;
-        this.deleted = true;
-        this.update();
-
-        // Case 1.2 :: After Delete - we send notification to frontend (Only if it is desirable)
-        //new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo( Model_Project.class, "project.id", "model.id"))).start();
         return super.delete();
     }
 
