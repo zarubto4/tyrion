@@ -944,7 +944,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.InstanceSnapshot_create.name())) return;
-        get_instance().check_update_permission();
+        instance.check_update_permission();
     }
 
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
