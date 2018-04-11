@@ -4,8 +4,8 @@ import com.google.inject.Inject;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
 import io.swagger.annotations.*;
-import models.Model_ProductExtension;
 import models.Model_Tariff;
+import models.Model_TariffExtension;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -17,7 +17,7 @@ import utilities.financial.extensions.configurations.Configuration;
 import utilities.logger.Logger;
 import utilities.swagger.input.Swagger_TariffExtension_Edit;
 import utilities.swagger.input.Swagger_TariffExtension_New;
-import utilities.swagger.output.Swagger_ProductExtension_Type;
+import utilities.swagger.output.Swagger_TariffExtension_Type;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,13 +40,68 @@ public class Controller_Finance_TariffExtension extends _BaseController {
         this.baseFormFactory = formFactory;
     }
 
+    @ApiOperation(value = "get Tariff Extensions all",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "get all Tariffs - required for every else action in system. For example: Project is created under the Product which is under some Tariff",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_TariffExtension.class, responseContainer = "list"),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result tariffExtension_getAll() {
+        try {
+
+            // Pokud má uživatel oprávnění vracím upravený SQL
+            if (person().has_permission(Model_TariffExtension.Permission.TariffExtension_update.name())) {
+
+                return ok(Model_TariffExtension.find.query().where().order().asc("name").findList());
+
+            } else {
+
+                return ok(Model_TariffExtension.find.query().where().eq("active", true).order().asc("name").findList());
+
+            }
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "Get Tariff_Extension",
+            tags = {"Price & Invoice & Tariffs"},
+            notes = "", //TODO
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_TariffExtension.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Not found object",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
+    })
+    public Result tariffExtension_get(UUID extension_id) {
+        try {
+            Model_TariffExtension extension = Model_TariffExtension.getById(extension_id);
+            return created(extension);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
     @ApiOperation(value = "create Tariff_Extension",
-                tags = {"Admin-Extension"},
-    notes = "", //TODO
-    produces = "application/json",
-    protocols = "https",
-    code = 201
-            )
+                 tags = {"Admin-Extension"},
+                 notes = "", //TODO
+                 produces = "application/json",
+                 protocols = "https",
+                 code = 201
+    )
     @ApiImplicitParams(
             {
                     @ApiImplicitParam(
@@ -59,7 +114,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 201, message = "Successfully created",      response = Model_ProductExtension.class),
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_TariffExtension.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -67,14 +122,11 @@ public class Controller_Finance_TariffExtension extends _BaseController {
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result tariffExtension_create(UUID tariff_id) {
+    public Result tariffExtension_create() {
         try {
 
             // Get and Validate Object
             Swagger_TariffExtension_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_TariffExtension_New.class);
-
-            // Kontrola objektu
-            Model_Tariff tariff = Model_Tariff.getById(tariff_id);
 
             try {
                 ExtensionType type = ExtensionType.valueOf(help.extension_type);
@@ -82,7 +134,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
                 return notFound("Extension Type not found");
             }
 
-            Model_ProductExtension extension = new Model_ProductExtension();
+            Model_TariffExtension extension = new Model_TariffExtension();
             extension.name = help.name;
             extension.description = help.description;
             extension.color = help.color;
@@ -102,12 +154,6 @@ public class Controller_Finance_TariffExtension extends _BaseController {
 
             Object config = Configuration.getConfiguration(extension.type, help.config);
             extension.configuration = Json.toJson(config).toString();
-
-            if (help.included) {
-                extension.tariff_included = tariff;
-            } else {
-                extension.tariff_optional = tariff;
-            }
 
             extension.save();
 
@@ -138,7 +184,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_ProductExtension.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_TariffExtension.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -153,7 +199,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
             Swagger_TariffExtension_Edit help  = baseFormFactory.formFromRequestWithValidation(Swagger_TariffExtension_Edit.class);
 
             // Kontrola objektu
-            Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
+            Model_TariffExtension extension = Model_TariffExtension.getById(extension_id);
 
             extension.name = help.name;
             extension.description = help.description;
@@ -170,17 +216,6 @@ public class Controller_Finance_TariffExtension extends _BaseController {
 
             extension.configuration = Json.toJson(Configuration.getConfiguration(extension.type, help.config)).toString();
 
-            Model_Tariff tariff =   extension.tariff_optional;
-            if (tariff == null) tariff = extension.tariff_included;
-
-            if (help.included) {
-                extension.tariff_optional = null;
-                extension.tariff_included = tariff;
-            } else {
-                extension.tariff_included = null;
-                extension.tariff_optional = tariff;
-            }
-
             extension.update();
 
             return ok(extension);
@@ -190,75 +225,6 @@ public class Controller_Finance_TariffExtension extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "order Tariff_Extension UP",
-            tags = {"Admin-Extension"},
-            notes = "order Tariff in list",
-            produces = "application/json",
-            protocols = "https"
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result tariffExtension_up(UUID extension_id) {
-        try {
-
-            // Kontrola objektu
-            Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
-
-            // Shift Up
-            extension.up();
-
-            return ok();
-
-        } catch (Exception e) {
-            return controllerServerError(e);
-        }
-    }
-
-    @ApiOperation(value = "order Tariff_Extension Down",
-            tags = {"Admin-Extension"},
-            notes = "order Tariff_Extension Down",
-            produces = "application/json",
-            protocols = "https"
-
-    )
-
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result tariffExtension_down(UUID extension_id) {
-        try {
-
-            // Kontrola objektu
-            Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
-
-            // Shift Down
-            extension.down();
-
-            return ok();
-
-        } catch (Exception e) {
-            return controllerServerError(e);
-        }
-    }
-
-    @ApiOperation(value = "deactivate Tariff_Extension",
-            tags = {"Admin-Extension"},
-            notes = "order Tariff_Extension Down",
-            produces = "application/json",
-            protocols = "https"
-
-    )
 
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -272,9 +238,9 @@ public class Controller_Finance_TariffExtension extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
+            Model_TariffExtension extension = Model_TariffExtension.getById(extension_id);
 
-            if (!extension.active) return badRequest("Tariff is already deactivated");
+            if (!extension.active) return badRequest("Tariff extension is already deactivated");
             extension.active = false;
 
             extension.update();
@@ -306,9 +272,9 @@ public class Controller_Finance_TariffExtension extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
+            Model_TariffExtension extension = Model_TariffExtension.getById(extension_id);
 
-            if (extension.active) return badRequest("Tariff is already activated");
+            if (extension.active) return badRequest("Tariff Extension is already activated");
             extension.active = true;
 
             extension.update();
@@ -340,8 +306,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
-
+            Model_TariffExtension extension = Model_TariffExtension.getById(extension_id);
             extension.delete();
 
             return ok();
@@ -350,6 +315,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
             return controllerServerError(e);
         }
     }
+//
 
     @ApiOperation(value = "get Tariff All types",
             tags = {"Price & Invoice & Tariffs"},
@@ -358,7 +324,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
             protocols = "https"
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "OK Result",                 response = Swagger_ProductExtension_Type.class, responseContainer = "list"),
+            @ApiResponse(code = 200, message = "OK Result",                 response = Swagger_TariffExtension_Type.class, responseContainer = "list"),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 500, message = "Server side error" ,        response = Result_InternalServerError.class)
@@ -367,7 +333,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
         try {
 
 
-            List<Swagger_ProductExtension_Type> types = new ArrayList<>();
+            List<Swagger_TariffExtension_Type> types = new ArrayList<>();
 
             for (ExtensionType e : ExtensionType.values()) {
 
@@ -375,7 +341,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
                 if (clazz != null) {
                     utilities.financial.extensions.extensions.Extension extension = clazz.newInstance();
 
-                    Swagger_ProductExtension_Type type = new Swagger_ProductExtension_Type();
+                    Swagger_TariffExtension_Type type = new Swagger_TariffExtension_Type();
                     type.type = extension.getType().name();
                     type.name = extension.getName();
                     type.description = extension.getDescription();

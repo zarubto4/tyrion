@@ -231,16 +231,21 @@ public class Controller_Finance_Product extends _BaseController {
 
             logger.debug("product_create: Adding extensions");
 
-            List<Model_ProductExtension> extensions = new ArrayList<>();
+            List<Model_TariffExtension> extensions = new ArrayList<>();
 
-            if (help.extension_ids.size() > 0) extensions.addAll( Model_ProductExtension.find.query().where().in("id", help.extension_ids).eq("tariff_optional.id", tariff.id).findList());
+            if (help.extension_ids.size() > 0) extensions.addAll( Model_TariffExtension.find.query().where().in("id", help.extension_ids).findList());
             extensions.addAll(tariff.extensions_included);
 
-            for (Model_ProductExtension ext : extensions) {
-
+            for (Model_TariffExtension ext : extensions) {
                 if (ext.active) {
-
-                    Model_ProductExtension extension = ext.copy();
+                    Model_ProductExtension extension = new Model_ProductExtension();
+                    extension.name = ext.name;
+                    extension.description = ext.description;
+                    extension.color = ext.color;
+                    extension.type = ext.type;
+                    extension.active = true;
+                    extension.deleted = false;
+                    extension.configuration = ext.configuration;
                     extension.product = product;
                     extension.save();
                 }

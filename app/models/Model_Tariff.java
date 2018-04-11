@@ -16,6 +16,7 @@ import utilities.enums.PaymentMethod;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.financial.extensions.extensions.Extension;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.swagger.input.Swagger_TariffLabel;
@@ -55,8 +56,11 @@ public class Model_Tariff extends NamedModel {
                             public String awesome_icon;
                 @JsonIgnore public String labels_json;
 
-   @JsonIgnore @OneToMany(mappedBy="tariff_included", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_ProductExtension> extensions_included = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="tariff_optional", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_ProductExtension> extensions_optional = new ArrayList<>();
+    @JoinTable(name = "tariff_extensions_included")
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_TariffExtension> extensions_included = new ArrayList<>();
+
+    @JoinTable(name = "tariff_extensions_recomended")
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_TariffExtension> extensions_recommended = new ArrayList<>();
 
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -108,25 +112,25 @@ public class Model_Tariff extends NamedModel {
         }
     }
 
-    @JsonProperty
-    public List<Model_ProductExtension> extensions_included() {
-        try {
-            this.check_update_permission();
-            return Model_ProductExtension.find.query().where().eq("tariff_included.id", id).orderBy("order_position").findList();
-        } catch (_Base_Result_Exception e){
-            return Model_ProductExtension.find.query().where().eq("tariff_included.id", id).eq("active", true).orderBy("order_position").findList();
-        }
-    }
-
-    @JsonProperty
-    public List<Model_ProductExtension> extensions_optional() {
-        try {
-            this.check_update_permission();
-            return  Model_ProductExtension.find.query().where().eq("tariff_optional.id", id).orderBy("order_position").findList();
-        } catch (_Base_Result_Exception e){
-            return  Model_ProductExtension.find.query().where().eq("tariff_optional.id", id).eq("active", true).orderBy("order_position").findList();
-        }
-    }
+//    @JsonProperty
+//    public List<Model_ProductExtension> extensions_included() {
+//        try {
+//            this.check_update_permission();
+//            return Model_ProductExtension.find.query().where().eq("tariff_included.id", id).orderBy("order_position").findList();
+//        } catch (_Base_Result_Exception e){
+//            return Model_ProductExtension.find.query().where().eq("tariff_included.id", id).eq("active", true).orderBy("order_position").findList();
+//        }
+//    }
+//
+//    @JsonProperty
+//    public List<Model_ProductExtension> extensions_optional() {
+//        try {
+//            this.check_update_permission();
+//            return  Model_ProductExtension.find.query().where().eq("tariff_optional.id", id).orderBy("order_position").findList();
+//        } catch (_Base_Result_Exception e){
+//            return  Model_ProductExtension.find.query().where().eq("tariff_optional.id", id).eq("active", true).orderBy("order_position").findList();
+//        }
+//    }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
@@ -135,11 +139,12 @@ public class Model_Tariff extends NamedModel {
         try {
             Long total_price = 0L;
 
-            for (Model_ProductExtension extension : this.extensions_included) {
-                Long price = extension.getDailyPrice();
+            for (Model_TariffExtension extension : this.extensions_included) {
+                Long price = Extension.getDailyPrice(extension.type, extension.configuration);
 
-                if (price != null)
+                if (price != null) {
                     total_price += price;
+                }
             }
             return (double) total_price;
 

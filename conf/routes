@@ -179,14 +179,14 @@ PUT       /admin/tariff/down/:tariff_id                                 controll
 DELETE    /admin/tariff/:tariff_id                                      controllers.finance.Controller_Finance_Tariff.tariff_delete(tariff_id: java.util.UUID)
 GET       /admin/tariff/types                                           controllers.finance.Controller_Finance_TariffExtension.tariff_getAllTypes()
 
-POST      /admin/tariff_extension/:tariff_id                            controllers.finance.Controller_Finance_TariffExtension.tariffExtension_create(tariff_id: java.util.UUID)
+
+GET       /admin/tariff_extension                                       controllers.finance.Controller_Finance_TariffExtension.tariffExtension_getAll()
+GET       /admin/tariff_extension/:extension_id                         controllers.finance.Controller_Finance_TariffExtension.tariffExtension_get(extension_id: java.util.UUID)
+POST      /admin/tariff_extension                                       controllers.finance.Controller_Finance_TariffExtension.tariffExtension_create()
 PUT       /admin/tariff_extension/:extension_id                         controllers.finance.Controller_Finance_TariffExtension.tariffExtension_update(extension_id: java.util.UUID)
-PUT       /admin/tariff_extension/up/:extension_id                      controllers.finance.Controller_Finance_TariffExtension.tariffExtension_up(extension_id: java.util.UUID)
-PUT       /admin/tariff_extension/down/:extension_id                    controllers.finance.Controller_Finance_TariffExtension.tariffExtension_down(extension_id: java.util.UUID)
 PUT       /admin/tariff_extension/deactive/:extension_id                controllers.finance.Controller_Finance_TariffExtension.tariffExtension_deactivate(extension_id: java.util.UUID)
 PUT       /admin/tariff_extension/active/:extension_id                  controllers.finance.Controller_Finance_TariffExtension.tariffExtension_activate(extension_id: java.util.UUID)
 DELETE    /admin/tariff_extension/:extension_id                         controllers.finance.Controller_Finance_TariffExtension.tariffExtension_delete(extension_id: java.util.UUID)
-
 
 ### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
 ################################################################################################################################################################################
