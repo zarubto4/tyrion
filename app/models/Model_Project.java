@@ -588,10 +588,9 @@ public class Model_Project extends TaggedModel {
 
     @JsonIgnore @Override public boolean delete() {
         logger.debug("delete - deleting from database, id: {} ", this.id);
-        super.delete();
 
         getProduct().cache().remove(this.getClass(), id);
-        return false;
+        return super.delete();
     }
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
