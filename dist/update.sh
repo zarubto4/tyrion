@@ -14,7 +14,7 @@ CURRENTSERVER=$(cat CURRENTSERVER)
 OLDSERVER=$(cat OLDSERVER)
 
 # Unzip new package
-unzip "dist.zip"
+unzip -q "dist.zip"
 
 if [ ! -e ./$CURRENTSERVER/RUNNING_PID ] ; then
     >&2 echo " !! Current PID is missing !!"
@@ -33,7 +33,16 @@ cd ./$NEWSERVER
 
 # Run instance of new verion
 echo " == Starting new server =="
-start_https.sh
+
+if [[ -v SECURED && $SECURED == "Y" ]] ; then
+    chmod +x ./start_https.sh
+    ./start_https.sh
+    TESTURL="https://0.0.0.0:443"
+else
+    chmod +x ./start_http.sh
+    ./start_http.sh
+    TESTURL="http://0.0.0.0:80"
+fi
 
 # Go one level below current instance
 cd ..
@@ -43,7 +52,7 @@ echo " == Sleeping for 30s to wait for server to start =="
 sleep 30
 
 # Then request it
-RESPONSE=$(curl -w "%{http_code}" -o "" --silent --connect-timeout 60 "http://0.0.0.0:443")
+RESPONSE=$(curl -w "%{http_code}" -o "" --silent --connect-timeout 60 "$TESTURL")
 case $RESPONSE in
         200|201|400|404)
                 echo " == Server started properly =="
@@ -59,15 +68,9 @@ case $RESPONSE in
                     kill $(cat ./$NEWSERVER/RUNNING_PID)
                 fi
 
-                # Go into last functioning server
-                cd ./$CURRENTSERVER
-
                 # Run instance of last version
                 echo " == Starting previous server =="
-                start_https.sh
-
-                # Go back down
-                cd ..
+                ./start.sh
 
                 # Post to Slack
                 echo " == Posting to Slack, that error occurred during update =="

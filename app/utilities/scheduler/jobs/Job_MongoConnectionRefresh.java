@@ -1,6 +1,5 @@
 package utilities.scheduler.jobs;
 
-import models.Model_InstanceSnapshot;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -9,7 +8,6 @@ import utilities.logger.Logger;
 import utilities.scheduler.Scheduled;
 
 import java.util.Date;
-import java.util.UUID;
 
 /**
  * Uploads blocko program to homer.

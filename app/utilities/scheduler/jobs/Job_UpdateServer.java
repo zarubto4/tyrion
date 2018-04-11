@@ -13,10 +13,7 @@ import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 import utilities.logger.Logger;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -138,30 +135,12 @@ public class Job_UpdateServer implements Job {
 
                         logger.trace("update_server_thread: File downloaded, run update script");
 
-                        Runtime.getRuntime().exec("./update_server.sh " + jobData.getString("version") + " 2>&1 > ./update.log &");
+                        // Runtime.getRuntime().exec("./update_wrapper.sh " + jobData.getString("version") + " &");
 
-                        /*BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-                        String line;
-                        while ((line = in.readLine()) != null) {
-                            logger.info("update_server_thread: Process output: {}", line);
-                        }
-
-                        BufferedReader err = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-                        StringBuilder err_log = new StringBuilder();
-                        String err_line;
-                        while ((err_line = err.readLine()) != null) {
-                            logger.info("update_server_thread: Process output: {}", err_line);
-                            err_log.append(err_line);
-                            err_log.append("\n");
-                        }
-
-                        int exitCode = proc.waitFor();
-
-                        logger.debug("update_server_thread: Process exit code: {}", exitCode);
-
-                        if (exitCode != 0) {
-                            logger.internalServerError(new Exception("Process exited with non-zero code " + exitCode + ". Errors:\n" + err_log.toString()));
-                        }*/
+                        ProcessBuilder processBuilder = new ProcessBuilder("./update.sh", jobData.getString("version"));
+                        processBuilder.redirectOutput(new File("./update.log"));
+                        processBuilder.redirectError(new File("./update.log"));
+                        processBuilder.start();
 
                         break;
                     }
