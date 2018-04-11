@@ -42,8 +42,10 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
     public Swagger_Short_Reference grid_program() {
         try {
             return new Swagger_Short_Reference(grid_program_version.get_grid_program().id, grid_program_version.get_grid_program().name, grid_program_version.get_grid_program().description);
+        } catch (_Base_Result_Exception e) {
+            // nothing
+            return null;
         } catch (Exception e) {
-
             logger.internalServerError(e);
             return null;
         }
@@ -53,6 +55,10 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
     public Swagger_Short_Reference grid_program_version() {
         try {
             return new Swagger_Short_Reference(grid_program_version.id, grid_program_version.name, grid_program_version.description);
+
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
 
             logger.internalServerError(e);

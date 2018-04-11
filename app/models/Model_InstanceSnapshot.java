@@ -69,7 +69,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Instance instance;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BProgramVersion b_program_version;
-    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)  public Model_Blob program;
+    @JsonIgnore @OneToOne(fetch  = FetchType.LAZY) public Model_Blob program;
     @JsonIgnore @OneToMany(fetch = FetchType.LAZY) public List<Model_UpdateProcedure> procedures = new ArrayList<>(); // Reálně zde je uložena jen jedna, pokud byla instance nasazena víckrát, vždy se tvoří nový aktualizační plán! Pak jich tu je víc než jedna
 
     /**
@@ -92,6 +92,9 @@ public class Model_InstanceSnapshot extends TaggedModel {
             Model_BProgramVersion b_program_version = get_b_program_version();
             return new Swagger_Short_Reference(b_program_version.id, b_program_version.name, b_program_version.description);
 
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -105,6 +108,9 @@ public class Model_InstanceSnapshot extends TaggedModel {
             Model_BProgramVersion b_program_version = get_b_program_version();
             return new Swagger_Short_Reference(b_program_version.get_b_program().id, b_program_version.get_b_program().name, b_program_version.get_b_program().description);
 
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -118,6 +124,9 @@ public class Model_InstanceSnapshot extends TaggedModel {
             Model_BProgramVersion b_program_version = get_b_program_version();
             return b_program_version.grid_project_snapshots;
 
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -142,7 +151,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                             program_config.grid_program_id = program.grid_program().id;
                             program_config.grid_program_version_id = program.grid_program_version.id;
                             program_config.snapshot_settings = GridAccess.PROJECT;
-                            program_config.connection_token = program.id;
+                            program_config.connection_token = instance.id.toString() + "/" + program.grid_program_version.id.toString();
 
                             project_config.grid_programs.add(program_config);
                         }
@@ -169,11 +178,13 @@ public class Model_InstanceSnapshot extends TaggedModel {
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "only if snapshot is main")
     public Swagger_InstanceSnapshot_JsonFile program(){
         try {
-
-            if (program != null) return  baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapshot_JsonFile.class, Json.parse( program.get_fileRecord_from_Azure_inString()));
-
+            if (program != null) {
+                return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapshot_JsonFile.class, Json.parse(program.get_fileRecord_from_Azure_inString()));
+            }
             return null;
-
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         }catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -183,9 +194,10 @@ public class Model_InstanceSnapshot extends TaggedModel {
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "only if snapshot is main")
     public List<Model_UpdateProcedure>  updates() throws _Base_Result_Exception {
         try {
-
             return getUpdateProcedure();
-
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -194,12 +206,12 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public Model_BProgramVersion get_b_program_version() throws _Base_Result_Exception {
         return Model_BProgramVersion.getById(get_b_program_version_id());
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public UUID get_b_program_version_id() throws _Base_Result_Exception {
 
         if (cache().gets(Model_BProgramVersion.class) == null) {
@@ -211,24 +223,22 @@ public class Model_InstanceSnapshot extends TaggedModel {
         return cache().get(Model_BProgramVersion.class);
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public Model_Instance get_instance() throws _Base_Result_Exception  {
         return Model_Instance.getById(get_instance_id());
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public UUID get_instance_id() throws _Base_Result_Exception {
 
         if (cache().gets(Model_Instance.class) == null) {
-            Model_Instance instance = Model_Instance.find.query().where().eq("snapshots.id", id).select("id").findOne();
-            if (instance == null) throw new Result_Error_NotFound(Model_Instance.class);
-            cache().add(Model_Instance.class, instance.id);
+            cache().add(Model_Instance.class, (UUID) Model_Instance.find.query().where().eq("snapshots.id", id).select("id").findSingleAttribute());
         }
 
         return cache().get(Model_Instance.class);
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public List<UUID> getHardwareIds() throws _Base_Result_Exception {
         List<UUID> list = new ArrayList<>();
 
@@ -242,7 +252,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
         return list;
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public List<UUID> getHardwareGroupseIds() throws _Base_Result_Exception {
         List<UUID> list = new ArrayList<>();
 
@@ -256,13 +266,13 @@ public class Model_InstanceSnapshot extends TaggedModel {
         return list;
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public Model_Product getProduct() throws _Base_Result_Exception {
         return this.get_instance().getProject().getProduct();
 
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public List<UUID> getUpdateProcedureIds() {
 
         if (cache().gets(Model_UpdateProcedure.class) == null) {
@@ -272,7 +282,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
         return cache().gets(Model_UpdateProcedure.class);
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public List<Model_UpdateProcedure> getUpdateProcedure() {
         try {
 
@@ -385,7 +395,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
         }).start();
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public WS_Message_Instance_set_hardware setHardware() {
         try {
 
@@ -429,7 +439,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
         }
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public WS_Message_Instance_set_terminals setTerminals() {
         try {
 
@@ -447,7 +457,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
         }
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public WS_Message_Instance_set_program setProgram() {
         try {
 
@@ -461,7 +471,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
         }
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public void override_all_actualization_hardware_request(){
         for(Model_UpdateProcedure procedure : getUpdateProcedure()) {
 
@@ -486,7 +496,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
         }
     }
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public void create_and_start_actualization_hardware_request(){
         try {
 
@@ -702,7 +712,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
 /* Helper Class --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
+    @JsonIgnore @Transient
     public Swagger_Mobile_Connection_Summary get_connection_summary(UUID grid_program_version_id,  Http.Context context) throws _Base_Result_Exception {
 
         // OBJEKT který se variabilně naplní a vrátí - ITS EMPTY!!!!
@@ -739,11 +749,14 @@ public class Model_InstanceSnapshot extends TaggedModel {
             summary.grid_app_url = "wss://";
         }
 
+        summary.grid_app_url += Model_HomerServer.getById(instance.getServer_id()).get_Grid_APP_URL() + "/";
+        summary.grid_app_url += instance.id + "/" ;
+
         switch (program.snapshot_settings) {
 
             case PUBLIC: {
 
-                summary.grid_app_url += Model_HomerServer.getById(instance.getServer_id()).get_Grid_APP_URL() + instance.id + "/" + collection.grid_project_id + "/"  + program.connection_token;
+                summary.grid_app_url += collection.grid_project_id + "/"  + program.grid_program_id + "/" + "public_key";
                 summary.grid_program = Model_GridProgramVersion.getById(program.grid_program_version_id).file.get_fileRecord_from_Azure_inString();
                 summary.grid_project_id = collection.grid_project_id;
                 summary.grid_program_id = program.grid_program_id;
@@ -776,7 +789,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 terminal.person = person;
                 terminal.save();
 
-                summary.grid_app_url += Model_HomerServer.getById(instance.getServer_id()).get_Grid_APP_URL() + instance.id + "/" + collection.grid_project_id + "/" + terminal.terminal_token;
+                summary.grid_app_url += collection.grid_project_id + "/"  + program.grid_program_id + "/" + terminal.terminal_token;
                 summary.grid_program = Model_GridProgramVersion.getById(program.grid_program_version_id).file.get_fileRecord_from_Azure_inString();
                 summary.grid_project_id = collection.grid_project_id;
                 summary.grid_program_id = program.grid_program_id;
@@ -873,10 +886,13 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
     @Override
     public void save() {
+
         super.save();
 
-        this.instance.cache().add(this.getClass(), this.id);
+        this.cache().add(Model_Instance.class, this.get_instance_id());
+        this.get_instance().cache().add(this.getClass(), this.id);
         cache.put(this.id, this);
+
     }
 
     @Override

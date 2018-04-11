@@ -63,12 +63,21 @@ public class Model_Tariff extends NamedModel {
 
     @JsonProperty public List<Pair> payment_methods() {
 
-        List<Pair> methods = new ArrayList<>();
+        try{
 
-        methods.add( new Pair( PaymentMethod.BANK_TRANSFER.name(), "Bank transfers") );
-        methods.add( new Pair( PaymentMethod.CREDIT_CARD.name()  , "Credit Card Payment"));
+            List<Pair> methods = new ArrayList<>();
+
+            methods.add( new Pair( PaymentMethod.BANK_TRANSFER.name(), "Bank transfers") );
+            methods.add( new Pair( PaymentMethod.CREDIT_CARD.name()  , "Credit Card Payment"));
 
         return methods;
+
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -79,6 +88,9 @@ public class Model_Tariff extends NamedModel {
             return credit_for_beginning;
         } catch (_Base_Result_Exception e){
             return null;
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
         }
     }
 
@@ -86,6 +98,9 @@ public class Model_Tariff extends NamedModel {
     @JsonProperty public Double price() {
         try {
             return total_per_month();
+
+        }catch (_Base_Result_Exception e){
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return 0d;
@@ -95,13 +110,16 @@ public class Model_Tariff extends NamedModel {
     @JsonProperty public List<Swagger_TariffLabel> labels() {
         try {
 
-            if (labels_json== null || labels_json.length() < 4) return new ArrayList<>();
+            if (labels_json == null || labels_json.length() < 4) return new ArrayList<>();
 
             ObjectNode request_list = Json.newObject();
             request_list.set("labels", Json.parse(labels_json));
 
             return baseFormFactory.formFromJsonWithValidation(Swagger_TariffLabelList.class, request_list).labels;
 
+        } catch (_Base_Result_Exception e) {
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();

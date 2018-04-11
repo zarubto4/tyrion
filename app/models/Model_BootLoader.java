@@ -53,13 +53,23 @@ public class /**/Model_BootLoader extends NamedModel {
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty public boolean main_bootloader() {
-         return getMainHardwareType() != null;
+        try {
+
+            return getMainHardwareType() != null;
+
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return false;
+        }catch(Exception e){
+            logger.internalServerError(e);
+            return false;
+        }
     }
 
     @JsonProperty public String  file_path() {
         try {
 
-            if (cache().get(Model_Blob.class) != null ) {
+            if (cache().get(Model_Blob.class) != null) {
                 String link = Model_Blob.cache_public_link.get(cache().get(Model_Blob.class));
                 if (link != null) {
                     return link;
@@ -81,6 +91,9 @@ public class /**/Model_BootLoader extends NamedModel {
             // Přesměruji na link
             return total_link;
 
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;

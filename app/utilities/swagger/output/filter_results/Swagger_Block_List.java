@@ -4,6 +4,7 @@ import io.ebean.Query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.Model_Block;
+import utilities.swagger.input._Swagger_filter_parameter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,10 +21,10 @@ public class Swagger_Block_List extends _Swagger_Filter_Common {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
-    public Swagger_Block_List(Query<Model_Block> query, int page_number) {
+    public Swagger_Block_List(Query<Model_Block> query, int page_number, _Swagger_filter_parameter filter) {
 
         if (page_number < 1) page_number = 1;
-        List<Model_Block> uuids_o =  query.setFirstRow((page_number - 1) * 25).setMaxRows(25).select("id").findList();
+        List<Model_Block> uuids_o =  query.setFirstRow((page_number - 1) * filter.count_on_page).setMaxRows(filter.count_on_page).select("id").findList();
 
         List<UUID> uuids = new ArrayList<>();
         for(Model_Block l : uuids_o) {
@@ -36,8 +37,8 @@ public class Swagger_Block_List extends _Swagger_Filter_Common {
         }
 
         this.total = query.findCount();
-        this.from   = (page_number - 1) * 25;
-        this.to     = (page_number - 1) * 25 + content.size();
-        this.pages = (total / 25);
+        this.from   = (page_number - 1) * filter.count_on_page;
+        this.to     = (page_number - 1) * filter.count_on_page + content.size();
+        this.pages = (total / filter.count_on_page);
     }
 }

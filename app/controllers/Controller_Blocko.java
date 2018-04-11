@@ -169,7 +169,7 @@ public class Controller_Blocko extends _BaseController {
             }
 
             // Vytvoření odchozího JSON
-            Swagger_B_Program_List result = new Swagger_B_Program_List(query, page_number);
+            Swagger_B_Program_List result = new Swagger_B_Program_List(query, page_number, help);
 
             // Vrácení výsledku
             return ok(result);
@@ -865,17 +865,36 @@ public class Controller_Blocko extends _BaseController {
             Swagger_InstanceSnapshot_New help = baseFormFactory.formFromRequestWithValidation(Swagger_InstanceSnapshot_New.class);
 
             // Kontrola objektu
+            System.out.println("Kontrola ID instance_id " + instance_id);
+
             Model_Instance instance = Model_Instance.getById(instance_id);
 
+            System.out.println("Kontrola help.version_id " + help.version_id);
+
             Model_BProgramVersion version = Model_BProgramVersion.getById(help.version_id);
+
+            System.out.println("Kontrola version jsem našel " + version.id);
 
             Model_InstanceSnapshot snapshot = new Model_InstanceSnapshot();
             snapshot.name = help.name;
             snapshot.description = help.description;
             snapshot.b_program_version = version;
             snapshot.instance = instance;
+
+            System.out.println("Kontrola version zeptám se na path ");
+            System.out.println("Kontrola version: path: "+  snapshot.get_path());
+
+
             snapshot.program = Model_Blob.upload(help.json().toString(), "snapshot.json", snapshot.get_path());
+
+            System.out.println("Program Uložen");
+
             snapshot.save();
+
+            System.out.println("Snapshot Uložen");
+
+            System.out.println("Uložil jseml snapshot " + snapshot.id);
+
 
             return created(snapshot);
 
@@ -1012,11 +1031,14 @@ public class Controller_Blocko extends _BaseController {
 
                 logger.trace("instanceSnapshot_deploy:: Deploy Snapshot Immediately");
 
+                Model_Instance instance = snapshot.get_instance();
+                instance.current_snapshot_id = snapshot.id;
+                instance.update();
+
                 // Deploy immediately!
                 snapshot.deployed = new Date();
-                snapshot.get_instance().current_snapshot_id = snapshot.id;
-                snapshot.get_instance().update();
                 snapshot.update();
+
                 snapshot.deploy();
             }
 
@@ -1026,6 +1048,7 @@ public class Controller_Blocko extends _BaseController {
             return ok();
 
         } catch (Exception e) {
+            e.printStackTrace();
             return controllerServerError(e);
         }
     }
@@ -1109,7 +1132,7 @@ public class Controller_Blocko extends _BaseController {
             }
 
             // Vytvářím seznam podle stránky
-            Swagger_Instance_List result = new Swagger_Instance_List(query, page_number);
+            Swagger_Instance_List result = new Swagger_Instance_List(query, page_number, help);
 
             // Vracím seznam
             return ok(result);
@@ -1543,7 +1566,7 @@ public class Controller_Blocko extends _BaseController {
             }
 
             // Vytvoření odchozího JSON
-            Swagger_Block_List result = new Swagger_Block_List(query, page_number);
+            Swagger_Block_List result = new Swagger_Block_List(query, page_number,help);
 
             // Vrácení výsledku
             return ok(result);

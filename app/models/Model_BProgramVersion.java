@@ -48,9 +48,19 @@ public class Model_BProgramVersion extends VersionModel {
     public String program() {
         // TODO Hodně náročné na stahování do Cahce - Nejlépe takový objekt na linky, že sám sebe zahodí po vypršení platnosti
         // Myslím, že jsem ho někde programoval!
-        Model_Blob blob = Model_Blob.find.query().where().eq("b_program_version.id", id).eq("name", "blocko.json").findOne();
-        if (blob != null) return blob.get_fileRecord_from_Azure_inString();
-        return null;
+        try {
+
+            Model_Blob blob = Model_Blob.find.query().where().eq("b_program_version.id", id).eq("name", "blocko.json").findOne();
+            if (blob != null) return blob.get_fileRecord_from_Azure_inString();
+            return null;
+
+        } catch (_Base_Result_Exception e) {
+            // nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
@@ -117,8 +127,7 @@ public class Model_BProgramVersion extends VersionModel {
 
         logger.debug("delete::Delete object Id: {}",  this.id);
 
-        this.deleted = true;
-        super.update();
+        super.delete();
 
         // Remove from Cache
         try {
@@ -169,20 +178,20 @@ public class Model_BProgramVersion extends VersionModel {
 
     public static Model_BProgramVersion getById(UUID id) throws _Base_Result_Exception {
 
-        Model_BProgramVersion grid_widget_version = cache.get(id);
+        Model_BProgramVersion b_program_version = cache.get(id);
 
-        if (grid_widget_version == null) {
+        if (b_program_version == null) {
 
-            grid_widget_version = Model_BProgramVersion.find.byId(id);
-            if (grid_widget_version == null) throw new Result_Error_NotFound(Model_BProgramVersion.class);
+            b_program_version = Model_BProgramVersion.find.byId(id);
+            if (b_program_version == null) throw new Result_Error_NotFound(Model_BProgramVersion.class);
 
-            cache.put(id, grid_widget_version);
+            cache.put(id, b_program_version);
         }
         // Check Permission
-        if(grid_widget_version.its_person_operation()) {
-            grid_widget_version.check_read_permission();
+        if(b_program_version.its_person_operation()) {
+            b_program_version.check_read_permission();
         }
-        return grid_widget_version;
+        return b_program_version;
     }
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/

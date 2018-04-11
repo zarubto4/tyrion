@@ -176,7 +176,7 @@ public class Controller_Grid extends _BaseController {
 
 
 
-            Swagger_GridProjectList result = new Swagger_GridProjectList(query, page_number);
+            Swagger_GridProjectList result = new Swagger_GridProjectList(query, page_number, help);
 
             return ok(result);
 
@@ -829,16 +829,12 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 477, message = "External Server is offline", response = Result_ServerOffline.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result gridProgram_getByQRToken(String qr_token) {
+    public Result gridProgram_getByQRToken(UUID instance_id, UUID grid_program_id) { // ins = instance_id && prg = program_version_id
         try {
 
 
-            logger.debug("get_M_Program_byQR_Token_forMobile: Connection token: " + qr_token);
-            logger.debug("get_M_Program_byQR_Token_forMobile: Instance ID:: " + qr_token.substring(0 , 24));
-            logger.debug("get_M_Program_byQR_Token_forMobile: Grid Program ID:: " + qr_token.substring(25 , 44));
-
-            UUID instance_id = UUID.fromString(qr_token.substring(0 , 24));
-            UUID grid_program_id = UUID.fromString(qr_token.substring(24 , 44));
+            System.out.println("get_grid_byQR_Token_forMobile: Instance ID::  {}" + instance_id);
+            System.out.println("get_grid_byQR_Token_forMobile: Grid Program ID:: {}" + grid_program_id);
 
             Model_Instance instance = Model_Instance.getById(instance_id);
 
@@ -846,8 +842,10 @@ public class Controller_Grid extends _BaseController {
                 return badRequest("Instance not running");
             }
 
-            Swagger_Mobile_Connection_Summary result = instance.current_snapshot().get_connection_summary(grid_program_id,ctx());
+            Swagger_Mobile_Connection_Summary result = instance.current_snapshot().get_connection_summary(grid_program_id , ctx());
 
+            System.out.println("Co Vracím?? \n");
+            System.out.println(Json.toJson(result));
             return ok(result);
 
         } catch (Exception e) {
@@ -1133,7 +1131,7 @@ public class Controller_Grid extends _BaseController {
             }
 
             // Vytvoření odchozího JSON
-            Swagger_GridWidget_List result = new Swagger_GridWidget_List(query, page_number);
+            Swagger_GridWidget_List result = new Swagger_GridWidget_List(query, page_number, help);
 
             // Vrácení výsledku
             return ok(result);

@@ -68,53 +68,121 @@ public class Model_Invoice extends BaseModel {
 /* JSON PROPERTY VALUES -----------------------------------------------------------------------------------------------*/
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Visible only when the invoice is available")
-    public String invoice_pdf_link()  { return fakturoid_pdf_url != null ?  Server.httpAddress + "/invoice/pdf/invoice/" + id : null; }
+    public String invoice_pdf_link()  {
+        try{
+            return fakturoid_pdf_url != null ?  Server.httpAddress + "/invoice/pdf/invoice/" + id : null;
+            } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Visible only when the invoice is available")
-    public String proforma_pdf_link() { return proforma_pdf_url != null ?  Server.httpAddress + "/invoice/pdf/proforma/" + id : null; }
+    public String proforma_pdf_link() {
+        try {
+            return proforma_pdf_url != null ?  Server.httpAddress + "/invoice/pdf/proforma/" + id : null;
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Visible only when the invoice is not paid")
-    public boolean require_payment()  { return status == PaymentStatus.PENDING || status == PaymentStatus.OVERDUE; }
+    public boolean require_payment()  {
+        try{
+            return status == PaymentStatus.PENDING || status == PaymentStatus.OVERDUE;
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return false;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return false;
+        }
+    }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Visible only when the invoice is not paid")
     public String gw_url()  {
+       try{
         if (status == PaymentStatus.PENDING || status == PaymentStatus.OVERDUE) return this.gw_url;
 
         return null;
+       } catch (_Base_Result_Exception e){
+           //nothing
+           return null;
+       } catch (Exception e) {
+           logger.internalServerError(e);
+           return null;
+       }
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public String payment_status() {
+        try {
+            switch (status) {
+                case PAID: return  "Invoice is paid.";
+                case PENDING: return  "Invoice needs to be paid.";
+                case OVERDUE: return  "Invoice is overdue.";
+                case CANCELED: return  "Invoice is canceled.";
+                default             : return  "Undefined state";
+            }
 
-        switch (status) {
-            case PAID: return  "Invoice is paid.";
-            case PENDING: return  "Invoice needs to be paid.";
-            case OVERDUE: return  "Invoice is overdue.";
-            case CANCELED: return  "Invoice is canceled.";
-            default             : return  "Undefined state";
+        }catch (_Base_Result_Exception e){
+            logger.internalServerError(e);
+            return null;
+
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
         }
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public String payment_method() {
-        switch (method) {
-            case BANK_TRANSFER: return  "Bank transfer.";
-            case CREDIT_CARD: return  "Credit Card Payment.";
-            default            : return  "Undefined state";
+        try {
+            switch (method) {
+                case BANK_TRANSFER:
+                    return "Bank transfer.";
+                case CREDIT_CARD:
+                    return "Credit Card Payment.";
+                default:
+                    return "Undefined state";
+            }
+        }catch (_Base_Result_Exception e){
+            logger.internalServerError(e);
+            return null;
+
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
         }
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public List<Model_InvoiceItem> invoice_items() {
+        try {
+            if (invoice_items != null) return invoice_items;
 
-        if (invoice_items != null) return invoice_items;
+            return Model_InvoiceItem.find.query().where().eq("invoice.id", this.id).findList();
 
-        return Model_InvoiceItem.find.query().where().eq("invoice.id", this.id).findList();
+         }catch (_Base_Result_Exception e){
+            logger.internalServerError(e);
+            return null;
+
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public double price() {
-        return ((double)this.total_price());
+            return ((double) this.total_price());
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

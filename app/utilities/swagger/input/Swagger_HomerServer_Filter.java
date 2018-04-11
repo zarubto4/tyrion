@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @ApiModel(description = "Json Model for Filtering Homer Servers",
           value = "HomerServer_Filter")
-public class Swagger_HomerServer_Filter {
+public class Swagger_HomerServer_Filter extends _Swagger_filter_parameter{
 
     @ApiModelProperty(required = false, value = "Default if empty is public")
     public List<HomerType> server_types = new ArrayList<>();

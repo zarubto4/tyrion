@@ -124,7 +124,7 @@ public class Controller_Update extends _BaseController {
             }
 
             // Vyvoření odchozího JSON
-            Swagger_ActualizationProcedure_List result = new Swagger_ActualizationProcedure_List(query,page_number);
+            Swagger_ActualizationProcedure_List result = new Swagger_ActualizationProcedure_List(query,page_number, help);
 
             // Vrácení objektu
             return ok(result);
@@ -398,7 +398,7 @@ public class Controller_Update extends _BaseController {
             }
 
             // Vyvoření odchozího JSON
-            Swagger_ActualizationProcedureTask_List result = new Swagger_ActualizationProcedureTask_List(query, page_number);
+            Swagger_ActualizationProcedureTask_List result = new Swagger_ActualizationProcedureTask_List(query, page_number,help);
 
             // Vrácení objektu
             return ok(result);

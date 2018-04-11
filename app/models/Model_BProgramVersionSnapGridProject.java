@@ -41,8 +41,10 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
     public Swagger_Short_Reference grid_project() {
         try {
             return new Swagger_Short_Reference(grid_project.id, grid_project.name, grid_project.description);
+        } catch (_Base_Result_Exception e) {
+            // nothing
+            return null;
         } catch (Exception e) {
-
             logger.internalServerError(e);
             return null;
         }

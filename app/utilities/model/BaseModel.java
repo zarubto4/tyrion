@@ -27,6 +27,7 @@ import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
 import javax.transaction.NotSupportedException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -65,7 +66,7 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
     /**
      *
      */
-
+   @JsonIgnore @Transient
     public IDCache cache(){
 
         if(idCache == null) {
@@ -260,9 +261,12 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
             super.update();
             this.cacheCleaner();
 
+        } catch (Result_Error_PermissionDenied e) {
+            logger.warn("update::Unauthorized UPDATE operation, its required remove everything from Cache");
+            throw new Result_Error_PermissionDenied();
         } catch (Exception e){
-            logger.warn("Unauthorized UPDATE operation, its required remove everything from Cache");
-            this.evict();
+            logger.error("update::Something is wrong!");
+            logger.internalServerError(e);
             throw new Result_Error_PermissionDenied();
         }
     }
@@ -279,9 +283,7 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
             check_delete_permission();
         }
 
-        this.deleted = true;
-        this.removed = new Date();
-        super.update();
+        super.delete();
 
         new Thread(this::evict).start(); // Evict the object from cache
         this.echoParent(); // Send echo update of parent object

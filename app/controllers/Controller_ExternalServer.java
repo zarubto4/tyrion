@@ -391,7 +391,7 @@ public class Controller_ExternalServer extends _BaseController {
             // Junction!!! END ------------------------------------------------------------------------------------------
 
             // Vyvoření odchozího JSON
-            Swagger_HomerServer_List result = new Swagger_HomerServer_List(query, page_number);
+            Swagger_HomerServer_List result = new Swagger_HomerServer_List(query, page_number, help);
 
             // Vrácení seznamu
             return ok(result);

@@ -269,7 +269,7 @@ public class Controller_Library extends _BaseController {
             }
 
             // Vyvoření odchozího JSON
-            Swagger_Library_List result = new Swagger_Library_List(query,page_number);
+            Swagger_Library_List result = new Swagger_Library_List(query,page_number, help);
 
             // Vrácneí objektu
             return ok(result);

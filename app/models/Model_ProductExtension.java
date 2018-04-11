@@ -56,6 +56,9 @@ public class Model_ProductExtension extends NamedModel {
     public Double price() {
         try {
             return getDoubleDailyPrice();
+
+        }catch (_Base_Result_Exception e){
+            return null;
         } catch (Exception e) {
             return null;
         }
@@ -66,7 +69,10 @@ public class Model_ProductExtension extends NamedModel {
     public Boolean include() {
         try {
             check_update_permission();
-            return tariff_included!= null;
+            return tariff_included != null;
+        } catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             return null;
         }

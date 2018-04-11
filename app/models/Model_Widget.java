@@ -52,11 +52,13 @@ public class Model_Widget extends TaggedModel {
     @JsonProperty @ApiModelProperty(value = "Visible only if user has permission to know it", required = false)
     public Model_Person author() throws _Base_Result_Exception {
         try {
-
             if (author_id != null) {
                 return Model_Person.getById(author_id);
             }
 
+            return null;
+        }catch (_Base_Result_Exception e){
+            //nothing
             return null;
         }catch (Exception e){
             logger.internalServerError(e);
@@ -64,11 +66,20 @@ public class Model_Widget extends TaggedModel {
         }
     }
 
-    @JsonProperty  @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company", required = false)
+    @JsonProperty
+    @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company", required = false)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_Short_Reference producer(){
         try {
             Model_Producer product = get_producer();
-            return new Swagger_Short_Reference(product.id, product.name, product.description);
+            if(product != null) {
+                return new Swagger_Short_Reference(product.id, product.name, product.description);
+            } else {
+                return null;
+            }
+        }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -78,13 +89,29 @@ public class Model_Widget extends TaggedModel {
 
     @JsonProperty @ApiModelProperty(required = true)
     public  List<Model_WidgetVersion> versions() {
+        try{
         return get_versions();
+    }catch (_Base_Result_Exception e){
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
 
     @JsonProperty @ApiModelProperty(required = false, value = "Only for Community Administrator") @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean active() {
+        try{
         return publish_type == ProgramType.PUBLIC ? true : null;
+    }catch (_Base_Result_Exception e){
+            //nothing
+            return false;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return false;
+        }
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/

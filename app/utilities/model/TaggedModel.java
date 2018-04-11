@@ -36,7 +36,7 @@ public abstract class TaggedModel extends NamedModel {
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
 
-    @JsonProperty
+    @JsonProperty @Transient
     public List<String > tags() {
         try {
 

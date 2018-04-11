@@ -234,7 +234,7 @@ PUT       /instance/filter/:page_number                                 controll
 PUT       /instance/grid_app/:snapshot_id                               controllers.Controller_Blocko.instance_change_settings_grid_App(snapshot_id: java.util.UUID)
 
 #InstanceSnapshot
-POST      /instance/snapshot/:instance_id                                controllers.Controller_Blocko.instanceSnapshot_create(instance_id: java.util.UUID)
+POST      /instance/snapshot/:instance_id                               controllers.Controller_Blocko.instanceSnapshot_create(instance_id: java.util.UUID)
 GET       /instance/snapshot/get/:snapshot_id                           controllers.Controller_Blocko.instanceSnapshot_get(snapshot_id: java.util.UUID)
 PUT       /instance/snapshot/update/:snapshot_id                        controllers.Controller_Blocko.instanceSnapshot_udpate(snapshot_id: java.util.UUID)
 PUT       /instance/snapshot/deploy                                     controllers.Controller_Blocko.instanceSnapshot_deploy()
@@ -458,7 +458,7 @@ PUT       /grid_program/tags/remove                                     controll
 DELETE    /grid_program/:grid_program_id                                controllers.Controller_Grid.gridProgram_delete(grid_program_id: java.util.UUID)
 
 # Terminals Aps
-GET       /grid_program/app/token/*qr_token                             controllers.Controller_Grid.gridProgram_getByQRToken(qr_token)
+GET       /grid_program/app/token/:instance_id/:program_version_id      controllers.Controller_Grid.gridProgram_getByQRToken(instance_id: java.util.UUID, program_version_id: java.util.UUID)
 
 PUT       /websocket/terminal/identificator                             controllers.Controller_Grid.get_identificator()
 PUT       /websocket/terminal/identificator/:terminal_id                controllers.Controller_Grid.check_identifiactor(terminal_id: java.util.UUID)
