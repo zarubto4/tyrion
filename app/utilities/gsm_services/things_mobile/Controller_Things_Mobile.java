@@ -17,10 +17,7 @@ import utilities.logger.Logger;
 import websocket.messages.homer_with_tyrion.configuration.WS_Message_Homer_Get_homer_server_configuration;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
@@ -49,11 +46,11 @@ public class Controller_Things_Mobile {
 
         public KeyStore(String key, String values[]){
             this.key = key;
-            this.values = values;
+            this.values.addAll(Arrays.asList(values));
         }
 
         public String key;
-        public String values[];
+        public List<String> values = new ArrayList<>();
     }
 /* Object API  ---------------------------------------------------------------------------------------------------------*/
 
@@ -101,7 +98,7 @@ public class Controller_Things_Mobile {
                 System.out.println("response: sim_status no filter: " + response.toString());
 
                 // Tady překonverutji JsonNode na třídu
-                // Appendable - je nějaká fake třída co jsem první vymyslel - tady vy měli bt reálné !!
+                // Appendable - je nějaká fake bullshit třída co jsem první vymyslel - tady by měla bt reálné kterou teprve vytoříš !!
 
                 // Pak tuhle podmínku smaž a oprav co je pod ní.
                if(4> 3) return;
@@ -157,13 +154,13 @@ public class Controller_Things_Mobile {
                 add(api_key);
             }});
 
-/*
+
             if(optional_keys.length > 0) {
                 for(KeyStore store : optional_keys) {
                     map.put(store.key, store.values);
                 }
             }
-*/
+
 
             logger.error("Things_Mobile:: GET: URL: " + thingsmobile_url + url);
             CompletionStage<WSResponse> responsePromise = Server.injector.getInstance(WSClient.class).url(thingsmobile_url + url)
