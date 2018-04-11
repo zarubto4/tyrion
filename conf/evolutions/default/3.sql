@@ -2,13 +2,13 @@
 # --- !Ups
 
 alter table cprogram
-  ADD COLUMN IF NOT EXISTS original_id uuid;
+  add column original_id uuid;
 
 alter table widget
-  ADD COLUMN IF NOT EXISTS original_id uuid;
+  add column original_id uuid;
 
 alter table block
-  ADD COLUMN IF NOT EXISTS original_id uuid;
+  add column original_id uuid;
 
 # --- !Downs
 
