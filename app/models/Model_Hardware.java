@@ -943,7 +943,7 @@ public class Model_Hardware extends TaggedModel {
 
                     case WS_Message_Hardware_uuid_converter.message_type: {
 
-                        Model_Hardware.convert_hardware_full_id_to_uuid(homer, baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_uuid_converter.class, json));
+                        Model_Hardware.convert_hardware_full_id_uuid(homer, baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_uuid_converter.class, json));
                         return;
                     }
 
@@ -1199,20 +1199,42 @@ public class Model_Hardware extends TaggedModel {
     }
 
     @JsonIgnore
-    public static void convert_hardware_full_id_to_uuid(WS_Homer homer, WS_Message_Hardware_uuid_converter request) {
+    public static void convert_hardware_full_id_uuid(WS_Homer homer, WS_Message_Hardware_uuid_converter request) {
         try {
 
             logger.debug("convert_hardware_full_id_to_uuid:: Incomimng Request for Transformation:: ", Json.toJson(request));
-            Model_Hardware board = Model_Hardware.getByFullId(request.full_id);
 
-            if(board == null){
-                logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found!");
-                homer.send(request.get_result_error());
+            // Přejlad na UUID
+            if(request.full_id != null) {
+                Model_Hardware board = Model_Hardware.getByFullId(request.full_id);
+
+                if (board == null) {
+                    logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found!");
+                    homer.send(request.get_result_error());
+                    return;
+                }
+
+                logger.debug("convert_hardware_full_id_to_uuid:: Device found - Return Success");
+                homer.send(request.get_result(board.id, board.full_id));
                 return;
             }
 
-            logger.debug("convert_hardware_full_id_to_uuid:: Device found - Return Success");
-            homer.send(request.get_result(board.id));
+            // Přejlad na FULL_ID
+            if(request.uuid != null) {
+                Model_Hardware board = Model_Hardware.getById(request.uuid);
+
+                if (board == null) {
+                    logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found!");
+                    homer.send(request.get_result_error());
+                    return;
+                }
+
+                logger.debug("convert_hardware_full_id_to_uuid:: Device found - Return Success");
+                homer.send(request.get_result(board.id, board.full_id));
+                return;
+            }
+
+            logger.error("convert_hardware_full_id_to_uuid: Incoming message not contain full_id or uuid!!!!");
 
         }catch (Exception e){
             logger.internalServerError(e);

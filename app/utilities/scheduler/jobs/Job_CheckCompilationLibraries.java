@@ -38,8 +38,8 @@ import java.util.regex.Pattern;
 @Scheduled("30 0/1 * * * ?")
 public class Job_CheckCompilationLibraries implements Job {
 
-    @Inject
-    public static _BaseFormFactory baseFormFactory;
+    @Inject public static _BaseFormFactory baseFormFactory;
+    @Inject public static Config configuration; // Its Required to set this in Server.class Component
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -137,6 +137,13 @@ public class Job_CheckCompilationLibraries implements Job {
                             if (library.tag_name.equals(release.tag_name)) {
                                 continue synchro_libraries;
                             }
+                        }
+
+                        List<String> obsolete_versions = configuration.getStringList("compilation_settings.obsolete_lib_version");
+
+                        if(obsolete_versions.contains(release.tag_name)) {
+                            logger.debug("check_version_thread: Tag version  {} is mark as obsolete", release.tag_name);
+                            continue synchro_libraries;
                         }
 
 

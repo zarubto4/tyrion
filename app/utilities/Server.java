@@ -458,6 +458,7 @@ public class Server {
      */
     private static void setConfigurationInjectorForNonStaticClass() {
         DigitalOceanTyrionService.configuration = configuration;
+        Job_CheckCompilationLibraries.configuration = configuration;
 
     }
 

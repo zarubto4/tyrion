@@ -18,11 +18,12 @@ public class WS_Message_Hardware_uuid_converter extends WS_AbstractMessage {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Constraints.Required public String full_id;
+    public String full_id;
+    public UUID uuid;
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
-    public ObjectNode get_result(UUID uuid) {
+    public ObjectNode get_result(UUID uuid, String full_id) {
 
         ObjectNode result = Json.newObject();
         result.put("message_type", message_type);
