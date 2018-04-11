@@ -1,14 +1,18 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import play.libs.Json;
 import utilities.enums.ExtensionType;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.financial.extensions.configurations.Configuration;
+import utilities.financial.extensions.extensions.Extension;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 
@@ -45,8 +49,51 @@ public class Model_TariffExtension extends NamedModel {
 
     /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
+    @JsonProperty @ApiModelProperty(required = true) @Transient
+    public Double price() {
+        try {
+            return getDoubleDailyPrice();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @JsonProperty  @ApiModelProperty(required = false, value = "Visible only for Administrator with Special Permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String config() {
+        try {
+
+            check_update_permission();
+            if (configuration == null) {
+                throw new NullPointerException();
+            }
+            return Json.toJson(Configuration.getConfiguration(type, configuration)).toString();
+
+        } catch (NullPointerException e) {
+            return "{\"error\":\"configuration is not set yet\"}";
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return "{\"error\":\"config file error, or required permission\"}";
+        }
+    }
 
     /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+        /**
+         * Method serves for information purposes only.
+         * Returned value is shown to users, because real price is Double USD * 1000.
+         * @return Real price in Double.
+         */
+        @JsonIgnore
+        public Double getDoubleDailyPrice() {
+            try {
+                Long price = Extension.getDailyPrice(type, configuration);
+                return (double) price;
+
+            } catch (Exception e) {
+                logger.internalServerError(e);
+                return 0d;
+            }
+        }
 
     /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
