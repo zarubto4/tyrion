@@ -255,7 +255,7 @@ public class Controller_Finance_Tariff extends _BaseController {
 
     @ApiOperation(value = "order Tariff Up",
             tags = {"Admin-Tariff"},
-            notes = "activate Tariff",
+            notes = "",
             produces = "application/json",
             protocols = "https"
     )
@@ -283,7 +283,7 @@ public class Controller_Finance_Tariff extends _BaseController {
 
     @ApiOperation(value = "order Tariff Down",
             tags = {"Admin-Tariff"},
-            notes = "activate Tariff",
+            notes = "",
             produces = "application/json",
             protocols = "https"
     )
@@ -311,7 +311,7 @@ public class Controller_Finance_Tariff extends _BaseController {
 
     @ApiOperation(value = "delete Tariff",
             tags = {"Admin-Tariff"},
-            notes = "activate Tariff",
+            notes = "",
             produces = "application/json",
             protocols = "https"
     )
@@ -339,7 +339,7 @@ public class Controller_Finance_Tariff extends _BaseController {
 
     @ApiOperation(value = "get Tariff",
             tags = {"Admin-Tariff"},
-            notes = "activate Tariff",
+            notes = "",
             produces = "application/json",
             protocols = "https"
     )
@@ -364,7 +364,7 @@ public class Controller_Finance_Tariff extends _BaseController {
 
     @ApiOperation(value = "add Tariff Extension included",
             tags = {"Admin-Tariff"},
-            notes = "activate Tariff",
+            notes = "",
             produces = "application/json",
             protocols = "https"
     )
@@ -408,9 +408,9 @@ public class Controller_Finance_Tariff extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "add Tariff Extension included",
+    @ApiOperation(value = "add Tariff Extension recommended",
             tags = {"Admin-Tariff"},
-            notes = "activate Tariff",
+            notes = "",
             produces = "application/json",
             protocols = "https"
     )
@@ -455,9 +455,9 @@ public class Controller_Finance_Tariff extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "add Tariff Extension included",
+    @ApiOperation(value = "remove Tariff Extension",
             tags = {"Admin-Tariff"},
-            notes = "activate Tariff",
+            notes = "",
             produces = "application/json",
             protocols = "https"
     )

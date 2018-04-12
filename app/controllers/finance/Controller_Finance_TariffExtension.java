@@ -244,8 +244,13 @@ public class Controller_Finance_TariffExtension extends _BaseController {
 
             // Kontrola objektu
             Model_TariffExtension extension = Model_TariffExtension.getById(extension_id);
+            if(extension == null) {
+                return notFound("Invalid extension id.");
+            }
 
-            if (!extension.active) return badRequest("Tariff extension is already deactivated");
+            if (!extension.active) {
+                return badRequest("Tariff extension is already deactivated");
+            }
             extension.active = false;
 
             extension.update();
@@ -257,9 +262,9 @@ public class Controller_Finance_TariffExtension extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "active Tariff_Extension",
+    @ApiOperation(value = "activate Tariff_Extension",
             tags = {"Admin-Extension"},
-            notes = "order Tariff_Extension Down",
+            notes = "",
             produces = "application/json",
             protocols = "https"
 
@@ -278,10 +283,15 @@ public class Controller_Finance_TariffExtension extends _BaseController {
 
             // Kontrola objektu
             Model_TariffExtension extension = Model_TariffExtension.getById(extension_id);
+            if(extension == null) {
+                return notFound("Invalid extension id.");
+            }
 
-            if (extension.active) return badRequest("Tariff Extension is already activated");
+            if (extension.active) {
+                return badRequest("Tariff Extension is already activated");
+            }
+
             extension.active = true;
-
             extension.update();
 
             return ok();
@@ -293,7 +303,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
 
     @ApiOperation(value = "delete Tariff_Extension",
             tags = {"Admin-Extension"},
-            notes = "order Tariff_Extension Down",
+            notes = "",
             produces = "application/json",
             protocols = "https"
 
@@ -312,6 +322,10 @@ public class Controller_Finance_TariffExtension extends _BaseController {
 
             // Kontrola objektu
             Model_TariffExtension extension = Model_TariffExtension.getById(extension_id);
+            if(extension == null) {
+                return notFound("Invalid extension id.");
+            }
+
             extension.delete();
 
             return ok();
