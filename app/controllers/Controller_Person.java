@@ -799,7 +799,12 @@ public class Controller_Person extends _BaseController {
             // Get and Validate Object
             Swagger_Person_ChangeProperty help = baseFormFactory.formFromRequestWithValidation(Swagger_Person_ChangeProperty.class);
 
-            if (Model_ChangePropertyToken.find.query().where().eq("person.id", _BaseController.personId()).findOne() != null) return badRequest("You can request only one change at this time.");
+
+            Model_ChangePropertyToken property = Model_ChangePropertyToken.find.query().where().eq("person.id", _BaseController.personId()).findOne();
+
+            if (property != null){
+                property.delete();
+            }
 
             // Proměnné mailu
             String subject;
@@ -821,10 +826,12 @@ public class Controller_Person extends _BaseController {
 
                     // Úprava proměnných mailu
                     subject = "Password change - need authorization";
-                    text = "Password change was requested for your account. Click on the link below to authorize the change.";
-                    link = Server.httpAddress + "/person/authorize_change/" + changePropertyToken.id;
+                    text = "Password change was requested to your account. Click on the link below to authorize the change.";
+                    link = Server.httpAddress + "/person/authorize_change/" + changePropertyToken.id.toString();
 
-                    break;}
+                    break;
+
+                }
 
                 case "email":{
 
@@ -842,7 +849,8 @@ public class Controller_Person extends _BaseController {
                     text = "Email change was requested for your account. Click on the link below to authorize the change. Verification email will be sent to your new email";
                     link = Server.httpAddress + "/person/authorize_change/" + changePropertyToken.id;
 
-                    break;}
+                    break;
+                }
 
                 default: return badRequest("No such property");
             }
@@ -850,10 +858,11 @@ public class Controller_Person extends _BaseController {
             // Odeslání emailu
             try {
 
+                System.out.println("ODesílám Email!!!!! na : "+ person().email);
                 new Email()
                         .text(text)
                         .divider()
-                        .text("If you do not recognize any of this activity, we strongly recommend you to go to your account and change your password there, because it was probably stolen.")
+                        .text("If you do not recognize any of this activity, we strongly recommend you to go to your account and change your password. It's was probably stolen.")
                         .divider()
                         .link("Authorize change",link)
                         .send(person().email, subject);

@@ -166,8 +166,7 @@ public class Model_ServerError extends NamedModel {
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(person().has_permission(Permission.ServerError_update.name())) return;
-        throw new Result_Error_PermissionDenied();
+        // true
     }
 
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {

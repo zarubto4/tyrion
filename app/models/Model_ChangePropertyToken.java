@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import controllers._BaseController;
 import io.ebean.Finder;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions._Base_Result_Exception;
@@ -30,6 +31,14 @@ public class Model_ChangePropertyToken extends BaseModel {
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Override
+    public boolean delete() {
+
+        logger.debug("permanent delete :: Delete object Id: {} ", this.id);
+        return super.deletePermanent();
+
+    }
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
@@ -44,6 +53,7 @@ public class Model_ChangePropertyToken extends BaseModel {
     }
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
         logger.error("check_create_permission: Not Supported");
+        if(_BaseController.person().id.equals(person.id)) return;
         throw new Result_Error_NotSupportedException();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
@@ -52,6 +62,7 @@ public class Model_ChangePropertyToken extends BaseModel {
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
         logger.error("check_delete_permission: Not Supported");
+        if(_BaseController.person().id.equals(person.id)) return;
         throw new Result_Error_NotSupportedException();
     }
 
