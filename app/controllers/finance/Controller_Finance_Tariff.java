@@ -5,6 +5,7 @@ import controllers._BaseController;
 import controllers._BaseFormFactory;
 import io.swagger.annotations.*;
 import models.Model_Tariff;
+import models.Model_TariffExtension;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -354,8 +355,141 @@ public class Controller_Finance_Tariff extends _BaseController {
         try {
 
             Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
-
             return ok(tariff);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "add Tariff Extension included",
+            tags = {"Admin-Tariff"},
+            notes = "activate Tariff",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result tariff_add_extension_included(UUID tariff_id, UUID extension_id) {
+        try {
+            Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
+            if(tariff == null) {
+                return notFound("Invalid tariff id.");
+            }
+
+            Model_TariffExtension extension =  Model_TariffExtension.getById(extension_id);
+            if(extension == null) {
+                return notFound("Invalid extension id.");
+            }
+
+            if(tariff.extensions_included.contains(extension)) {
+                return badRequest("Tariff already contains given extension.");
+            }
+
+            if(tariff.extensions_recommended.contains(extension)) {
+                tariff.extensions_recommended.remove(extension);
+            }
+
+            if(!tariff.extensions_included.add(extension)) {
+                return badRequest("Tariff cannot be added.");
+            }
+
+            tariff.save();
+            return ok();
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "add Tariff Extension included",
+            tags = {"Admin-Tariff"},
+            notes = "activate Tariff",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result tariff_add_extension_recommended(UUID tariff_id, UUID extension_id) {
+        try {
+
+            Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
+            if(tariff == null) {
+                return notFound("Invalid tariff id.");
+            }
+
+            Model_TariffExtension extension =  Model_TariffExtension.getById(extension_id);
+            if(extension == null) {
+                return notFound("Invalid extension id.");
+            }
+
+            if(tariff.extensions_recommended.contains(extension)) {
+                return badRequest("Tariff already contains given extension.");
+            }
+
+            if(tariff.extensions_included.contains(extension)) {
+                tariff.extensions_included.remove(extension);
+            }
+
+            if(!tariff.extensions_recommended.add(extension)) {
+                return externalServerError("Tariff cannot be added.");
+            }
+
+            tariff.save();
+            return ok();
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "add Tariff Extension included",
+            tags = {"Admin-Tariff"},
+            notes = "activate Tariff",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result tariff_remove_extension(UUID tariff_id, UUID extension_id) {
+        try {
+
+            Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
+            if(tariff == null) {
+                return notFound("Invalid tariff id.");
+            }
+
+            Model_TariffExtension extension =  Model_TariffExtension.getById(extension_id);
+            if(extension == null) {
+                return notFound("Invalid extension id.");
+            }
+
+            boolean removed = tariff.extensions_included.remove(extension) || tariff.extensions_recommended.remove(extension);
+
+            if(!removed) {
+                return badRequest("Extension was not part of the tariff.");
+            }
+
+            tariff.save();
+            return ok();
 
         } catch (Exception e) {
             return controllerServerError(e);

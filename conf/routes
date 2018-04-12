@@ -179,6 +179,9 @@ PUT       /admin/tariff/down/:tariff_id                                 controll
 DELETE    /admin/tariff/:tariff_id                                      controllers.finance.Controller_Finance_Tariff.tariff_delete(tariff_id: java.util.UUID)
 GET       /admin/tariff/types                                           controllers.finance.Controller_Finance_TariffExtension.tariff_getAllTypes()
 
+PUT       /admin/tariff/extensions/included/:tariff_id/:ext_id          controllers.finance.Controller_Finance_Tariff.tariff_add_extension_included(tariff_id: java.util.UUID, ext_id: java.util.UUID)
+PUT       /admin/tariff/extensions/recommended/:tariff_id/:ext_id       controllers.finance.Controller_Finance_Tariff.tariff_add_extension_recommended(tariff_id: java.util.UUID, ext_id: java.util.UUID)
+DELETE    /admin/tariff/extensions/:tariff_id/:ext_id                   controllers.finance.Controller_Finance_Tariff.tariff_remove_extension(tariff_id: java.util.UUID, ext_id: java.util.UUID)
 
 GET       /admin/tariff_extension                                       controllers.finance.Controller_Finance_TariffExtension.tariffExtension_getAll()
 GET       /admin/tariff_extension/:extension_id                         controllers.finance.Controller_Finance_TariffExtension.tariffExtension_get(extension_id: java.util.UUID)
