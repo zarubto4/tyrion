@@ -412,6 +412,7 @@ public class Model_Hardware extends TaggedModel {
     @JsonProperty
     public Model_HomerServer server() {
         try{
+
             if (connected_server_id == null) return null; return Model_HomerServer.getById(connected_server_id);
 
         } catch (_Base_Result_Exception e){
@@ -431,10 +432,9 @@ public class Model_Hardware extends TaggedModel {
                 Swagger_Short_Reference instance = new Swagger_Short_Reference(i.id, i.name, i.description);
                 instance.online_state = i.online_state();
                 return instance;
-
+            }else {
+                return null;
             }
-
-            return null;
         } catch (_Base_Result_Exception e){
             //nothing
             return null;
@@ -448,7 +448,11 @@ public class Model_Hardware extends TaggedModel {
     public Swagger_Short_Reference actual_c_program() {
         try {
             Model_CProgram type = this.get_actual_c_program();
-            return new Swagger_Short_Reference(type.id, type.name, type.description);
+            if(type != null) {
+                return new Swagger_Short_Reference(type.id, type.name, type.description);
+            }else {
+                return null;
+            }
         } catch (_Base_Result_Exception e){
             //nothing
             return null;
@@ -462,7 +466,11 @@ public class Model_Hardware extends TaggedModel {
     public Swagger_Short_Reference actual_c_program_version() {
         try {
             Model_CProgramVersion version = this.get_actual_c_program_version();
-            return new Swagger_Short_Reference(version.id, version.name, version.description);
+            if(version != null) {
+                return new Swagger_Short_Reference(version.id, version.name, version.description);
+            } else {
+                return null;
+            }
         } catch (_Base_Result_Exception e){
             //nothing
             return null;
@@ -476,7 +484,11 @@ public class Model_Hardware extends TaggedModel {
     public Swagger_Short_Reference actual_c_program_backup() {
         try{
             Model_CProgram program = this.get_backup_c_program();
-            return new Swagger_Short_Reference(program.id, program.name, program.description);
+            if(program != null) {
+                return new Swagger_Short_Reference(program.id, program.name, program.description);
+            }else {
+                return null;
+            }
         } catch (_Base_Result_Exception e){
             //nothing
             return null;
@@ -490,7 +502,11 @@ public class Model_Hardware extends TaggedModel {
     public Swagger_Short_Reference actual_c_program_backup_version() {
         try{
             Model_CProgramVersion version = this.get_backup_c_program_version();
-            return new Swagger_Short_Reference(version.id, version.name, version.description);
+            if(version != null) {
+                return new Swagger_Short_Reference(version.id, version.name, version.description);
+            } else {
+                return null;
+            }
         } catch (_Base_Result_Exception e){
             //nothing
             return null;
