@@ -2848,7 +2848,7 @@ public class Model_Hardware extends TaggedModel {
 
     /**
      * For this case - its not delete, but unregistration from Project
-     * @throws _Base_Result_Exception
+     * @throws Error when _Base_Result_Exception
      */
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception  {
         try {
