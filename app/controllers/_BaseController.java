@@ -506,6 +506,7 @@ public abstract class _BaseController {
      * @return 500 result
      */
     public static Result internalServerError(Throwable error) {
+        error.printStackTrace();
         StackTraceElement current_stack = Thread.currentThread().getStackTrace()[2]; // Find the caller origin
         ServerLogger.error(error, current_stack.getClassName() + "::" + current_stack.getMethodName(), Controller.request());
         return Controller.internalServerError(Json.toJson(new Result_InternalServerError()));

@@ -23,6 +23,7 @@ import utilities.swagger.output.Swagger_Entity_Validation_Out;
 
 import java.time.Duration;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck") // Překrývá nezdokumentované API do jednotné serverové kategorie ve Swaggeru.
@@ -90,9 +91,9 @@ public class Controller_Person extends _BaseController {
             person.setPassword(help.password);
             person.save();
 
-            Model_Invitation invitation = Model_Invitation.find.query().where().eq("email", person.email).findOne();
+            List<Model_Invitation> invitations = Model_Invitation.find.query().where().eq("email", person.email).findList();
 
-            if (invitation == null) {
+            if (invitations.isEmpty()) {
 
                 Model_ValidationToken validationToken = Model_ValidationToken.find.query().where().eq("email",help.email).findOne();
                 if (validationToken!=null) validationToken.delete();
@@ -113,11 +114,16 @@ public class Controller_Person extends _BaseController {
                 }
 
             } else {
+
                 person.validated = true;
                 person.update();
 
                 try {
-                    NotificationActionHandler.perform(NotificationAction.ACCEPT_PROJECT_INVITATION, invitation.id.toString());
+
+                    for(Model_Invitation invitation : invitations ) {
+                        NotificationActionHandler.perform(NotificationAction.ACCEPT_PROJECT_INVITATION, invitation.id.toString());
+                    }
+
                 } catch (IllegalArgumentException e) {
                     person.notification_error(e.getMessage());
                 } catch (Exception e) {

@@ -29,7 +29,7 @@ public class RefreshTouch_echo_handler {
 
     public static List<WS_Message_RefreshTouch> update_messages = new ArrayList<>();
 
-    public static void startEchoUpdateThread() {
+    public static void startThread() {
         logger.info("startEchoUpdateThread - starting");
         if (!send_update_messages_thread.isAlive()) send_update_messages_thread.start();
     }
@@ -95,13 +95,21 @@ public class RefreshTouch_echo_handler {
 
         for (UUID person_id : message.person_ids) {
             try {
+
+                System.out.println("Kontroluji zda je uživatel přihlášen");
                 // Pokud je uživatel přihlášený pošlu notifikaci přes websocket
                 if (Controller_WebSocket.portals.containsKey(person_id)) {
+                    System.out.println("Ano  - uživatel přihlášen je ");
 
                     WS_Portal becki = Controller_WebSocket.portals.get(person_id);
+
+                    System.out.println("Našel jsem Becki Entitu ");
+
+                    System.out.println("Posílám");
                     becki.send(message.make_request());
 
                 } else {
+                    System.out.println("Ne uživatel přihlášen není");
                     Model_Project.becki_person_id_unsubscribe(person_id);
                 }
 

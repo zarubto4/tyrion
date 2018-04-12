@@ -91,7 +91,7 @@ public class Controller_Project extends _BaseController {
                 participant.state = employee.state;
 
                 participant.save();
-                participant.person.cache_project_ids.add(project.id);
+                participant.person.cache().add(Model_Project.class, project.id);
             }
 
             project.refresh();

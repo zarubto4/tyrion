@@ -83,7 +83,6 @@ public class Model_Person extends BaseModel {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public List<UUID> cache_project_ids = new ArrayList<>();
     @JsonIgnore @Transient public HashMap<String, Boolean> cache_permissions_keys = new HashMap<>(); // Záměrně Private! Tak aby se přistupovalo z jedné metody
     @JsonIgnore @Transient public String cache_picture_link;
 
@@ -114,18 +113,18 @@ public class Model_Person extends BaseModel {
     @JsonIgnore
     public List<Model_Project> get_user_access_projects() {
 
+
         // Chache Add Projects
-        if (cache_project_ids.isEmpty()) {
+        if (cache().gets(Model_Project.class) == null) {
             // Získání seznamu
-            cache_project_ids = Model_Project.find.query().where().eq("participants.person.id", id).findIds();
+            cache().add(Model_Project.class, Model_Project.find.query().where().eq("participants.person.id", id).select("id").findSingleAttributeList());
         }
 
         List<Model_Project> projects = new ArrayList<>();
 
-        for (UUID project_id : cache_project_ids) {
+        for (UUID project_id : cache().gets(Model_Project.class) ) {
             try {
                 Model_Project project = Model_Project.getById(project_id);
-                System.out.println("get_user_access_projects() GetProject:: " + project.name);
                 projects.add(project);
             }catch (_Base_Result_Exception e){
                 // Nothing

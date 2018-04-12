@@ -791,15 +791,23 @@ public class Model_Project extends TaggedModel {
 
     public static Model_Project getById(UUID id) throws _Base_Result_Exception {
 
+        Model_Project project = getByIdWithoutPermission(id);
+
+        // Check Permission
+        if(project.its_person_operation()) {
+            project.check_read_permission();
+        }
+
+        return project;
+    }
+
+    public static Model_Project getByIdWithoutPermission(UUID id) throws _Base_Result_Exception {
+
         Model_Project project = cache.get(id);
         if (project == null) {
             project = find.query().where().idEq(id).eq("deleted", false).findOne();
             if (project == null) throw new Result_Error_NotFound(Model_Project.class);
             cache.put(id, project);
-        }
-        // Check Permission
-        if(project.its_person_operation()) {
-            project.check_read_permission();
         }
 
         return project;

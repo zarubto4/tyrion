@@ -24,6 +24,7 @@ import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 import utilities.model.BaseModel;
 import utilities.models_update_echo.EchoHandler;
+import utilities.models_update_echo.RefreshTouch_echo_handler;
 import utilities.notifications.NotificationHandler;
 import utilities.scheduler.jobs.Job_CheckCompilationLibraries;
 import utilities.threads.homer_server.Synchronize_Homer_Synchronize_Settings;
@@ -156,6 +157,7 @@ public class Server {
     public static void startThreads() {
         EchoHandler.startThread();
         NotificationHandler.startThread();
+        RefreshTouch_echo_handler.startThread();
        // GoPay_PaymentCheck.startThread();
        // Fakturoid_InvoiceCheck.startThread();
     }
