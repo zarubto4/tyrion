@@ -152,6 +152,16 @@ public class Model_ServerError extends NamedModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override
+    public boolean delete() {
+
+        logger.debug("permanent delete :: Delete object Id: {} ", this.id);
+        return super.delete();
+
+    }
+
 /* PERMISSION ----------------------------------------------------------------------------------------------*/
 
 

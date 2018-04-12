@@ -300,7 +300,11 @@ public class Controller_Admin extends _BaseController {
 
             if (!errors.isEmpty()) {
                 errors.get(0).check_delete_permission();
-                Ebean.delete(errors);
+
+
+                for(Model_ServerError error : errors) {
+                    error.delete();
+                }
             }
 
             return ok();
