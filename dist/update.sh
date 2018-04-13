@@ -37,7 +37,7 @@ echo " == Starting new server =="
 if [[ -v SECURED && $SECURED == "Y" ]] ; then
     chmod +x ./start_https.sh
     ./start_https.sh
-    TESTURL="https://0.0.0.0:443"
+    TESTURL="https://$DOMAIN:443"
 else
     chmod +x ./start_http.sh
     ./start_http.sh
@@ -63,7 +63,7 @@ case $RESPONSE in
                 echo " !! Server did not start or is in fault state !!"
 
                 # If server started but is in fault state - stopping it
-                if [ $RESPONSE -eq 500 ] && [ -e ./$NEWSERVER/RUNNING_PID ] ; then
+                if [ -e ./$NEWSERVER/RUNNING_PID ] ; then
                     echo " == Killing non functioning instance with pid: $(cat ./$NEWSERVER/RUNNING_PID) =="
                     kill $(cat ./$NEWSERVER/RUNNING_PID)
                 fi
@@ -78,7 +78,7 @@ case $RESPONSE in
 
                 # Clean up non functioning server
                 echo " == Cleaning after unsuccessful update =="
-                rm -rf ./$NEWSERVER && rm -rf ./dist.zip
+                # rm -rf ./$NEWSERVER && rm -rf ./dist.zip
                 exit 1
                 ;;
 esac

@@ -187,7 +187,7 @@ echo "SECURED=\"$SECURED\"" >> /etc/environment
 
 if [ $SECURED == "Y" ]; then
 
-    DOMAIN=$(prompt "Enter the server domain name (without protocol): ")
+    DOMAIN=$(prompt_save "DOMAIN" "Enter the server domain name (without protocol): ")
     echo "CERTPATH=\"/etc/letsencrypt/live/$DOMAIN\"" >> /etc/environment
 
     CERTPASS=$(prompt_save "CERTPASS" "Enter the password for the certificate: ")
