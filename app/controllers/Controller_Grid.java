@@ -21,7 +21,6 @@ import utilities.swagger.output.Swagger_M_Project_Interface;
 import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
 import utilities.swagger.output.filter_results.Swagger_GridProjectList;
 import utilities.swagger.output.filter_results.Swagger_GridWidget_List;
-import utilities.swagger.output.filter_results.Swagger_Hardware_List;
 
 import java.util.*;
 
@@ -133,7 +132,7 @@ public class Controller_Grid extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Grid_Filter",
+                            dataType = "utilities.swagger.input.Swagger_GridProject_Filter",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -147,33 +146,29 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
+    @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
     public Result gridProject_get_filterByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n. For first call, use 1 (first page of list)", required = true)  int page_number) {
         try {
 
             // Get and Validate Object
-            Swagger_Grid_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Grid_Filter.class);
+            Swagger_GridProject_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_GridProject_Filter.class);
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_GridProject> query = Ebean.find(Model_GridProject.class);
 
             query.orderBy("UPPER(name) ASC");
             query.orderBy("project.id");
-            query.where().eq("deleted", false);
-
-            ExpressionList<Model_GridProject> list = query.where();
+            query.where().ne("deleted", true);
 
 
-            if (help.project_ids != null && !help.project_ids.isEmpty()) {
-
-                // Permissin check
-                for(UUID uuid_project: help.project_ids) {
-                    Model_Project.getById(uuid_project);
-                }
-
-                query.where().in("project.id", help.project_ids);
+            if (help.project_id != null) {
+                query.where().eq("project.id", help.project_id);
             }
 
+            if (help.project_id == null) {
+                query.where().isNull("project.id");
+            }
 
 
             Swagger_GridProjectList result = new Swagger_GridProjectList(query, page_number, help);
@@ -1124,6 +1119,10 @@ public class Controller_Grid extends _BaseController {
 
                 Model_Project project = Model_Project.getById(help.project_id);
                 query.where().eq("project.id", help.project_id);
+            }
+
+            if (help.project_id == null) {
+                query.where().isNull("project.id");
             }
 
             if (help.pending_widgets) {

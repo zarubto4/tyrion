@@ -25,15 +25,10 @@ public class Swagger_GridWidget_List extends _Swagger_Filter_Common {
     public Swagger_GridWidget_List(Query<Model_Widget> query, int page_number, _Swagger_filter_parameter filter) {
 
         if (page_number < 1) page_number = 1;
-        List<Model_Widget> uuids_o =  query.setFirstRow((page_number - 1) * filter.count_on_page).setMaxRows(filter.count_on_page).select("id").findList();
 
-        List<UUID> uuids = new ArrayList<>();
-        for(Model_Widget l : uuids_o) {
-            uuids.add(l.id);
-        }
+        List<UUID> ids = query.setFirstRow((page_number - 1) * filter.count_on_page).setMaxRows(filter.count_on_page).findIds();
 
-
-        for (UUID id : uuids) {
+        for (UUID id : ids) {
             this.content.add( Model_Widget.getById(id));
         }
 

@@ -2,6 +2,7 @@ package utilities.swagger.input;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import play.data.validation.Constraints;
 
 import java.util.UUID;
 
@@ -10,5 +11,6 @@ import java.util.UUID;
 public class Swagger_B_Program_Filter extends _Swagger_filter_parameter {
 
     @ApiModelProperty(required = false, value = "Include only if you want to get b_programs of given project")
+    @Constraints.Required
     public UUID project_id;
 }

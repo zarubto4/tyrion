@@ -15,7 +15,7 @@ import java.util.UUID;
 public class Swagger_ActualizationProcedure_Filter extends _Swagger_filter_parameter{
 
 
-    @ApiModelProperty(required = true,  readOnly = true)  @Constraints.Required public List<UUID> project_ids = new ArrayList<>();
+    @ApiModelProperty(required = true,  readOnly = true)  @Constraints.Required public UUID project_id;
 
     @ApiModelProperty(required = false, readOnly = true)  public List<Enum_Update_group_procedure_state> update_states  = new ArrayList<>();
     @ApiModelProperty(required = false, readOnly = true)  public List<UpdateType> type_of_updates  = new ArrayList<>();

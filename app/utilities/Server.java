@@ -348,27 +348,39 @@ public class Server {
      * Creates default block and widget if it does not exists.
      */
     private static void setWidgetAndBlock() {
+        try {
+            logger.warn("setWidgetAndBlock - Creating Widget and Block with " + "0000000-0000-0000-0000-000000000001");
 
-        if(new Model_Widget().check_if_exist("0000000-0000-0000-0000-000000000001")) {
-            Model_Widget gridWidget = new Model_Widget();
-            gridWidget.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
-            gridWidget.description = "Default Widget";
-            gridWidget.name = "Default Widget";
-            gridWidget.project = null;
-            gridWidget.author_id = null;
-            gridWidget.publish_type = ProgramType.DEFAULT_MAIN;
-            gridWidget.save();
-        }
+            if (Model_Widget.find.query().where().eq("id", UUID.fromString("00000000-0000-0000-0000-000000000001")).findCount() == 0) {
+                Model_Widget gridWidget = new Model_Widget();
+                gridWidget.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
+                gridWidget.description = "Default Widget";
+                gridWidget.name = "Default Widget";
+                gridWidget.project = null;
+                gridWidget.author_id = null;
+                gridWidget.publish_type = ProgramType.DEFAULT_MAIN;
+                gridWidget.save();
+            } else {
+                logger.warn("Model_Widget Model_Widget already exist");
+                System.out.println( Model_Block.getById(UUID.fromString("00000000-0000-0000-0000-000000000001")).name );
+            }
 
-        if(new Model_Widget().check_if_exist("0000000-0000-0000-0000-000000000001")) {
-            Model_Block block = new Model_Block();
-            block.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
-            block.description = "Default Block";
-            block.name = "Default Block";
-            block.author_id = null;
-            block.project = null;
-            block.publish_type = ProgramType.DEFAULT_MAIN;
-            block.save();
+            if (Model_Block.find.query().where().eq("id", UUID.fromString("00000000-0000-0000-0000-000000000001")).findCount() == 0) {
+                Model_Block block = new Model_Block();
+                block.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
+                block.description = "Default Block";
+                block.name = "Default Block";
+                block.author_id = null;
+                block.project = null;
+                block.publish_type = ProgramType.DEFAULT_MAIN;
+                block.save();
+            } else {
+                logger.warn("setWidgetAndBlock Model_Widget already exist");
+
+                System.out.println( Model_Block.getById(UUID.fromString("00000000-0000-0000-0000-000000000001")).name );
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

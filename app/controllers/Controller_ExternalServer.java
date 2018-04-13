@@ -385,6 +385,9 @@ public class Controller_ExternalServer extends _BaseController {
                 Model_Project.getById(help.project_id);
                 junction.add(Expr.eq("project.id", help.project_id));
             }
+            if (help.project_id == null) {
+                query.where().isNull("project.id");
+            }
 
             junction.endJunction();
 

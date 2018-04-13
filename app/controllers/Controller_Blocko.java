@@ -1126,6 +1126,9 @@ public class Controller_Blocko extends _BaseController {
             if (help.project_id != null ) {
                 query.where().eq("project_id", help.project_id);
             }
+            if (help.project_id == null) {
+                query.where().isNull("project.id");
+            }
 
             if (!help.server_unique_ids.isEmpty()) {
                 query.where().in("server_main.id", help.server_unique_ids);

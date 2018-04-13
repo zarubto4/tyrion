@@ -111,16 +111,14 @@ public class Controller_Update extends _BaseController {
             Query<Model_UpdateProcedure> query = Ebean.find(Model_UpdateProcedure.class);
             query.order().desc("created");
 
-            if (!help.project_ids.isEmpty()) {
+            if (help.project_id != null) {
 
-                for (UUID project_id : help.project_ids) {
-                    Model_Project.getById(project_id);
-                }
+                Model_Project.getById(help.project_id);
+                query.where().eq("project_id", help.project_id);
 
-                query.where().in("project_id", help.project_ids);
-
-            } else {
-                return notFound("Project project_id not included");
+            }
+            if (help.project_id == null) {
+                query.where().isNull("project.id");
             }
 
             // Vyvoření odchozího JSON

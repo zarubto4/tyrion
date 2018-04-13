@@ -2428,7 +2428,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardware_allDetailsForBlocko(String project_id) {
+    public Result hardware_allDetailsForBlocko(UUID project_id) {
         try {
 
             /* // TODO
@@ -2862,12 +2862,18 @@ public class Controller_Hardware extends _BaseController {
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_HardwareGroup> query = Ebean.find(Model_HardwareGroup.class);
 
+            query.where().eq("deleted", false);
+
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
 
                 Model_Project.getById(help.project_id);
-                query.where().eq("project.id", help.project_id).eq("deleted", false);
+                query.where().eq("project.id", help.project_id);
             }
+            if (help.project_id == null) {
+                query.where().isNull("project.id");
+            }
+
 
             // Vyvoření odchozího JSON
             Swagger_HardwareGroup_List result = new Swagger_HardwareGroup_List(query, page_number, help);

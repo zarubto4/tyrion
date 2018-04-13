@@ -437,7 +437,7 @@ GET       /file/cprogram_version/:version_id                            controll
 GET       /grid_project/interface/:grid_project_id                      controllers.Controller_Grid.gridProject_getInterface(grid_project_id: java.util.UUID)
 
 POST      /grid_project/:project_id                                     controllers.Controller_Grid.gridProject_create(project_id: java.util.UUID)
-GET       /grid_project/filter/:page_number                             controllers.Controller_Grid.gridProject_get_filterByFilter(page_number: Int)
+PUT       /grid_project/filter/:page_number                             controllers.Controller_Grid.gridProject_get_filterByFilter(page_number: Int)
 GET       /grid_project/:grid_project_id                                controllers.Controller_Grid.gridProject_get(grid_project_id: java.util.UUID)
 PUT       /grid_project/:grid_project_id                                controllers.Controller_Grid.gridProject_update(grid_project_id: java.util.UUID)
 PUT       /grid_project/tags/add                                        controllers.Controller_Grid.gridProject_addTags

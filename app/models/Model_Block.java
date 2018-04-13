@@ -188,7 +188,9 @@ public class Model_Block extends TaggedModel {
     @JsonIgnore @Override
     public void save() {
 
-        if(project != null) project.check_update_permission();
+        if(project != null) {
+            project.check_update_permission();
+        }
 
         super.save();
 
