@@ -18,6 +18,7 @@ import utilities.document_mongo_db.MongoDB;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
 import utilities.grid_support.utils.IP_Founder;
+import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
 import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.logger.Logger;
@@ -451,14 +452,16 @@ public class Server {
         Model_HardwareRegistrationEntity.baseFormFactory= Server.injector.getInstance(_BaseFormFactory.class);
         Model_InstanceSnapshot.baseFormFactory          = Server.injector.getInstance(_BaseFormFactory.class);
         Job_CheckCompilationLibraries.baseFormFactory   = Server.injector.getInstance(_BaseFormFactory.class);
+        Controller_Things_Mobile.baseFormFactory   = Server.injector.getInstance(_BaseFormFactory.class);
     }
+
 
     /**
      * Set configuration
      */
     private static void setConfigurationInjectorForNonStaticClass() {
         DigitalOceanTyrionService.configuration = configuration;
-
+        Controller_Things_Mobile.configuration = configuration;
     }
 
 

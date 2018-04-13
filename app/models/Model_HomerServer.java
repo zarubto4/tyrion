@@ -67,8 +67,8 @@ public class Model_HomerServer extends TaggedModel {
     @ApiModelProperty(required = true, readOnly = true) public Integer hardware_logger_port;              // HW logger
     @ApiModelProperty(required = true, readOnly = true) public Integer rest_api_port;                   // Rest APi Port
 
-    @ApiModelProperty(required = true, readOnly = true) public String server_url;  // Může být i IP adresa
-    @ApiModelProperty(required = true, readOnly = true) public String server_version;  // Může být i IP adresa
+    @ApiModelProperty(required = true, readOnly = true) public String server_url;       // Může být i IP adresa
+    @ApiModelProperty(required = true, readOnly = true) public String server_version;   // Může být i IP adresa
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Project project;
 
