@@ -14,7 +14,7 @@ import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.extensions.configurations.Configuration;
 import utilities.financial.extensions.extensions.Extension;
 import utilities.logger.Logger;
-import utilities.model.NamedModel;
+import utilities.model.OrderedNamedModel;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ import java.util.UUID;
 @Entity
 @ApiModel(value = "TariffExtension", description = "Model of TariffExtension")
 @Table(name="TariffExtension")
-public class Model_TariffExtension extends NamedModel {
+public class Model_TariffExtension extends OrderedNamedModel {
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
     private static final Logger logger = new Logger(Model_ProductExtension.class);
@@ -43,9 +43,10 @@ public class Model_TariffExtension extends NamedModel {
        @JoinTable(name = "tariff_extensions_recommended")
        @JsonIgnore @ManyToMany(mappedBy="extensions_recommended", fetch = FetchType.LAZY)  public List<Model_Tariff> tariffs_recommended = new ArrayList<>();
 
-
-    /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
+    /* CONSTUCTOR *****-----------------------------------------------------------------------------------------------------*/
+    public Model_TariffExtension() {
+        super(find);
+    }
 
     /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 

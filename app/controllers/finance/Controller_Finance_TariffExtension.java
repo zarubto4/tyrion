@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
 import io.swagger.annotations.*;
-import models.Model_Tariff;
 import models.Model_TariffExtension;
 import play.libs.Json;
 import play.mvc.BodyParser;
@@ -57,11 +56,11 @@ public class Controller_Finance_TariffExtension extends _BaseController {
             // Pokud má uživatel oprávnění vracím upravený SQL
             if (person().has_permission(Model_TariffExtension.Permission.TariffExtension_update.name())) {
 
-                return ok(Model_TariffExtension.find.query().where().order().asc("name").findList());
+                return ok(Model_TariffExtension.find.query().where().order().asc("order_position").findList());
 
             } else {
 
-                return ok(Model_TariffExtension.find.query().where().eq("active", true).order().asc("name").findList());
+                return ok(Model_TariffExtension.find.query().where().eq("active", true).order().asc("order_position").findList());
 
             }
 
@@ -226,7 +225,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
     }
 
     @ApiOperation(value = "deactivate Tariff_Extension",
-            tags = {"Admin-Tariff"},
+            tags = {"Admin-Extension"},
             notes = "deactivate Tariff Extension",
             produces = "application/json",
             protocols = "https"
@@ -293,6 +292,62 @@ public class Controller_Finance_TariffExtension extends _BaseController {
 
             extension.active = true;
             extension.update();
+
+            return ok();
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "order TariffExtension Up",
+            tags = {"Admin-Extension"},
+            notes = "",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result tariffExtension_up(UUID extension_id) {
+        try {
+
+            Model_TariffExtension tariffExtension =  Model_TariffExtension.getById(extension_id);
+
+            tariffExtension.up();
+
+            return ok();
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "order TariffExtension Down",
+            tags = {"Admin-Extension"},
+            notes = "",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result tariffExtension_down(UUID extension_id) {
+        try {
+
+            Model_TariffExtension extension =  Model_TariffExtension.getById(extension_id);
+
+            extension.down();
 
             return ok();
 

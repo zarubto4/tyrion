@@ -189,6 +189,8 @@ POST      /admin/tariff_extension                                       controll
 PUT       /admin/tariff_extension/:extension_id                         controllers.finance.Controller_Finance_TariffExtension.tariffExtension_update(extension_id: java.util.UUID)
 PUT       /admin/tariff_extension/deactivate/:extension_id              controllers.finance.Controller_Finance_TariffExtension.tariffExtension_deactivate(extension_id: java.util.UUID)
 PUT       /admin/tariff_extension/activate/:extension_id                controllers.finance.Controller_Finance_TariffExtension.tariffExtension_activate(extension_id: java.util.UUID)
+PUT       /admin/tariff_extension/up/:extension_id                      controllers.finance.Controller_Finance_TariffExtension.tariffExtension_up(extension_id: java.util.UUID)
+PUT       /admin/tariff_extension/down/:extension_id                    controllers.finance.Controller_Finance_TariffExtension.tariffExtension_down(extension_id: java.util.UUID)
 DELETE    /admin/tariff_extension/:extension_id                         controllers.finance.Controller_Finance_TariffExtension.tariffExtension_delete(extension_id: java.util.UUID)
 
 ### PROJECT ############ PROJECT ############### PROJECT ################ PROJECT ################# PROJECT ####################################################################
