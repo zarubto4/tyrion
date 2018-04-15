@@ -22,7 +22,11 @@ public abstract class OrderedNamedModel extends NamedModel {
 
     @JsonIgnore @Override
     public void save() {
-        order_position = finder.query().findCount() + 1;
+        // usually order is not set first time instance is created, in this case, add the item at the end
+        if(order_position == null) {
+            order_position = finder.query().findCount() + 1;
+        }
+
         super.save();
     }
 
