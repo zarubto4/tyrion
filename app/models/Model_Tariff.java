@@ -18,7 +18,7 @@ import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.extensions.extensions.Extension;
 import utilities.logger.Logger;
-import utilities.model.NamedModel;
+import utilities.model.OrderedNamedModel;
 import utilities.swagger.input.Swagger_TariffLabel;
 import utilities.swagger.input.Swagger_TariffLabelList;
 
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel(value = "Tariff", description = "Model of Tariff")
 @Table(name="Tariff")
-public class Model_Tariff extends NamedModel {
+public class Model_Tariff extends OrderedNamedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -44,8 +44,6 @@ public class Model_Tariff extends NamedModel {
                             public boolean active;
 
     @Enumerated(EnumType.STRING) @JsonIgnore public BusinessModel business_model;
-
-                            public Integer order_position;
 
                             public boolean company_details_required;
                             public boolean payment_details_required;
@@ -62,6 +60,11 @@ public class Model_Tariff extends NamedModel {
 
     @JoinTable(name = "tariff_extensions_recommended")
     @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_TariffExtension> extensions_recommended = new ArrayList<>();
+
+    /* CONSTUCTOR *****-----------------------------------------------------------------------------------------------------*/
+    public Model_Tariff() {
+        super(find);
+    }
 
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -155,50 +158,6 @@ public class Model_Tariff extends NamedModel {
             logger.internalServerError(e);
             return 0d;
         }
-    }
-
-
-
-/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override
-    public void save() {
-
-        order_position = Model_Tariff.find.query().findCount() + 1;
-        super.save();
-    }
-
-/* ORDER ---------------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient
-    public void up() {
-
-        check_update_permission();
-
-        Model_Tariff up = Model_Tariff.find.query().where().eq("order_position", (order_position-1) ).findOne();
-        if (up == null) return;
-
-        up.order_position += 1;
-        up.update();
-
-        this.order_position -= 1;
-        this.update();
-    }
-
-    @JsonIgnore @Transient
-    public void down() {
-
-        check_update_permission();
-
-        Model_Tariff down = Model_Tariff.find.query().where().eq("order_position", (order_position+1) ).findOne();
-        if (down == null) return;
-
-        down.order_position -= 1;
-        down.update();
-
-        this.order_position += 1;
-        this.update();
-
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
