@@ -25,21 +25,22 @@ fi
 echo " == Killing previous instance with pid: $(cat ./$CURRENTSERVER/RUNNING_PID) =="
 (kill $(cat ./$CURRENTSERVER/RUNNING_PID) && rm -rf ./$CURRENTSERVER/RUNNING_PID && echo " == Previous instance stopped ==") &
 
-# Add execute permission
-chmod +x ./$NEWSERVER/bin/tyrion
-
 # Go into new server
 cd ./$NEWSERVER
+
+# Add execute permission
+chmod +x ./bin/tyrion
+chmod +x ./start_http.sh
+chmod +x ./start_https.sh
+chmod +x ./update.sh
 
 # Run instance of new verion
 echo " == Starting new server =="
 
 if [[ -v SECURED && $SECURED == "Y" ]] ; then
-    chmod +x ./start_https.sh
     ./start_https.sh
     TESTURL="https://$DOMAIN:443"
 else
-    chmod +x ./start_http.sh
     ./start_http.sh
     TESTURL="http://0.0.0.0:80"
 fi
