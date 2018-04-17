@@ -1513,8 +1513,8 @@ public class Controller_Hardware extends _BaseController {
                 registration_of_hardware.mac_address = batch.get_new_MacAddress();
                 registration_of_hardware.hardware_type_compiler_target_name =  hardwareType.compiler_target_name;
                 registration_of_hardware.production_batch_id = batch.batch_id;
-                registration_of_hardware.mqtt_username = mqtt_username_not_hashed;
-                registration_of_hardware.mqtt_password =mqtt_password_not_hashed;
+                registration_of_hardware.mqtt_username = BCrypt.hashpw(mqtt_username_not_hashed, BCrypt.gensalt());
+                registration_of_hardware.mqtt_password = BCrypt.hashpw(mqtt_password_not_hashed, BCrypt.gensalt());
                 registration_of_hardware.save();
 
 
