@@ -1190,14 +1190,16 @@ public class Model_Hardware extends TaggedModel {
                 return;
             }
 
-            logger.debug("check_mqtt_hardware_connection_validation: Device is not null - HW name {} . Pass from Homer: {} Name from Homer: {} ", board.name, request.password, request.user_name);
-            logger.debug("check_mqtt_hardware_connection_validation: Device is not null - HW name {} . Pass from Tyrion: {} Name from Tyrion: {} ", board.name, board.mqtt_password, board.mqtt_username);
+            logger.debug("check_mqtt_hardware_connection_validation: Device is not null - HW name {} . Pass from Homer: {} Name from Homer: {} ", board.full_id, request.password, request.user_name);
+            logger.debug("check_mqtt_hardware_connection_validation: Device is not null - HW name {} . Pass from Tyrion: {} Name from Tyrion: {} ", board.full_id, board.mqtt_password, board.mqtt_username);
 
 
 
             if (BCrypt.checkpw(request.password, board.mqtt_password) && BCrypt.checkpw(request.user_name, board.mqtt_username)) {
+                logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Approve",  board.full_id);
                 homer.send(request.get_result(true,  board.id));
             } else {
+                logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Denied",  board.full_id);
                 homer.send(request.get_result(false,  board.id));
             }
 
