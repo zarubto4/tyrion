@@ -723,7 +723,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
         Swagger_InstanceSnapShotConfigurationProgram program = null;
 
         for(Swagger_InstanceSnapShotConfigurationFile grids_collection : settings.grids_collections){
-            for(Swagger_InstanceSnapShotConfigurationProgram grids_program : collection.grid_programs){
+            for(Swagger_InstanceSnapShotConfigurationProgram grids_program : collection.grid_programs){ // FIXME must throw null pointer exception
                 if(grids_program.grid_program_version_id == grid_program_version_id){
                     collection = grids_collection;
                     program = grids_program;
