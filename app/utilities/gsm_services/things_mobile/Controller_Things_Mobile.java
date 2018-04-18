@@ -79,38 +79,50 @@ public class Controller_Things_Mobile {
         Long sim_card_id =  882360002156971L;
         Long sim_card_ids[] =  new Long[]{882360002156971L, 882360002156969L};
         String simBarcode = "12345678901234567890";
+        String name = "fhsdkjh";
 
         // PS podle dokumentace lze používat TAGY - Ty mi ale používat nebudeme
 
         //--------- SIM LIST --------
         // 1. Get All SimCards
-        // TM_Sim_List_list list = sim_list();
+         //TM_Sim_List_list list = sim_list();
+        // System.out.println(Json.toJson(list));
 
 
         //--------- SIM STATUS --------
 
-        //TM_Sim_Status_list status = sim_status(sim_card_id);
-        //System.out.println(Json.toJson(status));
+       // TM_Sim_Status_list status = sim_status(sim_card_id);
+       // System.out.println(Json.toJson(status));
 
 
         //--------- SIM ACTIVE --------
-        TM_Sim_Active active = sim_active(sim_card_id, simBarcode);
+        //TM_Sim_Active active = sim_active(sim_card_id, simBarcode);
 
-        System.out.println(Json.toJson(active));
-        System.out.println("Je aktivovana? : " + active.done);
+       // System.out.println(Json.toJson(active));
+        //System.out.println("Je aktivovana? : " + active.done);
 
         //--------- SIM BLOCK ---------
         //sim_block(sim_card_id);
         //sim_block(sim_card_ids);
+        //TM_Sim_Block blocked = sim_block(sim_card_id);
+        //System.out.println(Json.toJson(blocked));
 
         //--------- SIM UNBLOCK --------
-        //sim_unblock(sim_card_id);
+        //TM_Sim_Unblock unblocked = sim_unblock(sim_card_id);
+        //System.out.println(Json.toJson(unblocked));
 
         //--------- SIM CREDIT --------
 
-       // TM_Sim_Credit_list credit = sim_credit();
+        //TM_Sim_Credit_list credit = sim_credit();
         //System.out.println(Json.toJson(credit));
 
+        //---------UPDATE_SIM_NAME---------
+        TM_Update_Sim_Name simName = update_sim_name(sim_card_id, name);
+        System.out.println(Json.toJson(simName));
+
+        //-------- UPDATE SIM TAG---------
+        TM_Update_Sim_Tag simTag = update_sim_tag(sim_card_id, name);
+        System.out.println(Json.toJson(simTag));
 
         //sim_active(sim_card_id);
 
@@ -170,9 +182,67 @@ public class Controller_Things_Mobile {
 
     }
 
+    //SIM BLOCK
+    public TM_Sim_Block sim_block(Long id) {
+        try {
+
+            Document response = post("/services/business-api/blockSim", new KeyStore("msisdn", new ArrayList<String>() {{
+                add(id.toString());
+            }}));
+
+            TM_Sim_Block node = new TM_Sim_Block();
+            if (response.getElementsByTagName("done").item(0).getTextContent().equals("true")) {
+
+                node.done = true;
+                return node;
+
+            } else {
+
+                logger.error("sim_block:: Invalid Response: {}", response);
+                node.done = false;
+                node.errorCode = Integer.valueOf( response.getElementsByTagName("errorCode").item(0).getTextContent());
+                node.errorMessage = response.getElementsByTagName("errorMessage").item(0).getTextContent();
+
+                return node;
+            }
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    //SIM UNBLOCK
+    public TM_Sim_Unblock sim_unblock(Long id) {
+        try {
+
+            Document response = post("/services/business-api/unblockSim", new KeyStore("msisdn", new ArrayList<String>() {{
+                add(id.toString());
+            }}));
+
+            TM_Sim_Unblock node = new TM_Sim_Unblock();
+            if (response.getElementsByTagName("done").item(0).getTextContent().equals("true")) {
+
+                node.done = true;
+                return node;
+
+            } else {
+
+                logger.error("sim_unblock:: Invalid Response: {}", response);
+                node.done = false;
+                node.errorCode = Integer.valueOf( response.getElementsByTagName("errorCode").item(0).getTextContent());
+                node.errorMessage = response.getElementsByTagName("errorMessage").item(0).getTextContent();
+
+                return node;
+            }
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 
     //SIM LIST
-
     public TM_Sim_List_list sim_list() {
         try {
 
@@ -185,40 +255,34 @@ public class Controller_Things_Mobile {
 
                 NodeList nList = response.getElementsByTagName("sim");
 
-
-                System.out.println("if prosel");
-
                 for (int temp = 0; temp < nList.getLength(); temp++) {
 
                     Node nNode = nList.item(temp);
                     TM_Sim_List node = new TM_Sim_List();
 
                     if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-                        System.out.println("if nNode prosel");
                         Element eElement = (Element) nNode;
 
                         node.activationDate              = eElement.getElementsByTagName("activationDate").item(0).getTextContent();
-                        node.balance                     = eElement.getElementsByTagName("balance").item(0).getTextContent();
-                        node.blockSimAfterExpirationDate = eElement.getElementsByTagName("blockSimAfterExpirationDate").item(0).getTextContent();
-                        node.blockSimDaily               = eElement.getElementsByTagName("blockSimDaily").item(0).getTextContent();
-                        node.blockSimMonthly             = eElement.getElementsByTagName("blockSimMonthly").item(0).getTextContent();
-                        node.blockSimTotal               = eElement.getElementsByTagName("blockSimTotal").item(0).getTextContent();
-                        node.dailyTraffic                = eElement.getElementsByTagName("dailyTraffic").item(0).getTextContent();
-                        node.dailyTrafficThreshold       = eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent();
+                        node.balance                     = Integer.valueOf(eElement.getElementsByTagName("balance").item(0).getTextContent());
+                        node.blockSimAfterExpirationDate = Integer.valueOf(eElement.getElementsByTagName("blockSimAfterExpirationDate").item(0).getTextContent());
+                        node.blockSimDaily               = Integer.valueOf(eElement.getElementsByTagName("blockSimDaily").item(0).getTextContent());
+                        node.blockSimMonthly             = Integer.valueOf(eElement.getElementsByTagName("blockSimMonthly").item(0).getTextContent());
+                        node.blockSimTotal               = Integer.valueOf(eElement.getElementsByTagName("blockSimTotal").item(0).getTextContent());
+                        node.dailyTraffic                = Integer.valueOf(eElement.getElementsByTagName("dailyTraffic").item(0).getTextContent());
+                        node.dailyTrafficThreshold       = Integer.valueOf(eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent());
                         node.expirationDate              = eElement.getElementsByTagName("expirationDate").item(0).getTextContent();
                         node.lastConnectionDate          = eElement.getElementsByTagName("lastConnectionDate").item(0).getTextContent();
-                        node.monthlyTraffic              = eElement.getElementsByTagName("monthlyTraffic").item(0).getTextContent();
-                        node.monthlyTrafficThreshold     = eElement.getElementsByTagName("monthlyTrafficThreshold").item(0).getTextContent();
+                        node.monthlyTraffic              = Integer.valueOf(eElement.getElementsByTagName("monthlyTraffic").item(0).getTextContent());
+                        node.monthlyTrafficThreshold     = Integer.valueOf(eElement.getElementsByTagName("monthlyTrafficThreshold").item(0).getTextContent());
                         node.msisdn                      = eElement.getElementsByTagName("msisdn").item(0).getTextContent();
                         node.name                        = eElement.getElementsByTagName("name").item(0).getTextContent();
                         node.plan                        = eElement.getElementsByTagName("plan").item(0).getTextContent();
                         node.tag                         = eElement.getElementsByTagName("tag").item(0).getTextContent();
-                        node.totalTraffic                = eElement.getElementsByTagName("totalTraffic").item(0).getTextContent();
-                        node.totalTrafficThreshold       = eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent();
-
+                        node.totalTraffic                = Integer.valueOf(eElement.getElementsByTagName("totalTraffic").item(0).getTextContent());
+                        node.totalTrafficThreshold       = Integer.valueOf(eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent());
 
                         NodeList cdrs_list =  ((Element) nNode).getElementsByTagName("cdr");
-
 
                         for (int j = 0; j < cdrs_list.getLength(); j++) {
 
@@ -226,24 +290,17 @@ public class Controller_Things_Mobile {
                             Element eeElement = (Element) cdrs_list.item(0);
                             TM_Sim_List_cdr node_cdr = new TM_Sim_List_cdr();
 
-                            node_cdr.cdrImsi        = eeElement.getElementsByTagName("cdrImsi").item(0).getTextContent();
+                            node_cdr.cdrImsi        = Long.valueOf(eeElement.getElementsByTagName("cdrImsi").item(0).getTextContent());
                             node_cdr.cdrDateStart   = eeElement.getElementsByTagName("cdrDateStart").item(0).getTextContent();
                             node_cdr.cdrDateStop    = eeElement.getElementsByTagName("cdrDateStop").item(0).getTextContent();
                             node_cdr.cdrNetwork     = eeElement.getElementsByTagName("cdrNetwork").item(0).getTextContent();
                             node_cdr.cdrCountry     = eeElement.getElementsByTagName("cdrCountry").item(0).getTextContent();
 
                             node.cdrs.add(node_cdr);
-
                         }
-
-
                     }
 
-
-                    System.out.println("pred listem");
-
                     list.sims.add(node);
-
 
                 }
 
@@ -251,7 +308,7 @@ public class Controller_Things_Mobile {
 
             } else {
 
-                logger.error("sim_active:: Invalid Response: {}", response);
+                logger.error("sim_list:: Invalid Response: {}", response);
                 list.done = false;
                 list.errorCode = Integer.valueOf( response.getElementsByTagName("errorCode").item(0).getTextContent());
                 list.errorMessage = response.getElementsByTagName("errorMessage").item(0).getTextContent();
@@ -268,9 +325,8 @@ public class Controller_Things_Mobile {
         }
     }
 
-
     //SIM STATUS
-
+    //moc CDR
     public TM_Sim_Status_list sim_status(Long id) {
 
 
@@ -295,23 +351,23 @@ public class Controller_Things_Mobile {
                         Element eElement = (Element) nNode;
 
                         node.activationDate =               eElement.getElementsByTagName("activationDate").item(0).getTextContent();
-                        node.balance =                      eElement.getElementsByTagName("balance").item(0).getTextContent();
-                        node.blockSimAfterExpirationDate =  eElement.getElementsByTagName("blockSimAfterExpirationDate").item(0).getTextContent();
-                        node.blockSimDaily =                eElement.getElementsByTagName("blockSimDaily").item(0).getTextContent();
-                        node.blockSimMonthly =              eElement.getElementsByTagName("blockSimMonthly").item(0).getTextContent();
-                        node.blockSimTotal =                eElement.getElementsByTagName("blockSimTotal").item(0).getTextContent();
-                        node.dailyTraffic =                 eElement.getElementsByTagName("dailyTraffic").item(0).getTextContent();
-                        node.dailyTrafficThreshold =        eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent();
+                        node.balance =                      Integer.valueOf(eElement.getElementsByTagName("balance").item(0).getTextContent());
+                        node.blockSimAfterExpirationDate =  Integer.valueOf(eElement.getElementsByTagName("blockSimAfterExpirationDate").item(0).getTextContent());
+                        node.blockSimDaily =                Integer.valueOf(eElement.getElementsByTagName("blockSimDaily").item(0).getTextContent());
+                        node.blockSimMonthly =              Integer.valueOf(eElement.getElementsByTagName("blockSimMonthly").item(0).getTextContent());
+                        node.blockSimTotal =                Integer.valueOf(eElement.getElementsByTagName("blockSimTotal").item(0).getTextContent());
+                        node.dailyTraffic =                 Integer.valueOf(eElement.getElementsByTagName("dailyTraffic").item(0).getTextContent());
+                        node.dailyTrafficThreshold =        Integer.valueOf(eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent());
                         node.expirationDate =               eElement.getElementsByTagName("expirationDate").item(0).getTextContent();
                         node.lastConnectionDate =           eElement.getElementsByTagName("lastConnectionDate").item(0).getTextContent();
-                        node.monthlyTraffic =               eElement.getElementsByTagName("monthlyTraffic").item(0).getTextContent();
-                        node.monthlyTrafficThreshold =      eElement.getElementsByTagName("monthlyTrafficThreshold").item(0).getTextContent();
+                        node.monthlyTraffic =               Integer.valueOf(eElement.getElementsByTagName("monthlyTraffic").item(0).getTextContent());
+                        node.monthlyTrafficThreshold =      Integer.valueOf(eElement.getElementsByTagName("monthlyTrafficThreshold").item(0).getTextContent());
                         node.msisdn =                       eElement.getElementsByTagName("msisdn").item(0).getTextContent();
                         node.name =                         eElement.getElementsByTagName("name").item(0).getTextContent();
                         node.plan =                         eElement.getElementsByTagName("plan").item(0).getTextContent();
                         node.tag =                          eElement.getElementsByTagName("tag").item(0).getTextContent();
-                        node.totalTraffic =                 eElement.getElementsByTagName("totalTraffic").item(0).getTextContent();
-                        node.totalTrafficThreshold =        eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent();
+                        node.totalTraffic =                 Integer.valueOf(eElement.getElementsByTagName("totalTraffic").item(0).getTextContent());
+                        node.totalTrafficThreshold =        Integer.valueOf(eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent());
 
                         NodeList cdrs_list =  ((Element) nNode).getElementsByTagName("cdr");
 
@@ -322,7 +378,7 @@ public class Controller_Things_Mobile {
                             Element eeElement = (Element) cdrs_list.item(0);
                             TM_Sim_Status_cdr node_cdr = new TM_Sim_Status_cdr();
 
-                            node_cdr.cdrImsi        = eeElement.getElementsByTagName("cdrImsi").item(0).getTextContent();
+                            node_cdr.cdrImsi        = Long.valueOf(eeElement.getElementsByTagName("cdrImsi").item(0).getTextContent());
                             node_cdr.cdrDateStart   = eeElement.getElementsByTagName("cdrDateStart").item(0).getTextContent();
                             node_cdr.cdrDateStop    = eeElement.getElementsByTagName("cdrDateStop").item(0).getTextContent();
                             node_cdr.cdrNetwork     = eeElement.getElementsByTagName("cdrNetwork").item(0).getTextContent();
@@ -338,7 +394,7 @@ public class Controller_Things_Mobile {
                 return list;
             }else{
 
-                logger.error("sim_active:: Invalid Response: {}", response);
+                logger.error("sim_status:: Invalid Response: {}", response);
                 list.done = false;
                 list.errorCode = Integer.valueOf( response.getElementsByTagName("errorCode").item(0).getTextContent());
                 list.errorMessage = response.getElementsByTagName("errorMessage").item(0).getTextContent();
@@ -352,42 +408,47 @@ public class Controller_Things_Mobile {
         }
     }
 
-
-    //SIM BLOCK
-
     //CREDIT
     public TM_Sim_Credit_list sim_credit() {
         try {
-            Document response = post("/services/business-api/activateSim");
+            Document response = post("/services/business-api/credit");
             response.getDocumentElement().normalize();
+
+            TM_Sim_Credit_list credit = new TM_Sim_Credit_list();
 
             if (response.getElementsByTagName("done").item(0).getTextContent().equals("true")) {
 
+                credit.amount    = Integer.valueOf(response.getElementsByTagName("amount").item(0).getTextContent());
+                credit.currency  = response.getElementsByTagName("currency").item(0).getTextContent();
+
                 NodeList nList = response.getElementsByTagName("historyRow");
 
-                TM_Sim_Credit_list credit = new TM_Sim_Credit_list();
-
                 for (int temp = 0; temp < nList.getLength(); temp++) {
-
                     Node nNode = nList.item(temp);
                     TM_Sim_Credit node = new TM_Sim_Credit();
 
                     if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                        Element eeElement = (Element) nNode;
 
-                        Element eElement = (Element) nNode;
-
-                        node.amount = eElement.getElementsByTagName("amount").item(0).getTextContent();
-                        node.dateLoad = eElement.getElementsByTagName("dateLoad").item(0).getTextContent();
-                        node.opDescription = eElement.getElementsByTagName("opDescription").item(0).getTextContent();
+                        node.amount         = Integer.valueOf(eeElement.getElementsByTagName("amount").item(0).getTextContent());
+                        node.dateLoad       = eeElement.getElementsByTagName("dateLoad").item(0).getTextContent();
+                        node.msisdn         = eeElement.getElementsByTagName("msisdn").item(0).getTextContent();
+                        node.opDescription  = eeElement.getElementsByTagName("opDescription").item(0).getTextContent();
 
                     }
-                    credit.HistoryRow.add(node);
+
+                    credit.historyRow.add(node);
+
                 }
+
                 return credit;
             } else {
 
-                logger.error("sim_list:: Invalid Response: {}", response);
-                return null;
+                logger.error("sim_credit:: Invalid Response: {}", response);
+                credit.done = false;
+                credit.errorCode = Integer.valueOf( response.getElementsByTagName("errorCode").item(0).getTextContent());
+                credit.errorMessage = response.getElementsByTagName("errorMessage").item(0).getTextContent();
+                return credit;
             }
 
         } catch (Exception e) {
@@ -395,67 +456,94 @@ public class Controller_Things_Mobile {
             return null;
         }
     }
-/*
 
-
-
-
-    //SIM BLOCK
-
-    public TM_Sim_Block sim_block(Long id) {
+    //UPDATE SIM NAME
+    public TM_Update_Sim_Name update_sim_name(Long id, String name) {
         try {
-        JsonNode response = post("/services/business-api/blockSim", new KeyStore("msisdn", new ArrayList<String>() {{
-            add(id.toString());
-        }}));
-            if(response.get("done").asBoolean()) {
-
-                // Tady překonverutji JsonNode na třídu
-                TM_Sim_Block help = baseFormFactory.formFromJsonWithValidation( TM_Sim_Block.class, response);
-
-                System.out.println(" Vypisuji výsledek: " + Json.toJson(help));
 
 
-                return help;
-            }else {
-
-                logger.error("sim_list:: Invalid Response: {}", response);
-                return null;
-            }
-
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    //SIM UNBLOCK
-
-    public TM_Sim_Unblock sim_unblock(Long id) {
-        try {
-            JsonNode response = post("/services/business-api/unblockSim", new KeyStore("msisdn", new ArrayList<String>() {{
+            KeyStore k1 =  new KeyStore("msisdn", new ArrayList<String>() {{
                 add(id.toString());
-            }}));
-            if(response.get("done").asBoolean()) {
+            }});
 
-                // Tady překonverutji JsonNode na třídu
-                TM_Sim_Unblock help = baseFormFactory.formFromJsonWithValidation( TM_Sim_Unblock.class, response);
+            KeyStore k2 = new KeyStore("name", new ArrayList<String>() {{
+                add(name);
+            }});
 
-                System.out.println(" Vypisuji výsledek: " + Json.toJson(help));
+            KeyStore[] stores = new KeyStore[2];
+            stores[0] = k1;
+            stores[1] = k2;
 
+            Document response = post("/services/business-api/updateSimName", stores);
 
-                return help;
-            }else {
+            TM_Update_Sim_Name node = new TM_Update_Sim_Name();
+            if (response.getElementsByTagName("done").item(0).getTextContent().equals("true")) {
 
-                logger.error("sim_list:: Invalid Response: {}", response);
-                return null;
+                node.done = true;
+
+                return node;
+
+            } else {
+
+                logger.error("update_sim_name:: Invalid Response: {}", response);
+                node.done = false;
+                node.errorCode = Integer.valueOf( response.getElementsByTagName("errorCode").item(0).getTextContent());
+                node.errorMessage = response.getElementsByTagName("errorMessage").item(0).getTextContent();
+
+                return node;
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
+
     }
 
+    //UPDATE SIM TAG
+    public TM_Update_Sim_Tag update_sim_tag(Long id, String tag){
+        try {
+            KeyStore k1 =  new KeyStore("msisdn", new ArrayList<String>() {{
+                add(id.toString());
+            }});
+
+            KeyStore k2 = new KeyStore("tag", new ArrayList<String>() {{
+                add(tag);
+            }});
+
+            KeyStore[] stores = new KeyStore[2];
+            stores[0] = k1;
+            stores[1] = k2;
+
+            Document response = post("/services/business-api/updateSimTag", stores);
+
+            TM_Update_Sim_Tag node = new TM_Update_Sim_Tag();
+
+            if (response.getElementsByTagName("done").item(0).getTextContent().equals("true")) {
+
+                node.done = true;
+
+                return node;
+
+            } else {
+
+                logger.error("update_sim_tag:: Invalid Response: {}", response);
+                node.done = false;
+                node.errorCode = Integer.valueOf( response.getElementsByTagName("errorCode").item(0).getTextContent());
+                node.errorMessage = response.getElementsByTagName("errorMessage").item(0).getTextContent();
+
+                return node;
+            }
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+
+    }
+
+
+    /*
     //SIM CREDIT
 
 
@@ -521,7 +609,7 @@ public class Controller_Things_Mobile {
     */
 
     /**
-
+     Metoda, která vypisuje XML a přidává k němu inputy
     */
     private static Document post(String url, KeyStore... optional_keys) throws Exception {
 
@@ -539,7 +627,7 @@ public class Controller_Things_Mobile {
         }});
 
 
-        //podmínka která v případě že je
+        //podmínka která v případě že je optional klíčů více než 0, tak je všechny přidá do do HasMapy map
         if(optional_keys.length > 0) {
             for(KeyStore store : optional_keys) {
                 map.put(store.key, store.values);
@@ -549,15 +637,16 @@ public class Controller_Things_Mobile {
 
         logger.error("Things_Mobile:: GET: URL: " + thingsmobile_url + url);
 
-        //
+        //ressponsivePromise volá třídu Server injector(ten teprv v průběhu motody najde potřebnou knihovnu) a vytváří instanci objektu WSClient ze kterého volá metodu url(vrac9 objekt WS Request reprezentující URL)
         CompletionStage<WSResponse> responsePromise = Server.injector.getInstance(WSClient.class).url(thingsmobile_url + url)
+               //nastavuje typ obsahu
                 .setContentType("application/x-www-form-urlencoded")
+                //nastavuje jak dlouho se bude pokusit připojit než vyhodí chybu
                 .setRequestTimeout(Duration.ofSeconds(5))
-                .setAuth(Server.PrintNode_apiKey)
                 .setQueryString(map)
                 .post(map.toString());
 
-
+    //vztvářím si objekt, který teprv bude existovat a poté na něj volám metodu getStatus
         Integer status = responsePromise.toCompletableFuture().get().getStatus();
 
         //pokud metoda neprobehne bez problemu vyhodí chybu

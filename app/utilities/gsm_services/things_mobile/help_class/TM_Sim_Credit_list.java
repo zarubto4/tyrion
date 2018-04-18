@@ -6,8 +6,11 @@ import java.util.List;
 
 public class TM_Sim_Credit_list {
 
-    public double amount;
+    public Integer amount;
     public String currency;
+    public boolean done;
+    public Integer errorCode;
+    public String errorMessage;
 
-    public List<TM_Sim_Credit> HistoryRow = new ArrayList<>();
+    public List<TM_Sim_Credit> historyRow = new ArrayList<>();
 }
