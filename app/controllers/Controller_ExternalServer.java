@@ -114,6 +114,7 @@ public class Controller_ExternalServer extends _BaseController {
             Model_HomerServer server = new Model_HomerServer();
             server.name = help.name;
             server.description = help.description;
+            server.setTags(help.tags);
 
             if(help.project_id == null) {
                 server.server_type = HomerType.PUBLIC;
@@ -181,6 +182,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.server_url = help.server_url;
 
             server.server_type = HomerType.PUBLIC;
+            server.setTags(help.tags);
 
             if(help.project_id == null) {
                 server.server_type = HomerType.PUBLIC;
@@ -322,6 +324,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.hardware_logger_port = help.hardware_logger_port;
             server.rest_api_port = help.rest_api_port;
             server.server_url = help.server_url;
+            server.setTags(help.tags);
 
             // Uložení objektu
             server.update();
@@ -765,7 +768,6 @@ public class Controller_ExternalServer extends _BaseController {
            return controllerServerError(e);
         }
     }
-
 
 // PRIVATE FILE STORAGE FOR HOMER SERVERS ###########################################################################*/
 

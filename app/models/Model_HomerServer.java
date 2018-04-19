@@ -34,6 +34,7 @@ import utilities.model.TaggedModel;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
 import websocket.WS_Message;
 import websocket.interfaces.WS_Homer;
+import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_online_status;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Command;
 import websocket.messages.homer_with_tyrion.*;
 import websocket.messages.homer_with_tyrion.WS_Message_Homer_Instance_add;
@@ -560,6 +561,20 @@ public class Model_HomerServer extends TaggedModel {
     */
 
     // Get Data
+
+    @JsonIgnore
+    public WS_Message_Hardware_online_status device_online_synchronization_ask(List<UUID> list) {
+        try {
+
+            logger.trace("device_online_synchronization_ask:: Making Request");
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_online_status().make_request(list), 1000 * 5, 0, 2);
+            return  baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_online_status.class, node);
+
+        }catch (Exception e){
+            logger.internalServerError(e);
+            return new WS_Message_Hardware_online_status();
+        }
+    }
 
     @JsonIgnore
     public WS_Message_Homer_Instance_list get_homer_server_list_of_instance() {

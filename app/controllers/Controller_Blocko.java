@@ -90,6 +90,7 @@ public class Controller_Blocko extends _BaseController {
             bProgram.description           = help.description;
             bProgram.name                  = help.name;
             bProgram.project               = project;
+            bProgram.setTags(help.tags);
 
             // Uložení objektu
             bProgram.save();
@@ -603,6 +604,7 @@ public class Controller_Blocko extends _BaseController {
             instance.server_main = main_server;
             instance.server_backup = backup_server;
             instance.b_program = b_program;
+            instance.setTags(help.tags);
 
             instance.save();
 
@@ -1253,6 +1255,7 @@ public class Controller_Blocko extends _BaseController {
             block.name = help.name;
             block.description = help.description;
             block.author_id = person().id;
+            block.setTags(help.tags);
 
             if (project != null) {
                 block.project = project;
@@ -1394,6 +1397,7 @@ public class Controller_Blocko extends _BaseController {
             // Úprava objektu
             block.description = help.description;
             block.name        = help.name;
+            block.setTags(help.tags);
 
             // Uložení objektu
             block.update();

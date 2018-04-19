@@ -299,7 +299,7 @@ public class Model_Hardware extends TaggedModel {
     public Swagger_Short_Reference dominant_project_active(){
         try {
             if (dominant_entity) return null;
-            UUID uuid = Model_Project.find.query().where().eq("hardware.id", id).eq("dominant_entity", true).select("id").findSingleAttribute();
+            UUID uuid = Model_Project.find.query().where().eq("hardware.full_id", full_id).eq("dominant_entity", true).select("id").findSingleAttribute();
             if (uuid == null) return null;
 
             // Dont Cache IT!!!!!!!!!!!!!!
@@ -307,8 +307,8 @@ public class Model_Hardware extends TaggedModel {
             return new Swagger_Short_Reference(project.id, project.name, project.description);
 
         }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
+            // Uživatel na tento projekt nemá oprávnění - alew i tak by měl vědět že někde existuje
+            return new Swagger_Short_Reference(null,"No Permission", "");
         }catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -2846,8 +2846,9 @@ public class Model_Hardware extends TaggedModel {
 
     @JsonIgnore @Transient @Override  public void check_create_permission() throws _Base_Result_Exception {
         // Only for Garfield Registration or Manual Registration
-        if (_BaseController.person().has_permission(Permission.Hardware_create.name())) return;
-        throw new Result_Error_PermissionDenied();
+        if(project == null) {
+            return;
+        }
     }
 
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
@@ -2896,6 +2897,13 @@ public class Model_Hardware extends TaggedModel {
             if (_BaseController.person().has_permission(Permission.Hardware_update.name())) return;
 
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+            // Speciální podmínka - protože registrace nového HW vyžaduje update nikoliv save!!!
+            if(this.project != null) {
+                this.project.check_update_permission();
+                _BaseController.person().cache_permission("hardware_update_" + id, true);
+                return;
+            }
+
             get_project().check_update_permission();
             _BaseController.person().cache_permission("hardware_update_" + id, true);
 

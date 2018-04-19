@@ -14,7 +14,9 @@ import utilities.emails.Email;
 import utilities.enums.BoardCommand;
 import utilities.enums.NetworkStatus;
 import utilities.logger.Logger;
+import utilities.models_update_echo.EchoHandler;
 import utilities.swagger.input.*;
+import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -645,6 +647,8 @@ public class Controller_Project extends _BaseController {
             Model_Project project = Model_Project.getById(help.project_id);
             project.check_update_permission();
 
+            System.out.println("project_addHardware - check_update_permission done");
+
             Model_HardwareRegistrationEntity registration_authority = Model_HardwareRegistrationEntity.getbyFull_hash(help.registration_hash);
 
             // Hash not exist
@@ -683,9 +687,17 @@ public class Controller_Project extends _BaseController {
                 }
             }
 
-            // Set Dominance if its possible (Not dominant in diferent project!
+            // Set Dominance if its possible (Not dominant in diferent project!)
             if (Model_Hardware.find.query().where().eq("full_id", hardware.full_id).eq("dominant_entity", true).findCount() == 0) {
                 hardware.dominant_entity = true;
+
+                // Najdi všechny kterří mají stejné FUll Full-ID
+
+                List<Model_Hardware> hardware_for_cache_clean =  Model_Hardware.find.query().where().eq("full_id", hardware.full_id).select("id").findList();
+                for(Model_Hardware clean_hw: hardware_for_cache_clean) {
+                    System.out.println("Posílám update o zaplnění HW na HW: " + clean_hw.id);
+                    EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, Model_Project.find.query().where().eq("hardware.id", clean_hw.id).select("id").findSingleAttribute(), clean_hw.id));
+                }
             }
 
             // Update

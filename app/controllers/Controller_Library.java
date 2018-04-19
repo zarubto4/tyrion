@@ -79,6 +79,7 @@ public class Controller_Library extends _BaseController {
             library.name = help.name;
             library.description = help.description;
             library.publish_type = ProgramType.PRIVATE;
+            library.setTags(help.tags);
 
             if (help.project_id != null) {
                 Model_Project project = Model_Project.getById(help.project_id);
@@ -317,6 +318,7 @@ public class Controller_Library extends _BaseController {
             // Change values
             library.name = help.name;
             library.description = help.description;
+            library.setTags(help.tags);
 
             // Uložení změn
             library.update();

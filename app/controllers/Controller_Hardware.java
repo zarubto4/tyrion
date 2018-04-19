@@ -1633,11 +1633,10 @@ public class Controller_Hardware extends _BaseController {
             // Uprava desky
             hardware.name = help.name;
             hardware.description = help.description;
+            hardware.setTags(help.tags);
 
             // Uprava objektu v databázi
             hardware.update();
-
-            hardware.check_update_permission();
 
             // Synchronizace s Homer serverem
             hardware.set_alias(hardware.name);

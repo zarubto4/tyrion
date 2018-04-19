@@ -824,7 +824,10 @@ public class Model_Instance extends TaggedModel {
         if (instance == null) {
 
             instance = Model_Instance.find.query().where().idEq(id).eq("deleted", false).findOne();
-            if (instance == null) throw new Result_Error_NotFound(Model_Instance.class);
+            if (instance == null) {
+                logger.error("not found ID: {}", id);
+                throw new Result_Error_NotFound(Model_Instance.class);
+            }
 
             cache.put(id, instance);
         }

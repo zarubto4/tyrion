@@ -359,6 +359,7 @@ public class Controller_Code extends _BaseController {
             c_program.description           = help.description;
             c_program.hardware_type = hardwareType;
             c_program.publish_type          = ProgramType.PRIVATE;
+            c_program.setTags(help.tags);
 
             if (help.project_id != null) {
                 c_program.project = Model_Project.getById(help.project_id);

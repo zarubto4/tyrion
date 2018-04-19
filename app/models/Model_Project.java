@@ -8,6 +8,7 @@ import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
+import play.api.libs.json.Json;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.cache.IdsList;
@@ -23,6 +24,7 @@ import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.output.Swagger_ProjectStats;
 import utilities.swagger.output.Swagger_Short_Reference;
+import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_online_status;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
@@ -146,7 +148,7 @@ public class Model_Project extends TaggedModel {
     public List<UUID> getHardwareIds() {
 
         if (cache().gets(Model_Hardware.class) == null) {
-            cache().add(Model_Hardware.class, Model_Hardware.find.query().where().eq("project.id", id).select("id").findSingleAttributeList());
+            cache().add(Model_Hardware.class, Model_Hardware.find.query().where().eq("project.id", id).ne("deleted", true).select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_Hardware.class);
@@ -174,7 +176,7 @@ public class Model_Project extends TaggedModel {
     public List<UUID> getCProgramsIds() {
 
         if (cache().gets(Model_CProgram.class) == null) {
-            cache().add(Model_CProgram.class, Model_CProgram.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+            cache().add(Model_CProgram.class, Model_CProgram.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_CProgram.class);
@@ -202,7 +204,7 @@ public class Model_Project extends TaggedModel {
     public List<UUID> getLibrariesIds() {
 
         if (cache().gets(Model_Library.class) == null) {
-            cache().add(Model_Library.class, Model_Library.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+            cache().add(Model_Library.class, Model_Library.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_Library.class);
@@ -230,7 +232,7 @@ public class Model_Project extends TaggedModel {
     public List<UUID> getBProgramsIds() {
 
         if (cache().gets(Model_BProgram.class) == null) {
-            cache().add(Model_BProgram.class, Model_BProgram.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+            cache().add(Model_BProgram.class, Model_BProgram.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_BProgram.class);
@@ -259,7 +261,7 @@ public class Model_Project extends TaggedModel {
     public List<UUID> getGridProjectsIds() {
 
         if (cache().gets(Model_GridProject.class) == null) {
-            cache().add(Model_GridProject.class, Model_GridProject.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+            cache().add(Model_GridProject.class, Model_GridProject.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_GridProject.class);
@@ -287,7 +289,7 @@ public class Model_Project extends TaggedModel {
     public List<UUID> getHardwareGroupsIds() {
 
         if (cache().gets(Model_HardwareGroup.class) == null) {
-            cache().add(Model_HardwareGroup.class, Model_HardwareGroup.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+            cache().add(Model_HardwareGroup.class, Model_HardwareGroup.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_HardwareGroup.class);
@@ -315,7 +317,7 @@ public class Model_Project extends TaggedModel {
     public List<UUID> getWidgetsIds() {
 
         if (cache().gets(Model_Widget.class) == null) {
-            cache().add(Model_Widget.class, Model_Widget.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+            cache().add(Model_Widget.class, Model_Widget.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_Widget.class);
@@ -343,7 +345,7 @@ public class Model_Project extends TaggedModel {
     public List<UUID> getBlocksIds() {
 
         if (cache().gets(Model_Block.class) == null) {
-            cache().add(Model_Block.class, Model_Widget.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+            cache().add(Model_Block.class, Model_Widget.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_Block.class);
@@ -371,7 +373,7 @@ public class Model_Project extends TaggedModel {
     public List<UUID> getInstancesIds() {
 
         if (cache().gets(Model_Instance.class) == null) {
-            cache().add(Model_Instance.class, Model_Widget.find.query().where().eq("project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+            cache().add(Model_Instance.class, Model_Widget.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_Instance.class);
@@ -515,7 +517,7 @@ public class Model_Project extends TaggedModel {
             "If not, the system automatically searches for all data in a special thread, and when it gets it, it sends them to the client via Websocket. ")
     public Swagger_ProjectStats project_stats(){
 
-        if(getProduct().active){
+        if(!getProduct().active){
             return null;
         }
 
@@ -528,15 +530,45 @@ public class Model_Project extends TaggedModel {
 
                 Swagger_ProjectStats project_stats = new Swagger_ProjectStats();
                 project_stats.hardware = getHardware().size();
-                project_stats.b_programs = getBPrograms().size();
-                project_stats.c_programs = getCPrograms().size();
-                project_stats.libraries = getLibraries().size();
-                project_stats.grid_projects = getGridProjects().size();
-                project_stats.hardware_groups = getHardwareGroups().size();
-                project_stats.widgets = getWidgets().size();
-                project_stats.blocks = getBlocks().size();
-                project_stats.instances = getInstances().size();
+                project_stats.b_programs = getBProgramsIds().size();
+                project_stats.c_programs = getCProgramsIds().size();
+                project_stats.libraries = getLibrariesIds().size();
+                project_stats.grid_projects = getGridProjectsIds().size();
+                project_stats.hardware_groups = getHardwareGroupsIds().size();
+                project_stats.widgets = getWidgetsIds().size();
+                project_stats.blocks = getBlocksIds().size();
+                project_stats.instances = getInstancesIds().size();
 
+                project_stats.hardware_online = 0;
+
+                List<UUID> homer_server_list = Model_Hardware.find.query().where().eq("project.id", id).select("connected_server_id").setDistinct(true).findSingleAttributeList();
+                for(UUID homer_id: homer_server_list) {
+
+                    try {
+                        Model_HomerServer server = Model_HomerServer.getById(homer_id);
+                        if (server.online_state() == NetworkStatus.ONLINE) {
+                            WS_Message_Hardware_online_status response = server.device_online_synchronization_ask(Model_Hardware.find.query().where().eq("project.id", id).eq("connected_server_id", homer_id).select("id").findSingleAttributeList());
+                            if (response.status.equals("success")) {
+
+                                for (WS_Message_Hardware_online_status.DeviceStatus status : response.hardware_list) {
+
+                                    if (status.online_status) {
+                                        ++project_stats.hardware_online;
+
+                                    }
+
+                                    Model_Hardware.cache_status.put(status.uuid, status.online_status);
+                                }
+                            }
+
+                        }
+                    } catch (Exception e) {
+                        logger.error("project_stats: Homer Server ID: {} not found", homer_id);
+                        // Nothing
+                    }
+                }
+
+                this.project_stats = project_stats;
                 EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, this.id, this.id));
 
             } catch (_Base_Result_Exception e) {

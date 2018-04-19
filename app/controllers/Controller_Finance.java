@@ -1193,8 +1193,6 @@ public class Controller_Finance extends _BaseController {
 
             Ebean.commitTransaction();
 
-            product.refresh();
-
             return created(product);
 
         } catch (Exception e) {
@@ -1334,10 +1332,6 @@ public class Controller_Finance extends _BaseController {
             // Deaktivování (vyřazení všech funkcionalit produktu
             product.active = false;
             product.update();
-
-            for(UUID id : product.get_projects_ids()){
-                Model_Project.cache.remove(id);
-            }
 
             product.notificationDeactivation();
 

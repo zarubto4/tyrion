@@ -82,10 +82,10 @@ public class Model_ProductExtension extends NamedModel {
     public String config() {
         try {
 
-            check_update_permission();
             if(configuration== null){
                 throw new NullPointerException();
             }
+
             return Json.toJson(Configuration.getConfiguration(type, configuration)).toString();
 
         } catch (NullPointerException e) {
@@ -421,26 +421,45 @@ public class Model_ProductExtension extends NamedModel {
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.ProductExtension_create.name())) return;
+        if (product == null || product.customer == null) {
+            System.out.println("Model_ProductExtension:: check_create_permission:: product.customer is null - this.product name: " + this.name );
+            throw new Result_Error_PermissionDenied();
+        }
         if(product.customer.isEmployee(_BaseController.person())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.ProductExtension_read.name())) return;
+        if (product == null) {
+           return;
+        }
         if(product.customer.isEmployee(_BaseController.person())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.ProductExtension_update.name())) return;
+        if (product == null || product.customer == null) {
+            System.out.println("Model_ProductExtension:: check_update_permission:: product.customer is null - this.product name: " + this.name );
+            throw new Result_Error_PermissionDenied();
+        }
         if(product.customer.isEmployee(_BaseController.person())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.ProductExtension_delete.name())) return;
+        if (product == null || product.customer == null) {
+            System.out.println("Model_ProductExtension:: check_delete_permission:: product.customer is null - this.product name: " + this.name );
+            throw new Result_Error_PermissionDenied();
+        }
         throw new Result_Error_PermissionDenied();
     }
 
     @JsonProperty @ApiModelProperty(required = true) public void check_act_deactivate_permission()  throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.ProductExtension_act_deactivate.name())) return;
+        if (product == null || product.customer == null) {
+            System.out.println("Model_ProductExtension:: check_act_deactivate_permission:: product.customer is null - this.product name: " + this.id );
+            throw new Result_Error_PermissionDenied();
+        }
         if(product.customer.isEmployee(_BaseController.person())) return;
         throw new Result_Error_PermissionDenied();
     }

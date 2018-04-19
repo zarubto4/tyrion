@@ -57,6 +57,11 @@ public abstract class TaggedModel extends NamedModel {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+
+    public void setTags(List<String> new_tags) throws _Base_Result_Exception {
+        // TODO
+    }
+
     public void addTags(List<String> new_tags) throws _Base_Result_Exception {
         new_tags.forEach(value -> {
             Model_Tag tag = Model_Tag.getByValue(value);
@@ -64,19 +69,6 @@ public abstract class TaggedModel extends NamedModel {
             if (tag == null) {
                 tag = new Model_Tag();
                 tag.value = value;
-
-                /*
-                try {
-                    tag.person = _BaseController.person();
-                } catch (_Base_Result_Exception exception){
-                    if(exception.getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
-                        logger.error("addTags::Person not found");
-                    }else {
-                        logger.internalServerError(exception);
-                    }
-                }
-                */
-
                 tag.save();
             }
 

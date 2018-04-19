@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
         value = "ProjectStats")
 public class Swagger_ProjectStats{
     @ApiModelProperty(required = true) @JsonProperty() public int hardware;
+    @ApiModelProperty(required = true) @JsonProperty() public int hardware_online;
     @ApiModelProperty(required = true) @JsonProperty() public int b_programs;
     @ApiModelProperty(required = true) @JsonProperty() public int c_programs;
     @ApiModelProperty(required = true) @JsonProperty() public int libraries;

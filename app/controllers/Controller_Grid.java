@@ -86,6 +86,7 @@ public class Controller_Grid extends _BaseController {
             gridProject.description = help.description;
             gridProject.name = help.name;
             gridProject.project = project;
+            gridProject.setTags(help.tags);
 
             gridProject.save();
 
@@ -217,6 +218,7 @@ public class Controller_Grid extends _BaseController {
 
             gridProject.name = help.name;
             gridProject.description = help.description;
+            gridProject.setTags(help.tags);
 
             gridProject.update();
             
@@ -436,6 +438,7 @@ public class Controller_Grid extends _BaseController {
             gridProgram.description         = help.description;
             gridProgram.name                = help.name;
             gridProgram.grid_project = gridProject;
+            gridProgram.setTags(help.tags);
             
             gridProgram.save();
 
@@ -511,6 +514,7 @@ public class Controller_Grid extends _BaseController {
 
             gridProgram.description = help.description;
             gridProgram.name        = help.name;
+            gridProgram.setTags(help.tags);
 
             gridProgram.update();
 
@@ -682,7 +686,7 @@ public class Controller_Grid extends _BaseController {
             version.grid_program        = gridProgram;
             version.public_access       = help.public_access;
             version.m_program_virtual_input_output =  help.virtual_input_output;
-          
+
             version.save();
 
             ObjectNode content = Json.newObject();
@@ -1019,6 +1023,7 @@ public class Controller_Grid extends _BaseController {
             widget.name = help.name;
             widget.description = help.description;
             widget.author_id = person().id;
+            widget.setTags(help.tags);
 
             if (project != null) {
                 widget.project = project;
@@ -1179,6 +1184,7 @@ public class Controller_Grid extends _BaseController {
             // Úprava objektu
             widget.description = help.description;
             widget.name        = help.name;
+            widget.setTags(help.tags);
 
             // Uložení objektu
             widget.update();

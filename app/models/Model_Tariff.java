@@ -241,8 +241,7 @@ public class Model_Tariff extends NamedModel {
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        if (_BaseController.person().has_permission(Permission.Tariff_read.name())) return;
-        throw new Result_Error_PermissionDenied();
+        // True
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
         if (_BaseController.person().has_permission(Permission.Tariff_update.name())) return;
