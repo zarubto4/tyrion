@@ -37,8 +37,8 @@ create table tariffextension (
 
 # --- !Downs
 
-ALTER TABLE if exists product ADD COLUMN tariff_included_id uuid;
-ALTER TABLE if exists product ADD COLUMN tariff_optional_id uuid;
+ALTER TABLE if exists productextension ADD COLUMN tariff_included_id uuid;
+ALTER TABLE if exists productextension ADD COLUMN tariff_optional_id uuid;
 
 alter table if exists tariff_extensions_included drop constraint if exists fk_tariff_extensions_included_tariff;
 drop index if exists ix_tariff_extensions_included_tariff;
