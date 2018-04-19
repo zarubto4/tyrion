@@ -273,6 +273,26 @@ public class Utilities_Demo_data_Controller extends _BaseController {
                 return badRequest("Its Already done!");
             }
 
+            Model_TariffExtension extensions_1 = new Model_TariffExtension();
+            extensions_1.name = "Extension 1";
+            extensions_1.description = "description extension 1";
+            extensions_1.type = ExtensionType.project;
+            extensions_1.active = true;
+            extensions_1.deleted = false;
+            extensions_1.color = "blue-madison";
+            extensions_1.configuration = "{\"price\":1000,\"count\":100}";
+            extensions_1.save();
+
+            Model_TariffExtension extensions_2 = new Model_TariffExtension();
+            extensions_2.name = "Extension 2";
+            extensions_2.description = "description extension 2";
+            extensions_2.type = ExtensionType.log;
+            extensions_2.active = true;
+            extensions_2.deleted = false;
+            extensions_2.color = "blue-chambray";
+            extensions_2.configuration = "{\"price\":400,\"count\":2}";
+            extensions_2.save();
+
             // Alfa
             Model_Tariff tariff_1 = new Model_Tariff();
             tariff_1.order_position = 1;
@@ -288,29 +308,10 @@ public class Utilities_Demo_data_Controller extends _BaseController {
             tariff_1.company_details_required = false;
             tariff_1.payment_details_required = false;
 
+            tariff_1.extensions_included.add(extensions_1);
+            tariff_1.extensions_recommended.add(extensions_2);
+
             tariff_1.save();
-
-            Model_ProductExtension extensions_1 = new Model_ProductExtension();
-            extensions_1.name = "Extension 1";
-            extensions_1.description = "description extension 1";
-            extensions_1.type = ExtensionType.project;
-            extensions_1.active = true;
-            extensions_1.deleted = false;
-            extensions_1.color = "blue-madison";
-            extensions_1.tariff_included = tariff_1;
-            extensions_1.configuration = "{\"price\":1000,\"count\":100}";
-            extensions_1.save();
-
-            Model_ProductExtension extensions_2 = new Model_ProductExtension();
-            extensions_2.name = "Extension 2";
-            extensions_2.description = "description extension 2";
-            extensions_2.type = ExtensionType.log;
-            extensions_2.active = true;
-            extensions_2.deleted = false;
-            extensions_2.color = "blue-chambray";
-            extensions_2.tariff_optional = tariff_1;
-            extensions_2.configuration = "{\"price\":400,\"count\":2}";
-            extensions_2.save();
 
             return ok();
         } catch (Exception e) {

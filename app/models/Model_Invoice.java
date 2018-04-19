@@ -131,45 +131,45 @@ public class Model_Invoice extends BaseModel {
      */
     @JsonIgnore
     public void setItems() {
-
-        Model_Product product = getProduct();
-        if (product == null) throw new NullPointerException("Product is not set yet for this invoice.");
-
-        for (Model_ProductExtension extension : product.extensions) {
-
-            Model_InvoiceItem item = new Model_InvoiceItem();
-            item.name = extension.name;
-            item.unit_price = extension.getConfigPrice() * 30;
-
-            switch (extension.type) {
-                case project: {
-                    item.quantity = ((Configuration_Project) extension.getConfiguration()).count;
-                    break;
-                }
-                case log: {
-                    item.quantity = ((Configuration_Log) extension.getConfiguration()).count;
-                    break;
-                }
-                case rest_api: {
-                    item.quantity = ((Configuration_RestApi) extension.getConfiguration()).available_requests;
-                    break;
-                }
-                case instance: {
-                    item.quantity = ((Configuration_Instance) extension.getConfiguration()).count;
-                    break;
-                }
-                case participant: {
-                    item.quantity = ((Configuration_Participant) extension.getConfiguration()).count;
-                    break;
-                }
-                default: item.quantity = 1L;
-            }
-
-            item.unit_name = "Pcs";
-            item.currency = Currency.USD;
-
-            invoice_items.add(item);
-        }
+//
+//        Model_Product product = getProduct();
+//        if (product == null) throw new NullPointerException("Product is not set yet for this invoice.");
+//
+//        for (Model_ProductExtension extension : product.extensions) {
+//
+//            Model_InvoiceItem item = new Model_InvoiceItem();
+//            item.name = extension.name;
+//            item.unit_price = extension.getConfigPrice() * 30;
+//
+//            switch (extension.type) {
+//                case project: {
+//                    item.quantity = ((Configuration_Project) extension.getConfiguration()).count;
+//                    break;
+//                }
+//                case log: {
+//                    item.quantity = ((Configuration_Log) extension.getConfiguration()).count;
+//                    break;
+//                }
+//                case rest_api: {
+//                    item.quantity = ((Configuration_RestApi) extension.getConfiguration()).available_requests;
+//                    break;
+//                }
+//                case instance: {
+//                    item.quantity = ((Configuration_Instance) extension.getConfiguration()).count;
+//                    break;
+//                }
+//                case participant: {
+//                    item.quantity = ((Configuration_Participant) extension.getConfiguration()).count;
+//                    break;
+//                }
+//                default: item.quantity = 1L;
+//            }
+//
+//            item.unit_name = "Pcs";
+//            item.currency = Currency.USD;
+//
+//            invoice_items.add(item);
+//        }
     }
 
     @JsonIgnore
