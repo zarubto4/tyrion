@@ -127,32 +127,29 @@ public class Controller_Finance_TariffExtension extends _BaseController {
             // Get and Validate Object
             Swagger_TariffExtension_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_TariffExtension_New.class);
 
-            try {
-                ExtensionType type = ExtensionType.valueOf(help.extension_type);
-            } catch (Exception e) {
-                return notFound("Extension Type not found");
-            }
-
             Model_TariffExtension extension = new Model_TariffExtension();
             extension.name = help.name;
             extension.description = help.description;
             extension.color = help.color;
-            extension.type = ExtensionType.valueOf(help.extension_type);
             extension.active = true;
 
+            try {
+                ExtensionType type = ExtensionType.valueOf(help.extension_type);
+                extension.type = type;
+            } catch (Exception e) {
+                return notFound("Extension Type not found");
+            }
 
             // Config Validation
             try {
 
                 Object config = Configuration.getConfiguration(extension.type, help.config);
+                extension.configuration = Json.toJson(config).toString();
 
             } catch (Exception e) {
                 logger.warn("Tariff Extension Create - Invalid Json Format ");
                 return badRequest("Invalid Configuration Json");
             }
-
-            Object config = Configuration.getConfiguration(extension.type, help.config);
-            extension.configuration = Json.toJson(config).toString();
 
             extension.save();
 
@@ -199,21 +196,22 @@ public class Controller_Finance_TariffExtension extends _BaseController {
 
             // Kontrola objektu
             Model_TariffExtension extension = Model_TariffExtension.getById(extension_id);
+            if(extension == null) {
+                return notFound("Invalid extension id.");
+            }
 
             extension.name = help.name;
             extension.description = help.description;
             extension.color = help.color;
-            extension.active = true;
 
             // Config Validation
             try {
                 Object config = Configuration.getConfiguration(extension.type, help.config);
+                extension.configuration = Json.toJson(config).toString();
             } catch (Exception e) {
                 logger.warn("Tariff Extension Create - Invalid Json Format ");
                 return badRequest("Invalid Configuration Json");
             }
-
-            extension.configuration = Json.toJson(Configuration.getConfiguration(extension.type, help.config)).toString();
 
             extension.update();
 
