@@ -16,8 +16,9 @@ import utilities.enums.PaymentMethod;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.financial.extensions.extensions.Extension;
 import utilities.logger.Logger;
-import utilities.model.NamedModel;
+import utilities.model.OrderedNamedModel;
 import utilities.swagger.input.Swagger_TariffLabel;
 import utilities.swagger.input.Swagger_TariffLabelList;
 
@@ -25,11 +26,12 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @ApiModel(value = "Tariff", description = "Model of Tariff")
 @Table(name="Tariff")
-public class Model_Tariff extends NamedModel {
+public class Model_Tariff extends OrderedNamedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -43,8 +45,6 @@ public class Model_Tariff extends NamedModel {
 
     @Enumerated(EnumType.STRING) @JsonIgnore public BusinessModel business_model;
 
-                            public Integer order_position;
-
                             public boolean company_details_required;
                             public boolean payment_details_required;
                             public boolean payment_method_required;
@@ -55,8 +55,16 @@ public class Model_Tariff extends NamedModel {
                             public String awesome_icon;
                 @JsonIgnore public String labels_json;
 
-   @JsonIgnore @OneToMany(mappedBy="tariff_included", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_ProductExtension> extensions_included = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="tariff_optional", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_ProductExtension> extensions_optional = new ArrayList<>();
+    @JoinTable(name = "tariff_extensions_included")
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_TariffExtension> extensions_included = new ArrayList<>();
+
+    @JoinTable(name = "tariff_extensions_recommended")
+    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_TariffExtension> extensions_recommended = new ArrayList<>();
+
+    /* CONSTUCTOR *****-----------------------------------------------------------------------------------------------------*/
+    public Model_Tariff() {
+        super(find);
+    }
 
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -127,22 +135,24 @@ public class Model_Tariff extends NamedModel {
     }
 
     @JsonProperty
-    public List<Model_ProductExtension> extensions_included() {
+    public List<Model_TariffExtension> extensions_included() {
+        // TODO order
         try {
             this.check_update_permission();
-            return Model_ProductExtension.find.query().where().eq("tariff_included.id", id).orderBy("order_position").findList();
+            return extensions_included;
         } catch (_Base_Result_Exception e){
-            return Model_ProductExtension.find.query().where().eq("tariff_included.id", id).eq("active", true).orderBy("order_position").findList();
+            return extensions_included.stream().filter(ex -> ex.active).collect(Collectors.toList());
         }
     }
 
     @JsonProperty
-    public List<Model_ProductExtension> extensions_optional() {
+    public List<Model_TariffExtension> extensions_recommended() {
+        // TODO order
         try {
             this.check_update_permission();
-            return  Model_ProductExtension.find.query().where().eq("tariff_optional.id", id).orderBy("order_position").findList();
+            return extensions_recommended;
         } catch (_Base_Result_Exception e){
-            return  Model_ProductExtension.find.query().where().eq("tariff_optional.id", id).eq("active", true).orderBy("order_position").findList();
+            return extensions_recommended.stream().filter(ex -> ex.active).collect(Collectors.toList());
         }
     }
 
@@ -153,11 +163,12 @@ public class Model_Tariff extends NamedModel {
         try {
             Long total_price = 0L;
 
-            for (Model_ProductExtension extension : this.extensions_included) {
-                Long price = extension.getDailyPrice();
+            for (Model_TariffExtension extension : this.extensions_included) {
+                Long price = Extension.getDailyPrice(extension.type, extension.configuration);
 
-                if (price != null)
+                if (price != null) {
                     total_price += price;
+                }
             }
             return (double) total_price;
 
@@ -165,50 +176,6 @@ public class Model_Tariff extends NamedModel {
             logger.internalServerError(e);
             return 0d;
         }
-    }
-
-
-
-/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override
-    public void save() {
-
-        order_position = Model_Tariff.find.query().findCount() + 1;
-        super.save();
-    }
-
-/* ORDER ---------------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient
-    public void up() {
-
-        check_update_permission();
-
-        Model_Tariff up = Model_Tariff.find.query().where().eq("order_position", (order_position-1) ).findOne();
-        if (up == null) return;
-
-        up.order_position += 1;
-        up.update();
-
-        this.order_position -= 1;
-        this.update();
-    }
-
-    @JsonIgnore @Transient
-    public void down() {
-
-        check_update_permission();
-
-        Model_Tariff down = Model_Tariff.find.query().where().eq("order_position", (order_position+1) ).findOne();
-        if (down == null) return;
-
-        down.order_position -= 1;
-        down.update();
-
-        this.order_position += 1;
-        this.update();
-
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

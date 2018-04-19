@@ -1,6 +1,7 @@
 package utilities.financial.extensions.extensions;
 
 import utilities.enums.ExtensionType;
+import utilities.financial.extensions.configurations.Configuration;
 
 /**
  * Defines common behavior of every product Extension.
@@ -48,6 +49,32 @@ public interface Extension {
      * @return The String description of the Extension.
      */
     String getDescription();
+
+    public static Long getDailyPrice(ExtensionType type, String configurationString) throws Exception {
+        Class<? extends Extension> extensionClass = type.getExtensionClass();
+        if(extensionClass == null) {
+          throw new IllegalStateException("No extension class.");
+        }
+
+        Extension extension = extensionClass.newInstance();
+        Object configuration = Configuration.getConfiguration(type, configurationString);
+
+        return extension.getDailyPrice(configuration);
+
+    }
+
+    public static Long getActualPrice(ExtensionType type, String configurationString) throws Exception {
+        Class<? extends Extension> extensionClass = type.getExtensionClass();
+        if(extensionClass == null) {
+            throw new IllegalStateException("No extension class.");
+        }
+
+        Extension extension = extensionClass.newInstance();
+        Object configuration = Configuration.getConfiguration(type, configurationString);
+
+        return extension.getActualPrice(configuration);
+
+    }
 
 
 }

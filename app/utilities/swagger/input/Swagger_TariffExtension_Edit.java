@@ -11,9 +11,6 @@ public class Swagger_TariffExtension_Edit extends Swagger_NameAndDescription {
     @Constraints.Required
     public String color;
 
-    @Constraints.Required
-    public boolean included;
-
     @Constraints.Required @ApiModelProperty(required = true, value = "Json in String")
     public String config;
 

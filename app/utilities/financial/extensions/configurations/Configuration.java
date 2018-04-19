@@ -41,7 +41,7 @@ public interface Configuration {
             }
 
             case homer_server:{
-                return BaseModel.baseFormFactory.formFromJsonWithValidation(Configuration_Project.class, Json.parse(configuration));
+                return BaseModel.baseFormFactory.formFromJsonWithValidation(Configuration_HomerServer.class, Json.parse(configuration));
             }
 
             case participant:{

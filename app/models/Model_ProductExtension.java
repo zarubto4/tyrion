@@ -44,9 +44,6 @@ public class Model_ProductExtension extends NamedModel {
 
                                                     @JsonIgnore @ManyToOne public Model_Product product;
 
-                                                    @JsonIgnore @ManyToOne public Model_Tariff tariff_included;
-                                                    @JsonIgnore @ManyToOne public Model_Tariff tariff_optional;
-
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
 
@@ -58,20 +55,6 @@ public class Model_ProductExtension extends NamedModel {
             return getDoubleDailyPrice();
 
         }catch (_Base_Result_Exception e){
-            return null;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-
-    @JsonProperty @ApiModelProperty(required = false, value ="Visible only for Administrator with Special Permission") @Transient  @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Boolean include() {
-        try {
-            check_update_permission();
-            return tariff_included != null;
-        } catch (_Base_Result_Exception e){
-            //nothing
             return null;
         } catch (Exception e) {
             return null;
@@ -100,166 +83,43 @@ public class Model_ProductExtension extends NamedModel {
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
     @JsonIgnore @Override
     public void save() {
-
-        if (product == null) {
-            if (tariff_included != null) {
-                order_position = find.query().where().eq("tariff_included.id", tariff_included.id).findCount() + 1;
-            } else {
-                order_position = find.query().where().eq("tariff_optional.id", tariff_optional.id).findCount() + 1;
-            }
+        if (order_position == null || order_position < 0) {
+                order_position = find.query().where().eq("product.id", product.id).findCount() + 1;
         }
+
         super.save();
     }
 
     @JsonIgnore @Override
     public boolean delete() {
-
         int pointer = 1;
-
-        if (tariff_included != null) {
-            for (Model_ProductExtension extension : tariff_included.extensions_included()) {
-
-                if (!extension.id.equals(this.id)) {
-                    extension.order_position = pointer++;
-                    extension.update();
-                }
+        for (Model_ProductExtension extension : product.extensions) {
+            if (!extension.id.equals(this.id)) {
+                extension.order_position = pointer++;
+                extension.update();
             }
         }
-        if (tariff_optional != null) {
-            for (Model_ProductExtension extension : tariff_optional.extensions_optional()) {
 
-                if (!extension.id.equals(this.id)) {
-                    extension.order_position = pointer++;
-                    extension.update();
-                }
-            }
-        }
-        if (product != null) {
-            for (Model_ProductExtension extension : product.extensions) {
-
-                if (!extension.id.equals(this.id)) {
-                    extension.order_position = pointer++;
-                    extension.update();
-                }
-            }
-        }
         return super.delete();
     }
 
     @JsonIgnore @Override
     public void update() {
-
-        cache_price.put(this.id, this.getDailyPrice());
+        cache_price.remove(this.id);
         super.update();
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public void up() throws _Base_Result_Exception {
-
-        check_update_permission();
-
-        if (order_position == 1) return;
-
-        if (tariff_included != null) {
-            tariff_included.extensions_included.get(order_position - 2).order_position = this.order_position;
-            tariff_included.extensions_included.get(order_position - 2).update();
-        } else {
-
-            tariff_optional.extensions_optional.get(order_position - 2).order_position = this.order_position;
-            tariff_optional.extensions_optional.get(order_position - 2).update();
-        }
-
-        this.order_position -= 1;
-        this.update();
-    }
-
-    @JsonIgnore
-    public void down() throws _Base_Result_Exception {
-
-        check_update_permission();
-
-        if (tariff_included != null) {
-
-            tariff_included.extensions_included.get(order_position).order_position = tariff_included.order_position - 1;
-            tariff_included.extensions_included.get(order_position).update();
-
-        } else {
-
-            tariff_optional.extensions_optional.get(order_position).order_position = tariff_optional.order_position - 1;
-            tariff_optional.extensions_optional.get(order_position).update();
-        }
-
-        this.order_position += 1;
-        this.update();
-
-    }
-
-    /**
-     * This method is used to get calculated price. Credit can be spent more than once per day.
-     * Returned value corresponds to the daily period of spending.
-     * @return Long price divided by spendDailyPeriod.
-     */
-    @JsonIgnore
-    public Long getActualPrice() {
+    public Object getConfiguration() {
         try {
 
-            logger.trace("getActualPrice: Getting price for extension of type '{}' with id: {}", this.type.name(), this.id);
-
-            Extension extension = getExtensionType();
-            if (extension == null) return null;
-
-            Object configuration = getConfiguration();
-            if (configuration == null) return null;
-
-            logger.debug("getActualPrice: Got extension type and configuration.");
-
-            Long price = extension.getActualPrice(configuration);
-
-            logger.debug("getActualPrice: Returned value is {}", price);
-
-            return price;
+            return  Configuration.getConfiguration(type, configuration);
 
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
-        }
-    }
-
-    /**
-     * Method gets calculated price of an extension for one day.
-     * @return Long price of extension for one day.
-     */
-    @JsonIgnore
-    public Long getDailyPrice() {
-        try {
-
-            logger.trace("getDailyPrice: Getting price for extension of type {}", this.type.name());
-
-            Long price = cache_price.get(id);
-            if (price == null) {
-
-                Extension extension = getExtensionType();
-                if (extension == null) return null;
-
-                Object configuration = getConfiguration();
-                if (configuration == null) return null;
-
-                logger.debug("getDailyPrice: Got extension type and configuration.");
-
-                price = extension.getDailyPrice(configuration);
-
-                cache_price.put(id, price);
-            } else {
-                logger.debug("getDailyPrice: Returned from cache");
-            }
-
-            return price;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return 0l;
         }
     }
 
@@ -271,9 +131,11 @@ public class Model_ProductExtension extends NamedModel {
     @JsonIgnore
     public Double getDoubleDailyPrice() {
         try {
-
-            Long price = getDailyPrice();
-            if (price == null) return null;
+            Long price = cache_price.get(id);
+            if(price == null) {
+                price = Extension.getDailyPrice(type, configuration);
+                cache_price.put(this.id, price);
+            }
 
             return (double) price;
 
@@ -283,131 +145,21 @@ public class Model_ProductExtension extends NamedModel {
         }
     }
 
-    /**
-     * Method serves for information purposes only.
-     * Returned value is shown to users, because real price is Double USD * 1000.
-     * @return Real price in Double.
-     */
     @JsonIgnore
-    public Double getDoubleConfigPrice() {
+    public Long getActualPrice() {
         try {
-
-            logger.trace("getDoubleConfigPrice: Getting price for extension of type {}", this.type.name());
-
-            Extension extension = getExtensionType();
-            if (extension == null) return null;
-
-            Object configuration = getConfiguration();
-            if (configuration == null) return null;
-
-            logger.debug("getDoubleConfigPrice: Got extension type and configuration.");
-
-            return ((double) extension.getConfigPrice(configuration));
+            return Extension.getActualPrice(type, configuration);
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
+            return 0L;
         }
     }
 
-    @JsonIgnore
-    public Long getConfigPrice() {
-        try {
-
-            logger.trace("getConfigPrice: Getting price for extension of type {}", this.type.name());
-
-            Extension extension = getExtensionType();
-            if (extension == null) return null;
-
-            Object configuration = getConfiguration();
-            if (configuration == null) return null;
-
-            logger.debug("getConfigPrice: Got extension type and configuration.");
-
-            return extension.getConfigPrice(configuration);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
 
     @JsonIgnore
     public boolean isActive() {
         return active;
-    }
-
-    @JsonIgnore
-    public String getTypeName() {
-
-        return type.name();
-    }
-
-    @JsonIgnore
-    public Extension getExtensionType() {
-        try {
-
-            Class<? extends Extension> clazz = this.type.getExtensionClass();
-
-            Extension extension = null;
-
-            if (clazz != null) {
-                extension = clazz.newInstance();
-            }
-
-            return extension;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonIgnore
-    public String getExtensionTypeName() {
-
-        Extension extension = getExtensionType();
-        if (extension == null) return null;
-
-        return extension.getName();
-    }
-
-    @JsonIgnore
-    public String getExtensionTypeDescription() {
-
-        Extension extension = getExtensionType();
-        if (extension == null) return null;
-
-        return extension.getDescription();
-    }
-
-
-    @JsonIgnore
-    public Model_ProductExtension copy() {
-
-        Model_ProductExtension extension = new Model_ProductExtension();
-        extension.name = this.name;
-        extension.description = this.description;
-        extension.color = this.color;
-        extension.type = this.type;
-        extension.active = true;
-        extension.deleted = false;
-        extension.configuration = this.configuration;
-
-        return extension;
-    }
-
-
-    @JsonIgnore
-    public Object getConfiguration() {
-        try {
-
-          return  Configuration.getConfiguration(type, configuration);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
