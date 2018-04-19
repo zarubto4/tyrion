@@ -171,7 +171,8 @@ public class Controller_Security extends _BaseController {
             token.where_logged  = PlatformAccess.BECKI_WEBSITE;
 
             // Zjistím kde je přihlášení (user-Agent je třeba "Safari v1.30" nebo "Chrome 12.43" atd..)
-            if ( Http.Context.current().request().headers().get("User-Agent")[0] != null) token.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
+            String[] userAgents = Http.Context.current().request().headers().get("User-Agent");
+            if ( userAgents != null && userAgents[0] != null) token.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
             else  token.user_agent = "Unknown browser";
 
             // Ukládám do databáze
