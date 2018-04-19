@@ -36,9 +36,10 @@ public class WS_Message_Hardware_set_hardware_groups extends WS_AbstractMessage 
         request.put("message_channel", Model_Hardware.CHANNEL);
         request.set("uuid_ids", Json.toJson(hardware_ids) );
         request.put("hardware_group_ids", Json.toJson(group_ids));
-        request.put("command_type", command_type.name() );
+        request.put("command_type", command_type.name());
 
         return request;
+
     }
 
 

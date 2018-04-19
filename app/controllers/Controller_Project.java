@@ -333,6 +333,7 @@ public class Controller_Project extends _BaseController {
                 }
             }
 
+            // Pro Registrované uživatele
             for (Model_Person person : listIn) {
 
                 if (project.isParticipant(person)) continue;
@@ -351,7 +352,9 @@ public class Controller_Project extends _BaseController {
                 try {
 
                     new Email()
-                            .text("User " + Email.bold(full_name) + " invites you to collaborate on the project " + Email.bold(project.name) + ". If you would like to participate in it, log in to your Byzance account.")
+                            .text("User " + Email.bold(full_name) + " invites you to collaborate on the project ")
+                            .link(project.name, Server.becki_mainUrl + "/projects")
+                            .text(". If you would like to participate in it, log in to your Byzance account.")
                             .send(person.email, "Invitation to Collaborate");
 
                 } catch (Exception e) {

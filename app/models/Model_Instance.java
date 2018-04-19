@@ -637,8 +637,9 @@ public class Model_Instance extends TaggedModel {
                 }
 
                 for(Swagger_InstanceSnapShotConfigurationFile grids_collection : settings.grids_collections){
-                    for(Swagger_InstanceSnapShotConfigurationProgram grids_program : collection.grid_programs){
-                        if(grids_program.grid_program_id == help.grid_app_id){
+                    for(Swagger_InstanceSnapShotConfigurationProgram grids_program : grids_collection.grid_programs){
+                        if(grids_program.grid_program_id.equals( help.grid_app_id) || grids_program.grid_program_version_id.equals(help.grid_app_id)){
+                            logger.debug("cloud_verification_token_GRID:: set collection and program");
                             collection = grids_collection;
                             program = grids_program;
                             break;

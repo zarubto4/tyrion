@@ -828,12 +828,13 @@ public class Controller_Grid extends _BaseController {
         try {
 
 
-            System.out.println("get_grid_byQR_Token_forMobile: Instance ID::  {}" + instance_id);
-            System.out.println("get_grid_byQR_Token_forMobile: Grid Program ID:: {}" + grid_program_id);
+            logger.trace("get_grid_byQR_Token_forMobile: Instance ID::  {}" , instance_id);
+            logger.trace("get_grid_byQR_Token_forMobile: Grid Program ID:: {}" , grid_program_id);
 
             Model_Instance instance = Model_Instance.getById(instance_id);
 
             if(instance.current_snapshot() == null){
+                logger.debug("get_grid_byQR_Token_forMobile: Instance ID:: {} not running", instance_id);
                 return badRequest("Instance not running");
             }
 

@@ -178,17 +178,13 @@ public class Server {
             logger.warn("setServerValues - local macAddress: {}", mac_address);
 
             // Speciální podmínka, která nastaví podklady sice v Developerském modu - ale s URL adresami tak, aby byly v síti přístupné
-            if (mac_address.equals("60:f8:1d:bc:71:42")|| // Mac Mini Server Wifi
-                    mac_address.equals("ac:87:a3:18:a1:1c")|| // Mac Mini Server Ethernet
-                    mac_address.equals("2c:4d:54:4f:68:6e")) { // Linux Lexa
 
-                logger.warn("setConstants - special settings for DEV office servers.");
-                logger.warn("setConstants - local URL: {}", IP_Founder.getLocalHostLANAddress().getHostAddress());
+            logger.warn("setConstants - special settings for DEV office servers.");
+            logger.warn("setConstants - local URL: {}", IP_Founder.getLocalHostLANAddress().getHostAddress());
 
-                httpAddress = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
-                wsAddress   = "ws://"   + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
-                becki_mainUrl = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress();
-            }
+            httpAddress = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
+            wsAddress   = "ws://"   + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
+            becki_mainUrl = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":8080";
 
             // Nastavení adresy, kde běží Grid APP
             grid_app_main_url       = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":8888";

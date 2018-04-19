@@ -151,7 +151,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                             program_config.grid_program_id = program.grid_program().id;
                             program_config.grid_program_version_id = program.grid_program_version.id;
                             program_config.snapshot_settings = GridAccess.PROJECT;
-                            program_config.connection_token = instance.id.toString() + "/" + program.grid_program_version.id.toString();
+                            program_config.connection_token = instance.id.toString() + "/" + program_config.grid_program_id;
 
                             project_config.grid_programs.add(program_config);
                         }
@@ -713,7 +713,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 /* Helper Class --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public Swagger_Mobile_Connection_Summary get_connection_summary(UUID grid_program_version_id,  Http.Context context) throws _Base_Result_Exception {
+    public Swagger_Mobile_Connection_Summary get_connection_summary(UUID grid_program_id,  Http.Context context) throws _Base_Result_Exception {
 
         // OBJEKT který se variabilně naplní a vrátí - ITS EMPTY!!!!
         Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
@@ -722,9 +722,26 @@ public class Model_InstanceSnapshot extends TaggedModel {
         Swagger_InstanceSnapShotConfigurationFile collection = null;
         Swagger_InstanceSnapShotConfigurationProgram program = null;
 
+        System.out.println("get_connection_summary:: ---------------------------");
+        System.out.println(" - actual Settings:: ");
+        System.out.println(Json.toJson(settings));
+        System.out.println("Looking for grid_program_id:: {} " + grid_program_id);
+
+        System.out.println("Start with For cycle");
         for(Swagger_InstanceSnapShotConfigurationFile grids_collection : settings.grids_collections){
-            for(Swagger_InstanceSnapShotConfigurationProgram grids_program : collection.grid_programs){ // FIXME must throw null pointer exception
-                if(grids_program.grid_program_version_id == grid_program_version_id){
+
+            System.out.println("grids_collection grid_project_id:: " + grids_collection.grid_project_id);
+            System.out.println("grids_collection grid_programs.size:: " + grids_collection.grid_programs.size());
+
+            for(Swagger_InstanceSnapShotConfigurationProgram grids_program : grids_collection.grid_programs){
+
+                System.out.println("grids_collection grids_program grid_program_id:: " + grids_program.grid_program_id);
+                System.out.println("grids_collection grids_program grid_program_version_id:: " + grids_program.grid_program_version_id);
+
+                if(grids_program.grid_program_id.equals( grid_program_id) || grids_program.grid_program_version_id.equals(grid_program_id) ){
+
+                    System.out.println("grids_collection set collection and program ");
+
                     collection = grids_collection;
                     program = grids_program;
                     break;
@@ -732,14 +749,13 @@ public class Model_InstanceSnapshot extends TaggedModel {
             }
         }
 
+        System.out.println(" IS Collection ok?? " + collection != null);
+        System.out.println(" IS program ok?? " + program != null);
+
+
         if(collection == null){
             logger.error("SnapShotConfigurationFile is missing return null");
             throw new Result_Error_NotFound(Swagger_InstanceSnapShotConfigurationFile.class);
-        }
-
-        if(program == null){
-            logger.error("SnapShotConfigurationFileProgram is missing return null");
-            throw new Result_Error_NotFound(Swagger_InstanceSnapShotConfigurationProgram.class);
         }
 
         // Nastavení SSL
@@ -756,6 +772,9 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
             case PUBLIC: {
 
+
+                System.out.println("program.snapshot_settings - PUBLIC");
+
                 summary.grid_app_url += collection.grid_project_id + "/"  + program.grid_program_id + "/" + "public_key";
                 summary.grid_program = Model_GridProgramVersion.getById(program.grid_program_version_id).file.get_fileRecord_from_Azure_inString();
                 summary.grid_project_id = collection.grid_project_id;
@@ -768,13 +787,21 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
             case PROJECT: {
 
+                System.out.println("program.snapshot_settings - PROJECT");
+
                 // Check Token
                 String token = new Authentication().getUsername(context);
-                if (token == null) throw new Result_Error_PermissionDenied();
+                if (token == null) {
+                    System.out.println("Token se kterým se uživatel přihlašuje je prázdný - proto vracím zamítavou zprávu vyžadující login!");
+                    throw new Result_Error_Unauthorized();
+                }
+
+                System.out.println("Token mám : " + token );
 
                 // Check Person By Token (who send request)
                 Model_Person person = _BaseController.person();
-                if (person == null) throw new Result_Error_PermissionDenied();
+
+                System.out.println("Person Mám: " + token );
 
                 //Chekc Permission
                 check_read_permission();

@@ -1483,6 +1483,8 @@ public class Model_Hardware extends TaggedModel {
     public WS_Message_Hardware_set_hardware_groups set_hardware_groups_on_hardware(List<UUID> hardware_groups_ids, Enum_type_of_command command) {
         try {
 
+            System.out.println("WS_Message_Hardware_set_hardware_groups: hardware_group_ids set: hardware_groups_ids" + hardware_groups_ids.toString() + " Command: " + command);
+
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_hardware_groups().make_request(Collections.singletonList(this), hardware_groups_ids, command), 1000 * 5, 0, 2);
 
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_hardware_groups.class, node);
@@ -1856,7 +1858,7 @@ public class Model_Hardware extends TaggedModel {
       */
 /* CHECK BOARD RIGHT FIRMWARE || BACKUP || BOOTLOADER STATUS -----------------------------------------------------------*/
 
-    // Kontrola up_to_date harwaru
+    // Kontrola up_to_date hardwaru
     @JsonIgnore
     public void hardware_firmware_state_check() {
         try {
@@ -1890,16 +1892,16 @@ public class Model_Hardware extends TaggedModel {
 
             logger.debug("hardware_firmware_state_check - Summary information of connected master hardware: ID = {}", this.id);
 
-            logger.debug("hardware_firmware_state_check - Settings check ",this.id);
+            logger.debug("hardware_firmware_state_check - Settings check ", this.id);
             if (!check_settings(report)) return;
 
-            logger.debug("hardware_firmware_state_check - Firmware check ",this.id);
+            logger.debug("hardware_firmware_state_check - Firmware check ", this.id);
             check_firmware(report);
 
-            logger.debug("hardware_firmware_state_check - Backup check ",this.id);
+            logger.debug("hardware_firmware_state_check - Backup check ", this.id);
             check_backup(report);
 
-            logger.debug("hardware_firmware_state_check - Bootloader check ",this.id);
+            logger.debug("hardware_firmware_state_check - Bootloader check ", this.id);
             check_bootloader(report);
 
         } catch (Exception e) {
@@ -1956,6 +1958,7 @@ public class Model_Hardware extends TaggedModel {
         for(UUID hardware_group_id : get_hardware_group_ids()) {
             // Pokud neobsahuje přidám - ale abych si ušetřil čas - nastavím rovnou celý seznam - Homer si s tím poradí
             if (overview.hardware_group_ids == null || overview.hardware_group_ids.isEmpty() || !overview.hardware_group_ids.contains(hardware_group_id)) {
+                System.out.println("check_settings - Nastavení Hardware Groups!!!!!!!! ");
                 set_hardware_groups_on_hardware(get_hardware_group_ids(), Enum_type_of_command.SET);
                 break;
             }
