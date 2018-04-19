@@ -1047,7 +1047,7 @@ public class Model_Hardware extends TaggedModel {
 
             // Nastavím server_id - pokud nekoresponduje s tím, který má HW v databázi uložený
             if (help.websocket_identificator != null && (device.connected_server_id == null || !device.connected_server_id.equals(help.websocket_identificator))) {
-                logger.debug("master_device_Connected:: Changing server id property to {} ", help.websocket_identificator);
+                logger.warn("master_device_Connected:: Changing server id property to {} ", help.websocket_identificator);
                 device.connected_server_id = help.websocket_identificator;
                 device.update();
             }
@@ -1862,15 +1862,15 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public void hardware_firmware_state_check() {
         try {
-            logger.debug("hardware_firmware_state_check procedure");
+            logger.warn("hardware_firmware_state_check procedure");
 
             WS_Message_Hardware_overview_Board report = get_devices_overview();
 
             if (report.error_message != null) {
-                logger.debug("hardware_firmware_state_check - Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: {} " , this.id, report.error_code, report.error_message);
+                logger.warn("hardware_firmware_state_check - Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: {} " , this.id, report.error_code, report.error_message);
 
                 if (report.error_code.equals(ErrorCode.HARDWARE_IS_OFFLINE.error_code())) {
-                    logger.debug("hardware_firmware_state_check -: Report Device ID: {} is offline" , this.id);
+                    logger.warn("hardware_firmware_state_check -: Report Device ID: {} is offline" , this.id);
                     return;
                 }
             }
@@ -1881,27 +1881,27 @@ public class Model_Hardware extends TaggedModel {
             }
 
             if (!report.online_status) {
-                logger.debug("hardware_firmware_state_check - device is offline");
+                logger.warn("hardware_firmware_state_check - device is offline");
                 return;
             }
 
             if (project().id == null) {
-                logger.debug("hardware_firmware_state_check device id:: {} - No project - synchronize is not allowed.", this.id);
+                logger.warn("hardware_firmware_state_check device id:: {} - No project - synchronize is not allowed.", this.id);
                 return;
             }
 
-            logger.debug("hardware_firmware_state_check - Summary information of connected master hardware: ID = {}", this.id);
+            logger.warn("hardware_firmware_state_check - Summary information of connected master hardware: ID = {}", this.id);
 
-            logger.debug("hardware_firmware_state_check - Settings check ", this.id);
+            logger.warn("hardware_firmware_state_check - Settings check ", this.id);
             if (!check_settings(report)) return;
 
-            logger.debug("hardware_firmware_state_check - Firmware check ", this.id);
+            logger.warn("hardware_firmware_state_check - Firmware check ", this.id);
             check_firmware(report);
 
-            logger.debug("hardware_firmware_state_check - Backup check ", this.id);
+            logger.warn("hardware_firmware_state_check - Backup check ", this.id);
             check_backup(report);
 
-            logger.debug("hardware_firmware_state_check - Bootloader check ", this.id);
+            logger.warn("hardware_firmware_state_check - Bootloader check ", this.id);
             check_bootloader(report);
 
         } catch (Exception e) {
@@ -2044,14 +2044,15 @@ public class Model_Hardware extends TaggedModel {
     private void check_firmware(WS_Message_Hardware_overview_Board overview) {
         try {
 
+            logger.warn("Firmware:: Device id: {} : CHECK FIRMWARE --------------------------------------------------------------------", this.id);
             // Pokud uživatel nechce DB synchronizaci ingoruji
             if (!this.database_synchronize) {
-                logger.trace("check_firmware: Device id: {} : database_synchronize is forbidden - change parameters not allowed!", this.id);
+                logger.warn("check_firmware: Device id: {} : database_synchronize is forbidden - change parameters not allowed!", this.id);
                 return;
             }
 
             if (get_actual_c_program_version() == null) {
-                logger.trace("check_firmware: Device id: {} : Actual firmware by DB not recognized :: {}", this.id, overview.binaries.firmware.build_id);
+                logger.warn("check_firmware: Device id: {} : Actual firmware by DB not recognized :: {}", this.id, overview.binaries.firmware.build_id);
             }
 
             if (overview.binaries.firmware == null) {
@@ -2085,7 +2086,7 @@ public class Model_Hardware extends TaggedModel {
             // Ale jestli mám udpate firmwaru a backupu pak k tomu dojít nesmí!
             // Poměrně krkolomné řešení a HNUS kod - ale chyba je výjmečná a stává se jen sporadicky těsně před nebo po restartu serveru
             if (firmware_plans.size() > 1) {
-                logger.debug("check_firmware: Device id: {} : there is more than one active firmware_plans. Its time to override it!", this.id);
+                logger.warn("check_firmware: Device id: {} : there is more than one active firmware_plans. Its time to override it!", this.id);
                 for (int i = 1; i < firmware_plans.size(); i++) {
                     firmware_plans.get(i).state = HardwareUpdateState.OBSOLETE;
                     firmware_plans.get(i).update();
@@ -2094,18 +2095,18 @@ public class Model_Hardware extends TaggedModel {
 
             if (!firmware_plans.isEmpty()) {
 
-                logger.debug("check_firmware: Device id: {} : existují nedokončené procedury", this.id);
+                logger.warn("check_firmware: Device id: {} : existují nedokončené procedury", this.id);
 
                 Model_HardwareUpdate plan = firmware_plans.get(0);
 
-                logger.debug("Plan:: {} status: {} ", plan.id, plan.state);
+                logger.warn("Plan:: {} status: {} ", plan.id, plan.state);
 
                 // Mám shodu firmwaru oproti očekávánemů
                 if (get_actual_c_program_version() != null) {
-
-                    logger.debug("Firmware:: Device id: {} :  Co aktuálně je na HW podle Tyriona??:: CProgram Name {} Version Name {} Build Id {} ", this.id, get_actual_c_program_version().get_c_program().name, get_actual_c_program_version().name,  get_actual_c_program_version().compilation.firmware_build_id);
-                    logger.debug("Firmware:: Device id: {} :  Co aktuálně je na HW podle Homera??:: {}", this.id, overview.binaries.firmware.build_id);
-                    logger.debug("Firmware:: Device id: {} :  Co očekává nedokončená procedura??:: CProgram Name {} Version Name {} Build Id {} ", this.id, plan.c_program_version_for_update.get_c_program().name, plan.c_program_version_for_update.name, plan.c_program_version_for_update.compilation.firmware_build_id);
+                    logger.warn("Firmware:: Device id: {} :   --------------------------------------------------------------------", this.id);
+                    logger.warn("Firmware:: Device id: {} :  Co aktuálně je na HW podle Tyriona??:: CProgram Name {} Version Name {} Build Id {} ", this.id, get_actual_c_program_version().get_c_program().name, get_actual_c_program_version().name,  get_actual_c_program_version().compilation.firmware_build_id);
+                    logger.warn("Firmware:: Device id: {} :  Co aktuálně je na HW podle Homera??:: {}", this.id, overview.binaries.firmware.build_id);
+                    logger.warn("Firmware:: Device id: {} :  Co očekává nedokončená procedura??:: CProgram Name {} Version Name {} Build Id {} ", this.id, plan.c_program_version_for_update.get_c_program().name, plan.c_program_version_for_update.name, plan.c_program_version_for_update.compilation.firmware_build_id);
 
                     // Verze se rovnají
                     if (overview.binaries.firmware.build_id.equals(plan.c_program_version_for_update.compilation.firmware_build_id)) {

@@ -345,7 +345,7 @@ public class Model_Project extends TaggedModel {
     public List<UUID> getBlocksIds() {
 
         if (cache().gets(Model_Block.class) == null) {
-            cache().add(Model_Block.class, Model_Widget.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+            cache().add(Model_Block.class, Model_Block.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_Block.class);
@@ -370,10 +370,38 @@ public class Model_Project extends TaggedModel {
     }
 
     @JsonIgnore
+    public List<UUID> getHomerServerIds() {
+
+        if (cache().gets(Model_HomerServer.class) == null) {
+            cache().add(Model_HomerServer.class, Model_HomerServer.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_HomerServer.class);
+    }
+
+    @JsonIgnore
+    public List<Model_HomerServer> getHomerServers() {
+        try {
+
+            List<Model_HomerServer> list = new ArrayList<>();
+
+            for (UUID id : getHomerServerIds() ) {
+                list.add(Model_HomerServer.getById(id));
+            }
+
+            return list;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new ArrayList<>();
+        }
+    }
+
+    @JsonIgnore
     public List<UUID> getInstancesIds() {
 
         if (cache().gets(Model_Instance.class) == null) {
-            cache().add(Model_Instance.class, Model_Widget.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+            cache().add(Model_Instance.class, Model_Instance.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_Instance.class);
@@ -538,11 +566,19 @@ public class Model_Project extends TaggedModel {
                 project_stats.widgets = getWidgetsIds().size();
                 project_stats.blocks = getBlocksIds().size();
                 project_stats.instances = getInstancesIds().size();
+                project_stats.servers = getHomerServerIds().size();
 
                 project_stats.hardware_online = 0;
+                project_stats.instance_online = 0;
+                project_stats.servers_online = 0;
 
                 List<UUID> homer_server_list = Model_Hardware.find.query().where().eq("project.id", id).select("connected_server_id").setDistinct(true).findSingleAttributeList();
+
+                System.out.println("Počet prvků? : " + homer_server_list.size());
+
                 for(UUID homer_id: homer_server_list) {
+
+                    if(homer_id == null) continue;
 
                     try {
                         Model_HomerServer server = Model_HomerServer.getById(homer_id);
@@ -565,6 +601,18 @@ public class Model_Project extends TaggedModel {
                     } catch (Exception e) {
                         logger.error("project_stats: Homer Server ID: {} not found", homer_id);
                         // Nothing
+                    }
+                }
+
+                for(Model_HomerServer server : getHomerServers()) {
+                    if(server.online_state() == NetworkStatus.ONLINE) {
+                        ++project_stats.servers_online;
+                    }
+                }
+
+                for(Model_Instance instance : getInstances()) {
+                    if(instance.online_state() == NetworkStatus.ONLINE) {
+                        ++project_stats.instance_online;
                     }
                 }
 

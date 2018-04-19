@@ -17,4 +17,7 @@ public class Swagger_ProjectStats{
     @ApiModelProperty(required = true) @JsonProperty() public int widgets;
     @ApiModelProperty(required = true) @JsonProperty() public int blocks;
     @ApiModelProperty(required = true) @JsonProperty() public int instances;
+    @ApiModelProperty(required = true) @JsonProperty() public int instance_online;
+    @ApiModelProperty(required = true) @JsonProperty() public int servers;
+    @ApiModelProperty(required = true) @JsonProperty() public int servers_online;
 }

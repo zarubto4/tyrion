@@ -124,6 +124,8 @@ public class Server {
 
         setConstants();
 
+        cleanUpdateMess();
+
         ServerCache.init();
 
         try {
@@ -160,6 +162,14 @@ public class Server {
         RefreshTouch_echo_handler.startThread();
        // GoPay_PaymentCheck.startThread();
        // Fakturoid_InvoiceCheck.startThread();
+    }
+
+    /**
+     * Some time, after restart of Tyrion, we have more In Progress Updates on Hardware,
+     * So we Clean this mess
+     */
+    public static void cleanUpdateMess() {
+
     }
 
     /**
