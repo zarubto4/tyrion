@@ -6,7 +6,7 @@ import java.util.List;
 
 public class TM_Sim_Credit_list {
 
-    public Integer amount;
+    public double amount;
     public String currency;
     public boolean done;
     public Integer errorCode;

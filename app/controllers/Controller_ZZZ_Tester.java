@@ -78,7 +78,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test3() {
         try {
 
-
+            new Controller_Things_Mobile().test_of_all_apis();
 
             return ok();
         } catch (Exception e) {

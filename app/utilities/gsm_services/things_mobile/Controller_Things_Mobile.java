@@ -81,27 +81,13 @@ public class Controller_Things_Mobile {
 
         // PS podle dokumentace lze používat TAGY - Ty mi ale používat nebudeme
 
-        //--------- SIM LIST --------
-        // 1. Get All SimCards
-         //TM_Sim_List_list list = sim_list();
-        // System.out.println(Json.toJson(list));
-
-
-        //--------- SIM STATUS --------
-
-       // TM_Sim_Status_list status = sim_status(sim_card_id);
-       // System.out.println(Json.toJson(status));
-
 
         //--------- SIM ACTIVE --------
         //TM_Sim_Active active = sim_active(sim_card_id, simBarcode);
-
-       // System.out.println(Json.toJson(active));
+        //System.out.println(Json.toJson(active));
         //System.out.println("Je aktivovana? : " + active.done);
 
         //--------- SIM BLOCK ---------
-        //sim_block(sim_card_id);
-        //sim_block(sim_card_ids);
         //TM_Sim_Block blocked = sim_block(sim_card_id);
         //System.out.println(Json.toJson(blocked));
 
@@ -109,8 +95,17 @@ public class Controller_Things_Mobile {
         //TM_Sim_Unblock unblocked = sim_unblock(sim_card_id);
         //System.out.println(Json.toJson(unblocked));
 
-        //--------- SIM CREDIT --------
+        //--------- SIM LIST --------
+        // 1. Get All SimCards
+        //TM_Sim_List_list list = sim_list();
+        //System.out.println(Json.toJson(list));
 
+        //--------- SIM STATUS --------
+
+        //TM_Sim_Status_list status = sim_status(sim_card_id);
+        //System.out.println(Json.toJson(status));
+
+        //--------- SIM CREDIT --------
         //TM_Sim_Credit_list credit = sim_credit();
         //System.out.println(Json.toJson(credit));
 
@@ -119,21 +114,10 @@ public class Controller_Things_Mobile {
         System.out.println(Json.toJson(simName));
 
         //-------- UPDATE SIM TAG---------
-        TM_Update_Sim_Tag simTag = update_sim_tag(sim_card_id, name);
-        System.out.println(Json.toJson(simTag));
-
-        //sim_active(sim_card_id);
-
-        //sim_block(sim_card_id);
-        //2. Get One SimCards
-        // sim_list(sim_card_id);
-
-        //3. Get Array of IDS of SimCards
-        // sim_list(sim_card_ids); TODO
+        //TM_Update_Sim_Tag simTag = update_sim_tag(sim_card_id, name);
+        //System.out.println(Json.toJson(simTag));
 
 
-
-        // Atd..
     }
 
     /* Object API  ---------------------------------------------------------------------------------------------------------*/
@@ -383,14 +367,14 @@ public class Controller_Things_Mobile {
                             node_cdr.cdrCountry     = eeElement.getElementsByTagName("cdrCountry").item(0).getTextContent();
 
                             node.cdrs.add(node_cdr);
-                            System.out.println("TOTO JE node_cdr -----------" +node_cdr);
+
                         }
                     }
                     list.sims.add(node);
                 }
 
                 return list;
-            }else{
+            } else {
 
                 logger.error("sim_status:: Invalid Response: {}", response);
                 list.done = false;
@@ -416,7 +400,7 @@ public class Controller_Things_Mobile {
 
             if (response.getElementsByTagName("done").item(0).getTextContent().equals("true")) {
 
-                credit.amount    = Integer.valueOf(response.getElementsByTagName("amount").item(0).getTextContent());
+                credit.amount    = Double.valueOf(response.getElementsByTagName("amount").item(0).getTextContent());
                 credit.currency  = response.getElementsByTagName("currency").item(0).getTextContent();
 
                 NodeList nList = response.getElementsByTagName("historyRow");
@@ -428,7 +412,7 @@ public class Controller_Things_Mobile {
                     if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                         Element eeElement = (Element) nNode;
 
-                        node.amount         = Integer.valueOf(eeElement.getElementsByTagName("amount").item(0).getTextContent());
+                        node.amount         = Double.valueOf(eeElement.getElementsByTagName("amount").item(0).getTextContent());
                         node.dateLoad       = eeElement.getElementsByTagName("dateLoad").item(0).getTextContent();
                         node.msisdn         = eeElement.getElementsByTagName("msisdn").item(0).getTextContent();
                         node.opDescription  = eeElement.getElementsByTagName("opDescription").item(0).getTextContent();
@@ -541,70 +525,6 @@ public class Controller_Things_Mobile {
     }
 
 
-    /*
-    //SIM CREDIT
-
-
-
-    //UPDATE SIM NAME
-    public TM_Update_Sim_Name update_sim_name(Long id) {
-        try {
-            JsonNode response = post("/services/business-api/UpdateSimName", new KeyStore("msisdn", new ArrayList<String>() {{
-                add(id.toString());
-            }}));
-            if(response.get("done").asBoolean()) {
-
-                // Tady překonverutji JsonNode na třídu
-                TM_Update_Sim_Name help = baseFormFactory.formFromJsonWithValidation( TM_Update_Sim_Name.class, response);
-
-                System.out.println("Vypisuji výsledek: " + Json.toJson(help));
-
-
-                return help;
-            }else {
-
-                logger.error("sim_list:: Invalid Response: {}", response);
-                return null;
-            }
-
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    //UPDATE SIM TAG
-    public TM_Update_Sim_Tag update_sim_tag(Long id) {
-        try {
-            JsonNode response = post("/services/business-api/credit", new KeyStore("name", new ArrayList<String>() {{
-                add(id.toString());
-            }}));
-            if(response.get("done").asBoolean()) {
-
-                // Tady překonverutji JsonNode na třídu
-                TM_Update_Sim_Tag help = baseFormFactory.formFromJsonWithValidation( TM_Update_Sim_Tag.class, response);
-
-                System.out.println(" Vypisuji výsledek: " + Json.toJson(help));
-
-
-                return help;
-            }else {
-
-                logger.error("sim_list:: Invalid Response: {}", response);
-                return null;
-            }
-
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    //SETUP SIM EXPIRATION DATE
-
-    //SETUP SIM TRAFFIC THRESHOLD
-
-    */
 
     /**
      Metoda, která vypisuje XML a přidává k němu inputy
