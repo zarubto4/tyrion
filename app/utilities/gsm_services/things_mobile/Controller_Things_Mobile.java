@@ -308,7 +308,6 @@ public class Controller_Things_Mobile {
     }
 
     //SIM STATUS
-    //moc CDR
     public TM_Sim_Status_list sim_status(Long id) {
 
 
