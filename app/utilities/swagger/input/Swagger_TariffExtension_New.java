@@ -12,9 +12,6 @@ public class Swagger_TariffExtension_New extends Swagger_NameAndDescription {
     public String color;
 
     @Constraints.Required
-    public boolean included;
-
-    @Constraints.Required
     @ApiModelProperty(required = true, value = "Enumerated type of extension")
     public String extension_type;
 

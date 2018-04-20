@@ -67,12 +67,12 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
                 homer.update();
             }
 
-            if (homer.server_version == null || homer.server_version.equals(help.server_version)) {
+            if (homer.server_version == null || !homer.server_version.equals(help.server_version)) {
                 homer.server_version = help.server_version;
                 homer.update();
             }
 
-            if (homer.server_url == null ||  homer.server_url.equals(help.server_url)) {
+            if (homer.server_url == null ||  !homer.server_url.equals(help.server_url)) {
                 homer.server_url = help.server_url;
                 homer.update();
             }

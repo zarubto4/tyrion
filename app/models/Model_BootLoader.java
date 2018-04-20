@@ -85,7 +85,7 @@ public class /**/Model_BootLoader extends NamedModel {
             cache().add(Model_Blob.class, file.id);
 
 
-            logger.debug("path - total link: {}", total_link);
+            logger.trace("path - total link: {}", total_link);
             Model_Blob.cache_public_link.put(cache().get(Model_Blob.class), total_link);
 
             // Přesměruji na link

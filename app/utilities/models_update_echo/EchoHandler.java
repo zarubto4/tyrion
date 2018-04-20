@@ -86,6 +86,7 @@ public class EchoHandler {
             logger.trace("sendUpdate - sending update");
 
             List<UUID> list = Model_Project.get_project_becki_person_ids_list(message.project_id);
+            List<UUID> list_ids_for_unsubscribe = new ArrayList<>();
 
             for (UUID person_id : list) {
                 try {
@@ -97,12 +98,17 @@ public class EchoHandler {
                         becki.send(message.make_request());
 
                     } else {
-                        Model_Project.becki_person_id_unsubscribe(person_id);
+                        list_ids_for_unsubscribe.add(person_id);
                     }
 
                 } catch (Exception e) {
                     logger.internalServerError(e);
                 }
+            }
+
+
+            for (UUID person_id : list_ids_for_unsubscribe) {
+                Model_Project.becki_person_id_unsubscribe(person_id);
             }
 
         } catch (Exception e) {

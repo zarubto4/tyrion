@@ -14,7 +14,9 @@ import utilities.emails.Email;
 import utilities.enums.BoardCommand;
 import utilities.enums.NetworkStatus;
 import utilities.logger.Logger;
+import utilities.models_update_echo.EchoHandler;
 import utilities.swagger.input.*;
+import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -37,7 +39,7 @@ public class Controller_Project extends _BaseController {
         this.baseFormFactory = formFactory;
     }
     
-// GENERAL PROJECT #####################################################################################################
+// GENERAL PROJECT #######-##############################################################################################
 
     @ApiOperation(value = "create Project",
             tags = {"Project"},
@@ -91,7 +93,7 @@ public class Controller_Project extends _BaseController {
                 participant.state = employee.state;
 
                 participant.save();
-                participant.person.cache_project_ids.add(project.id);
+                participant.person.cache().add(Model_Project.class, project.id);
             }
 
             project.refresh();
@@ -333,6 +335,7 @@ public class Controller_Project extends _BaseController {
                 }
             }
 
+            // Pro Registrované uživatele
             for (Model_Person person : listIn) {
 
                 if (project.isParticipant(person)) continue;
@@ -351,7 +354,9 @@ public class Controller_Project extends _BaseController {
                 try {
 
                     new Email()
-                            .text("User " + Email.bold(full_name) + " invites you to collaborate on the project " + Email.bold(project.name) + ". If you would like to participate in it, log in to your Byzance account.")
+                            .text("User " + Email.bold(full_name) + " invites you to collaborate on the project ")
+                            .link(project.name, Server.becki_mainUrl + "/projects")
+                            .text(". If you would like to participate in it, log in to your Byzance account.")
                             .send(person.email, "Invitation to Collaborate");
 
                 } catch (Exception e) {
@@ -642,6 +647,8 @@ public class Controller_Project extends _BaseController {
             Model_Project project = Model_Project.getById(help.project_id);
             project.check_update_permission();
 
+            System.out.println("project_addHardware - check_update_permission done");
+
             Model_HardwareRegistrationEntity registration_authority = Model_HardwareRegistrationEntity.getbyFull_hash(help.registration_hash);
 
             // Hash not exist
@@ -680,9 +687,17 @@ public class Controller_Project extends _BaseController {
                 }
             }
 
-            // Set Dominance if its possible (Not dominant in diferent project!
+            // Set Dominance if its possible (Not dominant in diferent project!)
             if (Model_Hardware.find.query().where().eq("full_id", hardware.full_id).eq("dominant_entity", true).findCount() == 0) {
                 hardware.dominant_entity = true;
+
+                // Najdi všechny kterří mají stejné FUll Full-ID
+
+                List<Model_Hardware> hardware_for_cache_clean =  Model_Hardware.find.query().where().eq("full_id", hardware.full_id).select("id").findList();
+                for(Model_Hardware clean_hw: hardware_for_cache_clean) {
+                    System.out.println("Posílám update o zaplnění HW na HW: " + clean_hw.id);
+                    EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, Model_Project.find.query().where().eq("hardware.id", clean_hw.id).select("id").findSingleAttribute(), clean_hw.id));
+                }
             }
 
             // Update

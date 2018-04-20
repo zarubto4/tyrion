@@ -1513,8 +1513,8 @@ public class Controller_Hardware extends _BaseController {
                 registration_of_hardware.mac_address = batch.get_new_MacAddress();
                 registration_of_hardware.hardware_type_compiler_target_name =  hardwareType.compiler_target_name;
                 registration_of_hardware.production_batch_id = batch.batch_id;
-                registration_of_hardware.mqtt_username = mqtt_username_not_hashed;
-                registration_of_hardware.mqtt_password =mqtt_password_not_hashed;
+                registration_of_hardware.mqtt_username = BCrypt.hashpw(mqtt_username_not_hashed, BCrypt.gensalt());
+                registration_of_hardware.mqtt_password = BCrypt.hashpw(mqtt_password_not_hashed, BCrypt.gensalt());
                 registration_of_hardware.save();
 
 
@@ -1633,11 +1633,10 @@ public class Controller_Hardware extends _BaseController {
             // Uprava desky
             hardware.name = help.name;
             hardware.description = help.description;
+            hardware.setTags(help.tags);
 
             // Uprava objektu v databázi
             hardware.update();
-
-            hardware.check_update_permission();
 
             // Synchronizace s Homer serverem
             hardware.set_alias(hardware.name);
@@ -2428,7 +2427,7 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardware_allDetailsForBlocko(String project_id) {
+    public Result hardware_allDetailsForBlocko(UUID project_id) {
         try {
 
             /* // TODO
@@ -2862,12 +2861,18 @@ public class Controller_Hardware extends _BaseController {
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_HardwareGroup> query = Ebean.find(Model_HardwareGroup.class);
 
+            query.where().eq("deleted", false);
+
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
 
                 Model_Project.getById(help.project_id);
-                query.where().eq("project.id", help.project_id).eq("deleted", false);
+                query.where().eq("project.id", help.project_id);
             }
+            if (help.project_id == null) {
+                query.where().isNull("project.id");
+            }
+
 
             // Vyvoření odchozího JSON
             Swagger_HardwareGroup_List result = new Swagger_HardwareGroup_List(query, page_number, help);

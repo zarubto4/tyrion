@@ -21,7 +21,6 @@ import utilities.swagger.output.Swagger_M_Project_Interface;
 import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
 import utilities.swagger.output.filter_results.Swagger_GridProjectList;
 import utilities.swagger.output.filter_results.Swagger_GridWidget_List;
-import utilities.swagger.output.filter_results.Swagger_Hardware_List;
 
 import java.util.*;
 
@@ -87,6 +86,7 @@ public class Controller_Grid extends _BaseController {
             gridProject.description = help.description;
             gridProject.name = help.name;
             gridProject.project = project;
+            gridProject.setTags(help.tags);
 
             gridProject.save();
 
@@ -133,7 +133,7 @@ public class Controller_Grid extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Grid_Filter",
+                            dataType = "utilities.swagger.input.Swagger_GridProject_Filter",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"
@@ -147,33 +147,29 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
+    @BodyParser.Of(BodyParser.Json.class)
     @Security.Authenticated(Authentication.class)
     public Result gridProject_get_filterByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n. For first call, use 1 (first page of list)", required = true)  int page_number) {
         try {
 
             // Get and Validate Object
-            Swagger_Grid_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Grid_Filter.class);
+            Swagger_GridProject_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_GridProject_Filter.class);
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_GridProject> query = Ebean.find(Model_GridProject.class);
 
             query.orderBy("UPPER(name) ASC");
             query.orderBy("project.id");
-            query.where().eq("deleted", false);
-
-            ExpressionList<Model_GridProject> list = query.where();
+            query.where().ne("deleted", true);
 
 
-            if (help.project_ids != null && !help.project_ids.isEmpty()) {
-
-                // Permissin check
-                for(UUID uuid_project: help.project_ids) {
-                    Model_Project.getById(uuid_project);
-                }
-
-                query.where().in("project.id", help.project_ids);
+            if (help.project_id != null) {
+                query.where().eq("project.id", help.project_id);
             }
 
+            if (help.project_id == null) {
+                query.where().isNull("project.id");
+            }
 
 
             Swagger_GridProjectList result = new Swagger_GridProjectList(query, page_number, help);
@@ -222,6 +218,7 @@ public class Controller_Grid extends _BaseController {
 
             gridProject.name = help.name;
             gridProject.description = help.description;
+            gridProject.setTags(help.tags);
 
             gridProject.update();
             
@@ -441,6 +438,7 @@ public class Controller_Grid extends _BaseController {
             gridProgram.description         = help.description;
             gridProgram.name                = help.name;
             gridProgram.grid_project = gridProject;
+            gridProgram.setTags(help.tags);
             
             gridProgram.save();
 
@@ -516,6 +514,7 @@ public class Controller_Grid extends _BaseController {
 
             gridProgram.description = help.description;
             gridProgram.name        = help.name;
+            gridProgram.setTags(help.tags);
 
             gridProgram.update();
 
@@ -687,7 +686,7 @@ public class Controller_Grid extends _BaseController {
             version.grid_program        = gridProgram;
             version.public_access       = help.public_access;
             version.m_program_virtual_input_output =  help.virtual_input_output;
-          
+
             version.save();
 
             ObjectNode content = Json.newObject();
@@ -833,12 +832,13 @@ public class Controller_Grid extends _BaseController {
         try {
 
 
-            System.out.println("get_grid_byQR_Token_forMobile: Instance ID::  {}" + instance_id);
-            System.out.println("get_grid_byQR_Token_forMobile: Grid Program ID:: {}" + grid_program_id);
+            logger.trace("get_grid_byQR_Token_forMobile: Instance ID::  {}" , instance_id);
+            logger.trace("get_grid_byQR_Token_forMobile: Grid Program ID:: {}" , grid_program_id);
 
             Model_Instance instance = Model_Instance.getById(instance_id);
 
             if(instance.current_snapshot() == null){
+                logger.debug("get_grid_byQR_Token_forMobile: Instance ID:: {} not running", instance_id);
                 return badRequest("Instance not running");
             }
 
@@ -1023,6 +1023,7 @@ public class Controller_Grid extends _BaseController {
             widget.name = help.name;
             widget.description = help.description;
             widget.author_id = person().id;
+            widget.setTags(help.tags);
 
             if (project != null) {
                 widget.project = project;
@@ -1126,6 +1127,10 @@ public class Controller_Grid extends _BaseController {
                 query.where().eq("project.id", help.project_id);
             }
 
+            if (help.project_id == null) {
+                query.where().isNull("project.id");
+            }
+
             if (help.pending_widgets) {
                 query.where().eq("versions.approval_state", Approval.PENDING.name()).eq("versions.deleted", false);
             }
@@ -1179,6 +1184,7 @@ public class Controller_Grid extends _BaseController {
             // Úprava objektu
             widget.description = help.description;
             widget.name        = help.name;
+            widget.setTags(help.tags);
 
             // Uložení objektu
             widget.update();
@@ -1880,16 +1886,22 @@ public class Controller_Grid extends _BaseController {
                 privateGridWidgetVersion.approval_state = Approval.APPROVED;
                 privateGridWidgetVersion.update();
 
-                Model_Widget widget = Model_Widget.find.query().where().eq("id",widget_old.id.toString() + "_public_copy").findOne(); // TODO won't work
 
-                if (widget == null) {
+                UUID widget_previous_id = Model_Widget.find.query().where().eq("original_id", widget_old.id).select("id").findSingleAttribute();
+
+                Model_Widget widget = null;
+
+                if (widget_previous_id == null) {
                     // Vytvoření objektu
                     widget = new Model_Widget();
+                    widget.original_id = widget_old.id;
                     widget.name = help.program_name;
                     widget.description = help.program_description;
                     widget.author_id = privateGridWidgetVersion.get_grid_widget().get_author().id;
                     widget.publish_type = ProgramType.PUBLIC;
                     widget.save();
+                } else {
+                    widget = Model_Widget.getById(widget_previous_id);
                 }
 
                 // Vytvoření objektu

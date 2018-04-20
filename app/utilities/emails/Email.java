@@ -164,9 +164,15 @@ public class Email {
         return this;
     }
 
+
     public static String bold(String text) {
 
         return "<strong>" + text + "</strong>";
+    }
+
+    public static String text_link(String text, String link) {
+
+        return "<a href=\"" + link + " target=\"_blank\">" + text + "</a>";
     }
 
     public static String italics(String text) {

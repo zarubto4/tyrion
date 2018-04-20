@@ -442,6 +442,7 @@ public class Model_Instance extends TaggedModel {
 
             ObjectNode request = Json.newObject();
             request.put("message_type", json.get("message_type").asText());
+            request.put("status", "error");
             request.put("message_channel", Model_Instance.CHANNEL);
             request.put("error_code", ErrorCode.HOMER_SERVER_NOT_SET_FOR_INSTANCE.error_code());
             request.put("error_message", ErrorCode.HOMER_SERVER_NOT_SET_FOR_INSTANCE.error_message());
@@ -458,6 +459,7 @@ public class Model_Instance extends TaggedModel {
 
             ObjectNode request = Json.newObject();
             request.put("message_type", json.get("message_type").asText());
+            request.put("status", "error");
             request.put("message_channel", Model_Instance.CHANNEL);
             request.put("error_code", ErrorCode.HOMER_NOT_EXIST.error_code());
             request.put("error_message", ErrorCode.HOMER_NOT_EXIST.error_message());
@@ -635,8 +637,9 @@ public class Model_Instance extends TaggedModel {
                 }
 
                 for(Swagger_InstanceSnapShotConfigurationFile grids_collection : settings.grids_collections){
-                    for(Swagger_InstanceSnapShotConfigurationProgram grids_program : collection.grid_programs){
-                        if(grids_program.grid_program_id == help.grid_app_id){
+                    for(Swagger_InstanceSnapShotConfigurationProgram grids_program : grids_collection.grid_programs){
+                        if(grids_program.grid_program_id.equals( help.grid_app_id) || grids_program.grid_program_version_id.equals(help.grid_app_id)){
+                            logger.debug("cloud_verification_token_GRID:: set collection and program");
                             collection = grids_collection;
                             program = grids_program;
                             break;
@@ -817,12 +820,14 @@ public class Model_Instance extends TaggedModel {
 
     public static Model_Instance getById(UUID id) throws _Base_Result_Exception {
 
-        System.out.println("Model_Instance::getById:: "+ id);
         Model_Instance instance = cache.get(id);
         if (instance == null) {
 
             instance = Model_Instance.find.query().where().idEq(id).eq("deleted", false).findOne();
-            if (instance == null) throw new Result_Error_NotFound(Model_Instance.class);
+            if (instance == null) {
+                logger.error("not found ID: {}", id);
+                throw new Result_Error_NotFound(Model_Instance.class);
+            }
 
             cache.put(id, instance);
         }

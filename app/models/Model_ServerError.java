@@ -152,6 +152,16 @@ public class Model_ServerError extends NamedModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override
+    public boolean delete() {
+
+        logger.debug("permanent delete :: Delete object Id: {} ", this.id);
+        return super.delete();
+
+    }
+
 /* PERMISSION ----------------------------------------------------------------------------------------------*/
 
 
@@ -166,8 +176,7 @@ public class Model_ServerError extends NamedModel {
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(person().has_permission(Permission.ServerError_update.name())) return;
-        throw new Result_Error_PermissionDenied();
+        // true
     }
 
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {

@@ -26,6 +26,7 @@ public class WS_Message_RefreshTouch extends WS_AbstractMessage {
 // -------------------------------------------------------------------------------------------------------------------
 
    public WS_Message_RefreshTouch(String command, UUID person_id) {
+       System.out.println("WS_Message_RefreshTouch:: command " + command + " UUID: " + person_id);
         this.command = command;
         this.person_ids.add(person_id);
    }

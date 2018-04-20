@@ -159,15 +159,21 @@ public class Model_AuthorizationToken extends BaseModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 
-    @Override public void check_create_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException(); }
+    @Override public void check_create_permission() throws _Base_Result_Exception {
+        throw new Result_Error_NotSupportedException();
+    }
     @Override public void check_read_permission()   throws _Base_Result_Exception {
        if(_BaseController.person().has_permission(Permission.AuthorizationToken_read.name())) return;
-       if(get_person_id().equals( _BaseController.personId())) throw new Result_Error_Unauthorized();
+       if(get_person_id().equals( _BaseController.personId())) return;
+       throw new Result_Error_Unauthorized();
     }
-    @Override public void check_update_permission() throws _Base_Result_Exception { throw new Result_Error_NotSupportedException(); }
+    @Override public void check_update_permission() throws _Base_Result_Exception {
+        throw new Result_Error_NotSupportedException();
+    }
     @Override public void check_delete_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.AuthorizationToken_delete.name())) return;
-        if(get_person_id().equals( _BaseController.personId())) throw new Result_Error_Unauthorized();
+        if(get_person_id().equals( _BaseController.personId())) return;
+        throw new Result_Error_Unauthorized();
     }
 
     public enum Permission { AuthorizationToken_read, AuthorizationToken_delete }

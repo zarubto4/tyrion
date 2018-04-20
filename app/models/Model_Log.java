@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModel;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.logger.Logger;
 import utilities.model.NamedModel;
 
 import javax.persistence.Entity;
@@ -22,6 +23,8 @@ import java.util.UUID;
 public class Model_Log extends NamedModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+    private static final Logger logger = new Logger(Model_Log.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
@@ -59,18 +62,22 @@ public class Model_Log extends NamedModel {
 
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
         if (_BaseController.person().has_permission(Permission.Log_delete.name())) return;
+        logger.error("check_read_permission: Not Supported");
         throw new Result_Error_NotSupportedException();
     }
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
         if (_BaseController.person().has_permission(Permission.Log_delete.name())) return;
+        logger.error("check_create_permission: Not Supported");
         throw new Result_Error_NotSupportedException();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
         if (_BaseController.person().has_permission(Permission.Log_delete.name())) return;
+        logger.error("check_update_permission: Not Supported");
         throw new Result_Error_NotSupportedException();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
         if (_BaseController.person().has_permission(Permission.Log_delete.name())) return;
+        logger.error("check_delete_permission: Not Supported");
         throw new Result_Error_NotSupportedException();
     }
 

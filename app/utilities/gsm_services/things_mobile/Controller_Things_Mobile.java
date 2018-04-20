@@ -20,7 +20,6 @@ import utilities.Server;
 import utilities.gsm_services.things_mobile.help_class.*;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.logger.Logger;
-import websocket.messages.homer_with_tyrion.configuration.WS_Message_Homer_Get_homer_server_configuration;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
@@ -31,7 +30,6 @@ import java.lang.reflect.Array;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
 
 public class Controller_Things_Mobile {
 
@@ -55,7 +53,7 @@ public class Controller_Things_Mobile {
      * Je nutné se přispůsobit jejich požadavkům podle application/x-www-form-urlencoded
      *
      */
-    private class KeyStore {
+    public static class KeyStore {
 
         public KeyStore(String key, List<String> values){
             this.key = key;

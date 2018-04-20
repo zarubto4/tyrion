@@ -7,6 +7,7 @@ import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
 import io.ebean.*;
 import io.swagger.annotations.*;
 import models.*;
+import org.omg.CORBA.ExceptionList;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -113,6 +114,7 @@ public class Controller_ExternalServer extends _BaseController {
             Model_HomerServer server = new Model_HomerServer();
             server.name = help.name;
             server.description = help.description;
+            server.setTags(help.tags);
 
             if(help.project_id == null) {
                 server.server_type = HomerType.PUBLIC;
@@ -180,6 +182,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.server_url = help.server_url;
 
             server.server_type = HomerType.PUBLIC;
+            server.setTags(help.tags);
 
             if(help.project_id == null) {
                 server.server_type = HomerType.PUBLIC;
@@ -321,6 +324,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.hardware_logger_port = help.hardware_logger_port;
             server.rest_api_port = help.rest_api_port;
             server.server_url = help.server_url;
+            server.setTags(help.tags);
 
             // Uložení objektu
             server.update();
@@ -375,20 +379,48 @@ public class Controller_ExternalServer extends _BaseController {
 
             // Junction!!! START ---------------------------------------------------------------------------------------
 
-            Junction<Model_HomerServer> junction = list.disjunction();
 
-            if (!help.server_types.isEmpty()) {
-                junction.add(Expr.in("server_type", help.server_types));
+            // OR
+            Junction<Model_HomerServer>  disjunction = list.disjunction();
+
+            // AND && END AND
+            if (!help.server_types.isEmpty() && help.server_types.contains(HomerType.PUBLIC) ) {
+                disjunction
+                        .conjunction()
+                            .eq("server_type", HomerType.PUBLIC)
+                            .isNull("project.id")
+                        .endJunction();
             }
 
-            if (help.project_id != null) {
-                Model_Project.getById(help.project_id);
-                junction.add(Expr.eq("project.id", help.project_id));
+            if (!help.server_types.isEmpty() && help.server_types.contains(HomerType.MAIN) ) {
+                disjunction
+                        .conjunction()
+                            .eq("server_type", HomerType.MAIN)
+                            .isNull("project.id")
+                        .endJunction();
             }
 
-            junction.endJunction();
+            if (!help.server_types.isEmpty() && help.server_types.contains(HomerType.BACKUP) ) {
+                disjunction
+                        .conjunction()
+                            .eq("server_type", HomerType.BACKUP)
+                            .isNull("project.id")
+                        .endJunction();
+            }
 
-            // Junction!!! END ------------------------------------------------------------------------------------------
+            // AND && END AND
+            if (!help.server_types.isEmpty() && help.server_types.contains(HomerType.PRIVATE) ) {
+                disjunction
+                        .conjunction()
+                            .eq("server_type", HomerType.PRIVATE)
+                            .eq("project.id",  help.project_id)
+                        .endJunction();
+            }
+
+            // END OR
+            disjunction.endJunction();
+
+
 
             // Vyvoření odchozího JSON
             Swagger_HomerServer_List result = new Swagger_HomerServer_List(query, page_number, help);
@@ -736,7 +768,6 @@ public class Controller_ExternalServer extends _BaseController {
            return controllerServerError(e);
         }
     }
-
 
 // PRIVATE FILE STORAGE FOR HOMER SERVERS ###########################################################################*/
 

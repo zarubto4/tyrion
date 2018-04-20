@@ -128,6 +128,7 @@ public class Model_CompilationServer extends BaseModel {
 
                 ObjectNode request = Json.newObject();
                 request.put("message_type", json.get("message_type").asText());
+                request.put("status", "error");
                 request.put("message_channel", Model_CompilationServer.CHANNEL);
                 request.put("error_code", ErrorCode.HOMER_IS_OFFLINE.error_code());
                 request.put("error_message", ErrorCode.HOMER_IS_OFFLINE.error_message());
@@ -144,6 +145,7 @@ public class Model_CompilationServer extends BaseModel {
 
             ObjectNode request = Json.newObject();
             request.put("message_type", json.get("message_type").asText());
+            request.put("status", "error");
             request.put("message_channel", Model_CompilationServer.CHANNEL);
             request.put("error_code", ErrorCode.COMPILATION_SERVER_IS_OFFLINE.error_code());
             request.put("error_message", ErrorCode.COMPILATION_SERVER_IS_OFFLINE.error_message());

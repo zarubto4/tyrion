@@ -196,8 +196,15 @@ public class Model_HardwareType extends NamedModel {
     public List<Model_HardwareBatch> batchs () {
         try {
 
-            if (!test_c_program_edit_permission()) return null;
-            return Model_HardwareBatch.getByTypeOfBoardId(this.compiler_target_name);
+            if (test_c_program_edit_permission()) {
+                return Model_HardwareBatch.getByTypeOfBoardId(this.compiler_target_name);
+            }
+
+            return null;
+
+        }catch (NullPointerException e) {
+            //nothing
+            return null;
         } catch(_Base_Result_Exception e){
             //nothing
             return null;

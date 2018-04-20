@@ -90,6 +90,7 @@ public class Controller_Blocko extends _BaseController {
             bProgram.description           = help.description;
             bProgram.name                  = help.name;
             bProgram.project               = project;
+            bProgram.setTags(help.tags);
 
             // Uložení objektu
             bProgram.save();
@@ -603,6 +604,7 @@ public class Controller_Blocko extends _BaseController {
             instance.server_main = main_server;
             instance.server_backup = backup_server;
             instance.b_program = b_program;
+            instance.setTags(help.tags);
 
             instance.save();
 
@@ -1126,6 +1128,9 @@ public class Controller_Blocko extends _BaseController {
             if (help.project_id != null ) {
                 query.where().eq("project_id", help.project_id);
             }
+            if (help.project_id == null) {
+                query.where().isNull("project.id");
+            }
 
             if (!help.server_unique_ids.isEmpty()) {
                 query.where().in("server_main.id", help.server_unique_ids);
@@ -1250,6 +1255,7 @@ public class Controller_Blocko extends _BaseController {
             block.name = help.name;
             block.description = help.description;
             block.author_id = person().id;
+            block.setTags(help.tags);
 
             if (project != null) {
                 block.project = project;
@@ -1391,6 +1397,7 @@ public class Controller_Blocko extends _BaseController {
             // Úprava objektu
             block.description = help.description;
             block.name        = help.name;
+            block.setTags(help.tags);
 
             // Uložení objektu
             block.update();
@@ -1782,16 +1789,21 @@ public class Controller_Blocko extends _BaseController {
                 private_block_version.approval_state = Approval.APPROVED;
                 private_block_version.update();
 
-                Model_Block block = Model_Block.find.query().where().eq("id",block_old.id.toString() + "_public_copy").findOne(); // TODO won't work
+                UUID block_previous_id = Model_Block.find.query().where().eq("original_id", block_old.id).select("id").findSingleAttribute();
 
-                if (block == null) {
+                Model_Block block = null;
+
+                if (block_previous_id == null) {
                     // Vytvoření objektu
                     block = new Model_Block();
+                    block.original_id = block_old.id;
                     block.name = help.program_name;
                     block.description = help.program_description;
                     block.author_id = private_block_version.get_block().get_author().id;
                     block.publish_type = ProgramType.PUBLIC;
                     block.save();
+                } else {
+                    block = Model_Block.getById(block_previous_id);
                 }
 
                 // Vytvoření objektu

@@ -25,6 +25,7 @@ import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 import utilities.model.BaseModel;
 import utilities.models_update_echo.EchoHandler;
+import utilities.models_update_echo.RefreshTouch_echo_handler;
 import utilities.notifications.NotificationHandler;
 import utilities.scheduler.jobs.Job_CheckCompilationLibraries;
 import utilities.threads.homer_server.Synchronize_Homer_Synchronize_Settings;
@@ -124,6 +125,8 @@ public class Server {
 
         setConstants();
 
+        cleanUpdateMess();
+
         ServerCache.init();
 
         try {
@@ -157,8 +160,17 @@ public class Server {
     public static void startThreads() {
         EchoHandler.startThread();
         NotificationHandler.startThread();
+        RefreshTouch_echo_handler.startThread();
        // GoPay_PaymentCheck.startThread();
        // Fakturoid_InvoiceCheck.startThread();
+    }
+
+    /**
+     * Some time, after restart of Tyrion, we have more In Progress Updates on Hardware,
+     * So we Clean this mess
+     */
+    public static void cleanUpdateMess() {
+
     }
 
     /**
@@ -177,17 +189,13 @@ public class Server {
             logger.warn("setServerValues - local macAddress: {}", mac_address);
 
             // Speciální podmínka, která nastaví podklady sice v Developerském modu - ale s URL adresami tak, aby byly v síti přístupné
-            if (mac_address.equals("60:f8:1d:bc:71:42")|| // Mac Mini Server Wifi
-                    mac_address.equals("ac:87:a3:18:a1:1c")|| // Mac Mini Server Ethernet
-                    mac_address.equals("2c:4d:54:4f:68:6e")) { // Linux Lexa
 
-                logger.warn("setConstants - special settings for DEV office servers.");
-                logger.warn("setConstants - local URL: {}", IP_Founder.getLocalHostLANAddress().getHostAddress());
+            logger.warn("setConstants - special settings for DEV office servers.");
+            logger.warn("setConstants - local URL: {}", IP_Founder.getLocalHostLANAddress().getHostAddress());
 
-                httpAddress = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
-                wsAddress   = "ws://"   + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
-                becki_mainUrl = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress();
-            }
+            httpAddress = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
+            wsAddress   = "ws://"   + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
+            becki_mainUrl = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":8080";
 
             // Nastavení adresy, kde běží Grid APP
             grid_app_main_url       = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":8888";
@@ -347,27 +355,39 @@ public class Server {
      * Creates default block and widget if it does not exists.
      */
     private static void setWidgetAndBlock() {
+        try {
+            logger.warn("setWidgetAndBlock - Creating Widget and Block with " + "0000000-0000-0000-0000-000000000001");
 
-        if(new Model_Widget().check_if_exist("0000000-0000-0000-0000-000000000001")) {
-            Model_Widget gridWidget = new Model_Widget();
-            gridWidget.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
-            gridWidget.description = "Default Widget";
-            gridWidget.name = "Default Widget";
-            gridWidget.project = null;
-            gridWidget.author_id = null;
-            gridWidget.publish_type = ProgramType.DEFAULT_MAIN;
-            gridWidget.save();
-        }
+            if (Model_Widget.find.query().where().eq("id", UUID.fromString("00000000-0000-0000-0000-000000000001")).findCount() == 0) {
+                Model_Widget gridWidget = new Model_Widget();
+                gridWidget.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
+                gridWidget.description = "Default Widget";
+                gridWidget.name = "Default Widget";
+                gridWidget.project = null;
+                gridWidget.author_id = null;
+                gridWidget.publish_type = ProgramType.DEFAULT_MAIN;
+                gridWidget.save();
+            } else {
+                logger.warn("Model_Widget Model_Widget already exist");
+                System.out.println( Model_Block.getById(UUID.fromString("00000000-0000-0000-0000-000000000001")).name );
+            }
 
-        if(new Model_Widget().check_if_exist("0000000-0000-0000-0000-000000000001")) {
-            Model_Block block = new Model_Block();
-            block.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
-            block.description = "Default Block";
-            block.name = "Default Block";
-            block.author_id = null;
-            block.project = null;
-            block.publish_type = ProgramType.DEFAULT_MAIN;
-            block.save();
+            if (Model_Block.find.query().where().eq("id", UUID.fromString("00000000-0000-0000-0000-000000000001")).findCount() == 0) {
+                Model_Block block = new Model_Block();
+                block.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
+                block.description = "Default Block";
+                block.name = "Default Block";
+                block.author_id = null;
+                block.project = null;
+                block.publish_type = ProgramType.DEFAULT_MAIN;
+                block.save();
+            } else {
+                logger.warn("setWidgetAndBlock Model_Widget already exist");
+
+                System.out.println( Model_Block.getById(UUID.fromString("00000000-0000-0000-0000-000000000001")).name );
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -461,6 +481,7 @@ public class Server {
      */
     private static void setConfigurationInjectorForNonStaticClass() {
         DigitalOceanTyrionService.configuration = configuration;
+        Job_CheckCompilationLibraries.configuration = configuration;
         Controller_Things_Mobile.configuration = configuration;
     }
 

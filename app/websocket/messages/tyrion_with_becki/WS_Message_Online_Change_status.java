@@ -25,7 +25,7 @@ public class WS_Message_Online_Change_status {
 
     //------------------------------------------------------------------
 
-     @JsonIgnore public String project_id; // Not required!
+     @JsonIgnore public UUID project_id; // Not required!
     //------------------------------------------------------------------
 
     @JsonProperty public String model;

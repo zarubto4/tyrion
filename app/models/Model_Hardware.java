@@ -272,16 +272,14 @@ public class Model_Hardware extends TaggedModel {
                     try {
                         WS_Message_Hardware_overview_Board overview_board = this.get_devices_overview();
 
-                        if(overview_board.error_message != null && overview_board.error_message.equals("ERROR_HARDWARE_COMMAND_OFFLINE_DEVICE")) {
-                            cache_latest_know_ip_address = "";
-                            return;
-                        }
+                        System.out.println("WS_Message_Hardware_overview_Board:: " + Json.toJson(overview_board));
 
                         if(overview_board.status.equals("success")) {
                             cache_latest_know_ip_address = overview_board.ip;
+                            EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project().id, this.id));
                         }
 
-                        EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project().id, this.id));
+
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -301,7 +299,7 @@ public class Model_Hardware extends TaggedModel {
     public Swagger_Short_Reference dominant_project_active(){
         try {
             if (dominant_entity) return null;
-            UUID uuid = Model_Project.find.query().where().eq("hardware.id", id).eq("dominant_entity", true).select("id").findSingleAttribute();
+            UUID uuid = Model_Project.find.query().where().eq("hardware.full_id", full_id).eq("dominant_entity", true).select("id").findSingleAttribute();
             if (uuid == null) return null;
 
             // Dont Cache IT!!!!!!!!!!!!!!
@@ -309,8 +307,8 @@ public class Model_Hardware extends TaggedModel {
             return new Swagger_Short_Reference(project.id, project.name, project.description);
 
         }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
+            // Uživatel na tento projekt nemá oprávnění - alew i tak by měl vědět že někde existuje
+            return new Swagger_Short_Reference(null,"No Permission", "");
         }catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -414,6 +412,7 @@ public class Model_Hardware extends TaggedModel {
     @JsonProperty
     public Model_HomerServer server() {
         try{
+
             if (connected_server_id == null) return null; return Model_HomerServer.getById(connected_server_id);
 
         } catch (_Base_Result_Exception e){
@@ -433,10 +432,9 @@ public class Model_Hardware extends TaggedModel {
                 Swagger_Short_Reference instance = new Swagger_Short_Reference(i.id, i.name, i.description);
                 instance.online_state = i.online_state();
                 return instance;
-
+            }else {
+                return null;
             }
-
-            return null;
         } catch (_Base_Result_Exception e){
             //nothing
             return null;
@@ -450,7 +448,11 @@ public class Model_Hardware extends TaggedModel {
     public Swagger_Short_Reference actual_c_program() {
         try {
             Model_CProgram type = this.get_actual_c_program();
-            return new Swagger_Short_Reference(type.id, type.name, type.description);
+            if(type != null) {
+                return new Swagger_Short_Reference(type.id, type.name, type.description);
+            }else {
+                return null;
+            }
         } catch (_Base_Result_Exception e){
             //nothing
             return null;
@@ -464,7 +466,11 @@ public class Model_Hardware extends TaggedModel {
     public Swagger_Short_Reference actual_c_program_version() {
         try {
             Model_CProgramVersion version = this.get_actual_c_program_version();
-            return new Swagger_Short_Reference(version.id, version.name, version.description);
+            if(version != null) {
+                return new Swagger_Short_Reference(version.id, version.name, version.description);
+            } else {
+                return null;
+            }
         } catch (_Base_Result_Exception e){
             //nothing
             return null;
@@ -478,7 +484,11 @@ public class Model_Hardware extends TaggedModel {
     public Swagger_Short_Reference actual_c_program_backup() {
         try{
             Model_CProgram program = this.get_backup_c_program();
-            return new Swagger_Short_Reference(program.id, program.name, program.description);
+            if(program != null) {
+                return new Swagger_Short_Reference(program.id, program.name, program.description);
+            }else {
+                return null;
+            }
         } catch (_Base_Result_Exception e){
             //nothing
             return null;
@@ -492,7 +502,11 @@ public class Model_Hardware extends TaggedModel {
     public Swagger_Short_Reference actual_c_program_backup_version() {
         try{
             Model_CProgramVersion version = this.get_backup_c_program_version();
-            return new Swagger_Short_Reference(version.id, version.name, version.description);
+            if(version != null) {
+                return new Swagger_Short_Reference(version.id, version.name, version.description);
+            } else {
+                return null;
+            }
         } catch (_Base_Result_Exception e){
             //nothing
             return null;
@@ -945,7 +959,7 @@ public class Model_Hardware extends TaggedModel {
 
                     case WS_Message_Hardware_uuid_converter.message_type: {
 
-                        Model_Hardware.convert_hardware_full_id_to_uuid(homer, baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_uuid_converter.class, json));
+                        Model_Hardware.convert_hardware_full_id_uuid(homer, baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_uuid_converter.class, json));
                         return;
                     }
 
@@ -1033,7 +1047,7 @@ public class Model_Hardware extends TaggedModel {
 
             // Nastavím server_id - pokud nekoresponduje s tím, který má HW v databázi uložený
             if (help.websocket_identificator != null && (device.connected_server_id == null || !device.connected_server_id.equals(help.websocket_identificator))) {
-                logger.debug("master_device_Connected:: Changing server id property to {} ", help.websocket_identificator);
+                logger.warn("master_device_Connected:: Changing server id property to {} ", help.websocket_identificator);
                 device.connected_server_id = help.websocket_identificator;
                 device.update();
             }
@@ -1176,14 +1190,16 @@ public class Model_Hardware extends TaggedModel {
                 return;
             }
 
-            logger.debug("check_mqtt_hardware_connection_validation: Device is not null - HW name {} . Pass from Homer: {} Name from Homer: {} ", board.name, request.password, request.user_name);
-            logger.debug("check_mqtt_hardware_connection_validation: Device is not null - HW name {} . Pass from Tyrion: {} Name from Tyrion: {} ", board.name, board.mqtt_password, board.mqtt_username);
+            logger.debug("check_mqtt_hardware_connection_validation: Device is not null - HW name {} . Pass from Homer: {} Name from Homer: {} ", board.full_id, request.password, request.user_name);
+            logger.debug("check_mqtt_hardware_connection_validation: Device is not null - HW name {} . Pass from Tyrion: {} Name from Tyrion: {} ", board.full_id, board.mqtt_password, board.mqtt_username);
 
 
 
             if (BCrypt.checkpw(request.password, board.mqtt_password) && BCrypt.checkpw(request.user_name, board.mqtt_username)) {
+                logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Approve",  board.full_id);
                 homer.send(request.get_result(true,  board.id));
             } else {
+                logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Denied",  board.full_id);
                 homer.send(request.get_result(false,  board.id));
             }
 
@@ -1201,20 +1217,42 @@ public class Model_Hardware extends TaggedModel {
     }
 
     @JsonIgnore
-    public static void convert_hardware_full_id_to_uuid(WS_Homer homer, WS_Message_Hardware_uuid_converter request) {
+    public static void convert_hardware_full_id_uuid(WS_Homer homer, WS_Message_Hardware_uuid_converter request) {
         try {
 
             logger.debug("convert_hardware_full_id_to_uuid:: Incomimng Request for Transformation:: ", Json.toJson(request));
-            Model_Hardware board = Model_Hardware.getByFullId(request.full_id);
 
-            if(board == null){
-                logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found!");
-                homer.send(request.get_result_error());
+            // Přejlad na UUID
+            if(request.full_id != null) {
+                Model_Hardware board = Model_Hardware.getByFullId(request.full_id);
+
+                if (board == null) {
+                    logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found!");
+                    homer.send(request.get_result_error());
+                    return;
+                }
+
+                logger.debug("convert_hardware_full_id_to_uuid:: Device found - Return Success");
+                homer.send(request.get_result(board.id, board.full_id));
                 return;
             }
 
-            logger.debug("convert_hardware_full_id_to_uuid:: Device found - Return Success");
-            homer.send(request.get_result(board.id));
+            // Přejlad na FULL_ID
+            if(request.uuid != null) {
+                Model_Hardware board = Model_Hardware.getById(request.uuid);
+
+                if (board == null) {
+                    logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found!");
+                    homer.send(request.get_result_error());
+                    return;
+                }
+
+                logger.debug("convert_hardware_full_id_to_uuid:: Device found - Return Success");
+                homer.send(request.get_result(board.id, board.full_id));
+                return;
+            }
+
+            logger.error("convert_hardware_full_id_to_uuid: Incoming message not contain full_id or uuid!!!!");
 
         }catch (Exception e){
             logger.internalServerError(e);
@@ -1278,6 +1316,7 @@ public class Model_Hardware extends TaggedModel {
             logger.warn("write_with_confirmation- Try to send request on Hardware, but connected_server_id is empty!");
             ObjectNode request = Json.newObject();
             request.put("message_type", json.get("message_type").asText());
+            request.put("status", "error");
             request.put("message_channel", Model_Hardware.CHANNEL);
             request.put("error_code", ErrorCode.HOMER_SERVER_NOT_SET_FOR_HARDWARE.error_code());
             request.put("error_message", ErrorCode.HOMER_SERVER_NOT_SET_FOR_HARDWARE.error_message());
@@ -1297,6 +1336,7 @@ public class Model_Hardware extends TaggedModel {
 
             ObjectNode request = Json.newObject();
             request.put("message_type", json.get("message_type").asText());
+            request.put("status", "error");
             request.put("message_channel", Model_Hardware.CHANNEL);
             request.put("error_code", ErrorCode.HOMER_NOT_EXIST.error_code());
             request.put("error_message", ErrorCode.HOMER_NOT_EXIST.error_message());
@@ -1366,8 +1406,17 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public WS_Message_Hardware_overview_Board get_devices_overview() {
         JsonNode node = write_with_confirmation(new WS_Message_Hardware_overview().make_request(Collections.singletonList(this.id)), 1000 * 5, 0, 2);
-        WS_Message_Hardware_overview overview = baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_overview.class, node);
-        return overview.get_device_from_list(this.id);
+
+        if(node.get("status").asText().equals("success")) {
+            WS_Message_Hardware_overview overview = baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_overview.class, node);
+            return overview.get_device_from_list(this.id);
+        }else {
+            WS_Message_Hardware_overview_Board overview = new WS_Message_Hardware_overview_Board();
+            overview.status = node.get("status").asText();
+            overview.error_message = node.get("error_message").asText();
+            overview.error_code = node.get("error_code").asInt();
+            return overview;
+        }
     }
 
     @JsonIgnore
@@ -1433,6 +1482,8 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public WS_Message_Hardware_set_hardware_groups set_hardware_groups_on_hardware(List<UUID> hardware_groups_ids, Enum_type_of_command command) {
         try {
+
+            System.out.println("WS_Message_Hardware_set_hardware_groups: hardware_group_ids set: hardware_groups_ids" + hardware_groups_ids.toString() + " Command: " + command);
 
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_hardware_groups().make_request(Collections.singletonList(this), hardware_groups_ids, command), 1000 * 5, 0, 2);
 
@@ -1807,19 +1858,19 @@ public class Model_Hardware extends TaggedModel {
       */
 /* CHECK BOARD RIGHT FIRMWARE || BACKUP || BOOTLOADER STATUS -----------------------------------------------------------*/
 
-    // Kontrola up_to_date harwaru
+    // Kontrola up_to_date hardwaru
     @JsonIgnore
     public void hardware_firmware_state_check() {
         try {
-            logger.debug("hardware_firmware_state_check procedure");
+            logger.warn("hardware_firmware_state_check procedure");
 
             WS_Message_Hardware_overview_Board report = get_devices_overview();
 
             if (report.error_message != null) {
-                logger.debug("hardware_firmware_state_check - Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: {} " , this.id, report.error_code, report.error_message);
+                logger.warn("hardware_firmware_state_check - Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: {} " , this.id, report.error_code, report.error_message);
 
                 if (report.error_code.equals(ErrorCode.HARDWARE_IS_OFFLINE.error_code())) {
-                    logger.debug("hardware_firmware_state_check -: Report Device ID: {} is offline" , this.id);
+                    logger.warn("hardware_firmware_state_check -: Report Device ID: {} is offline" , this.id);
                     return;
                 }
             }
@@ -1830,27 +1881,27 @@ public class Model_Hardware extends TaggedModel {
             }
 
             if (!report.online_status) {
-                logger.debug("hardware_firmware_state_check - device is offline");
+                logger.warn("hardware_firmware_state_check - device is offline");
                 return;
             }
 
             if (project().id == null) {
-                logger.debug("hardware_firmware_state_check device id:: {} - No project - synchronize is not allowed.", this.id);
+                logger.warn("hardware_firmware_state_check device id:: {} - No project - synchronize is not allowed.", this.id);
                 return;
             }
 
-            logger.debug("hardware_firmware_state_check - Summary information of connected master hardware: ID = {}", this.id);
+            logger.warn("hardware_firmware_state_check - Summary information of connected master hardware: ID = {}", this.id);
 
-            logger.debug("hardware_firmware_state_check - Settings check ",this.id);
+            logger.warn("hardware_firmware_state_check - Settings check ", this.id);
             if (!check_settings(report)) return;
 
-            logger.debug("hardware_firmware_state_check - Firmware check ",this.id);
+            logger.warn("hardware_firmware_state_check - Firmware check ", this.id);
             check_firmware(report);
 
-            logger.debug("hardware_firmware_state_check - Backup check ",this.id);
+            logger.warn("hardware_firmware_state_check - Backup check ", this.id);
             check_backup(report);
 
-            logger.debug("hardware_firmware_state_check - Bootloader check ",this.id);
+            logger.warn("hardware_firmware_state_check - Bootloader check ", this.id);
             check_bootloader(report);
 
         } catch (Exception e) {
@@ -1907,6 +1958,7 @@ public class Model_Hardware extends TaggedModel {
         for(UUID hardware_group_id : get_hardware_group_ids()) {
             // Pokud neobsahuje přidám - ale abych si ušetřil čas - nastavím rovnou celý seznam - Homer si s tím poradí
             if (overview.hardware_group_ids == null || overview.hardware_group_ids.isEmpty() || !overview.hardware_group_ids.contains(hardware_group_id)) {
+                System.out.println("check_settings - Nastavení Hardware Groups!!!!!!!! ");
                 set_hardware_groups_on_hardware(get_hardware_group_ids(), Enum_type_of_command.SET);
                 break;
             }
@@ -1992,14 +2044,15 @@ public class Model_Hardware extends TaggedModel {
     private void check_firmware(WS_Message_Hardware_overview_Board overview) {
         try {
 
+            logger.warn("Firmware:: Device id: {} : CHECK FIRMWARE --------------------------------------------------------------------", this.id);
             // Pokud uživatel nechce DB synchronizaci ingoruji
             if (!this.database_synchronize) {
-                logger.trace("check_firmware: Device id: {} : database_synchronize is forbidden - change parameters not allowed!", this.id);
+                logger.warn("check_firmware: Device id: {} : database_synchronize is forbidden - change parameters not allowed!", this.id);
                 return;
             }
 
             if (get_actual_c_program_version() == null) {
-                logger.trace("check_firmware: Device id: {} : Actual firmware by DB not recognized :: {}", this.id, overview.binaries.firmware.build_id);
+                logger.warn("check_firmware: Device id: {} : Actual firmware by DB not recognized :: {}", this.id, overview.binaries.firmware.build_id);
             }
 
             if (overview.binaries.firmware == null) {
@@ -2033,7 +2086,7 @@ public class Model_Hardware extends TaggedModel {
             // Ale jestli mám udpate firmwaru a backupu pak k tomu dojít nesmí!
             // Poměrně krkolomné řešení a HNUS kod - ale chyba je výjmečná a stává se jen sporadicky těsně před nebo po restartu serveru
             if (firmware_plans.size() > 1) {
-                logger.debug("check_firmware: Device id: {} : there is more than one active firmware_plans. Its time to override it!", this.id);
+                logger.warn("check_firmware: Device id: {} : there is more than one active firmware_plans. Its time to override it!", this.id);
                 for (int i = 1; i < firmware_plans.size(); i++) {
                     firmware_plans.get(i).state = HardwareUpdateState.OBSOLETE;
                     firmware_plans.get(i).update();
@@ -2042,18 +2095,18 @@ public class Model_Hardware extends TaggedModel {
 
             if (!firmware_plans.isEmpty()) {
 
-                logger.debug("check_firmware: Device id: {} : existují nedokončené procedury", this.id);
+                logger.warn("check_firmware: Device id: {} : existují nedokončené procedury", this.id);
 
                 Model_HardwareUpdate plan = firmware_plans.get(0);
 
-                logger.debug("Plan:: {} status: {} ", plan.id, plan.state);
+                logger.warn("Plan:: {} status: {} ", plan.id, plan.state);
 
                 // Mám shodu firmwaru oproti očekávánemů
                 if (get_actual_c_program_version() != null) {
-
-                    logger.debug("Firmware:: Device id: {} :  Co aktuálně je na HW podle Tyriona??:: CProgram Name {} Version Name {} Build Id {} ", this.id, get_actual_c_program_version().get_c_program().name, get_actual_c_program_version().name,  get_actual_c_program_version().compilation.firmware_build_id);
-                    logger.debug("Firmware:: Device id: {} :  Co aktuálně je na HW podle Homera??:: {}", this.id, overview.binaries.firmware.build_id);
-                    logger.debug("Firmware:: Device id: {} :  Co očekává nedokončená procedura??:: CProgram Name {} Version Name {} Build Id {} ", this.id, plan.c_program_version_for_update.get_c_program().name, plan.c_program_version_for_update.name, plan.c_program_version_for_update.compilation.firmware_build_id);
+                    logger.warn("Firmware:: Device id: {} :   --------------------------------------------------------------------", this.id);
+                    logger.warn("Firmware:: Device id: {} :  Co aktuálně je na HW podle Tyriona??:: CProgram Name {} Version Name {} Build Id {} ", this.id, get_actual_c_program_version().get_c_program().name, get_actual_c_program_version().name,  get_actual_c_program_version().compilation.firmware_build_id);
+                    logger.warn("Firmware:: Device id: {} :  Co aktuálně je na HW podle Homera??:: {}", this.id, overview.binaries.firmware.build_id);
+                    logger.warn("Firmware:: Device id: {} :  Co očekává nedokončená procedura??:: CProgram Name {} Version Name {} Build Id {} ", this.id, plan.c_program_version_for_update.get_c_program().name, plan.c_program_version_for_update.name, plan.c_program_version_for_update.compilation.firmware_build_id);
 
                     // Verze se rovnají
                     if (overview.binaries.firmware.build_id.equals(plan.c_program_version_for_update.compilation.firmware_build_id)) {
@@ -2794,8 +2847,9 @@ public class Model_Hardware extends TaggedModel {
 
     @JsonIgnore @Transient @Override  public void check_create_permission() throws _Base_Result_Exception {
         // Only for Garfield Registration or Manual Registration
-        if (_BaseController.person().has_permission(Permission.Hardware_create.name())) return;
-        throw new Result_Error_PermissionDenied();
+        if(project == null) {
+            return;
+        }
     }
 
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
@@ -2817,7 +2871,7 @@ public class Model_Hardware extends TaggedModel {
 
     /**
      * For this case - its not delete, but unregistration from Project
-     * @throws _Base_Result_Exception
+     * @throws Error when _Base_Result_Exception
      */
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception  {
         try {
@@ -2844,6 +2898,13 @@ public class Model_Hardware extends TaggedModel {
             if (_BaseController.person().has_permission(Permission.Hardware_update.name())) return;
 
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+            // Speciální podmínka - protože registrace nového HW vyžaduje update nikoliv save!!!
+            if(this.project != null) {
+                this.project.check_update_permission();
+                _BaseController.person().cache_permission("hardware_update_" + id, true);
+                return;
+            }
+
             get_project().check_update_permission();
             _BaseController.person().cache_permission("hardware_update_" + id, true);
 

@@ -520,44 +520,5 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
     @JsonIgnore public abstract void check_update_permission() throws _Base_Result_Exception;
     @JsonIgnore public abstract void check_delete_permission() throws _Base_Result_Exception;
 
-
-    /**
-     * Special Abstract method for all Model_Xxxx where you can find  public XXXXX getById(UUID id){....}
-     * @param id
-     * @return
-     */
-    @JsonIgnore
-    public boolean check_if_exist(UUID id) {
-        try {
-
-            // Set Arguments of Methods
-            Class[] cArg = new Class[1];
-            cArg[0] = UUID.class;
-
-            Method method = this.getClass().getDeclaredMethod("getById", cArg);
-            Object o = method.invoke(this.getClass(), id);
-
-            return o != null;
-
-        } catch (InvocationTargetException e) {
-
-            if(e.getCause().getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
-                return false;
-            }
-
-            logger.error("check_if_exist:: is not supported on {}, because getById(UUID id) is missing.", this.getClass().getSimpleName());
-            throw new Result_Error_NotSupportedException();
-
-        }catch (Exception e){
-            // Everytime its InvocationTargetException, but compilator required this one also
-            logger.error("check_if_exist:: is not supported on {}, because getById(UUID id) missing.", this.getClass().getSimpleName());
-            throw new Result_Error_NotSupportedException();
-        }
-    }
-
-    @JsonIgnore
-    public boolean check_if_exist(String id) {
-        return check_if_exist(UUID.fromString(id));
-    }
 }
 

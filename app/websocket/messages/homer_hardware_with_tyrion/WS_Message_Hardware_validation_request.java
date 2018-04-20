@@ -11,7 +11,7 @@ import websocket.messages.common.abstract_class.WS_AbstractMessage_Hardware;
 
 import java.util.UUID;
 
-public class WS_Message_Hardware_validation_request extends WS_AbstractMessage_Hardware {
+public class WS_Message_Hardware_validation_request {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -28,6 +28,14 @@ public class WS_Message_Hardware_validation_request extends WS_AbstractMessage_H
     @Constraints.Required public String user_name;
     @Constraints.Required public String password;
     @Constraints.Required public String full_id;
+
+    @Constraints.Required public String websocket_identificator;   // Becki ID, Homer Server ID Etc - Dosazuje do JSONu WS_SendMesage
+    @Constraints.Required public String message_id;
+    @Constraints.Required public String message_channel;
+
+    public String status = "error";
+    public String error  = null;
+    public Integer error_code = null;
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 

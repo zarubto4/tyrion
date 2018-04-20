@@ -92,19 +92,27 @@ public class Model_Invitation extends BaseModel {
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Invitation_create.name())) return;
-        if(!_BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
+        if(_BaseController.personId().equals(this.owner.id)) return;
+        if(_BaseController.person().email.equals(this.email)) return;
+        throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Invitation_update.name())) return;
-        if(!_BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
+        if(_BaseController.personId().equals(this.owner.id)) return;
+        if(_BaseController.person().email.equals(this.email)) return;
+        throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_update_permission()  {
         if(_BaseController.person().has_permission(Permission.Invitation_update.name())) return;
-        if(!_BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
+        if(_BaseController.personId().equals(this.owner.id)) return;
+        if(_BaseController.person().email.equals(this.email)) return;
+        throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void  check_delete_permission() throws _Base_Result_Exception  {
         if(_BaseController.person().has_permission(Permission.Invitation_delete.name())) return;
-        if(!_BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
+        if(_BaseController.personId().equals(this.owner.id)) return;
+        if(_BaseController.person().email.equals(this.email)) return;
+        throw new Result_Error_PermissionDenied();
     }
 
     public enum Permission { Invitation_create, Invitation_read, Invitation_update, Invitation_delete }

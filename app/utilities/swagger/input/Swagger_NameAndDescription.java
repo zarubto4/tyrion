@@ -6,6 +6,9 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @ApiModel(description = "Json Model with name and description",
           value = "NameAndDescription")
 public class Swagger_NameAndDescription extends _Swagger_Abstract_Default {
@@ -19,4 +22,7 @@ public class Swagger_NameAndDescription extends _Swagger_Abstract_Default {
     @ApiModelProperty(required = false, value = "description can be null or maximum length of 255 characters.")
     @Constraints.MaxLength(value = 255, message = "The description must not have more than 255 characters.")
     public String description;
+
+    @ApiModelProperty(value = "Tags - Optional", required = false)
+    public List<String> tags = new ArrayList<>();
 }

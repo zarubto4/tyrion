@@ -19,6 +19,8 @@ import utilities.slack.Slack;
 
 import java.time.Duration;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 public class SelfDeployedThreadRegister extends Thread {
 
@@ -119,7 +121,9 @@ public class SelfDeployedThreadRegister extends Thread {
                         logger.error("crate_server::  Response  Head {} and body: {}", response.getStatus(), response.getBody());
                     }
 
-
+                }catch (ExecutionException e) {
+                    logger.warn("run:: Thread - ExecutionException - No Response");
+                    sleep(1000 * 10);
                 }catch (Exception e) {
                     logger.warn("run:: Thread - Still not ready! Time to sleep and do it again!");
                     logger.internalServerError(e);

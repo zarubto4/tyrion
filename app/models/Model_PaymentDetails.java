@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.CacheField;
 import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -153,21 +154,23 @@ public class Model_PaymentDetails extends BaseModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.PaymentDetail_crete.name())) return;
-        customer.check_update_permission();
+        // true
     }
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.PaymentDetail_read.name())) return;
-        customer.check_update_permission();
+        if(product == null)  throw new Result_Error_PermissionDenied();
+        product.check_update_permission();
     }
 
     @JsonIgnore @Transient @Override public void check_update_permission()  throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.PaymentDetail_update.name())) return;
-        customer.check_update_permission();
+        if(product == null)  throw new Result_Error_PermissionDenied();
+        product.check_update_permission();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission()  throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.PaymentDetail_delete.name())) return;
-        customer.check_update_permission();
+        if(product == null)  throw new Result_Error_PermissionDenied();
+        product.check_update_permission();
     }
 
     public enum Permission {PaymentDetail_crete, PaymentDetail_update, PaymentDetail_read, PaymentDetail_delete}
