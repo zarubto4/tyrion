@@ -533,7 +533,9 @@ public class Controller_Admin extends _BaseController {
                 for (int i = 0; i < versionNumbers.length; i++) {
                     Long versionNumber = new Long(versionNumbers[i]);
                     Long currentNumber = new Long(currentNumbers[i]);
-                    if (versionNumber < currentNumber || (i == versionNumbers.length - 1 && versionNumber.equals(currentNumber))) {
+                    if (versionNumber > currentNumber) {
+                        return true;
+                    } else if (versionNumber < currentNumber || (i == versionNumbers.length - 1 && versionNumber.equals(currentNumber))) {
                         logger.debug("server_getUpdates - release is older than current running version");
                         return false;
                     }
