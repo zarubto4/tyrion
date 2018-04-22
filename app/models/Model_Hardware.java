@@ -111,7 +111,7 @@ public class Model_Hardware extends TaggedModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_HardwareType hardware_type; // Typ desky - (Cachováno)
 
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_CProgramVersion actual_c_program_version;           // OVěřená verze firmwaru, která na hardwaru běží (Cachováno)
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE) public Model_CProgramVersion actual_c_program_version;           // OVěřená verze firmwaru, která na hardwaru běží (Cachováno)
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_CProgramVersion actual_backup_c_program_version;    // Ověřený statický backup - nebo aktuálně zazálohovaný firmware (Cachováno)
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BootLoader actual_boot_loader;              // Aktuální bootloader (Cachováno)
 
@@ -2049,7 +2049,7 @@ public class Model_Hardware extends TaggedModel {
     private void check_firmware(WS_Message_Hardware_overview_Board overview) {
         try {
 
-            logger.warn("Firmware:: Device id: {} : CHECK FIRMWARE --------------------------------------------------------------------", this.id);
+            logger.warn("check_firmware: Device id: {} : CHECK FIRMWARE --------------------------------------------------------------------", this.id);
             // Pokud uživatel nechce DB synchronizaci ingoruji
             if (!this.database_synchronize) {
                 logger.warn("check_firmware: Device id: {} : database_synchronize is forbidden - change parameters not allowed!", this.id);
@@ -2079,6 +2079,7 @@ public class Model_Hardware extends TaggedModel {
                     .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
                     .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
                     .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
+                    .add(Expr.eq("state", HardwareUpdateState.CRITICAL_ERROR))
                     .endJunction()
                     .eq("firmware_type", FirmwareType.FIRMWARE.name())
                     .lt("actualization_procedure.date_of_planing", new Date())
@@ -2119,8 +2120,8 @@ public class Model_Hardware extends TaggedModel {
                         logger.debug("check_firmware:: Device id: {} : verze se shodují - tím pádem je procedura dokončená a uzavírám", this.id);
                         this.actual_c_program_version = plan.c_program_version_for_update;
 
-                        this.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
-                        this.cache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
+                        this.cache().add(Model_CProgram.class,  this.actual_c_program_version.get_c_program().id);
+                        this.cache().add(Model_CProgramVersion.class,  this.actual_c_program_version.id);
 
                         this.update();
 
@@ -2223,8 +2224,8 @@ public class Model_Hardware extends TaggedModel {
             // Set Defualt Program protože žádný teď nemáš
             if (get_actual_c_program_version() == null && firmware_plans.isEmpty()) {
 
-                logger.debug("check_firmware - Actual firmware_id is not recognized by the DB - Device has not firmware required by Tyrion");
-                logger.debug("check_firmware - Tyrion will try to find Default C Program Main Version for this type of hardware. If is it set, Tyrion will update device to starting state");
+                logger.debug("check_firmware:: Device id: {} Actual firmware_id is not recognized by the DB - Device has not firmware required by Tyrion", this.id);
+                logger.debug("check_firmware:: Device id: {} Tyrion will try to find Default C Program Main Version for this type of hardware. If is it set, Tyrion will update device to starting state", this.id);
 
                 // Ověřím - jestli nemám nově nahraný firmware na Hardwaru (to je ten co je teď výcohí firmware pro aktuální typ hardwaru)
                 if (overview.binaries != null && overview.binaries.firmware != null
@@ -2234,7 +2235,7 @@ public class Model_Hardware extends TaggedModel {
                         && overview.binaries.firmware.build_id.equals(getHardwareTypeCache().get_main_c_program().default_main_version.compilation.firmware_build_id)
                         ) {
 
-                    logger.debug("check_firmware - hardware is brand new, but already has required default hardware type firmware");
+                    logger.debug("check_firmware:: Device id: {}  hardware is brand new, but already has required default hardware type firmware", this.id);
 
                     // SET MAIN
                     this.actual_c_program_version = getHardwareTypeCache().get_main_c_program().default_main_version;
@@ -2264,7 +2265,7 @@ public class Model_Hardware extends TaggedModel {
                 // Defaultní firmware je v v backandu určený výchozí program k typu desky.
                 if (getHardwareTypeCache().get_main_c_program() != null && getHardwareTypeCache().get_main_c_program().default_main_version != null) {
 
-                    logger.debug("check_firmware - Yes, Default Version for Type Of Device {} is set", getHardwareTypeCache().name);
+                    logger.debug("check_firmware:: Device id: {} Yes, Default Version for Type Of Device {} is set", this.id , getHardwareTypeCache().name);
 
                     List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
 
@@ -2280,8 +2281,8 @@ public class Model_Hardware extends TaggedModel {
                     procedure.execute_update_procedure();
 
                 } else {
-                    logger.error("Attention please! This is not a critical bug - Tyrion server is not just set for this type of device! Set main C_Program and version!");
-                    logger.error("Default main code version is not set for Type Of Board " + getHardwareTypeCache().name + " please set that!");
+                    logger.error("check_firmware:: Device id: {} Attention please! This is not a critical bug - Tyrion server is not just set for this type of device! Set main C_Program and version!", this.id  );
+                    logger.error("check_firmware:: Device id: {} Default main code version is not set for Type Of Board {} please set that!", this.id , getHardwareTypeCache().name);
                 }
             }
         } catch (Exception e) {
@@ -2294,27 +2295,45 @@ public class Model_Hardware extends TaggedModel {
         try {
             // Pokud uživatel nechce DB synchronizaci ingoruji
             if (!this.database_synchronize) {
-                logger.trace("check_backup - database_synchronize is forbidden - change parameters not allowed!");
+                logger.trace("check_backup:: Device id: {} - database_synchronize is forbidden - change parameters not allowed!", this.id );
                 return;
             }
 
             // když je autobackup tak sere pes - změna autobacku je rovnou z devicu
             if (backup_mode) {
-                logger.trace("check_backup - autobackup is true change parameters not allowed!");
+                logger.trace("check_backup:: Device id: {}- autobackup is true change parameters not allowed!", this.id );
 
                 // Ale mohl bych udělat záznam o tom co tam je - kdyby to nebylo stejné s tím co si myslí tyrion že tam je:
 
-                if (overview.binaries.backup != null && (overview.binaries.backup.build_id == null || !overview.binaries.backup.build_id.equals(""))) {
-                    Model_CProgramVersion version_not_cached = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findOne();
-                    if (version_not_cached != null) {
-                        logger.debug("check_backup:: Ještě nebyla přiřazena žádná Backup verze k HW v Tyrionovi - ale program se podařilo najít");
-                        Model_CProgramVersion cached_version = Model_CProgramVersion.getById(version_not_cached.id);
+                if (overview.binaries.backup != null && overview.binaries.backup.build_id != null && !overview.binaries.backup.build_id.equals("")) {
 
 
+                    if (this.actual_backup_c_program_version != null && this.actual_backup_c_program_version.compilation.firmware_build_id.equals(overview.binaries.backup.build_id)) {
+                        logger.debug("check_backup:: Device id: {} - verze se shodují");
+                    } else {
 
-                        this.actual_backup_c_program_version = cached_version;
-                        this.cache().add(Model_CProgramVersionFakeBackup.class, cached_version.get_c_program().id);
-                        this.update();
+                        Model_CProgramVersion version_not_cached = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findOne();
+                        if (version_not_cached != null) {
+
+                            Model_CProgramVersion cached_version = Model_CProgramVersion.getById(version_not_cached.id);
+
+                            logger.debug("check_backup:: Device id: {} Ještě nebyla přiřazena žádná Backup verze k HW v Tyrionovi - ale program se podařilo najít", this.id);
+                            logger.debug("check_backup:: Device id: {} Actual Version ID of backup: {} build_id: {} ", this.id, this.actual_backup_c_program_version != null ? this.actual_backup_c_program_version.id : "'neni uloženo'", this.actual_backup_c_program_version != null ? this.actual_backup_c_program_version.compilation.firmware_build_id : " není uloženo ");
+                            logger.debug("check_backup:: Device id: {} Actual Version ID of backup: {} build_id: {} ", this.id, cached_version != null ? cached_version.id : "'neni uloženo'", cached_version != null ? cached_version.compilation.firmware_build_id : " není uloženo ");
+
+
+                            if (this.actual_backup_c_program_version != null && version_not_cached.id.equals(this.actual_backup_c_program_version.id)) {
+                                logger.debug("check_backup:: Version is same!");
+                            }
+
+                            if (cached_version != null) {
+                                this.actual_backup_c_program_version = cached_version;
+                                this.cache().add(Model_CProgramVersionFakeBackup.class, cached_version.get_c_program().id);
+                                this.update();
+                            } else {
+                                logger.error("check_backup:: Device id: {} - critical bug - we found version_not_cached id {} but cached version is null!!!!", this.id, version_not_cached.id);
+                            }
+                        }
                     }
                 }
 
@@ -2982,11 +3001,6 @@ public class Model_Hardware extends TaggedModel {
             _BaseController.person().cache_permission("hardware_update_" + id, false);
             throw new Result_Error_PermissionDenied();
         }
-    }
-
-
-    @JsonIgnore @Transient public boolean first_connect_permission() {
-        return project().id == null;
     }
 
     public enum Permission {Hardware_create, Hardware_read, Hardware_update, Hardware_edit, Hardware_delete}

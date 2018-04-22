@@ -301,7 +301,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
     }
 
 
-    /* Actions --------------------------------------------------------------------------------------------------------*/
+/* Actions --------------------------------------------------------------------------------------------------------*/
 
     public void deploy() {
         Model_Person person = its_person_operation() ? _BaseController.person() : null;
@@ -473,16 +473,24 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
     @JsonIgnore @Transient
     public void override_all_actualization_hardware_request(){
+
+        logger.debug("override_all_actualization_hardware_request Snapshot {} : start with override_all_actualization_hardware_request", this.id);
+        logger.debug("override_all_actualization_hardware_request Snapshot {} : size of updates procedure for instance id {} is: {} ", this.id, this.get_instance_id(), getUpdateProcedure().size());
         for(Model_UpdateProcedure procedure : getUpdateProcedure()) {
 
+            logger.debug("override_all_actualization_hardware_request Snapshot {} : FOR CYCLE Procedure ID: {}", this.id, procedure.id);
+
             if (procedure.state == Enum_Update_group_procedure_state.CANCELED) {
+                logger.debug("override_all_actualization_hardware_request Snapshot {} : FOR CYCLE Procedure ID: {} procedure is CANCELED ", this.id, procedure.id);
                 continue;
             }
 
-            procedure.date_of_finish = new Date();
-            if(procedure.state !=  Enum_Update_group_procedure_state.COMPLETE && procedure.state != Enum_Update_group_procedure_state.SUCCESSFULLY_COMPLETE) {
-                procedure.state = Enum_Update_group_procedure_state.CANCELED;
+            if(procedure.state ==  Enum_Update_group_procedure_state.COMPLETE || procedure.state == Enum_Update_group_procedure_state.SUCCESSFULLY_COMPLETE) {
+                logger.debug("override_all_actualization_hardware_request Snapshot {} : FOR CYCLE Procedure ID: {} procedure is COMPLETE or  SUCCESSFULLY_COMPLETE", this.id, procedure.id);
+                continue;
             }
+
+            logger.debug("override_all_actualization_hardware_request Snapshot {} : FOR CYCLE Procedure ID: {} canceling this procedure ", this.id, procedure.id);
 
             procedure.update();
 
@@ -490,9 +498,14 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 if(update.state != HardwareUpdateState.COMPLETE) {
                     update.state = HardwareUpdateState.OBSOLETE;
                 }
-
+                update.date_of_finish = new Date();
                 update.update();
             }
+
+            procedure.state = Enum_Update_group_procedure_state.CANCELED;
+            procedure.date_of_finish = new Date();
+            procedure.update();
+
         }
     }
 
@@ -722,25 +735,25 @@ public class Model_InstanceSnapshot extends TaggedModel {
         Swagger_InstanceSnapShotConfigurationFile collection = null;
         Swagger_InstanceSnapShotConfigurationProgram program = null;
 
-        System.out.println("get_connection_summary:: ---------------------------");
-        System.out.println(" - actual Settings:: ");
-        System.out.println(Json.toJson(settings));
-        System.out.println("Looking for grid_program_id:: {} " + grid_program_id);
+        // System.out.println("get_connection_summary:: ---------------------------");
+        // System.out.println(" - actual Settings:: ");
+        // System.out.println(Json.toJson(settings));
+        // System.out.println("Looking for grid_program_id:: {} " + grid_program_id);
 
-        System.out.println("Start with For cycle");
+        // System.out.println("Start with For cycle");
         for(Swagger_InstanceSnapShotConfigurationFile grids_collection : settings.grids_collections){
 
-            System.out.println("grids_collection grid_project_id:: " + grids_collection.grid_project_id);
-            System.out.println("grids_collection grid_programs.size:: " + grids_collection.grid_programs.size());
+            // System.out.println("grids_collection grid_project_id:: " + grids_collection.grid_project_id);
+            // System.out.println("grids_collection grid_programs.size:: " + grids_collection.grid_programs.size());
 
             for(Swagger_InstanceSnapShotConfigurationProgram grids_program : grids_collection.grid_programs){
 
-                System.out.println("grids_collection grids_program grid_program_id:: " + grids_program.grid_program_id);
-                System.out.println("grids_collection grids_program grid_program_version_id:: " + grids_program.grid_program_version_id);
+                // System.out.println("grids_collection grids_program grid_program_id:: " + grids_program.grid_program_id);
+                // System.out.println("grids_collection grids_program grid_program_version_id:: " + grids_program.grid_program_version_id);
 
                 if(grids_program.grid_program_id.equals( grid_program_id) || grids_program.grid_program_version_id.equals(grid_program_id) ){
 
-                    System.out.println("grids_collection set collection and program ");
+                    // System.out.println("grids_collection set collection and program ");
 
                     collection = grids_collection;
                     program = grids_program;
@@ -749,8 +762,8 @@ public class Model_InstanceSnapshot extends TaggedModel {
             }
         }
 
-        System.out.println(" IS Collection ok?? " + collection != null);
-        System.out.println(" IS program ok?? " + program != null);
+        // System.out.println(" IS Collection ok?? " + collection != null);
+        // System.out.println(" IS program ok?? " + program != null);
 
 
         if(collection == null){
@@ -773,7 +786,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
             case PUBLIC: {
 
 
-                System.out.println("program.snapshot_settings - PUBLIC");
+                // System.out.println("program.snapshot_settings - PUBLIC");
 
                 Model_GridProgramVersion version = Model_GridProgramVersion.getById(program.grid_program_version_id);
 
@@ -784,10 +797,10 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 summary.grid_program_version_id = program.grid_program_version_id;
                 summary.instance_id = get_instance().id;
 
-                System.out.println("get_connection_summary: Parsování začíná:");
-                System.out.println("get_connection_summary: Model_GridProgramVersion: " + program.grid_program_version_id);
-                System.out.println("get_connection_summary: Program Original: " + summary.grid_program);
-                System.out.println("get_connection_summary: Program: " +  Json.parse(summary.grid_program));
+                // System.out.println("get_connection_summary: Parsování začíná:");
+                // System.out.println("get_connection_summary: Model_GridProgramVersion: " + program.grid_program_version_id);
+                // System.out.println("get_connection_summary: Program Original: " + summary.grid_program);
+                // System.out.println("get_connection_summary: Program: " +  Json.parse(summary.grid_program));
 
                 JsonNode jsonNode = Json.parse(summary.grid_program);
                 JsonNode m_code = Json.parse(jsonNode.get("m_code").asText().replace("\\\"", "\""));
@@ -799,7 +812,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
             case PROJECT: {
 
-                System.out.println("program.snapshot_settings - PROJECT");
+                 System.out.println("program.snapshot_settings - PROJECT");
 
                 // Check Token
                 String token = new Authentication().getUsername(context);
@@ -867,7 +880,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
         try {
 
 
-            System.out.println("version_separator:: m_program: " + Json.toJson(m_code));
+            // System.out.println("version_separator:: m_program: " + Json.toJson(m_code));
 
             // List for returning
             List<Swagger_GridWidgetVersion_GridApp_source> list = new ArrayList<>();
@@ -875,12 +888,12 @@ public class Model_InstanceSnapshot extends TaggedModel {
             // Create object
             M_Program_Parser program_parser = baseFormFactory.formFromJsonWithValidation(M_Program_Parser.class, m_code);
 
-            System.out.println("version_separator:: program_parser: " + Json.toJson(program_parser));
+            // System.out.println("version_separator:: program_parser: " + Json.toJson(program_parser));
 
-            System.out.println("\n");
-            System.out.println("version_separator:: screens: " + Json.toJson( program_parser.screens));
-            System.out.println("\n");
-            System.out.println("version_separator:: main: " + Json.toJson( program_parser.screens.main));
+            // System.out.println("\n");
+            // System.out.println("version_separator:: screens: " + Json.toJson( program_parser.screens));
+            // System.out.println("\n");
+            // System.out.println("version_separator:: main: " + Json.toJson( program_parser.screens.main));
 
                     // Loking for objects
             for (Widget_Parser widget_parser : program_parser.screens.main.get(0).widgets) {

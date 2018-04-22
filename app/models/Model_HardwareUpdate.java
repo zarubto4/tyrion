@@ -231,7 +231,6 @@ public class Model_HardwareUpdate extends BaseModel {
     public UUID getActualizationProcedureId() {
 
         if (cache().get(Model_UpdateProcedure.class) == null) {
-            System.out.println("getActualizationProcedureId:: " +  Model_UpdateProcedure.find.query().where().eq("updates.id", id).ne("deleted", true).select("id").findSingleAttribute());
             cache().add(Model_UpdateProcedure.class, (UUID) Model_UpdateProcedure.find.query().where().eq("updates.id", id).ne("deleted", true).select("id").findSingleAttribute());
         }
 
@@ -382,6 +381,7 @@ public class Model_HardwareUpdate extends BaseModel {
     @JsonIgnore @Override
     public boolean delete() {
         this.state = HardwareUpdateState.CANCELED;
+        this.date_of_finish = new Date();
         super.update();
 
         return true;
@@ -414,13 +414,14 @@ public class Model_HardwareUpdate extends BaseModel {
                 throw new NullPointerException("Plan id" + report.tracking_id + " not found!");
             }
 
-            logger.warn("update_procedure_progress :: {} Progress: {}", plan.id);
+            logger.debug("update_procedure_progress :: {} Progress: {}", plan.id, report.percentage_progress);
 
 
             // Pokud se vrátí fáze špatně - ukončuji celý update
             if (report.error_message != null || report.error_code != null) {
                 logger.warn("update_procedure_progress  Update Fail! Device ID: {}, update procedure: {}", plan.getHardware().id, plan.id);
 
+                plan.date_of_finish = new Date();
                 plan.state = HardwareUpdateState.CRITICAL_ERROR;
                 plan.error_code = report.error_code;
                 plan.error = report.error + report.error_message;
@@ -446,7 +447,7 @@ public class Model_HardwareUpdate extends BaseModel {
                 return;
             }
 
-            logger.warn("update_procedure_progress :: Checking phase: Phase {} ", phase);
+            logger.debug("update_procedure_progress :: Checking phase: Phase {} ", phase);
             // Fáze jsou volány jen tehdá, když má homer instrukce je zasílat
             switch (phase) {
 
@@ -634,7 +635,7 @@ public class Model_HardwareUpdate extends BaseModel {
                 case PHASE_UPDATE_DONE: {
                     try {
 
-                        logger.warn("update_procedure_progress :: UPDATE DONE :: for Hardware: {} ", plan.getHardware().name);
+                        logger.debug("update_procedure_progress :: UPDATE DONE :: for Hardware: {} ", plan.getHardware().name);
 
                         Model_Notification notification = new Model_Notification();
 
@@ -656,21 +657,46 @@ public class Model_HardwareUpdate extends BaseModel {
 
                         Model_Hardware hardware = plan.getHardware();
 
-                        logger.warn("update_procedure_progress :: UPDATE DONE :: plan.firmware_type  ", plan.firmware_type);
+                        logger.warn("update_procedure_progress :: UPDATE DONE :: plan.firmware_type {} ", plan.firmware_type);
 
                         if (plan.firmware_type == FirmwareType.FIRMWARE) {
 
-                            logger.debug("update_procedure_progress: firmware:: on HW now:: {} ",  hardware.get_actual_c_program_version() == null ? " nothing by DB" : hardware.get_actual_c_program_version().compilation.firmware_build_id);
+                            logger.debug("update_procedure_progress: firmware:: on HW id: {} now:: {} ", hardware.id,  hardware.get_actual_c_program_version() == null ? " nothing by DB" : hardware.get_actual_c_program_version().compilation.firmware_build_id);
                             logger.debug("update_procedure_progress: required by update: {} ",  plan.c_program_version_for_update.compilation.firmware_build_id);
+
+                            logger.debug("update_procedure_progress: Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
+                            logger.debug("update_procedure_progress: Na Hardwaru je teď CProgram Verze " + hardware.get_actual_c_program_version().name + " id: " + hardware.get_actual_c_program_version().id);
+
+
+                            logger.debug("update_procedure_progress: Co by tam ale mělo za chvíli být je CProgram " + plan.c_program_version_for_update.get_c_program().name);
+                            logger.debug("update_procedure_progress: Co by tam ale mělo za chvíli být je CProgram Verze " + plan.c_program_version_for_update.name + " id: " + plan.c_program_version_for_update.id);
 
                             hardware.actual_c_program_version = plan.c_program_version_for_update;
 
+                            logger.debug("update_procedure_progress: Na Hardwar jsem nastavil " +  hardware.actual_c_program_version.name);
+
                             hardware.cache().removeAll(Model_CProgram.class);
                             hardware.cache().removeAll(Model_CProgramVersion.class);
+                            logger.debug("update_procedure_progress: Udělal jsem clean ");
+                            logger.debug("update_procedure_progress: zkontroluji clean: " + hardware.cache().get(Model_CProgram.class));
+                            logger.debug("update_procedure_progress: zkontroluji clean: " + hardware.cache().get(Model_CProgramVersion.class));
+
 
                             hardware.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
                             hardware.cache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
+
+                            logger.debug("update_procedure_progress: Před updatem Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
+                            logger.debug("update_procedure_progress: Před updatem Na Hardwaru je teď CProgram Verze " + hardware.get_actual_c_program_version().name + " id: " + hardware.get_actual_c_program_version().id);
+
                             hardware.update();
+
+                            logger.debug("update_procedure_progress: ještě blbý check: " + hardware.actual_c_program_version.name);
+
+                            hardware.cache().add(Model_CProgram.class, hardware.actual_c_program_version.get_c_program().id);
+                            hardware.cache().add(Model_CProgramVersion.class, hardware.actual_c_program_version.id);
+
+                            logger.debug("update_procedure_progress: PO updatu Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
+                            logger.debug("update_procedure_progress: PO updatu Na Hardwaru je teď CProgram Verze " + hardware.get_actual_c_program_version().name + " id: " + hardware.get_actual_c_program_version().id);
 
                         } else if (plan.firmware_type == FirmwareType.BOOTLOADER) {
 
@@ -770,7 +796,7 @@ public class Model_HardwareUpdate extends BaseModel {
 
                         Model_Hardware hardware = plan.getHardware();
 
-                        if (plan.firmware_type == FirmwareType.FIRMWARE &&  !hardware.get_actual_c_program_version_id().equals(plan.c_program_version_for_update.id)) {
+                        if (plan.firmware_type == FirmwareType.FIRMWARE && !hardware.get_actual_c_program_version_id().equals(plan.c_program_version_for_update.id)) {
 
                             hardware.actual_c_program_version = plan.c_program_version_for_update;
                             hardware.cache().removeAll(Model_CProgram.class);
@@ -796,8 +822,9 @@ public class Model_HardwareUpdate extends BaseModel {
                             hardware.update();
 
                             hardware.make_log_backup_arrise_change();
+
                         } else {
-                            logger.error("update_procedure_progress: plan.firmware_type not recognized!");
+                            logger.debug("update_procedure_progress: nebylo třeba vůbec nic měnit.");
                         }
 
                         EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, hardware.get_project_id(), hardware.id));

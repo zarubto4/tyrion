@@ -140,17 +140,19 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
                     cash_map.get(c).remove(id);
                 }
             } catch (Exception e){
-                // Nothing
+                logger.internalServerError(e);
             }
         }
 
         public void removeAll(Class c){
             try {
+
                 if (cash_map.containsKey(c)) {
-                    cash_map.get(c).clear();
+                    cash_map.remove(c);
                 }
+
             } catch (Exception e){
-                // Nothing
+                logger.internalServerError(e);
             }
         }
 

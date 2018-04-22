@@ -168,6 +168,8 @@ public class MainLogger {
 
                 logger.trace(t_class.getSimpleName() + "::" + log_message, args);
             }
+        } else {
+          // System.out.println("trace neobsahuje klíč " + t_class.getSimpleName());
         }
     }
 
@@ -183,6 +185,8 @@ public class MainLogger {
                 logger.debug(t_class.getSimpleName() + "::" + log_message, args);
 
             }
+        } else {
+          //  System.out.println("debug neobsahuje klíč " + t_class.getSimpleName());
         }
     }
 
