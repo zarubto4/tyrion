@@ -15,7 +15,7 @@ public class WS_Message_Grid_token_verification extends WS_AbstractMessage_Insta
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Constraints.Required public UUID token;
+    @Constraints.Required public String token;      // Can be two UUID+ID
     @Constraints.Required public UUID grid_app_id;
 
 

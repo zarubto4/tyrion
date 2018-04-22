@@ -765,7 +765,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
             summary.grid_app_url = "wss://";
         }
 
-        summary.grid_app_url += Model_HomerServer.getById(instance.getServer_id()).get_Grid_APP_URL() + "/";
+        summary.grid_app_url += Model_HomerServer.getById(instance.getServer_id()).get_Grid_APP_URL();
         summary.grid_app_url += instance.id + "/" ;
 
         switch (program.snapshot_settings) {
@@ -775,13 +775,25 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
                 System.out.println("program.snapshot_settings - PUBLIC");
 
-                summary.grid_app_url += collection.grid_project_id + "/"  + program.grid_program_id + "/" + "public_key";
-                summary.grid_program = Model_GridProgramVersion.getById(program.grid_program_version_id).file.get_fileRecord_from_Azure_inString();
+                Model_GridProgramVersion version = Model_GridProgramVersion.getById(program.grid_program_version_id);
+
+                summary.grid_app_url += collection.grid_project_id + "/"  + program.grid_program_id + "/" + UUID.randomUUID();
+                summary.grid_program = version.file.get_fileRecord_from_Azure_inString();
                 summary.grid_project_id = collection.grid_project_id;
                 summary.grid_program_id = program.grid_program_id;
                 summary.grid_program_version_id = program.grid_program_version_id;
                 summary.instance_id = get_instance().id;
-                summary.source_code_list = version_separator(Json.parse(Model_GridProgramVersion.getById(program.grid_program_version_id).file.get_fileRecord_from_Azure_inString()));
+
+                System.out.println("get_connection_summary: Parsování začíná:");
+                System.out.println("get_connection_summary: Model_GridProgramVersion: " + program.grid_program_version_id);
+                System.out.println("get_connection_summary: Program Original: " + summary.grid_program);
+                System.out.println("get_connection_summary: Program: " +  Json.parse(summary.grid_program));
+
+                JsonNode jsonNode = Json.parse(summary.grid_program);
+                JsonNode m_code = Json.parse(jsonNode.get("m_code").asText().replace("\\\"", "\""));
+
+                summary.source_code_list = version_separator(m_code);
+
                 return summary;
             }
 
@@ -822,7 +834,11 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 summary.grid_program_id = program.grid_program_id;
                 summary.grid_program_version_id = program.grid_program_version_id;
                 summary.instance_id = get_instance().id;
-                summary.source_code_list = version_separator(Json.parse(Model_GridProgramVersion.getById(program.grid_program_version_id).file.get_fileRecord_from_Azure_inString()));
+
+                JsonNode jsonNode = Json.parse(summary.grid_program);
+                JsonNode m_code = Json.parse(jsonNode.get("m_code").asText().replace("\\\"", "\""));
+                summary.source_code_list = version_separator(m_code);
+
                 return summary;
             }
 
@@ -846,17 +862,27 @@ public class Model_InstanceSnapshot extends TaggedModel {
     /**
      * Modelové schéma určené k parsování m_programu která přišla z Becki ----------------------------------------------
      */
-    private List<Swagger_GridWidgetVersion_GridApp_source> version_separator(JsonNode m_program) {
+    private List<Swagger_GridWidgetVersion_GridApp_source> version_separator(JsonNode m_code) {
 
         try {
+
+
+            System.out.println("version_separator:: m_program: " + Json.toJson(m_code));
 
             // List for returning
             List<Swagger_GridWidgetVersion_GridApp_source> list = new ArrayList<>();
 
             // Create object
-            M_Program_Parser program_parser = baseFormFactory.formFromJsonWithValidation(M_Program_Parser.class, m_program);
+            M_Program_Parser program_parser = baseFormFactory.formFromJsonWithValidation(M_Program_Parser.class, m_code);
 
-            // Loking for objects
+            System.out.println("version_separator:: program_parser: " + Json.toJson(program_parser));
+
+            System.out.println("\n");
+            System.out.println("version_separator:: screens: " + Json.toJson( program_parser.screens));
+            System.out.println("\n");
+            System.out.println("version_separator:: main: " + Json.toJson( program_parser.screens.main));
+
+                    // Loking for objects
             for (Widget_Parser widget_parser : program_parser.screens.main.get(0).widgets) {
 
                 Swagger_GridWidgetVersion_GridApp_source detail = new Swagger_GridWidgetVersion_GridApp_source();

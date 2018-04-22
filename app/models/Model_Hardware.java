@@ -1920,6 +1920,30 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     private boolean check_settings(WS_Message_Hardware_overview_Board overview) {
 
+        // ---- ZDE ještě nedělám žádné změny na HW!!! -----
+
+        // Kontrola Skupin Hardware Groups - To není synchronizace s HW ale s Instancí HW na Homerovi
+        for(UUID hardware_group_id : get_hardware_group_ids()) {
+            // Pokud neobsahuje přidám - ale abych si ušetřil čas - nastavím rovnou celý seznam - Homer si s tím poradí
+            if (overview.hardware_group_ids == null || overview.hardware_group_ids.isEmpty() || !overview.hardware_group_ids.contains(hardware_group_id)) {
+                System.out.println("check_settings - Nastavení Hardware Groups!!!!!!!! ");
+                set_hardware_groups_on_hardware(get_hardware_group_ids(), Enum_type_of_command.SET);
+                break;
+            }
+        }
+
+        // Uložení do Cache paměti // PORT je synchronizován v následujícím for cyklu
+        if (cache_latest_know_ip_address == null || !cache_latest_know_ip_address.equals(overview.ip)) {
+            logger.warn("check_settings nastavuju jí do cache ");
+            cache_latest_know_ip_address = overview.ip;
+            if (get_project_id() != null) {
+                new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project_id(), this.id))).start();
+            }
+        }
+
+
+        // ---- ZDE už dělám změny na HW!! -----
+
         // Pokud uživatel nechce DB synchronizaci ingoruji
         if (!this.database_synchronize) {
             logger.trace("check_settings - database_synchronize is forbidden - change parameters not allowed!");
@@ -1938,30 +1962,11 @@ public class Model_Hardware extends TaggedModel {
             set_alias(this.name);
         }
 
-        // Uložení do Cache paměti // PORT je synchronizován v následujícím for cyklu
-        if (cache_latest_know_ip_address == null || !cache_latest_know_ip_address.equals(overview.ip)) {
-            logger.warn("check_settings nastavuju jí do cache ");
-            cache_latest_know_ip_address = overview.ip;
-            if (get_project_id() != null) {
-                new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project_id(), this.id))).start();
-            }
-        }
-
         // Synchronizace mac_adressy pokud k tomu ještě nedošlo
         if (mac_address == null) {
             if (overview.mac != null)
             mac_address = overview.mac;
             this.update();
-        }
-
-        // Kontrola Skupin Hardware Groups - To není synchronizace s HW ale s Instancí HW na Homerovi
-        for(UUID hardware_group_id : get_hardware_group_ids()) {
-            // Pokud neobsahuje přidám - ale abych si ušetřil čas - nastavím rovnou celý seznam - Homer si s tím poradí
-            if (overview.hardware_group_ids == null || overview.hardware_group_ids.isEmpty() || !overview.hardware_group_ids.contains(hardware_group_id)) {
-                System.out.println("check_settings - Nastavení Hardware Groups!!!!!!!! ");
-                set_hardware_groups_on_hardware(get_hardware_group_ids(), Enum_type_of_command.SET);
-                break;
-            }
         }
 
         /*

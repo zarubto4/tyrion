@@ -136,6 +136,8 @@ public class Model_GridProgram extends TaggedModel {
 
         if (grid_project != null) {
             grid_project.cache().add(this.getClass(), id);
+        } else {
+            get_grid_project().cache().add(this.getClass(), id);
         }
 
         cache.put(this.id, this);

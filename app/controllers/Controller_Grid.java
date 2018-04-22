@@ -437,7 +437,7 @@ public class Controller_Grid extends _BaseController {
             Model_GridProgram gridProgram = new Model_GridProgram();
             gridProgram.description         = help.description;
             gridProgram.name                = help.name;
-            gridProgram.grid_project = gridProject;
+            gridProgram.grid_project        = gridProject;
             gridProgram.setTags(help.tags);
             
             gridProgram.save();
@@ -809,9 +809,7 @@ public class Controller_Grid extends _BaseController {
         }
     }
 
-//######################################################################################################################
-
-    // Příkazy pro Terminál
+// FOR GRID APP ########################################################################################################
 
     @ApiOperation(value = "getByToken GridProgram",
             tags = {"APP-Api"},

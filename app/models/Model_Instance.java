@@ -652,12 +652,6 @@ public class Model_Instance extends TaggedModel {
                     throw new Result_Error_NotFound(Swagger_InstanceSnapShotConfigurationFile.class);
                 }
 
-                if(program == null){
-                    logger.error("SnapShotConfigurationFileProgram is missing return null");
-                    throw new Result_Error_NotFound(Swagger_InstanceSnapShotConfigurationProgram.class);
-                }
-
-
                 logger.debug("Enum_MProgram_SnapShot_settings: {}", program.snapshot_settings);
 
                 switch (program.snapshot_settings) {
@@ -687,7 +681,7 @@ public class Model_Instance extends TaggedModel {
                 }
             } else {
 
-                logger.trace("cloud_verification_token_GRID:: terminal != null");
+                logger.trace("cloud_verification_token_GRID::  terminal != null");
                 logger.debug("cloud_verification_token_GRID::  Person id:: {}", terminal.person.id);
                 logger.debug("cloud_verification_token_GRID::  Person mail:: {}", terminal.person.email);
                 logger.debug("cloud_verification_token_GRID::  Instance ID:: {} ", help.instance_id);
