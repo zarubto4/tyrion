@@ -692,7 +692,7 @@ public class Model_Instance extends TaggedModel {
                    logger.trace("cloud_verification_token_GRID:: Person is null");
                    logger.debug("cloud_verification_token:: Grid_Terminal object has not own Person - its probably public - Trying to find Instance");
 
-                   if ( Model_Instance.find.query().where().eq("id", help.instance_id).eq("actual_instance.version.public_version", true).findCount() > 0) {
+                   if (Model_Instance.find.query().where().eq("id", help.instance_id).findCount() > 0) {
                        logger.trace("cloud_verification_token_GRID:: Permission found");
                        homer.send(help.get_result(true));
                    } else {
@@ -703,8 +703,10 @@ public class Model_Instance extends TaggedModel {
                 } else {
                     logger.trace("cloud_verification_token_GRID:: Person is not null!");
                     logger.debug("cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
-                    if ( Model_Instance.find.query().where().eq("id", help.instance_id)
-                            .or(Expr.eq("b_program.project.participants.person.id", terminal.person.id), Expr.eq("actual_instance.version.public_version", true))
+                    if (Model_Instance.find.query().where()
+                            .eq("id", help.instance_id)
+                            .eq("project.participants.person.id", terminal.person.id)
+                            // .or(Expr.eq("project.participants.person.id", terminal.person.id), Expr.eq("actual_instance.version.public_version", true)) TODO find grid access settings
                             .findCount() > 0) {
                         logger.trace("cloud_verification_token_GRID:: Permission found");
                         homer.send(help.get_result(true));
