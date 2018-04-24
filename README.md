@@ -29,20 +29,8 @@
   
 ---------------------------------------------------------------------------------------------------------------------------------------
   
-  ####  Návod na stažení a nahrátí na server: #### 
+  ####  DOCU on GIT DOCU #### 
  
-    1. Stáhneme na server dist soubor To provedeme pomocí příkazu  
-  
-         wget --header="Accept: application/octet-stream" -O dist.zip https://api.github.com/repos/ByzanceIoT/tyrion/releases/assets/6667636?access_token=4d89903b259510a1257a67d396bd4aaf10cdde6a
-    
-    2. Rozbalíme Zip soubor pomocí 
-    
-         zip dist.zip
-         
-    3. Smažeme Zip soubor 
-        rm dist.zip
-    
-    4. Otevřeme si složku 
-        ls v2.0.1 
-        
-    5.              
+    https://github.com/ByzanceIoT/tyrion/wiki
+ 
+      
