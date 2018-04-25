@@ -8,6 +8,9 @@ import models.Model_GSM;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import responses.*;
+import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
+import utilities.gsm_services.things_mobile.help_class.TM_Sim_List;
+import utilities.gsm_services.things_mobile.help_class.TM_Sim_List_list;
 import utilities.logger.Logger;
 import utilities.swagger.input.Swagger_GSM_Filter;
 import utilities.swagger.input.Swagger_GSM_New;
@@ -51,29 +54,33 @@ public class Controller_GSM extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 201, message = "Successfully created",    response = Swagger_GSM_List.class),
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class ),
             @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result create_Sim(){
+    public Result register_Sim(){
         try {
-            Swagger_GSM_New help = baseFormFactory.formFromRequestWithValidation(Swagger_GSM_New.class);
+            //hledam si list se sim
+            Controller_Things_Mobile things_mobile = new Controller_Things_Mobile();
+            TM_Sim_List_list list = things_mobile.sim_list();
 
-            if (Model_GSM.find.query().where().eq("MSINumber", help.MSINumber).findOne() == null){
-                return badRequest("MSINumber does not exist");
+            //procházím list a hledám pokud v něm sim s MSINumber existuje
+            //pokud ne vytvářím si novou a ukládám jí do databáze
+            for (TM_Sim_List sim : list.sims) {
+                if (Model_GSM.find.query().where().eq("MSINumber", sim.msisdn).findCount() == 0) {
+                    Model_GSM gsm = new Model_GSM();
+                    gsm.MSINumber = sim.msisdn;
+                    gsm.save();
+                }
             }
 
-            Model_GSM sim = new Model_GSM();
-            sim.MSINumber = help.MSINumber;
-
-            return created(help);
+            return ok();
 
         } catch (Exception e) {
             return controllerServerError(e);
         }
     }
-
 
     @ApiOperation(value = "get Sim",
             tags = {"GSM"},
