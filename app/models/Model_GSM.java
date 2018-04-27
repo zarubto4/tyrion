@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @Entity
 @ApiModel( value = "GSM", description = "Model of GSM")
-@Table(name="GSM")
+@Table(name="gsm")
 public class Model_GSM extends TaggedModel {
 
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -43,12 +43,11 @@ public class Model_GSM extends TaggedModel {
     public UUID get_project_id() {
 
         if (cache().get(Model_Project.class) == null) {
-            // TODO Query chyba MARTINE!
-            cache().add(Model_Project.class, Model_Project.find.query().where().eq("blocks.id", id).select("id").findSingleAttributeList());
+
+            cache().add(Model_Project.class, Model_Project.find.query().where().eq("gsm.id", id).select("id").findSingleAttributeList());
         }
 
         return cache().get(Model_Project.class);
-
     }
 
     @JsonIgnore
