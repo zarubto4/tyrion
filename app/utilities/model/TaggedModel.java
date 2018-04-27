@@ -59,7 +59,29 @@ public abstract class TaggedModel extends NamedModel {
 
 
     public void setTags(List<String> new_tags) throws _Base_Result_Exception {
-        // TODO
+        List<String > tags = tags();
+
+        new_tags.forEach(value -> {
+
+            if(tags.contains(value)) {
+                return;
+            }
+
+            Model_Tag tag = Model_Tag.getByValue(value);
+
+            if (tag == null) {
+                tag = new Model_Tag();
+                tag.value = value;
+                tag.save();
+            }
+
+            if (!this.tags.contains(tag)) {
+                this.tags.add(tag);
+            }
+
+        });
+
+        this.save();
     }
 
     public void addTags(List<String> new_tags) throws _Base_Result_Exception {

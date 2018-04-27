@@ -66,7 +66,7 @@ public class Model_Tag extends Model {
     }
 
     public static Model_Tag getByValue(String value) throws _Base_Result_Exception {
-        return find.query().where().eq("value", value).eq("person.id", _BaseController.personId()).findOne();
+        return find.query().where().eq("value", value).findOne();
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

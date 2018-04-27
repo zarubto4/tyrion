@@ -436,6 +436,7 @@ public class Controller_Code extends _BaseController {
             c_program_new.name = help.name;
             c_program_new.description = help.description;
             c_program_new.hardware_type = c_program_old.getHardwareType();
+            c_program_new.publish_type  = ProgramType.PRIVATE;
             c_program_new.project = project;
 
             c_program_new.save();
@@ -600,6 +601,8 @@ public class Controller_Code extends _BaseController {
             // Úprava objektu
             c_program.name = help.name;
             c_program.description = help.description;
+
+            c_program.setTags(help.tags);
 
             // Uložení změn
             c_program.update();
