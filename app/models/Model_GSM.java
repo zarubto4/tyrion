@@ -28,17 +28,22 @@ public class Model_GSM extends TaggedModel {
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Project project;
 
     public String MSINumber;
+    public String provider; // Sem ukládáme kro dodává simakrty, ThingsMobile, T-Mobile, Vodafone etc.. (Ano, zatím máme integraci jen na ThingsMobile)
+    @JsonIgnore public UUID registration_hash; // Sem ukládáme kro dodává simakrty, ThingsMobile, T-Mobile, Vodafone etc.. (Ano, zatím máme integraci jen na ThingsMobile)
+
+    @JsonIgnore public String private_additional_information; // Sem si ukládáme dodatečné informace, třeba kdy jsme provedli billing
 
 
     /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 
-
     /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
     @JsonIgnore
-    public UUID get_project_id() throws _Base_Result_Exception {
+    public UUID get_project_id() {
 
         if (cache().get(Model_Project.class) == null) {
+            // TODO Query chyba MARTINE!
             cache().add(Model_Project.class, Model_Project.find.query().where().eq("blocks.id", id).select("id").findSingleAttributeList());
         }
 
@@ -47,14 +52,14 @@ public class Model_GSM extends TaggedModel {
     }
 
     @JsonIgnore
-    public Model_Project get_project() throws _Base_Result_Exception {
-
+    public Model_Project get_project() {
         try {
             return Model_Project.getById(get_project_id());
-        }catch (Exception e) {
+        } catch (Exception e) {
             return null;
         }
     }
+
     /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
@@ -75,7 +80,7 @@ public class Model_GSM extends TaggedModel {
 
         logger.debug("update :: Update object Id: {}", this.id);
 
-        // Case 1.1 :: We delete the object
+        // Case 1.1 :: We update the object
         super.update();
 
         // Case 1.2 :: After Update - we send notification to frontend (Only if it is desirable)
