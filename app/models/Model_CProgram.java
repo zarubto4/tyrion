@@ -270,14 +270,7 @@ public class Model_CProgram extends TaggedModel {
     }
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
 
-        try{
-            // Object project not exist so its public program, and user not need read permission
-            getProject();
-        }catch (Exception e) {
-            // Nothing
-            return;
-        }
-
+        if(publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN ) return;
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if (_BaseController.person().has_permission("c_program_read_" + id)) _BaseController.person().valid_permission("c_program_read_" + id);

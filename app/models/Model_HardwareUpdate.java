@@ -796,14 +796,16 @@ public class Model_HardwareUpdate extends BaseModel {
 
                         Model_Hardware hardware = plan.getHardware();
 
-                        if (plan.firmware_type == FirmwareType.FIRMWARE && !hardware.get_actual_c_program_version_id().equals(plan.c_program_version_for_update.id)) {
+                        if (plan.firmware_type == FirmwareType.FIRMWARE) {
 
-                            hardware.actual_c_program_version = plan.c_program_version_for_update;
-                            hardware.cache().removeAll(Model_CProgram.class);
-                            hardware.cache().removeAll(Model_CProgramVersion.class);
-                            hardware.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
-                            hardware.cache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
-                            hardware.update();
+                            if(hardware.get_actual_c_program_version_id() == null || !hardware.get_actual_c_program_version_id().equals(plan.c_program_version_for_update.id)) {
+                                hardware.actual_c_program_version = plan.c_program_version_for_update;
+                                hardware.cache().removeAll(Model_CProgram.class);
+                                hardware.cache().removeAll(Model_CProgramVersion.class);
+                                hardware.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
+                                hardware.cache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
+                                hardware.update();
+                            }
 
                         } else if (plan.firmware_type == FirmwareType.BOOTLOADER) {
 
@@ -813,15 +815,18 @@ public class Model_HardwareUpdate extends BaseModel {
                             hardware.cache().add(Model_BootLoader.class, plan.getBootloader().id);
                             hardware.update();
 
-                        } else if (plan.firmware_type == FirmwareType.BACKUP && !hardware.get_backup_c_program_version_id().equals(plan.c_program_version_for_update.id)) {
+                        } else if (plan.firmware_type == FirmwareType.BACKUP) {
 
-                            hardware.cache().removeAll(Model_CProgramFakeBackup.class);
-                            hardware.cache().removeAll(Model_CProgramVersionFakeBackup.class);
-                            hardware.cache().add(Model_CProgramFakeBackup.class, plan.c_program_version_for_update.get_c_program().id);
-                            hardware.cache().add(Model_CProgramVersionFakeBackup.class, plan.c_program_version_for_update.id);
-                            hardware.update();
+                            if (hardware.get_backup_c_program_version_id() == null || !hardware.get_backup_c_program_version_id().equals(plan.c_program_version_for_update.id)) {
 
-                            hardware.make_log_backup_arrise_change();
+                                hardware.cache().removeAll(Model_CProgramFakeBackup.class);
+                                hardware.cache().removeAll(Model_CProgramVersionFakeBackup.class);
+                                hardware.cache().add(Model_CProgramFakeBackup.class, plan.c_program_version_for_update.get_c_program().id);
+                                hardware.cache().add(Model_CProgramVersionFakeBackup.class, plan.c_program_version_for_update.id);
+                                hardware.update();
+
+                                hardware.make_log_backup_arrise_change();
+                            }
 
                         } else {
                             logger.debug("update_procedure_progress: nebylo třeba vůbec nic měnit.");

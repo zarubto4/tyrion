@@ -278,6 +278,7 @@ public class Model_Block extends TaggedModel {
         project.check_update_permission();
     }
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception   {
+        if(publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN ) return;
         if(_BaseController.person().has_permission(Permission.Block_read.name())) return;
         if(publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN ) return;
         get_project().check_read_permission();
