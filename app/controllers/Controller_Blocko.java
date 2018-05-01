@@ -2037,12 +2037,22 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result blockVersion_makePublic(UUID version_id) {
+    public Result blockVersion_make_public(UUID version_id) {
         try {
 
             // Kontrola objektu
             Model_BlockVersion version = Model_BlockVersion.getById(version_id);
-        
+
+            if (Model_WidgetVersion.find.query().where().eq("approval_state", Approval.PENDING.name())
+                    .eq("author_id", _BaseController.personId())
+                    .findList().size() > 3) {
+                // TODO Notifikace uživatelovi
+                return badRequest("You can publish only 3 programs. Wait until the previous ones approved by the administrator. Thanks.");
+            }
+
+            if (version.approval_state != null)  return badRequest("You cannot publish same program twice!");
+
+
             // Úprava objektu
             version.approval_state = Approval.PENDING;
 

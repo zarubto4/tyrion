@@ -1626,7 +1626,7 @@ public class Controller_Grid extends _BaseController {
             Model_WidgetVersion gridWidgetVersion = Model_WidgetVersion.getById(grid_widget_version_id);
             
             if (Model_WidgetVersion.find.query().where().eq("approval_state", Approval.PENDING.name())
-                    .eq("author.id", _BaseController.personId())
+                    .eq("author_id", _BaseController.personId())
                     .findList().size() > 3) {
                 // TODO Notifikace uživatelovi
                 return badRequest("You can publish only 3 programs. Wait until the previous ones approved by the administrator. Thanks.");

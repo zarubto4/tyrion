@@ -933,7 +933,7 @@ public class Controller_Code extends _BaseController {
             Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
 
             if (Model_CProgramVersion.find.query().where().eq("approval_state", Approval.PENDING.name())
-                    .eq("c_program.project.participants.person.id", _BaseController.personId())
+                    .eq("author_id", _BaseController.personId())
                     .findList().size() > 3) {
                 // TODO Notifikace uživatelovi
                 return badRequest("You can publish only 3 programs. Wait until the previous ones approved by the administrator. Thanks.");

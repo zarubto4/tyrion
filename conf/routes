@@ -263,7 +263,7 @@ PUT       /block/tags/remove                                            controll
 
 POST      /block/version/:block_id                                      controllers.Controller_Blocko.blockVersion_create(block_id: java.util.UUID)
 PUT       /block/version/:version_id                                    controllers.Controller_Blocko.blockVersion_update(version_id: java.util.UUID)
-PUT       /block/version/make_public/:version_id                        controllers.Controller_Blocko.blockVersion_makePublic(version_id: java.util.UUID)
+PUT       /block/version/make_public/:version_id                        controllers.Controller_Blocko.blockVersion_make_public(version_id: java.util.UUID)
 GET       /block/version/:version_id                                    controllers.Controller_Blocko.blockVersion_get(version_id: java.util.UUID)
 DELETE    /block/version/:version_id                                    controllers.Controller_Blocko.blockVersion_delete(version_id: java.util.UUID)
 PUT       /admin/block/version/set_main/:version_id                     controllers.Controller_Blocko.blockVersion_setMain(version_id: java.util.UUID)
