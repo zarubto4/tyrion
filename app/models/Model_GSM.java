@@ -3,6 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
+import play.mvc.Result;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -58,6 +59,8 @@ public class Model_GSM extends TaggedModel {
             return null;
         }
     }
+
+
 
     /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 

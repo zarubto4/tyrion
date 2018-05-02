@@ -11,8 +11,8 @@ import utilities.logger.Logger;
 import utilities.scheduler.Scheduled;
 
 import java.util.UUID;
-
-@Scheduled("0/15 0 0 ? * * *")
+//0/15 0 0 ? * * *
+@Scheduled("0 */2 * ? * *")
 public class Job_ThingsMobileSimListOnlySynchronizer implements Job {
 
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -37,19 +37,14 @@ public class Job_ThingsMobileSimListOnlySynchronizer implements Job {
         @Override
         public void run() {
             try {
-                logger.trace("před objektem");
-                System.out.println("Před objektem");
                 Controller_Things_Mobile things_mobile = new Controller_Things_Mobile();
                 TM_Sim_List_list list = things_mobile.sim_list();
                 //procházím list a hledám pokud v něm sim s MSINumber existuje
                 //pokud ne vytvářím si novou a ukládám jí do databáze
-                logger.debug("Před for cyklem");
                 for (TM_Sim_List sim : list.sims) {
-                    logger.error("for cyklus");
                     if (Model_GSM.find.query().where().eq("MSINumber", sim.msisdn).findCount() == 0) {
                         Model_GSM gsm = new Model_GSM();
                         gsm.MSINumber = sim.msisdn;
-                        logger.warn("podminka");
                         gsm.provider = "ThingsMobile";
                         gsm.registration_hash = UUID.randomUUID();
                         gsm.save();
