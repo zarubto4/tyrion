@@ -2873,6 +2873,16 @@ public class Controller_Hardware extends _BaseController {
                 query.where().isNull("project.id");
             }
 
+            if (help.instance_snapshots != null && !help.instance_snapshots.isEmpty()){
+
+                List<UUID> list_ids = new ArrayList<>();
+                for(UUID snapshost_ids : help.instance_snapshots) {
+                    list_ids.addAll( Model_InstanceSnapshot.getById(snapshost_ids).getHardwareGroupseIds());
+                }
+
+                query.where().in("id", list_ids);
+            }
+
 
             // Vyvoření odchozího JSON
             Swagger_HardwareGroup_List result = new Swagger_HardwareGroup_List(query, page_number, help);

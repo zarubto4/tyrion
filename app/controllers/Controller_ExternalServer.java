@@ -771,7 +771,7 @@ public class Controller_ExternalServer extends _BaseController {
 
 // PRIVATE FILE STORAGE FOR HOMER SERVERS ###########################################################################*/
 
-    @ApiOperation(value = "get B_Program File",
+    @ApiOperation(value = "get B_Program Instance Snapshost File",
             tags = {"Homer-Server-API"},
             notes = "Required secure Token changed throw websocket",
             produces = "multipart/form-data",
@@ -789,8 +789,12 @@ public class Controller_ExternalServer extends _BaseController {
     public Result cloud_file_get_b_program_version(UUID snapshot_id) {
         try {
 
+            System.out.println("cloud_file_get_b_program_version");
+
             // Získám soubor
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
+
+            System.out.println("OK 1");
 
             // Separace na Container a Blob
             int slash = snapshot.program.path.indexOf("/");

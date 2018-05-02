@@ -1117,6 +1117,7 @@ public class Controller_Grid extends _BaseController {
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_Widget> query = Ebean.find(Model_Widget.class);
+            query.where().ne("deleted", true);
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
