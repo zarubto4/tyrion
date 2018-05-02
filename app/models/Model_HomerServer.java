@@ -751,15 +751,51 @@ public class Model_HomerServer extends TaggedModel {
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Homer_read.name())) return;
         if(server_type == HomerType.PUBLIC || server_type == HomerType.MAIN  || server_type == HomerType.BACKUP) return;
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if (_BaseController.person().has_permission("homer_server_read_" + id)) _BaseController.person().valid_permission("homer_server_read_" + id);
+        if (_BaseController.person().has_permission(Model_CProgram.Permission.CProgram_read.name())) return;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
+        if ( Model_HomerServer.find.query().where().where().eq("project.participants.person.id", _BaseController.person().id ).eq("id", id).findCount() > 0) {
+            _BaseController.person().cache_permission("homer_server_read_" + id, true);
+            return;
+        }
+
+        // Přidávám do listu false a vracím false
+        _BaseController.person().cache_permission("homer_server_read_" + id, false);
         throw new Result_Error_PermissionDenied();
     }
 
     @JsonIgnore @Transient @Override public void check_update_permission()  throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Homer_update.name())) return;
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if (_BaseController.person().has_permission("homer_server_update_" + id)) _BaseController.person().valid_permission("homer_server_update_" + id);
+        if (_BaseController.person().has_permission(Model_CProgram.Permission.CProgram_read.name())) return;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
+        if ( Model_HomerServer.find.query().where().where().eq("project.participants.person.id", _BaseController.person().id ).eq("id", id).findCount() > 0) {
+            _BaseController.person().cache_permission("homer_server_update_" + id, true);
+            return;
+        }
+        _BaseController.person().cache_permission("homer_server_update_" + id, false);
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission()  throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Homer_delete.name())) return;
+
+        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        if (_BaseController.person().has_permission("homer_server_delete_" + id)) _BaseController.person().valid_permission("homer_server_delete_" + id);
+        if (_BaseController.person().has_permission(Model_CProgram.Permission.CProgram_read.name())) return;
+
+        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
+        if ( Model_HomerServer.find.query().where().where().eq("project.participants.person.id", _BaseController.person().id ).eq("id", id).findCount() > 0) {
+            _BaseController.person().cache_permission("homer_server_delete_" + id, true);
+            return;
+        }
+        _BaseController.person().cache_permission("homer_server_delete_" + id, false);
+
         throw new Result_Error_PermissionDenied();
     }
     public enum Permission { Homer_create, Homer_read, Homer_update, Homer_delete }

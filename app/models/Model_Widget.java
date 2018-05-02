@@ -106,7 +106,7 @@ public class Model_Widget extends TaggedModel {
     @JsonProperty @ApiModelProperty(required = false, value = "Only for Community Administrator") @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean active() {
         try{
-        return publish_type == ProgramType.PUBLIC ? true : null;
+        return publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN ? active : null;
     }catch (_Base_Result_Exception e){
             //nothing
             return false;

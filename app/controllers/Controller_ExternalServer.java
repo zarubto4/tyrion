@@ -114,7 +114,7 @@ public class Controller_ExternalServer extends _BaseController {
             Model_HomerServer server = new Model_HomerServer();
             server.name = help.name;
             server.description = help.description;
-            server.setTags(help.tags);
+
 
             if(help.project_id == null) {
                 server.server_type = HomerType.PUBLIC;
@@ -124,6 +124,8 @@ public class Controller_ExternalServer extends _BaseController {
             }
 
             server.save();
+
+            server.setTags(help.tags);
 
 
             DigitalOceanTyrionService.create_server(server, help.size_slug, help.region_slug);
@@ -182,7 +184,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.server_url = help.server_url;
 
             server.server_type = HomerType.PUBLIC;
-            server.setTags(help.tags);
+
 
             if(help.project_id == null) {
                 server.server_type = HomerType.PUBLIC;
@@ -193,6 +195,8 @@ public class Controller_ExternalServer extends _BaseController {
 
             // Uložení objektu
             server.save();
+
+            server.setTags(help.tags);
 
             new SelfDeployedThreadRegister(server).start();
 
@@ -379,7 +383,6 @@ public class Controller_ExternalServer extends _BaseController {
 
             // Junction!!! START ---------------------------------------------------------------------------------------
 
-
             // OR
             Junction<Model_HomerServer>  disjunction = list.disjunction();
 
@@ -419,7 +422,6 @@ public class Controller_ExternalServer extends _BaseController {
 
             // END OR
             disjunction.endJunction();
-
 
 
             // Vyvoření odchozího JSON

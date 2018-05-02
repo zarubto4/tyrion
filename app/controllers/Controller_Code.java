@@ -353,13 +353,14 @@ public class Controller_Code extends _BaseController {
             // Ověření Typu Desky
             Model_HardwareType hardwareType = Model_HardwareType.getById(help.hardware_type_id);
 
+            System.out.println("Model_HardwareType ok");
+
             // Tvorba programu
             Model_CProgram c_program        = new Model_CProgram();
             c_program.name                  = help.name;
             c_program.description           = help.description;
-            c_program.hardware_type = hardwareType;
+            c_program.hardware_type         = hardwareType;
             c_program.publish_type          = ProgramType.PRIVATE;
-            c_program.setTags(help.tags);
 
             if (help.project_id != null) {
                 c_program.project = Model_Project.getById(help.project_id);
@@ -367,6 +368,9 @@ public class Controller_Code extends _BaseController {
 
             // Uložení C++ Programu
             c_program.save();
+
+            // Set Tags
+            c_program.setTags(help.tags);
 
             // Přiřadím první verzi!
             if (hardwareType.get_main_c_program() != null && hardwareType.get_main_c_program().default_main_version != null) {
@@ -602,10 +606,11 @@ public class Controller_Code extends _BaseController {
             c_program.name = help.name;
             c_program.description = help.description;
 
-            c_program.setTags(help.tags);
-
             // Uložení změn
             c_program.update();
+
+            // Set Tags
+            c_program.setTags(help.tags);
 
             // Vrácení objektu
             return ok(c_program);

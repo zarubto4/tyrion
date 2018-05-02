@@ -170,6 +170,7 @@ public class Model_CProgram extends TaggedModel {
     @JsonIgnore @Override public void save() {
 
         logger.debug("save :: Creating new Object");
+
         super.save();
 
         // Call notification about project update
@@ -247,10 +248,16 @@ public class Model_CProgram extends TaggedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        System.out.println("Check Cprogram check_create_permission");
         if(_BaseController.person().has_permission(Permission.CProgram_create.name())) return;
-        if(this.project == null) throw new Result_Error_PermissionDenied();
+
+        if(this.project == null) {
+            System.out.println("Project je null");
+            throw new Result_Error_PermissionDenied();
+        }
         this.project.check_update_permission();
     }
+
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
 
         // Cache už Obsahuje Klíč a tak vracím hodnotu
@@ -283,7 +290,7 @@ public class Model_CProgram extends TaggedModel {
         }
 
         // Přidávám do listu false a vracím false
-        _BaseController.person().cache_permission("read_" + id, false);
+        _BaseController.person().cache_permission("c_program_read_" + id, false);
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {

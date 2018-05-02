@@ -702,6 +702,8 @@ public class Model_Project extends TaggedModel {
 
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception   {
 
+        System.out.println("Project: check_update_permission");
+
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if (_BaseController.person().has_permission("project_update_" + id)) _BaseController.person().valid_permission("project_update_" + id);
         if (_BaseController.person().has_permission(Permission.Project_update.name())) return;
@@ -711,6 +713,8 @@ public class Model_Project extends TaggedModel {
             _BaseController.person().cache_permission("project_update_" + id, true);
             return;
         }
+
+        System.out.println("Project: check_update_permission - nenašel jsem participanta");
 
         // Přidávám do listu false a vracím false
         _BaseController.person().cache_permission("project_update_" + id, false);

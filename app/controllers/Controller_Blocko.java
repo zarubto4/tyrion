@@ -2,6 +2,8 @@ package controllers;
 
 import com.google.inject.Inject;
 import io.ebean.Ebean;
+import io.ebean.ExpressionList;
+import io.ebean.Junction;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
@@ -90,10 +92,11 @@ public class Controller_Blocko extends _BaseController {
             bProgram.description           = help.description;
             bProgram.name                  = help.name;
             bProgram.project               = project;
-            bProgram.setTags(help.tags);
 
             // Uložení objektu
             bProgram.save();
+
+            bProgram.setTags(help.tags);
 
             // Vrácení objektu
             return created(bProgram);
@@ -604,9 +607,10 @@ public class Controller_Blocko extends _BaseController {
             instance.server_main = main_server;
             instance.server_backup = backup_server;
             instance.b_program = b_program;
-            instance.setTags(help.tags);
 
             instance.save();
+
+            instance.setTags(help.tags);
 
             return created(instance);
 
@@ -1397,10 +1401,12 @@ public class Controller_Blocko extends _BaseController {
             // Úprava objektu
             block.description = help.description;
             block.name        = help.name;
-            block.setTags(help.tags);
 
             // Uložení objektu
             block.update();
+
+            // Set Tags
+            block.setTags(help.tags);
 
             // Vrácení objektu
             return ok(block);
@@ -1563,14 +1569,44 @@ public class Controller_Blocko extends _BaseController {
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_Block> query = Ebean.find(Model_Block.class);
-            query.orderBy("UPPER(name) ASC");
-            query.where().eq("deleted", false);
+
+            // query.orderBy("UPPER(name) ASC");
+            query.where().ne("deleted", true);
+
+            ExpressionList<Model_Block> list = query.where();
+
+            Junction<Model_Block> disjunction = list.disjunction();
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
                 Model_Project.getById(help.project_id);
-                query.where().eq("project.id", help.project_id);
+                disjunction
+                        .conjunction()
+                        .eq("project.id", help.project_id)
+                        .endJunction();
             }
+
+            if (help.pending_blocks) {
+                disjunction
+                        .conjunction()
+                        .eq("versions.approval_state", Approval.PENDING.name())
+                        .ne("publish_type", ProgramType.DEFAULT_MAIN)
+                        .endJunction();
+            }
+
+            if (help.project_id  == null && help.public_programs) {
+                disjunction
+                        .conjunction()
+                        .eq("publish_type", ProgramType.PUBLIC)
+                        .isNull("project.id")
+                        .endJunction();
+            }
+
+
+            disjunction.endJunction();
+
+            disjunction.endJunction();
+
 
             // Vytvoření odchozího JSON
             Swagger_Block_List result = new Swagger_Block_List(query, page_number,help);
@@ -1801,6 +1837,7 @@ public class Controller_Blocko extends _BaseController {
                     block.description = help.program_description;
                     block.author_id = private_block_version.get_block().get_author().id;
                     block.publish_type = ProgramType.PUBLIC;
+                    block.active = true;
                     block.save();
                 } else {
                     block = Model_Block.getById(block_previous_id);
@@ -1823,6 +1860,7 @@ public class Controller_Blocko extends _BaseController {
                 return ok();
 
             } else {
+
                 // Změna stavu schválení
                 private_block_version.approval_state = Approval.DISAPPROVED;
 

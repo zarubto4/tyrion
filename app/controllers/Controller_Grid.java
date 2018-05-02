@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import io.ebean.Ebean;
 import io.ebean.ExpressionList;
+import io.ebean.Junction;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
@@ -13,6 +14,7 @@ import responses.*;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.Approval;
+import utilities.enums.HomerType;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
 import utilities.swagger.input.*;
@@ -86,9 +88,10 @@ public class Controller_Grid extends _BaseController {
             gridProject.description = help.description;
             gridProject.name = help.name;
             gridProject.project = project;
-            gridProject.setTags(help.tags);
 
             gridProject.save();
+
+            gridProject.setTags(help.tags);
 
             return created(gridProject);
 
@@ -1021,7 +1024,6 @@ public class Controller_Grid extends _BaseController {
             widget.name = help.name;
             widget.description = help.description;
             widget.author_id = person().id;
-            widget.setTags(help.tags);
 
             if (project != null) {
                 widget.project = project;
@@ -1032,6 +1034,8 @@ public class Controller_Grid extends _BaseController {
 
             // Uložení objektu
             widget.save();
+
+            widget.setTags(help.tags);
 
             // Získání šablony
             Model_WidgetVersion scheme = Model_WidgetVersion.find.query().where().eq("publish_type", ProgramType.DEFAULT_VERSION.name()).findOne();
@@ -1117,22 +1121,42 @@ public class Controller_Grid extends _BaseController {
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_Widget> query = Ebean.find(Model_Widget.class);
-            query.where().ne("deleted", true);
+
+            // query.orderBy("UPPER(name) ASC");
+            query.where().eq("deleted", false);
+
+            ExpressionList<Model_Widget> list = query.where();
+
+            // OR
+            Junction<Model_Widget> disjunction = list.disjunction();
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
-
-                Model_Project project = Model_Project.getById(help.project_id);
-                query.where().eq("project.id", help.project_id);
-            }
-
-            if (help.project_id == null) {
-                query.where().isNull("project.id");
+                Model_Project.getById(help.project_id);
+                disjunction
+                        .conjunction()
+                        .eq("project.id", help.project_id)
+                        .endJunction();
             }
 
             if (help.pending_widgets) {
-                query.where().eq("versions.approval_state", Approval.PENDING.name()).eq("versions.deleted", false);
+                disjunction
+                        .conjunction()
+                            .eq("versions.approval_state", Approval.PENDING.name())
+                            .ne("publish_type", ProgramType.DEFAULT_MAIN)
+                        .endJunction();
             }
+
+            if (help.project_id == null && help.public_programs) {
+                disjunction
+                        .conjunction()
+                            .eq("publish_type", ProgramType.PUBLIC)
+                            .isNull("project.id")
+                        .endJunction();
+            }
+
+
+            disjunction.endJunction();
 
             // Vytvoření odchozího JSON
             Swagger_GridWidget_List result = new Swagger_GridWidget_List(query, page_number, help);
@@ -1414,7 +1438,7 @@ public class Controller_Grid extends _BaseController {
             // Kontrola objekt
             Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
 
-            if (!gridWidget.active) return badRequest("Tariff is already deactivated");
+            if (!gridWidget.active) return badRequest("Model_Widget is already deactivated");
             gridWidget.active = false;
 
             gridWidget.update();
@@ -1447,7 +1471,7 @@ public class Controller_Grid extends _BaseController {
             // Kontrola objekt
             Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
 
-            if (gridWidget.active) return badRequest("Tariff is already activated");
+            if (gridWidget.active) return badRequest("Model_Widget is already activate");
             gridWidget.active = true;
 
             gridWidget.update();
@@ -1898,6 +1922,7 @@ public class Controller_Grid extends _BaseController {
                     widget.description = help.program_description;
                     widget.author_id = privateGridWidgetVersion.get_grid_widget().get_author().id;
                     widget.publish_type = ProgramType.PUBLIC;
+                    widget.active = true;
                     widget.save();
                 } else {
                     widget = Model_Widget.getById(widget_previous_id);

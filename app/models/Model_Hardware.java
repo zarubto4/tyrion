@@ -270,6 +270,8 @@ public class Model_Hardware extends TaggedModel {
 
                 new Thread(() -> {
                     try {
+
+                        logger.warn("Need ip_address for device ID: {}", this.id);
                         WS_Message_Hardware_overview_Board overview_board = this.get_devices_overview();
 
                         System.out.println("WS_Message_Hardware_overview_Board:: " + Json.toJson(overview_board));
@@ -531,6 +533,8 @@ public class Model_Hardware extends TaggedModel {
             new Thread(() -> {
                 try {
 
+                    logger.warn("Need latest_online for device ID: {}", this.id);
+
                     List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(), "SELECT * FROM root r  WHERE r.hardware_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
 
                     logger.debug("last_online: number of retrieved documents = {}", documents.size());
@@ -602,6 +606,7 @@ public class Model_Hardware extends TaggedModel {
                     // Začnu zjišťovat stav - v separátním vlákně!
                     new Thread(() -> {
                         try {
+                            logger.warn("Need device_online_synchronization_ask for device ID: {}", this.id);
                             device_online_synchronization_ask();
                         } catch (Exception e) {
                             logger.internalServerError(e);
@@ -3037,6 +3042,7 @@ public class Model_Hardware extends TaggedModel {
 
         if (get_project() != null) {
             if (get_project().id != null) {
+                logger.warn("SEnding Update for device ID: {}", this.id);
                 new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project().id, this.id))).start();
             }
         }

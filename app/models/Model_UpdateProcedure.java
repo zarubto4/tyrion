@@ -60,7 +60,7 @@ public class Model_UpdateProcedure extends BaseModel {
     public FirmwareType firmware_type(){
         try {
 
-            if (type_of_update == UpdateType.MANUALLY_RELEASE_MANAGER) {
+            if (type_of_update == UpdateType.MANUALLY_RELEASE_MANAGER || type_of_update == UpdateType.MANUALLY_BY_USER_INDIVIDUAL) {
                 return getUpdates().get(0).firmware_type;
             }
 

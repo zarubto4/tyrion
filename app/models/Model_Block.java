@@ -95,8 +95,8 @@ public class Model_Block extends TaggedModel {
 
     @JsonProperty(required = false) @ApiModelProperty(required = false, value = "Only for Community Administrator") @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean active() {
-        try{
-        return publish_type == ProgramType.PUBLIC ? true : null;
+        try {
+            return publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN ? active : null;
         }catch(_Base_Result_Exception e){
             //nothing
             return null;
@@ -158,7 +158,9 @@ public class Model_Block extends TaggedModel {
 
     @JsonIgnore
     public Model_Person get_author() {
-        return Model_Person.getById(author_id);
+        if(author_id != null) {
+            return Model_Person.getById(author_id);
+        } else return null;
     }
 
     @JsonIgnore
