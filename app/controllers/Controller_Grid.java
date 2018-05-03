@@ -1901,8 +1901,9 @@ public class Controller_Grid extends _BaseController {
             Model_Widget widget_old = Model_Widget.getById(privateGridWidgetVersion.get_grid_widget_id());
 
             // Zkontroluji oprávnění
-            widget_old.check_community_permission();
-           
+            if (!widget_old.community_publishing_permission()) {
+                return forbidden();
+            }
 
             if (help.decision) {
 

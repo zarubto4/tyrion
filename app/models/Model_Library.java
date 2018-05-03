@@ -196,30 +196,75 @@ public class Model_Library extends TaggedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override @Transient public void check_create_permission() throws _Base_Result_Exception  {
-        if(project != null) project.check_update_permission();
         if(_BaseController.person().has_permission(Permission.Library_create.name())) return;
-        get_project().check_update_permission();
+        project.check_update_permission();
     }
 
-    @JsonIgnore @Override  @Transient public void check_read_permission() throws _Base_Result_Exception  {
-        if(_BaseController.person().has_permission(Permission.Library_read.name())) return;
-        get_project().check_update_permission();
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception   {
+        try {
 
+            if (publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN) return;
+
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+            }
+
+            if (_BaseController.person().has_permission(Permission.Library_read.name())) return;
+
+
+            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
+            this.get_project().check_read_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
     }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        try {
 
-    @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Library_update.name())) return;
-        get_project().check_update_permission();
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+            }
+
+            if (_BaseController.person().has_permission(Permission.Library_update.name())) return;
+
+            if(publish_type == ProgramType.PUBLIC) {
+                throw new Result_Error_PermissionDenied();
+            }
+
+            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+            this.get_project().check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
     }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception  {
+        try {
 
-    @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Library_delete.name())) return;
-        get_project().check_update_permission();
-    }
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+            }
+            if (_BaseController.person().has_permission(Permission.Library_delete.name())) return;
 
-    @JsonIgnore @Transient public void check_community_publishing_permission() throws _Base_Result_Exception {
-        if(community_publishing_permission()) return;
-        throw new Result_Error_PermissionDenied();
+            if(publish_type == ProgramType.PUBLIC) {
+                throw new Result_Error_PermissionDenied();
+            }
+            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
+            this.get_project().check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
     }
 
     @JsonProperty @Transient @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {

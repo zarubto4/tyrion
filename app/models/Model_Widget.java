@@ -329,6 +329,10 @@ public class Model_Widget extends TaggedModel {
             }
             if (_BaseController.person().has_permission(Permission.Widget_update.name())) return;
 
+            if(publish_type == ProgramType.PUBLIC) {
+                throw new Result_Error_PermissionDenied();
+            }
+
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
             this.get_project().check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
@@ -338,7 +342,6 @@ public class Model_Widget extends TaggedModel {
             throw new Result_Error_PermissionDenied();
         }
     }
-
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
         try {
 
@@ -348,6 +351,10 @@ public class Model_Widget extends TaggedModel {
             }
 
             if (_BaseController.person().has_permission(Permission.Widget_delete.name())) return;
+
+            if(publish_type == ProgramType.PUBLIC) {
+                throw new Result_Error_PermissionDenied();
+            }
 
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
             this.get_project().check_read_permission();
@@ -359,17 +366,18 @@ public class Model_Widget extends TaggedModel {
         }
     }
 
-    @JsonIgnore @Transient public void check_community_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-
     @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
         try {
-            _BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name());
-            return true;
-        }catch (Exception e){
-            return false;
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (_BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) {
+                return true;
+            }
+            return null;
+        }catch (_Base_Result_Exception e){
+            return null;
+        } catch (Exception e){
+            logger.internalServerError(e);
+            return null;
         }
     }
 

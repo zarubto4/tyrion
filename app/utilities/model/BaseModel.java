@@ -35,6 +35,8 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import static java.util.stream.Collectors.toList;
+
 @MappedSuperclass
 public abstract class BaseModel  extends Model implements JsonSerializer {
 
@@ -110,7 +112,10 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
                         cash_map.put(c, Collections.singletonList(id));
                     } else {
                         if (cash_map.get(c) != null) {
-                            cash_map.get(c).add(0, id);
+                            List<UUID> list = cash_map.get(c);
+                            synchronized (list) {
+                                list.add(id);
+                            }
                         } else {
                             cash_map.put(c, Collections.singletonList(id));
                         }
@@ -158,7 +163,16 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
 
 
         public List<UUID> gets(Class c){
-            return cash_map.getOrDefault(c, null);
+
+                if (cash_map.containsKey(c)) {
+                    // return Collections.synchronizedList(cash_map.get(c));
+                    List<UUID> clone = cash_map.get(c).stream().collect(toList());
+                    return clone;
+
+                } else {
+                    return null;
+                }
+
         }
 
         public UUID get(Class c){

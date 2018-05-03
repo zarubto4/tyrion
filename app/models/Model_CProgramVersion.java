@@ -197,11 +197,7 @@ public class Model_CProgramVersion extends VersionModel {
 
     @JsonIgnore
     public Model_CProgram get_c_program() throws _Base_Result_Exception {
-        try {
-            return Model_CProgram.getById(get_c_program_id());
-        }catch (Exception e) {
-            return null;
-        }
+        return Model_CProgram.getById(get_c_program_id());
     }
 
 

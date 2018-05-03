@@ -221,9 +221,9 @@ public class Model_Person extends BaseModel {
 
     @JsonIgnore
     public void valid_permission(String permission_key) throws _Base_Result_Exception {
-        if(this.cache_permissions_keys.get(permission_key)){
+        if(this.cache_permissions_keys.get(permission_key)) {
             return;
-        }else {
+        } else {
             throw new Result_Error_PermissionDenied();
         }
     }

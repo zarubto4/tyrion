@@ -711,7 +711,9 @@ public class Controller_Library extends _BaseController {
 
             // Zkontroluji oprávnění
 
-            library_old.check_community_publishing_permission();
+            if (!library_old.community_publishing_permission()) {
+                return forbidden();
+            }
 
             if (help.decision) {
 

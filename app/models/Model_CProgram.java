@@ -115,6 +115,7 @@ public class Model_CProgram extends TaggedModel {
         try {
             return Model_Project.getById(getProjectId());
         }catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -132,7 +133,7 @@ public class Model_CProgram extends TaggedModel {
 
             List<Model_CProgramVersion> list = new ArrayList<>();
 
-            for (UUID id : getVersionsId() ) {
+            for (UUID id : getVersionsId()) {
                 list.add(Model_CProgramVersion.getById(id));
             }
 
@@ -246,11 +247,9 @@ public class Model_CProgram extends TaggedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        System.out.println("Check Cprogram check_create_permission");
         if(_BaseController.person().has_permission(Permission.CProgram_create.name())) return;
 
         if(this.project == null) {
-            System.out.println("Project je null");
             throw new Result_Error_PermissionDenied();
         }
         this.project.check_update_permission();
@@ -263,20 +262,26 @@ public class Model_CProgram extends TaggedModel {
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
             }
+
             if (_BaseController.person().has_permission(Permission.CProgram_update.name())) return;
+
+            if(publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN || publish_type == ProgramType.DEFAULT_TEST) {
+                throw new Result_Error_PermissionDenied();
+            }
 
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
             this.get_project().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
 
         } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
             throw new Result_Error_PermissionDenied();
         }
     }
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
         try {
-            if (publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN) return;
+
+            if (publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN || publish_type == ProgramType.DEFAULT_TEST) return;
 
             // Cache už Obsahuje Klíč a tak vracím hodnotu
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
@@ -284,6 +289,7 @@ public class Model_CProgram extends TaggedModel {
             }
 
             if (_BaseController.person().has_permission(Permission.CProgram_read.name())) return;
+
 
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
             this.get_project().check_read_permission();
@@ -303,8 +309,11 @@ public class Model_CProgram extends TaggedModel {
             }
             if (_BaseController.person().has_permission(Permission.CProgram_delete.name())) return;
 
+            if(publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN || publish_type == ProgramType.DEFAULT_TEST) {
+                throw new Result_Error_PermissionDenied();
+            }
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_read_permission();
+            this.get_project().check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
 
         } catch (_Base_Result_Exception e) {
@@ -336,15 +345,14 @@ public class Model_CProgram extends TaggedModel {
     public static Cache<UUID, Model_CProgram> cache;
     
     public static Model_CProgram getById(UUID id) throws _Base_Result_Exception  {
-
         Model_CProgram c_program = cache.get(id);
         if (c_program == null) {
-
             c_program = find.byId(id);
             if (c_program == null) throw new Result_Error_NotFound(Model_CProgram.class);
 
             cache.put(id, c_program);
         }
+
         // Check Permission
         if(c_program.its_person_operation()) {
             c_program.check_read_permission();

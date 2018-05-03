@@ -1,6 +1,6 @@
 name := """tyrion"""
 
-version := "2.1.7"
+version := "2.1.8"
 
 packageName in Universal := "v" + version.value
 
