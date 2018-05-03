@@ -1037,19 +1037,12 @@ public class Controller_Blocko extends _BaseController {
 
                 logger.trace("instanceSnapshot_deploy:: Deploy Snapshot Immediately");
 
-                Model_Instance instance = snapshot.get_instance();
-                instance.current_snapshot_id = snapshot.id;
-                instance.update();
-
                 // Deploy immediately!
                 snapshot.deployed = new Date();
                 snapshot.update();
 
                 snapshot.deploy();
             }
-
-            // Update
-            snapshot.update();
 
             return ok();
 

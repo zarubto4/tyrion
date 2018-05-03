@@ -1,14 +1,11 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import io.ebean.Ebean;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
-import play.data.Form;
-import play.data.FormFactory;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -1057,7 +1054,7 @@ public class Controller_Code extends _BaseController {
                                 .divider()
                                 .text("We will publish it as soon as possible.")
                                 .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                                .send(version_old.get_c_program().getProject().getProduct().customer, "Publishing your program" );
+                                .send(version_old.get_c_program().get_project().getProduct().customer, "Publishing your program" );
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -1077,7 +1074,7 @@ public class Controller_Code extends _BaseController {
                                 .text("We will publish it as soon as possible. We also had to make some changes to your program or rename something.")
                                 .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                                 .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                                .send(version_old.get_c_program().getProject().getProduct().customer, "Publishing your program" );
+                                .send(version_old.get_c_program().get_project().getProduct().customer, "Publishing your program" );
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -1102,7 +1099,7 @@ public class Controller_Code extends _BaseController {
                                     "We are glad that you want to contribute to our public libraries. Here are some tips what to improve, so you can try it again.")
                             .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                             .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                            .send(version_old.get_c_program().getProject().getProduct().customer, "Publishing your program");
+                            .send(version_old.get_c_program().get_project().getProduct().customer, "Publishing your program");
 
                 } catch (Exception e) {
                     logger.internalServerError(e);

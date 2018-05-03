@@ -17,9 +17,11 @@ import utilities.cache.CacheField;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.models_update_echo.EchoHandler;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfiguration;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationFile;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationProgram;
@@ -29,6 +31,7 @@ import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Message_Homer_Hardware_ID_UUID_Pair;
 import websocket.messages.homer_instance_with_tyrion.verification.WS_Message_Grid_token_verification;
 import websocket.messages.homer_instance_with_tyrion.verification.WS_Message_WebView_token_verification;
+import websocket.messages.tyrion_with_becki.WSM_Echo;
 import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 import websocket.messages.homer_instance_with_tyrion.*;
 
@@ -344,6 +347,11 @@ public class Model_Instance extends TaggedModel {
         logger.trace("update - updating in database, id: {}",  this.id);
 
         super.update();
+
+        if (getProject() != null) {
+            logger.warn("Sending Update for Instance ID: {}", this.id);
+            new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Instance.class, getProject().id, this.id))).start();
+        }
 
         if (cache.containsKey(this.id)) {
             cache.replace(this.id, this);
@@ -786,21 +794,73 @@ public class Model_Instance extends TaggedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Instance_create.name())) return;
-        this.project.check_update_permission();
+        try {
+
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_create_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_create_" + id);
+            }
+            if (_BaseController.person().has_permission(Permission.Instance_create.name())) return;
+
+            this.project.check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_create_" + id, true);
+
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_create_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
     }
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Instance_read.name())) return;
-        getProject().check_read_permission();
+        try {
+
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+            }
+            if (_BaseController.person().has_permission(Permission.Instance_read.name())) return;
+
+            this.project.check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
+
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Instance_update.name())) return;
-        getProject().check_update_permission();
+        try {
+
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+            }
+            if (_BaseController.person().has_permission(Permission.Instance_update.name())) return;
+
+            this.project.check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
+
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
     }
 
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Instance_delete.name())) return;
-        getProject().check_delete_permission();
+        try {
+
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+            }
+            if (_BaseController.person().has_permission(Permission.Instance_delete.name())) return;
+
+            this.project.check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
+
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
     }
 
     public enum Permission { Instance_create, Instance_read, Instance_update, Instance_delete }

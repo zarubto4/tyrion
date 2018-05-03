@@ -15,6 +15,7 @@ import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -855,15 +856,57 @@ public class Model_HardwareUpdate extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.UpdateProcedure_read.name())) return;
-        getHardware().check_read_permission();
-    }
-
     // Not Required - Supported directly only by Tyrion
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { }
+    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
+        // true
+    }
+    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
+        try {
+
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+            }
+
+            if(_BaseController.person().has_permission(Permission.UpdateProcedure_read.name())) return;
+
+            getHardware().check_read_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
+    }
+    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        try {
+
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+            }
+
+            if(_BaseController.person().has_permission(Permission.UpdateProcedure_edit.name())) return;
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
+    }
+    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
+        try {
+
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+            }
+
+            if(_BaseController.person().has_permission(Permission.UpdateProcedure_edit.name())) return;
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
+    }
 
     public enum Permission { UpdateProcedure_read, UpdateProcedure_edit }
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/

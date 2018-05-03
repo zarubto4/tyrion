@@ -23,6 +23,7 @@ import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.CompilationStatus;
 import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.VersionModel;
@@ -574,9 +575,50 @@ public class Model_CProgramVersion extends VersionModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { c_program.check_update_permission();}
-    @JsonIgnore @Override public void check_read_permission()   throws _Base_Result_Exception { get_c_program().check_read_permission();}
-    @JsonIgnore @Override public void check_update_permission() throws _Base_Result_Exception { get_c_program().check_update_permission();}
-    @JsonIgnore @Override public void check_delete_permission() throws _Base_Result_Exception { get_c_program().check_update_permission();}
+    @JsonIgnore @Override public void check_read_permission()   throws _Base_Result_Exception {
+        try {
+
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+            }
+
+            get_c_program().check_read_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
+    }
+    @JsonIgnore @Override public void check_update_permission() throws _Base_Result_Exception {
+        try {
+
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+            }
+
+            get_c_program().check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
+    }
+    @JsonIgnore @Override public void check_delete_permission() throws _Base_Result_Exception {
+        try {
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+            }
+
+            get_c_program().check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
+    }
 
     public enum Permission {} // Not Required here
 

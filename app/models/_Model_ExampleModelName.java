@@ -2,9 +2,11 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -78,24 +80,55 @@ public class _Model_ExampleModelName extends BaseModel {
 
     @JsonIgnore @javax.persistence.Transient
     @Override public void check_read_permission()   throws _Base_Result_Exception {
-        logger.error("check_read_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
+        
     }
+
     @JsonIgnore @javax.persistence.Transient
     @Override public void check_create_permission() throws _Base_Result_Exception {
         logger.error("check_create_permission: Not Supported");
         throw new Result_Error_NotSupportedException();
     }
+
     @JsonIgnore @javax.persistence.Transient
     @Override public void check_update_permission() throws _Base_Result_Exception {
         logger.error("check_update_permission: Not Supported");
         throw new Result_Error_NotSupportedException();
     }
+
+    /**
+     * Example jak tvořit oprávnění!
+     *
+     * @throws _Base_Result_Exception
+     */
     @JsonIgnore @javax.persistence.Transient
     @Override public void check_delete_permission() throws _Base_Result_Exception {
-        logger.error("check_delete_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
+        try {
+
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() +  "_delete_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() +  "_delete_" + id);
+            }
+
+            // Podmínka pro běžné uživatele 
+            // Příklad
+            if (Model_HomerServer.find.query().where().where().eq("project.participants.person.id", _BaseController.person().id).eq("id", id).findCount() > 0) {
+                _BaseController.person().cache_permission(this.getClass().getSimpleName()  + "_delete_" + id, true);
+                return;
+            }
+
+            // Podmínka pro administrátora
+            if (_BaseController.person().has_permission(Permission.ExampleModelName_delete.name())) return;
+
+            throw new Result_Error_PermissionDenied();
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
     }
+
+    public enum Permission { ExampleModelName_create, ExampleModelName_read, ExampleModelName_update, ExampleModelName_delete }
+
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore

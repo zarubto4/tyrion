@@ -54,6 +54,7 @@ public class Model_ServerError extends NamedModel {
 
     public Model_ServerError(Throwable exception, String origin, Http.RequestHeader request) {
         super();
+
         this.type = exception.getClass().getName();
         this.message = exception.getMessage();
         this.stack_trace = formatStackTrace(exception.getStackTrace());

@@ -354,7 +354,7 @@ public class Model_Blob extends BaseModel {
 
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
 
-        if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+        if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + this.id)) _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + this.id);
         if (_BaseController.person().has_permission(Model_BProgram.Permission.BProgram_delete.name())) return;
 
 
@@ -364,6 +364,7 @@ public class Model_Blob extends BaseModel {
 
         if(id != null) {
             Model_Person.getById(id).check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
 
@@ -371,6 +372,7 @@ public class Model_Blob extends BaseModel {
 
         if(id != null) {
             Model_InstanceSnapshot.getById(id).check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
 
@@ -378,6 +380,7 @@ public class Model_Blob extends BaseModel {
 
         if(id != null) {
             Model_HardwareType.getById(id).check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
 
@@ -385,6 +388,7 @@ public class Model_Blob extends BaseModel {
 
         if(id != null) {
             Model_Hardware.getById(id).check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
 
@@ -392,6 +396,7 @@ public class Model_Blob extends BaseModel {
 
         if(id != null) {
             Model_Log.getById(id).check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
 
@@ -399,6 +404,7 @@ public class Model_Blob extends BaseModel {
 
         if(id != null) {
             Model_BootLoader.getById(id).check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
 
@@ -406,6 +412,7 @@ public class Model_Blob extends BaseModel {
 
         if(id != null) {
             Model_HardwareUpdate.getById(id).check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
 
@@ -413,6 +420,7 @@ public class Model_Blob extends BaseModel {
 
         if(id != null) {
             Model_Compilation.getById(id).check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
 
@@ -420,6 +428,7 @@ public class Model_Blob extends BaseModel {
 
         if(id != null) {
             Model_CProgramVersion.getById(id).check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
 
@@ -427,6 +436,7 @@ public class Model_Blob extends BaseModel {
 
         if(id != null) {
             Model_LibraryVersion.getById(id).check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
 
@@ -434,6 +444,7 @@ public class Model_Blob extends BaseModel {
 
         if(id != null) {
             Model_BProgramVersion.getById(id).check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
 
@@ -441,6 +452,7 @@ public class Model_Blob extends BaseModel {
 
         if(id != null) {
             Model_GridProgramVersion.getById(id).check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
 
@@ -448,6 +460,7 @@ public class Model_Blob extends BaseModel {
 
         if(id != null) {
             Model_WidgetVersion.getById(id).check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
 
@@ -455,9 +468,11 @@ public class Model_Blob extends BaseModel {
 
         if(id != null) {
             Model_BlockVersion.getById(id).check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
 
+        _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, false);
         logger.error("Unsupported object in Model Blob when system tried to remove this object!");
         throw new Result_Error_NotSupportedException();
     }

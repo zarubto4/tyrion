@@ -508,7 +508,12 @@ public abstract class _BaseController {
     public static Result internalServerError(Throwable error) {
         error.printStackTrace();
         StackTraceElement current_stack = Thread.currentThread().getStackTrace()[2]; // Find the caller origin
-        ServerLogger.error(error, current_stack.getClassName() + "::" + current_stack.getMethodName(), Controller.request());
+
+        try {
+            ServerLogger.error(error, current_stack.getClassName() + "::" + current_stack.getMethodName(), Controller.request());
+        } catch (Exception e) {
+            ServerLogger.error(error, current_stack.getClassName() + "::" + current_stack.getMethodName(), null);
+        }
         return Controller.internalServerError(Json.toJson(new Result_InternalServerError()));
     }
 

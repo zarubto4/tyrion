@@ -9,7 +9,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.CacheField;
-import utilities.cache.Cached;
 import utilities.enums.ProgramType;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
@@ -24,7 +23,6 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 
 @Entity
@@ -113,7 +111,7 @@ public class Model_CProgram extends TaggedModel {
         return cache().get(Model_Project.class);
     }
 
-    @JsonIgnore @Transient public Model_Project getProject() throws _Base_Result_Exception {
+    @JsonIgnore @Transient public Model_Project get_project() throws _Base_Result_Exception {
         try {
             return Model_Project.getById(getProjectId());
         }catch (Exception e) {
@@ -204,7 +202,7 @@ public class Model_CProgram extends TaggedModel {
 
         // Remove from Project Cache
         try {
-            getProject().cache().remove(this.getClass(), id);
+            get_project().cache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
@@ -232,15 +230,15 @@ public class Model_CProgram extends TaggedModel {
     public String get_path() {
 
         // C_Program is Private registred under Project
-        if (getProject() != null) {
-            return getProject().getPath() + "/c-programs/" + this.id;
+        if (get_project() != null) {
+            return get_project().getPath() + "/c-programs/" + this.id;
         } else {
 
             if(getProjectId() == null) {
                 logger.debug("save :: is a public Program");
                 return "public-c-programs/" + this.id;
             }else {
-               return getProject().getPath() + "/c-programs/" + this.id;
+               return get_project().getPath() + "/c-programs/" + this.id;
             }
         }
     }
@@ -259,55 +257,60 @@ public class Model_CProgram extends TaggedModel {
     }
 
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
+        try {
 
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (_BaseController.person().has_permission("c_program_update_" + id)) _BaseController.person().valid_permission("c_program_update_" + id);
-        if (_BaseController.person().has_permission(Permission.CProgram_update.name())) return;
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+            }
+            if (_BaseController.person().has_permission(Permission.CProgram_update.name())) return;
 
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_CProgram.find.query().where().where().eq("project.participants.person.id", _BaseController.person().id ).where().eq("id", id).findCount() > 0) {
-            _BaseController.person().cache_permission("c_program_update_" + id, true);
-            return;
+            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
+            this.get_project().check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
+            throw new Result_Error_PermissionDenied();
         }
-
-        // Přidávám do listu false a vracím false
-        _BaseController.person().cache_permission("c_program_update_" + id, false);
-        throw new Result_Error_PermissionDenied();
-
     }
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
+        try {
+            if (publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN) return;
 
-        if(publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN ) return;
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+            }
 
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (_BaseController.person().has_permission("c_program_read_" + id)) _BaseController.person().valid_permission("c_program_read_" + id);
-        if (_BaseController.person().has_permission(Permission.CProgram_read.name())) return;
+            if (_BaseController.person().has_permission(Permission.CProgram_read.name())) return;
 
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_CProgram.find.query().where().where().eq("project.participants.person.id", _BaseController.person().id ).eq("id", id).findCount() > 0) {
-            _BaseController.person().cache_permission("c_program_read_" + id, true);
-            return;
+            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
+            this.get_project().check_read_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
+            throw new Result_Error_PermissionDenied();
         }
-
-        // Přidávám do listu false a vracím false
-        _BaseController.person().cache_permission("c_program_read_" + id, false);
-        throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (_BaseController.person().has_permission("c_program_delete_" + id)) _BaseController.person().valid_permission("c_program_delete_" + id);
-        if (_BaseController.person().has_permission(Permission.CProgram_delete.name())) return;
+        try {
 
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_CProgram.find.query().where().where().eq("project.participants.person.id", _BaseController.person().id ).where().eq("id", id).findCount() > 0) {
-            _BaseController.person().cache_permission("c_program_delete_" + id, true);
-            return;
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+            }
+            if (_BaseController.person().has_permission(Permission.CProgram_delete.name())) return;
+
+            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
+            this.get_project().check_read_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
+            throw new Result_Error_PermissionDenied();
         }
-
-        // Přidávám do listu false a vracím false
-        _BaseController.person().cache_permission("c_program_delete_" + id, false);
-        throw new Result_Error_PermissionDenied();
-
     }
 
     @JsonProperty @Transient @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {

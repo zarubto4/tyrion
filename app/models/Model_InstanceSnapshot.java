@@ -22,6 +22,7 @@ import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.model.TaggedModel;
+import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.input.*;
@@ -35,6 +36,7 @@ import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_status;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_program;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_terminals;
 import websocket.messages.homer_with_tyrion.WS_Message_Homer_Instance_add;
+import websocket.messages.tyrion_with_becki.WSM_Echo;
 import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 
 import javax.persistence.*;
@@ -308,11 +310,13 @@ public class Model_InstanceSnapshot extends TaggedModel {
         new Thread(() -> {
 
             try {
+
+                Model_Instance instance = get_instance();
                 // Step 1
                 logger.debug("deploy - begin - step 1");
-                if (this.get_instance().current_snapshot_id != null && !this.get_instance().current_snapshot_id.equals(this.id)) {
+                if (instance.current_snapshot_id != null && !instance.current_snapshot_id.equals(this.id)) {
                     logger.debug("deploy - stop previous running snapshot");
-                    Model_InstanceSnapshot previous = getById(this.get_instance().current_snapshot_id);
+                    Model_InstanceSnapshot previous = getById(instance.current_snapshot_id);
                     if (previous != null) {
                         this.get_instance().current_snapshot_id = null;
                         this.update();
@@ -321,8 +325,9 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
                 if (get_instance().getServer().online_state() != NetworkStatus.ONLINE) {
                     logger.debug("deploy - server is offline, it is not possible to continue");
-                    get_instance().current_snapshot_id = this.id;
-                    get_instance().update();
+
+                    instance.current_snapshot_id = this.id;
+                    instance.update();
 
                     if(person != null) {
                         notification_instance_set_wait_for_server(person);
@@ -330,7 +335,12 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     return;
                 }
 
-                WS_Message_Instance_status status = get_instance().get_instance_status();
+                if (instance.current_snapshot_id == null) {
+                    instance.current_snapshot_id = this.id;
+                    instance.update();
+                }
+
+                WS_Message_Instance_status status = instance.get_instance_status();
 
                 WS_Message_Instance_status.InstanceStatus instanceStatus = status.get_status(get_instance_id());
 
@@ -341,7 +351,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 // Instance status
                 if (!instanceStatus.status) {
                     // Vytvořím Instanci
-                    WS_Message_Homer_Instance_add result_instance = get_instance().server_main.add_instance(get_instance());
+                    WS_Message_Homer_Instance_add result_instance = instance.server_main.add_instance(instance);
                     if (!result_instance.status.equals("success")) {
                         logger.internalServerError(new Exception("Failed to add Instance. ErrorCode: " + result_instance.error_code + ". Error: " + result_instance.error + result_instance.error_message));
                         return;
@@ -370,7 +380,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 }
 
                 Model_Instance.cache_status.put(get_instance_id(), true);
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, get_instance_id(), true, this.get_instance().getProjectId());
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, get_instance_id(), true, instance.getProjectId());
 
                 // Only if there are hardware for update
                 if(program().interfaces.size() > 0) {
@@ -385,7 +395,10 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
                 }
 
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, get_instance_id(), true, get_instance().getProjectId());
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, get_instance_id(), true, instance.getProjectId());
+
+                logger.warn("Sending Update for Instance ID: {}", this.id);
+                new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Instance.class, instance.getProject().id, get_instance_id()))).start();
 
 
             }catch (Exception e) {
@@ -1009,27 +1022,60 @@ public class Model_InstanceSnapshot extends TaggedModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.InstanceSnapshot_create.name())) return;
+        if(_BaseController.person().has_permission(Model_Instance.Permission.Instance_create.name())) return;
         instance.check_update_permission();
     }
 
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.InstanceSnapshot_read.name())) return;
-        get_instance().check_update_permission();
+        try {
+
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+            }
+
+            get_instance().check_read_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
     }
 
     @JsonIgnore @Transient @Override public void check_update_permission()  {
-        if(_BaseController.person().has_permission(Permission.InstanceSnapshot_update.name())) return;
-        get_instance().check_update_permission();
+        try {
+
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+            }
+
+            get_instance().check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
     }
 
     @JsonIgnore @Transient @Override public void  check_delete_permission() throws _Base_Result_Exception  {
-        if(_BaseController.person().has_permission(Permission.InstanceSnapshot_delete.name())) return;
-        get_instance().check_update_permission();
+        try {
+
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+            }
+
+            get_instance().check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
     }
 
 
-    public enum Permission { InstanceSnapshot_create, InstanceSnapshot_read, InstanceSnapshot_update, InstanceSnapshot_delete }
+    public enum Permission {}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
