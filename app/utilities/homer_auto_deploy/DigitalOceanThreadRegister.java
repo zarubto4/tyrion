@@ -2,6 +2,8 @@ package utilities.homer_auto_deploy;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
+import com.myjeeva.digitalocean.pojo.Domain;
+import com.myjeeva.digitalocean.pojo.DomainRecord;
 import com.myjeeva.digitalocean.pojo.Droplet;
 import com.myjeeva.digitalocean.pojo.Network;
 import controllers._BaseFormFactory;
@@ -70,10 +72,22 @@ public class DigitalOceanThreadRegister extends Thread {
                         logger.trace("run:: Thread -Perfect - we have Networks");
 
                         Network network = droplet.getNetworks().getVersion4Networks().get(0);
-                        logger.trace("create_server::    Server URL:    " + network.getIpAddress());
+                        logger.trace("create_server:: Server URL:    " + network.getIpAddress());
 
-                        Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
-                        server.server_url = network.getIpAddress();
+
+                        // Registrace domény
+                        Domain domain = DigitalOceanTyrionService.apiClient.getDomainInfo("do.byzance.cz");
+
+                        DomainRecord domainRecord = new DomainRecord();
+                        domainRecord.setType("A");
+                        domainRecord.setName(this.homer_server_id.toString());
+                        domainRecord.setData(network.getIpAddress());
+
+                        DigitalOceanTyrionService.apiClient.createDomainRecord(domain.getName(), domainRecord);
+
+
+                        this.server = Model_HomerServer.getById(homer_server_id);
+                        server.server_url = homer_server_id + ".do.byzance.cz";
                         server.update();
 
                         // Time to configure Homer Server!!
@@ -85,7 +99,7 @@ public class DigitalOceanThreadRegister extends Thread {
                         json.put("url", server.server_url);
 
 
-                        logger.trace("create_server::   Default Homer Server Port is  3000");
+                        logger.trace("create_server:: Default Homer Server Port is 3000");
                         String configuration_homer_url = "http://" + server.server_url + ":3000" + "/configuration";
 
                         logger.trace("crate_server:: Try to request Homer Server on url {}", configuration_homer_url);
@@ -149,6 +163,9 @@ public class DigitalOceanThreadRegister extends Thread {
                                     logger.error("crate_server::  Response  Head {} and body: ", response.getStatus(), response.getBody());
 
                                 }
+
+
+
                             } catch (ExecutionException e) {
                                 sleep(1000 * 4);
                                 // Nothing
@@ -162,8 +179,14 @@ public class DigitalOceanThreadRegister extends Thread {
                         logger.trace("run:: Thread - Still not Networks on Droplet! Time To sleep");
                         sleep(1000*2);
                     }
+
+                    server.deployment_in_progress = false;
+                    server.update();
+
                 } catch (Exception e){
                     logger.internalServerError(e);
+                    server.deployment_in_progress = false;
+                    server.update();
                 }
 
                 logger.trace("run:: Thread - Still not ready! Time to sleep and do it again!");
@@ -174,6 +197,8 @@ public class DigitalOceanThreadRegister extends Thread {
 
         }catch (Exception e){
             logger.error("synchronize_configuration: TimeoutException");
+            server.deployment_in_progress = false;
+            server.update();
             server.cache().removeAll(DigitalOceanThreadRegister.class);
             logger.internalServerError(e);
         }

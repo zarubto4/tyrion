@@ -6,6 +6,8 @@ import play.data.validation.Constraints;
 import play.libs.Json;
 import websocket.messages.common.abstract_class.WS_AbstractMessage;
 
+import java.util.UUID;
+
 public class WS_Message_Homer_Token_validation_request extends WS_AbstractMessage {
 
     // MessageType

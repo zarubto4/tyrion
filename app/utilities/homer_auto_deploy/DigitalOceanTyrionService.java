@@ -178,7 +178,9 @@ public class DigitalOceanTyrionService {
         service.blue_ocean_config = blueOcean;
 
         homer_server.json_additional_parameter = Json.toJson(service).toString();
+        homer_server.deployment_in_progress = true;
         homer_server.update();
+
 
         DigitalOceanThreadRegister threadRegister = new DigitalOceanThreadRegister(homer_server, blueOcean);
         threadRegister.start();
@@ -227,6 +229,7 @@ public class DigitalOceanTyrionService {
         Swagger_ExternalService service = homerServer.external_settings();
         if(service != null) {
             apiClient.deleteDroplet(service.blue_ocean_config.id);
+            apiClient.deleteDomain(homerServer.id + ".do.byzance.cz");
         }
     }
 

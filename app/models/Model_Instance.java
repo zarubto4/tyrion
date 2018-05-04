@@ -818,7 +818,7 @@ public class Model_Instance extends TaggedModel {
             }
             if (_BaseController.person().has_permission(Permission.Instance_read.name())) return;
 
-            this.project.check_update_permission();
+            this.getProject().check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
 
 
@@ -835,7 +835,7 @@ public class Model_Instance extends TaggedModel {
             }
             if (_BaseController.person().has_permission(Permission.Instance_update.name())) return;
 
-            this.project.check_update_permission();
+            this.getProject().check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
 
 
@@ -853,7 +853,7 @@ public class Model_Instance extends TaggedModel {
             }
             if (_BaseController.person().has_permission(Permission.Instance_delete.name())) return;
 
-            this.project.check_update_permission();
+            this.getProject().check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
 
 

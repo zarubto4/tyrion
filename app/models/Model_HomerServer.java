@@ -72,9 +72,10 @@ public class Model_HomerServer extends TaggedModel {
     @ApiModelProperty(required = true, readOnly = true) public String server_version;  // Může být i IP adresa
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Project project;
+    @JsonIgnore @OneToMany(mappedBy = "server_main", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Instance> instances = new ArrayList<>();
 
-    public HomerType server_type;  // Určující typ serveru
-    public Date time_stamp_configuration;            // Čas konfigurace
+    public HomerType server_type;                     // Určující typ serveru
+    public Date time_stamp_configuration;             // Čas konfigurace
 
     // Stav Deploy
     public Integer days_in_archive;
@@ -82,14 +83,20 @@ public class Model_HomerServer extends TaggedModel {
     public boolean interactive;
     public LogLevel log_level;
 
-    @JsonIgnore @OneToMany(mappedBy = "server_main", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Instance> instances = new ArrayList<>();
+
+    // Příznak, beukládaný do databáze, je true v případě že probíhá deployment na serveru
+    @Transient @JsonIgnore public boolean deployment_in_progress = false;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = true, readOnly = true)
-    @JsonProperty
+    @ApiModelProperty(required = true, readOnly = true) @JsonProperty
     public NetworkStatus online_state() {
         try{
+
+            if(deployment_in_progress) {
+                return NetworkStatus.SYNCHRONIZATION_IN_PROGRESS;
+            }
+
             return Controller_WebSocket.homers.containsKey(id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
         } catch (_Base_Result_Exception e){
             //nothing
@@ -100,8 +107,7 @@ public class Model_HomerServer extends TaggedModel {
         }
     }
 
-    @ApiModelProperty(required = false, readOnly = true)
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    @ApiModelProperty(required = false, readOnly = true) @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public String connection_identificator() {
         try {
             check_update_permission();
@@ -115,8 +121,7 @@ public class Model_HomerServer extends TaggedModel {
         }
     }
 
-    @ApiModelProperty(required = false, readOnly = true)
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    @ApiModelProperty(required = false, readOnly = true) @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public String hash_certificate() {
         try {
             check_update_permission();
@@ -494,7 +499,7 @@ public class Model_HomerServer extends TaggedModel {
             // Zjistím, zda v Cache už token není Pokud není - vyhledám Token objekt a ověřím jeho platnost
             if (!Model_Person.token_cache.containsKey(UUID.fromString(message.client_token))) {
 
-                model_token = Model_AuthorizationToken.find.query().where().eq("token", message.client_token).findOne();
+                model_token = Model_AuthorizationToken.find.query().where().eq("token", UUID.fromString(message.client_token)).findOne();
                 if (model_token == null || !model_token.isValid()) {
                     logger.info("validate_incoming_user_connection_to_hardware_logger:: Token::" + message.client_token + " is not t is no longer valid according time");
                     ws_homer.send(message.get_result(false));

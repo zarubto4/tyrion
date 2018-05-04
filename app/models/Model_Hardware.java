@@ -268,25 +268,29 @@ public class Model_Hardware extends TaggedModel {
                 return cache_latest_know_ip_address;
             } else {
 
-                new Thread(() -> {
-                    try {
+                if(online_state() == NetworkStatus.ONLINE){
+                    new Thread(() -> {
+                        try {
 
-                        logger.warn("Need ip_address for device ID: {}", this.id);
-                        WS_Message_Hardware_overview_Board overview_board = this.get_devices_overview();
+                            logger.warn("Need ip_address for device ID: {}", this.id);
+                            WS_Message_Hardware_overview_Board overview_board = this.get_devices_overview();
 
-                        System.out.println("WS_Message_Hardware_overview_Board:: " + Json.toJson(overview_board));
+                            System.out.println("WS_Message_Hardware_overview_Board:: " + Json.toJson(overview_board));
 
-                        if(overview_board.status.equals("success")) {
-                            cache_latest_know_ip_address = overview_board.ip;
-                            EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project().id, this.id));
+                            if (overview_board.status.equals("success") && overview_board.online_status) {
+                                cache_latest_know_ip_address = overview_board.ip;
+                                EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project().id, this.id));
+                            } else {
+                                this.cache_latest_know_ip_address = "";
+                            }
+
+                        } catch (Exception e) {
+                            logger.internalServerError(e);
                         }
-
-
-
-                    } catch (Exception e) {
-                        logger.internalServerError(e);
-                    }
-                }).start();
+                    }).start();
+                } else {
+                    this.cache_latest_know_ip_address = "";
+                }
 
                 return null;
             }
@@ -3077,7 +3081,7 @@ public class Model_Hardware extends TaggedModel {
     @CacheField(Model_Hardware.class)
     public static Cache<UUID, Model_Hardware> cache;
 
-    @CacheField(value = Boolean.class, duration = 300, name ="Model_Hardware_Status")
+    @CacheField(value = Boolean.class, duration = CacheField.DayCacheConstant, name ="Model_Hardware_Status")
     public static Cache<UUID, Boolean> cache_status;
 
     public static Model_Hardware getById(UUID id) throws _Base_Result_Exception {

@@ -72,7 +72,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Instance instance;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BProgramVersion b_program_version;
     @JsonIgnore @OneToOne(fetch  = FetchType.LAZY) public Model_Blob program;
-    @JsonIgnore @OneToMany(fetch = FetchType.LAZY) public List<Model_UpdateProcedure> procedures = new ArrayList<>(); // Reálně zde je uložena jen jedna, pokud byla instance nasazena víckrát, vždy se tvoří nový aktualizační plán! Pak jich tu je víc než jedna
+    @JsonIgnore @OneToMany(mappedBy = "instance", fetch = FetchType.LAZY) public List<Model_UpdateProcedure> procedures = new ArrayList<>(); // Reálně zde je uložena jen jedna, pokud byla instance nasazena víckrát, vždy se tvoří nový aktualizační plán! Pak jich tu je víc než jedna
 
     /**
      * Here we collect everything additional settings for Snapshot.
@@ -315,12 +315,9 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 // Step 1
                 logger.debug("deploy - begin - step 1");
                 if (instance.current_snapshot_id != null && !instance.current_snapshot_id.equals(this.id)) {
-                    logger.debug("deploy - stop previous running snapshot");
-                    Model_InstanceSnapshot previous = getById(instance.current_snapshot_id);
-                    if (previous != null) {
-                        this.get_instance().current_snapshot_id = null;
-                        this.update();
-                    }
+                    logger.debug("deploy - stop previous running snapshot current_snapshot_id: {}", instance.current_snapshot_id);
+                    instance.current_snapshot_id = null;
+                    instance.update();
                 }
 
                 if (get_instance().getServer().online_state() != NetworkStatus.ONLINE) {
@@ -402,6 +399,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
 
             }catch (Exception e) {
+                e.printStackTrace();
                 logger.internalServerError(e);
             }
 

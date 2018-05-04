@@ -398,8 +398,6 @@ public class Model_UpdateProcedure extends BaseModel {
         // Save Object
         super.save();
 
-        super.refresh();
-
         // Cache
         cache.put(this.id, this);
 
