@@ -58,7 +58,7 @@ public class Model_HardwareType extends NamedModel {
     @JsonIgnore @OneToOne(mappedBy="hardware_type_test",    cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Model_CProgram test_program;
 
 
-     @ManyToMany(mappedBy = "hardware_types", fetch = FetchType.LAZY)  public List<Model_HardwareFeature> features = new ArrayList<>();
+    @ManyToMany(mappedBy = "hardware_types", fetch = FetchType.LAZY)  public List<Model_HardwareFeature> features = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "hardware_types", fetch = FetchType.LAZY)  public List<Model_Library> libraries = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/

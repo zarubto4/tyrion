@@ -132,11 +132,6 @@ public class _Model_ExampleModelName extends BaseModel {
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public static _Model_ExampleModelName getById(String id) {
-        return getById(UUID.fromString(id));
-    }
-
-    @JsonIgnore
     public static _Model_ExampleModelName getById(UUID id) {
         return find.byId(id);
     }

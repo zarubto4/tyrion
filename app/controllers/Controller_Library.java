@@ -250,7 +250,7 @@ public class Controller_Library extends _BaseController {
             // Musí být splněna alespoň jedna podmínka, aby mohl být Junction aktivní. V opačném případě by totiž způsobil bychu
             // která vypadá nějak takto:  where t0.deleted = false and and .... KDE máme 2x end!!!!!
             if (!(help.project_id != null || help.public_library || help.pending_library)) {
-                return ok(new Swagger_C_Program_List());
+                return ok(new Swagger_Library_List());
             }
 
 
