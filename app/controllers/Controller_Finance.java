@@ -454,7 +454,7 @@ public class Controller_Finance extends _BaseController {
 
     @ApiOperation(value = "add Employee",
             tags = {"Price & Invoice & Tariffs"},
-            notes = "Adds employee to a company.",
+            notes = "Adds employee to a company. Add them again for send new invitations",
             produces = "application/json",
             protocols = "https"
     )
@@ -524,7 +524,7 @@ public class Controller_Finance extends _BaseController {
         try {
             
             Model_Employee employee = Model_Employee.getById(employee_id);
-  
+
             employee.delete();
 
             return ok();

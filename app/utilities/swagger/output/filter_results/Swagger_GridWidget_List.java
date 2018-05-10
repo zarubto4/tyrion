@@ -22,6 +22,10 @@ public class Swagger_GridWidget_List extends _Swagger_Filter_Common {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
+    public Swagger_GridWidget_List() {
+
+    }
+
     public Swagger_GridWidget_List(Query<Model_Widget> query, int page_number, _Swagger_filter_parameter filter) {
 
         if (page_number < 1) page_number = 1;

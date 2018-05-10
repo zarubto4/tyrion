@@ -2,6 +2,8 @@ package controllers;
 
 import com.google.inject.Inject;
 import io.ebean.Ebean;
+import io.ebean.ExpressionList;
+import io.ebean.Junction;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
@@ -18,6 +20,7 @@ import utilities.enums.Approval;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
 import utilities.swagger.input.*;
+import utilities.swagger.output.filter_results.Swagger_C_Program_List;
 import utilities.swagger.output.filter_results.Swagger_Library_List;
 
 import java.util.UUID;
@@ -213,7 +216,7 @@ public class Controller_Library extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "get Library Short List by filter",
+    @ApiOperation(value = "get Library List by Filter",
             tags = {"Library"},
             notes = "if you want to get Libraries filtered by specific parameters. For private Libraries under project set project_id, for all public use empty JSON",
             produces = "application/json",
@@ -244,10 +247,20 @@ public class Controller_Library extends _BaseController {
             // Get and Validate Object
             Swagger_Library_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Library_Filter.class);
 
+            // Musí být splněna alespoň jedna podmínka, aby mohl být Junction aktivní. V opačném případě by totiž způsobil bychu
+            // která vypadá nějak takto:  where t0.deleted = false and and .... KDE máme 2x end!!!!!
+            if (!(help.project_id != null || help.public_library || help.pending_library)) {
+                return ok(new Swagger_C_Program_List());
+            }
+
+
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_Library> query = Ebean.find(Model_Library.class);
             query.where().eq("deleted", false);
 
+
+            ExpressionList<Model_Library> list = query.where();
+            Junction<Model_Library> disjunction = list.disjunction();
 
             if (!help.hardware_type_ids.isEmpty()) {
                 query.where().in("hardware_types.id", help.hardware_type_ids);
@@ -255,20 +268,30 @@ public class Controller_Library extends _BaseController {
 
             if (help.project_id != null) {
                 Model_Project.getById(help.project_id);
-                query.where().eq("project_id", help.project_id);
+                disjunction
+                        .conjunction()
+                        .eq("project.id", help.project_id)
+                        .endJunction();
 
-            } else {
-                query.where().isNull("project_id");
             }
 
             if (help.public_library) {
-                query.where().isNull("project_id").eq("publish_type", ProgramType.PUBLIC.name());
+                disjunction
+                        .conjunction()
+                        .eq("publish_type", ProgramType.PUBLIC.name())
+                        .endJunction();
             }
 
             if (help.pending_library) {
-                if (!_BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return forbidden();
-                query.where().eq("versions.approval_state", Approval.PENDING.name());
+                if (!person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return forbidden();
+                disjunction
+                        .conjunction()
+                        .eq("versions.approval_state", Approval.PENDING.name())
+                        .ne("publish_type", ProgramType.DEFAULT_MAIN)
+                        .endJunction();
             }
+
+            disjunction.endJunction();
 
             // Vyvoření odchozího JSON
             Swagger_Library_List result = new Swagger_Library_List(query,page_number, help);

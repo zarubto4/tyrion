@@ -574,8 +574,6 @@ public class Model_Project extends TaggedModel {
 
                 List<UUID> homer_server_list = Model_Hardware.find.query().where().eq("project.id", id).select("connected_server_id").setDistinct(true).findSingleAttributeList();
 
-                System.out.println("Počet prvků? : " + homer_server_list.size());
-
                 for(UUID homer_id: homer_server_list) {
 
                     if(homer_id == null) continue;

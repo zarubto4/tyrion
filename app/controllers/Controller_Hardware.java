@@ -22,6 +22,7 @@ import utilities.logger.Logger;
 import utilities.swagger.Picture2Mb;
 import utilities.swagger.input.*;
 import utilities.swagger.output.*;
+import utilities.swagger.output.filter_results.Swagger_C_Program_List;
 import utilities.swagger.output.filter_results.Swagger_HardwareGroup_List;
 import utilities.swagger.output.filter_results.Swagger_Hardware_List;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_change_server;
@@ -1630,6 +1631,7 @@ public class Controller_Hardware extends _BaseController {
             // Kotrola objektu
             Model_Hardware hardware = Model_Hardware.getById(hardware_id);
 
+            String help_previouse_name = hardware.name;
             // Uprava desky
             hardware.name = help.name;
             hardware.description = help.description;
@@ -1640,7 +1642,10 @@ public class Controller_Hardware extends _BaseController {
             hardware.setTags(help.tags);
 
             // Synchronizace s Homer serverem
-            hardware.set_alias(hardware.name);
+            if(!hardware.name.equals(help_previouse_name)) {
+                hardware.set_alias(hardware.name);
+            }
+
 
             // Vrácení upravenéh objektu
             return ok(hardware);
@@ -1958,7 +1963,7 @@ public class Controller_Hardware extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "get Boards with filter parameters",
+    @ApiOperation(value = "get Boards List by Filter",
             tags = { "Hardware"},
             notes = "Get List of hardware. According to permission - system return only hardware from project, where is user owner or" +
                     " all hardware if user have static Permission key",
@@ -1987,6 +1992,17 @@ public class Controller_Hardware extends _BaseController {
 
             // Get and Validate Object
             Swagger_Board_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_Filter.class);
+
+            // Musí být splněna alespoň jedna podmínka, aby mohl být Junction aktivní. V opačném případě by totiž způsobil bychu
+            // která vypadá nějak takto:  where t0.deleted = false and and .... KDE máme 2x end!!!!!
+            if (!(
+                    help.projects != null && !help.projects.isEmpty()
+                    || ( help.producers != null && !help.producers.isEmpty() )
+                    || ( help.processors != null && !help.processors.isEmpty())
+                    || ( help.hardware_groups_id != null && !help.hardware_groups_id.isEmpty())
+                )) {
+                return ok(new Swagger_Hardware_List());
+            }
 
             // Tvorba parametru dotazu
             Query<Model_Hardware> query = Ebean.find(Model_Hardware.class);

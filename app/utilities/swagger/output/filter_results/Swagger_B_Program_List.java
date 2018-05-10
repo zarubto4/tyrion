@@ -22,6 +22,10 @@ public class Swagger_B_Program_List extends _Swagger_Filter_Common {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
+    public Swagger_B_Program_List() {
+        // If return empty list!
+    }
+
     public Swagger_B_Program_List(Query<Model_BProgram> query, int page_number,_Swagger_filter_parameter filter) {
 
         if (page_number < 1) page_number = 1;

@@ -492,7 +492,7 @@ public class Model_UpdateProcedure extends BaseModel {
 
 
                 notification.setText(new Notification_Text().setText("Update under Instance "))
-                .setObject(Model_InstanceSnapshot.getById(getInstanceSnapshotId()).instance); // TODO objekt notifikace
+                .setObject(Model_InstanceSnapshot.getById(getInstanceSnapshotId()).get_instance()); // TODO objekt notifikace
 
                 if (getUpdates().size() == 1) {
 

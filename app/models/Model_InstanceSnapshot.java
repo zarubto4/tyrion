@@ -153,7 +153,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                             program_config.grid_program_id = program.grid_program().id;
                             program_config.grid_program_version_id = program.grid_program_version.id;
                             program_config.snapshot_settings = GridAccess.PROJECT;
-                            program_config.connection_token = instance.id.toString() + "/" + program_config.grid_program_id;
+                            program_config.connection_token = get_instance_id() + "/" + program_config.grid_program_id;
 
                             project_config.grid_programs.add(program_config);
                         }
@@ -348,7 +348,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 // Instance status
                 if (!instanceStatus.status) {
                     // Vytvořím Instanci
-                    WS_Message_Homer_Instance_add result_instance = instance.server_main.add_instance(instance);
+                    WS_Message_Homer_Instance_add result_instance = instance.getServer().add_instance(instance);
                     if (!result_instance.status.equals("success")) {
                         logger.internalServerError(new Exception("Failed to add Instance. ErrorCode: " + result_instance.error_code + ". Error: " + result_instance.error + result_instance.error_message));
                         return;
@@ -789,8 +789,8 @@ public class Model_InstanceSnapshot extends TaggedModel {
             summary.grid_app_url = "wss://";
         }
 
-        summary.grid_app_url += Model_HomerServer.getById(instance.getServer_id()).get_Grid_APP_URL();
-        summary.grid_app_url += instance.id + "/" ;
+        summary.grid_app_url += Model_HomerServer.getById(get_instance().getServer_id()).get_Grid_APP_URL();
+        summary.grid_app_url += get_instance_id() + "/" ;
 
         switch (program.snapshot_settings) {
 

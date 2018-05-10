@@ -54,18 +54,19 @@ public abstract class TaggedModel extends NamedModel {
         }
     }
 
-
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
-
 
     public void setTags(List<String> new_tags) throws _Base_Result_Exception {
         List<String > tags = tags();
 
-        new_tags.forEach(value -> {
+        boolean change = false;
+        for(String value : tags) {
 
             if(tags.contains(value)) {
-                return;
+                continue;
             }
+
+            change = true;
 
             Model_Tag tag = Model_Tag.getByValue(value);
 
@@ -78,10 +79,11 @@ public abstract class TaggedModel extends NamedModel {
             if (!this.tags.contains(tag)) {
                 this.tags.add(tag);
             }
+        }
 
-        });
-
-        this.save();
+        if(change) {
+            this.update();
+        }
     }
 
     public void addTags(List<String> new_tags) throws _Base_Result_Exception {
@@ -99,7 +101,7 @@ public abstract class TaggedModel extends NamedModel {
             }
         });
 
-        this.save();
+        this.update();
     }
 
     public void removeTags(List<String> tags) throws _Base_Result_Exception {

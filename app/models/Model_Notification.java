@@ -207,9 +207,10 @@ public class Model_Notification extends BaseModel {
                 break;
             }
             case "Project" : {
+                Model_Project project = (Model_Project)object;
                 element.name = class_name;
-                element.text = ((Model_Project)object).name;
-                element.id = ((Model_Project)object).id;
+                element.text = project.name;
+                element.id = project.id;
                 break;
             }
             case "Hardware" : {
@@ -217,7 +218,7 @@ public class Model_Notification extends BaseModel {
                 element.name = class_name;
                 element.id = hardware.id;
                 element.text = hardware.name;
-                element.project_id = hardware.project.id;
+                element.project_id = hardware.get_producerId();
                 break;
             }
             case "CProgram" : {

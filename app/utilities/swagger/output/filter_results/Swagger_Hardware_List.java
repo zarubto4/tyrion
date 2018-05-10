@@ -23,6 +23,10 @@ public class Swagger_Hardware_List extends _Swagger_Filter_Common {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
+    public Swagger_Hardware_List() {
+
+    }
+
     public Swagger_Hardware_List(Query<Model_Hardware> query , int page_number, _Swagger_filter_parameter filter) {
 
         if (page_number < 1) page_number = 1;

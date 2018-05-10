@@ -57,17 +57,20 @@ public class Model_Instance extends TaggedModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BProgram b_program; // Only first reference!
 
-    @OneToMany(mappedBy = "instance", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_InstanceSnapshot> snapshots = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "instance", fetch = FetchType.LAZY) public List<Model_InstanceSnapshot> snapshots = new ArrayList<>();
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-
-
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
-    public List<Model_InstanceSnapshot> snapshots(){
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient
+    public List<Swagger_Short_Reference> snapshots(){
         try {
 
-            return getSnapShots();
+            List<Swagger_Short_Reference> references = new ArrayList<>();
+            for(Model_InstanceSnapshot snapshot :  getSnapShots()) {
+                references.add(new Swagger_Short_Reference(snapshot.id, snapshot.name, snapshot.description));
+            }
+
+            return references;
 
         } catch (_Base_Result_Exception e){
             //nothing

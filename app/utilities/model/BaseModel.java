@@ -4,35 +4,24 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
-import com.typesafe.config.Config;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
 import io.ebean.Model;
 import io.ebean.annotation.SoftDelete;
 import io.swagger.annotations.ApiModelProperty;
-import models.Model_Person;
 import org.ehcache.Cache;
-import play.Environment;
 import play.libs.Json;
-import play.libs.ws.WSClient;
-import scala.xml.Null;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.models_update_echo.EchoHandler;
-import utilities.scheduler.SchedulerController;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
-import javax.transaction.NotSupportedException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
 import java.util.*;
 
 import static java.util.stream.Collectors.toList;
@@ -85,6 +74,7 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
     public class IDCache {
 
         private HashMap<Class, List<UUID>> cash_map = new HashMap<>();
+        private JsonNode cached_json_object_for_rest = null;
 
         public void add(Class c, List<UUID> ids){
             try {
@@ -190,6 +180,14 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
             }
         }
 
+        public JsonNode get_cached_json(){
+           return this.cached_json_object_for_rest;
+        }
+
+        public void set_cached_json(JsonNode node){
+            this.cached_json_object_for_rest = node;
+        }
+
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
@@ -199,7 +197,21 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
      * @return JSON representation of this model
      */
     public JsonNode json() {
+
+        /*
+
+        // Výrzané zrychlení kdy je cachován už rovnou celý objekt v json podobě,
+        // bohužel se musí udělat opravdu hluboké testování na veškšrou kombinatoriku protože při každé změně je nutné udělat clean tohoto jsonu
+        if(cache().get_cached_json() != null) {
+            return cache().get_cached_json();
+        }
+
+        cache().set_cached_json( Json.toJson(this));
+        return cache().get_cached_json();
+        */
+
         return Json.toJson(this);
+
     }
 
     /**

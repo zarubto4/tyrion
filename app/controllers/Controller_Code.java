@@ -3,6 +3,8 @@ package controllers;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import io.ebean.Ebean;
+import io.ebean.ExpressionList;
+import io.ebean.Junction;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
@@ -529,29 +531,57 @@ public class Controller_Code extends _BaseController {
             // Get and Validate Object
             Swagger_C_Program_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_C_Program_Filter.class);
 
+
+            // Musí být splněna alespoň jedna podmínka, aby mohl být Junction aktivní. V opačném případě by totiž způsobil bychu
+            // která vypadá nějak takto:  where t0.deleted = false and and .... KDE máme 2x end!!!!!
+            if (!(help.project_id != null || help.public_programs || help.pending_programs)) {
+                return ok(new Swagger_C_Program_List());
+            }
+
+
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_CProgram> query = Ebean.find(Model_CProgram.class);
             query.orderBy("UPPER(name) ASC");
-            query.where().eq("deleted", false);
+            query.where().ne("deleted", true);
+
+            // Ovlivňuje všechny
+            if (!help.hardware_type_ids.isEmpty()) {
+                query.where().in("hardware_type.id", help.hardware_type_ids);
+            }
+
+
+            ExpressionList<Model_CProgram> list = query.where();
+            Junction<Model_CProgram> disjunction = list.disjunction();
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
                 Model_Project.getById(help.project_id);
-                query.where().eq("project.id", help.project_id);
-            }
-
-            if (!help.hardware_type_ids.isEmpty()) {
-               query.where().in("hardware_type.id", help.hardware_type_ids);
+                disjunction
+                        .conjunction()
+                            .eq("project.id", help.project_id)
+                        .endJunction();
             }
 
             if (help.public_programs) {
-                query.where().isNull("project").eq("publish_type", ProgramType.PUBLIC.name());
+                disjunction
+                        .conjunction()
+                            .eq("publish_type", ProgramType.PUBLIC.name())
+                        .endJunction();
             }
 
             if (help.pending_programs) {
                 if (!person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return forbidden();
-                query.where().eq("versions.approval_state", Approval.PENDING.name());
+                disjunction
+                        .conjunction()
+                            .eq("versions.approval_state", Approval.PENDING.name())
+                            .ne("publish_type", ProgramType.DEFAULT_MAIN)
+                        .endJunction();
             }
+
+            disjunction.endJunction();
+
+
+
 
             // Vyvoření odchozího JSON
             Swagger_C_Program_List result = new Swagger_C_Program_List(query,page_number,help);

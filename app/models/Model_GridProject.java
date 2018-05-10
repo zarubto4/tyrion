@@ -77,6 +77,9 @@ public class Model_GridProject extends TaggedModel {
 
             return gridPrograms;
 
+        } catch (NullPointerException e) {
+            return new ArrayList<>();
+
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();

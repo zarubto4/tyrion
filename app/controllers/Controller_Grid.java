@@ -21,6 +21,7 @@ import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_M_Program_Interface;
 import utilities.swagger.output.Swagger_M_Project_Interface;
 import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
+import utilities.swagger.output.filter_results.Swagger_C_Program_List;
 import utilities.swagger.output.filter_results.Swagger_GridProjectList;
 import utilities.swagger.output.filter_results.Swagger_GridWidget_List;
 
@@ -1090,7 +1091,7 @@ public class Controller_Grid extends _BaseController {
 
     }
 
-    @ApiOperation(value = "get Widget by Filter",
+    @ApiOperation(value = "get Widget List by Filter",
             tags = {"Grid-Widget"},
             notes = "get GridWidget List",
             produces = "application/json",
@@ -1119,15 +1120,20 @@ public class Controller_Grid extends _BaseController {
             // Get and Validate Object
             Swagger_GridWidget_Filter help  = baseFormFactory.formFromRequestWithValidation(Swagger_GridWidget_Filter.class);
 
+            // Musí být splněna alespoň jedna podmínka, aby mohl být Junction aktivní. V opačném případě by totiž způsobil bychu
+            // která vypadá nějak takto:  where t0.deleted = false and and .... KDE máme 2x end!!!!!
+            if (!(help.project_id != null || help.public_programs || help.pending_widgets)) {
+                return ok(new Swagger_GridWidget_List());
+            }
+
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_Widget> query = Ebean.find(Model_Widget.class);
 
             // query.orderBy("UPPER(name) ASC");
             query.where().eq("deleted", false);
 
-            ExpressionList<Model_Widget> list = query.where();
 
-            // OR
+            ExpressionList<Model_Widget> list = query.where();
             Junction<Model_Widget> disjunction = list.disjunction();
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
@@ -1135,7 +1141,14 @@ public class Controller_Grid extends _BaseController {
                 Model_Project.getById(help.project_id);
                 disjunction
                         .conjunction()
-                        .eq("project.id", help.project_id)
+                            .eq("project.id", help.project_id)
+                        .endJunction();
+            }
+
+            if (help.public_programs) {
+                disjunction
+                        .conjunction()
+                            .eq("publish_type", ProgramType.PUBLIC)
                         .endJunction();
             }
 
@@ -1146,15 +1159,6 @@ public class Controller_Grid extends _BaseController {
                             .ne("publish_type", ProgramType.DEFAULT_MAIN)
                         .endJunction();
             }
-
-            if (help.project_id == null && help.public_programs) {
-                disjunction
-                        .conjunction()
-                            .eq("publish_type", ProgramType.PUBLIC)
-                            .isNull("project.id")
-                        .endJunction();
-            }
-
 
             disjunction.endJunction();
 

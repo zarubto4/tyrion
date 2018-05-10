@@ -368,7 +368,6 @@ public class Server {
                 gridWidget.save();
             } else {
                 logger.warn("Model_Widget Model_Widget already exist");
-                System.out.println( Model_Block.getById(UUID.fromString("00000000-0000-0000-0000-000000000001")).name );
             }
 
             if (Model_Block.find.query().where().eq("id", UUID.fromString("00000000-0000-0000-0000-000000000001")).findCount() == 0) {
@@ -382,8 +381,6 @@ public class Server {
                 block.save();
             } else {
                 logger.warn("setWidgetAndBlock Model_Widget already exist");
-
-                System.out.println( Model_Block.getById(UUID.fromString("00000000-0000-0000-0000-000000000001")).name );
             }
         }catch (Exception e) {
             e.printStackTrace();

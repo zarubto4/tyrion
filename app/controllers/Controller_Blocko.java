@@ -23,6 +23,7 @@ import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
 import utilities.swagger.output.filter_results.Swagger_B_Program_List;
 import utilities.swagger.output.filter_results.Swagger_Block_List;
+import utilities.swagger.output.filter_results.Swagger_C_Program_List;
 import utilities.swagger.output.filter_results.Swagger_Instance_List;
 import java.util.Date;
 import java.util.UUID;
@@ -132,7 +133,7 @@ public class Controller_Blocko extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "get B_Program by Filter",
+    @ApiOperation(value = "get B_Program List by Filter",
             tags = {"B_Program"},
             notes = "get B_Program List",
             produces = "application/json",
@@ -161,16 +162,31 @@ public class Controller_Blocko extends _BaseController {
             // Get and Validate Object
             Swagger_B_Program_Filter help  = baseFormFactory.formFromRequestWithValidation(Swagger_B_Program_Filter.class);
 
+            // Musí být splněna alespoň jedna podmínka, aby mohl být Junction aktivní. V opačném případě by totiž způsobil bychu
+            // která vypadá nějak takto:  where t0.deleted = false and and .... KDE máme 2x end!!!!!
+            if (!(help.project_id != null)) {
+                return ok(new Swagger_B_Program_List());
+            }
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_BProgram> query = Ebean.find(Model_BProgram.class);
             query.where().eq("deleted", false);
 
+
+
+            ExpressionList<Model_BProgram> list = query.where();
+            Junction<Model_BProgram> disjunction = list.disjunction();
+
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
                 Model_Project.getById(help.project_id);
-                query.where().eq("project.id", help.project_id);
+                disjunction
+                        .conjunction()
+                            .eq("project.id", help.project_id)
+                        .endJunction();
             }
+
+            disjunction.endJunction();
 
             // Vytvoření odchozího JSON
             Swagger_B_Program_List result = new Swagger_B_Program_List(query, page_number, help);
@@ -1529,7 +1545,7 @@ public class Controller_Blocko extends _BaseController {
 
     }
 
-    @ApiOperation(value = "getByFilter Block",
+    @ApiOperation(value = "get Block List by Filter",
             tags = {"Block"},
             notes = "get Block List",
             produces = "application/json",
@@ -1560,6 +1576,12 @@ public class Controller_Blocko extends _BaseController {
             // Get and Validate Object
             Swagger_Block_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Block_Filter.class);
 
+            // Musí být splněna alespoň jedna podmínka, aby mohl být Junction aktivní. V opačném případě by totiž způsobil bychu
+            // která vypadá nějak takto:  where t0.deleted = false and and .... KDE máme 2x end!!!!!
+            if (!(help.project_id != null || help.public_programs || help.pending_blocks)) {
+                return ok(new Swagger_Block_List());
+            }
+
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_Block> query = Ebean.find(Model_Block.class);
 
@@ -1567,7 +1589,6 @@ public class Controller_Blocko extends _BaseController {
             query.where().ne("deleted", true);
 
             ExpressionList<Model_Block> list = query.where();
-
             Junction<Model_Block> disjunction = list.disjunction();
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
@@ -1579,6 +1600,14 @@ public class Controller_Blocko extends _BaseController {
                         .endJunction();
             }
 
+
+            if (help.public_programs) {
+                disjunction
+                        .conjunction()
+                        .eq("publish_type", ProgramType.PUBLIC.name())
+                        .endJunction();
+            }
+
             if (help.pending_blocks) {
                 disjunction
                         .conjunction()
@@ -1587,19 +1616,7 @@ public class Controller_Blocko extends _BaseController {
                         .endJunction();
             }
 
-            if (help.project_id  == null && help.public_programs) {
-                disjunction
-                        .conjunction()
-                        .eq("publish_type", ProgramType.PUBLIC)
-                        .isNull("project.id")
-                        .endJunction();
-            }
-
-
             disjunction.endJunction();
-
-            disjunction.endJunction();
-
 
             // Vytvoření odchozího JSON
             Swagger_Block_List result = new Swagger_Block_List(query, page_number,help);

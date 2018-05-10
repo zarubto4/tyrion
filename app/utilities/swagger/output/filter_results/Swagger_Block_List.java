@@ -21,6 +21,10 @@ public class Swagger_Block_List extends _Swagger_Filter_Common {
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
+    public Swagger_Block_List(){
+        // If return empty list!
+    }
+
     public Swagger_Block_List(Query<Model_Block> query, int page_number, _Swagger_filter_parameter filter) {
 
         if (page_number < 1) page_number = 1;

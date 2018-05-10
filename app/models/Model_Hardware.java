@@ -1472,6 +1472,7 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore @Transient public WS_Message_Hardware_set_settings set_database_synchronize(boolean settings) {
         try {
 
+            logger.error("set_database_synchronize: Settings", settings);
             if (this.database_synchronize != settings) {
                 this.database_synchronize = settings;
                 this.update();
@@ -2933,6 +2934,7 @@ public class Model_Hardware extends TaggedModel {
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
             // Speciální podmínka - protože registrace nového HW vyžaduje update nikoliv save!!!
             if(this.project != null) {
+                // Speciální podmínka - protože registrace nového HW vyžaduje update nikoliv save!!!
                 this.project.check_update_permission();
                 _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
                 return;
@@ -3040,6 +3042,7 @@ public class Model_Hardware extends TaggedModel {
     public void update() {
 
         logger.debug("update - updating database, id: {}", this.id);
+        logger.debug("update - updating database, actual synchronize to database is {} ", this.database_synchronize);
 
         //Cache Update
         cache.replace(this.id, this);
@@ -3053,6 +3056,8 @@ public class Model_Hardware extends TaggedModel {
 
         //Database Update
         super.update();
+
+        logger.debug("update - updating database, actual after update synchronize in database is {} ", this.database_synchronize);
     }
 
     @Override
