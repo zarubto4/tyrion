@@ -52,6 +52,17 @@ PUT       /notification/read                                            controll
 POST      /test/notification/individual                                 utilities.notifications.NotificationTester.test_notifications()
 POST      /test/notification/chain/:email                               utilities.notifications.NotificationTester.test_chain_notifications(email)
 
+
+### ARTICLE ############ ARTICLE ############### ARTICLE ################ ARTICLE ################# ARTICLE ############ ARTICLE #####################################
+######################################################################################################################################################################
+
+
+POST      /article                                                      controllers.Controller_Article.article_create()
+PUT       /article/:article_id                                          controllers.Controller_Article.article_edit(article_id: java.util.UUID)
+DELETE    /article/:article_id                                          controllers.Controller_Article.article_delete(article_id: java.util.UUID)
+PUT       /article/list/:page_number                                    controllers.Controller_Article.article_getByFilter(page_number:Int)
+
+
 ### PERSON ############ PERSON ############### PERSON ################ PERSON ################# PERSON ############ PERSON ###########################################
 ######################################################################################################################################################################
 

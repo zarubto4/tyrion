@@ -96,10 +96,10 @@ public class Controller_Library extends _BaseController {
                 }
             }
 
-            library.setTags(help.tags);
-
             // Ukládám objekt
             library.save();
+
+            library.setTags(help.tags);
 
             // Vracím objekt
             return created(library);

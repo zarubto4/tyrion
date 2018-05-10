@@ -60,7 +60,7 @@ public abstract class TaggedModel extends NamedModel {
         List<String > tags = tags();
 
         boolean change = false;
-        for(String value : tags) {
+        for(String value : new_tags) {
 
             if(tags.contains(value)) {
                 continue;

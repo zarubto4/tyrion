@@ -89,7 +89,7 @@ public class Controller_GSM extends _BaseController {
             // Tento token se spolu s dalšími údaji vytiskne na lepící štítek a nalepí na zadní stranu GSM modulu, který nese simku, anténu atd..
             // Simkarty totiž používáme SMD - to jsou takové, které jsou přímo připájené na tišták. Vypadají jako maličký procesor.
 
-            // Zde se ted\ registruje simkarta nikoliv podle čísla MSINumber, ale podle registračního HASHe. To proto, že MSINumber jdou hezky po sobě 87000000001, 87000000002, 87000000003, 87000000004....
+            // Zde se ted\ registruje simkarta nikoliv podle čísla msinumber, ale podle registračního HASHe. To proto, že msinumber jdou hezky po sobě 87000000001, 87000000002, 87000000003, 87000000004....
             // a to je velký problém. Proto při ukládání použijeme registration_hash což je UUID string.
 
             // Get and Validate Object
@@ -115,7 +115,7 @@ public class Controller_GSM extends _BaseController {
 
     @ApiOperation(value = "get Sim",
             tags = {"GSM"},
-            notes = "get Sim by id, not by MSINumber",
+            notes = "get Sim by id, not by msinumber",
             produces = "application/json",
             protocols = "https"
     )
@@ -246,7 +246,7 @@ public class Controller_GSM extends _BaseController {
         }
     }
 
-
+    @ApiOperation(value = "todo dokumentace!", hidden =  true)
     @BodyParser.Of(BodyParser.Json.class)
     public Result credit_usage(UUID sim_id) {
         try {

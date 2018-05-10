@@ -17,7 +17,7 @@ import javax.persistence.Table;
 import java.util.UUID;
 
 @Entity
-@ApiModel(value = "ExampleModelName", description = "Model of Article")
+@ApiModel(value = "Article", description = "Model of Article")
 @Table(name="Article")
 public class Model_Article extends TaggedModel {
 
