@@ -1,5 +1,6 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import io.ebean.Ebean;
 import io.ebean.Query;
@@ -9,19 +10,29 @@ import models.Model_Garfield;
 import models.Model_HardwareRegistrationEntity;
 import models.Model_Project;
 import play.mvc.BodyParser;
+import play.mvc.Http;
 import play.mvc.Result;
 import responses.*;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status;
+import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status_cdr;
+import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status_list;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_GSM_label_Details;
 import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Logger;
+import utilities.swagger.input.Swagger_GSM_Date;
 import utilities.swagger.input.Swagger_GSM_Filter;
 import utilities.swagger.input.Swagger_GSM_Register;
 import utilities.swagger.output.filter_results.Swagger_GSM_List;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
+import java.util.Date;
 import java.util.UUID;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -33,12 +44,14 @@ public class Controller_GSM extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-        private _BaseFormFactory baseFormFactory;
+        @Inject
+        public static _BaseFormFactory baseFormFactory;
 
         @Inject
         public Controller_GSM(_BaseFormFactory formFactory) {
             this.baseFormFactory = formFactory;
         }
+
 
 ///###################################################################################################################*/
 
@@ -152,10 +165,8 @@ public class Controller_GSM extends _BaseController {
     })
     public Result get_sim_by_filter(Integer page_number) {
         try {
-
             // Get and Validate Object
             Swagger_GSM_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_GSM_Filter.class);
-
 
             // Tvorba parametru dotazu
             Query<Model_GSM> query = Ebean.find(Model_GSM.class);
@@ -235,26 +246,49 @@ public class Controller_GSM extends _BaseController {
         }
     }
 
+
+    @BodyParser.Of(BodyParser.Json.class)
     public Result credit_usage(UUID sim_id) {
         try {
-            //nalezení sim
+
+
+            Swagger_GSM_Date help = baseFormFactory.formFromRequestWithValidation(Swagger_GSM_Date.class);
+
+            LocalDate date_first =  help.date_first.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate date_last =  help.date_last.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+            // nalezení sim
             Model_GSM gsm = Model_GSM.getById(sim_id);
 
-            //ověření jestli existuje
+            // ověření jestli existuje
             if (gsm == null) {
                 return notFound("sim wasn't found");
             }
 
-            //vytvořím si objekt ze třídy Controller_Things_Mobile a na něm volám metodu pro vypis množství creditu
-            //Controller_Things_Mobile things_mobile = new Controller_Things_Mobile();
-            //things_mobile.sim_credit();
+            TM_Sim_Status status = new Controller_Things_Mobile().sim_status(gsm.MSINumber);
 
-            TM_Sim_Status status = new TM_Sim_Status();
-            status.dailyTraffic.toString();
+            Long pocet_spotrebvonych_bitu = 0L;
 
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-d HH:mm:ss");
 
+            for(TM_Sim_Status_cdr state :  status.cdrs) {
 
-            return ok(gsm);
+                LocalDate cdr_start =  LocalDate.parse(state.cdrDateStart, formatter);
+                LocalDate cdr_stop =  LocalDate.parse(state.cdrDateStop, formatter);
+
+                System.out.println("CDR START: " + state.cdrDateStart + "(" + cdr_start + ")" + " END: " + state.cdrDateStop + "(" + cdr_stop + ")");
+
+                // Tady potřebujeme porovnat zda date start je později než date_fist
+                if(cdr_stop.isBefore(date_last) && cdr_start.isAfter(date_first)) {
+                    System.out.println("Údaj splňuje podmínku pro přičtení");
+                    pocet_spotrebvonych_bitu += state.cdrTraffic.longValue();
+                }else {
+                    System.out.println("Údaj nesplňuje podmínku pro přičtení");
+                }
+
+            }
+
+            return ok();
 
         } catch (Exception e) {
             return controllerServerError(e);

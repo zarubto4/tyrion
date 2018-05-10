@@ -7,4 +7,5 @@ public class TM_Sim_Status_cdr {
     public String cdrDateStop;
     public String cdrNetwork;
     public String cdrCountry;
+    public Float cdrTraffic;
 }

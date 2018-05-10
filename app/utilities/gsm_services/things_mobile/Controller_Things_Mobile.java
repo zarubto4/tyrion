@@ -42,7 +42,7 @@ public class Controller_Things_Mobile {
     private static final Logger logger = new Logger(Controller_Things_Mobile.class);
 
     private static String api_key = "9f8879bc-a700-4588-8d3c-ef3864bcfd2b"; // TODO podívám je jak se to dělá v třídě server respective kdekoliv kde pracuji s config souborem
-    private static String thingsmobile_url = "https://www.thingsmobile.com/";
+    private static String thingsmobile_url = "https://www.thingsmobile.com";
 
     // example List<String> groups = this.configuration.getStringList("logger.logged_groups");
 
@@ -123,12 +123,12 @@ public class Controller_Things_Mobile {
     /* Object API  ---------------------------------------------------------------------------------------------------------*/
 
     //SIM ACTIVE
-    public TM_Sim_Active sim_active(Long id, String simBarcode) {
+    public TM_Sim_Active sim_active(String id, String simBarcode) {
         try {
 
 
             KeyStore k1 =  new KeyStore("msisdn", new ArrayList<String>() {{
-                add(id.toString());
+                add(id);
             }});
 
             KeyStore k2 = new KeyStore("simBarcode", new ArrayList<String>() {{
@@ -165,11 +165,11 @@ public class Controller_Things_Mobile {
     }
 
     //SIM BLOCK
-    public TM_Sim_Block sim_block(Long id) {
+    public TM_Sim_Block sim_block(String id) {
         try {
 
             Document response = post("/services/business-api/blockSim", new KeyStore("msisdn", new ArrayList<String>() {{
-                add(id.toString());
+                add(id);
             }}));
 
             TM_Sim_Block node = new TM_Sim_Block();
@@ -194,12 +194,12 @@ public class Controller_Things_Mobile {
         }
     }
 
-    //SIM UNBLOCK
-    public TM_Sim_Unblock sim_unblock(Long id) {
+    // SIM UNBLOCK
+    public TM_Sim_Unblock sim_unblock(String id) {
         try {
 
             Document response = post("/services/business-api/unblockSim", new KeyStore("msisdn", new ArrayList<String>() {{
-                add(id.toString());
+                add(id);
             }}));
 
             TM_Sim_Unblock node = new TM_Sim_Unblock();
@@ -224,7 +224,7 @@ public class Controller_Things_Mobile {
         }
     }
 
-    //SIM LIST
+    // SIM LIST
     public TM_Sim_List_list sim_list() {
         try {
 
@@ -308,13 +308,13 @@ public class Controller_Things_Mobile {
     }
 
     //SIM STATUS
-    public TM_Sim_Status_list sim_status(Long id) {
+    public TM_Sim_Status sim_status(String msisdn) {
 
 
         try {
 
             Document response = post("/services/business-api/simStatus", new KeyStore("msisdn",new ArrayList<String>() {{
-                add(id.toString());
+                add(msisdn);
             }}));
 
             TM_Sim_Status_list list = new TM_Sim_Status_list();
@@ -364,6 +364,7 @@ public class Controller_Things_Mobile {
                             node_cdr.cdrDateStop    = eeElement.getElementsByTagName("cdrDateStop").item(0).getTextContent();
                             node_cdr.cdrNetwork     = eeElement.getElementsByTagName("cdrNetwork").item(0).getTextContent();
                             node_cdr.cdrCountry     = eeElement.getElementsByTagName("cdrCountry").item(0).getTextContent();
+                            node_cdr.cdrTraffic     = Float.valueOf(eeElement.getElementsByTagName("cdrTraffic").item(0).getTextContent());
 
                             node.cdrs.add(node_cdr);
 
@@ -372,15 +373,17 @@ public class Controller_Things_Mobile {
                     list.sims.add(node);
                 }
 
-                return list;
+                return list.sims.get(0);
             } else {
 
                 logger.error("sim_status:: Invalid Response: {}", response);
-                list.done = false;
-                list.errorCode = Integer.valueOf( response.getElementsByTagName("errorCode").item(0).getTextContent());
-                list.errorMessage = response.getElementsByTagName("errorMessage").item(0).getTextContent();
+                list.sims.add(new TM_Sim_Status());
 
-                return list;
+                list.sims.get(0).done = false;
+                list.sims.get(0).errorCode = Integer.valueOf( response.getElementsByTagName("errorCode").item(0).getTextContent());
+                list.sims.get(0).errorMessage = response.getElementsByTagName("errorMessage").item(0).getTextContent();
+
+                return list.sims.get(0);
             }
 
         } catch (Exception e) {
@@ -552,7 +555,7 @@ public class Controller_Things_Mobile {
         }
 
 
-        logger.error("Things_Mobile:: GET: URL: " + thingsmobile_url + url);
+        logger.trace("Things_Mobile:: GET: URL: " + thingsmobile_url + url);
 
         //ressponsivePromise volá třídu Server injector(ten teprv v průběhu motody najde potřebnou knihovnu) a vytváří instanci objektu WSClient ze kterého volá metodu url(vrac9 objekt WS Request reprezentující URL)
         CompletionStage<WSResponse> responsePromise = Server.injector.getInstance(WSClient.class).url(thingsmobile_url + url)

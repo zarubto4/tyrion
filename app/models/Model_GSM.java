@@ -13,6 +13,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -34,9 +35,7 @@ public class Model_GSM extends TaggedModel {
 
     @JsonIgnore public String private_additional_information; // Sem si ukládáme dodatečné informace, třeba kdy jsme provedli billing
 
-
     /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
-
 
     /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 

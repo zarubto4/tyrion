@@ -18,7 +18,6 @@ public class Swagger_GSM_Register {
     @Constraints.Required
     public UUID project_id;
 
-
     @Constraints.MaxLength(value = 60, message = "The name must not have more than 60 characters")
     @ApiModelProperty(required = false, value = "Length must be max 60 characters.")
     public String name;

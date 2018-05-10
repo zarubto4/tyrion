@@ -28,4 +28,10 @@ public class TM_Sim_Status {
     public Integer totalTrafficThreshold;
 
     public List<TM_Sim_Status_cdr> cdrs = new ArrayList<>();
+
+
+    public boolean done;
+    public Integer errorCode;
+    public String errorMessage;
+
 }
