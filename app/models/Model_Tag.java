@@ -40,6 +40,7 @@ public class Model_Tag extends Model {
     @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_GridProject> m_projects = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_Instance> instances = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_Hardware> hardware = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_GSM> gsms = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY) public List<Model_Article> articles = new ArrayList<>();
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/

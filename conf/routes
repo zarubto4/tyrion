@@ -505,6 +505,16 @@ GET       /admin/garfiled-print-labes/:hardware_id                      controll
 GET       /printer/printer/:garfield_id/:printer_id                     controllers.Controller_Garfield.online_state_Printer(garfield_id : java.util.UUID, printer_id: Integer)
 POST      /printer/test/:garfield_id/:printer_id                        controllers.Controller_Garfield.print_test_Printer(garfield_id : java.util.UUID, printer_id: Integer)
 
+### GSM ############ GSM ############### GSM ################ GSM ##############################################################################################################
+################################################################################################################################################################################
+
+POST      /gsm                                                          controllers.Controller_GSM.register_sim()
+GET       /gsm/:sim_id                                                  controllers.Controller_GSM.get_sim(sim_id: java.util.UUID)
+DELETE    /gsm/:sim_id                                                  controllers.Controller_GSM.delete_sim(sim_id: java.util.UUID)
+PUT       /gsm/filter/:page_number                                      controllers.Controller_GSM.get_sim_by_filter(page_number: Int)
+GET       /admin/gsm/print-label/:sim_id                                controllers.Controller_GSM.print_sim(sim_id: java.util.UUID)
+PUT       /gsm/credit/:sim_id                                           controllers.Controller_GSM.credit_usage(sim_id: java.util.UUID)
+
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################
 
