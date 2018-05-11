@@ -5,6 +5,7 @@ import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import play.mvc.Result;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
@@ -129,6 +130,11 @@ public class Model_GSM extends TaggedModel {
     @JsonIgnore @Override
     public void check_delete_permission() throws _Base_Result_Exception {
 
+    }
+
+    @JsonIgnore
+    public void unregistratione_permission() throws _Base_Result_Exception {
+        get_project().check_update_permission();
     }
 
     public enum Permission { GSM_create, GSM_read, GSM_update, GSM_edit, GSM_delete }

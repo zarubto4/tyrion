@@ -12,7 +12,9 @@ import models.Model_Project;
 import play.mvc.BodyParser;
 import play.mvc.Http;
 import play.mvc.Result;
+import play.mvc.Security;
 import responses.*;
+import utilities.authentication.Authentication;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status_cdr;
@@ -25,6 +27,7 @@ import utilities.logger.Logger;
 import utilities.swagger.input.Swagger_GSM_Date;
 import utilities.swagger.input.Swagger_GSM_Filter;
 import utilities.swagger.input.Swagger_GSM_Register;
+import utilities.swagger.input.Swagger_GSM_Unregister;
 import utilities.swagger.output.filter_results.Swagger_GSM_List;
 
 import java.time.Instant;
@@ -35,6 +38,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
 import java.util.UUID;
 
+@Security.Authenticated(Authentication.class)
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_GSM extends _BaseController {
 
@@ -112,6 +116,33 @@ public class Controller_GSM extends _BaseController {
         }
     }
 
+    @ApiOperation(value = "unregister Sim",
+            tags = {"GSM - admin"},
+            notes = "unregister SIM from project",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class ),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    public Result unregister_sim(UUID sim_id){
+        try{
+
+            Model_GSM sim = Model_GSM.getById(sim_id);
+            sim.unregistratione_permission();
+
+            sim.project = null;
+            sim.update();
+
+            return ok();
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
 
     @ApiOperation(value = "get Sim",
             tags = {"GSM"},
@@ -128,9 +159,15 @@ public class Controller_GSM extends _BaseController {
     })
     public Result get_sim(UUID sim_id) {
         try {
-
+            // Najdu sim
             Model_GSM sim = Model_GSM.getById(sim_id);
 
+            //ověřim jestli existuje
+            if(sim == null) {
+                return notFound("Invalid sim id.");
+            }
+
+            //vypíšu sim
             return ok(sim);
 
         } catch (Exception e) {
@@ -201,13 +238,29 @@ public class Controller_GSM extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-
     public Result delete_sim(UUID sim_id){
-        Model_GSM gsm = Model_GSM.getById(sim_id);
+        try{
+            // Kontrola objektu
+            Model_GSM gsm = Model_GSM.getById(sim_id);
 
-        gsm.delete();
+            //ověřim jestli existuje
+            if(gsm == null) {
+                return notFound("Invalid sim id.");
+            }
 
-        return ok();
+            if(!person().is_admin()) {
+                return forbidden();
+            }
+
+            // Smazání objektu
+            gsm.delete();
+
+            // Vrácení potvrzení
+            return ok();
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
     }
 
     @ApiOperation(value = "print Sim Sticker",
@@ -246,7 +299,32 @@ public class Controller_GSM extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "todo dokumentace!", hidden =  true)
+
+    @ApiOperation(value = "get GSM credit usage",
+            tags = {"GSM"},
+            notes = "",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_GSM_Date",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     @BodyParser.Of(BodyParser.Json.class)
     public Result credit_usage(UUID sim_id) {
         try {
@@ -268,6 +346,7 @@ public class Controller_GSM extends _BaseController {
             TM_Sim_Status status = new Controller_Things_Mobile().sim_status(gsm.MSINumber);
 
             Long pocet_spotrebvonych_bitu = 0L;
+
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-d HH:mm:ss");
 
