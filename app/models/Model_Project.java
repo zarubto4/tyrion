@@ -687,6 +687,7 @@ public class Model_Project extends TaggedModel {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
             _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+            return;
         }
         if (_BaseController.person().has_permission(Permission.Project_read.name())) return;
 
@@ -706,6 +707,7 @@ public class Model_Project extends TaggedModel {
             // Cache už Obsahuje Klíč a tak vracím hodnotu
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+                return;
             }
             if (_BaseController.person().has_permission(Permission.Project_delete.name())) return;
 
@@ -729,6 +731,7 @@ public class Model_Project extends TaggedModel {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
             _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+            return;
         }
         if (_BaseController.person().has_permission(Permission.Project_delete.name())) return;
 
@@ -748,6 +751,7 @@ public class Model_Project extends TaggedModel {
         // Cache už Obsahuje Klíč a tak vracím hodnotu
         if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_unshare_" + id)) {
             _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_unshare_" + id);
+            return;
         }
 
         if (_BaseController.person().has_permission(Permission.Project_share.name())) return;

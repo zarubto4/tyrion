@@ -331,6 +331,7 @@ public class Model_Block extends TaggedModel {
             // Cache už Obsahuje Klíč a tak vracím hodnotu
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+                return;
             }
             if (_BaseController.person().has_permission(Permission.Block_delete.name())) return;
 

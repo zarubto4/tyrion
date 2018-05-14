@@ -345,7 +345,6 @@ public class Model_Blob extends BaseModel {
         //true
     }
 
-
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
         if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
         if (_BaseController.person().has_permission(Model_BProgram.Permission.BProgram_delete.name())) return;

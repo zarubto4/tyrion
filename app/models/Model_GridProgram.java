@@ -212,6 +212,7 @@ public class Model_GridProgram extends TaggedModel {
 
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+                return;
             }
 
             if (_BaseController.person().has_permission(Permission.GridProgram_delete.name())) return;
@@ -231,6 +232,7 @@ public class Model_GridProgram extends TaggedModel {
 
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+                return;
             }
 
             if (_BaseController.person().has_permission(Permission.GridProgram_read.name())) return;
@@ -250,6 +252,7 @@ public class Model_GridProgram extends TaggedModel {
 
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+                return;
             }
 
             if (_BaseController.person().has_permission(Permission.GridProgram_delete.name())) return;

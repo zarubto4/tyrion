@@ -762,6 +762,7 @@ public class Model_HomerServer extends TaggedModel {
             // Cache už Obsahuje Klíč a tak vracím hodnotu
             if (_BaseController.person().has_permission(this.getClass().getSimpleName()  + "_read_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+                return;
             }
 
             if ( Model_HomerServer.find.query().where().where().eq("project.participants.person.id", _BaseController.person().id ).eq("id", id).findCount() > 0) {
@@ -785,6 +786,7 @@ public class Model_HomerServer extends TaggedModel {
             // Cache už Obsahuje Klíč a tak vracím hodnotu
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() +  "_update_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+                return;
             }
 
             if ( Model_HomerServer.find.query().where().where().eq("project.participants.person.id", _BaseController.person().id ).eq("id", id).findCount() > 0) {
@@ -807,6 +809,7 @@ public class Model_HomerServer extends TaggedModel {
             // Cache už Obsahuje Klíč a tak vracím hodnotu
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+                return;
             }
 
             if (Model_HomerServer.find.query().where().where().eq("project.participants.person.id", _BaseController.person().id).eq("id", id).findCount() > 0) {

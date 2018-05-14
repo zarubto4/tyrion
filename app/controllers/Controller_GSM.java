@@ -1,5 +1,6 @@
 package controllers;
 
+import akka.actor.ProviderSelection;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import io.ebean.Ebean;
@@ -27,7 +28,6 @@ import utilities.logger.Logger;
 import utilities.swagger.input.Swagger_GSM_Date;
 import utilities.swagger.input.Swagger_GSM_Filter;
 import utilities.swagger.input.Swagger_GSM_Register;
-import utilities.swagger.input.Swagger_GSM_Unregister;
 import utilities.swagger.output.filter_results.Swagger_GSM_List;
 
 import java.time.Instant;
@@ -102,6 +102,8 @@ public class Controller_GSM extends _BaseController {
             Model_GSM gsm = Model_GSM.find.query().where().eq("registration_hash", help.registration_hash).findOne();
             Model_Project project = Model_Project.getById(help.project_id);
 
+            //gsm.registratione_permission();
+
             if(gsm.get_project() != null) {
                 return badRequest("GSM Modul is already registred!");
             }
@@ -142,7 +144,6 @@ public class Controller_GSM extends _BaseController {
             return controllerServerError(e);
         }
     }
-
 
     @ApiOperation(value = "get Sim",
             tags = {"GSM"},
@@ -282,6 +283,8 @@ public class Controller_GSM extends _BaseController {
             // Najdu sim
             Model_GSM gsm = Model_GSM.getById(sim_id);
 
+            gsm.check_read_permission();
+
             // Vytvořím PRINT SERVISE
             Printer_Api api = new Printer_Api();
 
@@ -329,11 +332,16 @@ public class Controller_GSM extends _BaseController {
     public Result credit_usage(UUID sim_id) {
         try {
 
-
             Swagger_GSM_Date help = baseFormFactory.formFromRequestWithValidation(Swagger_GSM_Date.class);
 
-            LocalDate date_first =  help.date_first.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            LocalDate date_last =  help.date_last.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            System.out.println("Datamum DATE> first " + help.date_first);
+            System.out.println("Datamum DATE> last " + help.date_last);
+
+            LocalDate local_first =  new Date(help.date_first).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate local_last = new Date(help.date_last).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+            System.out.println("Datamum DATE> local_first " + local_first);
+            System.out.println("Datamum DATE> local_last " + local_last);
 
             // nalezení sim
             Model_GSM gsm = Model_GSM.getById(sim_id);
@@ -343,13 +351,17 @@ public class Controller_GSM extends _BaseController {
                 return notFound("sim wasn't found");
             }
 
+            gsm.check_read_permission();
+
             TM_Sim_Status status = new Controller_Things_Mobile().sim_status(gsm.MSINumber);
 
+            //sem se ukládá pocet spotřebovaných bitů
             Long pocet_spotrebvonych_bitu = 0L;
 
-
+            //formatter, který mi poupravý datum z yyyy-MM-d HH:mm:ss na yyyy-MM-d
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-d HH:mm:ss");
 
+            //for cyklus přes který procházím všechny Sim_status_cdrs
             for(TM_Sim_Status_cdr state :  status.cdrs) {
 
                 LocalDate cdr_start =  LocalDate.parse(state.cdrDateStart, formatter);
@@ -357,9 +369,11 @@ public class Controller_GSM extends _BaseController {
 
                 System.out.println("CDR START: " + state.cdrDateStart + "(" + cdr_start + ")" + " END: " + state.cdrDateStop + "(" + cdr_stop + ")");
 
+
                 // Tady potřebujeme porovnat zda date start je později než date_fist
-                if(cdr_stop.isBefore(date_last) && cdr_start.isAfter(date_first)) {
+                if(cdr_stop.isBefore(local_last) && cdr_start.isAfter(local_first)) {
                     System.out.println("Údaj splňuje podmínku pro přičtení");
+                    //v případě že cdr_stop je před date_last a date_start je před date_first se proměnné pocet_spotrebvonych_bitu pčičte cdrTraffic
                     pocet_spotrebvonych_bitu += state.cdrTraffic.longValue();
                 }else {
                     System.out.println("Údaj nesplňuje podmínku pro přičtení");

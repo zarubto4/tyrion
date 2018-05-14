@@ -216,6 +216,7 @@ public class Model_HardwareGroup extends NamedModel {
 
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+                return;
             }
 
             get_project().check_read_permission();
@@ -231,6 +232,7 @@ public class Model_HardwareGroup extends NamedModel {
 
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+                return;
             }
 
             get_project().check_update_permission();
@@ -246,6 +248,7 @@ public class Model_HardwareGroup extends NamedModel {
 
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+                return;
             }
 
             get_project().check_update_permission();

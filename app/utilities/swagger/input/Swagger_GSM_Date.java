@@ -12,8 +12,10 @@ import java.util.Date;
 public class Swagger_GSM_Date {
 
     @Constraints.Required
-    @ApiModelProperty(required = true) public Date date_first;
+    @ApiModelProperty(required = true, value = "UNIX time in millis", example = "1466163478925", dataType = "integer")
+    public Long date_first;
 
     @Constraints.Required
-    @ApiModelProperty(required = true) public Date date_last;
+    @ApiModelProperty(required = true, value = "UNIX time in millis", example = "1466163478925", dataType = "integer")
+    public Long date_last;
 }

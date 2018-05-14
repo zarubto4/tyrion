@@ -308,6 +308,7 @@ public class Model_Widget extends TaggedModel {
             // Cache už Obsahuje Klíč a tak vracím hodnotu
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+                return;
             }
             if (_BaseController.person().has_permission(Permission.Widget_read.name())) return;
 
@@ -326,6 +327,7 @@ public class Model_Widget extends TaggedModel {
             // Cache už Obsahuje Klíč a tak vracím hodnotu
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+                return;
             }
             if (_BaseController.person().has_permission(Permission.Widget_update.name())) return;
 
@@ -348,6 +350,7 @@ public class Model_Widget extends TaggedModel {
             // Cache už Obsahuje Klíč a tak vracím hodnotu
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+                return;
             }
 
             if (_BaseController.person().has_permission(Permission.Widget_delete.name())) return;

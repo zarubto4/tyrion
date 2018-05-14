@@ -1,9 +1,11 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import play.mvc.Result;
+import utilities.enums.ProgramType;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
@@ -114,12 +116,31 @@ public class Model_GSM extends TaggedModel {
 
     @JsonIgnore @Override
     public void check_read_permission() throws _Base_Result_Exception {
+        try {
 
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+                return;
+            }
+
+            if (_BaseController.person().has_permission(Permission.GSM_read.name())) return;
+
+
+            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
+            this.get_project().check_read_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
     }
 
     @JsonIgnore @Override
     public void check_create_permission() throws _Base_Result_Exception {
-
+        logger.error("check_create_permission not allowed to save new GSM_MODEL - its only for thread by Tyrion");
+        throw new Result_Error_PermissionDenied();
     }
 
     @JsonIgnore @Override
@@ -129,7 +150,12 @@ public class Model_GSM extends TaggedModel {
 
     @JsonIgnore @Override
     public void check_delete_permission() throws _Base_Result_Exception {
+        logger.error("check_delete_permission not allowed to delete GSM_MODEL - its only for thread by Tyrion");
+        throw new Result_Error_PermissionDenied();
+    }
 
+    public void registratione_permission() throws _Base_Result_Exception {
+        get_project().check_update_permission();
     }
 
     @JsonIgnore

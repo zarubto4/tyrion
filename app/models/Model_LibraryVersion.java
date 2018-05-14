@@ -191,6 +191,7 @@ public class Model_LibraryVersion extends VersionModel {
 
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+                return;
             }
 
             get_library().check_read_permission();
@@ -206,6 +207,7 @@ public class Model_LibraryVersion extends VersionModel {
 
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+                return;
             }
 
             get_library().check_update_permission();
@@ -221,6 +223,7 @@ public class Model_LibraryVersion extends VersionModel {
 
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+                return;
             }
 
             get_library().check_update_permission();

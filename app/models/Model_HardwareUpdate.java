@@ -865,6 +865,7 @@ public class Model_HardwareUpdate extends BaseModel {
 
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+                return;
             }
 
             if(_BaseController.person().has_permission(Permission.UpdateProcedure_read.name())) return;
@@ -882,6 +883,7 @@ public class Model_HardwareUpdate extends BaseModel {
 
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+                return;
             }
 
             if(_BaseController.person().has_permission(Permission.UpdateProcedure_edit.name())) return;
@@ -897,6 +899,7 @@ public class Model_HardwareUpdate extends BaseModel {
 
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+                return;
             }
 
             if(_BaseController.person().has_permission(Permission.UpdateProcedure_edit.name())) return;

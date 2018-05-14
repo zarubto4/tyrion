@@ -254,13 +254,13 @@ public class Model_CProgram extends TaggedModel {
         }
         this.project.check_update_permission();
     }
-
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
         try {
 
             // Cache už Obsahuje Klíč a tak vracím hodnotu
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+                return;
             }
 
             if (_BaseController.person().has_permission(Permission.CProgram_update.name())) return;
@@ -286,6 +286,7 @@ public class Model_CProgram extends TaggedModel {
             // Cache už Obsahuje Klíč a tak vracím hodnotu
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+                return;
             }
 
             if (_BaseController.person().has_permission(Permission.CProgram_read.name())) return;

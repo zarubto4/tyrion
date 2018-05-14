@@ -172,6 +172,7 @@ public class Model_BProgramVersion extends VersionModel {
 
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+                return;
             }
 
             get_b_program().check_read_permission();
@@ -187,6 +188,7 @@ public class Model_BProgramVersion extends VersionModel {
 
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+                return;
             }
 
             get_b_program().check_update_permission();
@@ -201,6 +203,7 @@ public class Model_BProgramVersion extends VersionModel {
         try {
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+                return;
             }
 
             get_b_program().check_update_permission();
