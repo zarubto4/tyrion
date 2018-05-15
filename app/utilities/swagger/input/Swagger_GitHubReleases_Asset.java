@@ -17,7 +17,7 @@ public class Swagger_GitHubReleases_Asset {
     public String  label;
     public String  state;
     public String  content_type;
-    public Integer size;
+    public Long size;
     public Integer download_count;
     public String  created_at;
     public String  updated_at;

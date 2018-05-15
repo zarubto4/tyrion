@@ -20,6 +20,7 @@ import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 import play.data.validation.ValidationError;
 import javax.validation.ValidationException;
 import java.io.File;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -167,6 +168,15 @@ public abstract class _BaseController {
     public static Result ok(List <? extends JsonSerializer> objects){
         check_latency();
         return Controller.ok(Json.toJson(objects)); // TODO tato metoda je nesystemová a list by neměl v tyrionovi být - Oprava TZ!
+    }
+
+    /**
+     * Create stream result
+     *
+     * @return 200 result
+     */
+    public static Result ok(InputStream stream, long content_length) {
+        return Controller.ok(stream, content_length);
     }
 
     /**

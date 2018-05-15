@@ -66,7 +66,7 @@ public class Controller_GSM extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_GSM_New",
+                            dataType = "utilities.swagger.input.Swagger_GSM_Register",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"

@@ -297,6 +297,7 @@ PUT       /homer_server/set_main/:server_id                             controll
 PUT       /homer_server/action/restart/:server_id                       controllers.Controller_ExternalServer.homer_server_restart(server_id: java.util.UUID)
 PUT       /homer_server/action/shutdown/:server_id                      controllers.Controller_ExternalServer.homer_server_power_down(server_id: java.util.UUID)
 PUT       /homer_server/action/start/:server_id                         controllers.Controller_ExternalServer.homer_server_power_on(server_id: java.util.UUID)
+GET       /homer_server/download/:type                                  controllers.Controller_UploadFiles.homer_server_download(type)
 
 PUT       /homer_server/:page_number                                    controllers.Controller_ExternalServer.homer_server_by_filter(page_number: Int)
 DELETE    /homer_server/server/:server_id                               controllers.Controller_ExternalServer.homer_server_delete(server_id: java.util.UUID)

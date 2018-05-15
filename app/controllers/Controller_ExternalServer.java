@@ -4,12 +4,20 @@ import com.google.inject.Inject;
 import com.microsoft.azure.storage.blob.CloudAppendBlob;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
+import com.typesafe.config.Config;
 import io.ebean.*;
 import io.swagger.annotations.*;
 import models.*;
 import org.omg.CORBA.ExceptionList;
+import play.api.http.HttpEntity;
+import play.api.libs.ws.WSBodyWritables;
 import play.libs.Json;
+import play.libs.ws.BodyReadable;
+import play.libs.ws.StandaloneWSResponse;
+import play.libs.ws.WSClient;
+import play.libs.ws.WSResponse;
 import play.mvc.BodyParser;
+import play.mvc.ResponseHeader;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
@@ -24,12 +32,14 @@ import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.homer_auto_deploy.SelfDeployedThreadRegister;
 import utilities.homer_auto_deploy.models.common.Swagger_ServerRegistration_FormData;
 import utilities.logger.Logger;
-import utilities.swagger.input.Swagger_CompilationServer_New;
-import utilities.swagger.input.Swagger_HomerServer_Filter;
-import utilities.swagger.input.Swagger_HomerServer_New_Auto;
-import utilities.swagger.input.Swagger_HomerServer_New_Manually;
+import utilities.model.TaggedModel;
+import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_HomerServer_List;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalUnit;
 import java.util.*;
 
 
@@ -42,10 +52,13 @@ public class Controller_ExternalServer extends _BaseController {
 
 
 // CONTROLLER CONFIGURATION ############################################################################################
-
+    private WSClient ws;
+    private Config config;
     private _BaseFormFactory baseFormFactory;
 
-    @Inject public Controller_ExternalServer(_BaseFormFactory formFactory) {
+    @Inject public Controller_ExternalServer(WSClient ws, Config config, _BaseFormFactory formFactory) {
+        this.ws = ws;
+        this.config = config;
         this.baseFormFactory = formFactory;
     }
 
@@ -585,6 +598,8 @@ public class Controller_ExternalServer extends _BaseController {
             return controllerServerError(e);
         }
     }
+
+
 
 // COMPILATION SERVER ##################################################################################################
 
