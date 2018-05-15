@@ -13,6 +13,9 @@ import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
+import utilities.gsm_services.things_mobile.help_class.TM_Sim_Block;
+import utilities.gsm_services.things_mobile.help_class.TM_Sim_Unblock;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 
@@ -25,23 +28,25 @@ import java.util.UUID;
 @Table(name="gsm")
 public class Model_GSM extends TaggedModel {
 
-    /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
     private static final Logger logger = new Logger(Model_GSM.class);
 
-    /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Project project;
 
     public Long msi_number;
-    public String provider; // Sem ukládáme kro dodává simakrty, ThingsMobile, T-Mobile, Vodafone etc.. (Ano, zatím máme integraci jen na ThingsMobile)
+    public String provider; // Sem ukládáme kdo dodává simakrty, ThingsMobile, T-Mobile, Vodafone etc.. (Ano, zatím máme integraci jen na ThingsMobile)
     @JsonIgnore public UUID registration_hash; // Sem ukládáme kro dodává simakrty, ThingsMobile, T-Mobile, Vodafone etc.. (Ano, zatím máme integraci jen na ThingsMobile)
 
     @JsonIgnore public String private_additional_information; // Sem si ukládáme dodatečné informace, třeba kdy jsme provedli billing
 
-    /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+    public boolean blocked;
 
-    /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public UUID get_project_id() {
@@ -63,8 +68,53 @@ public class Model_GSM extends TaggedModel {
     }
 
 
+/* OPERATIONS ----------------------------------------------------------------------------------------------------------*/
 
-    /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+    // For users - owners of SIM modules
+    public void block() {
+       // Kontrola oprávnění
+       this.check_update_permission();
+
+       TM_Sim_Block result = Controller_Things_Mobile.sim_block(this.msi_number);
+       if (result.done) {
+           this.blocked = true;
+       } else {
+           // Error
+       }
+    }
+
+    // For users - owners of SIM modules
+    public void unblock() {
+        // Kontrola oprávnění
+        this.check_update_permission();
+
+        TM_Sim_Unblock result = Controller_Things_Mobile.sim_unblock(this.msi_number);
+        if (result.done) {
+            this.blocked = false;
+        } else {
+            // Error
+        }
+    }
+
+    // K této mětodě chybí v Controoller_GSM Metoda kterou musíš taky komplet se Swagger objektem napsat
+    // For users - owners of SIM modules
+    // TODO 3.10. Setup sim traffic threshold z PDF dokumentace
+    public void set_trashholds(Integer daily_traffic_threshold, boolean daily_traffic_threshold_excedded_limit,
+                              Integer monthly_traffic_threshold, boolean monthly_traffic_threshold_excedded_limit,
+                              Integer total_traffic_threshold, boolean total_traffic_threshold_excedded_limit) {
+        // Kontrola oprávnění
+        this.check_update_permission();
+
+        // https://www.thingsmobile.com/services/business- api/setupSimTrafficThreeshold
+        // Pozor dokumentace říká "Block sim exceed limit (0 = false, 1 = true)"
+        // takže budeš muset true převest na "1" a false na "O"
+
+        String hokus_pokus = total_traffic_threshold_excedded_limit ? "1" : "0";
+
+        // TODO Controller_Things_Mobile.set_trashholds(......)
+    }
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     @Override
@@ -104,22 +154,74 @@ public class Model_GSM extends TaggedModel {
 
     @JsonIgnore @Override
     public void check_read_permission() throws _Base_Result_Exception {
+        try {
 
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
+                return;
+            }
+
+            if (_BaseController.person().has_permission(Permission.GSM_read.name())) return;
+
+            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
+            this.get_project().check_read_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
     }
 
     @JsonIgnore @Override
     public void check_create_permission() throws _Base_Result_Exception {
-
+        logger.error("check_create_permission - mot allowed");
+        throw new Result_Error_PermissionDenied();
     }
 
     @JsonIgnore @Override
     public void check_update_permission() throws _Base_Result_Exception {
+        try {
 
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
+                return;
+            }
+
+            if (_BaseController.person().has_permission(Permission.GSM_update.name())) return;
+
+            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
+            this.get_project().check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
     }
 
     @JsonIgnore @Override
     public void check_delete_permission() throws _Base_Result_Exception {
+        try {
 
+            // Cache už Obsahuje Klíč a tak vracím hodnotu
+            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
+                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
+                return;
+            }
+
+            if (_BaseController.person().has_permission(Permission.GSM_delete.name())) return;
+
+            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
+            this.get_project().check_update_permission();
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
+
+        } catch (_Base_Result_Exception e) {
+            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
+            throw new Result_Error_PermissionDenied();
+        }
     }
 
     @JsonProperty @Transient

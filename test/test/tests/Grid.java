@@ -27,8 +27,6 @@ public class Grid extends TestHelper {
     public static Model_Product product;
     public static Model_Project project;
 
-    public static Model_TypeOfWidget type_of_widget;
-    public static Model_GridWidget grid_widget;
     public static Model_WidgetVersion grid_widget_version;
 
     public static String adminToken;
@@ -53,8 +51,6 @@ public class Grid extends TestHelper {
         product = product_create(person);
         project = project_create(product);
 
-        type_of_widget = type_of_widget_create(project);
-        grid_widget = grid_widget_create(type_of_widget);
         grid_widget_version = grid_widget_version_create(grid_widget);
 
         secondPerson = person_create();

@@ -280,14 +280,60 @@ public class Controller_GSM extends _BaseController {
     }
 
 
-    // TODO - Už to naše API umí
+    @ApiOperation(value = "activate Sim",
+            tags = {"GSM"},
+            notes = "",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     public Result active_sim(UUID sim_id) {
-       return badRequest("todo");
+        try {
+
+            // Najdu sim
+            Model_GSM gsm = Model_GSM.getById(sim_id);
+
+            gsm.block();
+
+            return ok();
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
     }
 
-    // TODO - Už to naše API umí
+    @ApiOperation(value = "deactivate Sim",
+            tags = {"GSM"},
+            notes = "",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     public Result de_active_sim(UUID sim_id) {
-        return badRequest("todo");
+        try {
+
+            // Najdu sim
+            Model_GSM gsm = Model_GSM.getById(sim_id);
+
+            gsm.unblock();
+
+            return ok();
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
     }
 
     // TODO - nejsem si jist jestli to naše api umí, ale asi to v dokuemtaci bylo
