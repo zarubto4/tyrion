@@ -522,10 +522,11 @@ POST      /printer/test/:garfield_id/:printer_id                        controll
 
 POST      /gsm                                                          controllers.Controller_GSM.register_sim()
 GET       /gsm/:sim_id                                                  controllers.Controller_GSM.get_sim(sim_id: java.util.UUID)
-DELETE    /gsm/:sim_id                                                  controllers.Controller_GSM.delete_sim(sim_id: java.util.UUID)
+DELETE    /admin/gsm/:sim_id                                            controllers.Controller_GSM.delete_sim(sim_id: java.util.UUID)
 PUT       /gsm/filter/:page_number                                      controllers.Controller_GSM.get_sim_by_filter(page_number: Int)
 GET       /admin/gsm/print-label/:sim_id                                controllers.Controller_GSM.print_sim(sim_id: java.util.UUID)
 PUT       /gsm/credit/:sim_id                                           controllers.Controller_GSM.credit_usage(sim_id: java.util.UUID)
+DELETE    /admin/gsm_project/:sim_id                                    controllers.Controller_GSM.unregister_sim(sim_id: java.util.UUID)
 
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################
