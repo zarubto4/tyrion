@@ -1,14 +1,8 @@
 package utilities.gsm_services.things_mobile;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import controllers._BaseFormFactory;
-import models.Model_Invoice;
-import org.json.JSONObject;
-import org.json.XML;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -18,15 +12,8 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
 import utilities.gsm_services.things_mobile.help_class.*;
-import utilities.lablel_printer_service.Printer_Api;
 import utilities.logger.Logger;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import java.lang.reflect.Array;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletionStage;
@@ -42,7 +29,7 @@ public class Controller_Things_Mobile {
     private static final Logger logger = new Logger(Controller_Things_Mobile.class);
 
     private static String api_key = "9f8879bc-a700-4588-8d3c-ef3864bcfd2b"; // TODO podívám je jak se to dělá v třídě server respective kdekoliv kde pracuji s config souborem
-    private static String thingsmobile_url = "https://www.thingsmobile.com";
+    private static final String things_mobile_url = "https://www.thingsmobile.com";
 
     // example List<String> groups = this.configuration.getStringList("logger.logged_groups");
 
@@ -62,62 +49,6 @@ public class Controller_Things_Mobile {
 
         public String key;
         public List<String> values = new ArrayList<>();
-    }
-
-
-    /* TESTER of  API  ---------------------------------------------------------------------------------------------------------*/
-
-    /**
-     * Voláním této metody se odzkouší všechny metody
-     */
-    public void test_of_all_apis(){
-
-        // S touto sim_cad_id mužeme hledat a zkoušet API
-        // Máme tři ID - a po tobě chci aby si se všema vyzkoušel všechny operace a vytvořil všechny možné objekty co umožnuje dokumentace
-        Long sim_card_id =  882360002156971L;
-        Long sim_card_ids[] =  new Long[]{882360002156971L, 882360002156969L};
-        String simBarcode = "12345678901234567890";
-        String name = "fhsdkjh";
-
-        // PS podle dokumentace lze používat TAGY - Ty mi ale používat nebudeme
-
-
-        //--------- SIM ACTIVE --------
-        //TM_Sim_Active active = sim_active(sim_card_id, simBarcode);
-        //System.out.println(Json.toJson(active));
-        //System.out.println("Je aktivovana? : " + active.done);
-
-        //--------- SIM BLOCK ---------
-        //TM_Sim_Block blocked = sim_block(sim_card_id);
-        //System.out.println(Json.toJson(blocked));
-
-        //--------- SIM UNBLOCK --------
-        //TM_Sim_Unblock unblocked = sim_unblock(sim_card_id);
-        //System.out.println(Json.toJson(unblocked));
-
-        //--------- SIM LIST --------
-        // 1. Get All SimCards
-        //TM_Sim_List_list list = sim_list();
-        //System.out.println(Json.toJson(list));
-
-        //--------- SIM STATUS --------
-
-        //TM_Sim_Status_list status = sim_status(sim_card_id);
-        //System.out.println(Json.toJson(status));
-
-        //--------- SIM CREDIT --------
-        //TM_Sim_Credit_list credit = sim_credit();
-        //System.out.println(Json.toJson(credit));
-
-        //---------UPDATE_SIM_NAME---------
-        TM_Update_Sim_Name simName = update_sim_name(sim_card_id, name);
-        System.out.println(Json.toJson(simName));
-
-        //-------- UPDATE SIM TAG---------
-        //TM_Update_Sim_Tag simTag = update_sim_tag(sim_card_id, name);
-        //System.out.println(Json.toJson(simTag));
-
-
     }
 
     /* Object API  ---------------------------------------------------------------------------------------------------------*/
@@ -257,7 +188,7 @@ public class Controller_Things_Mobile {
                         node.lastConnectionDate          = eElement.getElementsByTagName("lastConnectionDate").item(0).getTextContent();
                         node.monthlyTraffic              = Integer.valueOf(eElement.getElementsByTagName("monthlyTraffic").item(0).getTextContent());
                         node.monthlyTrafficThreshold     = Integer.valueOf(eElement.getElementsByTagName("monthlyTrafficThreshold").item(0).getTextContent());
-                        node.msisdn                      = eElement.getElementsByTagName("msisdn").item(0).getTextContent();
+                        node.msisdn                      = Long.valueOf(eElement.getElementsByTagName("msisdn").item(0).getTextContent());
                         node.name                        = eElement.getElementsByTagName("name").item(0).getTextContent();
                         node.plan                        = eElement.getElementsByTagName("plan").item(0).getTextContent();
                         node.tag                         = eElement.getElementsByTagName("tag").item(0).getTextContent();
@@ -308,13 +239,13 @@ public class Controller_Things_Mobile {
     }
 
     //SIM STATUS
-    public TM_Sim_Status sim_status(String msisdn) {
+    public TM_Sim_Status sim_status(Long msi_number) {
 
 
         try {
 
             Document response = post("/services/business-api/simStatus", new KeyStore("msisdn",new ArrayList<String>() {{
-                add(msisdn);
+                add(msi_number.toString());
             }}));
 
             TM_Sim_Status_list list = new TM_Sim_Status_list();
@@ -555,10 +486,10 @@ public class Controller_Things_Mobile {
         }
 
 
-        logger.trace("Things_Mobile:: GET: URL: " + thingsmobile_url + url);
+        logger.trace("Things_Mobile:: GET: URL: " + things_mobile_url + url);
 
         //ressponsivePromise volá třídu Server injector(ten teprv v průběhu motody najde potřebnou knihovnu) a vytváří instanci objektu WSClient ze kterého volá metodu url(vrac9 objekt WS Request reprezentující URL)
-        CompletionStage<WSResponse> responsePromise = Server.injector.getInstance(WSClient.class).url(thingsmobile_url + url)
+        CompletionStage<WSResponse> responsePromise = Server.injector.getInstance(WSClient.class).url(things_mobile_url + url)
                //nastavuje typ obsahu
                 .setContentType("application/x-www-form-urlencoded")
                 //nastavuje jak dlouho se bude pokusit připojit než vyhodí chybu

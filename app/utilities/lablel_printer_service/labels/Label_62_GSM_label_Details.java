@@ -4,7 +4,6 @@ package utilities.lablel_printer_service.labels;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import models.Model_GSM;
-import models.Model_HardwareRegistrationEntity;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 
@@ -135,7 +134,7 @@ public class Label_62_GSM_label_Details {
 
 
 
-        Phrase phrase_firstLine = new Phrase("MSISDN: " + gsm.MSINumber + " \n", boldFont);
+        Phrase phrase_firstLine = new Phrase("MSISDN: " + gsm.msi_number + " \n", boldFont);
         Phrase thirthLine = new Phrase("Hash: " + gsm.registration_hash + "\n", registFont);
 
 

@@ -39,12 +39,12 @@ public class Job_ThingsMobileSimListOnlySynchronizer implements Job {
             try {
                 Controller_Things_Mobile things_mobile = new Controller_Things_Mobile();
                 TM_Sim_List_list list = things_mobile.sim_list();
-                //procházím list a hledám pokud v něm sim s MSINumber existuje
+                //procházím list a hledám pokud v něm sim s msi_number existuje
                 //pokud ne vytvářím si novou a ukládám jí do databáze
                 for (TM_Sim_List sim : list.sims) {
-                    if (Model_GSM.find.query().where().eq("MSINumber", sim.msisdn).findCount() == 0) {
+                    if (Model_GSM.find.query().where().eq("msi_number", sim.msisdn).findCount() == 0) {
                         Model_GSM gsm = new Model_GSM();
-                        gsm.MSINumber = sim.msisdn;
+                        gsm.msi_number = sim.msisdn;
                         gsm.provider = "ThingsMobile";
                         gsm.registration_hash = UUID.randomUUID();
                         gsm.save();

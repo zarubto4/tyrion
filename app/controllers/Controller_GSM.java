@@ -1,41 +1,31 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import io.ebean.Ebean;
 import io.ebean.Query;
 import io.swagger.annotations.*;
-import models.Model_GSM;
-import models.Model_Garfield;
-import models.Model_HardwareRegistrationEntity;
-import models.Model_Project;
+import models.*;
 import play.mvc.BodyParser;
-import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
+import utilities.enums.BoardRegistrationStatus;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status_cdr;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status_list;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_GSM_label_Details;
-import utilities.lablel_printer_service.labels.Label_62_mm_package;
-import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Logger;
 import utilities.swagger.input.Swagger_GSM_Date;
 import utilities.swagger.input.Swagger_GSM_Filter;
 import utilities.swagger.input.Swagger_GSM_Register;
-import utilities.swagger.input.Swagger_GSM_Unregister;
+import utilities.swagger.output.Swagger_Entity_Registration_Status;
 import utilities.swagger.output.filter_results.Swagger_GSM_List;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjusters;
-import java.util.Date;
 import java.util.UUID;
 
 @Security.Authenticated(Authentication.class)
@@ -117,7 +107,7 @@ public class Controller_GSM extends _BaseController {
     }
 
     @ApiOperation(value = "unregister Sim",
-            tags = {"GSM - admin"},
+            tags = {"GSM"},
             notes = "unregister SIM from project",
             produces = "application/json",
             protocols = "https"
@@ -132,7 +122,7 @@ public class Controller_GSM extends _BaseController {
         try{
 
             Model_GSM sim = Model_GSM.getById(sim_id);
-            sim.unregistratione_permission();
+            sim.un_registration_permission();
 
             sim.project = null;
             sim.update();
@@ -162,11 +152,6 @@ public class Controller_GSM extends _BaseController {
             // Najdu sim
             Model_GSM sim = Model_GSM.getById(sim_id);
 
-            //ověřim jestli existuje
-            if(sim == null) {
-                return notFound("Invalid sim id.");
-            }
-
             //vypíšu sim
             return ok(sim);
 
@@ -175,7 +160,7 @@ public class Controller_GSM extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "get GSM List by filter",
+    @ApiOperation(value = "get Sim List by filter",
             tags = {"GSM"},
             notes = "",
             produces = "application/json",
@@ -224,7 +209,7 @@ public class Controller_GSM extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "delete sim",
+    @ApiOperation(value = "delete Sim",
             tags = {"GSM-admin"},
             notes = "delete sim by id",
             produces = "application/json",
@@ -242,11 +227,6 @@ public class Controller_GSM extends _BaseController {
         try{
             // Kontrola objektu
             Model_GSM gsm = Model_GSM.getById(sim_id);
-
-            //ověřim jestli existuje
-            if(gsm == null) {
-                return notFound("Invalid sim id.");
-            }
 
             if(!person().is_admin()) {
                 return forbidden();
@@ -300,7 +280,83 @@ public class Controller_GSM extends _BaseController {
     }
 
 
-    @ApiOperation(value = "get GSM credit usage",
+    // TODO - Už to naše API umí
+    public Result active_sim(UUID sim_id) {
+       return badRequest("todo");
+    }
+
+    // TODO - Už to naše API umí
+    public Result de_active_sim(UUID sim_id) {
+        return badRequest("todo");
+    }
+
+    // TODO - nejsem si jist jestli to naše api umí, ale asi to v dokuemtaci bylo
+    public Result set_limit_sim(UUID sim_id) {
+        return badRequest("todo");
+    }
+
+
+    @ApiOperation(value = "check Sim registration status",
+            tags = {"GSM"},
+            notes = "Check SIM state for new Registration. Types of responses in JSON state value" +
+                    "[CAN_REGISTER, NOT_EXIST, ALREADY_REGISTERED_IN_YOUR_ACCOUNT, ALREADY_REGISTERED, PERMANENTLY_DISABLED, BROKEN_DEVICE]... \n " +
+                    "PERMANENTLY_DISABLED - sim was removed by Byzance. \n" +
+                    "BROKEN_DEVICE - modul exist - but its not possible to registered that. Damaged during manufacturing. ",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Entity_Registration_Status.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result gsm_check(UUID registration_hash, UUID project_id) {
+        try {
+
+            logger.trace("hardware_check:: Registration_hash: {} ",  registration_hash);
+            logger.trace("hardware_check:: Project_id: {}", project_id.toString());
+
+            Swagger_Entity_Registration_Status status = new Swagger_Entity_Registration_Status();
+
+            // Kontrola projektu
+            Model_Project.getById(project_id);
+
+            // Kotrola objektu
+            Model_GSM gsm = Model_GSM.find.query().where().eq("registration_hash", registration_hash).findOne();
+
+            if (gsm == null) {
+                status.status = BoardRegistrationStatus.NOT_EXIST;
+                return ok(status);
+            }
+
+            /* GSM Model to nemá integrované
+                if(gsm.state != null && hardware.state.equals("PERMANENTLY_DISABLED")) {
+                    status.status = BoardRegistrationStatus.PERMANENTLY_DISABLED;
+                    return ok(status);
+                }
+            */
+
+            if (Model_GSM.find.query().where().eq("id", gsm.id).isNull("project.id").findCount() == 1) {
+                status.status = BoardRegistrationStatus.CAN_REGISTER;
+                return ok(status);
+            }
+            if (Model_GSM.find.query().where().eq("id", gsm.id).eq("project.id", project_id).findCount() == 1) {
+                status.status = BoardRegistrationStatus.ALREADY_REGISTERED_IN_YOUR_ACCOUNT;
+                return ok(status);
+            }
+
+            status.status = BoardRegistrationStatus.ALREADY_REGISTERED;
+            return ok(status);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+
+    @ApiOperation(value = "get Sim credit usage",
             tags = {"GSM"},
             notes = "",
             produces = "application/json",
@@ -343,7 +399,7 @@ public class Controller_GSM extends _BaseController {
                 return notFound("sim wasn't found");
             }
 
-            TM_Sim_Status status = new Controller_Things_Mobile().sim_status(gsm.MSINumber);
+            TM_Sim_Status status = new Controller_Things_Mobile().sim_status(gsm.msi_number);
 
             Long pocet_spotrebvonych_bitu = 0L;
 
