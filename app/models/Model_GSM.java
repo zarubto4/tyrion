@@ -2,10 +2,14 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiOperation;
 import org.ehcache.Cache;
+import play.libs.Json;
 import play.mvc.Result;
 import utilities.cache.CacheField;
 import utilities.enums.ProgramType;
@@ -18,9 +22,13 @@ import utilities.gsm_services.things_mobile.help_class.TM_Sim_Block;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Unblock;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.swagger.input.Swagger_InstanceSnapShotConfiguration;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -45,6 +53,24 @@ public class Model_GSM extends TaggedModel {
     public boolean blocked;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+
+    @JsonProperty @Transient
+
+
+   // @ApiModelProperty(dataType = "DataSim_overview")
+    public JsonNode data_overview() {
+        try {
+            if(private_additional_information != null) {
+                return Json.parse(this.private_additional_information);
+            } else {
+                DataSim_overview overview = baseFormFactory.formFromJsonWithValidation(DataSim_overview.class, Json.parse(this.private_additional_information));
+                return null;
+            }
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
@@ -126,9 +152,7 @@ public class Model_GSM extends TaggedModel {
     @JsonIgnore
     @Override
     public void update() {
-
         logger.debug("update :: Update object Id: {}", this.id);
-
         super.update();
     }
 
@@ -139,8 +163,91 @@ public class Model_GSM extends TaggedModel {
         return super.delete();
     }
 
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
-    /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+    public class DataSim_overview {
+
+        public void DataSim_overview(){}
+        public List<DataSim_DataGram> datagram = new ArrayList<>();
+    }
+
+    public class DataSim_DataGram {
+
+        public void DataSim_DataGram(){}
+
+        public String period_name;
+        public Date from;
+        public Date to;
+        public Long data_consumption; // v KB
+        public List<DataSim_DataGram> detailed_datagram = new ArrayList<>();
+    }
+
+
+    // TODO MARTIN - Takto by měl vypadat na konci zpracovan datagram
+
+    /*
+       {
+        "datagram" : [
+            {
+                "period_name" : "leden",
+                "from" : 131231231231,
+                "to" : 123141231312331,
+                "data_consumption" : 31412213,
+                "detailed_datagram" : [
+                    {
+                         "period_name" : "week-1",
+                         "from" : 131231231231,
+                         "to" : 123141231312331,
+                         "data_consumption" : 31311,
+                         "detailed_datagram" : []
+                    },
+                    {
+                         "period_name" : "week-2",
+                         "from" : 131231231231,
+                         "to" : 123141231312331,
+                         "data_consumption" : 31311.
+                         "detailed_datagram" : []
+                    },
+                    {
+                         "period_name" : "week-3",
+                         "from" : 131231231231,
+                         "to" : 123141231312331,
+                         "data_consumption" : 1231231.
+                         "detailed_datagram" : []
+                    }
+                ]
+            },
+            {
+                "period_name" : "unor",
+                "from" : 131231231231,
+                "to" : 123141231312331,
+                "data_consumption" : 32123,
+                "detailed_datagram" : [
+                    {
+                         "period_name" : "week-5",
+                         "from" : 131231231231,
+                         "to" : 123141231312331,
+                         "data_consumption" : 31311,
+                         "detailed_datagram" : []
+                    },
+                    {
+                         "period_name" : "week-6",
+                         "from" : 131231231231,
+                         "to" : 123141231312331,
+                         "data_consumption" : 31311.
+                         "detailed_datagram" : []
+                    },
+                    {
+                         "period_name" : "week-7",
+                         "from" : 131231231231,
+                         "to" : 123141231312331,
+                         "data_consumption" : 1231231.
+                         "detailed_datagram" : []
+                    }
+                ]
+            }
+       ]
+     */
 
     /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
