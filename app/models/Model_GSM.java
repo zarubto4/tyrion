@@ -21,13 +21,17 @@ import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Block;
+import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status;
+import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status_cdr;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Unblock;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.swagger.input.Swagger_GSM_Date;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfiguration;
 
 import javax.persistence.*;
-import java.time.LocalDate;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -99,15 +103,93 @@ public class Model_GSM extends TaggedModel {
     public DataSim_overview get_dataSim_overview() {
         try {
 
-            DataSim_overview overview = baseFormFactory.formFromJsonWithValidation(DataSim_overview.class, Json.parse(this.json_bootloader_core_configuration));
-            return overview;
+            if(json_bootloader_core_configuration != null) {
+                DataSim_overview overview = baseFormFactory.formFromJsonWithValidation(DataSim_overview.class, Json.parse(this.json_bootloader_core_configuration));
+                return overview;
+            }
+
+            // Mus9m naj9t a ypracovat a pak vr8tit
+
+
 
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
+        return null;
     }
 
+
+    public void louskani() {
+
+        // Objekt do ktereho vsechnoo ulozim - vsech 12 mesicu
+        DataSim_overview overview = new DataSim_overview();
+
+        // Status kde mám vsechny crc teto simkary
+        TM_Sim_Status status = Controller_Things_Mobile.sim_status(msi_number);
+
+        int pointer_to_cdr_array = 0;
+
+        // For cyckle ktery projde vsechny crc a separuje je podle mesicu
+        for (int month_selector = 1; month_selector <= 12; month_selector++) {
+
+            // Datagram konkretniho mesice
+            DataSim_DataGram datagram_month = new DataSim_DataGram();
+
+            // NAjdu si aktuální mesic podle cisla for cyklu
+            LocalDate date = LocalDate.of( 2018, Month.of(month_selector), 1);
+
+            // Zacatek mesice (prvni minuta prvniho dne podle For Cyklu, kde naprkilad 1 = leden, 2 = unor
+            LocalDate local_start = date.withDayOfMonth(1);
+
+            // Konec mesice posledni minuta posledniho dne podle For Cyklu, kde naprkilad 1 = leden, 2 = unor
+            // Tady bude poslední den mesice
+            LocalDate local_end = date.withDayOfMonth(date.lengthOfMonth());
+
+            // Pro kontrolu vypisu
+            System.out.println("Datamum DATE> local_start " + local_start);
+            System.out.println("Datamum DATE> local_end " + local_end);
+
+            datagram_month.to = local_start.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            datagram_month.from = local_end.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+            // Doplnim název mesice podle enumu Moth
+            datagram_month.period_name = Month.of(month_selector).name();
+
+            //formatter, který mi poupravý datum z yyyy-MM-d HH:mm:ss na yyyy-MM-d
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-d HH:mm:ss");
+
+            //for cyklus přes který procházím všechny Sim_status_cdrs
+            // Procházím dokola celý seznam a chci vybrat jen ty které splnuji podminku ze jejich cas je mezi prvnim a poslednim dnem mesice
+
+            for (int i = pointer_to_cdr_array; i <= status.cdrs.size(); i++) {
+
+                LocalDate cdr_start = LocalDate.parse(status.cdrs.get(i).cdrDateStart, formatter);
+                LocalDate cdr_stop = LocalDate.parse(status.cdrs.get(i).cdrDateStop, formatter);
+
+                System.out.println("CDR START: " + status.cdrs.get(i).cdrDateStart + "(" + cdr_start + ")" + " END: " + status.cdrs.get(i).cdrDateStop + "(" + cdr_stop + ")");
+
+                // Tady potřebujeme porovnat zda date start je později než date_fist
+                if (cdr_stop.isBefore(local_end) && cdr_start.isAfter(local_start)) {
+
+                    System.out.println("Údaj splňuje podmínku pro přičtení");
+                    datagram_month.data_consumption += status.cdrs.get(i).cdrTraffic.longValue();
+
+                } else {
+                    System.out.println("Údaj nesplňuje podmínku pro přičtení");
+                }
+
+                // Nasel jsem udaj, ktery je ale az z pristiho mesice, tim padem jsem vycerpal vsechny moznosti aktualniho mesice a neni treba pole prochazet dal
+                if(cdr_start.isAfter(local_end)) {
+                    System.out.println("Udaj je y mesice, kterz teprve budu passovat, neni potreba ho prochayet");
+                    pointer_to_cdr_array = i;
+                    break;
+                }
+            }
+            overview.datagram.add(datagram_month);
+        }
+        System.out.println(Json.toJson(overview));
+    }
 
 /* OPERATIONS ----------------------------------------------------------------------------------------------------------*/
 
@@ -184,6 +266,8 @@ public class Model_GSM extends TaggedModel {
 
         public void DataSim_overview(){}
         public List<DataSim_DataGram> datagram = new ArrayList<>();
+
+
     }
 
     public class DataSim_DataGram {
@@ -191,8 +275,8 @@ public class Model_GSM extends TaggedModel {
         public void DataSim_DataGram(){}
 
         public String period_name;
-        public Date from;
-        public Date to;
+        public Long from;
+        public Long to;
         public Long data_consumption; // v KB
         public List<DataSim_DataGram> detailed_datagram = new ArrayList<>();
     }
@@ -204,13 +288,13 @@ public class Model_GSM extends TaggedModel {
        {
         "datagram" : [
             {
-                "period_name" : "leden",
+                "period_name" : "1",
                 "from" : 131231231231,
                 "to" : 123141231312331,
                 "data_consumption" : 31412213,
                 "detailed_datagram" : [
                     {
-                         "period_name" : "week-1",
+                         "period_name" : "day_1",
                          "from" : 131231231231,
                          "to" : 123141231312331,
                          "data_consumption" : 31311,

@@ -4,13 +4,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.typesafe.config.Config;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import models.Model_GSM;
 import org.mindrot.jbcrypt.BCrypt;
 import play.mvc.Result;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_List_list;
+import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status;
+import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status_cdr;
 import utilities.logger.Logger;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,6 +39,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
          try {
 
 
+
              return ok("Valid version for mode");
          } catch (Exception e) {
              logger.internalServerError(e);
@@ -41,8 +48,16 @@ public class Controller_ZZZ_Tester extends _BaseController {
      }
 
     @ApiOperation(value = "Hidden test Method", hidden = true)
-    public Result test2() {
+    public Result test2(UUID sim_id) {
         try {
+            // nalezení sim
+            Model_GSM gsm = Model_GSM.getById(sim_id);
+
+            // ověření jestli existuje
+            if (gsm == null) {
+                return notFound("sim wasn't found");
+            }
+            gsm.louskani();
 
            return ok();
         } catch (Exception e) {

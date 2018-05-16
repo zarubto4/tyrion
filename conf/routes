@@ -7,7 +7,7 @@ OPTIONS   /*all                                                         controll
 
 ### DEVELOPERS TEST ############ DEVELOPERS TEST ############### DEVELOPERS TEST ################ DEVELOPERS TEST ###################################################
 POST      /test1                                                        controllers.Controller_ZZZ_Tester.test1()
-GET       /test2                                                        controllers.Controller_ZZZ_Tester.test2()
+GET       /test2/:sim_id                                                controllers.Controller_ZZZ_Tester.test2(sim_id: java.util.UUID)
 GET       /test3                                                        controllers.Controller_ZZZ_Tester.test3()
 GET       /test4                                                        controllers.Controller_ZZZ_Tester.test4()
 
@@ -531,6 +531,7 @@ DELETE    /gsm/gsm_project/:sim_id                                      controll
 GET       /gsm/check/:registration_hash/:project_id                     controllers.Controller_GSM.gsm_check(registration_hash: java.util.UUID, project_id: java.util.UUID)
 
 DELETE    /admin/gsm/:sim_id                                            controllers.Controller_GSM.delete_sim(sim_id: java.util.UUID)
+
 
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################
