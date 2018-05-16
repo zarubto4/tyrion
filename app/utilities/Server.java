@@ -449,7 +449,7 @@ public class Server {
                 permission.name = permission_name;
                 permission.description = "description";
                 permission.save();
-            }else {
+            } else {
                 // logger.trace("setPermission - Permission {} is already in database", permission_name);
             }
         }

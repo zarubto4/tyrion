@@ -50,24 +50,24 @@ public class Model_GSM extends TaggedModel {
     public String provider; // Sem ukládáme kdo dodává simakrty, ThingsMobile, T-Mobile, Vodafone etc.. (Ano, zatím máme integraci jen na ThingsMobile)
     @JsonIgnore public UUID registration_hash; // Sem ukládáme kro dodává simakrty, ThingsMobile, T-Mobile, Vodafone etc.. (Ano, zatím máme integraci jen na ThingsMobile)
 
-    @JsonIgnore public String private_additional_information; // Sem si ukládáme dodatečné informace, třeba kdy jsme provedli billing
+
+    @JsonIgnore @Column(columnDefinition = "TEXT")
+    public String json_bootloader_core_configuration; // Sem si ukládáme dodatečné informace, třeba kdy jsme provedli billing
 
     public boolean blocked;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient
-
-
-   // @ApiModelProperty(dataType = "DataSim_overview")
+    // @ApiModelProperty(dataType = "DataSim_overview")
     public JsonNode data_overview() {
         try {
-            if(private_additional_information != null) {
-                return Json.parse(this.private_additional_information);
-            } else {
-                DataSim_overview overview = baseFormFactory.formFromJsonWithValidation(DataSim_overview.class, Json.parse(this.private_additional_information));
-                return null;
+
+            if(json_bootloader_core_configuration != null) {
+                return Json.parse(this.json_bootloader_core_configuration);
             }
+
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -91,6 +91,19 @@ public class Model_GSM extends TaggedModel {
         try {
             return Model_Project.getById(get_project_id());
         } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public DataSim_overview get_dataSim_overview() {
+        try {
+
+            DataSim_overview overview = baseFormFactory.formFromJsonWithValidation(DataSim_overview.class, Json.parse(this.json_bootloader_core_configuration));
+            return overview;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -226,7 +239,7 @@ public class Model_GSM extends TaggedModel {
                 "data_consumption" : 32123,
                 "detailed_datagram" : [
                     {
-                         "period_name" : "week-5",
+                         "period_name" : "day-1",
                          "from" : 131231231231,
                          "to" : 123141231312331,
                          "data_consumption" : 31311,
@@ -249,6 +262,7 @@ public class Model_GSM extends TaggedModel {
                 ]
             }
        ]
+       }
      */
 
     /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
