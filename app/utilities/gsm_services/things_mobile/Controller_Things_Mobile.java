@@ -1,14 +1,8 @@
 package utilities.gsm_services.things_mobile;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import controllers._BaseFormFactory;
-import models.Model_Invoice;
-import org.json.JSONObject;
-import org.json.XML;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -18,15 +12,8 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
 import utilities.gsm_services.things_mobile.help_class.*;
-import utilities.lablel_printer_service.Printer_Api;
 import utilities.logger.Logger;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import java.lang.reflect.Array;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletionStage;
@@ -36,17 +23,19 @@ public class Controller_Things_Mobile {
     @Inject public static _BaseFormFactory baseFormFactory;
     @Inject public static Config configuration; // Its Required to set this in Server.class Component
 
-    /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
     // Logger
     private static final Logger logger = new Logger(Controller_Things_Mobile.class);
 
-    private static String api_key = "9f8879bc-a700-4588-8d3c-ef3864bcfd2b"; // TODO podívám je jak se to dělá v třídě server respective kdekoliv kde pracuji s config souborem
-    private static String thingsmobile_url = "https://www.thingsmobile.com";
 
-    // example List<String> groups = this.configuration.getStringList("logger.logged_groups");
+// * CONFIFG VALUES -------------------------------------------------------------------------------------------------------------*/
 
-    /* HELPER PRIVATE CLASS   ----------------------------------------------------------------------------------------------*/
+    private static String api_key = null;
+    private static String email = null;
+    private static final String things_mobile_url = "https://www.thingsmobile.com";
+
+ /* HELPER PRIVATE CLASS   ----------------------------------------------------------------------------------------------*/
 
     /**
      * Slouží k vytváření n klíčů jako dodatečný filtr parametr pro API thins_mobile.
@@ -64,71 +53,15 @@ public class Controller_Things_Mobile {
         public List<String> values = new ArrayList<>();
     }
 
-
-    /* TESTER of  API  ---------------------------------------------------------------------------------------------------------*/
-
-    /**
-     * Voláním této metody se odzkouší všechny metody
-     */
-    public void test_of_all_apis(){
-
-        // S touto sim_cad_id mužeme hledat a zkoušet API
-        // Máme tři ID - a po tobě chci aby si se všema vyzkoušel všechny operace a vytvořil všechny možné objekty co umožnuje dokumentace
-        Long sim_card_id =  882360002156971L;
-        Long sim_card_ids[] =  new Long[]{882360002156971L, 882360002156969L};
-        String simBarcode = "12345678901234567890";
-        String name = "fhsdkjh";
-
-        // PS podle dokumentace lze používat TAGY - Ty mi ale používat nebudeme
-
-
-        //--------- SIM ACTIVE --------
-        //TM_Sim_Active active = sim_active(sim_card_id, simBarcode);
-        //System.out.println(Json.toJson(active));
-        //System.out.println("Je aktivovana? : " + active.done);
-
-        //--------- SIM BLOCK ---------
-        //TM_Sim_Block blocked = sim_block(sim_card_id);
-        //System.out.println(Json.toJson(blocked));
-
-        //--------- SIM UNBLOCK --------
-        //TM_Sim_Unblock unblocked = sim_unblock(sim_card_id);
-        //System.out.println(Json.toJson(unblocked));
-
-        //--------- SIM LIST --------
-        // 1. Get All SimCards
-        //TM_Sim_List_list list = sim_list();
-        //System.out.println(Json.toJson(list));
-
-        //--------- SIM STATUS --------
-
-        //TM_Sim_Status_list status = sim_status(sim_card_id);
-        //System.out.println(Json.toJson(status));
-
-        //--------- SIM CREDIT --------
-        //TM_Sim_Credit_list credit = sim_credit();
-        //System.out.println(Json.toJson(credit));
-
-        //---------UPDATE_SIM_NAME---------
-        TM_Update_Sim_Name simName = update_sim_name(sim_card_id, name);
-        System.out.println(Json.toJson(simName));
-
-        //-------- UPDATE SIM TAG---------
-        //TM_Update_Sim_Tag simTag = update_sim_tag(sim_card_id, name);
-        //System.out.println(Json.toJson(simTag));
-
-
-    }
-
-    /* Object API  ---------------------------------------------------------------------------------------------------------*/
+/* Object API  ---------------------------------------------------------------------------------------------------------*/
 
     //SIM ACTIVE
-    public TM_Sim_Active sim_active(String id, String simBarcode) {
+    public static TM_Sim_Active sim_active(String msisdn, String simBarcode) {
         try {
 
 
             KeyStore k1 =  new KeyStore("msisdn", new ArrayList<String>() {{
-                add(id);
+                add(msisdn);
             }});
 
             KeyStore k2 = new KeyStore("simBarcode", new ArrayList<String>() {{
@@ -159,17 +92,20 @@ public class Controller_Things_Mobile {
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
+            TM_Sim_Active result = new TM_Sim_Active();
+            result.done = false;
+            result.errorMessage = e.getMessage();
+            return result;
         }
 
     }
 
     //SIM BLOCK
-    public TM_Sim_Block sim_block(String id) {
+    public static TM_Sim_Block sim_block(Long msi_number) {
         try {
 
             Document response = post("/services/business-api/blockSim", new KeyStore("msisdn", new ArrayList<String>() {{
-                add(id);
+                add(msi_number.toString());
             }}));
 
             TM_Sim_Block node = new TM_Sim_Block();
@@ -190,16 +126,19 @@ public class Controller_Things_Mobile {
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
+            TM_Sim_Block result = new TM_Sim_Block();
+            result.done = false;
+            result.errorMessage = e.getMessage();
+            return result;
         }
     }
 
     // SIM UNBLOCK
-    public TM_Sim_Unblock sim_unblock(String id) {
+    public static TM_Sim_Unblock sim_unblock(Long msi_number) {
         try {
 
             Document response = post("/services/business-api/unblockSim", new KeyStore("msisdn", new ArrayList<String>() {{
-                add(id);
+                add(msi_number.toString());
             }}));
 
             TM_Sim_Unblock node = new TM_Sim_Unblock();
@@ -220,12 +159,15 @@ public class Controller_Things_Mobile {
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
+            TM_Sim_Unblock result = new TM_Sim_Unblock();
+            result.done = false;
+            result.errorMessage = e.getMessage();
+            return result;
         }
     }
 
     // SIM LIST
-    public TM_Sim_List_list sim_list() {
+    public static TM_Sim_List_list sim_list() {
         try {
 
             Document response = post("/services/business-api/simList");
@@ -257,7 +199,7 @@ public class Controller_Things_Mobile {
                         node.lastConnectionDate          = eElement.getElementsByTagName("lastConnectionDate").item(0).getTextContent();
                         node.monthlyTraffic              = Integer.valueOf(eElement.getElementsByTagName("monthlyTraffic").item(0).getTextContent());
                         node.monthlyTrafficThreshold     = Integer.valueOf(eElement.getElementsByTagName("monthlyTrafficThreshold").item(0).getTextContent());
-                        node.msisdn                      = eElement.getElementsByTagName("msisdn").item(0).getTextContent();
+                        node.msisdn                      = Long.valueOf(eElement.getElementsByTagName("msisdn").item(0).getTextContent());
                         node.name                        = eElement.getElementsByTagName("name").item(0).getTextContent();
                         node.plan                        = eElement.getElementsByTagName("plan").item(0).getTextContent();
                         node.tag                         = eElement.getElementsByTagName("tag").item(0).getTextContent();
@@ -302,19 +244,19 @@ public class Controller_Things_Mobile {
 
         }catch(Exception e){
             logger.internalServerError(e);
-
-            return null;
+            TM_Sim_List_list result = new TM_Sim_List_list();
+            result.done = false;
+            result.errorMessage = e.getMessage();
+            return result;
         }
     }
 
     //SIM STATUS
-    public TM_Sim_Status sim_status(String msisdn) {
-
-
+    public static TM_Sim_Status sim_status(Long msi_number) {
         try {
 
             Document response = post("/services/business-api/simStatus", new KeyStore("msisdn",new ArrayList<String>() {{
-                add(msisdn);
+                add(msi_number.toString());
             }}));
 
             TM_Sim_Status_list list = new TM_Sim_Status_list();
@@ -388,12 +330,15 @@ public class Controller_Things_Mobile {
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
+            TM_Sim_Status result = new TM_Sim_Status();
+            result.done = false;
+            result.errorMessage = e.getMessage();
+            return result;
         }
     }
 
     //CREDIT
-    public TM_Sim_Credit_list sim_credit() {
+    public static TM_Sim_Credit_list sim_credit() {
         try {
             Document response = post("/services/business-api/credit");
             response.getDocumentElement().normalize();
@@ -437,12 +382,15 @@ public class Controller_Things_Mobile {
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
+            TM_Sim_Credit_list list = new TM_Sim_Credit_list();
+            list.done = false;
+            list.errorMessage = e.getMessage();
+            return list;
         }
     }
 
     //UPDATE SIM NAME
-    public TM_Update_Sim_Name update_sim_name(Long id, String name) {
+    public static TM_Update_Sim_Name update_sim_name(Long id, String name) {
         try {
 
 
@@ -479,13 +427,16 @@ public class Controller_Things_Mobile {
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
+            TM_Update_Sim_Name result = new TM_Update_Sim_Name();
+            result.done = false;
+            result.errorMessage = e.getMessage();
+            return result;
         }
 
     }
 
     //UPDATE SIM TAG
-    public TM_Update_Sim_Tag update_sim_tag(Long id, String tag){
+    public static TM_Update_Sim_Tag update_sim_tag(Long id, String tag){
         try {
             KeyStore k1 =  new KeyStore("msisdn", new ArrayList<String>() {{
                 add(id.toString());
@@ -521,7 +472,10 @@ public class Controller_Things_Mobile {
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
+            TM_Update_Sim_Tag result = new TM_Update_Sim_Tag();
+            result.done = false;
+            result.errorMessage = e.getMessage();
+            return result;
         }
 
     }
@@ -533,12 +487,17 @@ public class Controller_Things_Mobile {
     */
     private static Document post(String url, KeyStore... optional_keys) throws Exception {
 
+        if(api_key == null) {
+            api_key = configuration.getString("mobile_things.token");
+            email = configuration.getString("mobile_things.username");
+        }
+
         //vytvoření hashmapy která majo klíč String a jako hodnotu pole Stringů
         Map<String, List<String>> map = new HashMap<>();
 
         //do pole se vkládá klíč "username"
         map.put("username", new ArrayList<String>() {{
-            add("tomas.zaruba@byzance.cz");
+            add(email);
         }});
 
         //do pole se vkládá klíč "token"
@@ -555,10 +514,10 @@ public class Controller_Things_Mobile {
         }
 
 
-        logger.trace("Things_Mobile:: GET: URL: " + thingsmobile_url + url);
+        logger.trace("Things_Mobile:: GET: URL: " + things_mobile_url + url);
 
         //ressponsivePromise volá třídu Server injector(ten teprv v průběhu motody najde potřebnou knihovnu) a vytváří instanci objektu WSClient ze kterého volá metodu url(vrac9 objekt WS Request reprezentující URL)
-        CompletionStage<WSResponse> responsePromise = Server.injector.getInstance(WSClient.class).url(thingsmobile_url + url)
+        CompletionStage<WSResponse> responsePromise = Server.injector.getInstance(WSClient.class).url(things_mobile_url + url)
                //nastavuje typ obsahu
                 .setContentType("application/x-www-form-urlencoded")
                 //nastavuje jak dlouho se bude pokusit připojit než vyhodí chybu

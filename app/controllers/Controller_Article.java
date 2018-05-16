@@ -109,7 +109,7 @@ public class Controller_Article extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input. Swagger_Article_CreateUpdate",
+                            dataType = "utilities.swagger.input.Swagger_Article_CreateUpdate",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"

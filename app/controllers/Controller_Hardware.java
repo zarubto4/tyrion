@@ -22,7 +22,6 @@ import utilities.logger.Logger;
 import utilities.swagger.Picture2Mb;
 import utilities.swagger.input.*;
 import utilities.swagger.output.*;
-import utilities.swagger.output.filter_results.Swagger_C_Program_List;
 import utilities.swagger.output.filter_results.Swagger_HardwareGroup_List;
 import utilities.swagger.output.filter_results.Swagger_Hardware_List;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_change_server;
@@ -2382,7 +2381,7 @@ public class Controller_Hardware extends _BaseController {
             protocols = "https"
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Board_Registration_Status.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Entity_Registration_Status.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
@@ -2390,10 +2389,10 @@ public class Controller_Hardware extends _BaseController {
     public Result hardware_check(String registration_hash, UUID project_id) {
         try {
 
-            logger.trace("hardware_check:: Registration_hash: "+  registration_hash);
+            logger.trace("hardware_check:: Registration_hash: {} ",  registration_hash);
             logger.trace("hardware_check:: Project_id: {}", project_id.toString());
 
-            Swagger_Board_Registration_Status status = new Swagger_Board_Registration_Status();
+            Swagger_Entity_Registration_Status status = new Swagger_Entity_Registration_Status();
 
             // It better to calid only full id (26 chars)
             if(registration_hash.length() != 26){

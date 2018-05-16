@@ -1,7 +1,6 @@
 package utilities.swagger.input;
 
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
 @ApiModel(description = "Json Model for create or update Article",

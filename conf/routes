@@ -297,6 +297,7 @@ PUT       /homer_server/set_main/:server_id                             controll
 PUT       /homer_server/action/restart/:server_id                       controllers.Controller_ExternalServer.homer_server_restart(server_id: java.util.UUID)
 PUT       /homer_server/action/shutdown/:server_id                      controllers.Controller_ExternalServer.homer_server_power_down(server_id: java.util.UUID)
 PUT       /homer_server/action/start/:server_id                         controllers.Controller_ExternalServer.homer_server_power_on(server_id: java.util.UUID)
+GET       /homer_server/download/:type                                  controllers.Controller_UploadFiles.homer_server_download(type)
 
 PUT       /homer_server/:page_number                                    controllers.Controller_ExternalServer.homer_server_by_filter(page_number: Int)
 DELETE    /homer_server/server/:server_id                               controllers.Controller_ExternalServer.homer_server_delete(server_id: java.util.UUID)
@@ -521,11 +522,15 @@ POST      /printer/test/:garfield_id/:printer_id                        controll
 
 POST      /gsm                                                          controllers.Controller_GSM.register_sim()
 GET       /gsm/:sim_id                                                  controllers.Controller_GSM.get_sim(sim_id: java.util.UUID)
-DELETE    /gsm/:sim_id                                            controllers.Controller_GSM.delete_sim(sim_id: java.util.UUID)
 PUT       /gsm/filter/:page_number                                      controllers.Controller_GSM.get_sim_by_filter(page_number: Int)
 GET       /admin/gsm/print-label/:sim_id                                controllers.Controller_GSM.print_sim(sim_id: java.util.UUID)
 PUT       /gsm/credit/:sim_id                                           controllers.Controller_GSM.credit_usage(sim_id: java.util.UUID)
-DELETE    /gsm_project/:sim_id                                    controllers.Controller_GSM.unregister_sim(sim_id: java.util.UUID)
+PUT       /gsm/active/:sim_id                                           controllers.Controller_GSM.active_sim(sim_id: java.util.UUID)
+PUT       /gsm/deactive/:sim_id                                         controllers.Controller_GSM.de_active_sim(sim_id: java.util.UUID)
+DELETE    /gsm/gsm_project/:sim_id                                      controllers.Controller_GSM.unregister_sim(sim_id: java.util.UUID)
+GET       /gsm/check/:registration_hash/:project_id                     controllers.Controller_GSM.gsm_check(registration_hash: java.util.UUID, project_id: java.util.UUID)
+
+DELETE    /admin/gsm/:sim_id                                            controllers.Controller_GSM.delete_sim(sim_id: java.util.UUID)
 
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################

@@ -19,7 +19,7 @@ public class TM_Sim_List {
     public String lastConnectionDate;
     public Integer monthlyTraffic;
     public Integer monthlyTrafficThreshold;
-    public String msisdn;
+    public Long msisdn;
     public String name;
     public String plan;
     public String status;
