@@ -24,6 +24,8 @@ import utilities.gsm_services.things_mobile.help_class.TM_Sim_Block;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status_cdr;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Unblock;
+import utilities.gsm_services.things_mobile.statistic_class.DataSim_DataGram;
+import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.swagger.input.Swagger_GSM_Date;
@@ -56,19 +58,32 @@ public class Model_GSM extends TaggedModel {
 
 
     @JsonIgnore @Column(columnDefinition = "TEXT")
-    public String json_bootloader_core_configuration; // Sem si ukládáme dodatečné informace, třeba kdy jsme provedli billing
+    public String json_history; // Sem si ukládáme dodatečné informace, třeba kdy jsme provedli billing
 
     public boolean blocked;
+
+    /* Konfigurace SIMkarty - je nutné vždy spárovat se službou ThingsMobile  */
+    public Long    daily_traffic_threshold;                     // Přípustná hodnota v KB
+    public boolean daily_traffic_threshold_exceeded_limit;      // Umožnit překročit limit
+    public boolean daily_traffic_threshold_notify_type;         // Zákazník bude informován o překročení
+
+    public Long    monthly_traffic_threshold;                   // Přípustná hodnota v KB
+    public boolean monthly_traffic_threshold_exceeded_limit;    // Umožnit překročit limit
+    public boolean monthly_traffic_threshold_notify_type;       // Zákazník bude informován o překročení
+
+    public Long    total_traffic_threshold;                     // Přípustná hodnota v KB
+    public boolean total_traffic_threshold_exceeded_limit;      // Umožnit překročit limit
+    public boolean total_traffic_threshold_notify_type;         // Zákazník bude informován o překročení
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @Transient
-    // @ApiModelProperty(dataType = "DataSim_overview")
+    @ApiModelProperty(dataType = "utilities.gsm_services.things_mobile.statistic_class.DataSim_overview")
     public JsonNode data_overview() {
         try {
 
-            if(json_bootloader_core_configuration != null) {
-                return Json.parse(this.json_bootloader_core_configuration);
+            if(json_history != null) {
+                return Json.parse(this.json_history);
             }
 
             return null;
@@ -103,8 +118,8 @@ public class Model_GSM extends TaggedModel {
     public DataSim_overview get_dataSim_overview() {
         try {
 
-            if(json_bootloader_core_configuration != null) {
-                DataSim_overview overview = baseFormFactory.formFromJsonWithValidation(DataSim_overview.class, Json.parse(this.json_bootloader_core_configuration));
+            if(json_history != null) {
+                DataSim_overview overview = baseFormFactory.formFromJsonWithValidation(DataSim_overview.class, Json.parse(this.json_history));
                 return overview;
             }
 
@@ -222,9 +237,9 @@ public class Model_GSM extends TaggedModel {
     // K této mětodě chybí v Controoller_GSM Metoda kterou musíš taky komplet se Swagger objektem napsat
     // For users - owners of SIM modules
     // TODO 3.10. Setup sim traffic threshold z PDF dokumentace
-    public void set_trashholds(Integer daily_traffic_threshold, boolean daily_traffic_threshold_excedded_limit,
-                              Integer monthly_traffic_threshold, boolean monthly_traffic_threshold_excedded_limit,
-                              Integer total_traffic_threshold, boolean total_traffic_threshold_excedded_limit) {
+    public void set_trashholds(Long daily_traffic_threshold,   boolean daily_traffic_threshold_exceeded_limit,
+                               Long monthly_traffic_threshold, boolean monthly_traffic_threshold_exceeded_limit,
+                               Long total_traffic_threshold,   boolean total_traffic_threshold_exceeded_limit) {
         // Kontrola oprávnění
         this.check_update_permission();
 
@@ -232,7 +247,7 @@ public class Model_GSM extends TaggedModel {
         // Pozor dokumentace říká "Block sim exceed limit (0 = false, 1 = true)"
         // takže budeš muset true převest na "1" a false na "O"
 
-        String hokus_pokus = total_traffic_threshold_excedded_limit ? "1" : "0";
+        String hokus_pokus = total_traffic_threshold_exceeded_limit ? "1" : "0";
 
         // TODO Controller_Things_Mobile.set_trashholds(......)
     }
@@ -243,7 +258,15 @@ public class Model_GSM extends TaggedModel {
     @Override
     public void save() {
         logger.debug("save :: Creating new Object");
+
+
+        // Defaultně vypnuté
+        this.daily_traffic_threshold = -1L;
+        this.monthly_traffic_threshold = -1L;
+        this.total_traffic_threshold = -1L;
+
         super.save();
+        cache.put(id, this);
     }
 
     @JsonIgnore
@@ -251,103 +274,23 @@ public class Model_GSM extends TaggedModel {
     public void update() {
         logger.debug("update :: Update object Id: {}", this.id);
         super.update();
+
+        cache.put(id, this);
     }
 
     @JsonIgnore
     @Override
     public boolean delete() {
         logger.debug("delete: Delete object Id: {} ", this.id);
-        return super.delete();
+        super.delete();
+
+        cache.remove(id);
+        return true;
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
-    public class DataSim_overview {
 
-        public void DataSim_overview(){}
-        public List<DataSim_DataGram> datagram = new ArrayList<>();
-
-
-    }
-
-    public class DataSim_DataGram {
-
-        public void DataSim_DataGram(){}
-
-        public String period_name;
-        public Long from;
-        public Long to;
-        public Long data_consumption; // v KB
-        public List<DataSim_DataGram> detailed_datagram = new ArrayList<>();
-    }
-
-
-    // TODO MARTIN - Takto by měl vypadat na konci zpracovan datagram
-
-    /*
-       {
-        "datagram" : [
-            {
-                "period_name" : "1",
-                "from" : 131231231231,
-                "to" : 123141231312331,
-                "data_consumption" : 31412213,
-                "detailed_datagram" : [
-                    {
-                         "period_name" : "day_1",
-                         "from" : 131231231231,
-                         "to" : 123141231312331,
-                         "data_consumption" : 31311,
-                         "detailed_datagram" : []
-                    },
-                    {
-                         "period_name" : "week-2",
-                         "from" : 131231231231,
-                         "to" : 123141231312331,
-                         "data_consumption" : 31311.
-                         "detailed_datagram" : []
-                    },
-                    {
-                         "period_name" : "week-3",
-                         "from" : 131231231231,
-                         "to" : 123141231312331,
-                         "data_consumption" : 1231231.
-                         "detailed_datagram" : []
-                    }
-                ]
-            },
-            {
-                "period_name" : "unor",
-                "from" : 131231231231,
-                "to" : 123141231312331,
-                "data_consumption" : 32123,
-                "detailed_datagram" : [
-                    {
-                         "period_name" : "day-1",
-                         "from" : 131231231231,
-                         "to" : 123141231312331,
-                         "data_consumption" : 31311,
-                         "detailed_datagram" : []
-                    },
-                    {
-                         "period_name" : "week-6",
-                         "from" : 131231231231,
-                         "to" : 123141231312331,
-                         "data_consumption" : 31311.
-                         "detailed_datagram" : []
-                    },
-                    {
-                         "period_name" : "week-7",
-                         "from" : 131231231231,
-                         "to" : 123141231312331,
-                         "data_consumption" : 1231231.
-                         "detailed_datagram" : []
-                    }
-                ]
-            }
-       ]
-       }
-     */
 
     /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 

@@ -527,6 +527,7 @@ GET       /admin/gsm/print-label/:sim_id                                controll
 PUT       /gsm/credit/:sim_id                                           controllers.Controller_GSM.credit_usage(sim_id: java.util.UUID)
 PUT       /gsm/active/:sim_id                                           controllers.Controller_GSM.active_sim(sim_id: java.util.UUID)
 PUT       /gsm/deactive/:sim_id                                         controllers.Controller_GSM.de_active_sim(sim_id: java.util.UUID)
+PUT       /gsm/update/:sim_id                                           controllers.Controller_GSM.edit_sim(sim_id: java.util.UUID)
 DELETE    /gsm/gsm_project/:sim_id                                      controllers.Controller_GSM.unregister_sim(sim_id: java.util.UUID)
 GET       /gsm/check/:registration_hash/:project_id                     controllers.Controller_GSM.gsm_check(registration_hash: java.util.UUID, project_id: java.util.UUID)
 

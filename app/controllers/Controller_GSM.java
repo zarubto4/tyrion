@@ -14,10 +14,12 @@ import utilities.enums.BoardRegistrationStatus;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status_cdr;
+import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_GSM_label_Details;
 import utilities.logger.Logger;
 import utilities.swagger.input.Swagger_GSM_Date;
+import utilities.swagger.input.Swagger_GSM_Edit;
 import utilities.swagger.input.Swagger_GSM_Filter;
 import utilities.swagger.input.Swagger_GSM_Register;
 import utilities.swagger.output.Swagger_Entity_Registration_Status;
@@ -340,9 +342,70 @@ public class Controller_GSM extends _BaseController {
         }
     }
 
-    // TODO - nejsem si jist jestli to naše api umí, ale asi to v dokuemtaci bylo
-    public Result set_limit_sim(UUID sim_id) {
-        return badRequest("todo");
+    @ApiOperation(value = "update Sim ",
+            tags = {"GSM"},
+            notes = "",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_GSM_Edit",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_GSM.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result edit_sim(UUID sim_id) {
+        try {
+
+            Swagger_GSM_Edit help = baseFormFactory.formFromRequestWithValidation(Swagger_GSM_Edit.class);
+
+            Model_GSM gsm = Model_GSM.getById(sim_id);
+
+            gsm.name = help.name;
+            gsm.description = help.description;
+
+            gsm.daily_traffic_threshold                 = help.daily_traffic_threshold;
+            gsm.daily_traffic_threshold_exceeded_limit  = help.daily_traffic_threshold_exceeded_limit;
+            gsm.daily_traffic_threshold_notify_type     = help.daily_traffic_threshold_notify_type;
+
+            gsm.monthly_traffic_threshold                = help.monthly_traffic_threshold;
+            gsm.monthly_traffic_threshold_exceeded_limit = help.monthly_traffic_threshold_exceeded_limit;
+            gsm.monthly_traffic_threshold_notify_type    = help.monthly_traffic_threshold_notify_type;
+
+            gsm.total_traffic_threshold                 = help.total_traffic_threshold;
+            gsm.total_traffic_threshold_exceeded_limit  = help.total_traffic_threshold_exceeded_limit;
+            gsm.total_traffic_threshold_notify_type     = help.total_traffic_threshold_notify_type;
+
+            gsm.update();
+
+
+            gsm.setTags(help.tags);
+
+
+            // Set Trashold to Things Mobile
+            gsm.set_trashholds(
+                    gsm.daily_traffic_threshold , gsm.daily_traffic_threshold_exceeded_limit,
+                    gsm.monthly_traffic_threshold , gsm.monthly_traffic_threshold_exceeded_limit,
+                    gsm.total_traffic_threshold , gsm.total_traffic_threshold_exceeded_limit
+            );
+
+            return ok(gsm);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
     }
 
 
@@ -425,7 +488,7 @@ public class Controller_GSM extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_GSM.DataSim_overview.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = DataSim_overview.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),

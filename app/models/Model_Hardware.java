@@ -1876,6 +1876,9 @@ public class Model_Hardware extends TaggedModel {
 
             WS_Message_Hardware_overview_Board report = get_devices_overview();
 
+            logger.debug("hardware_firmware_state_check: Result:  {}", Json.toJson(report));
+
+
             if (report.error_message != null) {
                 logger.warn("hardware_firmware_state_check - Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: {} " , this.id, report.error_code, report.error_message);
 
