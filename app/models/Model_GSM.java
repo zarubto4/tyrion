@@ -135,13 +135,14 @@ public class Model_GSM extends TaggedModel {
     }
 
 
-    public void louskani() {
+    public DataSim_overview louskani() {
 
         // Objekt do ktereho vsechnoo ulozim - vsech 12 mesicu
         DataSim_overview overview = new DataSim_overview();
 
         // Status kde mám vsechny crc teto simkary
         TM_Sim_Status status = Controller_Things_Mobile.sim_status(msi_number);
+        DateTimeFormatter day_formater = DateTimeFormatter.ofPattern("dd MMMM yyyy");
 
         int pointer_to_cdr_array = 0;
 
@@ -152,58 +153,93 @@ public class Model_GSM extends TaggedModel {
             DataSim_DataGram datagram_month = new DataSim_DataGram();
 
             // NAjdu si aktuální mesic podle cisla for cyklu
-            LocalDate date = LocalDate.of( 2018, Month.of(month_selector), 1);
+            LocalDate date = LocalDate.of( Year.now().getValue() , Month.of(month_selector), 1);
 
             // Zacatek mesice (prvni minuta prvniho dne podle For Cyklu, kde naprkilad 1 = leden, 2 = unor
-            LocalDate local_start = date.withDayOfMonth(1);
+            LocalDate selected_month_start = date.withDayOfMonth(1);
 
             // Konec mesice posledni minuta posledniho dne podle For Cyklu, kde naprkilad 1 = leden, 2 = unor
             // Tady bude poslední den mesice
-            LocalDate local_end = date.withDayOfMonth(date.lengthOfMonth());
+            LocalDate selected_month_end = date.withDayOfMonth(date.lengthOfMonth());
 
             // Pro kontrolu vypisu
-            System.out.println("Datamum DATE> local_start " + local_start);
-            System.out.println("Datamum DATE> local_end " + local_end);
+            // System.out.println("Datamum DATE> local_start " + selected_month_start);
+            // System.out.println("Datamum DATE> local_end "   + selected_month_end);
 
-            datagram_month.to = local_start.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-            datagram_month.from = local_end.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            datagram_month.to = selected_month_start.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            datagram_month.from = selected_month_end.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
 
             // Doplnim název mesice podle enumu Moth
             datagram_month.period_name = Month.of(month_selector).name();
 
             //formatter, který mi poupravý datum z yyyy-MM-d HH:mm:ss na yyyy-MM-d
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-d HH:mm:ss");
+            datagram_month.detailed_datagram = new ArrayList<>();
+
+            // Vytvořím Záznam pro celý měsíc - Den za dnem
+            for(int d = 1; d < selected_month_start.lengthOfMonth(); d++) {
+
+                // Záznam pro den d  - > 1.. až poslední den měsíce tedy lengthOfMonth()
+                DataSim_DataGram daily_datagram = new DataSim_DataGram();
+                daily_datagram.period_name = LocalDateTime.of( selected_month_start.withDayOfMonth(d), LocalTime.MIDNIGHT).format(day_formater);
+
+                // Uložím první sekundu toho dne
+                daily_datagram.from = LocalDateTime.of( selected_month_start.withDayOfMonth(d), LocalTime.MIDNIGHT).toInstant(ZoneOffset.UTC).toEpochMilli();
+                // A První sekundu předchozího dne
+                daily_datagram.to   = LocalDateTime.of( selected_month_start.withDayOfMonth(d), LocalTime.MIDNIGHT).plusDays(1L).toInstant(ZoneOffset.UTC).toEpochMilli();
+
+                datagram_month.detailed_datagram.add(daily_datagram);
+            }
+
+
+
+            System.out.println("status.cdrs SIZE: " + status.cdrs.size());
+            System.out.println("Latest Pointer for USE: " + pointer_to_cdr_array);
 
             //for cyklus přes který procházím všechny Sim_status_cdrs
             // Procházím dokola celý seznam a chci vybrat jen ty které splnuji podminku ze jejich cas je mezi prvnim a poslednim dnem mesice
+            // Přidám Všechny Dny toho měsíce
+            int latest_used_id = pointer_to_cdr_array;
+            for (int i = pointer_to_cdr_array; i < status.cdrs.size(); i++) {
 
-            for (int i = pointer_to_cdr_array; i <= status.cdrs.size(); i++) {
+                System.out.println("Actual Pointer: " + i);
 
                 LocalDate cdr_start = LocalDate.parse(status.cdrs.get(i).cdrDateStart, formatter);
-                LocalDate cdr_stop = LocalDate.parse(status.cdrs.get(i).cdrDateStop, formatter);
+                LocalDate cdr_stop  = LocalDate.parse(status.cdrs.get(i).cdrDateStop, formatter);
 
                 System.out.println("CDR START: " + status.cdrs.get(i).cdrDateStart + "(" + cdr_start + ")" + " END: " + status.cdrs.get(i).cdrDateStop + "(" + cdr_stop + ")");
 
                 // Tady potřebujeme porovnat zda date start je později než date_fist
-                if (cdr_stop.isBefore(local_end) && cdr_start.isAfter(local_start)) {
+                if (cdr_stop.isBefore(selected_month_end) && cdr_start.isAfter(selected_month_start)) {
 
-                    System.out.println("Údaj splňuje podmínku pro přičtení");
+                    // Udělám Záznam do správného dne
                     datagram_month.data_consumption += status.cdrs.get(i).cdrTraffic.longValue();
+
+
+                    System.out.println("Set Value for Day " + cdr_start.getDayOfMonth());
+                    datagram_month.detailed_datagram.get(cdr_start.getDayOfMonth()).data_consumption += status.cdrs.get(i).cdrTraffic.longValue();
 
                 } else {
                     System.out.println("Údaj nesplňuje podmínku pro přičtení");
                 }
 
                 // Nasel jsem udaj, ktery je ale az z pristiho mesice, tim padem jsem vycerpal vsechny moznosti aktualniho mesice a neni treba pole prochazet dal
-                if(cdr_start.isAfter(local_end)) {
-                    System.out.println("Udaj je y mesice, kterz teprve budu passovat, neni potreba ho prochayet");
-                    pointer_to_cdr_array = i;
+                if(cdr_start.isAfter(selected_month_end)) {
+                    System.out.println("Udaj je z jiného mesice, kterz teprve budu parssovat, neni potreba ho ještě procházet");
                     break;
                 }
+
+                latest_used_id++;
             }
+
+            pointer_to_cdr_array = latest_used_id;
             overview.datagram.add(datagram_month);
         }
-        System.out.println(Json.toJson(overview));
+
+        json_history = Json.toJson(overview).toString();
+        update();
+
+        return overview;
     }
 
 /* OPERATIONS ----------------------------------------------------------------------------------------------------------*/
@@ -234,7 +270,6 @@ public class Model_GSM extends TaggedModel {
         }
     }
 
-    // K této mětodě chybí v Controoller_GSM Metoda kterou musíš taky komplet se Swagger objektem napsat
     // For users - owners of SIM modules
     // TODO 3.10. Setup sim traffic threshold z PDF dokumentace
     public void set_trashholds(Long daily_traffic_threshold,   boolean daily_traffic_threshold_exceeded_limit,

@@ -1,11 +1,12 @@
 package utilities.gsm_services.things_mobile.statistic_class;
 
 import models.Model_GSM;
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataSim_overview {
+public class DataSim_overview extends _Swagger_Abstract_Default {
     public void DataSim_overview(){}
     public List<DataSim_DataGram> datagram = new ArrayList<>();
 }
