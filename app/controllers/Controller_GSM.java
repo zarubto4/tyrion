@@ -508,4 +508,9 @@ public class Controller_GSM extends _BaseController {
             return controllerServerError(e);
         }
     }
+
+    public Result set_trashholds{
+
+    }
+
 }

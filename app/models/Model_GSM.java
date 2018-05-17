@@ -250,8 +250,8 @@ public class Model_GSM extends TaggedModel {
         String hokus_pokus = total_traffic_threshold_exceeded_limit ? "1" : "0";
 
         // TODO Controller_Things_Mobile.set_trashholds(......)
-    }
 
+    }
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore

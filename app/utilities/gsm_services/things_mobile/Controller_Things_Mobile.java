@@ -480,6 +480,82 @@ public class Controller_Things_Mobile {
 
     }
 
+    //UPDATE SIM TAG
+    public static TM_Set_Trashhold set_trashhold(Long id, Long daily_traffic_threshold,   String daily_traffic_threshold_exceeded_limit,
+                                                 Long monthly_traffic_threshold, String monthly_traffic_threshold_exceeded_limit,
+                                                 Long total_traffic_threshold,   String total_traffic_threshold_exceeded_limit){
+        try {
+            KeyStore k1 =  new KeyStore("msisdn", new ArrayList<String>() {{
+                add(id.toString());
+            }});
+
+            KeyStore k2 = new KeyStore("daily_traffic_threshold", new ArrayList<String>() {{
+                add(daily_traffic_threshold.toString());
+            }});
+
+
+            KeyStore k3 = new KeyStore("monthly_traffic_threshold", new ArrayList<String>() {{
+                add(monthly_traffic_threshold.toString());
+            }});
+
+
+            KeyStore k4 = new KeyStore("daily_traffic_threshold", new ArrayList<String>() {{
+                add(total_traffic_threshold.toString());
+            }});
+
+
+            KeyStore k5 = new KeyStore("daily_traffic_threshold_exceeded_limit", new ArrayList<String>() {{
+                add(daily_traffic_threshold_exceeded_limit);
+            }});
+
+
+            KeyStore k6 = new KeyStore("monthly_traffic_threshold_exceeded_limit", new ArrayList<String>() {{
+                add(monthly_traffic_threshold_exceeded_limit);
+            }});
+
+
+            KeyStore k7 = new KeyStore("total_traffic_threshold_exceeded_limit", new ArrayList<String>() {{
+                add(total_traffic_threshold_exceeded_limit);
+            }});
+
+            KeyStore[] stores = new KeyStore[6];
+            stores[0] = k1;
+            stores[1] = k2;
+            stores[2] = k3;
+            stores[3] = k4;
+            stores[4] = k5;
+            stores[5] = k6;
+            stores[6] = k7;
+
+            Document response = post("/services/businessapi/setupSimTrafficThreeshold", stores);
+
+            TM_Set_Trashhold node = new TM_Set_Trashhold();
+
+            if (response.getElementsByTagName("done").item(0).getTextContent().equals("true")) {
+
+                node.done = true;
+
+                return node;
+
+            } else {
+
+                logger.error("update_sim_tag:: Invalid Response: {}", response);
+                node.done = false;
+                node.errorCode = Integer.valueOf( response.getElementsByTagName("errorCode").item(0).getTextContent());
+                node.errorMessage = response.getElementsByTagName("errorMessage").item(0).getTextContent();
+
+                return node;
+            }
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            TM_Set_Trashhold result = new TM_Set_Trashhold();
+            result.done = false;
+            result.errorMessage = e.getMessage();
+            return result;
+        }
+
+    }
 
 
     /**
