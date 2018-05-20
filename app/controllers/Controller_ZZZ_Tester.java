@@ -6,11 +6,14 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.Model_GSM;
 import org.mindrot.jbcrypt.BCrypt;
+import play.libs.Json;
+import play.mvc.Controller;
 import play.mvc.Result;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_List_list;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status_cdr;
+import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.logger.Logger;
 
 import java.time.LocalDate;
@@ -22,7 +25,7 @@ import java.util.regex.Pattern;
 
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class Controller_ZZZ_Tester extends _BaseController {
+public class Controller_ZZZ_Tester extends Controller {
 
 // LOGGER ##############################################################################################################
 
@@ -57,9 +60,9 @@ public class Controller_ZZZ_Tester extends _BaseController {
             if (gsm == null) {
                 return notFound("sim wasn't found");
             }
-            gsm.louskani();
+            DataSim_overview overview = gsm.louskani();
 
-           return ok();
+           return ok( Json.toJson(overview) );
         } catch (Exception e) {
             logger.internalServerError(e);
             return badRequest();
@@ -73,7 +76,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
             return ok();
         } catch (Exception e) {
             e.printStackTrace();
-            return internalServerError(e);
+            return badRequest(e.toString());
         }
     }
 
@@ -84,7 +87,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
             return ok();
         } catch (Exception e) {
             e.printStackTrace();
-            return internalServerError(e);
+            return badRequest(e.toString());
         }
     }
 

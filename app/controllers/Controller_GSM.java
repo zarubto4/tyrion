@@ -476,17 +476,6 @@ public class Controller_GSM extends _BaseController {
             consumes = "text/html",
             protocols = "https"
     )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.input.Swagger_GSM_Date",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = DataSim_overview.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -498,11 +487,11 @@ public class Controller_GSM extends _BaseController {
     public Result credit_usage(UUID sim_id) {
         try {
 
-            Swagger_GSM_Date help = baseFormFactory.formFromRequestWithValidation(Swagger_GSM_Date.class);
+            // Swagger_GSM_Date help = baseFormFactory.formFromRequestWithValidation(Swagger_GSM_Date.class);
 
-            Model_GSM.getById(sim_id).get_dataSim_overview();
+            DataSim_overview overview = Model_GSM.getById(sim_id).get_dataSim_overview();
 
-            return ok();
+            return ok(overview);
 
         } catch (Exception e) {
             return controllerServerError(e);
