@@ -20,10 +20,7 @@ import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_Block;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status_cdr;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_Unblock;
+import utilities.gsm_services.things_mobile.help_class.*;
 import utilities.gsm_services.things_mobile.statistic_class.DataSim_DataGram;
 import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.logger.Logger;
@@ -97,7 +94,6 @@ public class Model_GSM extends TaggedModel {
 
     @JsonIgnore
     public UUID get_project_id() {
-
         if (cache().get(Model_Project.class) == null) {
             cache().add(Model_Project.class, Model_Project.find.query().where().eq("gsm.id", id).select("id").findSingleAttributeList());
         }
@@ -123,7 +119,7 @@ public class Model_GSM extends TaggedModel {
                 return overview;
             }
 
-            // Mus9m naj9t a ypracovat a pak vr8tit
+            // Musím najít a vypracovat a pak vrátit
 
 
 
@@ -190,8 +186,6 @@ public class Model_GSM extends TaggedModel {
 
                 datagram_month.detailed_datagram.add(daily_datagram);
             }
-
-
 
             System.out.println("status.cdrs SIZE: " + status.cdrs.size());
             System.out.println("Latest Pointer for USE: " + pointer_to_cdr_array);
@@ -274,17 +268,22 @@ public class Model_GSM extends TaggedModel {
     // TODO 3.10. Setup sim traffic threshold z PDF dokumentace
     public void set_trashholds(Long daily_traffic_threshold,   boolean daily_traffic_threshold_exceeded_limit,
                                Long monthly_traffic_threshold, boolean monthly_traffic_threshold_exceeded_limit,
-                               Long total_traffic_threshold,   boolean total_traffic_threshold_exceeded_limit) {
+                               Long total_traffic_threshold,   boolean total_traffic_threshold_exceeded_limit){
         // Kontrola oprávnění
         this.check_update_permission();
 
+        TM_Set_Trashhold result = Controller_Things_Mobile.set_trashhold(this.msi_number, daily_traffic_threshold, daily_traffic_threshold_exceeded_limit, monthly_traffic_threshold, monthly_traffic_threshold_exceeded_limit, total_traffic_threshold, total_traffic_threshold_exceeded_limit);
+
+        if (result.done) {
+            this.blocked = false;
+        } else {
+            // Error
+        }
         // https://www.thingsmobile.com/services/business- api/setupSimTrafficThreeshold
         // Pozor dokumentace říká "Block sim exceed limit (0 = false, 1 = true)"
         // takže budeš muset true převest na "1" a false na "O"
 
         String hokus_pokus = total_traffic_threshold_exceeded_limit ? "1" : "0";
-
-        // TODO Controller_Things_Mobile.set_trashholds(......)
 
     }
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/

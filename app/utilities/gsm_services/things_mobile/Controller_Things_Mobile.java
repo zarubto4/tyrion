@@ -29,6 +29,7 @@ public class Controller_Things_Mobile {
     private static final Logger logger = new Logger(Controller_Things_Mobile.class);
 
 
+
 // * CONFIFG VALUES -------------------------------------------------------------------------------------------------------------*/
 
     private static String api_key = null;
@@ -480,10 +481,10 @@ public class Controller_Things_Mobile {
 
     }
 
-    //UPDATE SIM TAG
-    public static TM_Set_Trashhold set_trashhold(Long id, Long daily_traffic_threshold,   String daily_traffic_threshold_exceeded_limit,
-                                                 Long monthly_traffic_threshold, String monthly_traffic_threshold_exceeded_limit,
-                                                 Long total_traffic_threshold,   String total_traffic_threshold_exceeded_limit){
+    //SIM SET_TRASHHOLD
+    public static TM_Set_Trashhold set_trashhold(Long id, Long daily_traffic_threshold,   boolean daily_traffic_threshold_exceeded_limit,
+                                                 Long monthly_traffic_threshold, boolean monthly_traffic_threshold_exceeded_limit,
+                                                 Long total_traffic_threshold,   boolean total_traffic_threshold_exceeded_limit){
         try {
             KeyStore k1 =  new KeyStore("msisdn", new ArrayList<String>() {{
                 add(id.toString());
@@ -505,20 +506,20 @@ public class Controller_Things_Mobile {
 
 
             KeyStore k5 = new KeyStore("daily_traffic_threshold_exceeded_limit", new ArrayList<String>() {{
-                add(daily_traffic_threshold_exceeded_limit);
+                add(daily_traffic_threshold_exceeded_limit ? "1" : "0");
             }});
 
 
             KeyStore k6 = new KeyStore("monthly_traffic_threshold_exceeded_limit", new ArrayList<String>() {{
-                add(monthly_traffic_threshold_exceeded_limit);
+                add(monthly_traffic_threshold_exceeded_limit ? "1" : "0");
             }});
 
 
             KeyStore k7 = new KeyStore("total_traffic_threshold_exceeded_limit", new ArrayList<String>() {{
-                add(total_traffic_threshold_exceeded_limit);
+                add(total_traffic_threshold_exceeded_limit ? "1" : "0");
             }});
 
-            KeyStore[] stores = new KeyStore[6];
+            KeyStore[] stores = new KeyStore[7];
             stores[0] = k1;
             stores[1] = k2;
             stores[2] = k3;
@@ -527,7 +528,7 @@ public class Controller_Things_Mobile {
             stores[5] = k6;
             stores[6] = k7;
 
-            Document response = post("/services/businessapi/setupSimTrafficThreeshold", stores);
+            Document response = post("/services/business-api/setupSimTrafficThreeshold", stores);
 
             TM_Set_Trashhold node = new TM_Set_Trashhold();
 

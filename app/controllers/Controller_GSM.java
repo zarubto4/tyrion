@@ -371,8 +371,10 @@ public class Controller_GSM extends _BaseController {
 
             Swagger_GSM_Edit help = baseFormFactory.formFromRequestWithValidation(Swagger_GSM_Edit.class);
 
+            //hledám objekt
             Model_GSM gsm = Model_GSM.getById(sim_id);
 
+            //zde objekt edituju
             gsm.name = help.name;
             gsm.description = help.description;
 
@@ -497,9 +499,4 @@ public class Controller_GSM extends _BaseController {
             return controllerServerError(e);
         }
     }
-
-    public Result set_trashholds{
-
-    }
-
 }

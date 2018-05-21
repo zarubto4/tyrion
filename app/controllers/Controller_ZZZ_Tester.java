@@ -71,8 +71,7 @@ public class Controller_ZZZ_Tester extends Controller {
 
     @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test3() {
-        try {
-
+        try{
             return ok();
         } catch (Exception e) {
             e.printStackTrace();
