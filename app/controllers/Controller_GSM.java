@@ -11,24 +11,14 @@ import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.enums.BoardRegistrationStatus;
-import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status_cdr;
 import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_GSM_label_Details;
 import utilities.logger.Logger;
-import utilities.swagger.input.Swagger_GSM_Date;
-import utilities.swagger.input.Swagger_GSM_Edit;
-import utilities.swagger.input.Swagger_GSM_Filter;
-import utilities.swagger.input.Swagger_GSM_Register;
+import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Entity_Registration_Status;
 import utilities.swagger.output.filter_results.Swagger_GSM_List;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.UUID;
 
 @Security.Authenticated(Authentication.class)
@@ -488,10 +478,11 @@ public class Controller_GSM extends _BaseController {
     @BodyParser.Of(BodyParser.Json.class)
     public Result credit_usage(UUID sim_id) {
         try {
+            Swagger_GSM_From_To help = new Swagger_GSM_From_To();
+            //swagger třída odkdy, do kdy Long 234567876543456 a od kdy 5643256432146
+            // nebo to bude string kde "period" = "7days" nebo "LastMonth"
 
-            // Swagger_GSM_Date help = baseFormFactory.formFromRequestWithValidation(Swagger_GSM_Date.class);
-
-            DataSim_overview overview = Model_GSM.getById(sim_id).get_dataSim_overview();
+            DataSim_overview overview = Model_GSM.getById(sim_id).louskani(help.from,help.to);
 
             return ok(overview);
 

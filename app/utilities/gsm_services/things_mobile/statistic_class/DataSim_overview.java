@@ -11,8 +11,6 @@ public class DataSim_overview extends _Swagger_Abstract_Default {
     public List<DataSim_DataGram> datagram = new ArrayList<>();
 }
 
-// TODO MARTIN - Takto by měl vypadat na konci zpracovan datagram
-
     /*
        {
         "datagram" : [

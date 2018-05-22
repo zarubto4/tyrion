@@ -1,27 +1,19 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.Model_GSM;
-import org.mindrot.jbcrypt.BCrypt;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_List_list;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status_cdr;
 import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.logger.Logger;
+import utilities.swagger.input.Swagger_GSM_From_To;
+import utilities.swagger.input.Swagger_HardwareType_New;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -36,12 +28,19 @@ public class Controller_ZZZ_Tester extends Controller {
     // Nothing
     private Config config;
 
-// CONTROLLER CONTENT ##################################################################################################
+    @Inject
+    public static _BaseFormFactory baseFormFactory;
+
+    @Inject
+    public Controller_ZZZ_Tester(_BaseFormFactory formFactory) {
+        this.baseFormFactory = formFactory;
+    }
+
+
+    // CONTROLLER CONTENT ##################################################################################################
     @ApiOperation(value = "Hidden test Method", hidden = true)
      public Result test1() {
          try {
-
-
 
              return ok("Valid version for mode");
          } catch (Exception e) {
@@ -53,6 +52,9 @@ public class Controller_ZZZ_Tester extends Controller {
     @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test2(UUID sim_id) {
         try {
+
+            Swagger_GSM_From_To help = baseFormFactory.formFromRequestWithValidation(Swagger_GSM_From_To.class);
+
             // nalezení sim
             Model_GSM gsm = Model_GSM.getById(sim_id);
 
@@ -60,7 +62,7 @@ public class Controller_ZZZ_Tester extends Controller {
             if (gsm == null) {
                 return notFound("sim wasn't found");
             }
-            DataSim_overview overview = gsm.louskani();
+            DataSim_overview overview = gsm.louskani(help.from, help.to);
 
            return ok( Json.toJson(overview) );
         } catch (Exception e) {
