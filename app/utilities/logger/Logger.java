@@ -27,7 +27,6 @@ public class Logger {
     }
 
     public void internalServerError(Throwable e) {
-         e.printStackTrace();
          ServerLogger.internalServerError(e);
     }
 }
