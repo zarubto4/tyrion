@@ -132,6 +132,9 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
             try {
                 if(id != null)
                 if(cash_map.containsKey(c)){
+                    System.out.println("BaseModel Remove - Class " + c.getSimpleName() + " id " + id);
+                    System.out.println("BaseModel Remove - Conent " + cash_map.get(c) );
+                    System.out.println("BaseModel Remove - Conent size " + cash_map.get(c).size() );
                     cash_map.get(c).remove(id);
                 }
             } catch (Exception e){

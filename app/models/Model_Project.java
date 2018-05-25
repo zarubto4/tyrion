@@ -152,7 +152,7 @@ public class Model_Project extends TaggedModel {
             cache().add(Model_Hardware.class, Model_Hardware.find.query().where().eq("project.id", id).ne("deleted", true).select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_Hardware.class);
+        return cache().gets(Model_Hardware.class) != null ?  cache().gets(Model_Hardware.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -180,7 +180,7 @@ public class Model_Project extends TaggedModel {
             cache().add(Model_CProgram.class, Model_CProgram.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_CProgram.class);
+        return cache().gets(Model_CProgram.class) != null ?  cache().gets(Model_CProgram.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -208,7 +208,7 @@ public class Model_Project extends TaggedModel {
             cache().add(Model_Library.class, Model_Library.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_Library.class);
+        return cache().gets(Model_Library.class) != null ?  cache().gets(Model_Library.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -236,7 +236,7 @@ public class Model_Project extends TaggedModel {
             cache().add(Model_BProgram.class, Model_BProgram.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_BProgram.class);
+        return cache().gets(Model_BProgram.class) != null ?  cache().gets(Model_BProgram.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -265,7 +265,7 @@ public class Model_Project extends TaggedModel {
             cache().add(Model_GridProject.class, Model_GridProject.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_GridProject.class);
+        return cache().gets(Model_GridProject.class) != null ?  cache().gets(Model_GridProject.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -293,7 +293,7 @@ public class Model_Project extends TaggedModel {
             cache().add(Model_HardwareGroup.class, Model_HardwareGroup.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_HardwareGroup.class);
+        return cache().gets(Model_HardwareGroup.class) != null ?  cache().gets(Model_HardwareGroup.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -321,7 +321,7 @@ public class Model_Project extends TaggedModel {
             cache().add(Model_Widget.class, Model_Widget.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_Widget.class);
+        return cache().gets(Model_Widget.class) != null ?  cache().gets(Model_Widget.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -349,7 +349,7 @@ public class Model_Project extends TaggedModel {
             cache().add(Model_Block.class, Model_Block.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_Block.class);
+        return cache().gets(Model_Block.class) != null ?  cache().gets(Model_Block.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -377,7 +377,7 @@ public class Model_Project extends TaggedModel {
             cache().add(Model_HomerServer.class, Model_HomerServer.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_HomerServer.class);
+        return cache().gets(Model_HomerServer.class) != null ?  cache().gets(Model_HomerServer.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -405,7 +405,7 @@ public class Model_Project extends TaggedModel {
             cache().add(Model_Instance.class, Model_Instance.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_Instance.class);
+        return cache().gets(Model_Instance.class) != null ?  cache().gets(Model_Instance.class) : new ArrayList<>();
     }
 
     @JsonIgnore

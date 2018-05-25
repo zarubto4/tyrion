@@ -63,7 +63,7 @@ public class Model_GridProject extends TaggedModel {
             cache().add(Model_GridProgram.class, (UUID) Model_GridProgram.find.query().where().eq("grid_project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
         }
 
-        return cache().gets(Model_GridProgram.class);
+        return cache().gets(Model_GridProgram.class) != null ?  cache().gets(Model_GridProgram.class) : new ArrayList<>();
     }
 
     @JsonIgnore public List<Model_GridProgram> getGridPrograms() {
@@ -76,9 +76,6 @@ public class Model_GridProject extends TaggedModel {
             }
 
             return gridPrograms;
-
-        } catch (NullPointerException e) {
-            return new ArrayList<>();
 
         } catch (Exception e) {
             logger.internalServerError(e);

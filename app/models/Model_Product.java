@@ -460,7 +460,7 @@ public class Model_Product extends NamedModel {
             cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("product.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().gets(Model_Project.class);
+        return cache().gets(Model_Project.class) != null ?  cache().gets(Model_Project.class) : new ArrayList<>();
     }
 
     @JsonIgnore

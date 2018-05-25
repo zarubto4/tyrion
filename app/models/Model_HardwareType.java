@@ -229,7 +229,8 @@ public class Model_HardwareType extends NamedModel {
             cache().add(Model_BootLoader.class,  Model_BootLoader.find.query().where().eq("hardware_type.id", id).order().desc("name").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_BootLoader.class);
+        return cache().gets(Model_BootLoader.class) != null ?  cache().gets(Model_BootLoader.class) : new ArrayList<>();
+
     }
 
     @JsonIgnore

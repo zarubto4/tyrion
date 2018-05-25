@@ -189,7 +189,7 @@ public class Model_UpdateProcedure extends BaseModel {
             System.out.println("Model_UpdateProcedure:: getUpdatesId:: žádný jsem nenašel v cache paěti ");
         }
 
-        return cache().gets(Model_HardwareUpdate.class);
+        return cache().gets(Model_HardwareUpdate.class) != null ?  cache().gets(Model_HardwareUpdate.class) : new ArrayList<>();
     }
 
     @JsonIgnore @Transient public List<Model_HardwareUpdate> getUpdates() {

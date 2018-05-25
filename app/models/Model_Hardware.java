@@ -871,7 +871,8 @@ public class Model_Hardware extends TaggedModel {
             cache().add(Model_HardwareGroup.class,  Model_HardwareGroup.find.query().where().eq("hardware.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_HardwareGroup.class);
+
+        return cache().gets(Model_HardwareGroup.class) != null ?  cache().gets(Model_HardwareGroup.class) : new ArrayList<>();
 
     }
 

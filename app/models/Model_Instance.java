@@ -288,8 +288,7 @@ public class Model_Instance extends TaggedModel {
             cache().add(Model_InstanceSnapshot.class,  Model_InstanceSnapshot.find.query().where().ne("deleted", true).eq("instance.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_InstanceSnapshot.class);
-
+        return cache().gets(Model_InstanceSnapshot.class) != null ?  cache().gets(Model_InstanceSnapshot.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -374,6 +373,14 @@ public class Model_Instance extends TaggedModel {
             getProject().cache().remove(this.getClass(), id);
         } catch (Exception e) {
             // Nothing
+        }
+
+        // Its required to change all HW devices where this instance is registered in paramater connected_instance_id ( // Latest know Instance ID)
+        List<UUID> hardware_for_change = Model_Hardware.find.query().where().eq("connected_instance_id", this.id).select("id").findSingleAttributeList();
+        for(UUID hardware_id: hardware_for_change) {
+            Model_Hardware hw = Model_Hardware.getById(hardware_id);
+            hw.connected_instance_id = null;
+            hw.update();
         }
 
         if (cache.containsKey(this.id)) {

@@ -144,7 +144,7 @@ public class Model_Widget extends TaggedModel {
             cache().add(Model_WidgetVersion.class, Model_WidgetVersion.find.query().where().eq("widget.id", id).eq("deleted", false).select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_WidgetVersion.class);
+        return cache().gets(Model_WidgetVersion.class) != null ?  cache().gets(Model_WidgetVersion.class) : new ArrayList<>();
     }
 
     @JsonIgnore

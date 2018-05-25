@@ -78,7 +78,7 @@ public class Model_GridProgram extends TaggedModel {
             cache().add(Model_GridProgramVersion.class,  Model_GridProgramVersion.find.query().where().eq("grid_program.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_GridProgramVersion.class);
+        return cache().gets(Model_GridProgramVersion.class) != null ?  cache().gets(Model_GridProgramVersion.class) : new ArrayList<>();
     }
 
     @JsonIgnore @Transient public List<Model_GridProgramVersion> get_versions() {

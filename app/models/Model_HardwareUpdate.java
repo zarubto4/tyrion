@@ -793,6 +793,7 @@ public class Model_HardwareUpdate extends BaseModel {
                         }
 
                         plan.state = HardwareUpdateState.COMPLETE;
+                        plan.date_of_finish = new Date();
                         plan.update();
 
                         Model_Hardware hardware = plan.getHardware();

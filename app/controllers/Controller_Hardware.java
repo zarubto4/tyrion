@@ -2769,6 +2769,10 @@ public class Controller_Hardware extends _BaseController {
 
                             logger.debug("board_group_update_device_list - adding group {}", board_group_id);
 
+                            if ( Model_Hardware.find.query().where().eq("hardware_groups.id", board_group_id).eq("id", board.id).findCount() > 0) {
+                                continue;
+                            }
+
                             Model_HardwareGroup group = Model_HardwareGroup.getById(board_group_id);
 
                             board.get_hardware_group_ids().add(group.id);
@@ -2782,6 +2786,8 @@ public class Controller_Hardware extends _BaseController {
                             if(!group.cache().gets(Model_HardwareType.class).contains(board.getHardwareTypeCache_id())){
                                     group.cache().add(Model_HardwareType.class, board.getHardwareTypeCache_id());
                             }
+
+                            board.get_hardware_group_ids();
                         }
                     }
                 }
@@ -2809,6 +2815,7 @@ public class Controller_Hardware extends _BaseController {
                             Model_HardwareGroup group = Model_HardwareGroup.getById(board_group_id);
 
                             board.hardware_groups.remove(group);
+
                             group.cache_group_size -= 1;
                             group.cache().removeAll(Model_HardwareType.class);
                             it.remove();
@@ -2817,6 +2824,7 @@ public class Controller_Hardware extends _BaseController {
                 }
 
                 board.set_hardware_groups_on_hardware(board.get_hardware_group_ids(),  Enum_type_of_command.SET);
+                board.cache().removeAll(Model_HardwareGroup.class);
                 board.update();
             }
 
@@ -2830,7 +2838,6 @@ public class Controller_Hardware extends _BaseController {
 
                     board.cache().add(Model_HardwareGroup.class, help.group_synchro.group_id);
                     board.hardware_groups.add(group);
-
                 }
 
                 group.refresh();

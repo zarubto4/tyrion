@@ -136,7 +136,7 @@ public class Model_Block extends TaggedModel {
             cache().add(Model_BlockVersion.class, Model_BlockVersion.find.query().where().eq("block.id", id).eq("deleted", false).select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_BlockVersion.class);
+        return cache().gets(Model_BlockVersion.class) != null ?  cache().gets(Model_BlockVersion.class) : new ArrayList<>();
     }
     @JsonIgnore
     public List<Model_BlockVersion> getVersions() {

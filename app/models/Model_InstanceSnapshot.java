@@ -281,7 +281,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
             cache().add(Model_UpdateProcedure.class, Model_UpdateProcedure.find.query().where().eq("instance.id", id).orderBy("created desc").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_UpdateProcedure.class);
+        return cache().gets(Model_UpdateProcedure.class) != null ?  cache().gets(Model_UpdateProcedure.class) : new ArrayList<>();
     }
 
     @JsonIgnore @Transient

@@ -125,7 +125,7 @@ public class Model_CProgram extends TaggedModel {
             cache().add(Model_CProgramVersion.class, Model_CProgramVersion.find.query().where().eq("c_program.id", id).eq("deleted", false).order().desc("created").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_CProgramVersion.class);
+        return cache().gets(Model_CProgramVersion.class) != null ?  cache().gets(Model_CProgramVersion.class) : new ArrayList<>();
     }
 
     @JsonIgnore @Transient public List<Model_CProgramVersion> getVersions() {

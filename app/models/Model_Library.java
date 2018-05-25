@@ -93,7 +93,7 @@ public class Model_Library extends TaggedModel {
             cache().add(Model_LibraryVersion.class, Model_LibraryVersion.find.query().where().eq("library.id", id).eq("deleted", false).order().desc("created").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_LibraryVersion.class);
+        return cache().gets(Model_LibraryVersion.class) != null ?  cache().gets(Model_LibraryVersion.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -121,7 +121,7 @@ public class Model_Library extends TaggedModel {
             cache().add(Model_HardwareType.class, Model_HardwareType.find.query().where().eq("libraries.id", id).eq("deleted", false).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_HardwareType.class);
+        return cache().gets(Model_HardwareType.class) != null ?  cache().gets(Model_HardwareType.class) : new ArrayList<>();
     }
     @JsonIgnore
     public List<Model_HardwareType> getHardwareTypes() {

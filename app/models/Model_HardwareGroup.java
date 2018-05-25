@@ -83,8 +83,7 @@ public class Model_HardwareGroup extends NamedModel {
             cache().add(Model_HardwareType.class,  Model_HardwareType.find.query().where().eq("hardware.hardware_groups.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_HardwareType.class);
-
+        return cache().gets(Model_HardwareType.class) != null ?  cache().gets(Model_HardwareType.class) : new ArrayList<>();
     }
 
 
@@ -131,18 +130,17 @@ public class Model_HardwareGroup extends NamedModel {
     @JsonIgnore
     public List<UUID> getHardwareIds() {
         if (cache().gets(Model_Hardware.class) == null) {
-            cache().add(Model_Hardware.class,  Model_Hardware.find.query().where().eq("hardware_groups.id", id).order().desc("created").select("id").findSingleAttributeList());
+            cache().add(Model_Hardware.class, (UUID) Model_Hardware.find.query().where().eq("hardware_groups.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().gets(Model_Hardware.class);
-
+        return cache().gets(Model_Hardware.class) != null ?  cache().gets(Model_Hardware.class) : new ArrayList<>();
     }
 
     @JsonIgnore
     public List<Model_Hardware> getHardware() {
         try {
 
-            System.out.println("Model_HArdwaareGroup: getHardware()");
+            System.out.println("Model_HardwareGroup: getHardware()");
             List<Model_Hardware> hardwares = new ArrayList<>();
 
             for (UUID types : getHardwareIds()) {
@@ -178,13 +176,16 @@ public class Model_HardwareGroup extends NamedModel {
         logger.debug("delete: Delete object Id: {} ", this.id);
 
         this.getHardware().clear();
-        this.deletePermanent();
+
+
+        super.delete();
 
         try {
             get_project().cache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
-           // Nothing
+            // Nothing
         }
+
 
         // TODO opravit Info o updatu
         // Case 1.2 :: After Delete - we send notification to frontend (Only if it is desirable)
