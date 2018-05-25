@@ -844,7 +844,7 @@ public class Model_Project extends TaggedModel {
         }
 
         if (project_id == null) {
-            logger.error("get_project_becki_person_ids_list - project_id is null");
+            logger.trace("get_project_becki_person_ids_list - project_id is null");
             return new ArrayList<>();
         }
 

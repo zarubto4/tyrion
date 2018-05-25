@@ -115,7 +115,7 @@ public class Model_CProgram extends TaggedModel {
         try {
             return Model_Project.getById(getProjectId());
         }catch (Exception e) {
-            e.printStackTrace();
+            // Řízená chyba
             return null;
         }
     }
@@ -183,13 +183,15 @@ public class Model_CProgram extends TaggedModel {
         logger.debug("update :: Update object Id: {}",  this.id);
 
         // Call notification about model update
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo( Model_CProgram.class, getProjectId(), this.id));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        if(publish_type == ProgramType.PRIVATE) {
+            new Thread(() -> {
+                try {
+                    EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, getProjectId(), this.id));
+                } catch (_Base_Result_Exception e) {
+                    // Nothing
+                }
+            }).start();
+        }
 
         super.update();
 
@@ -198,23 +200,26 @@ public class Model_CProgram extends TaggedModel {
 
     @JsonIgnore @Override public boolean delete() {
 
-        logger.debug("update :: Delete object Id: {} ", this.id);
+        logger.debug("delete :: Delete object Id: {} ", this.id);
         super.delete();
 
         // Remove from Project Cache
-        try {
-            get_project().cache().remove(this.getClass(), id);
-        } catch (_Base_Result_Exception e) {
-            // Nothing
-        }
+        if(publish_type == ProgramType.PRIVATE) {
 
-        new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, getProjectId(), getProjectId()));
-            } catch (_Base_Result_Exception e) {
+                get_project().cache().remove(this.getClass(), id);
+            } catch (Exception e) {
                 // Nothing
             }
-        }).start();
+
+            new Thread(() -> {
+                try {
+                    EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, getProjectId(), getProjectId()));
+                } catch (Exception e) {
+                    // Nothing
+                }
+            }).start();
+        }
 
         
         return false;

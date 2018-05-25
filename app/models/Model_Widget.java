@@ -215,14 +215,15 @@ public class Model_Widget extends TaggedModel {
         // Update Object
         super.update();
 
-
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getProjectId(), getProjectId()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        if(publish_type == ProgramType.PRIVATE) {
+            new Thread(() -> {
+                try {
+                    EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getProjectId(), getProjectId()));
+                } catch (_Base_Result_Exception e) {
+                    // Nothing
+                }
+            }).start();
+        }
 
     }
 
@@ -234,20 +235,22 @@ public class Model_Widget extends TaggedModel {
         // Delete
         super.delete();
 
-        // Remove from Project Cache
-        try {
-            get_project().cache().remove(this.getClass(), id);
-        } catch (_Base_Result_Exception e) {
-            // Nothing
-        }
+        if(publish_type == ProgramType.PRIVATE) {
 
-        new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getProjectId(), getProjectId()));
-            } catch (_Base_Result_Exception e) {
+                get_project().cache().remove(this.getClass(), id);
+            } catch (Exception e) {
                 // Nothing
             }
-        }).start();
+
+            new Thread(() -> {
+                try {
+                    EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, getProjectId(), getProjectId()));
+                } catch (Exception e) {
+                    // Nothing
+                }
+            }).start();
+        }
 
         return false;
     }

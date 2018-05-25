@@ -211,15 +211,46 @@ public class Model_Block extends TaggedModel {
             cache.put(this.id, this);
         }
 
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, get_project_id(), id))).start();
+        // Call notification about model update
+        if(publish_type == ProgramType.PRIVATE) {
+            new Thread(() -> {
+                try {
+                    EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, get_project_id(), this.id));
+                } catch (_Base_Result_Exception e) {
+                    // Nothing
+                }
+            }).start();
+        }
+
     }
 
     @JsonIgnore @Override
     public boolean delete() {
 
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, get_project_id(), get_project_id()))).start();
+        logger.debug("delete :: Delete object Id: {} ", this.id);
+        super.delete();
 
-        return super.delete();
+        // Remove from Project Cache
+        if(publish_type == ProgramType.PRIVATE) {
+
+            try {
+
+                get_project().cache().remove(this.getClass(), id);
+
+            } catch (Exception e) {
+                // Nothing
+            }
+
+            new Thread(() -> {
+                try {
+                    EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, get_project_id(), get_project_id()));
+                } catch (Exception e) {
+                    // Nothing
+                }
+            }).start();
+        }
+
+        return false;
     }
 
 /* ORDER ---------------------------------------------------------------------------------------------------------------*/
