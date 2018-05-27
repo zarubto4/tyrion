@@ -107,6 +107,7 @@ public class Server {
     public static String link_api_swagger;
 
     public static String slack_webhook_url_channel_servers;
+    public static String slack_webhook_url_channel_homer;
     public static String slack_webhook_url_channel_hardware;
 
     /**
@@ -276,6 +277,7 @@ public class Server {
 
         slack_webhook_url_channel_servers = configuration.getString("Slack.servers");
         slack_webhook_url_channel_hardware = configuration.getString("Slack.hardware");
+        slack_webhook_url_channel_homer = configuration.getString("Slack.homer");
     }
 
     /**

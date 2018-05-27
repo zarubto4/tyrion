@@ -22,6 +22,7 @@ import utilities.Server;
 import utilities.enums.ServerMode;
 import utilities.logger.Logger;
 import utilities.scheduler.Scheduled;
+import utilities.slack.Slack;
 import utilities.swagger.input.*;
 
 import java.net.ConnectException;
@@ -237,11 +238,13 @@ public class Job_CheckCompilationLibraries implements Job {
 
                         if (subStrings_main_parts[0] == null) {
                             logger.error("Required Part in Release Tag name for Booloader missing): Type Of Board (compiler_target_name) ");
+                            Slack.post_invalid_bootloader(release.name);
                             continue;
                         }
 
                         if (subStrings_main_parts[1] == null) {
                             logger.error("Required Part in Release Tag name for Booloader missing): Version (v1.0.1)");
+                            Slack.post_invalid_bootloader(release.name);
                             continue;
                         }
 

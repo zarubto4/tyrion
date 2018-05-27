@@ -31,6 +31,7 @@ import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.homer_auto_deploy.models.common.Swagger_ExternalService;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.slack.Slack;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
 import websocket.WS_Message;
 import websocket.interfaces.WS_Homer;
@@ -692,6 +693,10 @@ public class Model_HomerServer extends TaggedModel {
 
         if(server_type == HomerType.PRIVATE) {
             WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerServer.class, this.id, false, get_project_id());
+        }
+
+        if(Server.mode == ServerMode.STAGE) {
+            Slack.homer_server_offline(this);
         }
     }
 

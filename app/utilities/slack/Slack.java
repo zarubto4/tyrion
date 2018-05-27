@@ -1,6 +1,7 @@
 package utilities.slack;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import models.Model_HomerServer;
 import models.Model_ServerError;
 import play.api.Play;
 import play.libs.Json;
@@ -114,6 +115,34 @@ public class Slack {
             e.printStackTrace();
         }
     }
+
+
+    /**
+     * Posts a message to Byzance Slack, chanel #servers on Stage and Production Level - Its Emergency message for DEVOPS
+     * @param server Model_HomerServer message to post.
+     */
+    public static void homer_server_offline(Model_HomerServer server) {
+        try {
+
+            WSClient ws = Play.current().injector().instanceOf(WSClient.class);
+
+            ObjectNode json = Json.newObject();
+            json.put("username", "Tyrion");
+            json.put("icon_emoji", ":tyrion:");
+            json.put("text",  "Homer Server " +"*" + server.name + "*"  +" on Stage Hierarchy is offline!!!\n Please Check it!!!");
+            json.put("mrkdwn", true);
+
+            ws.url(Server.slack_webhook_url_channel_homer)
+                    .setRequestTimeout(Duration.ofSeconds(10))
+                    .post(json.toString())
+                    .toCompletableFuture()
+                    .get();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * Posts a message to Byzance Slack, chanel #servers
