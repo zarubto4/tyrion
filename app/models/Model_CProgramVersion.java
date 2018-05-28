@@ -197,7 +197,8 @@ public class Model_CProgramVersion extends VersionModel {
 
     @JsonIgnore
     public Model_CProgram get_c_program() throws _Base_Result_Exception {
-        return Model_CProgram.getById(get_c_program_id());
+        UUID id = get_c_program_id();
+        return id != null ? Model_CProgram.getById(id) : null;
     }
 
 
@@ -207,8 +208,15 @@ public class Model_CProgramVersion extends VersionModel {
     public void save() {
 
         logger.debug("save :: Creating new Object");
-
         super.save();
+
+        // Add to Cache
+
+        if(get_c_program() != null) {
+            System.out.println("Add To CProgram by get_c_program()");
+            get_c_program().getVersionsId();
+            get_c_program().cache().add(this.getClass(), id);
+        }
 
         new Thread(() -> {
             try {
@@ -217,11 +225,6 @@ public class Model_CProgramVersion extends VersionModel {
                 // Nothing
             }
         }).start();
-
-        // Add to Cache
-        if (c_program != null) {
-            c_program.cache().add(Model_CProgramVersion.class, id);
-        }
     }
 
     @JsonIgnore @Override

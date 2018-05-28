@@ -122,8 +122,6 @@ public class Model_GridProgram extends TaggedModel {
     @JsonIgnore @Override
     public void save() {
 
-        this.blob_link = grid_project.get_path()  + "/grid-programs/"  + UUID.randomUUID();
-
         super.save();
 
         new Thread(() -> {
@@ -188,12 +186,17 @@ public class Model_GridProgram extends TaggedModel {
 
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    private String blob_link;
+    @JsonIgnore @Deprecated
+    private String blob_link; // TODO smazat z Databáze
 
     @JsonIgnore
     public String get_path() {
-        return blob_link;
+
+
+        // FOR OLD already created objects is still using blob_link, but its @Deprecated
+        if(blob_link != null) return blob_link;
+        return get_grid_project().get_path() + "/grid-programs/" + this.id;
+
     }
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/

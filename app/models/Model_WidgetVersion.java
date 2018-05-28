@@ -63,24 +63,25 @@ public class Model_WidgetVersion extends VersionModel {
 
     @JsonIgnore @Override
     public void save() {
-
         logger.debug("save::Creating new Object");
 
         // Save Object
         super.save();
 
+        // Add to Cache
+        if(get_grid_widget() != null) {
+            System.out.println("Add To Widget by get_grid_widget()");
+            get_grid_widget().get_versionsId();
+            get_grid_widget().cache().add(this.getClass(), id);
+        }
+
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, widget.getProjectId(), widget.id));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_grid_widget().getProjectId(), get_grid_widget_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
         }).start();
-
-        // Add to Cache
-        if (widget != null) {
-            widget.cache().add(this.getClass(), id);
-        }
     }
 
     @JsonIgnore @Override

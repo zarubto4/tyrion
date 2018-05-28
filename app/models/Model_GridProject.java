@@ -101,9 +101,6 @@ public class Model_GridProject extends TaggedModel {
     @JsonIgnore @Override
     public void save() {
 
-        // Create Link for Path for File - Like folder structures
-        this.blob_link = project.getPath()  + "/grid-projects/"  + UUID.randomUUID().toString();
-
         // Save Object
         super.save();
 
@@ -174,12 +171,15 @@ public class Model_GridProject extends TaggedModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    private String blob_link;
+    @JsonIgnore @Deprecated
+    private String blob_link;  // TODO SMAZAT z DATAB8ZE
 
     @JsonIgnore
     public String get_path() {
-        return blob_link;
+
+        // FOR OLD already created objects is still using blob_link, but its @Deprecated
+        if(blob_link != null) return blob_link;
+        return get_project().getPath() + "/grid-projects/" + this.id;
     }
 
 

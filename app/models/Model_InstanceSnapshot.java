@@ -967,8 +967,22 @@ public class Model_InstanceSnapshot extends TaggedModel {
         super.save();
 
         this.cache().add(Model_Instance.class, this.get_instance_id());
-        this.get_instance().cache().add(this.getClass(), this.id);
         cache.put(this.id, this);
+
+        // Add to Cache
+        if(get_instance() != null) {
+            System.out.println("Add To Instance by get_instance()");
+            get_instance().getSnapShotsIds();
+            get_instance().cache().add(this.getClass(), id);
+        }
+
+        new Thread(() -> {
+            try {
+                EchoHandler.addToQueue(new WSM_Echo(Model_Instance.class, get_instance().getProjectId(), get_instance_id()));
+            } catch (_Base_Result_Exception e) {
+                // Nothing
+            }
+        }).start();
 
     }
 

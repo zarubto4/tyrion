@@ -290,7 +290,7 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
             }
 
             super.update();
-            this.cacheCleaner();
+            // this.cacheCleaner();
 
         } catch (Result_Error_PermissionDenied e) {
             logger.warn("update::Unauthorized UPDATE operation, its required remove everything from Cache");

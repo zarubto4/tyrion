@@ -114,14 +114,20 @@ public class Model_LibraryVersion extends VersionModel {
 
         super.save();
 
-        new Thread(() -> {
-            EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, library.getProjectId(), library.id));
-        }).start();
-
         // Add to Cache
-        if (library != null) {
-            library.cache().add(this.getClass(), id);
+        if(get_library() != null) {
+            System.out.println("Add To Library by get_library()");
+            get_library().getVersionIds();
+            get_library().cache().add(this.getClass(), id);
         }
+
+        new Thread(() -> {
+            try {
+                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_library().getProjectId(), get_library_id()));
+            } catch (_Base_Result_Exception e) {
+                // Nothing
+            }
+        }).start();
     }
 
     @JsonIgnore @Override

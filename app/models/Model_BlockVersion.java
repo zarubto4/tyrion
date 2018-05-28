@@ -68,6 +68,12 @@ public class Model_BlockVersion extends VersionModel {
         
         super.save();
 
+        // Add to Cache
+        if(get_block() != null) {
+            System.out.println("Add To Blocko by get_block()");
+            get_block().getVersionsId();
+            get_block().cache().add(this.getClass(), id);
+        }
 
         new Thread(() -> {
             try {
@@ -76,8 +82,6 @@ public class Model_BlockVersion extends VersionModel {
                 // Nothing
             }
         }).start();
-
-        block.cache().add(this.getClass(), id);
 
     }
 
