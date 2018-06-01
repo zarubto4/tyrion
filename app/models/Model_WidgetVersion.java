@@ -68,16 +68,18 @@ public class Model_WidgetVersion extends VersionModel {
         // Save Object
         super.save();
 
+        Model_Widget widget = get_grid_widget();
+
         // Add to Cache
-        if(get_grid_widget() != null) {
-            System.out.println("Add To Widget by get_grid_widget()");
-            get_grid_widget().get_versionsId();
-            get_grid_widget().cache().add(this.getClass(), id);
+        if(widget != null) {
+            widget.get_versionsId();
+            widget.cache().add(this.getClass(), id);
+            widget.sort_Model_Model_GridProgramVersion_ids();
         }
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_grid_widget().getProjectId(), get_grid_widget_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, widget.getProjectId(), widget.id));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }

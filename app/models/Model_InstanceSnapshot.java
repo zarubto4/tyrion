@@ -124,7 +124,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
         try {
 
             Model_BProgramVersion b_program_version = get_b_program_version();
-            return b_program_version.grid_project_snapshots;
+            return b_program_version.get_grid_project_snapshots();
 
         } catch (_Base_Result_Exception e){
             //nothing
@@ -144,14 +144,14 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 if (this.get_instance().current_snapshot_id != null && this.get_instance().current_snapshot_id.equals(this.id)) {
                     Swagger_InstanceSnapShotConfiguration configuration = new Swagger_InstanceSnapShotConfiguration();
 
-                    for (Model_BProgramVersionSnapGridProject grid_project_snapshots : b_program_version.grid_project_snapshots) {
+                    for (Model_BProgramVersionSnapGridProject grid_project_snapshots : b_program_version.get_grid_project_snapshots()) {
                         Swagger_InstanceSnapShotConfigurationFile project_config = new Swagger_InstanceSnapShotConfigurationFile();
                         project_config.grid_project_id = grid_project_snapshots.grid_project.id;
 
                         for (Model_BProgramVersionSnapGridProjectProgram program : grid_project_snapshots.grid_programs) {
                             Swagger_InstanceSnapShotConfigurationProgram program_config = new Swagger_InstanceSnapShotConfigurationProgram();
-                            program_config.grid_program_id = program.grid_program().id;
-                            program_config.grid_program_version_id = program.grid_program_version.id;
+                            program_config.grid_program_id = program.get_grid_version_program().get_grid_program_id();
+                            program_config.grid_program_version_id = program.get_grid_program_version_id();
                             program_config.snapshot_settings = GridAccess.PROJECT;
                             program_config.connection_token = get_instance_id() + "/" + program_config.grid_program_id;
 
@@ -974,6 +974,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
             System.out.println("Add To Instance by get_instance()");
             get_instance().getSnapShotsIds();
             get_instance().cache().add(this.getClass(), id);
+            get_instance().sort_Model_InstanceSnapshot_ids();
         }
 
         new Thread(() -> {

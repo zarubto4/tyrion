@@ -75,10 +75,20 @@ public class Model_GridProgram extends TaggedModel {
 
     @JsonIgnore @Transient public List<UUID> get_versionsId() {
         if (cache().gets(Model_GridProgramVersion.class) == null) {
-            cache().add(Model_GridProgramVersion.class,  Model_GridProgramVersion.find.query().where().eq("grid_program.id", id).select("id").findSingleAttributeList());
+            cache().add(Model_GridProgramVersion.class,  Model_GridProgramVersion.find.query().where().ne("deleted", true).eq("grid_program.id", id).select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_GridProgramVersion.class) != null ?  cache().gets(Model_GridProgramVersion.class) : new ArrayList<>();
+    }
+
+    @JsonIgnore
+    public void sort_Model_Model_GridProgramVersion_ids() {
+
+        List<Model_GridProgramVersion> versions = get_versions();
+        this.cache().removeAll(Model_GridProgramVersion.class);
+        versions.stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())
+                .forEach(o -> this.cache().add(Model_GridProgramVersion.class, o.id));
+
     }
 
     @JsonIgnore @Transient public List<Model_GridProgramVersion> get_versions() {
@@ -132,10 +142,10 @@ public class Model_GridProgram extends TaggedModel {
             }
         }).start();
 
-        if (grid_project != null) {
-            grid_project.cache().add(this.getClass(), id);
-        } else {
-            get_grid_project().cache().add(this.getClass(), id);
+        Model_GridProject project = get_grid_project();
+        if (project != null) {
+            project.getGrid_programs_ids();
+            project.cache().add(this.getClass(), id);
         }
 
         cache.put(this.id, this);

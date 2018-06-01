@@ -413,6 +413,7 @@ public class Controller_Blocko extends _BaseController {
             // Ověření programu
             Model_BProgram bProgram = Model_BProgram.getById(b_program_id);
 
+            // System.out.println("bProgramVersion_create");
 
             // První nová Verze
             Model_BProgramVersion version = new Model_BProgramVersion();
@@ -420,34 +421,60 @@ public class Controller_Blocko extends _BaseController {
             version.description = help.description;
             version.b_program   = bProgram;
 
+            // Uložení objektu
+            version.save();
+
             // Vytvořím Snapshoty Verze M_Programu
             if (help.m_project_snapshots != null) {
 
+                // System.out.println("       help.m_project_snapshots != null ");
+                // System.out.println("       help.m_project_snapshots.size: " + help.m_project_snapshots.size());
+
                 for (Swagger_B_Program_Version_New.M_Project_SnapShot help_m_project_snap : help.m_project_snapshots) {
 
-                    Model_GridProject m_project = Model_GridProject.getById(help_m_project_snap.m_project_id);
+                    // System.out.println("        help.help.m_project_snapshots.m_project_id: " +  help_m_project_snap.m_project_id);
+                    // System.out.println("        help.help.m_project_snapshots.m_program_snapshots.size: " +  help_m_project_snap.m_program_snapshots.size());
 
+                    Model_GridProject m_project = Model_GridProject.getById(help_m_project_snap.m_project_id);
 
                     Model_BProgramVersionSnapGridProject snap = new Model_BProgramVersionSnapGridProject();
                     snap.grid_project = m_project;
 
                     for (Swagger_B_Program_Version_New.M_Program_SnapShot help_m_program_snap : help_m_project_snap.m_program_snapshots) {
-                        Model_GridProgramVersion m_program_version = Model_GridProgramVersion.find.query().where().eq("id", help_m_program_snap.version_id).eq("grid_program.id", help_m_program_snap.m_program_id).eq("grid_program.grid_project.id", m_project.id).findOne();
+
+                        System.out.println("            Model_GridProgramVersion id: " + help_m_program_snap.version_id);
+                        System.out.println("            grid_program. id: " + help_m_program_snap.m_program_id);
+
+                        UUID m_program_version_id = Model_GridProgramVersion.find.query().where()
+                                .eq("id", help_m_program_snap.version_id)
+                                .eq("grid_program.id", help_m_program_snap.m_program_id)
+                                .select("id")
+                                .findSingleAttribute();
+
+                        if (m_program_version_id == null) {
+                            logger.error("bProgramVersion_create:: m_program_version is null!! ");
+                            continue;
+                        }
+
+                        Model_GridProgramVersion grid_version = Model_GridProgramVersion.getById(m_program_version_id);
 
                         Model_BProgramVersionSnapGridProjectProgram snap_shot_parameter = new Model_BProgramVersionSnapGridProjectProgram();
 
-                        snap_shot_parameter.grid_program_version = m_program_version;
+
+                        // System.out.println("                    grid_program_version: " + m_program_version.id);
+                        snap_shot_parameter.grid_program_version = grid_version;
                         snap_shot_parameter.grid_project_program_snapshot = snap;
+                        snap_shot_parameter.save();
 
                         snap.grid_programs.add(snap_shot_parameter);
+
                     }
+                    snap.b_program_version = version;
+                    snap.save();
 
                     version.grid_project_snapshots.add(snap);
                 }
             }
-
-            // Uložení objektu
-            version.save();
 
             // Nahrání na Azure
             version.file = Model_Blob.upload(file_content, "blocko.json", bProgram.get_path());
@@ -896,6 +923,8 @@ public class Controller_Blocko extends _BaseController {
             Model_BProgramVersion version = Model_BProgramVersion.getById(help.version_id);
 
             System.out.println("Kontrola version jsem našel " + version.id);
+
+            System.out.println("JE v BProgram Verzi nějaký Grid??  Size: " + version.get_grid_project_snapshots().size());
 
             Model_InstanceSnapshot snapshot = new Model_InstanceSnapshot();
             snapshot.name = help.name;

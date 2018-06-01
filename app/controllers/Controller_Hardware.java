@@ -1717,6 +1717,47 @@ public class Controller_Hardware extends _BaseController {
                     break;
                 }
 
+                case "wdtime" :{
+
+                    if (help.integer_value  == null) {
+                        return badRequest("wdtime must be integer! And minimal value is 30");
+                    }
+
+                    if(help.integer_value < 30) {
+                        help.integer_value = 30;
+                    }
+                    WS_Message_Hardware_set_settings settings =  board.set_hardware_configuration_parameter(help);
+                    break;
+                }
+
+                case "autojump" :{
+
+                    if (help.integer_value  == null) {
+                        return badRequest("autojump must be integer! And minimal value is 30");
+                    }
+
+                    if(help.integer_value < 30) {
+                        help.integer_value = 30;
+                    }
+                    WS_Message_Hardware_set_settings settings =  board.set_hardware_configuration_parameter(help);
+                    break;
+                }
+
+                case "netsource" :{
+
+                    if (help.string_value  == null) {
+                        return badRequest("netsource must be string! Allowed values: 6lowpan, ethernet, gsm");
+                    }
+
+                    if(!(help.string_value.equals("ethernet") || help.string_value.equals("6lowpan")|| help.string_value.equals("gsm"))) {
+                        return badRequest("netsource must be string! Allowed values: 6lowpan, ethernet, gsm");
+                    }
+
+                    WS_Message_Hardware_set_settings settings =  board.set_hardware_configuration_parameter(help);
+                    break;
+                }
+
+
                 default: {
 
                     try {

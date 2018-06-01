@@ -683,20 +683,24 @@ public class Model_HomerServer extends TaggedModel {
     @JsonIgnore
     @Transient
     public void is_disconnect() {
-        logger.debug("is_disconnect:: Tyrion lost connection with Homer server: " + id);
-        make_log_disconnect();
+        try {
+            logger.error("is_disconnect:: Tyrion lost connection with Homer server: " + id);
+            make_log_disconnect();
 
-        // Send echo to all connected users (its public servers)
-        if (server_type == HomerType.PUBLIC || server_type == HomerType.MAIN || server_type == HomerType.BACKUP) {
-            WS_Message_Online_Change_status.synchronize_online_state_with_becki_public_objects(Model_HomerServer.class, this.id, false);
-        }
+            // Send echo to all connected users (its public servers)
+            if (server_type == HomerType.PUBLIC || server_type == HomerType.MAIN || server_type == HomerType.BACKUP) {
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_public_objects(Model_HomerServer.class, this.id, false);
+            }
 
-        if(server_type == HomerType.PRIVATE) {
-            WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerServer.class, this.id, false, get_project_id());
-        }
+            if (server_type == HomerType.PRIVATE) {
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerServer.class, this.id, false, get_project_id());
+            }
 
-        if(Server.mode == ServerMode.STAGE) {
-            Slack.homer_server_offline(this);
+            if (Server.mode == ServerMode.STAGE) {
+                Slack.homer_server_offline(this);
+            }
+        } catch (Exception e) {
+
         }
     }
 

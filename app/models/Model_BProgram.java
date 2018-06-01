@@ -43,7 +43,8 @@ public class Model_BProgram extends TaggedModel {
     public List<Model_BProgramVersion> program_versions() {
         try {
 
-            return getVersions().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList());
+            return getVersions();
+
         } catch(_Base_Result_Exception e){
             //nothing
             return null;
@@ -82,11 +83,20 @@ public class Model_BProgram extends TaggedModel {
     public List<UUID> getVersionsIds() {
 
         if (cache().gets(Model_BProgramVersion.class) == null) {
-            cache().add(Model_BProgramVersion.class,  Model_BProgramVersion.find.query().where().eq("b_program.id", id).select("id").findSingleAttributeList());
+            cache().add(Model_BProgramVersion.class,  Model_BProgramVersion.find.query().where().ne("deleted", true).eq("b_program.id", id).select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_BProgramVersion.class) != null ?  cache().gets(Model_BProgramVersion.class) : new ArrayList<>();
     }
+
+    @JsonIgnore
+    public void sort_Model_Model_BProgramVersion_ids() {
+        List<Model_BProgramVersion> versions = getVersions();
+        this.cache().removeAll(Model_BProgramVersion.class);
+        versions.stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())
+                .forEach(o -> this.cache().add(Model_BProgramVersion.class, o.id));
+    }
+
 
     @JsonIgnore
     public List<Model_BProgramVersion> getVersions() {
@@ -113,6 +123,8 @@ public class Model_BProgram extends TaggedModel {
     public void save() {
 
         super.save();
+
+        Model_Project project = getProject();
 
         if(project != null) {
             project.cache().add(this.getClass(), this.id);

@@ -33,20 +33,27 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
 
 /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @ManyToOne public Model_BProgramVersionSnapGridProject grid_project_program_snapshot;
-    @JsonIgnore @ManyToOne public Model_GridProgramVersion grid_program_version;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BProgramVersionSnapGridProject grid_project_program_snapshot;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_GridProgramVersion grid_program_version;
+
+
+    // Don't return ID of this object throw Swagger
+    @JsonIgnore
+    public UUID get_id() {
+        return this.id;
+    }
 
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Short_Reference grid_program() {
         try {
-            return new Swagger_Short_Reference(grid_program_version.get_grid_program().id, grid_program_version.get_grid_program().name, grid_program_version.get_grid_program().description);
+            return new Swagger_Short_Reference(get_grid_version_program().get_grid_program().id, get_grid_version_program().get_grid_program().name, get_grid_version_program().get_grid_program().description);
         } catch (_Base_Result_Exception e) {
             // nothing
             return null;
         } catch (Exception e) {
-            logger.internalServerError(e);
+            // logger.internalServerError(e);
             return null;
         }
     }
@@ -54,14 +61,13 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
     @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Short_Reference grid_program_version() {
         try {
-            return new Swagger_Short_Reference(grid_program_version.id, grid_program_version.name, grid_program_version.description);
+            return new Swagger_Short_Reference(get_grid_program_version_id(), get_grid_version_program().name, get_grid_version_program().description);
 
         }catch (_Base_Result_Exception e){
             //nothing
             return null;
         } catch (Exception e) {
-
-            logger.internalServerError(e);
+            // logger.internalServerError(e);
             return null;
         }
     }
@@ -69,10 +75,53 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
 
 /* JSON IGNORE  ---------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
+    public UUID get_grid_program_version_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_GridProgramVersion.class) == null) {
+            cache().add(Model_GridProgramVersion.class, Model_GridProgramVersion.find.query().where().eq("m_program_instance_parameters.id", id).select("id").findSingleAttributeList());
+        }
+
+        return cache().get(Model_GridProgramVersion.class);
+
+    }
+
+    @JsonIgnore
+    public Model_GridProgramVersion get_grid_version_program() throws _Base_Result_Exception {
+        try {
+            return Model_GridProgramVersion.getById(get_grid_program_version_id());
+        }catch (Exception e) {
+            // logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public UUID get_b_program_grid_version_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_BProgramVersionSnapGridProject.class) == null) {
+            cache().add(Model_BProgramVersionSnapGridProject.class, Model_GridProgramVersion.find.query().where().eq("grid_programs.id", id).select("id").findSingleAttributeList());
+        }
+
+        return cache().get(Model_BProgramVersionSnapGridProject.class);
+
+    }
+
+    @JsonIgnore
+    public Model_BProgramVersionSnapGridProject get_b_program_grid_version() throws _Base_Result_Exception {
+        try {
+            return Model_BProgramVersionSnapGridProject.getById(get_b_program_grid_version_id());
+        }catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
+        logger.trace("save :: Model_BProgramVersionSnapGridProjectProgram Creating new Object");
         super.save();
     }
 
@@ -90,18 +139,18 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
 
     @JsonIgnore @Override  @Transient public void check_read_permission() throws _Base_Result_Exception  {
         if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProjectProgram_read.name())) return;
-        grid_project_program_snapshot.check_update_permission();
+        get_b_program_grid_version().check_update_permission();
 
     }
 
     @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProjectProgram_update.name())) return;
-        grid_project_program_snapshot.check_update_permission();
+        get_b_program_grid_version().check_update_permission();
     }
 
     @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProjectProgram_delete.name())) return;
-        grid_project_program_snapshot.check_update_permission();
+        get_b_program_grid_version().check_update_permission();
     }
 
     public enum Permission { BProgramVersionSnapGridProjectProgram_create, BProgramVersionSnapGridProjectProgram_update, BProgramVersionSnapGridProjectProgram_read, BProgramVersionSnapGridProjectProgram_delete }

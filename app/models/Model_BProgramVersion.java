@@ -33,13 +33,14 @@ public class Model_BProgramVersion extends VersionModel {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @ManyToOne  public Model_Library library;
-    @JsonIgnore @OneToMany(mappedBy = "example_library", cascade = CascadeType.ALL)  public List<Model_CProgram> examples = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "example_library")  public List<Model_CProgram> examples = new ArrayList<>();
 
-    @JsonIgnore @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)   public Model_BProgram b_program;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)   public Model_BProgram b_program;
 
     @JsonIgnore public String additional_json_configuration;
 
-    @OneToMany(mappedBy = "b_program_version", cascade = CascadeType.ALL) public List<Model_BProgramVersionSnapGridProject> grid_project_snapshots = new ArrayList<>();    // Vazba kvůli puštěným B_programům
+    @JsonIgnore  @OneToMany(mappedBy = "b_program_version", fetch = FetchType.LAZY)
+    public List<Model_BProgramVersionSnapGridProject> grid_project_snapshots = new ArrayList<>();    // Vazba kvůli puštěným B_programům
 
     // B_Program - Instance
     @JsonIgnore @OneToMany(mappedBy="b_program_version", fetch = FetchType.LAZY) public List<Model_InstanceSnapshot> instances = new ArrayList<>();
@@ -49,7 +50,7 @@ public class Model_BProgramVersion extends VersionModel {
     @JsonProperty
     public String program() {
         // TODO Hodně náročné na stahování do Cahce - Nejlépe takový objekt na linky, že sám sebe zahodí po vypršení platnosti
-        // Myslím, že jsem ho někde programoval!
+        // Myslím, že jsem ho někde programoval! Tom
         try {
 
             Model_Blob blob = Model_Blob.find.query().where().eq("b_program_version.id", id).eq("name", "blocko.json").findOne();
@@ -64,8 +65,50 @@ public class Model_BProgramVersion extends VersionModel {
             return null;
         }
     }
+    @JsonProperty @Transient public List<Model_BProgramVersionSnapGridProject> grid_project_snapshots() {
+        try {
+            return get_grid_project_snapshots();
+        } catch (_Base_Result_Exception e) {
+            // nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public List<UUID> get_grid_snapshot_ids() throws _Base_Result_Exception {
+
+        if (cache().gets(Model_BProgramVersionSnapGridProject.class) == null) {
+            cache().add(Model_BProgramVersionSnapGridProject.class, Model_BProgramVersionSnapGridProject.find.query().where().eq("b_program_version.id", id).select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_BProgramVersionSnapGridProject.class) != null ?  cache().gets(Model_BProgramVersionSnapGridProject.class) : new ArrayList<>();
+
+    }
+
+    @JsonIgnore
+    public List<Model_BProgramVersionSnapGridProject> get_grid_project_snapshots() {
+        try {
+
+            List<Model_BProgramVersionSnapGridProject> list = new ArrayList<>();
+
+            for (UUID id : get_grid_snapshot_ids()) {
+                list.add(Model_BProgramVersionSnapGridProject.getById(id));
+            }
+
+            return list;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new ArrayList<>();
+        }
+    }
+
+
 
     @JsonIgnore
     public UUID get_b_program_id() throws _Base_Result_Exception {
@@ -98,13 +141,20 @@ public class Model_BProgramVersion extends VersionModel {
 
         super.save();
 
+
+        System.out.println("Uložil jsem BProgram Verzi id: " + this.id);
+
+        Model_BProgram program = get_b_program();
+
         new Thread(() -> {
-            EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, get_b_program().getProjectId(), get_b_program_id()));
+            EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, program.getProjectId(), program.id));
         }).start();
 
         // Add to Cache
-        if (get_b_program() != null) {
-            get_b_program().cache().add(this.getClass(), id);
+        if (program != null) {
+            program.getVersionsIds();
+            program.cache().add(this.getClass(), this.id);
+            program.sort_Model_Model_BProgramVersion_ids();
         }
     }
 
@@ -129,8 +179,6 @@ public class Model_BProgramVersion extends VersionModel {
 
         logger.debug("delete::Delete object Id: {}",  this.id);
 
-        super.delete();
-
         // Remove from Cache
         try {
             get_b_program().cache().remove(this.getClass(), id);
@@ -145,6 +193,8 @@ public class Model_BProgramVersion extends VersionModel {
                 // Nothing
             }
         }).start();
+
+        super.delete();
 
         return false;
     }

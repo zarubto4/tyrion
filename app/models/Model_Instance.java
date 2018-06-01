@@ -37,6 +37,7 @@ import websocket.messages.homer_instance_with_tyrion.*;
 
 import javax.persistence.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @ApiModel(description = "Model of Instance", value = "Instance")
@@ -311,6 +312,16 @@ public class Model_Instance extends TaggedModel {
             logger.internalServerError(e);
             return null;
         }
+    }
+
+    @JsonIgnore
+    public void sort_Model_InstanceSnapshot_ids() {
+
+        List<Model_InstanceSnapshot> snapshots = getSnapShots();
+        this.cache().removeAll(Model_InstanceSnapshot.class);
+        snapshots.stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())
+                .forEach(o -> this.cache().add(Model_InstanceSnapshot.class, o.id));
+
     }
 
 

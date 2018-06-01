@@ -100,16 +100,18 @@ public class Model_GridProgramVersion extends VersionModel {
 
         super.save();
 
+        Model_GridProgram program = get_grid_program();
+
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, grid_program.get_grid_project().get_project_id(), grid_program.id));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, program.get_grid_project().get_project_id(), program.id));
             } catch (_Base_Result_Exception e) {
                // Nothing
             }
         }).start();
 
-        grid_program.cache().add(this.getClass(), id);
-
+        program.cache().add(this.getClass(), id);
+        program.sort_Model_Model_GridProgramVersion_ids();
     }
 
     @JsonIgnore @Override

@@ -23,6 +23,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Entity
@@ -111,7 +112,7 @@ public class Model_CProgram extends TaggedModel {
         return cache().get(Model_Project.class);
     }
 
-    @JsonIgnore @Transient public Model_Project get_project() throws _Base_Result_Exception {
+    @JsonIgnore @Transient public Model_Project getProject() throws _Base_Result_Exception {
         try {
             return Model_Project.getById(getProjectId());
         }catch (Exception e) {
@@ -123,11 +124,23 @@ public class Model_CProgram extends TaggedModel {
     @JsonIgnore @Transient public List<UUID> getVersionsId() {
 
         if (cache().gets(Model_CProgramVersion.class) == null) {
-            cache().add(Model_CProgramVersion.class, Model_CProgramVersion.find.query().where().eq("c_program.id", id).eq("deleted", false).order().desc("created").select("id").findSingleAttributeList());
+            cache().add(Model_CProgramVersion.class, Model_CProgramVersion.find.query().where().eq("c_program.id", id).ne("deleted", true).order().desc("created").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_CProgramVersion.class) != null ?  cache().gets(Model_CProgramVersion.class) : new ArrayList<>();
     }
+
+
+    @JsonIgnore
+    public void sort_Model_Model_CProgramVersion_ids() {
+
+        List<Model_CProgramVersion> versions = getVersions();
+        this.cache().removeAll(Model_CProgramVersion.class);
+        versions.stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())
+                .forEach(o -> this.cache().add(Model_CProgramVersion.class, o.id));
+
+    }
+
 
     @JsonIgnore @Transient public List<Model_CProgramVersion> getVersions() {
         try {
@@ -173,6 +186,8 @@ public class Model_CProgram extends TaggedModel {
 
         super.save();
 
+        Model_Project project = getProject();
+
         // Call notification about project update
         if (project != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, project.id, project.id))).start();
 
@@ -208,7 +223,7 @@ public class Model_CProgram extends TaggedModel {
         if(publish_type == ProgramType.PRIVATE) {
 
             try {
-                get_project().cache().remove(this.getClass(), id);
+                getProject().cache().remove(this.getClass(), id);
             } catch (Exception e) {
                 // Nothing
             }
@@ -237,15 +252,15 @@ public class Model_CProgram extends TaggedModel {
     public String get_path() {
 
         // C_Program is Private registred under Project
-        if (get_project() != null) {
-            return get_project().getPath() + "/c-programs/" + this.id;
+        if (getProject() != null) {
+            return getProject().getPath() + "/c-programs/" + this.id;
         } else {
 
             if(getProjectId() == null) {
                 logger.debug("save :: is a public Program");
                 return "public-c-programs/" + this.id;
             }else {
-               return get_project().getPath() + "/c-programs/" + this.id;
+               return getProject().getPath() + "/c-programs/" + this.id;
             }
         }
     }
@@ -276,7 +291,7 @@ public class Model_CProgram extends TaggedModel {
             }
 
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_update_permission();
+            this.getProject().check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
 
         } catch (_Base_Result_Exception e) {
@@ -299,7 +314,7 @@ public class Model_CProgram extends TaggedModel {
 
 
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_read_permission();
+            this.getProject().check_read_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
 
         } catch (_Base_Result_Exception e) {
@@ -320,7 +335,7 @@ public class Model_CProgram extends TaggedModel {
                 throw new Result_Error_PermissionDenied();
             }
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_update_permission();
+            this.getProject().check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
 
         } catch (_Base_Result_Exception e) {

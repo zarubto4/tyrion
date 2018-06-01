@@ -12,7 +12,9 @@ import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.models_update_echo.EchoHandler;
 import utilities.swagger.output.Swagger_Short_Reference;
+import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -30,12 +32,16 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
 
 /* DATABASE VALUE  ----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)      public Model_BProgramVersion b_program_version;
+    @JsonIgnore @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)      public Model_BProgramVersion b_program_version;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)      public Model_GridProject grid_project;
     @JsonProperty @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "grid_project_program_snapshot") public List<Model_BProgramVersionSnapGridProjectProgram> grid_programs = new ArrayList<>(); // Verze M_Programu
 
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
+    public UUID get_id() {
+        return this.id;
+    }
 
     @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Short_Reference grid_project() {
@@ -54,6 +60,13 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Override
+    public void save() {
+
+        logger.trace("save :: Model_BProgramVersionSnapGridProject Creating new Object");
+        super.save();
+
+    }
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/

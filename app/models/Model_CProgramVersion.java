@@ -189,7 +189,7 @@ public class Model_CProgramVersion extends VersionModel {
     public UUID get_c_program_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_CProgram.class) == null) {
-            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("versions.id", id).select("id").findSingleAttribute());
+            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("deleted", false).eq("versions.id", id).select("id").findSingleAttribute());
         }
 
         return cache().get(Model_CProgram.class);
@@ -212,15 +212,18 @@ public class Model_CProgramVersion extends VersionModel {
 
         // Add to Cache
 
+        Model_CProgram program = get_c_program();
+
         if(get_c_program() != null) {
             System.out.println("Add To CProgram by get_c_program()");
-            get_c_program().getVersionsId();
-            get_c_program().cache().add(this.getClass(), id);
+            program.getVersionsId();
+            program.cache().add(this.getClass(), id);
+            program.sort_Model_Model_CProgramVersion_ids();
         }
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, c_program.getProjectId(), c_program.id));
+                EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, program.getProjectId(), program.id));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }

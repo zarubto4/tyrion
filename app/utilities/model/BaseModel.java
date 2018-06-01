@@ -97,21 +97,42 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
 
         public void add(Class c, UUID id){
             try {
+
                 if (id != null) {
                     if (!cash_map.containsKey(c)) {
-                        cash_map.put(c, Collections.singletonList(id));
+                       // System.out.println("IDCache:: not contains KEy");
+
+                        // Create List ArraList <- its not possible to use  Collections.singletonList(id))
+                        // * @throws UnsupportedOperationException if the <tt>add</tt> operation
+                        // *  is not supported by singletonList
+                        List<UUID> list = new ArrayList<>();
+                        list.add(id);
+
+                        cash_map.put(c, list);
                     } else {
                         if (cash_map.get(c) != null) {
-                            List<UUID> list = cash_map.get(c);
-                            synchronized (list) {
-                                list.add(id);
-                            }
+                            // System.out.println("IDCache:: add Id: " + id);
+                            cash_map.get(c).add(id);
+
+                           // System.out.println("IDCache:: contains now: " + cash_map.get(c));
+
                         } else {
-                            cash_map.put(c, Collections.singletonList(id));
+                          //  System.out.println("IDCache:: add singletonList Id: " + id);
+
+                            // Create List ArraList <- its not possible to use  Collections.singletonList(id))
+                            // * @throws UnsupportedOperationException if the <tt>add</tt> operation
+                            // *  is not supported by singletonList
+                            List<UUID> list = new ArrayList<>();
+                            list.add(id);
+
+                            cash_map.put(c, list);
                         }
                     }
+                } else {
+                    System.err.println("IDCache: add id is null for class: " + c.getSimpleName());
                 }
             } catch (Exception e){
+                e.printStackTrace();
                 // Nothing
             }
         }
@@ -133,9 +154,10 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
                 if(id != null)
                 if(cash_map.containsKey(c)){
                     System.out.println("BaseModel Remove - Class " + c.getSimpleName() + " id " + id);
-                    System.out.println("BaseModel Remove - Conent " + cash_map.get(c) );
-                    System.out.println("BaseModel Remove - Conent size " + cash_map.get(c).size() );
+                    System.out.println("BaseModel Remove - Content " + cash_map.get(c) );
+                    System.out.println("BaseModel Remove - Content size " + cash_map.get(c).size() );
                     cash_map.get(c).remove(id);
+                    System.out.println("BaseModel Remove - Content " + cash_map.get(c) );
                 }
             } catch (Exception e){
                 logger.internalServerError(e);

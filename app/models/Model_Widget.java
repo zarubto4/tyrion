@@ -9,7 +9,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.CacheField;
-import utilities.cache.Cached;
 import utilities.enums.ProgramType;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
@@ -24,6 +23,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @ApiModel( value = "Widget", description = "Model of Widget")
@@ -129,7 +129,7 @@ public class Model_Widget extends TaggedModel {
     }
 
     @JsonIgnore
-    public Model_Project get_project() throws _Base_Result_Exception {
+    public Model_Project getProject() throws _Base_Result_Exception {
 
         try {
             return Model_Project.getById(getProjectId());
@@ -141,12 +141,21 @@ public class Model_Widget extends TaggedModel {
     @JsonIgnore
     public List<UUID> get_versionsId() {
         if (cache().gets(Model_WidgetVersion.class) == null) {
-            cache().add(Model_WidgetVersion.class, Model_WidgetVersion.find.query().where().eq("widget.id", id).eq("deleted", false).select("id").findSingleAttributeList());
+            cache().add(Model_WidgetVersion.class, Model_WidgetVersion.find.query().where().eq("widget.id", id).ne("deleted", true).select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_WidgetVersion.class) != null ?  cache().gets(Model_WidgetVersion.class) : new ArrayList<>();
     }
 
+    @JsonIgnore
+    public void sort_Model_Model_GridProgramVersion_ids() {
+
+        List<Model_WidgetVersion> versions = get_versions();
+        this.cache().removeAll(Model_WidgetVersion.class);
+        versions.stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())
+                .forEach(o -> this.cache().add(Model_WidgetVersion.class, o.id));
+
+    }
     @JsonIgnore
     public List<Model_WidgetVersion> get_versions() {
         try {
@@ -200,6 +209,8 @@ public class Model_Widget extends TaggedModel {
         // Save Object
         super.save();
 
+        Model_Project project = getProject();
+
         // Add to Cache
         if (project != null) {
             new Thread(() -> { EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, project.id, project.id)); }).start();
@@ -238,7 +249,7 @@ public class Model_Widget extends TaggedModel {
         if(publish_type == ProgramType.PRIVATE) {
 
             try {
-                get_project().cache().remove(this.getClass(), id);
+                getProject().cache().remove(this.getClass(), id);
             } catch (Exception e) {
                 // Nothing
             }
@@ -316,7 +327,7 @@ public class Model_Widget extends TaggedModel {
             if (_BaseController.person().has_permission(Permission.Widget_read.name())) return;
 
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_read_permission();
+            this.getProject().check_read_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
 
         } catch (_Base_Result_Exception e) {
@@ -339,7 +350,7 @@ public class Model_Widget extends TaggedModel {
             }
 
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_update_permission();
+            this.getProject().check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
 
         } catch (_Base_Result_Exception e) {
@@ -363,7 +374,7 @@ public class Model_Widget extends TaggedModel {
             }
 
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_read_permission();
+            this.getProject().check_read_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
 
         } catch (_Base_Result_Exception e) {
