@@ -134,6 +134,14 @@ public class Model_GridProgram extends TaggedModel {
 
         super.save();
 
+
+
+        Model_GridProject grid_project = get_grid_project();
+        if (grid_project != null) {
+            grid_project.getGrid_programs_ids();
+            grid_project.cache().add(this.getClass(), id);
+        }
+
         new Thread(() -> {
             try {
                 EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, grid_project.get_project_id(), grid_project.id));
@@ -141,12 +149,6 @@ public class Model_GridProgram extends TaggedModel {
                 // Nothing
             }
         }).start();
-
-        Model_GridProject project = get_grid_project();
-        if (project != null) {
-            project.getGrid_programs_ids();
-            project.cache().add(this.getClass(), id);
-        }
 
         cache.put(this.id, this);
     }
