@@ -39,9 +39,6 @@ import java.util.regex.Pattern;
 @Scheduled("30 0/1 * * * ?")
 public class Job_CheckCompilationLibraries implements Job {
 
-    @Inject public static _BaseFormFactory baseFormFactory;
-    @Inject public static Config configuration; // Its Required to set this in Server.class Component
-
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
     private static final Logger logger = new Logger(Job_CheckCompilationLibraries.class);
@@ -50,10 +47,10 @@ public class Job_CheckCompilationLibraries implements Job {
 
     private WSClient ws;
     private Config config;
-    private FormFactory formFactory;
+    private _BaseFormFactory formFactory;
 
     @Inject
-    public Job_CheckCompilationLibraries(WSClient ws, Config config, FormFactory formFactory) {
+    public Job_CheckCompilationLibraries(WSClient ws, Config config, _BaseFormFactory formFactory) {
         this.ws = ws;
         this.config = config;
         this.formFactory = formFactory;
@@ -104,7 +101,7 @@ public class Job_CheckCompilationLibraries implements Job {
                 request_list.set("list", ws_response_get_all_releases.asJson());
 
                 // Get and Validate Object
-                Swagger_GitHubReleases_List help = baseFormFactory.formFromJsonWithValidation(Swagger_GitHubReleases_List.class, request_list);
+                Swagger_GitHubReleases_List help = formFactory.formFromJsonWithValidation(Swagger_GitHubReleases_List.class, request_list);
 
 
                 // Seznam Release z GitHubu v upravené podobě
@@ -140,7 +137,7 @@ public class Job_CheckCompilationLibraries implements Job {
                             }
                         }
 
-                        List<String> obsolete_versions = configuration.getStringList("compilation_settings.obsolete_lib_version");
+                        List<String> obsolete_versions = config.getStringList("compilation_settings.obsolete_lib_version");
 
                         if(obsolete_versions.contains(release.tag_name)) {
                             logger.debug("check_version_thread: Tag version  {} is mark as obsolete", release.tag_name);
@@ -214,122 +211,10 @@ public class Job_CheckCompilationLibraries implements Job {
                 }
 
                 logger.trace("check_version_thread:: all Library type of Board synchronized");
-
-                for (UUID uuid : hardwareTypes_id) {
-
-                    Model_HardwareType hardwareType = Model_HardwareType.getById(uuid);
-
-                    //System.out.println("Získávám z databáze všechny bootloadery");
-                    List<Model_BootLoader> bootLoaders = hardwareType.boot_loaders_get_for_github_include_removed();
-
-                    // List který budu doplnovat
-                    List<Model_BootLoader> bootLoaders_for_add = new ArrayList<>();
-
-                    // Pokud knihovnu
-                    synchro_bootloaders:
-                    for (Swagger_GitHubReleases release : releases) {
-
-                        // Nejedná se o bootloader
-                        if (!release.tag_name.contains("bootloader")) {
-                            continue;
-                        }
-
-                        String[] subStrings_main_parts = release.tag_name.split("_bootloader_");
-
-                        if (subStrings_main_parts[0] == null) {
-                            logger.error("Required Part in Release Tag name for Booloader missing): Type Of Board (compiler_target_name) ");
-                            Slack.post_invalid_bootloader(release.name);
-                            continue;
-                        }
-
-                        if (subStrings_main_parts[1] == null) {
-                            logger.error("Required Part in Release Tag name for Booloader missing): Version (v1.0.1)");
-                            Slack.post_invalid_bootloader(release.name);
-                            continue;
-                        }
-
-                        // Kontrola zda už neexistuje
-                        for (Model_BootLoader bootLoader : bootLoaders) {
-                            if (bootLoader.version_identifier.equals(subStrings_main_parts[1])) {
-                                // Je již vytvořen
-                                continue synchro_bootloaders;
-                            }
-                        }
-
-                        // Nejedná se o správný typ desky
-                        if (!release.tag_name.contains(hardwareType.compiler_target_name)) {
-                            continue;
-                        }
-
-                        // nebráno v potaz
-                        if (release.prerelease || release.draft) {
-                            logger.trace("check_version_thread:: prerelease == true");
-                            continue;
-                        }
-
-                        Model_BootLoader new_bootLoader = new Model_BootLoader();
-                        new_bootLoader.name = release.name;
-                        new_bootLoader.changing_note = release.body;
-                        new_bootLoader.description = "Bootloader - automatic synchronize with GitHub Repository";
-                        new_bootLoader.version_identifier = subStrings_main_parts[1];
-                        new_bootLoader.hardware_type = hardwareType;
-
-                        // Find in Assest required file
-                        String asset_url = null;
-                        for (Swagger_GitHubReleases_Asset asset : release.assets) {
-                            if (asset.name.equals("bootloader.bin")) {
-                                asset_url = asset.url;
-                            }
-                        }
-
-                        if (asset_url == null) {
-                            logger.error("check_version_thread:: Required file bootloader.bin in release {} not found", release.tag_name);
-                            continue;
-                        }
-
-                        WSResponse ws_download_file = download_file(asset_url);
-                        if (ws_download_file == null) {
-                            logger.error("Error in downloading file");
-                            continue;
-                        }
-
-
-                        if (ws_download_file.getStatus() != 200) {
-                            logger.error("check_version_thread:: Download Bootloader [] unsuccessful", release.tag_name);
-                            logger.error("reason", ws_download_file.getBody());
-                            return;
-                        }
-
-                        String file_body = Model_Blob.get_encoded_binary_string_from_body(ws_download_file.asByteArray());
-
-                        // Naheraji na Azure
-                        String file_name = "bootloader.bin";
-                        String file_path = new_bootLoader.get_Container().getName() + "/" + UUID.randomUUID().toString() + "/" + file_name;
-
-                        logger.debug("check_version_thread:: bootLoader_uploadFile::  File Name " + file_name);
-                        logger.debug("check_version_thread:: bootLoader_uploadFile::  File Path " + file_path);
-
-                        new_bootLoader.file = Model_Blob.upload(file_body, "application/octet-stream", file_name, file_path);
-                        new_bootLoader.save();
-
-                        // Nefungovalo to korektně občas - tak se to ukládá oboustraně!
-                        new_bootLoader.file.boot_loader = new_bootLoader;
-                        new_bootLoader.file.update();
-                        new_bootLoader.refresh();
-
-                        bootLoaders_for_add.add(new_bootLoader);
-
-                        hardwareType.boot_loaders().addAll(bootLoaders_for_add);
-                        hardwareType.update();
-                    }
-                }
-
                 logger.trace("check_version_thread:: all Bootloader in type of Board synchronized");
 
             } catch (F.PromiseTimeoutException e ) {
                 logger.error("Job_CheckCompilationLibraries:: PromiseTimeoutException! - Probably Network is unreachable", new Date());
-            } catch (ConnectException e) {
-                logger.error("Job_CheckCompilationLibraries:: ConnectException! - Probably Network is unreachable", new Date());
             } catch (Exception e) {
                 logger.internalServerError(e);
             }

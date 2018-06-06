@@ -225,9 +225,20 @@ public class Model_HardwareType extends NamedModel {
     @JsonIgnore // Pouze Pro synchronizaci s GitHubem - musí obsahovat i smazané
     public List<UUID> get_bootloaders_id() {
 
+
+        System.out.println("Kontrola Bootloaderů v Hardware Type: ");
+
         if (cache().gets(Model_BootLoader.class) == null) {
-            cache().add(Model_BootLoader.class,  Model_BootLoader.find.query().where().eq("hardware_type.id", id).order().desc("name").select("id").findSingleAttributeList());
+            System.out.println("Bootloadery nemám, a tak je hledám");
+            cache().add(Model_BootLoader.class,  Model_BootLoader.find.query().where()
+                    .eq("hardware_type.id", id)
+                    .ne("deleted", true)
+                    .order().desc("name")
+                    .select("id")
+                    .findSingleAttributeList());
         }
+
+        System.out.println("Seznam Nalezených Bootloaderů: " + cache().gets(Model_BootLoader.class));
 
         return cache().gets(Model_BootLoader.class) != null ?  cache().gets(Model_BootLoader.class) : new ArrayList<>();
 
@@ -239,7 +250,9 @@ public class Model_HardwareType extends NamedModel {
 
             List<Model_BootLoader> list = new ArrayList<>();
 
-            for (UUID id : get_bootloaders_id() ) {
+            for (UUID id : get_bootloaders_id()) {
+
+                System.out.println("get_bootloaders id: " + id);
                 list.add(Model_BootLoader.getById(id));
             }
 
@@ -312,10 +325,10 @@ public class Model_HardwareType extends NamedModel {
 
     @JsonIgnore
     public UUID get_main_boot_loader_id() throws _Base_Result_Exception {
-        if (cache().get(Model_BootLoader.class) == null) {
-            cache().add(Model_BootLoader.class, (UUID) Model_BootLoader.find.query().where().eq("main_hardware_type.id", id).select("id").findSingleAttribute());
+        if (cache().get(Model_HardwareType.Model_HardwareType_Main.class) == null) {
+            cache().add(Model_HardwareType.Model_HardwareType_Main.class, (UUID) Model_BootLoader.find.query().where().eq("main_hardware_type.id", id).select("id").findSingleAttribute());
         }
-        return cache().get(Model_BootLoader.class);
+        return cache().get(Model_HardwareType.Model_HardwareType_Main.class);
     }
 
     @JsonIgnore
@@ -373,6 +386,7 @@ public class Model_HardwareType extends NamedModel {
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
+    public class Model_HardwareType_Main {}
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
@@ -458,9 +472,6 @@ public class Model_HardwareType extends NamedModel {
             return null;
         }
     }
-
-
-
 
     public enum Permission { HardwareType_create, HardwareType_edit, HardwareType_update, HardwareType_delete, HardwareType_register_new_device, HardwareType_bootloader,  HardwareType_c_program_edit_permission, HardwareType_test_c_program_edit_permission }
 

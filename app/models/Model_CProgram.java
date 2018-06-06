@@ -105,11 +105,17 @@ public class Model_CProgram extends TaggedModel {
 
     @JsonIgnore @Transient public UUID getProjectId() throws _Base_Result_Exception  {
 
-        if (cache().get(Model_Project.class) == null) {
-            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("c_programs.id", id).select("id").findSingleAttribute());
-        }
+        if(publish_type == ProgramType.PRIVATE) {
 
-        return cache().get(Model_Project.class);
+            if (cache().get(Model_Project.class) == null) {
+                cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("c_programs.id", id).select("id").findSingleAttribute());
+            }
+
+            return cache().get(Model_Project.class);
+
+        } else {
+            return null;
+        }
     }
 
     @JsonIgnore @Transient public Model_Project getProject() throws _Base_Result_Exception {

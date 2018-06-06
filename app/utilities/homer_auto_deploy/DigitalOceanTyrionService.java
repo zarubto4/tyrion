@@ -13,6 +13,7 @@ import models.Model_HomerServer;
 import models.Model_Product;
 import org.ehcache.Cache;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import utilities.Server;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.homer_auto_deploy.models.common.*;
@@ -37,8 +38,6 @@ public class DigitalOceanTyrionService {
 
     /*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
-    @Inject public static _BaseFormFactory baseFormFactory; // Its Required to set this in Server.class Component
-    @Inject public static Config configuration; // Its Required to set this in Server.class Component
     public static  DigitalOcean apiClient = new DigitalOceanClient( "2521a027f6120a471fa1187060cc56b58e6a42dbd3e56406606488d9e2d7c07f");
 
     /**
@@ -46,7 +45,15 @@ public class DigitalOceanTyrionService {
      */
     public static Cache<String, Swagger_ServerRegistration_FormData> tokenCache;
 
-    public DigitalOceanTyrionService(){
+    private static WSClient ws;
+    private static Config configuration;
+    private static _BaseFormFactory baseFormFactory;
+
+    @Inject
+    public DigitalOceanTyrionService(WSClient ws, Config config, _BaseFormFactory formFactory) {
+        DigitalOceanTyrionService.ws = ws;
+        DigitalOceanTyrionService.configuration = config;
+        DigitalOceanTyrionService.baseFormFactory = formFactory;
     }
 
     public static void create_server(Model_HomerServer homer_server, String server_size_slug, String region_slug) throws RequestUnsuccessfulException, DigitalOceanException {

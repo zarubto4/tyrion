@@ -1218,24 +1218,30 @@ public class Controller_Hardware extends _BaseController {
             if (boot_loader.file == null) return badRequest("Required bootloader object with file");
             if (boot_loader.getMainHardwareType() != null) return badRequest("Bootloader is Already Main");
 
+            Model_HardwareType hardware_type = boot_loader.getHardwareType();
+
             Model_BootLoader old_main_not_cached = Model_BootLoader.find.query().where().eq("main_hardware_type.id", boot_loader.getHardwareTypeId()).select("id").findOne();
 
             if (old_main_not_cached != null) {
                 Model_BootLoader old_main = Model_BootLoader.getById(old_main_not_cached.id);
                 if (old_main != null) {
                     old_main.main_hardware_type = null;
-                    old_main.cache().removeAll(Random.class);
+                    old_main.cache().removeAll(Model_HardwareType.Model_HardwareType_Main.class);
                     old_main.update();
                 }
             }
 
-            System.out.println("bootLoader_markAsMain main: " + boot_loader.getHardwareType().name);
-            boot_loader.main_hardware_type = boot_loader.getHardwareType();
-
-            boot_loader.getHardwareType().cache().removeAll(Random.class);
-            boot_loader.getHardwareType().cache().add(Random.class, boot_loader.id);
-
+            boot_loader.main_hardware_type = hardware_type;
             boot_loader.update();
+
+            hardware_type.main_boot_loader = boot_loader;
+            hardware_type.update();
+
+            hardware_type.cache().removeAll(Model_HardwareType.Model_HardwareType_Main.class);
+            hardware_type.cache().add(Model_HardwareType.Model_HardwareType_Main.class, boot_loader.id);
+
+
+            System.out.println("Model_HardwareType main bootloader id after: " +  hardware_type.cache().get(Model_HardwareType.Model_HardwareType_Main.class));
 
             // Vymažu Device Cache
             Model_Hardware.cache.clear();

@@ -466,11 +466,9 @@ public class Server {
         DigitalOceanThreadRegister.baseFormFactory      = Server.injector.getInstance(_BaseFormFactory.class);
         Model_HardwareBatch.baseFormFactory             = Server.injector.getInstance(_BaseFormFactory.class);
         BaseModel.baseFormFactory                       = Server.injector.getInstance(_BaseFormFactory.class);
-        DigitalOceanTyrionService.baseFormFactory       = Server.injector.getInstance(_BaseFormFactory.class);
         WS_Portal.baseFormFactory                       = Server.injector.getInstance(_BaseFormFactory.class);
         Model_HardwareRegistrationEntity.baseFormFactory= Server.injector.getInstance(_BaseFormFactory.class);
         Model_InstanceSnapshot.baseFormFactory          = Server.injector.getInstance(_BaseFormFactory.class);
-        Job_CheckCompilationLibraries.baseFormFactory   = Server.injector.getInstance(_BaseFormFactory.class);
         Controller_Things_Mobile.baseFormFactory   = Server.injector.getInstance(_BaseFormFactory.class);
     }
 
@@ -479,8 +477,6 @@ public class Server {
      * Set configuration
      */
     private static void setConfigurationInjectorForNonStaticClass() {
-        DigitalOceanTyrionService.configuration = configuration;
-        Job_CheckCompilationLibraries.configuration = configuration;
         Controller_Things_Mobile.configuration = configuration;
     }
 

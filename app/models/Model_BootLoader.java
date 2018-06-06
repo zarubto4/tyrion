@@ -43,8 +43,8 @@ public class /**/Model_BootLoader extends NamedModel {
 
     @JsonIgnore @OneToMany(mappedBy="bootloader",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareUpdate> updates = new ArrayList<>();
 
-    @JsonIgnore  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)                 public Model_HardwareType hardware_type;
-    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)                                                  public Model_HardwareType main_hardware_type;
+    @JsonIgnore  @ManyToOne(fetch = FetchType.LAZY)     public Model_HardwareType hardware_type;
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)       public Model_HardwareType main_hardware_type;
 
     @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader", fetch = FetchType.LAZY)                 public List<Model_Hardware> hardware = new ArrayList<>();
                  @OneToOne(mappedBy = "boot_loader", cascade = CascadeType.ALL)                    public Model_Blob file;
@@ -57,10 +57,10 @@ public class /**/Model_BootLoader extends NamedModel {
 
             return getMainHardwareType() != null;
 
-        }catch (_Base_Result_Exception e){
-            //nothing
+        } catch (_Base_Result_Exception e){
+            logger.internalServerError(e);
             return false;
-        }catch(Exception e){
+        } catch(Exception e){
             logger.internalServerError(e);
             return false;
         }
@@ -122,18 +122,40 @@ public class /**/Model_BootLoader extends NamedModel {
 
     @JsonIgnore
     public UUID getMainHardwareTypeId() {
-        if (cache().get(Random.class) == null) { // Záměrně random! Protože potřebuji uložit stejný typ objektu do paměti dvakrát a rozpoznání je jen podle typu třídy
-            cache().add(Random.class, (UUID) Model_HardwareType.find.query().where().eq("main_boot_loader.id", id).select("id").findSingleAttribute());
+
+        System.out.println("getMainHardwareTypeId for bootloader " + this.name);
+
+        if (cache().get(Model_HardwareType.Model_HardwareType_Main.class) == null) { // Záměrně random! Protože potřebuji uložit stejný typ objektu do paměti dvakrát a rozpoznání je jen podle typu třídy
+
+            System.out.println("getMainHardwareTypeId cache is null " + this.name);
+
+            UUID main = (UUID) Model_HardwareType.find.query().where().eq("main_boot_loader.id", id).select("id").findSingleAttribute();
+            if (main != null) {
+                logger.warn("getMainHardwareTypeId for bootloader {} is not null Model_HardwareType main ", main);
+                cache().add(Model_HardwareType.Model_HardwareType_Main.class, main);
+            } else {
+                logger.warn("getMainHardwareTypeId for bootloader {} is null - but its probably ok", this.name);
+            }
+
         }
 
-        return cache().get(Random.class);
+        return cache().get(Model_HardwareType.Model_HardwareType_Main.class);
     }
 
     @JsonIgnore
     public Model_HardwareType getMainHardwareType() {
         try {
-            return Model_HardwareType.getById(getMainHardwareTypeId());
+
+            UUID id = getMainHardwareTypeId();
+            logger.warn("getMainHardwareType for bootloader {} getMainHardwareTypeId: id {} ", this.name, id);
+            if(id != null) {
+                return Model_HardwareType.getById(id);
+            } else  {
+                return null;
+            }
+
         }catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }

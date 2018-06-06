@@ -487,7 +487,7 @@ public class Controller_Things_Mobile {
     */
     private static Document post(String url, KeyStore... optional_keys) throws Exception {
 
-        System.out.println("Request Controller_Things_Mobile: url " + url + " key stores" + optional_keys);
+        logger.debug("Request Controller_Things_Mobile: url {} key stores {}", url, optional_keys);
         if(api_key == null) {
             api_key = configuration.getString("mobile_things.token");
             email = configuration.getString("mobile_things.username");

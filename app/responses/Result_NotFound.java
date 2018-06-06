@@ -24,7 +24,7 @@ public class Result_NotFound extends _Response_Interface {
     @ApiModelProperty(value = "Can be null! If not, you can show that to User", required = false, readOnly = true)
     public String message() {
         if(message != null) return message;
-        return "On of required object not found. But Logs not specific witch one. Please in case of fire ;) contact technical support";
+        return "Required object not found. But Logs not specific witch one. Please in case of fire ;) contact technical support";
     }
 
 }
