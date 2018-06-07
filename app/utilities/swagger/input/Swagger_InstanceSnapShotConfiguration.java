@@ -13,4 +13,10 @@ public class Swagger_InstanceSnapShotConfiguration {
     @Valid
     public List<Swagger_InstanceSnapShotConfigurationFile> grids_collections = new ArrayList<>();
 
+    @Valid
+    public List<Swagger_InstanceSnapShotConfigurationApiKeys> api_keys = new ArrayList<>();
+
+    @Valid
+    public List<Swagger_InstanceSnapShotConfigurationApiKeys> mesh_keys = new ArrayList<>();
+
 }

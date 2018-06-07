@@ -1,10 +1,7 @@
 package controllers;
 
 import com.google.inject.Inject;
-import io.ebean.Ebean;
-import io.ebean.ExpressionList;
-import io.ebean.Junction;
-import io.ebean.Query;
+import io.ebean.*;
 import io.swagger.annotations.*;
 import models.*;
 import play.data.validation.Constraints;
@@ -1240,6 +1237,335 @@ public class Controller_Blocko extends _BaseController {
 
         } catch (Exception e) {
 
+            return controllerServerError(e);
+        }
+    }
+
+    // INSTANCE - API KEY  #############################################################################################
+
+    @ApiOperation(value = "add Instance Api Key",
+            tags = {"Instance"},
+            notes = "add new Api key for selected instance",
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Instance_Token",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Ok Result",                 response = Model_InstanceSnapshot.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result instance_create_api_key(UUID instance_id) {
+        try {
+
+            // Get and Validate Object
+            Swagger_Instance_Token help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_Token.class);
+
+            Model_Instance instance = Model_Instance.getById(instance_id);
+
+            Model_InstanceSnapshot current_snapshot = instance.current_snapshot();
+
+            if(current_snapshot == null) {
+                return notFound(Model_InstanceSnapshot.class);
+            }
+
+            Swagger_InstanceSnapShotConfiguration settings = current_snapshot.settings();
+
+            Swagger_InstanceSnapShotConfigurationApiKeys key = new Swagger_InstanceSnapShotConfigurationApiKeys();
+            key.token = UUID.randomUUID();
+            key.description = help.description;
+            key.created = new Date().getTime();
+            settings.api_keys.add(key);
+
+
+            current_snapshot.json_additional_parameter = Json.toJson(settings).toString();
+            current_snapshot.update();
+
+            return created(current_snapshot);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "update Instance Api Key",
+            tags = {"Instance"},
+            notes = "update Api key for selected instance",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Instance_Token",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_InstanceSnapshot.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result instance_edit_api_key(UUID instance_id, UUID token) {
+        try {
+
+            // Get and Validate Object
+            Swagger_Instance_Token help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_Token.class);
+
+            Model_Instance instance = Model_Instance.getById(instance_id);
+
+            Model_InstanceSnapshot current_snapshot = instance.current_snapshot();
+
+            if(current_snapshot == null) {
+                return notFound(Model_InstanceSnapshot.class);
+            }
+
+            Swagger_InstanceSnapShotConfiguration settings = current_snapshot.settings();
+
+
+            for(int i = 0; i <  settings.api_keys.size(); i++) {
+
+                Swagger_InstanceSnapShotConfigurationApiKeys key = settings.api_keys.get(i);
+                if(key.token.equals(token)){
+
+                    settings.api_keys.get(i).description = help.description;
+                    break;
+                }
+            }
+
+            current_snapshot.json_additional_parameter = Json.toJson(settings).toString();
+            current_snapshot.update();
+
+            current_snapshot.update();
+
+            return ok(current_snapshot);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "remove Instance Api Key",
+            tags = {"Instance"},
+            notes = "remove Api key for selected instance",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_InstanceSnapshot.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result instance_remove_api_key(UUID instance_id, UUID token) {
+        try {
+
+            Model_Instance instance = Model_Instance.getById(instance_id);
+
+            Model_InstanceSnapshot current_snapshot = instance.current_snapshot();
+
+            if(current_snapshot == null) {
+                return notFound(Model_InstanceSnapshot.class);
+            }
+
+            Swagger_InstanceSnapShotConfiguration settings = current_snapshot.settings();
+
+            for(int i = 0; i <  settings.api_keys.size(); i++) {
+
+                Swagger_InstanceSnapShotConfigurationApiKeys key = settings.api_keys.get(i);
+                if(key.token.equals(token)){
+                    settings.api_keys.remove(i);
+                    break;
+                }
+            }
+
+            current_snapshot.json_additional_parameter = Json.toJson(settings).toString();
+            current_snapshot.update();
+
+            return ok(current_snapshot);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+
+    // INSTANCE - MESH NETWORK KEY  #############################################################################################
+
+    @ApiOperation(value = "add Instance Mesh Network Key",
+            tags = {"Instance"},
+            notes = "add new Mesh Network key for selected instance",
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Instance_Token",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Ok Result",                 response = Model_InstanceSnapshot.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result instance_create_mesh_network_key(UUID instance_id) {
+        try {
+
+            // Get and Validate Object
+            Swagger_Instance_Token help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_Token.class);
+
+            Model_Instance instance = Model_Instance.getById(instance_id);
+
+            Model_InstanceSnapshot current_snapshot = instance.current_snapshot();
+
+            if(current_snapshot == null) {
+                return notFound(Model_InstanceSnapshot.class);
+            }
+
+            Swagger_InstanceSnapShotConfiguration settings = current_snapshot.settings();
+
+            Swagger_InstanceSnapShotConfigurationApiKeys key = new Swagger_InstanceSnapShotConfigurationApiKeys();
+            key.token = UUID.randomUUID();
+            key.description = help.description;
+            key.created = new Date().getTime();
+            settings.mesh_keys.add(key);
+
+
+            current_snapshot.json_additional_parameter = Json.toJson(settings).toString();
+            current_snapshot.update();
+
+            return created(current_snapshot);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "update Instance Mesh Network Key",
+            tags = {"Instance"},
+            notes = "update Mesh Network key for selected instance",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Instance_Token",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_InstanceSnapshot.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result instance_edit_mesh_network_key(UUID instance_id, UUID token) {
+        try {
+
+            // Get and Validate Object
+            Swagger_Instance_Token help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_Token.class);
+
+            Model_Instance instance = Model_Instance.getById(instance_id);
+
+            Model_InstanceSnapshot current_snapshot = instance.current_snapshot();
+
+            if(current_snapshot == null) {
+                return notFound(Model_InstanceSnapshot.class);
+            }
+
+            Swagger_InstanceSnapShotConfiguration settings = current_snapshot.settings();
+
+
+            for(int i = 0; i <  settings.mesh_keys.size(); i++) {
+
+                Swagger_InstanceSnapShotConfigurationApiKeys key = settings.mesh_keys.get(i);
+                if(key.token.equals(token)){
+
+                    settings.mesh_keys.get(i).description = help.description;
+                    break;
+                }
+            }
+
+            current_snapshot.json_additional_parameter = Json.toJson(settings).toString();
+            current_snapshot.update();
+
+            current_snapshot.update();
+
+            return ok(current_snapshot);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "remove Instance Mesh Network Key",
+            tags = {"Instance"},
+            notes = "remove Mesh Network key for selected instance",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_InstanceSnapshot.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result instance_remove_mesh_network_key(UUID instance_id, UUID token) {
+        try {
+
+            Model_Instance instance = Model_Instance.getById(instance_id);
+
+            Model_InstanceSnapshot current_snapshot = instance.current_snapshot();
+
+            if(current_snapshot == null) {
+                return notFound(Model_InstanceSnapshot.class);
+            }
+
+            Swagger_InstanceSnapShotConfiguration settings = current_snapshot.settings();
+
+            for(int i = 0; i <  settings.mesh_keys.size(); i++) {
+
+                Swagger_InstanceSnapShotConfigurationApiKeys key = settings.mesh_keys.get(i);
+                if(key.token.equals(token)){
+                    settings.mesh_keys.remove(i);
+                    break;
+                }
+            }
+
+            current_snapshot.json_additional_parameter = Json.toJson(settings).toString();
+            current_snapshot.update();
+
+            return ok(current_snapshot);
+
+        } catch (Exception e) {
             return controllerServerError(e);
         }
     }

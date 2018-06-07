@@ -76,7 +76,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
     /**
      * Here we collect everything additional settings for Snapshot.
-     * For example permission to Snapshot MProgram Aplications.
+     * For example permission to Snapshot MProgram Applications.
      *
      *
      * SnapShotConfiguration Object!!!!
@@ -141,8 +141,9 @@ public class Model_InstanceSnapshot extends TaggedModel {
             if (this.json_additional_parameter != null) {
                 return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapShotConfiguration.class, Json.parse(this.json_additional_parameter));
             } else {
+                Swagger_InstanceSnapShotConfiguration configuration = new Swagger_InstanceSnapShotConfiguration();
+
                 if (this.get_instance().current_snapshot_id != null && this.get_instance().current_snapshot_id.equals(this.id)) {
-                    Swagger_InstanceSnapShotConfiguration configuration = new Swagger_InstanceSnapShotConfiguration();
 
                     for (Model_BProgramVersionSnapGridProject grid_project_snapshots : b_program_version.get_grid_project_snapshots()) {
                         Swagger_InstanceSnapShotConfigurationFile project_config = new Swagger_InstanceSnapShotConfigurationFile();
@@ -164,11 +165,27 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     this.json_additional_parameter = Json.toJson(configuration).toString();
                     this.update();
 
-                    return configuration;
                 }
+
+                if(configuration.api_keys.isEmpty()) {
+                    Swagger_InstanceSnapShotConfigurationApiKeys key = new Swagger_InstanceSnapShotConfigurationApiKeys();
+                    key.token = UUID.randomUUID();
+                    key.description = "Default Instance Api Key";
+                    key.created = new Date().getTime();
+                    configuration.api_keys.add(key);
+                }
+
+                if(configuration.mesh_keys.isEmpty()) {
+                    Swagger_InstanceSnapShotConfigurationApiKeys key = new Swagger_InstanceSnapShotConfigurationApiKeys();
+                    key.token = UUID.randomUUID();
+                    key.description = "Default Instance Mesh Network Key";
+                    key.created = new Date().getTime();
+                    configuration.mesh_keys.add(key);
+                }
+
+                return configuration;
             }
 
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             this.json_additional_parameter = null;

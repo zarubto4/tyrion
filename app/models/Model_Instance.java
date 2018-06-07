@@ -63,7 +63,7 @@ public class Model_Instance extends TaggedModel {
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient
-    public List<Swagger_Short_Reference> snapshots(){
+    public List<Swagger_Short_Reference> snapshots() {
         try {
 
             List<Swagger_Short_Reference> references = new ArrayList<>();

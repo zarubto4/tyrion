@@ -18,4 +18,5 @@ public class Swagger_InstanceSnapShotConfigurationFile {
 
     @Valid
     public List<Swagger_InstanceSnapShotConfigurationProgram> grid_programs = new ArrayList<>();
+
 }

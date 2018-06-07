@@ -246,6 +246,14 @@ PUT       /instance/shutdown/:instance_id                               controll
 PUT       /instance/tags/add                                            controllers.Controller_Blocko.instance_addTags
 PUT       /instance/tags/remove                                         controllers.Controller_Blocko.instance_removeTags
 
+POST       /instance/api_key/:instance_id                               controllers.Controller_Blocko.instance_create_api_key(instance_id: java.util.UUID)
+PUT        /instance/api_key/:instance_id/:token                        controllers.Controller_Blocko.instance_edit_api_key(instance_id: java.util.UUID, token: java.util.UUID)
+DELETE     /instance/api_key/:instance_id/:token                        controllers.Controller_Blocko.instance_remove_api_key(instance_id: java.util.UUID, token: java.util.UUID)
+
+POST       /instance/mesh_network_key/:instance_id                      controllers.Controller_Blocko.instance_create_mesh_network_key(instance_id: java.util.UUID)
+PUT        /instance/mesh_network_key/:instance_id/:token               controllers.Controller_Blocko.instance_edit_mesh_network_key(instance_id: java.util.UUID, token: java.util.UUID)
+DELETE     /instance/mesh_network_key/:instance_id/:token               controllers.Controller_Blocko.instance_remove_mesh_network_key(instance_id: java.util.UUID, token: java.util.UUID)
+
 PUT       /instance/filter/:page_number                                 controllers.Controller_Blocko.get_b_program_instance_by_filter(page_number:Int)
 PUT       /instance/grid_app/:snapshot_id                               controllers.Controller_Blocko.instance_change_settings_grid_App(snapshot_id: java.util.UUID)
 
