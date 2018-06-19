@@ -207,11 +207,7 @@ public class Model_BProgramVersion extends VersionModel {
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public String get_path() {
-        if(get_b_program() != null) {
-            return get_b_program().get_path() + "/version/" + this.id;
-        }else {
-            return get_b_program().get_path() + "/version/" + this.id;
-        }
+        return get_b_program().get_path() + "/version/" + this.id;
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/

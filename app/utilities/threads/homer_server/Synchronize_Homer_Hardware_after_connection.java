@@ -71,6 +71,14 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                     continue;
                 }
 
+
+                if (board.connected_server_id == null || !board.connected_server_id.equals(this.homer.id)) {
+                    logger.debug("check_device_on_server:: Device: ID: {} has not set server parameters yet", board.id);
+                    board.connected_server_id = this.homer.id;
+                    board.update();
+                }
+
+
                 // Homer server neměl spojení s Tyrionem a tak dočasně přiřadil uuid jako full id - proto hned zaměním
                 if(pair.uuid.length() < 25) {
                     logger.warn("check_device_on_server:: Device: ID: {} there is a  same full ID: {} as a UUID {} from Server", board.id, pair.full_id, pair.full_id);
@@ -83,22 +91,22 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                 if(!board.id.equals(UUID.fromString(pair.uuid))) {
                     logger.warn("check_device_on_server:: Device: ID: {} there is a mistake with pair with full ID: {} and UUID {} from Server", board.id, pair.full_id, pair.full_id);
                     logger.warn("check_device_on_server:: Device: ID: {} Its required change pair on homer server!", board.id);
+
+
                     board.device_converted_id_clean_switch_on_server(pair.uuid);
                     continue;
                 }
 
-                if (board.connected_server_id == null) {
-                    logger.debug("check_device_on_server:: Device: ID: {} has not set server parameters yet", board.id);
-                    board.connected_server_id = this.homer.id;
-                    board.update();
-
-                } else if (!board.connected_server_id.equals(this.homer.id)) {
+                /*
+                else if (!board.connected_server_id.equals(this.homer.id)) {
                     logger.debug("check_device_on_server:: Device: ID: {}  je na špatném serveru a tak ho relokuji!!", board.id);
                     board.device_relocate_server(Model_HomerServer.getById(homer.id));
                     continue;
                 } else {
                     logger.trace("check_device_on_server:: Device: ID: {}  je na správném serveru evidentně a tak ho jenom zkrontroluji", board.id);
                 }
+                */
+
 
                 WS_Message_Hardware_overview_Board overview = board.get_devices_overview();
 

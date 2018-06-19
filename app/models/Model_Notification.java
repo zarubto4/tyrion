@@ -217,7 +217,7 @@ public class Model_Notification extends BaseModel {
                 Model_Hardware hardware = (Model_Hardware)object;
                 element.name = class_name;
                 element.id = hardware.id;
-                element.text = hardware.name;
+                element.text = hardware.name != null && hardware.name.length() > 2 ? hardware.name : hardware.full_id;
                 element.project_id = hardware.get_producerId();
                 break;
             }

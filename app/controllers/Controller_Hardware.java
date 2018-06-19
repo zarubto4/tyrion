@@ -1568,8 +1568,8 @@ public class Controller_Hardware extends _BaseController {
                 Swagger_Hardware_New_Settings_Result_Configuration configuration = new Swagger_Hardware_New_Settings_Result_Configuration();
                 configuration.normal_mqtt_hostname = main_server.server_url;
                 configuration.normal_mqtt_port = main_server.mqtt_port;
-                configuration.mqtt_username = mqtt_password_not_hashed;
-                configuration.mqtt_password = mqtt_username_not_hashed;
+                configuration.mqtt_username = mqtt_username_not_hashed;
+                configuration.mqtt_password = mqtt_password_not_hashed;
                 configuration.backup_mqtt_hostname = backup_server.server_url;
                 configuration.backup_mqtt_port = backup_server.mqtt_port;
                 configuration.mac = registration_of_hardware.mac_address;
@@ -2046,12 +2046,16 @@ public class Controller_Hardware extends _BaseController {
                     || ( help.producers != null && !help.producers.isEmpty() )
                     || ( help.processors != null && !help.processors.isEmpty())
                     || ( help.hardware_groups_id != null && !help.hardware_groups_id.isEmpty())
-                )) {
+                ) && !person().is_admin()) {
                 return ok(new Swagger_Hardware_List());
             }
 
             // Tvorba parametru dotazu
             Query<Model_Hardware> query = Ebean.find(Model_Hardware.class);
+
+            // not deleted
+            query.where().ne("deleted", true);
+
 
             if (help.hardware_type_ids != null && !help.hardware_type_ids.isEmpty()) {
                 query.where().in("hardware_type.id", help.hardware_type_ids);

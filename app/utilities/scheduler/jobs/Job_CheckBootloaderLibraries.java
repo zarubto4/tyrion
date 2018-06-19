@@ -6,6 +6,7 @@ import com.typesafe.config.Config;
 import controllers._BaseFormFactory;
 import models.Model_Blob;
 import models.Model_BootLoader;
+import models.Model_CProgramVersion;
 import models.Model_HardwareType;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -33,6 +34,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * This job synchronizes bootloader libraries from GitHub releases.
@@ -212,15 +214,15 @@ public class Job_CheckBootloaderLibraries implements Job {
 
                         String file_body = Model_Blob.get_encoded_binary_string_from_body(ws_download_file.asByteArray());
 
-                        // Naheraji na Azure
-                        String file_name = "bootloader.bin";
-                        String file_path = new_bootLoader.get_Container().getName() + "/" + UUID.randomUUID().toString() + "/" + file_name;
-
-                        logger.debug("check_version_thread:: bootLoader_uploadFile::  File Name " + file_name);
-                        logger.debug("check_version_thread:: bootLoader_uploadFile::  File Path " + file_path);
-
-                        new_bootLoader.file = Model_Blob.upload(file_body, "application/octet-stream", file_name, file_path);
                         new_bootLoader.save();
+
+                        // Naheraji na Azure
+
+                        logger.debug("check_version_thread:: bootLoader_uploadFile::  File Name " + "bootloader.bin");
+                        logger.debug("check_version_thread:: bootLoader_uploadFile::  File Path " + new_bootLoader.get_path());
+
+                        new_bootLoader.file = Model_Blob.upload(file_body, "application/octet-stream",  "bootloader.bin", new_bootLoader.get_path());
+                        new_bootLoader.update();
 
                         // Nefungovalo to korektně občas - tak se to ukládá oboustraně!
                         new_bootLoader.file.boot_loader = new_bootLoader;
@@ -229,10 +231,28 @@ public class Job_CheckBootloaderLibraries implements Job {
 
                         bootLoaders_for_add.add(new_bootLoader);
 
-                        hardwareType.boot_loaders().addAll(bootLoaders_for_add);
-                        hardwareType.update();
+
                     }
+
+                    hardwareType.boot_loaders().addAll(bootLoaders_for_add);
+                    hardwareType.update();
+
+                    // Clean Cache
+                    hardwareType.cache().removeAll(Model_BootLoader.class);
+
+                    //Get all bootloaders from Database
+                    List<Model_BootLoader> bootloaders = hardwareType.get_bootloaders();
+
+                    // Clean Cache
+                    hardwareType.cache().removeAll(Model_BootLoader.class);
+
+                    // Order by date of create
+                    bootloaders.stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())
+                            .forEach(o -> hardwareType.cache().add(Model_BootLoader.class, o.id));
+
+
                 }
+
 
                 logger.trace("check_version_thread:: all Bootloader in type of Board synchronized");
 

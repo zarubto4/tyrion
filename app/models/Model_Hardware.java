@@ -32,6 +32,7 @@ import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
+import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Model_Hardware_Temporary_NotDominant_record;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
 import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
@@ -721,7 +722,11 @@ public class Model_Hardware extends TaggedModel {
     public UUID get_actual_c_program_id() {
 
         if (cache().get(Model_CProgram.class) == null) {
-            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("versions.c_program_version_boards.id", id).select("id").findSingleAttribute());
+
+            UUID uuid = Model_CProgram.find.query().where().eq("versions.c_program_version_boards.id", id).select("id").findSingleAttribute();
+            if(uuid == null) return null;
+
+            cache().add(Model_CProgram.class, uuid);
         }
 
         return cache().get(Model_CProgram.class);
@@ -729,9 +734,12 @@ public class Model_Hardware extends TaggedModel {
 
     @JsonIgnore
     public Model_CProgram get_actual_c_program(){
-
         try {
-            return Model_CProgram.getById(get_actual_c_program_id());
+
+            UUID id = get_actual_c_program_id();
+            if(id == null) return null;
+            return Model_CProgram.getById(id);
+
         }catch (Exception e) {
             return null;
         }
@@ -742,7 +750,9 @@ public class Model_Hardware extends TaggedModel {
     public UUID get_actual_c_program_version_id(){
 
         if (cache().get(Model_CProgramVersion.class) == null) {
-            cache().add(Model_CProgramVersion.class, (UUID) Model_CProgramVersion.find.query().where().eq("c_program_version_boards.id", id).select("id").findSingleAttribute());
+            UUID uuid =  Model_CProgramVersion.find.query().where().eq("c_program_version_boards.id", id).select("id").findSingleAttribute();
+            if(uuid == null) return null;
+            cache().add(Model_CProgramVersion.class, uuid);
         }
 
         return cache().get(Model_CProgramVersion.class);
@@ -751,7 +761,11 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public Model_CProgramVersion get_actual_c_program_version(){
         try {
-            return Model_CProgramVersion.getById(get_actual_c_program_version_id());
+            UUID id = get_actual_c_program_version_id();
+
+            if(id == null) return null;
+            return Model_CProgramVersion.getById(id);
+
         }catch (Exception e) {
             return null;
         }
@@ -760,8 +774,11 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public UUID get_actual_bootloader_id() {
 
-        if (cache().get(Model_BootLoader.class) == null) {                                                         //propertyName
-            cache().add(Model_BootLoader.class, (UUID) Model_BootLoader.find.query().where().eq("hardware.id", id).select("id").findSingleAttribute());
+        if (cache().get(Model_BootLoader.class) == null) {
+
+            UUID uuid =  Model_BootLoader.find.query().where().eq("hardware.id", id).select("id").findSingleAttribute();
+            if(uuid == null) return null;
+            cache().add(Model_BootLoader.class, uuid);
         }
 
         return cache().get(Model_BootLoader.class);
@@ -782,7 +799,9 @@ public class Model_Hardware extends TaggedModel {
     public UUID get_backup_c_program_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_CProgram.class) == null) {
-            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("versions.c_program_version_backup_boards.id", id).select("id").findSingleAttribute());
+            UUID uuid = Model_CProgram.find.query().where().eq("versions.c_program_version_backup_boards.id", id).select("id").findSingleAttribute();
+            if(uuid == null) return null;
+            cache().add(Model_CProgram.class, uuid);
         }
 
         return cache().get(Model_CProgram.class);
@@ -802,8 +821,11 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public UUID get_backup_c_program_version_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_CProgramVersion.class) == null) {                                                         //property name
-            cache().add(Model_CProgramVersion.class, (UUID) Model_CProgramVersion.find.query().where().eq("c_program_version_boards.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+        if (cache().get(Model_CProgramVersion.class) == null) {
+
+            UUID uuid =  Model_CProgramVersion.find.query().where().eq("c_program_version_boards.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute();
+            if(uuid == null) return null;
+            cache().add(Model_CProgramVersion.class, uuid);
         }
 
         return cache().get(Model_CProgramVersion.class);
@@ -1034,6 +1056,12 @@ public class Model_Hardware extends TaggedModel {
 
             Model_Hardware device = Model_Hardware.getById(help.uuid);
 
+            if(device == null) {
+                if( cache_not_dominant_hardware.containsKey(help.full_id)) {
+                    return;
+                }
+            }
+
             // Aktualizuji cache status online HW
             cache_status.put(device.id, Boolean.TRUE);
 
@@ -1085,14 +1113,14 @@ public class Model_Hardware extends TaggedModel {
                 return;
             }
 
-            Model_Hardware device =  Model_Hardware.getById(help.uuid);
+            Model_Hardware device = Model_Hardware.getById(help.uuid);
 
             if (device == null) {
                 logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.uuid);
                 return;
             }
 
-            logger.debug("master_device_Disconnected:: Updating device status " +  help.uuid + " on offline ");
+            logger.debug("master_device_Disconnected:: Updating device status " + help.uuid + " on offline ");
 
             // CHACHE OFFLINE
             cache_status.put(device.id, Boolean.FALSE);
@@ -1104,19 +1132,21 @@ public class Model_Hardware extends TaggedModel {
 
             // Standartní synchronizace
             if (device.project().id != null) {
-                    WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, false, device.project().id);
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, false, device.project().id);
             }
 
             if (device.developer_kit) {
                 // Notifikace
                 device.notification_board_disconnect();
-             }
+            }
 
             // Záznam do DM databáze
             device.make_log_disconnect();
 
             Model_Hardware.cache_status.put(device.id, false);
 
+        } catch (_Base_Result_Exception e) {
+            // Nothing
         } catch (Exception e) {
             logger.internalServerError(e);
         }
@@ -1192,37 +1222,166 @@ public class Model_Hardware extends TaggedModel {
         try {
 
             logger.debug("check_mqtt_hardware_connection_validation: {} ", Json.toJson(request) );
+
+
             Model_Hardware board = request.get_hardware();
 
             if(board == null) {
-                logger.debug("Device has not any active or dominant entity in local database");
-                homer.send(request.get_result(false, null));
-                return;
+                logger.debug("check_mqtt_hardware_connection_validation: Device has not any active or dominant entity in local database");
+
+
+                // For public Homer server are all hardware allowed, but only if we find this Hardware in Central authority database!
+                if(homer.getModelHomerServer().server_type == HomerType.PUBLIC) {
+
+
+                    // We will save last know server, where we have hardware, in case of registration under some project. SAVE is only if device has permission!!!!!
+                    WS_Model_Hardware_Temporary_NotDominant_record record = new WS_Model_Hardware_Temporary_NotDominant_record();
+                    record.homer_server_id = homer.id;
+                    record.random_temporary_hardware_id = UUID.randomUUID();
+
+                    logger.debug("check_mqtt_hardware_connection_validation: Device is on Public Server but wihtout dominant entity - so we will save it to cache");
+
+                    logger.debug("check_mqtt_hardware_connection_validation: Before, we will try to know Mqtt PASS and Name - maybe from historical devices in local database?");
+                    board = Model_Hardware.find.query().where().eq("full_id", request.full_id).setMaxRows(1).select("id").findOne();
+                    if(board != null) {
+                        logger.debug("check_mqtt_hardware_connection_validation: Yes, we find historical device wiht same full_id, now we will check MQTT NAME and PASS");
+
+                        logger.debug("check_mqtt_hardware_connection_validation: Request PASS:: {}", request.password );
+                        logger.debug("check_mqtt_hardware_connection_validation: entity PASS:: {}", board.mqtt_password );
+
+                        logger.debug("check_mqtt_hardware_connection_validation: Request NAME:: {}", request.user_name );
+                        logger.debug("check_mqtt_hardware_connection_validation: entity NAME:: {}", board.mqtt_username );
+
+                        if (BCrypt.checkpw(request.password, board.mqtt_password) && BCrypt.checkpw(request.user_name, board.mqtt_username)) {
+
+                            // Save it - device has permission!
+                            cache_not_dominant_hardware.put(request.full_id, record);
+                            homer.send(request.get_result(true,  record.random_temporary_hardware_id, null, false));
+                            return;
+
+                        // in the case of several HW, it was saved in reverse
+                        } else if (BCrypt.checkpw( request.user_name, board.mqtt_password) && BCrypt.checkpw(request.password, board.mqtt_username)) {
+
+                            // Save it - device has permission!
+                            cache_not_dominant_hardware.put(request.full_id, record);
+                            homer.send(request.get_result(true, record.random_temporary_hardware_id, null, false));
+                            return;
+
+                        } else if( Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass")) {
+
+                            cache_not_dominant_hardware.put(request.full_id, record);
+                            homer.send(request.get_result(true,  record.random_temporary_hardware_id, null, false));
+                            return;
+
+                        } else {
+
+                            logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server has not right credentials Access Denied ",  board.full_id);
+                            homer.send(request.get_result(false,  null, null, false));
+                            return;
+
+                        }
+                    }
+
+
+                    logger.debug("check_mqtt_hardware_connection_validation: Before, we will try to know Mqtt PASS and Name - maybe from central authority?");
+                    Model_HardwareRegistrationEntity entity = Model_HardwareRegistrationEntity.getbyFull_id(request.full_id);
+                    if(entity != null) {
+                        logger.debug("check_mqtt_hardware_connection_validation: Yes, we find HardwareRegistrationEntity  device with same full_id, now we will check MQTT NAME and PASS");
+
+                        logger.debug("check_mqtt_hardware_connection_validation: Request PASS:: {}", request.password );
+                        logger.debug("check_mqtt_hardware_connection_validation: entity PASS:: {}", entity.mqtt_password );
+
+                        logger.debug("check_mqtt_hardware_connection_validation: Request NAME:: {}", request.user_name );
+                        logger.debug("check_mqtt_hardware_connection_validation: entity NAME:: {}", entity.mqtt_username );
+
+
+                        logger.debug("check_mqtt_hardware_connection_validation: PASS valid: {}", BCrypt.checkpw(request.password, entity.mqtt_password));
+                        logger.debug("check_mqtt_hardware_connection_validation: USERNAME valid {}", BCrypt.checkpw(request.user_name, entity.mqtt_username));
+
+
+                        if ( BCrypt.checkpw(request.password, entity.mqtt_password) && BCrypt.checkpw(request.user_name, entity.mqtt_username)) {
+
+                            logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server has  right credentials Access Allowed with Model_HardwareRegistrationEntity Device check",  entity.full_id);
+
+                            // Save it - device has permission!
+                            cache_not_dominant_hardware.put(request.full_id, record);
+                            homer.send(request.get_result(true, record.random_temporary_hardware_id, null, false));
+                            return;
+
+                        // in the case of several HW, it was saved in reverse
+                        } else if ( BCrypt.checkpw( request.user_name, entity.mqtt_password) && BCrypt.checkpw(request.password, entity.mqtt_username)) {
+
+                            logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server has  right credentials Access Allowed with Model_HardwareRegistrationEntity Device check",  entity.full_id);
+
+                            // Save it - device has permission!
+                            cache_not_dominant_hardware.put(request.full_id, record);
+                            homer.send(request.get_result(true, record.random_temporary_hardware_id, null, false));
+                            return;
+
+                            // Only for DEV server!
+                        } else if( Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass")) {
+
+                            cache_not_dominant_hardware.put(request.full_id, record);
+                            homer.send(request.get_result(true,  record.random_temporary_hardware_id, null, false));
+                            return;
+
+                        } else {
+
+                            logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server has not right credentials Access Denied with  HardwareRegistrationEntity check",  entity.full_id);
+                            homer.send(request.get_result(false, null, null, false));
+                            return;
+
+                        }
+                    }
+
+                    logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server we havent historical or HardwareRegistrationEntity, so Access Denied",  request.full_id);
+                    homer.send(request.get_result(false,  null, null, false));
+                    return;
+
+                } else {
+
+                    logger.debug("check_mqtt_hardware_connection_validation: Device is on PRIVATE!!!! Server but without dominant entity. This is not ok! Wo we will redirect this device to another server");
+
+                    // Find public server and redirect Hardware:
+                    homer.send(request.get_result(false, null, "redirect_url", false));
+                    return;
+
+                }
             }
 
-            logger.debug("check_mqtt_hardware_connection_validation: Device is not null - HW name {} . Pass from Homer: {} Name from Homer: {} ", board.full_id, request.password, request.user_name);
-            logger.debug("check_mqtt_hardware_connection_validation: Device is not null - HW name {} . Pass from Tyrion: {} Name from Tyrion: {} ", board.full_id, board.mqtt_password, board.mqtt_username);
+            logger.debug("check_mqtt_hardware_connection_validation: Request PASS:: {}", request.password );
+            logger.debug("check_mqtt_hardware_connection_validation: Hardware PASS:: {}", board.mqtt_password );
 
+            logger.debug("check_mqtt_hardware_connection_validation: Request NAME:: {}", request.user_name );
+            logger.debug("check_mqtt_hardware_connection_validation: Hardware NAME:: {}", board.mqtt_username );
 
 
             if (BCrypt.checkpw(request.password, board.mqtt_password) && BCrypt.checkpw(request.user_name, board.mqtt_username)) {
-                logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Approve",  board.full_id);
-                homer.send(request.get_result(true,  board.id));
+                logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Approve", board.full_id);
+                homer.send(request.get_result(true, board.id, null, true));
+            } else if (BCrypt.checkpw(request.user_name, board.mqtt_password) && BCrypt.checkpw(request.password, board.mqtt_username)) {
+                logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Approve", board.full_id);
+                homer.send(request.get_result(true, board.id, null, true));
+            }  else if( Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass")) {
+                logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Approve - DEV server - user and pass", board.full_id);
+                homer.send(request.get_result(true, board.id, null, true));
             } else {
                 logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Denied",  board.full_id);
-                homer.send(request.get_result(false,  board.id));
+                homer.send(request.get_result(false,  board.id, null, false));
             }
 
         } catch (Exception e) {
 
+            logger.internalServerError(e);
+
             if(Server.mode == ServerMode.DEVELOPER) {
                 logger.error("check_mqtt_hardware_connection_validation:: Device has not right permission to connect. But this is Dev version of Tyrion. So its allowed.");
-                homer.send(request.get_result(true, null));
+                homer.send(request.get_result(true, null, null, true));
                 return;
             }
 
             logger.internalServerError(e);
-            homer.send(request.get_result(false, null));
+            homer.send(request.get_result(false, null, null, true));
         }
     }
 
@@ -1237,9 +1396,17 @@ public class Model_Hardware extends TaggedModel {
                 Model_Hardware board = Model_Hardware.getByFullId(request.full_id);
 
                 if (board == null) {
-                    logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found!");
-                    homer.send(request.get_result_error());
-                    return;
+                    logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found with Dominant Entity - bus there is still hope! with Cache");
+
+                    if(cache_not_dominant_hardware.containsKey(request.full_id)) {
+                        logger.debug("convert_hardware_full_id_to_uuid:: Device Found in cache_not_dominant_hardware");
+                        homer.send(request.get_result(cache_not_dominant_hardware.get(request.full_id).random_temporary_hardware_id, request.full_id));
+                        return;
+                    } else {
+                        logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found and also not found in cache");
+                        homer.send(request.get_result_error());
+                        return;
+                    }
                 }
 
                 logger.debug("convert_hardware_full_id_to_uuid:: Device found - Return Success");
@@ -1578,9 +1745,11 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
+    // Remove Hardware from Server?? - Relocate that on public main server? //
     @JsonIgnore
     public WS_Message_Hardware_uuid_converter_cleaner device_converted_id_clean_remove_from_server() {
         try {
+
             JsonNode node = write_with_confirmation( new WS_Message_Hardware_uuid_converter_cleaner().make_request(null, this.id, this.full_id), 1000 * 5, 0, 2);
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_uuid_converter_cleaner.class, node);
 
@@ -1593,7 +1762,9 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public WS_Message_Hardware_uuid_converter_cleaner device_converted_id_clean_switch_on_server(String old_id) {
         try {
+
             JsonNode node = write_with_confirmation( new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.id, old_id, this.full_id), 1000 * 5, 0, 2);
+            System.out.println("Response: " + node);
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_uuid_converter_cleaner.class, node);
 
         } catch (Exception e) {
@@ -1847,18 +2018,21 @@ public class Model_Hardware extends TaggedModel {
     public void execute_command(BoardCommand command, boolean priority) {
         try {
 
-            // Priority false - pokud má hardware v ukolníčk předchozí úkony, tento se zařadí do fronty
-            // true - všechny přeskočí - muže se stát že pak některé stratí smysl a platnost a homer je zahodí
-
+            /*
+             Priority false - pokud má hardware v ukolníčk předchozí úkony, tento se zařadí do fronty
+             true - všechny přeskočí - muže se stát že pak některé stratí smysl a platnost a homer je zahodí
+             Execute Command.
+            */
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_command_execute().make_request(Collections.singletonList(this.id), command, priority), 1000 * 5, 0, 2);
 
-            // Execute Command
-            baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_command_execute.class, node);
+
+            logger.trace("execute_command:: Execute Command: response: ",   baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_command_execute.class, node));
 
         } catch (Exception e) {
             logger.internalServerError(e);
         }
     }
+
 
     /**
      * Kontrola po připojení zařízení - každé připojení zařízení odstartuje kontrolní proceduru,
@@ -2045,14 +2219,7 @@ public class Model_Hardware extends TaggedModel {
             }
         }
 
-        if (change_register) {
-            // Priority false - protože v ukolníčku má Hardware předchozí úkony k updatu registrů - kdyby byl true,
-            // tak všechny přeskočí
-            this.execute_command(BoardCommand.RESTART, false);
-            return false;
-        } else {
-            return true;
-        }
+        return true;
     }
 
     /**
@@ -3075,6 +3242,7 @@ public class Model_Hardware extends TaggedModel {
             logger.internalServerError(e);
         }
 
+        this.dominant_entity = false;
         return super.delete();
     }
 
@@ -3087,11 +3255,14 @@ public class Model_Hardware extends TaggedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(Model_Hardware.class)
+    @CacheField(value = Model_Hardware.class, maxElements = 100000)
     public static Cache<UUID, Model_Hardware> cache;
 
-    @CacheField(value = Boolean.class, duration = CacheField.DayCacheConstant, name ="Model_Hardware_Status")
+    @CacheField(value = Boolean.class,  maxElements = 100000, duration = CacheField.DayCacheConstant, name = "Model_Hardware_Status")
     public static Cache<UUID, Boolean> cache_status;
+
+    @CacheField(value = WS_Model_Hardware_Temporary_NotDominant_record.class, keyType = String.class,  maxElements = 100000, duration = CacheField.MonthCacheConstant, name = "Model_Hardware_NOT_DOMINANT_HARDWARE")
+    public static Cache<String, WS_Model_Hardware_Temporary_NotDominant_record> cache_not_dominant_hardware;  // FULL_ID, HOMER_SERVER_ID
 
     public static Model_Hardware getById(UUID id) throws _Base_Result_Exception {
 

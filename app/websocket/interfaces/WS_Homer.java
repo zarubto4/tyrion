@@ -54,6 +54,10 @@ public class WS_Homer extends WS_Interface {
         Controller_WebSocket.homers_not_sync.put(this.id, this);
     }
 
+    public Model_HomerServer getModelHomerServer(){
+         return Model_HomerServer.getById(this.id);
+    }
+
     @Override
     public void onMessage(ObjectNode json) {
 

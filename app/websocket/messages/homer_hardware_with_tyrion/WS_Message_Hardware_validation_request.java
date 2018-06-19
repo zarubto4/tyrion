@@ -39,7 +39,7 @@ public class WS_Message_Hardware_validation_request {
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
-    public ObjectNode get_result(boolean token_approve, UUID uuid) {
+    public ObjectNode get_result(boolean token_approve, UUID uuid, String redirect_url, boolean dominant_entity) {
 
         ObjectNode result = Json.newObject();
         result.put("message_type", message_type);
@@ -50,6 +50,8 @@ public class WS_Message_Hardware_validation_request {
         result.put("status" , "success");
         result.put("password" , password);
         result.put("user_name" , user_name);
+        result.put("redirect_url" , redirect_url);
+        result.put("dominant_entity" , dominant_entity);
         return result;
 
     }

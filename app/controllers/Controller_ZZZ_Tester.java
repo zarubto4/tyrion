@@ -1,8 +1,5 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -13,32 +10,23 @@ import com.typesafe.config.Config;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.Model_GSM;
-import models.Model_HardwareBatch;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.bson.Document;
-import org.mindrot.jbcrypt.BCrypt;
-import org.w3c.dom.Element;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_List_list;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status_cdr;
+
 import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.logger.Logger;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 
@@ -102,6 +90,13 @@ public class Controller_ZZZ_Tester extends Controller {
     public Result test4() {
         try {
 
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-d HH:mm:ss");
+
+
+
+            DateTime date_from = DateTime.parse("18-06-2018 05:00:00", DateTimeFormat.forPattern("dd-MM-yyyy HH:mm:ss"));
+            DateTime date_to = DateTime.parse("18-06-2018 15:00:00", DateTimeFormat.forPattern("dd-MM-yyyy HH:mm:ss"));
 
 
             // Připojení na MongoClient v Azure
@@ -180,7 +175,7 @@ public class Controller_ZZZ_Tester extends Controller {
 
                 BasicDBObject query = new BasicDBObject();
                 query.put("device_id", columns[i]);
-                query.put("date", new BasicDBObject("$gt", 1527580800000L).append("$lt", 1527595200000L));
+                query.put("date", new BasicDBObject("$gt", date_from.getMillis() ).append("$lt",  date_to.getMillis() ));
                 MongoCursor<Document> cursor = collection.find(query).iterator();
 
                 while (cursor.hasNext()) {

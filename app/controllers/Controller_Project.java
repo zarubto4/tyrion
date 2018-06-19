@@ -1,5 +1,6 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.*;
@@ -16,10 +17,14 @@ import utilities.enums.NetworkStatus;
 import utilities.logger.Logger;
 import utilities.models_update_echo.EchoHandler;
 import utilities.swagger.input.*;
+import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_command_execute;
+import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_uuid_converter_cleaner;
+import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Model_Hardware_Temporary_NotDominant_record;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -707,6 +712,42 @@ public class Controller_Project extends _BaseController {
             project.cache().add(Model_Hardware.class, hardware.id);
 
 
+            logger.warn("project_addHardware. Step 1 - is_online_get_from_cache");
+
+            // Try to find hardware by full_id
+            logger.warn("project_addHardware. Step 2 - Try to find in cache of not dominant hardware");
+            if(Model_Hardware.cache_not_dominant_hardware.containsKey(hardware.full_id)) {
+
+                new Thread(() -> {
+
+                    logger.warn("project_addHardware. Step 2 - Yes we have not dominant hardware record");
+
+                    WS_Model_Hardware_Temporary_NotDominant_record record = Model_Hardware.cache_not_dominant_hardware.get(hardware.full_id);
+                    Model_HomerServer server = Model_HomerServer.getById(record.homer_server_id);
+
+                    // Remove if exist in not dominant record on public server
+                    Model_Hardware.cache_not_dominant_hardware.remove(hardware.full_id);
+
+                    logger.warn("project_addHardware. Step 2 - No we will try to change that on server");
+                    // Send restart for reallocate hardware to new UUID
+                    if (server != null && server.online_state() == NetworkStatus.ONLINE) {
+
+                        logger.warn("project_addHardware. Step 2 - Server is online and know so we will do it");
+
+                        hardware.connected_server_id = record.homer_server_id;
+                        hardware.update();
+
+                        logger.warn("project_addHardware. Step 2 - Command Send");
+
+                        WS_Message_Hardware_uuid_converter_cleaner change = hardware.device_converted_id_clean_switch_on_server(record.random_temporary_hardware_id.toString());
+                        logger.warn("project_addHardware:: Step 2 - Response: Change on Homer Server: ", Json.toJson(change).toString());
+
+                    }
+
+                }).start();
+            }
+
+
             return created(hardware);
 
         } catch (Exception e) {
@@ -735,6 +776,7 @@ public class Controller_Project extends _BaseController {
 
             Model_Hardware hardware = Model_Hardware.getById(registration_id);
 
+            hardware.delete();
 
             return ok();
 
@@ -778,6 +820,7 @@ public class Controller_Project extends _BaseController {
 
             Model_Hardware.cache_status.remove(hardware.id);
 
+
             return ok(hardware);
 
         } catch (Exception e) {
@@ -810,8 +853,40 @@ public class Controller_Project extends _BaseController {
             hardware.dominant_entity = true;
             hardware.update();
 
+
+            //
             hardware.is_online_get_from_cache();
 
+            logger.warn("project_activeHardware. Step 1 - is_online_get_from_cache");
+
+            // Try to find hardware by full_id
+            logger.warn("project_activeHardware. Step 2 - Try to find in cache of not dominant hardware");
+            if(Model_Hardware.cache_not_dominant_hardware.containsKey(hardware.full_id)) {
+
+                logger.warn("project_activeHardware. Step 2 - Yes we have not dominant hardware record");
+
+                WS_Model_Hardware_Temporary_NotDominant_record record = Model_Hardware.cache_not_dominant_hardware.get(hardware.full_id);
+                Model_HomerServer server = Model_HomerServer.getById(record.homer_server_id);
+
+                // Remove if exist in not dominant record on public server
+                Model_Hardware.cache_not_dominant_hardware.remove(hardware.full_id);
+
+                logger.warn("project_activeHardware. Step 2 - No we will try to change that on server");
+                // Send restart for reallocate hardware to new UUID
+                if(server != null && server.online_state() == NetworkStatus.ONLINE) {
+
+                    logger.warn("project_activeHardware. Step 2 - Server is offline and know so we will do it");
+
+                    hardware.connected_server_id = record.homer_server_id;
+                    hardware.update();
+
+                    logger.warn("project_activeHardware. Step 2 - Command Send");
+
+                    WS_Message_Hardware_uuid_converter_cleaner change = hardware.device_converted_id_clean_switch_on_server(record.random_temporary_hardware_id.toString());
+                    logger.warn("project_activeHardware:: Step 2 - Response: Change on Homer Server: ", Json.toJson(change).toString());
+
+                }
+            }
 
             return ok(hardware);
 

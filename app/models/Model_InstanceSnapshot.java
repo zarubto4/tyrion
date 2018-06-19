@@ -42,10 +42,8 @@ import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 import javax.persistence.*;
 import javax.validation.Valid;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @ApiModel(value = "InstanceSnapshot", description = "Model of InstanceSnapshot")
@@ -138,18 +136,121 @@ public class Model_InstanceSnapshot extends TaggedModel {
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_InstanceSnapShotConfiguration settings(){
         try {
+
             if (this.json_additional_parameter != null) {
                 return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapShotConfiguration.class, Json.parse(this.json_additional_parameter));
             } else {
-                Swagger_InstanceSnapShotConfiguration configuration = new Swagger_InstanceSnapShotConfiguration();
 
-                if (this.get_instance().current_snapshot_id != null && this.get_instance().current_snapshot_id.equals(this.id)) {
+                System.out.println("Hledám poslední možný záznam");
+                Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.query().where().eq("instance.id", instance.id).ne("id", this.id).isNotNull("json_additional_parameter").orderBy("deployed").setMaxRows(1).findOne();
 
-                    for (Model_BProgramVersionSnapGridProject grid_project_snapshots : b_program_version.get_grid_project_snapshots()) {
+                if(snapshot != null) {
+
+                    System.out.println("Mám poslední možný záznam snapshot: " + snapshot.name);
+
+                    if(snapshot.id.equals(this.id)) {
+                        System.err.println("Aktuální settings tvořím nad naprosto stejným záznamem jako jem našel - něco je blblě: " + snapshot.name);
+                    }
+
+                    Swagger_InstanceSnapShotConfiguration configuration_new = new Swagger_InstanceSnapShotConfiguration();
+                    Swagger_InstanceSnapShotConfiguration configuration_old = snapshot.settings();
+
+                    System.out.println("Právě budu procházet pole předchozích konfigurací s Gridem a kopírovat to co mám už nastavené");
+                    for (Model_BProgramVersionSnapGridProject grid_project_snapshots : get_b_program_version().get_grid_project_snapshots()) {
+
+                        Swagger_InstanceSnapShotConfigurationFile previous_used_project = null;
+                        for(Swagger_InstanceSnapShotConfigurationFile file : configuration_old.grids_collections) {
+                            if(file.grid_project_id.equals(grid_project_snapshots.grid_project.id)){
+                                previous_used_project = file;
+                                break;
+                            }
+                        }
+
+                        if(previous_used_project != null) {
+
+                            System.out.println("Exituje předchozí nastavený grid project");
+
+                            Swagger_InstanceSnapShotConfigurationFile project_config = new Swagger_InstanceSnapShotConfigurationFile();
+                            project_config.grid_project_id = grid_project_snapshots.grid_project.id;
+
+
+                            System.out.println("Počet programů: " + grid_project_snapshots.grid_programs);
+                            for(Swagger_InstanceSnapShotConfigurationProgram program : previous_used_project.grid_programs) {
+
+                                System.out.println("Procházím Program id " + program.grid_program_id);
+                                System.out.println("Procházím Program Verze id " + program.grid_program_version_id);
+
+                                Swagger_InstanceSnapShotConfigurationProgram previous_used_program = null;
+                                k: for(Swagger_InstanceSnapShotConfigurationProgram old_program : previous_used_project.grid_programs) {
+                                    if(old_program.grid_program_id.equals(program.grid_program_id)) {
+                                        System.out.println("NAšel jsem předchozí používaný program a ukládám si ho");
+                                        previous_used_program = old_program;
+                                        break k;
+                                    }
+                                }
+
+                                if(previous_used_program != null) {
+                                    System.out.println("Mám přechozí program a tak ho překopíruju do nového configu");
+                                    project_config.grid_programs.add(previous_used_program);
+                                    continue;
+                                } else  {
+                                    System.out.println("Nemám přechozí program a tak ho vytvořím a uložím do nového configu");
+                                    Swagger_InstanceSnapShotConfigurationProgram program_config = new Swagger_InstanceSnapShotConfigurationProgram();
+                                    program_config.grid_program_id = program.grid_program_id;
+                                    program_config.grid_program_version_id = program.grid_program_version_id;
+                                    program_config.snapshot_settings = GridAccess.PROJECT;
+                                    program_config.connection_token = get_instance_id() + "/" + program_config.grid_program_id;
+
+                                    project_config.grid_programs.add(program_config);
+                                }
+
+                            }
+
+                            configuration_new.grids_collections.add(project_config);
+                        } else {
+                            System.out.println("NeExituje předchozí nastavený grid project");
+                            Swagger_InstanceSnapShotConfigurationFile project_config = new Swagger_InstanceSnapShotConfigurationFile();
+                            project_config.grid_project_id = grid_project_snapshots.grid_project.id;
+
+                            for (Model_BProgramVersionSnapGridProjectProgram program : grid_project_snapshots.grid_programs) {
+                                Swagger_InstanceSnapShotConfigurationProgram program_config = new Swagger_InstanceSnapShotConfigurationProgram();
+                                program_config.grid_program_id = program.get_grid_version_program().get_grid_program_id();
+                                program_config.grid_program_version_id = program.get_grid_program_version_id();
+                                program_config.snapshot_settings = GridAccess.PROJECT;
+                                program_config.connection_token = get_instance_id() + "/" + program_config.grid_program_id;
+
+                                project_config.grid_programs.add(program_config);
+                            }
+
+                            configuration_new.grids_collections.add(project_config);
+                        }
+
+
+                    }
+
+                    configuration_new.api_keys.addAll(configuration_old.api_keys);
+                    configuration_new.mesh_keys.addAll(configuration_old.mesh_keys);
+
+                    this.json_additional_parameter = Json.toJson(configuration_new).toString();
+                    this.update();
+
+                    return configuration_new;
+
+                } else {
+
+                    System.out.println("Nemám poslední možný záznam snapshot: a tak tvořím úplně nový záznam");
+                    // Najdu poslední běžící instanci
+
+                    Swagger_InstanceSnapShotConfiguration configuration = new Swagger_InstanceSnapShotConfiguration();
+
+
+
+                    for (Model_BProgramVersionSnapGridProject grid_project_snapshots : get_b_program_version().get_grid_project_snapshots()) {
                         Swagger_InstanceSnapShotConfigurationFile project_config = new Swagger_InstanceSnapShotConfigurationFile();
                         project_config.grid_project_id = grid_project_snapshots.grid_project.id;
 
                         for (Model_BProgramVersionSnapGridProjectProgram program : grid_project_snapshots.grid_programs) {
+
                             Swagger_InstanceSnapShotConfigurationProgram program_config = new Swagger_InstanceSnapShotConfigurationProgram();
                             program_config.grid_program_id = program.get_grid_version_program().get_grid_program_id();
                             program_config.grid_program_version_id = program.get_grid_program_version_id();
@@ -165,25 +266,35 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     this.json_additional_parameter = Json.toJson(configuration).toString();
                     this.update();
 
-                }
 
-                if(configuration.api_keys.isEmpty()) {
-                    Swagger_InstanceSnapShotConfigurationApiKeys key = new Swagger_InstanceSnapShotConfigurationApiKeys();
-                    key.token = UUID.randomUUID();
-                    key.description = "Default Instance Api Key";
-                    key.created = new Date().getTime();
-                    configuration.api_keys.add(key);
-                }
+                    if (configuration.api_keys.isEmpty()) {
+                        Swagger_InstanceSnapShotConfigurationApiKeys key = new Swagger_InstanceSnapShotConfigurationApiKeys();
+                        key.token = UUID.randomUUID().toString();
+                        key.description = "Default Instance Api Key";
+                        key.created = new Date().getTime();
+                        configuration.api_keys.add(key);
+                    }
 
-                if(configuration.mesh_keys.isEmpty()) {
-                    Swagger_InstanceSnapShotConfigurationApiKeys key = new Swagger_InstanceSnapShotConfigurationApiKeys();
-                    key.token = UUID.randomUUID();
-                    key.description = "Default Instance Mesh Network Key";
-                    key.created = new Date().getTime();
-                    configuration.mesh_keys.add(key);
-                }
+                    if (configuration.mesh_keys.isEmpty()) {
+                        Swagger_InstanceSnapShotConfigurationApiKeys key = new Swagger_InstanceSnapShotConfigurationApiKeys();
 
-                return configuration;
+
+
+                        StringBuilder sb = new StringBuilder(32);
+                        for(int i = 0; i < 32; i++) {
+                            sb.append("0123456789abcdef".charAt(new Random().nextInt("0123456789abcdef".length())));
+                        }
+
+                        key.token = sb.toString();
+
+                        key.description = "Default Instance Mesh Network Key";
+                        key.created = new Date().getTime();
+                        configuration.mesh_keys.add(key);
+                    }
+
+                    return configuration;
+
+                }
             }
 
         } catch (Exception e) {
@@ -1039,12 +1150,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
     @JsonIgnore @Transient
     public String get_path() {
-        // If its new Snapshot
-        if(instance != null) {
-            return instance.get_path() + "/snapshots/" + this.id;
-        }else {
-            return get_instance().get_path() + "/snapshots/" + this.id;
-        }
+        return get_instance().get_path() + "/snapshots/" + this.id;
     }
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/

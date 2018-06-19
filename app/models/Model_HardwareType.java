@@ -58,7 +58,7 @@ public class Model_HardwareType extends NamedModel {
     @JsonIgnore @OneToOne(mappedBy="hardware_type_test",    cascade = CascadeType.ALL, fetch = FetchType.LAZY) public Model_CProgram test_program;
 
 
-    @ManyToMany(mappedBy = "hardware_types", fetch = FetchType.LAZY)  public List<Model_HardwareFeature> features = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "hardware_types", fetch = FetchType.LAZY)  public List<Model_HardwareFeature> features = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "hardware_types", fetch = FetchType.LAZY)  public List<Model_Library> libraries = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
@@ -226,10 +226,10 @@ public class Model_HardwareType extends NamedModel {
     public List<UUID> get_bootloaders_id() {
 
 
-        System.out.println("Kontrola Bootloaderů v Hardware Type: ");
+        // System.out.println("Kontrola Bootloaderů v Hardware Type: ");
 
         if (cache().gets(Model_BootLoader.class) == null) {
-            System.out.println("Bootloadery nemám, a tak je hledám");
+            // System.out.println("Bootloadery nemám, a tak je hledám");
             cache().add(Model_BootLoader.class,  Model_BootLoader.find.query().where()
                     .eq("hardware_type.id", id)
                     .ne("deleted", true)
@@ -238,7 +238,7 @@ public class Model_HardwareType extends NamedModel {
                     .findSingleAttributeList());
         }
 
-        System.out.println("Seznam Nalezených Bootloaderů: " + cache().gets(Model_BootLoader.class));
+        // System.out.println("Seznam Nalezených Bootloaderů: " + cache().gets(Model_BootLoader.class));
 
         return cache().gets(Model_BootLoader.class) != null ?  cache().gets(Model_BootLoader.class) : new ArrayList<>();
 
@@ -251,8 +251,7 @@ public class Model_HardwareType extends NamedModel {
             List<Model_BootLoader> list = new ArrayList<>();
 
             for (UUID id : get_bootloaders_id()) {
-
-                System.out.println("get_bootloaders id: " + id);
+                // System.out.println("get_bootloaders id: " + id);
                 list.add(Model_BootLoader.getById(id));
             }
 

@@ -133,7 +133,6 @@ public class Model_BProgram extends TaggedModel {
         cache.put(this.id, this);
 
         new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, project.id, project.id))).start();
-
     }
 
     @JsonIgnore @Override

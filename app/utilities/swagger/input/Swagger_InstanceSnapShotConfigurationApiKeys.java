@@ -13,7 +13,7 @@ public class Swagger_InstanceSnapShotConfigurationApiKeys {
 
     public Swagger_InstanceSnapShotConfigurationApiKeys() {}
 
-    public UUID token;
+    public String token;
 
     public String description;
 

@@ -23,6 +23,7 @@ import utilities.swagger.output.filter_results.Swagger_Block_List;
 import utilities.swagger.output.filter_results.Swagger_C_Program_List;
 import utilities.swagger.output.filter_results.Swagger_Instance_List;
 import java.util.Date;
+import java.util.Random;
 import java.util.UUID;
 
 @Security.Authenticated(Authentication.class)
@@ -474,7 +475,7 @@ public class Controller_Blocko extends _BaseController {
             }
 
             // Nahrání na Azure
-            version.file = Model_Blob.upload(file_content, "blocko.json", bProgram.get_path());
+            version.file = Model_Blob.upload(file_content, "blocko.json", version.get_path());
             version.update();
 
             // Vrácení objektu
@@ -928,6 +929,7 @@ public class Controller_Blocko extends _BaseController {
             snapshot.description = help.description;
             snapshot.b_program_version = version;
             snapshot.instance = instance;
+            snapshot.save();
 
             System.out.println("Kontrola version zeptám se na path ");
             System.out.println("Kontrola version: path: "+  snapshot.get_path());
@@ -937,7 +939,7 @@ public class Controller_Blocko extends _BaseController {
 
             System.out.println("Program Uložen");
 
-            snapshot.save();
+            snapshot.update();
 
             System.out.println("Snapshot Uložen");
 
@@ -1283,7 +1285,9 @@ public class Controller_Blocko extends _BaseController {
             Swagger_InstanceSnapShotConfiguration settings = current_snapshot.settings();
 
             Swagger_InstanceSnapShotConfigurationApiKeys key = new Swagger_InstanceSnapShotConfigurationApiKeys();
-            key.token = UUID.randomUUID();
+
+            key.token = UUID.randomUUID().toString();
+
             key.description = help.description;
             key.created = new Date().getTime();
             settings.api_keys.add(key);
@@ -1405,7 +1409,6 @@ public class Controller_Blocko extends _BaseController {
         }
     }
 
-
     // INSTANCE - MESH NETWORK KEY  #############################################################################################
 
     @ApiOperation(value = "add Instance Mesh Network Key",
@@ -1448,7 +1451,16 @@ public class Controller_Blocko extends _BaseController {
             Swagger_InstanceSnapShotConfiguration settings = current_snapshot.settings();
 
             Swagger_InstanceSnapShotConfigurationApiKeys key = new Swagger_InstanceSnapShotConfigurationApiKeys();
-            key.token = UUID.randomUUID();
+
+
+            StringBuilder sb = new StringBuilder(32);
+            for(int i = 0; i < 32; i++) {
+                sb.append("0123456789abcdef".charAt(new Random().nextInt("0123456789abcdef".length())));
+            }
+
+            key.token = sb.toString();
+
+
             key.description = help.description;
             key.created = new Date().getTime();
             settings.mesh_keys.add(key);

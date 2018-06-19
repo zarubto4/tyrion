@@ -668,8 +668,42 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore @Override public boolean delete() {
         logger.debug("delete - deleting from database, id: {} ", this.id);
 
+
+        System.out.println("Its time to log out hardware form project for delete: " + this.id);
+        List<UUID> hardware_list = Model_Hardware.find.query().where()
+                .eq("project.id", this.id)
+                .eq("dominant_entity", true)
+                .select("id").findSingleAttributeList();
+
+        System.out.println("List of Hardware for Remove: " + hardware_list);
+
+        for (UUID hardware_id : hardware_list) {
+            try {
+                System.out.println("ID for Remove" + hardware_list);
+
+                Model_Hardware hardware = Model_Hardware.getById(hardware_id);
+
+                hardware.dominant_entity = false;
+                hardware.update();
+
+                // log Hard disconection
+                if (hardware.online_state() == NetworkStatus.ONLINE) {
+                    hardware.make_log_deactivated();
+                    // If device is online, restart it. So Device will connect immediately and it will find probably a new activated alternative of Device
+                    hardware.device_converted_id_clean_remove_from_server();
+                }
+
+                Model_Hardware.cache_status.remove(hardware.id);
+
+            } catch (Exception e) {
+                logger.internalServerError(e);
+            }
+        }
+
+        super.delete();
         getProduct().cache().remove(this.getClass(), id);
-        return super.delete();
+
+        return true;
     }
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/

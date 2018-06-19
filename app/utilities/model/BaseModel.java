@@ -129,10 +129,7 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
                         }
                     }
                 } else {
-                    System.err.println("IDCache: add id is null for class: " + c.getSimpleName());
-                    for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
-                        System.out.println(ste);
-                    }
+                    System.err.println("IDCache: add id is null for class: " + c.getSimpleName() + " its not error. In most cases it's okay ");
                 }
             } catch (Exception e){
                 e.printStackTrace();

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import controllers._BaseFormFactory;
+import models.Model_BProgramVersion;
 import models.Model_Blob;
 import models.Model_BootLoader;
 import models.Model_HardwareType;
@@ -32,6 +33,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * This job synchronizes compilation libraries from GitHub releases.
@@ -208,7 +210,19 @@ public class Job_CheckCompilationLibraries implements Job {
 
                     hardwareType.cache_library_list.addAll(library_list_for_add);
                     hardwareType.update();
+
+
+
+                    // Sorting List
+                    List<Swagger_CompilationLibrary> libraries = new ArrayList<>();
+                    hardwareType.cache_library_list.stream().sorted((element1, element2) -> element2.name.compareTo(element1.name)).collect(Collectors.toList())
+                            .forEach(o -> libraries.add(o));
+
+                    hardwareType.cache_library_list = libraries;
                 }
+
+
+
 
                 logger.trace("check_version_thread:: all Library type of Board synchronized");
                 logger.trace("check_version_thread:: all Bootloader in type of Board synchronized");
