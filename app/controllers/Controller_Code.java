@@ -15,14 +15,14 @@ import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
-import utilities.enums.Approval;
-import utilities.enums.ProgramType;
+import utilities.enums.*;
 import utilities.logger.Logger;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Compilation_Build_Error;
 import utilities.swagger.output.Swagger_Compilation_Ok;
 import utilities.swagger.output.filter_results.Swagger_C_Program_List;
 import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
+import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
 import java.util.*;
 
@@ -43,68 +43,9 @@ public class Controller_Code extends _BaseController {
     }
 
 // CONTROLLER CONTENT ##################################################################################################
-    
-    /**
-     @ApiOperation(value = "only for Tyrion Front End", hidden = true)
-     @Security.Authenticated(Secured_Admin.class)
-     public Result uploadBinaryFileToBoard_fake_board(String instance_id, String board_id, String build_id,  String firmware_type_string) {
-     try {
-
-     // Slouží k nahrávání firmwaru do deviců, které jsou ve fakce instnaci pro testování
-     // nejsou databázovaný a tedy nejde spustit regulérní update procedura na kterou jsme zvyklé - viz metoda nad tímto
-     // Slouží jen pro Admin rozhraní Tyriona
-
-     Firmware_type firmware_type = Firmware_type.getFirmwareType(firmware_type_string);
-     if (firmware_type == null) return notFound("FirmwareType not found!");
-
-     List<String> list = new ArrayList<>();
-     list.add(board_id);
-
-     // Přijmu soubor
-     Http.MultipartFormData body = request().body().asMultipartFormData();
-
-     List<Http.MultipartFormData.FilePart> files_from_request = body.getFiles();
-
-     if (files_from_request == null || files_from_request.isEmpty())return notFound("Bin File not found!");
-     if (files_from_request.size() > 1)return badRequest("More than one File is not allowed!");
-
-     File file = files_from_request.get(0).getFile();
-     if (file == null) return badRequest("File not found!");
-     if (file.length() < 1) return badRequest("File is Empty!");
 
 
-     int dot = files_from_request.get(0).getFilename().lastIndexOf(".");
-     String file_type = files_from_request.get(0).getFilename().substring(dot);
-     String file_name = files_from_request.get(0).getFilename().substring(0, dot);
 
-     // Zkontroluji soubor
-     if (!file_type.equals(".bin"))return badRequest("Wrong type of File - \"Bin\" required! ");
-     if ((file.length() / 1024) > 500)return badRequest("File is bigger than 500K b");
-
-
-     ObjectNode request = Json.newObject();
-     request.put("message_channel", "tyrion");
-     request.put("instance_id", instance_id);
-     request.put("message_type", "updateDevice");
-     request.put("firmware_type", firmware_type.get_firmwareType());
-     request.set("targetIds",  Json.toJson(list));
-     request.put("build_id", build_id);
-     request.put("program", Model_FileRecord.get_encoded_binary_string_from_File(file));
-
-     // ObjectNode result =  Controller_WebSocket.incomingConnections_homers.get(instance_id).write_with_confirmation(request, 1000*30, 0, 3);
-
-     if (request.get("status").asText().equals("success")) {
-     return ok();
-     }
-     else {
-     return badRequest(request);
-     }
-
-     } catch (Exception e) {
-     return Server_Logger.result_internalServerError(e, request());
-     }
-     }
-     */
 
     @ApiOperation(value = "compile C_Program_Version",
             hidden = true,
@@ -223,6 +164,33 @@ public class Controller_Code extends _BaseController {
                 Swagger_Compilation_Server_CompilationResult result = new Swagger_Compilation_Server_CompilationResult();
                 result.interface_code = compilation_result.interface_code;
 
+                if(help.immediately_hardware_update && !help.hardware_ids.isEmpty()) {
+                    Model_Compilation compilation = Model_Compilation.make_a_individual_compilation(compilation_result, help.library_compilation_version);
+                    System.out.println("Success -  we have compilation file!");
+
+                    Model_UpdateProcedure procedure = new Model_UpdateProcedure();
+                    procedure.type_of_update = UpdateType.MANUALLY_RELEASE_MANAGER;
+
+                    procedure.date_of_planing = new Date();
+
+
+                    for(UUID hardware_id : help.hardware_ids) {
+
+                        Model_Hardware hardware = Model_Hardware.getById(hardware_id);
+                        procedure.project_id = hardware.get_project_id();
+
+                        Model_HardwareUpdate plan = new Model_HardwareUpdate();
+                        plan.hardware = hardware;
+                        plan.firmware_type = FirmwareType.FIRMWARE;
+                        plan.state = HardwareUpdateState.NOT_YET_STARTED;
+                        plan.binary_file = compilation.blob;
+                        procedure.updates.add(plan);
+
+                    }
+
+                    procedure.save();
+                }
+
                 return ok(result);
             }
 
@@ -246,73 +214,6 @@ public class Controller_Code extends _BaseController {
             return controllerServerError(e);
         }
     }
-
-    /**
-     * TODO http://youtrack.byzance.cz/youtrack/issue/TYRION-503
-     @ApiOperation(value = "update Embedded Hardware with  binary file",
-     tags = {"C_Program", "Actualization"},
-     notes = "Upload Binary file and choose hardware_id for update. Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
-     "There is also problem / chance that Tyrion didn't find where Embedded hardware is. So you have to listening Server Sent Events (SSE) and show \"future\" message to the user!",
-     produces = "application/json",
-     protocols = "https",
-     consumes = "application/octet-stream",
-     )
-     @ApiResponses({
-     @ApiResponse(code = 200, message = "Ok Result", response = Result_ok.class),
-     @ApiResponse(code = 477, message = "External Cloud_Homer_server where is hardware is offline", response = Result_ServerOffline.class),
-     @ApiResponse(code = 404, message = "Object not found", response = Result_NotFound.class),
-     @ApiResponse(code = 401, message = "Unauthorized request", response = Result_Unauthorized.class),
-     @ApiResponse(code = 403, message = "Need required permission", response = Result_PermissionRequired.class),
-     @ApiResponse(code = 500, message = "Server side Error", response = Result_InternalServerError.class)
-     })
-     public Result uploadBinaryFileToBoard(@ApiParam(value = "version_id ", required = true) String board_id, @ApiParam(value = "version_id ", required = true) String firmware_type_string) {
-     try {
-
-     System.out.println("Body " + request().body().asText());
-
-     // Vyhledání objektů
-     Board board = Board.getById(board_id);
-     if (board == null) return notFound("Board board_id object not found");
-
-     if (!board.update_permission()) return forbidden();
-
-     Firmware_type firmware_type = Firmware_type.getFirmwareType(firmware_type_string);
-     if (firmware_type == null) return notFound("FirmwareType not found!");
-
-     // Přijmu soubor
-     Http.MultipartFormData body = request().body().asMultipartFormData();
-
-     List<Http.MultipartFormData.FilePart> files_from_request = body.getFiles();
-
-     if (files_from_request == null || files_from_request.isEmpty())return notFound("Bin File not found!");
-     if (files_from_request.size() > 1)return badRequest("More than one File is not allowed!");
-
-     File file = files_from_request.get(0).getFile();
-     if (file == null) return badRequest("File not found!");
-     if (file.length() < 1) return badRequest("File is Empty!");
-
-
-     int dot = files_from_request.get(0).getFilename().lastIndexOf(".");
-     String file_type = files_from_request.get(0).getFilename().substring(dot);
-     String file_name = files_from_request.get(0).getFilename().substring(0, dot);
-
-     // Zkontroluji soubor
-     if (!file_type.equals(".bin"))return badRequest("Wrong type of File - \"Bin\" required! ");
-     if ((file.length() / 1024) > 500)return badRequest("File is bigger than 500K b");
-
-     // Existuje Homer?
-
-     String binary_file = FileRecord.get_encoded_binary_string_from_File(file);
-     FileRecord fileRecord = FileRecord.create_Binary_file("byzance-private/binaryfiles", binary_file, file_name);
-     Controller_Actualization.add_new_actualization_request_with_user_file(board.project, firmware_type, board, fileRecord);
-
-     return ok();
-
-     } catch (Exception e) {
-     return Server_Logger.result_internalServerError(e, request());
-     }
-     }
-     */
 
 // C_PROGRAM AND VERSION  ###############################################################################################
 
@@ -768,9 +669,9 @@ public class Controller_Code extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "create C_Program_Version",
+    @ApiOperation(value = "create C_Program_Version SaveAs",
             tags = {"C_Program"},
-            notes = "If you want add new code to C_Program by query = c_program_id. Send required json values and cloud_compilation_server respond with new object",
+            notes = "New and database tracked version of C_Program",
             produces = "application/json",
             protocols = "https",
             code = 201
@@ -799,6 +700,9 @@ public class Controller_Code extends _BaseController {
     public Result c_program_version_create(@ApiParam(value = "version_id String query", required = true)  UUID c_program_id) {
         try {
 
+
+            System.out.println("c_program_version_create");
+
             // Get and Validate Object
             Swagger_C_Program_Version_New help = baseFormFactory.formFromRequestWithValidation(Swagger_C_Program_Version_New.class);
 
@@ -807,6 +711,14 @@ public class Controller_Code extends _BaseController {
 
             // Zkontroluji oprávnění
             c_program.check_update_permission();
+
+            UUID working_copy_version_id = Model_CProgramVersion.find.query().where().eq("c_program.id", c_program_id).ne("deleted", true).eq("working_copy", true).select("id").findSingleAttribute();
+
+            // If the is not working copy - make it
+            if(working_copy_version_id != null) {
+                Model_CProgramVersion version = Model_CProgramVersion.getById(working_copy_version_id);
+                version.delete();
+            }
 
             // První nová Verze
             Model_CProgramVersion version = new Model_CProgramVersion();
@@ -828,6 +740,97 @@ public class Controller_Code extends _BaseController {
             return created(version);
 
         } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "working_copy_save C_Program_Version",
+            tags = {"C_Program"},
+            notes = "Just override last version",
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_C_Program_Version_Refresh",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Successfully created",      response = Model_CProgramVersion.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result c_program_version_working_copy(@ApiParam(value = "version_id String query", required = true)  UUID c_program_id) {
+        try {
+
+            System.out.println("c_program_version_working_copy");
+
+            // Get and Validate Object
+            Swagger_C_Program_Version_Refresh help = baseFormFactory.formFromRequestWithValidation(Swagger_C_Program_Version_Refresh.class);
+
+            System.out.println("Sem to ani nedošlo :(");
+
+            // Find Last working copy
+            UUID version_id = Model_CProgramVersion.find.query().where().eq("c_program.id", c_program_id).ne("deleted", true).eq("working_copy", true).select("id").findSingleAttribute();
+
+            Model_CProgramVersion version = null;
+
+            // If the is not working copy - make it
+            if(version_id == null) {
+
+                System.out.println("Verze Neexistuje a tak jí vytvořím");
+
+
+                // Ověření objektu
+                Model_CProgram c_program = Model_CProgram.getById(c_program_id);
+
+                // Zkontroluji oprávnění
+                c_program.check_update_permission();
+
+                version = new Model_CProgramVersion();
+                version.name            = "Working Copy";
+                version.description     = "Save As for a databased version";
+                version.c_program       = c_program;
+                version.publish_type    = ProgramType.PRIVATE;
+                version.working_copy    = true;
+                version.save();
+
+            }else  {
+
+                version = Model_CProgramVersion.getById(version_id);
+
+                if(version.file != null) {
+                    version.file.delete();
+                }
+            }
+
+
+            System.out.println("Vytvářím Soubor");
+
+            // Content se nahraje na Azure
+            version.file = Model_Blob.upload(Json.toJson(help).toString(), "code.json" , Model_Blob.get_path_for_bin());
+            version.update();
+
+            // Start with asynchronous ccompilation
+            version.compile_program_thread(help.library_compilation_version);
+
+            // Vracím vytvořený objekt
+            return created(version);
+
+        } catch (Exception e) {
+            e.printStackTrace();
             return controllerServerError(e);
         }
     }

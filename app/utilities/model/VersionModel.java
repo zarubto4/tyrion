@@ -5,10 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
 import io.swagger.annotations.ApiModelProperty;
-import models.Model_Blob;
-import models.Model_CProgram;
-import models.Model_Person;
-import models.Model_WidgetVersion;
+import models.*;
 import utilities.cache.Cached;
 import utilities.enums.Approval;
 import utilities.enums.ProgramType;
@@ -35,6 +32,8 @@ public abstract class VersionModel extends NamedModel {
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only if user make request for publishing") @Enumerated(EnumType.STRING) public Approval approval_state;
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only for main / default program - and access only for administrators") @Enumerated(EnumType.STRING) public ProgramType publish_type;
 
+    @JsonIgnore public boolean working_copy;
+
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -57,7 +56,16 @@ public abstract class VersionModel extends NamedModel {
         }
     }
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+    @JsonProperty
+    @ApiModelProperty(value = "Visible only for working copy versions", required = false)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Boolean working_copy(){
+        if(working_copy) return true;
+        return null;
+    }
+
+
+    /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {

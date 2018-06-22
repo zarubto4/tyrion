@@ -506,10 +506,6 @@ public class Model_Product extends NamedModel {
 
     @JsonIgnore @Override public void save() {
 
-        while(true) { // I need Unique Value
-            this.azure_product_link = get_Container().getName() + "/" + UUID.randomUUID().toString();
-            if (Model_Product.find.query().where().eq("azure_product_link", azure_product_link ).findOne() == null) break;
-        }
 
         while(true) { // I need Unique Value
             this.subscription_id =  UUID.randomUUID().toString().substring(0, 12);
@@ -724,7 +720,6 @@ public class Model_Product extends NamedModel {
 
 /* BlOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore private String azure_product_link;
 
     @JsonIgnore @Transient
     public CloudBlobContainer get_Container() {
@@ -738,7 +733,7 @@ public class Model_Product extends NamedModel {
 
     @JsonIgnore @Transient
     public String get_path() {
-        return azure_product_link;
+       return get_Container().getName() + "/" + UUID.randomUUID().toString();
     }
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/

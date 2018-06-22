@@ -35,4 +35,12 @@ public class Swagger_C_Program_Version_Update {
     @ApiModelProperty(required = false, readOnly = true , value = "List ID of libraries version ID")
     public List<String> imported_libraries = new ArrayList<>();
 
+
+    @ApiModelProperty(required = false, value = "Only if user want update hardware with compilation immediately.")
+    public boolean immediately_hardware_update;
+
+    @ApiModelProperty(required = false)
+    public List<UUID> hardware_ids = new ArrayList<>();
+
+
 }

@@ -953,7 +953,7 @@ public class Controller_ExternalServer extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission or File is not probably right type",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    // @Security.Authenticated(AuthenticationHomer.class)
+    @Security.Authenticated(AuthenticationHomer.class)
     public Result cloud_file_get_bootloader(UUID bootloader_id) {
         try {
 

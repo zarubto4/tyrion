@@ -250,8 +250,6 @@ public class Model_Blob extends BaseModel {
         }
     }
 
-
-
     /**
      *  Metoda slouží k rekurzivnímu procháázení úrovně adresáře v Azure data storage a mazání jeho obsahu.
      *  Azure data storage je totiž jednoúrovňové datové skladiště! KJde není možné vytvářet složky, v nich složky
@@ -330,6 +328,15 @@ public class Model_Blob extends BaseModel {
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+
+    @JsonIgnore @Transient
+    public static String get_path_for_bin() throws Exception {
+
+        CloudBlobContainer container = Server.blobClient.getContainerReference("bin-files");
+        return container.getName() + "/" + UUID.randomUUID().toString();
+
+    }
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 

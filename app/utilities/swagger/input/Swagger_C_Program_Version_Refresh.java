@@ -10,9 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@ApiModel(description = "Json Model for new Version of C_Program",
-          value = "C_Program_Version_New")
-public class Swagger_C_Program_Version_New extends Swagger_NameAndDescription {
+
+@ApiModel(description = "Json Model for new Working Copy of C_Program",
+          value = "C_Program_Version_Refresh")
+public class Swagger_C_Program_Version_Refresh {
 
     @ApiModelProperty(required = false, value = "The Library Version tag_name from HardwareType.supported_libraries")
     @Constraints.MaxLength(value = 60)
@@ -28,3 +29,6 @@ public class Swagger_C_Program_Version_New extends Swagger_NameAndDescription {
     @Valid public List<String>  imported_libraries = new ArrayList<>();
 
 }
+
+
+

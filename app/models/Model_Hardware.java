@@ -1999,8 +1999,6 @@ public class Model_Hardware extends TaggedModel {
 
         logger.debug("execute_update_procedure - Summary for actualizations");
 
-        //  new Thread(procedure::notification_update_procedure_start).start();
-
         for (UUID server_id : server_device_sort.keySet()) {
 
             List<Swagger_UpdatePlan_brief_for_homer> tasks = new ArrayList<>();
@@ -2766,6 +2764,7 @@ public class Model_Hardware extends TaggedModel {
             throw new NullPointerException("List<WS_Help_Hardware_Pair> board_for_update) is empty");
         }
 
+
         Model_UpdateProcedure procedure = new Model_UpdateProcedure();
         procedure.project_id = board_for_update.get(0).hardware.get_project_id();
         procedure.state = Enum_Update_group_procedure_state.NOT_START_YET;
@@ -2799,19 +2798,23 @@ public class Model_Hardware extends TaggedModel {
 
             // Firmware
             if (firmware_type == FirmwareType.FIRMWARE) {
+
                 plan.c_program_version_for_update = b_pair.c_program_version;
-                plan.state = HardwareUpdateState.NOT_YET_STARTED;
+                plan.binary_file                  = b_pair.blob;
+                plan.state                        = HardwareUpdateState.NOT_YET_STARTED;
             }
 
             // Backup
             else if (firmware_type == FirmwareType.BACKUP) {
                 plan.c_program_version_for_update = b_pair.c_program_version;
+                plan.binary_file                  = b_pair.blob;
                 plan.state = HardwareUpdateState.NOT_YET_STARTED;
             }
 
             // Bootloader
             else if (firmware_type == FirmwareType.BOOTLOADER) {
-                plan.bootloader = b_pair.bootLoader;
+                plan.bootloader                   = b_pair.bootLoader;
+                plan.binary_file                  = b_pair.blob;
                 plan.state = HardwareUpdateState.NOT_YET_STARTED;
             }
 
@@ -3285,8 +3288,6 @@ public class Model_Hardware extends TaggedModel {
     /**
      * Specialní vyjímka - vždy vracíme Hardware podle full_id (číslo procesoru) kde
      * máme dominanci! Tuto metodu výlučně používá část systému obsluhující fyzický hardware.
-     * @param fullId
-     * @return
      */
     public static Model_Hardware getByFullId(String fullId) {
        logger.trace("getByFullId: {}", fullId);

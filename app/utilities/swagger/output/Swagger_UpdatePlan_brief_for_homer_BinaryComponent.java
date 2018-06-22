@@ -7,6 +7,7 @@ import utilities.enums.FirmwareType;
 import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.util.Date;
+import java.util.UUID;
 
 @ApiModel(description = "Private",
         value = "UpdatePlan_brief_for_homer_BinaryComponent")
@@ -22,8 +23,7 @@ public class Swagger_UpdatePlan_brief_for_homer_BinaryComponent extends _Swagger
     @JsonProperty
     public String program_version_name;               // C_Program.versions[1].name  for Model_BootLoader.version_identifier
     @JsonProperty
-    public String download_id;                        // For firmware or Backup is Model Version for bootloader is Model_BootLoader.version_identifier
-
+    public UUID download_id;                        // For firmware or Backup is Model Version for bootloader is Model_BootLoader.version_identifier
 
     @JsonProperty
     public Date time_stamp;

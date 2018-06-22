@@ -152,7 +152,7 @@ public class Model_CProgramVersion extends VersionModel {
 
                 JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
 
-                Swagger_C_Program_Version_New version_new = baseFormFactory.formFromJsonWithValidation(Swagger_C_Program_Version_New.class, json);
+                Swagger_C_Program_Version_Refresh version_new = baseFormFactory.formFromJsonWithValidation(Swagger_C_Program_Version_Refresh.class, json);
 
                 c_program_versions.main = version_new.main;
                 c_program_versions.files = version_new.files;
@@ -169,14 +169,13 @@ public class Model_CProgramVersion extends VersionModel {
 
                     c_program_versions.imported_libraries.add(pair);
                 }
+            } else {
+                logger.error("File Record is null!");
             }
 
             return c_program_versions;
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
+        } catch (Exception e){
             logger.internalServerError(e);
             return null;
         }
@@ -308,6 +307,7 @@ public class Model_CProgramVersion extends VersionModel {
     @JsonIgnore
     public Result compile_program_procedure() {
         try {
+
             Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("c_programs.id", get_c_program_id()).findOne();
             if (hardwareType == null) {
                 logger.internalServerError(new Exception("compile_program_procedure:: HardwareType not found! Not found way how to compile version."));

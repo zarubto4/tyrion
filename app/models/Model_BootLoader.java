@@ -123,11 +123,11 @@ public class /**/Model_BootLoader extends NamedModel {
     @JsonIgnore
     public UUID getMainHardwareTypeId() {
 
-        System.out.println("getMainHardwareTypeId for bootloader " + this.name);
+        // System.out.println("getMainHardwareTypeId for bootloader " + this.name);
 
         if (cache().get(Model_HardwareType.Model_HardwareType_Main.class) == null) { // Záměrně random! Protože potřebuji uložit stejný typ objektu do paměti dvakrát a rozpoznání je jen podle typu třídy
 
-            System.out.println("getMainHardwareTypeId cache is null " + this.name);
+            // System.out.println("getMainHardwareTypeId cache is null " + this.name);
 
             UUID main = (UUID) Model_HardwareType.find.query().where().eq("main_boot_loader.id", id).select("id").findSingleAttribute();
             if (main != null) {

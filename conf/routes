@@ -333,6 +333,7 @@ PUT       /update_procedure/filter/:page_number                         controll
 GET       /update_procedure/object/:procedure_id                        controllers.Controller_Update.get_Actualization_Procedure(procedure_id: java.util.UUID)
 POST      /update_procedure/make                                        controllers.Controller_Update.make_actualization_procedure()
 PUT       /update_procedure/cancel/:procedure_id                        controllers.Controller_Update.canceled_procedure(procedure_id)
+PUT       /update_procedure/bin/uploud                                  controllers.Controller_Update.uploadBinaryFileToBoard()
 
 #Task
 PUT       /update_task/filter/:page_number                              controllers.Controller_Update.get_Actualization_CProgramUpdatePlan_by_filter(page_number: Int)
@@ -347,10 +348,12 @@ PUT       /c_program/clone                                              controll
 GET       /c_program/get/:c_program_id                                  controllers.Controller_Code.c_program_get(c_program_id: java.util.UUID)
 PUT       /c_program/filter/:page_number                                controllers.Controller_Code.c_program_getByFilter(page_number: Int)
 
+
 PUT       /c_program/:c_program_id                                      controllers.Controller_Code.c_program_edit(c_program_id: java.util.UUID)
 DELETE    /c_program/:c_program_id                                      controllers.Controller_Code.c_program_delete(c_program_id: java.util.UUID)
 
 POST      /c_program/version/create/:c_program_id                       controllers.Controller_Code.c_program_version_create(c_program_id: java.util.UUID)
+POST      /c_program/version/working_copy/:c_program_id                 controllers.Controller_Code.c_program_version_working_copy(c_program_id: java.util.UUID)
 GET       /c_program/version/get/:version_id                            controllers.Controller_Code.c_program_version_get(version_id: java.util.UUID)
 PUT       /c_program/version/edit/:version_id                           controllers.Controller_Code.c_program_version_edit(version_id: java.util.UUID)
 DELETE    /c_program/version/delete/:version_id                         controllers.Controller_Code.c_program_version_delete(version_id: java.util.UUID)

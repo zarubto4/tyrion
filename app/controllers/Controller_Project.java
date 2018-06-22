@@ -14,8 +14,11 @@ import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.BoardCommand;
 import utilities.enums.NetworkStatus;
+import utilities.enums.NotificationImportance;
+import utilities.enums.NotificationLevel;
 import utilities.logger.Logger;
 import utilities.models_update_echo.EchoHandler;
+import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.input.*;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_command_execute;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_uuid_converter_cleaner;
@@ -714,6 +717,9 @@ public class Controller_Project extends _BaseController {
 
             logger.warn("project_addHardware. Step 1 - is_online_get_from_cache");
 
+            // Person - where we send notification
+            Model_Person person = this.person();
+
             // Try to find hardware by full_id
             logger.warn("project_addHardware. Step 2 - Try to find in cache of not dominant hardware");
             if(Model_Hardware.cache_not_dominant_hardware.containsKey(hardware.full_id)) {
@@ -731,6 +737,12 @@ public class Controller_Project extends _BaseController {
                     logger.warn("project_addHardware. Step 2 - No we will try to change that on server");
                     // Send restart for reallocate hardware to new UUID
                     if (server != null && server.online_state() == NetworkStatus.ONLINE) {
+
+                        Model_Notification notification = new Model_Notification();
+                        notification.setImportance(NotificationImportance.LOW);
+                        notification.setLevel(NotificationLevel.INFO);
+                        notification.setText(new Notification_Text().setText("Thank you for Activation Hardware. Now, its time to make a magic. Give us a few seconds or restart the device"));
+                        notification.send(person);
 
                         logger.warn("project_addHardware. Step 2 - Server is online and know so we will do it");
 

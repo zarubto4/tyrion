@@ -3,11 +3,15 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudAppendBlob;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
 import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
+import org.apache.commons.io.FileExistsException;
+import play.libs.ws.WSClient;
+import play.libs.ws.WSResponse;
 import utilities.Server;
 import utilities.cache.Cached;
 import utilities.enums.CompilationStatus;
@@ -19,10 +23,13 @@ import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
+import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
+import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.CompletionStage;
 
 @Entity
 @ApiModel(value = "Compilation", description = "Model of Compilation")
@@ -66,7 +73,7 @@ public class Model_Compilation extends BaseModel {
         return cache().get(Model_Blob.class);
     }
 
-@JsonIgnore
+    @JsonIgnore
     public Model_Blob blob()throws _Base_Result_Exception{
     try {
         return Model_Blob.getById(blob_id());
@@ -124,6 +131,49 @@ public class Model_Compilation extends BaseModel {
         }
     }
 
+
+/* EXECUTION METHODS ----------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static Model_Compilation make_a_individual_compilation(WS_Message_Make_compilation compilation_Result, String library_compilation_version) throws Exception {
+
+        WSClient ws = Server.injector.getInstance(WSClient.class);
+        CompletionStage<? extends WSResponse> responsePromise = ws.url(compilation_Result.build_url)
+                .setContentType("undefined")
+                .setRequestTimeout(Duration.ofMillis(7500))
+                .get();
+
+        byte[] body = responsePromise.toCompletableFuture().get().asByteArray();
+
+        //(response -> body = response.asByteArray())
+        //      get().asByteArray();
+
+        if (body == null || body.length == 0) {
+            throw new FileExistsException("Body length is 0");
+        }
+
+        logger.trace("compile_program_procedure:: Body is ok - uploading to Azure");
+
+
+        Model_Compilation compilation = new Model_Compilation();
+        compilation.status = CompilationStatus.IN_PROGRESS;
+        compilation.firmware_version_lib = library_compilation_version;
+        compilation.save();
+
+        // Daný soubor potřebuji dostat na Azure a Propojit s verzí
+        compilation.blob = Model_Blob.upload(body, "firmware.bin", get_path_for_bin());
+
+        logger.trace("compile_program_procedure:: Body is ok - uploading to Azure was successful");
+        compilation.status = CompilationStatus.SUCCESS;
+        compilation.build_url = compilation_Result.build_url;
+        compilation.firmware_build_id = compilation_Result.build_id;
+        compilation.virtual_input_output = compilation_Result.interface_code;
+        compilation.firmware_build_datetime = new Date();
+        compilation.update();
+
+        return compilation;
+    }
+
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Override
@@ -132,14 +182,17 @@ public class Model_Compilation extends BaseModel {
         logger.debug("update :: Update object Id: {}",  this.id);
 
         // Call notification about model update
-        new Thread(() -> {
-            try {
 
-                EchoHandler.addToQueue(new WSM_Echo( Model_CProgram.class, version.get_c_program().getProjectId(), version.get_c_program_id()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        if(version != null) {
+            new Thread(() -> {
+                try {
+
+                    EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, version.get_c_program().getProjectId(), version.get_c_program_id()));
+                } catch (_Base_Result_Exception e) {
+                    // Nothing
+                }
+            }).start();
+        }
 
 
         super.update();
@@ -152,7 +205,7 @@ public class Model_Compilation extends BaseModel {
     }
 
 
-    /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -244,7 +297,16 @@ public class Model_Compilation extends BaseModel {
 
     @JsonIgnore @Transient
     public String get_path() {
+
         return version.get_path();
+    }
+
+    @JsonIgnore @Transient
+    public static String get_path_for_bin() throws Exception {
+
+        CloudBlobContainer container = Server.blobClient.getContainerReference("bin-files");
+        return container.getName() + "/" + UUID.randomUUID().toString();
+
     }
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/

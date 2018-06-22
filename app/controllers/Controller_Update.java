@@ -11,10 +11,7 @@ import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
-import responses.Result_Forbidden;
-import responses.Result_InternalServerError;
-import responses.Result_NotFound;
-import responses.Result_Unauthorized;
+import responses.*;
 import utilities.authentication.Authentication;
 import utilities.enums.CompilationStatus;
 import utilities.enums.HardwareUpdateState;
@@ -24,7 +21,9 @@ import utilities.logger.Logger;
 import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_ActualizationProcedureTask_List;
 import utilities.swagger.output.filter_results.Swagger_ActualizationProcedure_List;
+import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -281,6 +280,87 @@ public class Controller_Update extends _BaseController {
             return controllerServerError(e);
         }
     }
+
+
+    @ApiOperation(value = "upload C_Program Bin File",
+            tags = {"Actualization"},
+            notes = "Upload manually build file on your own risk",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            @ApiImplicitParam(
+                    name = "body",
+                    dataType = "utilities.swagger.input.Swagger_Upload_BIN_to_HW_BASE64_FILE",
+                    required = true,
+                    paramType = "body",
+                    value = "Contains Json with values"
+            )
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    public Result uploadBinaryFileToBoard() {
+        try {
+
+            // Slouží k nahrávání firmwaru do deviců, které jsou ve fakce instnaci pro testování
+            // nejsou databázovaný a tedy nejde spustit regulérní update procedura na kterou jsme zvyklé - viz metoda nad tímto
+            // Slouží jen pro Admin rozhraní Tyriona
+
+            // Get and Validate Object
+            Swagger_Upload_BIN_to_HW_BASE64_FILE help = baseFormFactory.formFromRequestWithValidation(Swagger_Upload_BIN_to_HW_BASE64_FILE.class);
+
+            final byte[] utf8Bytes = help.file.getBytes("UTF-8");
+            System.out.println("hardwareType_uploadBin - update bin: size in bits: " + utf8Bytes.length); // prints "11"
+
+            String file_name =   "manual_upload_file_cron_remove.bin";
+
+
+            logger.debug("hardwareType_uploadBin- File Name:: " + file_name );
+
+
+            // Create File - its not owned by any other model object - and there is a Cron Job witch remove this file after 24 hours.
+            Model_Blob file = Model_Blob.upload(help.file, "bin", file_name , Model_Blob.get_path_for_bin());
+
+
+            List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
+
+            for (UUID hardware_id : help.hardware_ids) {
+
+                Model_Hardware hardware = Model_Hardware.getById(hardware_id);
+
+                WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
+                b_pair.hardware = hardware;
+                b_pair.blob = file;
+
+                b_pairs.add(b_pair);
+            }
+
+            if (!b_pairs.isEmpty()) {
+                new Thread(() -> {
+                    try {
+
+                        Model_Hardware.create_update_procedure(help.firmware_type, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, b_pairs);
+
+                    } catch (Exception e) {
+                        logger.internalServerError(e);
+                    }
+                }).start();
+            }
+
+            // Vracím odpověď
+            return ok();
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
 
 
 // C PROGRAM ACTUALIZATION PLAN ########################################################################################

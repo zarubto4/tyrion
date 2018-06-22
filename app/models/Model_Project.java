@@ -631,11 +631,9 @@ public class Model_Project extends TaggedModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore private String blob_project_link;
-
     @JsonIgnore
     public String getPath() {
-        return  blob_project_link;
+        return product.get_path() + "/projects/" + this.id;
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -644,7 +642,6 @@ public class Model_Project extends TaggedModel {
 
         financial_permission();
 
-        this.blob_project_link = product.get_path() + "/projects/" + UUID.randomUUID();
         super.save();
 
         product.cache().add(this.getClass(), id);

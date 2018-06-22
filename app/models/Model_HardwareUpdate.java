@@ -289,27 +289,61 @@ public class Model_HardwareUpdate extends BaseModel {
             }
 
             if (firmware_type == FirmwareType.FIRMWARE || firmware_type == FirmwareType.BACKUP) {
-                binary.download_id              = c_program_version_for_update.compilation.id.toString();
-                binary.build_id                 = c_program_version_for_update.compilation.firmware_build_id;
-                binary.program_name             = c_program_version_for_update.get_c_program().name.length() > 32 ? c_program_version_for_update.get_c_program().name.substring(0, 32) : c_program_version_for_update.get_c_program().name;
-                binary.program_version_name     = c_program_version_for_update.name.length() > 32 ? c_program_version_for_update.name.substring(0, 32) : c_program_version_for_update.name;
-                binary.compilation_lib_version  = c_program_version_for_update.compilation.firmware_version_lib;
-                binary.time_stamp               = c_program_version_for_update.compilation.firmware_build_datetime;
+
+                if(c_program_version_for_update != null) {
+
+                    binary.download_id              = c_program_version_for_update.compilation.id;
+                    binary.build_id                 = c_program_version_for_update.compilation.firmware_build_id;
+                    binary.program_name             = c_program_version_for_update.get_c_program().name.length() > 32 ? c_program_version_for_update.get_c_program().name.substring(0, 32) : c_program_version_for_update.get_c_program().name;
+                    binary.program_version_name     = c_program_version_for_update.name.length() > 32 ? c_program_version_for_update.name.substring(0, 32) : c_program_version_for_update.name;
+                    binary.compilation_lib_version  = c_program_version_for_update.compilation.firmware_version_lib;
+                    binary.time_stamp               = c_program_version_for_update.compilation.firmware_build_datetime;
+
+                    // Update přímo z kompilace souboru bez archivace verze
+                } else if(binary_file  != null && binary_file.c_compilations_binary_file != null) {
+
+                    binary.download_id              = binary_file.c_compilations_binary_file.id;
+                    binary.build_id                 = binary_file.c_compilations_binary_file.firmware_build_id;
+                    binary.program_name             = "Manual Update";
+                    binary.program_version_name     = "Manual Update";
+                    binary.compilation_lib_version  = binary_file.c_compilations_binary_file.firmware_version_lib;
+                    binary.time_stamp               = binary_file.c_compilations_binary_file.firmware_build_datetime;
+
+                    // Update manuálně nahraným souborem bez jakkékoliv vazby
+                    // nutné vyseparovat id z binárky
+                } else if(binary_file  != null) {
+
+                    throw new IllegalAccessException("get_brief_for_update_homer_server:: ¨Firmware is FIRMWARE or BACKUP but there is no binary_file or file!");
+                    /*
+                    binary.download_id              = binary_file.id;
+                    binary.build_id                 = "TODO";           // TODO! https://stackoverflow.com/questions/5600422/method-to-find-string-inside-of-the-text-file-then-getting-the-following-lines
+                    binary.program_name             = "Manual Update";
+                    binary.program_version_name     = "Manual Update";
+                    binary.compilation_lib_version  = "TODO";           // TODO!
+                    binary.time_stamp               = binary_file.created;
+                    */
+
+                } else {
+                    throw new IllegalAccessException("get_brief_for_update_homer_server:: ¨Firmware is FIRMWARE or BACKUP but there is no c_program_version_for_update or file!");
+                }
 
             } else if (firmware_type == FirmwareType.BOOTLOADER) {
 
                 Model_BootLoader cached_bootLoader = getBootloader();
-                if (cached_bootLoader == null) return null;
+                if (cached_bootLoader != null) {
 
-                binary.download_id          = cached_bootLoader.id.toString();
-                binary.build_id             = cached_bootLoader.version_identifier;
-                binary.program_name         = cached_bootLoader.name.length() > 32 ? cached_bootLoader.name.substring(0, 32) : cached_bootLoader.name;
-                binary.program_version_name = cached_bootLoader.version_identifier.length() > 32 ? cached_bootLoader.version_identifier.substring(0, 32) : cached_bootLoader.version_identifier;
-                binary.time_stamp           = cached_bootLoader.created;
+                    binary.download_id = cached_bootLoader.id;
+                    binary.build_id = cached_bootLoader.version_identifier;
+                    binary.program_name = cached_bootLoader.name.length() > 32 ? cached_bootLoader.name.substring(0, 32) : cached_bootLoader.name;
+                    binary.program_version_name = cached_bootLoader.version_identifier.length() > 32 ? cached_bootLoader.version_identifier.substring(0, 32) : cached_bootLoader.version_identifier;
+                    binary.time_stamp = cached_bootLoader.created;
+
+                } else {
+                    throw new  IllegalAccessException("get_brief_for_update_homer_server:: ¨Firmware is BOOTLOADER but there is no bootloader or file!");
+                }
+
             } else {
                 logger.internalServerError(new IllegalAccessException("get_brief_for_update_homer_server:: nsupported type of Enum_Firmware_type or not set firmware_type in Model_CProgramUpdatePlan"));
-                binary.download_id = binary_file.path;
-                binary.build_id = "TODO"; // TODO ???
             }
 
             return brief_for_homer;
@@ -663,41 +697,53 @@ public class Model_HardwareUpdate extends BaseModel {
                         if (plan.firmware_type == FirmwareType.FIRMWARE) {
 
                             logger.debug("update_procedure_progress: firmware:: on HW id: {} now:: {} ", hardware.id,  hardware.get_actual_c_program_version() == null ? " nothing by DB" : hardware.get_actual_c_program_version().compilation.firmware_build_id);
-                            logger.debug("update_procedure_progress: required by update: {} ",  plan.c_program_version_for_update.compilation.firmware_build_id);
 
-                            logger.debug("update_procedure_progress: Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
-                            logger.debug("update_procedure_progress: Na Hardwaru je teď CProgram Verze " + hardware.get_actual_c_program_version().name + " id: " + hardware.get_actual_c_program_version().id);
+                            if(plan.c_program_version_for_update != null ) {
 
+                                logger.debug("update_procedure_progress: required by update: {} ", plan.c_program_version_for_update.compilation.firmware_build_id);
 
-                            logger.debug("update_procedure_progress: Co by tam ale mělo za chvíli být je CProgram " + plan.c_program_version_for_update.get_c_program().name);
-                            logger.debug("update_procedure_progress: Co by tam ale mělo za chvíli být je CProgram Verze " + plan.c_program_version_for_update.name + " id: " + plan.c_program_version_for_update.id);
-
-                            hardware.actual_c_program_version = plan.c_program_version_for_update;
-
-                            logger.debug("update_procedure_progress: Na Hardwar jsem nastavil " +  hardware.actual_c_program_version.name);
-
-                            hardware.cache().removeAll(Model_CProgram.class);
-                            hardware.cache().removeAll(Model_CProgramVersion.class);
-                            logger.debug("update_procedure_progress: Udělal jsem clean ");
-                            logger.debug("update_procedure_progress: zkontroluji clean: " + hardware.cache().get(Model_CProgram.class));
-                            logger.debug("update_procedure_progress: zkontroluji clean: " + hardware.cache().get(Model_CProgramVersion.class));
+                                logger.debug("update_procedure_progress: Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
+                                logger.debug("update_procedure_progress: Na Hardwaru je teď CProgram Verze " + hardware.get_actual_c_program_version().name + " id: " + hardware.get_actual_c_program_version().id);
 
 
-                            hardware.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
-                            hardware.cache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
+                                logger.debug("update_procedure_progress: Co by tam ale mělo za chvíli být je CProgram " + plan.c_program_version_for_update.get_c_program().name);
+                                logger.debug("update_procedure_progress: Co by tam ale mělo za chvíli být je CProgram Verze " + plan.c_program_version_for_update.name + " id: " + plan.c_program_version_for_update.id);
 
-                            logger.debug("update_procedure_progress: Před updatem Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
-                            logger.debug("update_procedure_progress: Před updatem Na Hardwaru je teď CProgram Verze " + hardware.get_actual_c_program_version().name + " id: " + hardware.get_actual_c_program_version().id);
+                                hardware.actual_c_program_version = plan.c_program_version_for_update;
 
-                            hardware.update();
+                                logger.debug("update_procedure_progress: Na Hardwar jsem nastavil " + hardware.actual_c_program_version.name);
 
-                            logger.debug("update_procedure_progress: ještě blbý check: " + hardware.actual_c_program_version.name);
+                                hardware.cache().removeAll(Model_CProgram.class);
+                                hardware.cache().removeAll(Model_CProgramVersion.class);
+                                logger.debug("update_procedure_progress: Udělal jsem clean ");
+                                logger.debug("update_procedure_progress: zkontroluji clean: " + hardware.cache().get(Model_CProgram.class));
+                                logger.debug("update_procedure_progress: zkontroluji clean: " + hardware.cache().get(Model_CProgramVersion.class));
 
-                            hardware.cache().add(Model_CProgram.class, hardware.actual_c_program_version.get_c_program().id);
-                            hardware.cache().add(Model_CProgramVersion.class, hardware.actual_c_program_version.id);
 
-                            logger.debug("update_procedure_progress: PO updatu Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
-                            logger.debug("update_procedure_progress: PO updatu Na Hardwaru je teď CProgram Verze " + hardware.get_actual_c_program_version().name + " id: " + hardware.get_actual_c_program_version().id);
+                                hardware.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
+                                hardware.cache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
+
+                                logger.debug("update_procedure_progress: Před updatem Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
+                                logger.debug("update_procedure_progress: Před updatem Na Hardwaru je teď CProgram Verze " + hardware.get_actual_c_program_version().name + " id: " + hardware.get_actual_c_program_version().id);
+
+                                hardware.update();
+
+                                logger.debug("update_procedure_progress: ještě blbý check: " + hardware.actual_c_program_version.name);
+
+                                hardware.cache().add(Model_CProgram.class, hardware.actual_c_program_version.get_c_program().id);
+                                hardware.cache().add(Model_CProgramVersion.class, hardware.actual_c_program_version.id);
+
+                                logger.debug("update_procedure_progress: PO updatu Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
+                                logger.debug("update_procedure_progress: PO updatu Na Hardwaru je teď CProgram Verze " + hardware.get_actual_c_program_version().name + " id: " + hardware.get_actual_c_program_version().id);
+
+                            } else {
+
+                                logger.debug("update_procedure_progress: required by update: {} ", plan.binary_file.c_compilations_binary_file.firmware_build_id);
+                                hardware.cache().removeAll(Model_CProgram.class);
+                                hardware.cache().removeAll(Model_CProgramVersion.class);
+
+                                // TODO nějak poznamenat na Hardwaru
+                            }
 
                         } else if (plan.firmware_type == FirmwareType.BOOTLOADER) {
 
@@ -804,8 +850,14 @@ public class Model_HardwareUpdate extends BaseModel {
                                 hardware.actual_c_program_version = plan.c_program_version_for_update;
                                 hardware.cache().removeAll(Model_CProgram.class);
                                 hardware.cache().removeAll(Model_CProgramVersion.class);
-                                hardware.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
-                                hardware.cache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
+
+                                if(plan.c_program_version_for_update != null) {
+                                    hardware.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
+                                    hardware.cache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
+                                } else if(plan.binary_file != null) {
+                                    // TODO for file
+                                }
+
                                 hardware.update();
                             }
 
@@ -823,8 +875,14 @@ public class Model_HardwareUpdate extends BaseModel {
 
                                 hardware.cache().removeAll(Model_CProgramFakeBackup.class);
                                 hardware.cache().removeAll(Model_CProgramVersionFakeBackup.class);
-                                hardware.cache().add(Model_CProgramFakeBackup.class, plan.c_program_version_for_update.get_c_program().id);
-                                hardware.cache().add(Model_CProgramVersionFakeBackup.class, plan.c_program_version_for_update.id);
+
+                                if(plan.c_program_version_for_update != null) {
+                                    hardware.cache().add(Model_CProgramFakeBackup.class, plan.c_program_version_for_update.get_c_program().id);
+                                    hardware.cache().add(Model_CProgramVersionFakeBackup.class, plan.c_program_version_for_update.id);
+                                } else if(plan.binary_file != null) {
+                                    // TODO for file
+                                }
+
                                 hardware.update();
 
                                 hardware.make_log_backup_arrise_change();
