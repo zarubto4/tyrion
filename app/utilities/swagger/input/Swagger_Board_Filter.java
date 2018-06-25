@@ -1,5 +1,6 @@
 package utilities.swagger.input;
 
+import io.ebean.annotation.EnumValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -39,4 +40,41 @@ public class Swagger_Board_Filter extends _Swagger_filter_parameter{
     public Date end_time;
 
 
+    /** FIND BY SOME VALUE  ------------------------------------------------------------------------------------------ **/
+
+    @ApiModelProperty(value = "Hardware Alias Name - substring supported", required = false)
+    public String name;
+
+    @ApiModelProperty(value = "Hardware Alias Name - substring supported", required = false)
+    public String description;
+
+    @ApiModelProperty(value = "Hardware Full ID", required = false)
+    public String full_id;
+
+    @ApiModelProperty(value = "Hardware ID or part of ID (not necessary to send UUID)", required = false)
+    public String id;
+
+
+    /** ORDER BY ------------------------------------------------------------------------------------------------------ **/
+
+    @ApiModelProperty(value = "Order By Enum value", required = false)
+    public Order_by order_by;
+
+    @ApiModelProperty(value = "Order", required = false)
+    public Order_Schema order_schema;
+
+
+    public enum Order_by {
+        @EnumValue("NAME")      NAME,
+        @EnumValue("FULL_ID")   FULL_ID,
+        @EnumValue("ID")        ID,
+        @EnumValue("DATE_OF_REGISTER")        DATE_OF_REGISTER
+    }
+
+    public enum Order_Schema {
+        @EnumValue("ASC")    ASC,
+        @EnumValue("DESC")   DESC,
+    }
+
 }
+

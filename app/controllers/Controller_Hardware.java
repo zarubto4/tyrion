@@ -2,6 +2,8 @@ package controllers;
 
 import com.google.inject.Inject;
 import io.ebean.Ebean;
+import io.ebean.ExpressionList;
+import io.ebean.Junction;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
@@ -2055,6 +2057,47 @@ public class Controller_Hardware extends _BaseController {
 
             // not deleted
             query.where().ne("deleted", true);
+
+
+            if (help.order_by != null) {
+
+                if(help.order_by == Swagger_Board_Filter.Order_by.NAME) {
+                    query.where().order("name" + " " + help.order_schema  );
+                }
+
+                if(help.order_by == Swagger_Board_Filter.Order_by.FULL_ID) {
+                    query.where().order("full_id" + " " + help.order_schema );
+
+                }
+
+                if(help.order_by == Swagger_Board_Filter.Order_by.ID) {
+                    query.where().order("id" + " " + help.order_schema );
+                }
+
+            }
+
+            if (help.full_id != null && help.full_id.length() > 0) {
+                System.out.println("Full ID vyplněno: " + help.full_id + " l: " + help.full_id.length());
+
+
+                query.where().icontains("full_id", help.full_id);
+            }
+
+            if (help.id != null && help.id.length() > 1) {
+                System.out.println("ID vyplněno: " + help.id);
+                query.where().icontains("id", help.id);
+            }
+
+            if (help.name != null && help.name.length() > 0) {
+                System.out.println("name vyplněno: " + help.name + " l: " + help.name.length());
+                query.where().icontains("name", help.name);
+            }
+
+            if (help.description != null && help.description.length() > 0) {
+                System.out.println("description vyplněno: " + help.description + " l: " + help.description.length());
+                query.where().icontains("description", help.description);
+            }
+
 
 
             if (help.hardware_type_ids != null && !help.hardware_type_ids.isEmpty()) {

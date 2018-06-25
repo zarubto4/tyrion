@@ -596,11 +596,15 @@ public class Controller_Person extends _BaseController {
             person.first_name = help.first_name;
             person.last_name  = help.last_name;
 
-            if (help.country != null && (!help.country.equals("")))
-                person.country = help.country;
 
-            if (help.gender != null && !help.gender.equals("") && (help.gender.equals("male") || help.gender.equals("female")))
+            System.out.println("Country: " + help.country);
+            if (help.country != null && (!help.country.equals(""))) {
+                person.country = help.country;
+            }
+
+            if (help.gender != null && !help.gender.equals("") && (help.gender.equals("male") || help.gender.equals("female"))) {
                 person.gender = help.gender;
+            }
 
             person.update();
 
