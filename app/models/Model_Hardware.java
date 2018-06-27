@@ -89,7 +89,7 @@ public class Model_Hardware extends TaggedModel {
     public boolean dominant_entity;
 
 
-    public String wifi_mac_address;
+    @JsonIgnore public String wifi_mac_address;
     public String mac_address;
 
     // @JsonIgnore public String registration_hash;   // Vygenerovaný Hash pro přidávání a párování s Platformou. // Je na QR kodu na hardwaru
@@ -3205,6 +3205,7 @@ public class Model_Hardware extends TaggedModel {
         this.database_synchronize = true;
         this.developer_kit = false;
         this.backup_mode = bootloader_core_configuration().autobackup;
+        this.name = full_id;
 
         super.save();
 

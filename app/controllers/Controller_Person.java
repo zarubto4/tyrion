@@ -2,6 +2,7 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
+import io.intercom.api.User;
 import io.swagger.annotations.*;
 import models.*;
 import play.libs.Json;
@@ -90,6 +91,17 @@ public class Controller_Person extends _BaseController {
 
             person.setPassword(help.password);
             person.save();
+
+
+            // Create
+            io.intercom.api.User user = new io.intercom.api.User()
+                    .setEmail(person.email)
+                    .setName( person.first_name + " " + person.last_name)
+                    .addCustomAttribute(io.intercom.api.CustomAttribute.newStringAttribute("alias", person.nick_name))
+                    // .addCustomAttribute(io.intercom.api.CustomAttribute.newBooleanAttribute("browncoat", true))
+                    .setUserId(person.id.toString());
+            User.create(user);
+
 
             List<Model_Invitation> invitations = Model_Invitation.find.query().where().eq("email", person.email).findList();
 

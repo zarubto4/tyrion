@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers._BaseController;
 import io.ebean.Finder;
+import io.intercom.api.User;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
@@ -163,6 +164,29 @@ public class Model_Person extends BaseModel {
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+    @Override
+    public void save() {
+        super.save();
+    }
+
+    @Override
+    public void update() {
+
+        User user = User.find(this.id.toString());
+        user.setName( first_name + " " + last_name)
+            .addCustomAttribute(io.intercom.api.CustomAttribute.newStringAttribute("alias", nick_name));
+
+        User.update(user);
+
+        super.update();
+    }
+
+    @Override
+    public boolean delete() {
+        super.delete();
+        return true;
+    }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 

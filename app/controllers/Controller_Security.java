@@ -5,6 +5,8 @@ import com.github.scribejava.core.model.*;
 import com.github.scribejava.core.oauth.OAuth10aService;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
+import io.intercom.api.User;
 import io.swagger.annotations.*;
 import models.*;
 import play.data.DynamicForm;
@@ -31,6 +33,8 @@ import utilities.swagger.input.Swagger_Blocko_Token_validation_request;
 import websocket.interfaces.WS_Portal;
 import com.github.scribejava.core.oauth.OAuthService;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletionStage;
@@ -51,11 +55,13 @@ public class Controller_Security extends _BaseController {
 
     private _BaseFormFactory baseFormFactory;
     private WSClient ws;
+    private Config configuration;
 
     @Inject
-    public Controller_Security(_BaseFormFactory formFactory, WSClient ws) {
+    public Controller_Security(_BaseFormFactory formFactory, WSClient ws, Config configuration) {
         this.baseFormFactory = formFactory;
         this.ws = ws;
+        this.configuration = configuration;
     }
 
 // CLASIC LOGIN ########################################################################################################
@@ -226,6 +232,23 @@ public class Controller_Security extends _BaseController {
             result.person = person;
 
             result.roles = person.roles;
+
+
+            // Create Hmac
+            Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secret_key = new SecretKeySpec(configuration.getString("Intercom.hmacToken").getBytes(), "HmacSHA256");
+            sha256_HMAC.init(secret_key);
+
+            byte[] hash = (sha256_HMAC.doFinal( person.id.toString().getBytes() ));
+            StringBuffer result_hash = new StringBuffer();
+            for (byte b : hash) {
+                result_hash.append(String.format("%02x", b)); // thanks sachins! https://gist.github.com/thewheat/7342c76ade46e7322c3e#gistcomment-1863031
+            }
+
+            System.out.println("HMAC " + result_hash.toString());
+            result.hmac = result_hash.toString();
+
+
 
             List<String> permissions = new ArrayList<>();
             for ( Model_Permission m :  Model_Permission.find.query().where().eq("roles.persons.id", person.id).findList() ) permissions.add(m.name);

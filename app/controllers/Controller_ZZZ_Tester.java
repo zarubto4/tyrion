@@ -7,9 +7,11 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
+import io.intercom.api.User;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.Model_GSM;
+import models.Model_Person;
 import org.apache.poi.ss.usermodel.*;
 import org.bson.Document;
 import org.joda.time.DateTime;
@@ -78,6 +80,25 @@ public class Controller_ZZZ_Tester extends Controller {
     @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test3() {
         try {
+
+
+
+            List<Model_Person> persons = Model_Person.find.all();
+
+            for(Model_Person person : persons) {
+
+                // Create
+                io.intercom.api.User user = new io.intercom.api.User()
+                        .setEmail(person.email)
+                        .setName( person.first_name + " " + person.last_name)
+                        .addCustomAttribute(io.intercom.api.CustomAttribute.newStringAttribute("alias", person.nick_name))
+                        // .addCustomAttribute(io.intercom.api.CustomAttribute.newBooleanAttribute("browncoat", true))
+                        .setUserId(person.id.toString());
+                User.create(user);
+
+            }
+
+
 
             return ok();
         } catch (Exception e) {

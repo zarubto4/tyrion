@@ -15,6 +15,8 @@ public class Swagger_Person_All_Details extends _Swagger_Abstract_Default {
     @ApiModelProperty(readOnly = true)
     public Model_Person person;
 
+    @ApiModelProperty(readOnly = true)
+    public String hmac;
 
     @ApiModelProperty(value = "List of roles, that", readOnly = true)
     public List<Model_Role> roles;

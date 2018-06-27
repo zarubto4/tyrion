@@ -7,6 +7,7 @@ import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.typesafe.config.Config;
 import controllers.Controller_WebSocket;
 import controllers._BaseFormFactory;
+import io.intercom.api.Intercom;
 import models.*;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
@@ -109,6 +110,7 @@ public class Server {
     public static String slack_webhook_url_channel_servers;
     public static String slack_webhook_url_channel_homer;
     public static String slack_webhook_url_channel_hardware;
+
 
     /**
      * Loads all configurations and start all server components.
@@ -278,6 +280,9 @@ public class Server {
         slack_webhook_url_channel_servers = configuration.getString("Slack.servers");
         slack_webhook_url_channel_hardware = configuration.getString("Slack.hardware");
         slack_webhook_url_channel_homer = configuration.getString("Slack.homer");
+
+        // Set token to InterCom
+        Intercom.setToken(configuration.getString("Intercom.token"));
     }
 
     /**
@@ -349,7 +354,6 @@ public class Server {
                     person.permissions.add(personPermission);
                 }
             }
-            person.update();
         }
     }
 
