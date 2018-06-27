@@ -18,6 +18,12 @@ function check_cmd {
             read -p "$1 is required for the installation and none was detected. Would you like to install it? [Y/N] " DOINSTALL
         done
         if [ $DOINSTALL == "Y" ]; then
+
+            if [ $1 == "certbot" ]; then
+                add-apt-repository --yes ppa:certbot/certbot
+                apt-get update
+            fi
+
             apt-get --yes --force-yes install $1
         else
             echo " !! Manually install $1 and then run the script again. !!"
@@ -53,7 +59,7 @@ function prompt_save {
 echo "Checking prerequisites."
 
 check_cmd python
-check_cmd letsencrypt
+check_cmd dos2unix
 
 # Check if requests module is installed
 python -c "import requests"
@@ -187,6 +193,8 @@ echo "SECURED=\"$SECURED\"" >> /etc/environment
 
 if [ $SECURED == "Y" ]; then
 
+    check_cmd certbot
+
     DOMAIN=$(prompt_save "DOMAIN" "Enter the server domain name (without protocol): ")
     echo "CERTPATH=\"/etc/letsencrypt/live/$DOMAIN\"" >> /etc/environment
 
@@ -196,7 +204,7 @@ if [ $SECURED == "Y" ]; then
 
     if [ $CERTNOW == "Y" ]; then
         # Obtain certificate
-        letsencrypt certonly --standalone --preferred-challenges http -d $DOMAIN
+        certbot certonly --standalone --preferred-challenges http -d $DOMAIN
 
         # Convert certificate to Java Key Store format, so server can use it
         openssl pkcs12 -export -in $CERTPATH/fullchain.pem -inkey $CERTPATH/privkey.pem -out $CERTPATH/cert_and_key.p12 -CAfile $CERTPATH/chain.pem -caname root -passout pass:$CERTPASS
@@ -204,7 +212,7 @@ if [ $SECURED == "Y" ]; then
     fi
 
     # Add CRON job for automatic certificate renewal
-    echo '0 3 * * * letsencrypt renew --deploy-hook $TYRIONROOT/reload_certificate.sh' >> ./TEMPCRON
+    echo '0 3 * * * certbot renew --deploy-hook $TYRIONROOT/reload_certificate.sh' >> ./TEMPCRON
 fi
 
 

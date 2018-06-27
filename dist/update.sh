@@ -34,6 +34,10 @@ chmod +x ./start_http.sh
 chmod +x ./start_https.sh
 chmod +x ./update.sh
 
+dos2unix ./start_http.sh
+dos2unix ./start_https.sh
+dos2unix ./update.sh
+
 # Run instance of new verion
 echo " == Starting new server =="
 
