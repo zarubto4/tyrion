@@ -29,7 +29,7 @@ public class Model_BlockVersion extends VersionModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Column(columnDefinition = "TEXT") public String design_json;
+    @Column(columnDefinition = "TEXT") public String design_json; // TODO https://youtrack.byzance.cz/youtrack/issue/TYRION-639
     @Column(columnDefinition = "TEXT") public String logic_json;
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Block block;

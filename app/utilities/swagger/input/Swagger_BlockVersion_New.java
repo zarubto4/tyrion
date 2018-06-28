@@ -9,8 +9,6 @@ import play.data.validation.Constraints;
           value = "Swagger_BlockVersion_New")
 public class Swagger_BlockVersion_New extends Swagger_NameAndDescription {
 
-    @Constraints.Required
-    @ApiModelProperty(required = true)
     public String design_json;
 
     @Constraints.Required
