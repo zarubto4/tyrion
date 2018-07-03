@@ -592,7 +592,12 @@ public class Model_Project extends TaggedModel {
 
                                     }
 
-                                    Model_Hardware.cache_status.put(status.uuid, status.online_status);
+                                    try{
+                                        UUID uuid = UUID.fromString(status.uuid);
+                                        Model_Hardware.cache_status.put(uuid, status.online_status);
+                                    } catch (IllegalArgumentException exception){
+                                        System.err.println("project_stats invalid UUID" + exception.getMessage());
+                                    }
                                 }
                             }
 

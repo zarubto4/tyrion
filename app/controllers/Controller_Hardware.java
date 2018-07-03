@@ -2927,19 +2927,59 @@ public class Controller_Hardware extends _BaseController {
                 Model_HardwareGroup group = Model_HardwareGroup.getById(help.group_synchro.group_id);
                 group.check_update_permission();
 
+                // List of All HW ADDS
+                List<UUID> hw_ids_in_group = Model_Hardware.find.query().where().eq("hardware_groups.id", help.group_synchro.group_id).ne("deleted", true).findIds();
+
+                // Cyklus pro přidání
+
                 for (UUID board_id: help.group_synchro.hardware_ids) {
+
+                    // Remove from list and skip it - its already in group
+                    if(hw_ids_in_group.contains(board_id)) {
+                        hw_ids_in_group.remove(board_id);
+                        continue;
+                    }
+
+                    // Remove from list
+                    hw_ids_in_group.remove(board_id);
+
                     Model_Hardware board = Model_Hardware.getById(board_id);
 
-                    board.cache().add(Model_HardwareGroup.class, help.group_synchro.group_id);
+                    board.cache().add(Model_HardwareGroup.class, group.id);
                     board.hardware_groups.add(group);
+                    board.update();
+
+                    group.cache_group_size += 1;
+                    group.cache().add(Model_Hardware.class, board.id);
+
+                    if (group.cache().get(Model_HardwareType.class) == null) {
+                        group.cache().add(Model_HardwareType.class,  new ArrayList<>());
+                    }
+
+                    if(!group.cache().gets(Model_HardwareType.class).contains(board.getHardwareTypeCache_id())){
+                        group.cache().add(Model_HardwareType.class, board.getHardwareTypeCache_id());
+                    }
                 }
 
-                group.refresh();
+                // Cyklus pro smazání
+                for(UUID board_id:  hw_ids_in_group) {
+
+                    System.out.println("Kontrola HW_ID: " + board_id);
+
+                    Model_Hardware board = Model_Hardware.getById(board_id);
+                    board.cache().remove(Model_HardwareGroup.class, group.id);
+                    board.hardware_groups.remove(group);
+                    board.update();
+
+                    group.cache_group_size -= 1;
+                    group.cache().remove(Model_Hardware.class, board.id);
+                }
             }
 
             return ok();
 
         } catch (Exception e) {
+            e.printStackTrace();
             return controllerServerError(e);
         }
     }

@@ -99,6 +99,7 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
             try {
 
                 if (id != null) {
+
                     if (!cash_map.containsKey(c)) {
                        // System.out.println("IDCache:: not contains KEy");
 
@@ -110,23 +111,11 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
 
                         cash_map.put(c, list);
                     } else {
-                        if (cash_map.get(c) != null) {
-                            // System.out.println("IDCache:: add Id: " + id);
+
+                        if(!cash_map.get(c).contains(id)) {
                             cash_map.get(c).add(id);
-
-                           // System.out.println("IDCache:: contains now: " + cash_map.get(c));
-
-                        } else {
-                          //  System.out.println("IDCache:: add singletonList Id: " + id);
-
-                            // Create List ArraList <- its not possible to use  Collections.singletonList(id))
-                            // * @throws UnsupportedOperationException if the <tt>add</tt> operation
-                            // *  is not supported by singletonList
-                            List<UUID> list = new ArrayList<>();
-                            list.add(id);
-
-                            cash_map.put(c, list);
                         }
+
                     }
                 } else {
                     System.err.println("IDCache: add id is null for class: " + c.getSimpleName() + " its not error. In most cases it's okay ");

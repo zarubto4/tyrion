@@ -666,7 +666,7 @@ public class Controller_Project extends _BaseController {
 
             // Already not registred under project!
             if (Model_Hardware.find.query().where().eq("full_id", registration_authority.full_id).eq("project.id", help.project_id).findCount() > 0) {
-                return badRequest("Already registred under this project");
+                return badRequest("Already registered under this project");
             }
 
             // Copy is done - Hardware is saved in database, but without any connections for projec, groups etc..
@@ -783,10 +783,10 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_removeHardware(UUID registration_id) {
+    public Result project_removeHardware(UUID id) {
         try {
 
-            Model_Hardware hardware = Model_Hardware.getById(registration_id);
+            Model_Hardware hardware = Model_Hardware.getById(id);
 
             hardware.delete();
 
@@ -813,10 +813,10 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_deactiveHardware(UUID registration_id) {
+    public Result project_deactiveHardware(UUID id) {
         try {
 
-            Model_Hardware hardware = Model_Hardware.getById(registration_id);
+            Model_Hardware hardware = Model_Hardware.getById(id);
 
             hardware.check_deactivate_permission();
 
@@ -856,10 +856,10 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_activeHardware(UUID registration_id) {
+    public Result project_activeHardware(UUID id) {
         try {
 
-            Model_Hardware hardware = Model_Hardware.getById(registration_id);
+            Model_Hardware hardware = Model_Hardware.getById(id);
 
             hardware.check_activate_permission();
             hardware.dominant_entity = true;

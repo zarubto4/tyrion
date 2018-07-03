@@ -7,7 +7,7 @@ OPTIONS   /*all                                                         controll
 
 ### DEVELOPERS TEST ############ DEVELOPERS TEST ############### DEVELOPERS TEST ################ DEVELOPERS TEST ###################################################
 POST      /test1                                                        controllers.Controller_ZZZ_Tester.test1()
-GET       /test2/:sim_id                                                controllers.Controller_ZZZ_Tester.test2(sim_id: java.util.UUID)
+GET       /test2                                                        controllers.Controller_ZZZ_Tester.test2()
 GET       /test3                                                        controllers.Controller_ZZZ_Tester.test3()
 GET       /test4                                                        controllers.Controller_ZZZ_Tester.test4()
 

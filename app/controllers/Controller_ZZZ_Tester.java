@@ -11,6 +11,7 @@ import io.intercom.api.User;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.Model_GSM;
+import models.Model_HardwareRegistrationEntity;
 import models.Model_Person;
 import org.apache.poi.ss.usermodel.*;
 import org.bson.Document;
@@ -30,6 +31,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import utilities.swagger.output.Swagger_Hardware_Registration_Hash;
 
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -59,18 +61,29 @@ public class Controller_ZZZ_Tester extends Controller {
      }
 
     @ApiOperation(value = "Hidden test Method", hidden = true)
-    public Result test2(UUID sim_id) {
+    public Result test2() {
         try {
-            // nalezení sim
-            Model_GSM gsm = Model_GSM.getById(sim_id);
 
-            // ověření jestli existuje
-            if (gsm == null) {
-                return notFound("sim wasn't found");
+            List<String> places = Arrays.asList("002100373136510236363332","004100273136510236363332","002900363136510236363332","002C00443136510236363332","003500443036511935353233",
+                    "004300443136510236363332","002700373136510236363332","004900283136510236363332","003E00363136510236363332");
+
+
+            List<String> registration_hash = new ArrayList<>();
+
+            for(String full_id : places) {
+                System.out.println("Check Full_id:: " + full_id);
+                Model_HardwareRegistrationEntity hw = Model_HardwareRegistrationEntity.getbyFull_id(full_id);
+
+                if(hw != null) {
+                    registration_hash.add(hw.hash_for_adding);
+                }else {
+                    System.err.println("Full Id:: "+  full_id +" not exist in central authority");
+                }
             }
-            DataSim_overview overview = gsm.louskani();
 
-           return ok( Json.toJson(overview) );
+            System.out.println(registration_hash);
+
+           return ok();
         } catch (Exception e) {
             logger.internalServerError(e);
             return badRequest();
@@ -80,7 +93,6 @@ public class Controller_ZZZ_Tester extends Controller {
     @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test3() {
         try {
-
 
 
             List<Model_Person> persons = Model_Person.find.all();
@@ -113,8 +125,6 @@ public class Controller_ZZZ_Tester extends Controller {
 
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-d HH:mm:ss");
-
-
 
             DateTime date_from = DateTime.parse("18-06-2018 05:00:00", DateTimeFormat.forPattern("dd-MM-yyyy HH:mm:ss"));
             DateTime date_to = DateTime.parse("18-06-2018 15:00:00", DateTimeFormat.forPattern("dd-MM-yyyy HH:mm:ss"));

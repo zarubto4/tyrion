@@ -1206,10 +1206,20 @@ public class Model_Hardware extends TaggedModel {
     public static void device_online_synchronization_echo(WS_Message_Hardware_online_status report) {
         try {
             for (WS_Message_Hardware_online_status.DeviceStatus status : report.hardware_list) {
-                cache_status.put(status.uuid, status.online_status);
-                // Odešlu echo pomocí websocketu do becki
-                Model_Hardware device = getById(status.uuid);
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, status.online_status, device.project().id);
+
+                try{
+                    UUID uuid = UUID.fromString(status.uuid);
+                    //do something
+
+                    cache_status.put(uuid, status.online_status);
+                    // Odešlu echo pomocí websocketu do becki
+                    Model_Hardware device = getById(uuid);
+                    WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, status.online_status, device.project().id);
+
+                } catch (IllegalArgumentException exception){
+                    //handle the case where string is not valid UUID
+                }
+
             }
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -2079,7 +2089,7 @@ public class Model_Hardware extends TaggedModel {
             logger.warn("hardware_firmware_state_check - Summary information of connected master hardware: ID = {}", this.id);
 
             logger.warn("hardware_firmware_state_check - Settings check ", this.id);
-            if (!check_settings(report)) return;
+            if (check_settings(report)) return;
 
             logger.warn("hardware_firmware_state_check - Firmware check ", this.id);
             check_firmware(report);
@@ -2217,7 +2227,7 @@ public class Model_Hardware extends TaggedModel {
             }
         }
 
-        return true;
+        return change_register;
     }
 
     /**

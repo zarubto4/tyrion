@@ -44,9 +44,6 @@ public class Controller_Code extends _BaseController {
 
 // CONTROLLER CONTENT ##################################################################################################
 
-
-
-
     @ApiOperation(value = "compile C_Program_Version",
             hidden = true,
             tags = {"Admin-C_Program"},
@@ -291,7 +288,7 @@ public class Controller_Code extends _BaseController {
                 version.compile_program_thread(hardwareType.get_main_c_program().default_main_version.compilation.firmware_version_lib);
             }
 
-            return created(c_program);
+            return created(Model_CProgram.getById(c_program.id));
 
         } catch (Exception e) {
             return controllerServerError(e);

@@ -37,7 +37,13 @@ public class WS_Message_Hardware_online_status extends WS_AbstractMessage  {
             return false;
         } else if (map.isEmpty()) {
             for (DeviceStatus status : hardware_list) {
-                map.put(status.uuid, status);
+
+                try{
+                    UUID uuid = UUID.fromString(status.uuid);
+                    map.put(uuid, status);
+                } catch (IllegalArgumentException exception){
+                    System.err.println("is_device_online invalid UUID" + exception.getMessage());
+                }
             }
         }
 
@@ -66,7 +72,7 @@ public class WS_Message_Hardware_online_status extends WS_AbstractMessage  {
 
         public DeviceStatus() {}
 
-        @Constraints.Required  public UUID uuid;
+        @Constraints.Required  public String uuid;
         @Constraints.Required  public boolean online_status;
 
     }
