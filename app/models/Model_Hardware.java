@@ -1387,6 +1387,7 @@ public class Model_Hardware extends TaggedModel {
             if(Server.mode == ServerMode.DEVELOPER) {
                 logger.error("check_mqtt_hardware_connection_validation:: Device has not right permission to connect. But this is Dev version of Tyrion. So its allowed.");
                 homer.send(request.get_result(true, null, null, true));
+                // Save it - device has permission!
                 return;
             }
 
@@ -1406,16 +1407,42 @@ public class Model_Hardware extends TaggedModel {
                 Model_Hardware board = Model_Hardware.getByFullId(request.full_id);
 
                 if (board == null) {
-                    logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found with Dominant Entity - bus there is still hope! with Cache");
+                    logger.debug("convert_hardware_full_id_to_uuid:: {} Device Not Found with Dominant Entity - bus there is still hope! with Cache", request.full_id);
+
+                    System.err.println("Právě je čas zkontrolovat cache_not_dominant_hardware od kterého očekávám, že bude mít HW id v sobě: Kontrolované ID je  " + request.full_id);
 
                     if(cache_not_dominant_hardware.containsKey(request.full_id)) {
+
+                        System.err.println("Ano - Cache obsahuje HW s Full ID" + request.full_id);
+
                         logger.debug("convert_hardware_full_id_to_uuid:: Device Found in cache_not_dominant_hardware");
                         homer.send(request.get_result(cache_not_dominant_hardware.get(request.full_id).random_temporary_hardware_id, request.full_id));
                         return;
+
                     } else {
-                        logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found and also not found in cache");
-                        homer.send(request.get_result_error());
-                        return;
+
+                        System.err.println("Ne Cache neobsahuje HW s Full ID" + request.full_id);
+                        System.err.println("Cache má velilost" + cache_not_dominant_hardware);
+                        System.err.println("Cache Obsahuje " + cache_not_dominant_hardware);
+
+                        Model_HardwareRegistrationEntity entity = Model_HardwareRegistrationEntity.getbyFull_id(request.full_id);
+                        if(entity != null) {
+
+                            // We will save last know server, where we have hardware, in case of registration under some project. SAVE is only if device has permission!!!!!
+                            WS_Model_Hardware_Temporary_NotDominant_record record = new WS_Model_Hardware_Temporary_NotDominant_record();
+                            record.homer_server_id = homer.id;
+                            record.random_temporary_hardware_id = UUID.randomUUID();
+                            cache_not_dominant_hardware.put(request.full_id, record);
+
+                            homer.send(request.get_result(cache_not_dominant_hardware.get(request.full_id).random_temporary_hardware_id, request.full_id));
+                            return;
+
+                        } else {
+
+                            logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found and also not found in cache");
+                            homer.send(request.get_result_error());
+                            return;
+                        }
                     }
                 }
 
