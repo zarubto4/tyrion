@@ -92,17 +92,6 @@ public class Controller_Person extends _BaseController {
             person.setPassword(help.password);
             person.save();
 
-
-            // Create
-            io.intercom.api.User user = new io.intercom.api.User()
-                    .setEmail(person.email)
-                    .setName( person.first_name + " " + person.last_name)
-                    .addCustomAttribute(io.intercom.api.CustomAttribute.newStringAttribute("alias", person.nick_name))
-                    // .addCustomAttribute(io.intercom.api.CustomAttribute.newBooleanAttribute("browncoat", true))
-                    .setUserId(person.id.toString());
-            User.create(user);
-
-
             List<Model_Invitation> invitations = Model_Invitation.find.query().where().eq("email", person.email).findList();
 
             if (invitations.isEmpty()) {
@@ -176,9 +165,10 @@ public class Controller_Person extends _BaseController {
             person.validated = true;
             person.update();
 
-           validationToken.delete();
+            validationToken.delete();
 
             return redirect( Server.becki_mainUrl + "/" + Server.becki_accountAuthorizedSuccessful );
+
         } catch (Exception e) {
             return controllerServerError(e);
         }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers._BaseController;
 import io.ebean.Finder;
+import io.intercom.api.NotFoundException;
 import io.intercom.api.User;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -167,17 +168,48 @@ public class Model_Person extends BaseModel {
 
     @Override
     public void save() {
+
+
         super.save();
+
+        try {
+            // Create
+            io.intercom.api.User user = new io.intercom.api.User()
+                    .setEmail(email)
+                    .setName(first_name + " " + last_name)
+                    .addCustomAttribute(io.intercom.api.CustomAttribute.newStringAttribute("alias", nick_name))
+                    // .addCustomAttribute(io.intercom.api.CustomAttribute.newBooleanAttribute("browncoat", true))
+                    .setUserId(id.toString());
+            User.create(user);
+        } catch (Exception e) {
+
+        }
     }
 
     @Override
     public void update() {
 
-        User user = User.find(this.id.toString());
-        user.setName( first_name + " " + last_name)
-            .addCustomAttribute(io.intercom.api.CustomAttribute.newStringAttribute("alias", nick_name));
+        try {
 
-        User.update(user);
+            User user = User.find(this.id.toString());
+            user.setName( first_name + " " + last_name)
+                    .addCustomAttribute(io.intercom.api.CustomAttribute.newStringAttribute("alias", nick_name));
+            User.update(user);
+
+        } catch (NotFoundException e) {
+
+            io.intercom.api.User user = new io.intercom.api.User()
+                    .setEmail(email)
+                    .setName(first_name + " " + last_name)
+                    .addCustomAttribute(io.intercom.api.CustomAttribute.newStringAttribute("alias", nick_name))
+                    // .addCustomAttribute(io.intercom.api.CustomAttribute.newBooleanAttribute("browncoat", true))
+                    .setUserId(id.toString());
+            User.create(user);
+
+        }
+
+
+
 
         super.update();
     }

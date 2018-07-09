@@ -245,7 +245,7 @@ public class Controller_Security extends _BaseController {
                 result_hash.append(String.format("%02x", b)); // thanks sachins! https://gist.github.com/thewheat/7342c76ade46e7322c3e#gistcomment-1863031
             }
 
-            System.out.println("HMAC " + result_hash.toString());
+            // System.out.println("HMAC " + result_hash.toString());
             result.hmac = result_hash.toString();
 
 

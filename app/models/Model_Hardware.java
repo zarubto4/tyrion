@@ -1413,7 +1413,7 @@ public class Model_Hardware extends TaggedModel {
 
                     if(cache_not_dominant_hardware.containsKey(request.full_id)) {
 
-                        System.err.println("Ano - Cache obsahuje HW s Full ID" + request.full_id);
+                        System.err.println("Ano - Cache obsahuje HW s Full ID:: " + request.full_id);
 
                         logger.debug("convert_hardware_full_id_to_uuid:: Device Found in cache_not_dominant_hardware");
                         homer.send(request.get_result(cache_not_dominant_hardware.get(request.full_id).random_temporary_hardware_id, request.full_id));
@@ -1421,12 +1421,12 @@ public class Model_Hardware extends TaggedModel {
 
                     } else {
 
-                        System.err.println("Ne Cache neobsahuje HW s Full ID" + request.full_id);
-                        System.err.println("Cache má velilost" + cache_not_dominant_hardware);
-                        System.err.println("Cache Obsahuje " + cache_not_dominant_hardware);
+                        System.err.println("Ne Cache neobsahuje HW s Full ID:: " + request.full_id);
 
                         Model_HardwareRegistrationEntity entity = Model_HardwareRegistrationEntity.getbyFull_id(request.full_id);
                         if(entity != null) {
+
+                            System.err.println("Ne Cache neobsahuje HW s Full ID:: " + request.full_id + " ale našel jsem záznam z Model_HardwareRegistrationEntity");
 
                             // We will save last know server, where we have hardware, in case of registration under some project. SAVE is only if device has permission!!!!!
                             WS_Model_Hardware_Temporary_NotDominant_record record = new WS_Model_Hardware_Temporary_NotDominant_record();
