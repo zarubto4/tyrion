@@ -71,7 +71,7 @@ public class Model_WidgetVersion extends VersionModel {
         Model_Widget widget = get_grid_widget();
 
         // Add to Cache
-        if(widget != null) {
+        if (widget != null) {
             widget.get_versionsId();
             widget.cache().add(this.getClass(), id);
             widget.sort_Model_Model_GridProgramVersion_ids();

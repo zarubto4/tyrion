@@ -14,14 +14,12 @@ import responses.*;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.Approval;
-import utilities.enums.HomerType;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_M_Program_Interface;
 import utilities.swagger.output.Swagger_M_Project_Interface;
 import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
-import utilities.swagger.output.filter_results.Swagger_C_Program_List;
 import utilities.swagger.output.filter_results.Swagger_GridProjectList;
 import utilities.swagger.output.filter_results.Swagger_GridWidget_List;
 

@@ -100,7 +100,7 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
     public UUID get_b_program_grid_version_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_BProgramVersionSnapGridProject.class) == null) {
-            cache().add(Model_BProgramVersionSnapGridProject.class, Model_GridProgramVersion.find.query().where().eq("grid_programs.id", id).select("id").findSingleAttributeList());
+            cache().add(Model_BProgramVersionSnapGridProject.class, Model_GridProgramVersion.find.query().where().eq("grid_program.id", id).select("id").findSingleAttributeList());
         }
 
         return cache().get(Model_BProgramVersionSnapGridProject.class);

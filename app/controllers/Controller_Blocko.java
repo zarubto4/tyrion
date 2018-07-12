@@ -2319,7 +2319,7 @@ public class Controller_Blocko extends _BaseController {
             version.save();
 
             // Vrácení objektu
-            return created(block);
+            return created(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
