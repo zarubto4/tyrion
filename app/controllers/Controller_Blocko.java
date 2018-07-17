@@ -373,7 +373,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "create B_Program_Version",
             tags = {"B_Program"},
-            notes = "create new vesion in Blocko program",
+            notes = "create new version of Blocko program",
             produces = "application/json",
             protocols = "https"
     )
@@ -404,14 +404,11 @@ public class Controller_Blocko extends _BaseController {
             // Get and Validate Object
             Swagger_B_Program_Version_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_B_Program_Version_New.class);
 
-
             // Program který budu ukládat do data Storage v Azure
-            String file_content =  help.program;
+            String file_content = help.program;
 
             // Ověření programu
             Model_BProgram bProgram = Model_BProgram.getById(b_program_id);
-
-            // System.out.println("bProgramVersion_create");
 
             // První nová Verze
             Model_BProgramVersion version = new Model_BProgramVersion();
@@ -425,23 +422,16 @@ public class Controller_Blocko extends _BaseController {
             // Vytvořím Snapshoty Verze M_Programu
             if (help.m_project_snapshots != null) {
 
-                // System.out.println("       help.m_project_snapshots != null ");
-                // System.out.println("       help.m_project_snapshots.size: " + help.m_project_snapshots.size());
-
                 for (Swagger_B_Program_Version_New.M_Project_SnapShot help_m_project_snap : help.m_project_snapshots) {
-
-                    // System.out.println("        help.help.m_project_snapshots.m_project_id: " +  help_m_project_snap.m_project_id);
-                    // System.out.println("        help.help.m_project_snapshots.m_program_snapshots.size: " +  help_m_project_snap.m_program_snapshots.size());
 
                     Model_GridProject m_project = Model_GridProject.getById(help_m_project_snap.m_project_id);
 
                     Model_BProgramVersionSnapGridProject snap = new Model_BProgramVersionSnapGridProject();
                     snap.grid_project = m_project;
+                    snap.b_program_version = version;
+                    snap.save();
 
                     for (Swagger_B_Program_Version_New.M_Program_SnapShot help_m_program_snap : help_m_project_snap.m_program_snapshots) {
-
-                        System.out.println("            Model_GridProgramVersion id: " + help_m_program_snap.version_id);
-                        System.out.println("            grid_program. id: " + help_m_program_snap.m_program_id);
 
                         UUID m_program_version_id = Model_GridProgramVersion.find.query().where()
                                 .eq("id", help_m_program_snap.version_id)
@@ -457,20 +447,10 @@ public class Controller_Blocko extends _BaseController {
                         Model_GridProgramVersion grid_version = Model_GridProgramVersion.getById(m_program_version_id);
 
                         Model_BProgramVersionSnapGridProjectProgram snap_shot_parameter = new Model_BProgramVersionSnapGridProjectProgram();
-
-
-                        // System.out.println("                    grid_program_version: " + m_program_version.id);
                         snap_shot_parameter.grid_program_version = grid_version;
                         snap_shot_parameter.grid_project_program_snapshot = snap;
                         snap_shot_parameter.save();
-
-                        snap.grid_programs.add(snap_shot_parameter);
-
                     }
-                    snap.b_program_version = version;
-                    snap.save();
-
-                    version.grid_project_snapshots.add(snap);
                 }
             }
 
@@ -912,17 +892,9 @@ public class Controller_Blocko extends _BaseController {
             Swagger_InstanceSnapshot_New help = baseFormFactory.formFromRequestWithValidation(Swagger_InstanceSnapshot_New.class);
 
             // Kontrola objektu
-            System.out.println("Kontrola ID instance_id " + instance_id);
-
             Model_Instance instance = Model_Instance.getById(instance_id);
 
-            System.out.println("Kontrola help.version_id " + help.version_id);
-
             Model_BProgramVersion version = Model_BProgramVersion.getById(help.version_id);
-
-            System.out.println("Kontrola version jsem našel " + version.id);
-
-            System.out.println("JE v BProgram Verzi nějaký Grid??  Size: " + version.get_grid_project_snapshots().size());
 
             Model_InstanceSnapshot snapshot = new Model_InstanceSnapshot();
             snapshot.name = help.name;
@@ -931,20 +903,9 @@ public class Controller_Blocko extends _BaseController {
             snapshot.instance = instance;
             snapshot.save();
 
-            System.out.println("Kontrola version zeptám se na path ");
-            System.out.println("Kontrola version: path: "+  snapshot.get_path());
-
-
             snapshot.program = Model_Blob.upload(help.json().toString(), "snapshot.json", snapshot.get_path());
 
-            System.out.println("Program Uložen");
-
             snapshot.update();
-
-            System.out.println("Snapshot Uložen");
-
-            System.out.println("Uložil jseml snapshot " + snapshot.id);
-
 
             return created(snapshot);
 
@@ -980,7 +941,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result instanceSnapshot_udpate(UUID snapshot_id) {
+    public Result instanceSnapshot_update(UUID snapshot_id) {
         try {
 
             // Get and Validate Object

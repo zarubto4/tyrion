@@ -34,7 +34,7 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
 
     @JsonIgnore @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)      public Model_BProgramVersion b_program_version;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)      public Model_GridProject grid_project;
-    @JsonProperty @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "grid_project_program_snapshot") public List<Model_BProgramVersionSnapGridProjectProgram> grid_programs = new ArrayList<>(); // Verze M_Programu
+    @JsonIgnore @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "grid_project_program_snapshot") public List<Model_BProgramVersionSnapGridProjectProgram> grid_programs = new ArrayList<>(); // Verze M_Programu
 
 /* JSON PROPERTY VALUES ---------------------------------------------------------------------------------------------------------*/
 
@@ -56,7 +56,48 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
         }
     }
 
+    @JsonProperty @ApiModelProperty(required = true)
+    public List<Model_BProgramVersionSnapGridProjectProgram> grid_programs() {
+        try {
+            return get_grid_programs();
+
+        } catch (_Base_Result_Exception e) {
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public List<UUID> get_grid_program_ids() {
+        if (cache().gets(Model_BProgramVersionSnapGridProjectProgram.class) == null) {
+            cache().add(Model_BProgramVersionSnapGridProjectProgram.class,  Model_BProgramVersionSnapGridProjectProgram.find.query().where().ne("deleted", true).eq("grid_project_program_snapshot.id", id).select("id").findSingleAttributeList());
+        }
+
+        return cache().gets(Model_BProgramVersionSnapGridProjectProgram.class) != null ?  cache().gets(Model_BProgramVersionSnapGridProjectProgram.class) : new ArrayList<>();
+    }
+
+    @JsonIgnore
+    public List<Model_BProgramVersionSnapGridProjectProgram> get_grid_programs() {
+        try {
+
+            List<Model_BProgramVersionSnapGridProjectProgram> programs  = new ArrayList<>();
+
+            for (UUID version_id : get_grid_program_ids()) {
+                programs.add(Model_BProgramVersionSnapGridProjectProgram.getById(version_id));
+            }
+
+            return programs;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new ArrayList<>();
+        }
+    }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 

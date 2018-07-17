@@ -169,9 +169,8 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
         public List<UUID> gets(Class c){
 
                 if (cash_map.containsKey(c)) {
-                    // return Collections.synchronizedList(cash_map.get(c));
-                    List<UUID> clone = cash_map.get(c).stream().collect(toList());
-                    return clone;
+                    // List<UUID> clone = cash_map.get(c).stream().collect(toList()); throws ConcurrentModificationException !!!
+                    return new ArrayList<>(cash_map.get(c));
 
                 } else {
                     return null;

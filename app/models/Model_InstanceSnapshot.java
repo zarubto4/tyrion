@@ -10,17 +10,14 @@ import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
-import play.data.validation.Constraints;
 import play.libs.Json;
 import play.mvc.Http;
 import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.cache.CacheField;
-import utilities.cache.Cached;
 import utilities.enums.*;
 import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
-import utilities.model.BaseModel;
 import utilities.model.TaggedModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Becki_color;
@@ -41,7 +38,6 @@ import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 
 import javax.persistence.*;
 import javax.validation.Valid;
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -86,13 +82,13 @@ public class Model_InstanceSnapshot extends TaggedModel {
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Swagger_Short_Reference b_program_version(){
+    public Swagger_Short_Reference b_program_version() {
         try {
 
             Model_BProgramVersion b_program_version = get_b_program_version();
             return new Swagger_Short_Reference(b_program_version.id, b_program_version.name, b_program_version.description);
 
-        } catch (_Base_Result_Exception e){
+        } catch (_Base_Result_Exception e) {
             //nothing
             return null;
         } catch (Exception e) {
@@ -102,13 +98,13 @@ public class Model_InstanceSnapshot extends TaggedModel {
     }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Swagger_Short_Reference b_program(){
+    public Swagger_Short_Reference b_program() {
         try {
 
             Model_BProgramVersion b_program_version = get_b_program_version();
             return new Swagger_Short_Reference(b_program_version.get_b_program().id, b_program_version.get_b_program().name, b_program_version.get_b_program().description);
 
-        } catch (_Base_Result_Exception e){
+        } catch (_Base_Result_Exception e) {
             //nothing
             return null;
         } catch (Exception e) {
@@ -118,13 +114,13 @@ public class Model_InstanceSnapshot extends TaggedModel {
     }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
-    public List<Model_BProgramVersionSnapGridProject> m_projects(){
+    public List<Model_BProgramVersionSnapGridProject> m_projects() {
         try {
 
             Model_BProgramVersion b_program_version = get_b_program_version();
             return b_program_version.get_grid_project_snapshots();
 
-        } catch (_Base_Result_Exception e){
+        } catch (_Base_Result_Exception e) {
             //nothing
             return null;
         } catch (Exception e) {
@@ -134,85 +130,68 @@ public class Model_InstanceSnapshot extends TaggedModel {
     }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Swagger_InstanceSnapShotConfiguration settings(){
+    public Swagger_InstanceSnapShotConfiguration settings() {
         try {
 
             if (this.json_additional_parameter != null) {
                 return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapShotConfiguration.class, Json.parse(this.json_additional_parameter));
             } else {
 
-                System.out.println("Hledám poslední možný záznam");
                 Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.query().where().eq("instance.id", instance.id).ne("id", this.id).isNotNull("json_additional_parameter").orderBy("deployed").setMaxRows(1).findOne();
 
-                if(snapshot != null) {
+                if (snapshot != null) {
 
-                    System.out.println("Mám poslední možný záznam snapshot: " + snapshot.name);
-
-                    if(snapshot.id.equals(this.id)) {
+                    if (snapshot.id.equals(this.id)) {
                         System.err.println("Aktuální settings tvořím nad naprosto stejným záznamem jako jem našel - něco je blblě: " + snapshot.name);
                     }
 
                     Swagger_InstanceSnapShotConfiguration configuration_new = new Swagger_InstanceSnapShotConfiguration();
                     Swagger_InstanceSnapShotConfiguration configuration_old = snapshot.settings();
 
-                    System.out.println("Právě budu procházet pole předchozích konfigurací s Gridem a kopírovat to co mám už nastavené");
                     for (Model_BProgramVersionSnapGridProject grid_project_snapshots : get_b_program_version().get_grid_project_snapshots()) {
 
                         Swagger_InstanceSnapShotConfigurationFile previous_used_project = null;
-                        for(Swagger_InstanceSnapShotConfigurationFile file : configuration_old.grids_collections) {
-                            if(file.grid_project_id.equals(grid_project_snapshots.grid_project.id)){
+                        for (Swagger_InstanceSnapShotConfigurationFile file : configuration_old.grids_collections) {
+                            if (file.grid_project_id.equals(grid_project_snapshots.grid_project.id)){
                                 previous_used_project = file;
                                 break;
                             }
                         }
 
-                        if(previous_used_project != null) {
-
-                            System.out.println("Exituje předchozí nastavený grid project");
+                        if (previous_used_project != null) {
 
                             Swagger_InstanceSnapShotConfigurationFile project_config = new Swagger_InstanceSnapShotConfigurationFile();
                             project_config.grid_project_id = grid_project_snapshots.grid_project.id;
 
-
-                            System.out.println("Počet programů: " + grid_project_snapshots.grid_programs);
-                            for(Swagger_InstanceSnapShotConfigurationProgram program : previous_used_project.grid_programs) {
-
-                                System.out.println("Procházím Program id " + program.grid_program_id);
-                                System.out.println("Procházím Program Verze id " + program.grid_program_version_id);
+                            for (Model_BProgramVersionSnapGridProjectProgram program : grid_project_snapshots.get_grid_programs()) {
 
                                 Swagger_InstanceSnapShotConfigurationProgram previous_used_program = null;
-                                k: for(Swagger_InstanceSnapShotConfigurationProgram old_program : previous_used_project.grid_programs) {
-                                    if(old_program.grid_program_id.equals(program.grid_program_id)) {
-                                        System.out.println("NAšel jsem předchozí používaný program a ukládám si ho");
+                                for (Swagger_InstanceSnapShotConfigurationProgram old_program : previous_used_project.grid_programs) {
+                                    if (old_program.grid_program_id.equals(program.grid_program().id)) {
                                         previous_used_program = old_program;
-                                        break k;
+                                        break;
                                     }
                                 }
 
-                                if(previous_used_program != null) {
-                                    System.out.println("Mám přechozí program a tak ho překopíruju do nového configu");
+                                if (previous_used_program != null) {
                                     project_config.grid_programs.add(previous_used_program);
-                                    continue;
                                 } else  {
-                                    System.out.println("Nemám přechozí program a tak ho vytvořím a uložím do nového configu");
                                     Swagger_InstanceSnapShotConfigurationProgram program_config = new Swagger_InstanceSnapShotConfigurationProgram();
-                                    program_config.grid_program_id = program.grid_program_id;
-                                    program_config.grid_program_version_id = program.grid_program_version_id;
+                                    program_config.grid_program_id = program.grid_program().id;
+                                    program_config.grid_program_version_id = program.get_grid_program_version_id();
                                     program_config.snapshot_settings = GridAccess.PROJECT;
                                     program_config.connection_token = get_instance_id() + "/" + program_config.grid_program_id;
 
                                     project_config.grid_programs.add(program_config);
                                 }
-
                             }
 
                             configuration_new.grids_collections.add(project_config);
                         } else {
-                            System.out.println("NeExituje předchozí nastavený grid project");
                             Swagger_InstanceSnapShotConfigurationFile project_config = new Swagger_InstanceSnapShotConfigurationFile();
                             project_config.grid_project_id = grid_project_snapshots.grid_project.id;
 
-                            for (Model_BProgramVersionSnapGridProjectProgram program : grid_project_snapshots.grid_programs) {
+                            for (Model_BProgramVersionSnapGridProjectProgram program : grid_project_snapshots.get_grid_programs()) {
                                 Swagger_InstanceSnapShotConfigurationProgram program_config = new Swagger_InstanceSnapShotConfigurationProgram();
                                 program_config.grid_program_id = program.get_grid_version_program().get_grid_program_id();
                                 program_config.grid_program_version_id = program.get_grid_program_version_id();
@@ -224,8 +203,6 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
                             configuration_new.grids_collections.add(project_config);
                         }
-
-
                     }
 
                     configuration_new.api_keys.addAll(configuration_old.api_keys);
@@ -238,18 +215,13 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
                 } else {
 
-                    System.out.println("Nemám poslední možný záznam snapshot: a tak tvořím úplně nový záznam");
-                    // Najdu poslední běžící instanci
-
                     Swagger_InstanceSnapShotConfiguration configuration = new Swagger_InstanceSnapShotConfiguration();
-
-
 
                     for (Model_BProgramVersionSnapGridProject grid_project_snapshots : get_b_program_version().get_grid_project_snapshots()) {
                         Swagger_InstanceSnapShotConfigurationFile project_config = new Swagger_InstanceSnapShotConfigurationFile();
                         project_config.grid_project_id = grid_project_snapshots.grid_project.id;
 
-                        for (Model_BProgramVersionSnapGridProjectProgram program : grid_project_snapshots.grid_programs) {
+                        for (Model_BProgramVersionSnapGridProjectProgram program : grid_project_snapshots.get_grid_programs()) {
 
                             Swagger_InstanceSnapShotConfigurationProgram program_config = new Swagger_InstanceSnapShotConfigurationProgram();
                             program_config.grid_program_id = program.get_grid_version_program().get_grid_program_id();
@@ -266,7 +238,6 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     this.json_additional_parameter = Json.toJson(configuration).toString();
                     this.update();
 
-
                     if (configuration.api_keys.isEmpty()) {
                         Swagger_InstanceSnapShotConfigurationApiKeys key = new Swagger_InstanceSnapShotConfigurationApiKeys();
                         key.token = UUID.randomUUID().toString();
@@ -277,8 +248,6 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
                     if (configuration.mesh_keys.isEmpty()) {
                         Swagger_InstanceSnapShotConfigurationApiKeys key = new Swagger_InstanceSnapShotConfigurationApiKeys();
-
-
 
                         StringBuilder sb = new StringBuilder(32);
                         for(int i = 0; i < 32; i++) {
@@ -293,7 +262,6 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     }
 
                     return configuration;
-
                 }
             }
 
@@ -306,16 +274,16 @@ public class Model_InstanceSnapshot extends TaggedModel {
     }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "only if snapshot is main")
-    public Swagger_InstanceSnapshot_JsonFile program(){
+    public Swagger_InstanceSnapshot_JsonFile program() {
         try {
             if (program != null) {
                 return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapshot_JsonFile.class, Json.parse(program.get_fileRecord_from_Azure_inString()));
             }
             return null;
-        }catch (_Base_Result_Exception e){
+        } catch (_Base_Result_Exception e) {
             //nothing
             return null;
-        }catch (Exception e) {
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -325,7 +293,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
     public List<Model_UpdateProcedure>  updates() throws _Base_Result_Exception {
         try {
             return getUpdateProcedure();
-        } catch (_Base_Result_Exception e){
+        } catch (_Base_Result_Exception e) {
             //nothing
             return null;
         } catch (Exception e) {
@@ -374,7 +342,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
         for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.program().interfaces) {
 
-            if(interface_hw.type.equals("hardware")) {
+            if (interface_hw.type.equals("hardware")) {
                 list.add(interface_hw.target_id);
             }
         }
@@ -388,7 +356,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
         for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.program().interfaces) {
 
-            if(interface_hw.type.equals("group")) {
+            if (interface_hw.type.equals("group")) {
                 list.add(interface_hw.target_id);
             }
         }
@@ -418,7 +386,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
             List<Model_UpdateProcedure> list = new ArrayList<>();
 
-            for (UUID id : getUpdateProcedureIds() ) {
+            for (UUID id : getUpdateProcedureIds()) {
                 list.add(Model_UpdateProcedure.getById(id));
             }
 

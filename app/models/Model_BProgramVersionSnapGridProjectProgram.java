@@ -53,7 +53,7 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
             // nothing
             return null;
         } catch (Exception e) {
-            // logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -67,7 +67,7 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
             //nothing
             return null;
         } catch (Exception e) {
-            // logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
