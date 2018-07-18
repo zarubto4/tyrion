@@ -59,7 +59,7 @@ public class Model_GridProject extends TaggedModel {
     @JsonIgnore
     public List<UUID> getGrid_programs_ids() {
         if (cache().gets(Model_GridProgram.class) == null) {
-            cache().add(Model_GridProgram.class, Model_GridProgram.find.query().where().eq("grid_project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+            cache().add(Model_GridProgram.class, Model_GridProgram.find.query().where().eq("deleted", false).eq("grid_project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_GridProgram.class) != null ?  cache().gets(Model_GridProgram.class) : new ArrayList<>();
@@ -197,7 +197,7 @@ public class Model_GridProject extends TaggedModel {
         if (_BaseController.person().has_permission(Permission.GridProject_update.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_GridProject.find.query().where().where().eq("project.participants.person.id", _BaseController.personId()).where().eq("id", id).findCount() > 0) {
+        if ( Model_GridProject.find.query().where().eq("project.participants.person.id", _BaseController.personId()).eq("id", id).findCount() > 0) {
             _BaseController.person().cache_permission("grid_project_update_" + id, true);
             return;
         }
@@ -214,7 +214,7 @@ public class Model_GridProject extends TaggedModel {
         if (_BaseController.person().has_permission(Permission.GridProject_read.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_GridProject.find.query().where().where().eq("project.participants.person.id", _BaseController.personId()).where().eq("id", id).findCount() > 0) {
+        if ( Model_GridProject.find.query().where().eq("project.participants.person.id", _BaseController.personId()).eq("id", id).findCount() > 0) {
             _BaseController.person().cache_permission("grid_project_read_" + id, true);
             return;
         }
@@ -229,7 +229,7 @@ public class Model_GridProject extends TaggedModel {
         if (_BaseController.person().has_permission(Permission.GridProject_delete.name())) return;
 
         // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_GridProject.find.query().where().where().eq("project.participants.person.id", _BaseController.personId()).where().eq("id", id).findCount() > 0) {
+        if ( Model_GridProject.find.query().where().eq("project.participants.person.id", _BaseController.personId()).eq("id", id).findCount() > 0) {
             _BaseController.person().cache_permission("grid_project_delete_" + id, true);
             return;
         }

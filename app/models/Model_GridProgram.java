@@ -289,7 +289,7 @@ public class Model_GridProgram extends TaggedModel {
         if (m_program == null) {
 
             m_program = Model_GridProgram.find.byId(id);
-            if (m_program == null) throw new Result_Error_NotFound(Model_Widget.class);
+            if (m_program == null) throw new Result_Error_NotFound(Model_GridProgram.class);
 
             cache.put(id, m_program);
         }
