@@ -41,12 +41,12 @@ public class Model_GridProject extends TaggedModel {
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true) public List<Model_GridProgram> m_programs() {
-        try{
+        try {
             return getGridPrograms();
-        } catch (_Base_Result_Exception e){
+        } catch (_Base_Result_Exception e) {
              //nothing
             return null;
-         }catch (Exception e){
+        } catch (Exception e) {
              logger.internalServerError(e);
              return null;
         }
@@ -58,8 +58,8 @@ public class Model_GridProject extends TaggedModel {
 
     @JsonIgnore
     public List<UUID> getGrid_programs_ids() {
-        if (cache().get(Model_GridProgram.class) == null) {
-            cache().add(Model_GridProgram.class, (UUID) Model_GridProgram.find.query().where().eq("grid_project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+        if (cache().gets(Model_GridProgram.class) == null) {
+            cache().add(Model_GridProgram.class, Model_GridProgram.find.query().where().eq("grid_project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_GridProgram.class) != null ?  cache().gets(Model_GridProgram.class) : new ArrayList<>();
