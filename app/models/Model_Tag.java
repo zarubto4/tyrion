@@ -1,17 +1,13 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import controllers._BaseController;
 import io.ebean.Finder;
 import io.ebean.Model;
 import io.swagger.annotations.ApiModel;
-import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
-import utilities.model.BaseModel;
 
 import javax.persistence.*;
-import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;

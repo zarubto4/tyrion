@@ -8,11 +8,7 @@ import io.ebean.Expr;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.apache.commons.io.FileExistsException;
 import org.ehcache.Cache;
-import play.libs.ws.WSClient;
-import play.libs.ws.WSResponse;
-import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.enums.*;
@@ -24,13 +20,10 @@ import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.output.Swagger_Bootloader_Update_program;
 import utilities.swagger.output.Swagger_C_Program_Update_program;
-import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
-import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.CompletionStage;
 
 @Entity
 @ApiModel(value = "UpdateProcedure", description = "Model of UpdateProcedure")

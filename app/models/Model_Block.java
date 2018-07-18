@@ -9,7 +9,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.CacheField;
-import utilities.cache.Cached;
 import utilities.enums.ProgramType;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;

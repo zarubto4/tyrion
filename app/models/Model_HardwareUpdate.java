@@ -10,11 +10,9 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.cache.CacheField;
-import utilities.cache.Cached;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.errors.Exceptions.Result_Error_NotFound;
-import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -26,9 +24,7 @@ import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 /**

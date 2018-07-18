@@ -2,15 +2,12 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
-import play.libs.Json;
 import utilities.cache.CacheField;
-import utilities.cache.Cached;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
@@ -56,7 +53,6 @@ public class Model_GridProgram extends TaggedModel {
             return null;
         }
     }
-
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -133,8 +129,6 @@ public class Model_GridProgram extends TaggedModel {
     public void save() {
 
         super.save();
-
-
 
         Model_GridProject grid_project = get_grid_project();
         if (grid_project != null) {

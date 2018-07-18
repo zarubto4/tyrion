@@ -2,24 +2,19 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
-import utilities.Server;
 import utilities.cache.CacheField;
-import utilities.enums.GridAccess;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
-import utilities.swagger.input.Swagger_GridWidgetVersion_GridApp_source;
 import utilities.swagger.output.Swagger_Short_Reference;
 
 import javax.persistence.*;
-import javax.validation.Valid;
 import java.util.*;
 
 @Entity

@@ -10,7 +10,6 @@ import utilities.model.BaseModel;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import java.beans.Transient;
 import java.util.UUID;
 
 @Entity

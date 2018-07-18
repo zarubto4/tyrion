@@ -13,7 +13,6 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import org.hibernate.validator.constraints.Email;
 import org.mindrot.jbcrypt.BCrypt;
-import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.enums.NotificationAction;

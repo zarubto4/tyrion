@@ -7,14 +7,12 @@ import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import org.ehcache.Cache;
-import responses.Result_UnsupportedException;
 import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
-import utilities.model.VersionModel;
 
 import javax.persistence.*;
 import java.beans.Transient;

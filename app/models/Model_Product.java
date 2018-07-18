@@ -25,7 +25,6 @@ import utilities.financial.history.HistoryEvent;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.notifications.helps_objects.Notification_Text;
-import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 
 import javax.persistence.*;
 import java.util.ArrayList;

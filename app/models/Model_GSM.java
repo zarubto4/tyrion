@@ -180,8 +180,6 @@ public class Model_GSM extends TaggedModel {
                 datagram_month.detailed_datagram.add(daily_datagram);
             }
 
-
-
             System.out.println("status.cdrs SIZE: " + status.cdrs.size());
             System.out.println("Latest Pointer for USE: " + pointer_to_cdr_array);
 

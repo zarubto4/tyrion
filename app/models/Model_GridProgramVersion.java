@@ -9,7 +9,6 @@ import io.swagger.annotations.ApiModel;
 import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.cache.CacheField;
-import utilities.cache.Cached;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
