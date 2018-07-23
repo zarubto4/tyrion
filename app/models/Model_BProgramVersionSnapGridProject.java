@@ -44,7 +44,7 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
     @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Short_Reference grid_project() {
         try {
-            return new Swagger_Short_Reference(grid_project.id, grid_project.name, grid_project.description);
+            return new Swagger_Short_Reference(get_grid_project_id(), get_grid_project().name, get_grid_project().description);
         } catch (_Base_Result_Exception e) {
             // nothing
             return null;
@@ -69,6 +69,27 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public UUID get_grid_project_id() throws _Base_Result_Exception {
+
+        if (cache().get(Model_GridProject.class) == null) {
+            cache().add(Model_GridProject.class, (UUID) Model_GridProject.find.query().where().eq("snapshots.id", id).select("id").findSingleAttribute());
+        }
+
+        return cache().get(Model_GridProject.class);
+
+    }
+
+    @JsonIgnore
+    public Model_GridProject get_grid_project() throws _Base_Result_Exception {
+        try {
+            return Model_GridProject.getById(get_grid_project_id());
+        }catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 
     @JsonIgnore
     public List<UUID> get_grid_program_ids() {
@@ -123,17 +144,17 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
 
     @JsonIgnore @Override  @Transient public void check_read_permission() throws _Base_Result_Exception  {
         if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProject_read.name())) return;
-        grid_project.check_update_permission();
+        get_grid_project().check_update_permission();
     }
 
     @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProject_update.name())) return;
-        grid_project.check_update_permission();
+        get_grid_project().check_update_permission();
     }
 
     @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProject_delete.name())) return;
-        grid_project.check_update_permission();
+        get_grid_project().check_update_permission();
     }
 
     public enum Permission { BProgramVersionSnapGridProject_create, BProgramVersionSnapGridProject_update, BProgramVersionSnapGridProject_read, BProgramVersionSnapGridProject_delete }

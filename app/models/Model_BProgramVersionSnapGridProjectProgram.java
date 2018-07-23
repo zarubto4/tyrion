@@ -74,7 +74,7 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
     public UUID get_grid_program_version_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_GridProgramVersion.class) == null) {
-            cache().add(Model_GridProgramVersion.class, Model_GridProgramVersion.find.query().where().eq("m_program_instance_parameters.id", id).select("id").findSingleAttributeList());
+            cache().add(Model_GridProgramVersion.class, (UUID) Model_GridProgramVersion.find.query().where().eq("m_program_instance_parameters.id", id).select("id").findSingleAttribute());
         }
 
         return cache().get(Model_GridProgramVersion.class);
@@ -95,7 +95,7 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
     public UUID get_b_program_grid_version_id() throws _Base_Result_Exception {
 
         if (cache().get(Model_BProgramVersionSnapGridProject.class) == null) {
-            cache().add(Model_BProgramVersionSnapGridProject.class, Model_GridProgramVersion.find.query().where().eq("grid_program.id", id).select("id").findSingleAttributeList());
+            cache().add(Model_BProgramVersionSnapGridProject.class, (UUID) Model_BProgramVersionSnapGridProject.find.query().where().eq("grid_programs.id", id).select("id").findSingleAttribute());
         }
 
         return cache().get(Model_BProgramVersionSnapGridProject.class);
