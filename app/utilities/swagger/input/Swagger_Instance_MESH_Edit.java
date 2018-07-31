@@ -7,10 +7,12 @@ import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 
 @ApiModel(description = "",
-        value = "Instance_Token")
-public class Swagger_Instance_Token extends _Swagger_Abstract_Default {
+        value = "Instance_MESH_Edit")
+public class Swagger_Instance_MESH_Edit extends _Swagger_Abstract_Default {
+
 
     @ApiModelProperty(required = false)
     public String description;
+
 
 }

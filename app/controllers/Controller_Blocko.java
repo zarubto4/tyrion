@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import io.ebean.*;
 import io.swagger.annotations.*;
 import models.*;
-import play.data.validation.Constraints;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -17,10 +16,8 @@ import utilities.enums.ProgramType;
 import utilities.logger.Logger;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
-import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
 import utilities.swagger.output.filter_results.Swagger_B_Program_List;
 import utilities.swagger.output.filter_results.Swagger_Block_List;
-import utilities.swagger.output.filter_results.Swagger_C_Program_List;
 import utilities.swagger.output.filter_results.Swagger_Instance_List;
 import java.util.Date;
 import java.util.Random;
@@ -1248,9 +1245,9 @@ public class Controller_Blocko extends _BaseController {
             Swagger_InstanceSnapShotConfigurationApiKeys key = new Swagger_InstanceSnapShotConfigurationApiKeys();
 
             key.token = UUID.randomUUID().toString();
-
             key.description = help.description;
             key.created = new Date().getTime();
+
             settings.api_keys.add(key);
 
 
@@ -1290,7 +1287,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Instance_Token help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_Token.class);
+            Swagger_Instance_Token_Edit help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_Token_Edit.class);
 
             Model_Instance instance = Model_Instance.getById(instance_id);
 
@@ -1306,7 +1303,7 @@ public class Controller_Blocko extends _BaseController {
             for(int i = 0; i <  settings.api_keys.size(); i++) {
 
                 Swagger_InstanceSnapShotConfigurationApiKeys key = settings.api_keys.get(i);
-                if(key.token.equals(token)){
+                if(key.token.equals(token.toString())){
 
                     settings.api_keys.get(i).description = help.description;
                     break;
@@ -1382,7 +1379,7 @@ public class Controller_Blocko extends _BaseController {
     @ApiImplicitParams({
             @ApiImplicitParam(
                     name = "body",
-                    dataType = "utilities.swagger.input.Swagger_Instance_Token",
+                    dataType = "utilities.swagger.input.Swagger_Instance_MESH",
                     required = true,
                     paramType = "body",
                     value = "Contains Json with values"
@@ -1399,7 +1396,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Instance_Token help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_Token.class);
+            Swagger_Instance_MESH help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_MESH.class);
 
             Model_Instance instance = Model_Instance.getById(instance_id);
 
@@ -1414,13 +1411,18 @@ public class Controller_Blocko extends _BaseController {
             Swagger_InstanceSnapShotConfigurationApiKeys key = new Swagger_InstanceSnapShotConfigurationApiKeys();
 
 
+            // Random allowed key:
+            Random rand=new Random();
+            String possibleLetters = "0123456789abcdefABCDEF";
             StringBuilder sb = new StringBuilder(32);
             for(int i = 0; i < 32; i++) {
-                sb.append("0123456789abcdef".charAt(new Random().nextInt("0123456789abcdef".length())));
+                sb.append(possibleLetters.charAt(rand.nextInt(possibleLetters.length())));
             }
 
-            key.token = sb.toString();
+            help.short_prefix = help.short_prefix .replace(" ", "*");
+            help.short_prefix = help.short_prefix .replace("-", "_");
 
+            key.token = help.short_prefix + "-" + sb.toString();
 
             key.description = help.description;
             key.created = new Date().getTime();
@@ -1446,7 +1448,7 @@ public class Controller_Blocko extends _BaseController {
     @ApiImplicitParams({
             @ApiImplicitParam(
                     name = "body",
-                    dataType = "utilities.swagger.input.Swagger_Instance_Token",
+                    dataType = "utilities.swagger.input.Swagger_Instance_MESH_Edit",
                     required = true,
                     paramType = "body",
                     value = "Contains Json with values"
@@ -1459,11 +1461,11 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result instance_edit_mesh_network_key(UUID instance_id, UUID token) {
+    public Result instance_edit_mesh_network_key(UUID instance_id, String token) {
         try {
 
             // Get and Validate Object
-            Swagger_Instance_Token help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_Token.class);
+            Swagger_Instance_MESH_Edit help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_MESH_Edit.class);
 
             Model_Instance instance = Model_Instance.getById(instance_id);
 
@@ -1511,7 +1513,7 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result instance_remove_mesh_network_key(UUID instance_id, UUID token) {
+    public Result instance_remove_mesh_network_key(UUID instance_id, String token) {
         try {
 
             Model_Instance instance = Model_Instance.getById(instance_id);

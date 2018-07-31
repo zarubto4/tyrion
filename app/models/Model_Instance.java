@@ -285,7 +285,7 @@ public class Model_Instance extends TaggedModel {
     public List<UUID> getSnapShotsIds() throws _Base_Result_Exception  {
 
         if (cache().gets(Model_InstanceSnapshot.class) == null) {
-            cache().add(Model_InstanceSnapshot.class,  Model_InstanceSnapshot.find.query().where().ne("deleted", true).eq("instance.id", id).select("id").findSingleAttributeList());
+            cache().add(Model_InstanceSnapshot.class,  Model_InstanceSnapshot.find.query().where().ne("deleted", true).eq("instance.id", id).order().desc("created").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_InstanceSnapshot.class) != null ?  cache().gets(Model_InstanceSnapshot.class) : new ArrayList<>();
@@ -328,7 +328,7 @@ public class Model_Instance extends TaggedModel {
     public Model_HomerServer getHomerServer() {
         try {
             return Model_HomerServer.getById(getServer_id());
-        }catch (Exception e) {
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }

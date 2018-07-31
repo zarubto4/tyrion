@@ -71,7 +71,7 @@ public class Model_GridProgram extends TaggedModel {
 
     @JsonIgnore @Transient public List<UUID> get_versionsId() {
         if (cache().gets(Model_GridProgramVersion.class) == null) {
-            cache().add(Model_GridProgramVersion.class,  Model_GridProgramVersion.find.query().where().ne("deleted", true).eq("grid_program.id", id).select("id").findSingleAttributeList());
+            cache().add(Model_GridProgramVersion.class,  Model_GridProgramVersion.find.query().where().ne("deleted", true).eq("grid_program.id", id).order().desc("created").select("id").findSingleAttributeList());
         }
 
         return cache().gets(Model_GridProgramVersion.class) != null ?  cache().gets(Model_GridProgramVersion.class) : new ArrayList<>();
