@@ -7,6 +7,7 @@ import play.api.Play;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import utilities.Server;
+import utilities.swagger.input.Swagger_GitHubReleases;
 
 import java.time.Duration;
 
@@ -64,7 +65,7 @@ public class Slack {
      * Posts an error to Byzance Slack, chanel #hardware
      * @param release
      */
-    public static void post_invalid_release(String release) {
+    public static void post_invalid_release(Swagger_GitHubReleases release) {
         try {
 
             WSClient ws = Play.current().injector().instanceOf(WSClient.class);
@@ -74,8 +75,8 @@ public class Slack {
             json.put("icon_emoji", ":tyrion:");
             json.put("title", "Výstražná zpráva");
             json.put("color", "danger");
-            json.put("text", "Toto je automatická zpráva kterou vygeneroval všemocný Tyrion Server. \n Někdo *(nějaký vobšoust)* vytvořil release *" + release + "* bez požadovaných parametrů. \n" +
-                    " Například soubor (dist.zip)");
+            json.put("text", "Toto je automatická zpráva kterou vygeneroval všemocný Tyrion Server. \n Podle GitHubu *" + release.author.login + "* vytvořil firmware release *" + release.tag_name + "* bez požadovaných parametrů. \n" +
+                    " Například soubor (dist.zip) nebo výsledný zip soubor neobsahuje složku examples");
 
             ws.url(Server.slack_webhook_url_channel_hardware)
                     .setRequestTimeout(Duration.ofSeconds(10))
@@ -90,9 +91,9 @@ public class Slack {
 
     /**
      * Posts an error to Byzance Slack, chanel #hardware
-     * @param version
+     * @param release
      */
-    public static void post_invalid_bootloader(String version) {
+    public static void post_invalid_bootloader(Swagger_GitHubReleases release) {
         try {
 
             WSClient ws = Play.current().injector().instanceOf(WSClient.class);
@@ -102,7 +103,7 @@ public class Slack {
             json.put("icon_emoji", ":tyrion:");
             json.put("title", "Výstražná zpráva");
             json.put("color", "danger");
-            json.put("text", "Toto je automatická zpráva kterou vygeneroval všemocný Tyrion Server. \n Někdo *(nějaký vobšoust)* vytvořil nový bootloader *" + version + "* bez požadovaných parametrů. \n" +
+            json.put("text", "Toto je automatická zpráva kterou vygeneroval všemocný Tyrion Server. \n  Podle GitHubu *" + release.author.login + "* vytvořil Bootloader release *" + release.tag_name + "* bez požadovaných parametrů. \n" +
                     " Například soubor (dist.zip)");
 
             ws.url(Server.slack_webhook_url_channel_hardware)
@@ -175,7 +176,7 @@ public class Slack {
      * Posts a message to Byzance Slack, chanel #servers
      * @param message String message to post.
      */
-    public static void post_error(String message) {
+    public static void post_error(String message, String channel) {
         try {
 
             WSClient ws = Play.current().injector().instanceOf(WSClient.class);
@@ -188,7 +189,7 @@ public class Slack {
             json.put("color", "danger");
             json.put("mrkdwn", true);
 
-            ws.url(Server.slack_webhook_url_channel_servers)
+            ws.url(channel)
                     .setRequestTimeout(Duration.ofSeconds(10))
                     .post(json.toString())
                     .toCompletableFuture()

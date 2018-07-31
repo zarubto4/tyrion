@@ -8,6 +8,7 @@ import models.Model_Blob;
 import models.Model_BootLoader;
 import models.Model_CProgramVersion;
 import models.Model_HardwareType;
+import org.apache.commons.io.FileUtils;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -27,6 +28,7 @@ import utilities.swagger.input.Swagger_GitHubReleases;
 import utilities.swagger.input.Swagger_GitHubReleases_Asset;
 import utilities.swagger.input.Swagger_GitHubReleases_List;
 
+import java.io.*;
 import java.net.ConnectException;
 import java.net.URLDecoder;
 import java.time.Duration;
@@ -35,6 +37,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * This job synchronizes bootloader libraries from GitHub releases.
@@ -145,13 +149,13 @@ public class Job_CheckBootloaderLibraries implements Job {
 
                         if (subStrings_main_parts[0] == null) {
                             logger.error("Required Part in Release Tag name for Booloader missing): Type Of Board (compiler_target_name) ");
-                            Slack.post_invalid_bootloader(release.name);
+                            Slack.post_invalid_bootloader(release);
                             continue;
                         }
 
                         if (subStrings_main_parts[1] == null) {
                             logger.error("Required Part in Release Tag name for Booloader missing): Version (v1.0.1)");
-                            Slack.post_invalid_bootloader(release.name);
+                            Slack.post_invalid_bootloader(release);
                             continue;
                         }
 
@@ -268,7 +272,7 @@ public class Job_CheckBootloaderLibraries implements Job {
         }
     };
 
-    private WSResponse download_file(String assets_url) {
+    public WSResponse download_file(String assets_url) {
         try {
 
             WSResponse wsResponse = ws.url(assets_url)
@@ -279,7 +283,7 @@ public class Job_CheckBootloaderLibraries implements Job {
                     .toCompletableFuture()
                     .get();
 
-            logger.trace("update_server_thread: Got file download url");
+            logger.trace("download_file: Got file download url");
 
             String url;
 
@@ -287,6 +291,7 @@ public class Job_CheckBootloaderLibraries implements Job {
             if (optional.isPresent()) {
                 url = optional.get();
             } else {
+                logger.error("download_file: optional.isPresent() == false");
                 return null;
             }
 
@@ -306,8 +311,77 @@ public class Job_CheckBootloaderLibraries implements Job {
             return request.get().toCompletableFuture().get(30, TimeUnit.MINUTES);
 
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            logger.internalServerError(e);
             return null;
         }
+    }
+
+    public void remove_file (String path) {
+
+        try {
+
+            if (new File(path).isDirectory()) {
+                FileUtils.deleteDirectory(new File(path));
+            } else {
+
+                if(new File(path).delete()){
+                    System.out.println(path + " is deleted!");
+                }else{
+
+                    System.out.println("Delete " +path + " operation is failed.");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static final int BUFFER_SIZE = 4096;
+
+    /**
+     * Extracts a zip file specified by the zipFilePath to a directory specified by
+     * destDirectory (will be created if does not exists)
+     * @param zipFilePath
+     * @param destDirectory
+     * @throws IOException
+     */
+    public void unzip(String zipFilePath, String destDirectory) throws IOException {
+        File destDir = new File(destDirectory);
+        if (!destDir.exists()) {
+            destDir.mkdir();
+        }
+        ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath));
+        ZipEntry entry = zipIn.getNextEntry();
+        // iterates over entries in the zip file
+        while (entry != null) {
+            String filePath = destDirectory + File.separator + entry.getName();
+            if (!entry.isDirectory()) {
+                // if the entry is a file, extracts it
+                extractFile(zipIn, filePath);
+            } else {
+                // if the entry is a directory, make the directory
+                File dir = new File(filePath);
+                dir.mkdir();
+            }
+            zipIn.closeEntry();
+            entry = zipIn.getNextEntry();
+        }
+        zipIn.close();
+    }
+
+    /**
+     * Extracts a zip entry (file entry)
+     * @param zipIn
+     * @param filePath
+     * @throws IOException
+     */
+    private void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
+        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath));
+        byte[] bytesIn = new byte[BUFFER_SIZE];
+        int read = 0;
+        while ((read = zipIn.read(bytesIn)) != -1) {
+            bos.write(bytesIn, 0, read);
+        }
+        bos.close();
     }
 }

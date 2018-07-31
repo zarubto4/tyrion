@@ -27,6 +27,8 @@ public class Swagger_GitHubReleases {
     public String created_at;
     public String published_at;
 
+    public Swagger_GitHub_author author;
+
     @Valid
     public List<Swagger_GitHubReleases_Asset> assets = new ArrayList<>();
 
