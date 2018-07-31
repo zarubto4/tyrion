@@ -111,7 +111,7 @@ public class SelfDeployedThreadRegister extends Thread {
                         slack_echo += "Homer Serve ID: " + homer_server_id + ", Name:" + server.name + "\n";
                         slack_echo += "Droplet rul: " + server.server_url + ", Api URL:" + server.server_url + ":" + server.rest_api_port + " <---\n";
                         slack_echo += "Tyrion Server Type: " + Server.mode + ", Tyrion URL: " + Server.httpAddress + "\n";
-                        Slack.post_error(slack_echo);
+                        Slack.post_error(slack_echo, Server.slack_webhook_url_channel_servers);
 
 
                         break thr1;
