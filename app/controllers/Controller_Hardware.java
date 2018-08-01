@@ -1701,11 +1701,9 @@ public class Controller_Hardware extends _BaseController {
             // Kontrola oprávnění
             board.check_update_permission();
 
-            DM_Board_Bootloader_DefaultConfig config = board.bootloader_core_configuration();
+            switch (help.parameter_type.toLowerCase()) {
 
-            decision: switch (help.parameter_type.toLowerCase()) {
-
-                case "developer_kit" :{
+                case "developer_kit": {
 
                     // Synchronizace s Homer serverem a databází
                     board.developer_kit = help.boolean_value;
@@ -1713,19 +1711,19 @@ public class Controller_Hardware extends _BaseController {
                     break;
                 }
 
-                case "alias" :{
+                case "alias": {
                     // Synchronizace s Homer serverem a databází
                     board.set_alias(help.string_value);
                     break;
                 }
 
-                case "database_synchronize" :{
+                case "database_synchronize": {
                     // Synchronizace s Homer serverem a databází
                     board.set_database_synchronize(help.boolean_value);
                     break;
                 }
 
-                case "wdtime" :{
+                case "wdtime": {
 
                     if (help.integer_value  == null) {
                         return badRequest("wdtime must be integer! And minimal value is 30");
@@ -1734,11 +1732,11 @@ public class Controller_Hardware extends _BaseController {
                     if(help.integer_value < 30) {
                         help.integer_value = 30;
                     }
-                    WS_Message_Hardware_set_settings settings =  board.set_hardware_configuration_parameter(help);
+                    WS_Message_Hardware_set_settings settings = board.set_hardware_configuration_parameter(help);
                     break;
                 }
 
-                case "autojump" :{
+                case "autojump": {
 
                     if (help.integer_value  == null) {
                         return badRequest("autojump must be integer! And minimal value is 30");
@@ -1747,11 +1745,11 @@ public class Controller_Hardware extends _BaseController {
                     if(help.integer_value < 30) {
                         help.integer_value = 30;
                     }
-                    WS_Message_Hardware_set_settings settings =  board.set_hardware_configuration_parameter(help);
+                    WS_Message_Hardware_set_settings settings = board.set_hardware_configuration_parameter(help);
                     break;
                 }
 
-                case "netsource" :{
+                case "netsource": {
 
                     if (help.string_value  == null) {
                         return badRequest("netsource must be string! Allowed values: 6lowpan, ethernet, gsm");
@@ -1761,15 +1759,14 @@ public class Controller_Hardware extends _BaseController {
                         return badRequest("netsource must be string! Allowed values: 6lowpan, ethernet, gsm");
                     }
 
-                    WS_Message_Hardware_set_settings settings =  board.set_hardware_configuration_parameter(help);
+                    WS_Message_Hardware_set_settings settings = board.set_hardware_configuration_parameter(help);
                     break;
                 }
-
 
                 default: {
 
                     try {
-                        WS_Message_Hardware_set_settings settings =  board.set_hardware_configuration_parameter(help);
+                        WS_Message_Hardware_set_settings settings = board.set_hardware_configuration_parameter(help);
                         return ok(board);
                     } catch (IllegalArgumentException e) {
                         logger.trace("IllegalArgumentException" + e.getMessage());
@@ -1779,7 +1776,6 @@ public class Controller_Hardware extends _BaseController {
                         return badRequest(e.getMessage());
                     }
                 }
-
             }
 
             // Vrácení upravenéh objektu

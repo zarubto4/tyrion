@@ -1712,56 +1712,67 @@ public class Model_Hardware extends TaggedModel {
 
     // Change Hardware web view port --//
     @JsonIgnore
-    public WS_Message_Hardware_set_settings set_hardware_configuration_parameter(Swagger_Board_Developer_parameters help) throws IllegalArgumentException, Exception{
+    public WS_Message_Hardware_set_settings set_hardware_configuration_parameter(Swagger_Board_Developer_parameters help) throws IllegalArgumentException {
 
-            DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
+        DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
 
-            for (Field field : configuration.getClass().getFields()) {
+        try {
 
-                if (help.parameter_type.toLowerCase().equals(field.getName().toLowerCase())) {
+            ObjectNode message = null;
 
-                    if (field.getType().getSimpleName().equals(Boolean.class.getSimpleName().toLowerCase())) {
+            String name = help.parameter_type.toLowerCase();
 
-                        // Jediná přístupná vyjímka je pro autoback - ten totiž je zároven v COnfig Json (DM_Board_Bootloader_DefaultConfig)
-                        // Ale zároveň je také přímo přístupný v databázi Tyriona
-                        if (help.parameter_type.equals("autobackup")) {
-                            this.backup_mode = help.boolean_value;
-                            // Update bude proveden v   this.update_bootloader_configuration
-                        }
+            Field field = configuration.getClass().getField(name);
+            Class<?> type = field.getType();
 
-                        field.setBoolean(configuration, help.boolean_value); //setting field value to 10 in object
-                        this.update_bootloader_configuration(configuration);
+            if (type.equals(Boolean.class)) {
 
-                        JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.boolean_value), 1000 * 5, 0, 2);
-                        return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, node);
-                    }
-
-                    if (field.getType().getSimpleName().toLowerCase().equals(String.class.getSimpleName().toLowerCase())) {
-
-                        field.set(configuration, help.string_value);
-                        this.update_bootloader_configuration(configuration);
-
-                        JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.string_value), 1000 * 5, 0, 2);
-                        return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, node);
-                    }
-
-                    if (field.getType().getSimpleName().toLowerCase().equals(Integer.class.getSimpleName().toLowerCase())) {
-
-                        try {
-
-                            field.set(configuration, help.integer_value);
-                            this.update_bootloader_configuration(configuration);
-
-                            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.integer_value), 1000 * 5, 0, 2);
-                            return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, node);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
+                // Jediná přístupná vyjímka je pro autoback - ten totiž je zároven v COnfig Json (DM_Board_Bootloader_DefaultConfig)
+                // Ale zároveň je také přímo přístupný v databázi Tyriona
+                if (name.equals("autobackup")) {
+                    this.backup_mode = help.boolean_value;
+                    // Update bude proveden v this.update_bootloader_configuration
                 }
+
+                field.set(configuration, help.boolean_value);
+
+                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), name, help.boolean_value);
+
+            } else if (type.equals(String.class)) {
+
+                field.set(configuration, help.string_value);
+
+                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), name, help.string_value);
+
+            } else if (type.equals(Integer.class)) {
+
+                field.set(configuration, help.integer_value);
+
+                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), name, help.integer_value);
+            } else {
+                throw new NoSuchFieldException();
             }
 
-            throw  new IllegalArgumentException("Incoming Value " + help.parameter_type.toLowerCase() + " not recognized");
+            if (!configuration.pending.contains(name)) {
+                configuration.pending.add(name);
+            }
+
+            this.update_bootloader_configuration(configuration);
+
+            WS_Message_Hardware_set_settings response = baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, this.write_with_confirmation(message, 1000 * 5, 0, 2));
+
+            if (response.status.equals("success")) {
+                configuration.pending.remove(name);
+                this.update_bootloader_configuration(configuration);
+            }
+
+            return response;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+        }
+
+        throw new IllegalArgumentException("Incoming Value " + help.parameter_type.toLowerCase() + " not recognized");
     }
 
     //-- ADD or Remove // Change Server --//
@@ -1773,7 +1784,7 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public WS_Message_Hardware_change_server device_relocate_server(String mqtt_host, String mqtt_port) {
         try {
-            JsonNode node = write_with_confirmation( new WS_Message_Hardware_change_server().make_request(mqtt_host, mqtt_port, Collections.singletonList(this.id)), 1000 * 5, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_change_server().make_request(mqtt_host, mqtt_port, Collections.singletonList(this.id)), 1000 * 5, 0, 2);
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_change_server.class, node);
 
         } catch (Exception e) {
@@ -2201,60 +2212,74 @@ public class Model_Hardware extends TaggedModel {
 
          */
         DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
-        boolean change_register = false; // Pokud došlo ke změně
+        boolean changeSettings = false; // Pokud došlo ke změně
+        boolean changeConfig = false;
 
-        for (Field config_field : configuration.getClass().getFields()) {
+        try {
 
-            try {
-                Field incoming_report_right_filed = null;
+            for (Field configField : configuration.getClass().getFields()) {
 
-                for (Field incoming_filed : overview.getClass().getFields()) {
-                    if (config_field.getName().equals(incoming_filed.getName())) {
-                        incoming_report_right_filed = incoming_filed;
-                        break;
+                String configFieldName = configField.getName();
+
+                try {
+                    Field reportedField = overview.getClass().getField(configFieldName);
+
+                    Object configValue = configField.get(configuration);
+                    Object reportedValue = reportedField.get(overview);
+
+                    // If values are same do nothing
+                    if (configValue != reportedValue) {
+
+                        // If change was requested (is pending) update the hw setting, otherwise update database info
+                        if (configuration.pending.contains(configFieldName)) {
+                            Class type = reportedField.getType();
+
+                            ObjectNode message = null;
+
+                            if (type.equals(Boolean.class)) {
+
+                                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), configFieldName, (Boolean) configField.get(configuration));
+
+                            } else if (type.equals(String.class)) {
+
+                                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), configFieldName, (String) configField.get(configuration));
+
+                            } else if (type.equals(Integer.class)) {
+
+                                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), configFieldName, (Integer) configField.get(configuration));
+
+                            } else {
+                                throw new NoSuchFieldException();
+                            }
+
+                            changeSettings = true;
+                            changeConfig = true;
+                            this.write_with_confirmation(message, 5000, 0, 2);
+                            configuration.pending.remove(configFieldName);
+
+                        } else {
+                            configField.set(configuration, reportedValue);
+                            changeConfig = true;
+                        }
+                    } else if (configuration.pending.contains(configFieldName)) {
+                        configuration.pending.remove(configFieldName);
+                        changeConfig = true;
                     }
+
+                } catch (NoSuchFieldException e) {
+                    // Nothing
                 }
-
-                if (incoming_report_right_filed == null) {
-                    continue;
-                }
-
-                if (config_field.getType().getCanonicalName().equals(Boolean.class.getSimpleName().toLowerCase())) {
-
-                    if (config_field.getBoolean(configuration) != incoming_report_right_filed.getBoolean(overview)) {
-                        write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), config_field.getName(), config_field.getBoolean(configuration)), 1000 * 5, 0, 2);
-                        change_register = true;
-                    }
-
-                    continue;
-                }
-
-                if (config_field.getType().getCanonicalName().toLowerCase().equals(String.class.getSimpleName().toLowerCase())) {
-
-                    if (!config_field.get(configuration).toString().equals(incoming_report_right_filed.get(overview).toString())) {
-                        write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), config_field.getName(), config_field.get(configuration).toString()), 1000 * 5, 0, 2);
-                        change_register = true;
-                    }
-
-                    continue;
-                }
-
-                if (config_field.getType().getCanonicalName().toLowerCase().equals(Integer.class.getSimpleName().toLowerCase())) {
-
-                    if (config_field.getInt(configuration) != incoming_report_right_filed.getInt(overview)) {
-                        write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), config_field.getName(), config_field.getInt(configuration)), 1000 * 5, 0, 2);
-                        change_register = true;
-                    }
-
-                    continue;
-                }
-            } catch (Exception e) {
-                logger.internalServerError(e);
-                return true;
             }
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
         }
 
-        return change_register;
+        if (changeConfig) {
+            this.update_bootloader_configuration(configuration);
+        }
+
+        return changeSettings;
     }
 
     /**
