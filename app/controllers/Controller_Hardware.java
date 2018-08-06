@@ -1732,7 +1732,7 @@ public class Controller_Hardware extends _BaseController {
                     if(help.integer_value < 30) {
                         help.integer_value = 30;
                     }
-                    WS_Message_Hardware_set_settings settings = board.set_hardware_configuration_parameter(help);
+                    board.set_hardware_configuration_parameter(help);
                     break;
                 }
 
@@ -1745,7 +1745,7 @@ public class Controller_Hardware extends _BaseController {
                     if(help.integer_value < 30) {
                         help.integer_value = 30;
                     }
-                    WS_Message_Hardware_set_settings settings = board.set_hardware_configuration_parameter(help);
+                    board.set_hardware_configuration_parameter(help);
                     break;
                 }
 
@@ -1759,14 +1759,14 @@ public class Controller_Hardware extends _BaseController {
                         return badRequest("netsource must be string! Allowed values: 6lowpan, ethernet, gsm");
                     }
 
-                    WS_Message_Hardware_set_settings settings = board.set_hardware_configuration_parameter(help);
+                    board.set_hardware_configuration_parameter(help);
                     break;
                 }
 
                 default: {
 
                     try {
-                        WS_Message_Hardware_set_settings settings = board.set_hardware_configuration_parameter(help);
+                        board.set_hardware_configuration_parameter(help);
                         return ok(board);
                     } catch (IllegalArgumentException e) {
                         logger.trace("IllegalArgumentException" + e.getMessage());

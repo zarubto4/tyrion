@@ -46,6 +46,7 @@ import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 import javax.persistence.*;
 import java.util.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 @Entity
 @ApiModel(description = "Model of HomerServer", value = "HomerServer")
@@ -361,8 +362,6 @@ public class Model_HomerServer extends TaggedModel {
                         return;
                     }
 
-
-
                     default: {
                         logger.warn("Incoming Message not recognized::" + json.toString());
                         homer.send(json.put("error_message", "message_type not recognized").put("error_code", 400));
@@ -379,6 +378,16 @@ public class Model_HomerServer extends TaggedModel {
             }
 
         }).start();
+    }
+
+    @JsonIgnore
+    public void sendWithResponseAsync(WS_Message message, Consumer<ObjectNode> consumer) {
+        if (Controller_WebSocket.homers.containsKey(this.id)) {
+            Controller_WebSocket.homers.get(this.id).sendWithResponseAsync(message, consumer);
+        } else {
+            // TODO maybe exception?
+            logger.warn("sendWithResponseAsync - Attempt to send message to not existing interface");
+        }
     }
 
     @JsonIgnore

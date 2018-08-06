@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClientException;
+import controllers.Controller_WebSocket;
 import controllers._BaseController;
 import io.ebean.Expr;
 import io.ebean.Finder;
@@ -29,6 +30,7 @@ import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.input.Swagger_Board_Developer_parameters;
 import utilities.swagger.output.Swagger_Short_Reference;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
+import websocket.WS_Message;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
@@ -41,6 +43,7 @@ import javax.persistence.*;
 import javax.persistence.Transient;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.Consumer;
 
 @Entity
 @ApiModel(value = "Hardware", description = "Model of Hardware")
@@ -542,7 +545,7 @@ public class Model_Hardware extends TaggedModel {
 
                     List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(), "SELECT * FROM root r  WHERE r.hardware_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
 
-                    logger.debug("last_online: number of retrieved documents = {}", documents.size());
+                    logger.trace("last_online: number of retrieved documents = {}", documents.size());
 
                     if (documents.size() > 0) {
 
@@ -995,13 +998,12 @@ public class Model_Hardware extends TaggedModel {
                         return;
                     }
 
-
-
-                    // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
                     case WS_Message_Hardware_set_settings.message_type: {
-                        logger.warn("WS_Message_Hardware_set_settings: A message with a very high delay has arrived.");
+                        Model_Hardware.device_settings_set(baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_set_settings.class, json));
                         return;
                     }
+
+                    // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
                     case WS_Message_Hardware_command_execute.message_type: {
                         logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");
                         return;
@@ -1517,8 +1519,47 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
+    public static void device_settings_set(WS_Message_Hardware_set_settings settings) {
+        if (settings.key != null) {
+            if (settings.uuid != null) {
+                Model_Hardware hardware = Model_Hardware.getById(settings.uuid);
+
+                DM_Board_Bootloader_DefaultConfig configuration = hardware.bootloader_core_configuration();
+
+                configuration.pending.remove(settings.key.toLowerCase());
+
+                hardware.update_bootloader_configuration(configuration);
+
+            } else {
+                logger.warn("device_settings_set - got message without 'uuid' property");
+            }
+        } else {
+            logger.warn("device_settings_set - got message without 'key' property");
+        }
+    }
+
     /* Servers Parallel tasks  ----------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
+    public void sendWithResponseAsync(WS_Message message, Consumer<ObjectNode> consumer) {
+
+        if (this.connected_server_id != null) {
+
+            Model_HomerServer server = Model_HomerServer.getById(this.connected_server_id);
+            if (server != null) {
+                server.sendWithResponseAsync(message, consumer);
+            } else {
+                logger.internalServerError(new Exception("Could not find the server by the 'connected_server_id' on HW: " + this.id));
+
+                this.connected_server_id = null;
+                this.update();
+            }
+
+        } else {
+            // TODO maybe exception?
+            logger.warn("sendWithResponseAsync - connected server id is not set yet on HW: {}", this.id);
+        }
+    }
 
     // Odesílání zprávy harwaru jde skrze serve, zde je metoda, která pokud to nejde odeslat naplní objekt a vrácí ho
     @JsonIgnore
@@ -1712,13 +1753,13 @@ public class Model_Hardware extends TaggedModel {
 
     // Change Hardware web view port --//
     @JsonIgnore
-    public WS_Message_Hardware_set_settings set_hardware_configuration_parameter(Swagger_Board_Developer_parameters help) throws IllegalArgumentException {
+    public void set_hardware_configuration_parameter(Swagger_Board_Developer_parameters help) throws IllegalArgumentException {
 
         DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
 
         try {
 
-            ObjectNode message = null;
+            ObjectNode message;
 
             String name = help.parameter_type.toLowerCase();
 
@@ -1759,20 +1800,18 @@ public class Model_Hardware extends TaggedModel {
 
             this.update_bootloader_configuration(configuration);
 
-            WS_Message_Hardware_set_settings response = baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, this.write_with_confirmation(message, 1000 * 5, 0, 2));
+            this.sendWithResponseAsync(new WS_Message(message, 0, 5000, 2), (response) -> {
+                WS_Message_Hardware_set_settings result = baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, response);
 
-            if (response.status.equals("success")) {
-                configuration.pending.remove(name);
-                this.update_bootloader_configuration(configuration);
-            }
-
-            return response;
+                if (!result.status.equals("success")) {
+                    logger.internalServerError(new Exception("Got error response: " + response.toString()));
+                }
+            });
 
         } catch (Exception e) {
             logger.internalServerError(e);
+            throw new IllegalArgumentException("Incoming Value " + help.parameter_type.toLowerCase() + " not recognized");
         }
-
-        throw new IllegalArgumentException("Incoming Value " + help.parameter_type.toLowerCase() + " not recognized");
     }
 
     //-- ADD or Remove // Change Server --//
