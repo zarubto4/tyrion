@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClientException;
+import controllers.Controller_WebSocket;
 import controllers._BaseController;
 import io.ebean.Expr;
 import io.ebean.Finder;
@@ -29,6 +30,7 @@ import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.input.Swagger_Board_Developer_parameters;
 import utilities.swagger.output.Swagger_Short_Reference;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
+import websocket.WS_Message;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
@@ -41,6 +43,7 @@ import javax.persistence.*;
 import javax.persistence.Transient;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.Consumer;
 
 @Entity
 @ApiModel(value = "Hardware", description = "Model of Hardware")
@@ -542,7 +545,7 @@ public class Model_Hardware extends TaggedModel {
 
                     List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(), "SELECT * FROM root r  WHERE r.hardware_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
 
-                    logger.debug("last_online: number of retrieved documents = {}", documents.size());
+                    logger.trace("last_online: number of retrieved documents = {}", documents.size());
 
                     if (documents.size() > 0) {
 
@@ -995,13 +998,12 @@ public class Model_Hardware extends TaggedModel {
                         return;
                     }
 
-
-
-                    // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
                     case WS_Message_Hardware_set_settings.message_type: {
-                        logger.warn("WS_Message_Hardware_set_settings: A message with a very high delay has arrived.");
+                        Model_Hardware.device_settings_set(baseFormFactory.formFromJsonWithValidation(homer, WS_Message_Hardware_set_settings.class, json));
                         return;
                     }
+
+                    // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
                     case WS_Message_Hardware_command_execute.message_type: {
                         logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");
                         return;
@@ -1517,8 +1519,47 @@ public class Model_Hardware extends TaggedModel {
         }
     }
 
+    public static void device_settings_set(WS_Message_Hardware_set_settings settings) {
+        if (settings.key != null) {
+            if (settings.uuid != null) {
+                Model_Hardware hardware = Model_Hardware.getById(settings.uuid);
+
+                DM_Board_Bootloader_DefaultConfig configuration = hardware.bootloader_core_configuration();
+
+                configuration.pending.remove(settings.key.toLowerCase());
+
+                hardware.update_bootloader_configuration(configuration);
+
+            } else {
+                logger.warn("device_settings_set - got message without 'uuid' property");
+            }
+        } else {
+            logger.warn("device_settings_set - got message without 'key' property");
+        }
+    }
+
     /* Servers Parallel tasks  ----------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
+    public void sendWithResponseAsync(WS_Message message, Consumer<ObjectNode> consumer) {
+
+        if (this.connected_server_id != null) {
+
+            Model_HomerServer server = Model_HomerServer.getById(this.connected_server_id);
+            if (server != null) {
+                server.sendWithResponseAsync(message, consumer);
+            } else {
+                logger.internalServerError(new Exception("Could not find the server by the 'connected_server_id' on HW: " + this.id));
+
+                this.connected_server_id = null;
+                this.update();
+            }
+
+        } else {
+            // TODO maybe exception?
+            logger.warn("sendWithResponseAsync - connected server id is not set yet on HW: {}", this.id);
+        }
+    }
 
     // Odesílání zprávy harwaru jde skrze serve, zde je metoda, která pokud to nejde odeslat naplní objekt a vrácí ho
     @JsonIgnore
@@ -1712,56 +1753,65 @@ public class Model_Hardware extends TaggedModel {
 
     // Change Hardware web view port --//
     @JsonIgnore
-    public WS_Message_Hardware_set_settings set_hardware_configuration_parameter(Swagger_Board_Developer_parameters help) throws IllegalArgumentException, Exception{
+    public void set_hardware_configuration_parameter(Swagger_Board_Developer_parameters help) throws IllegalArgumentException {
 
-            DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
+        DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
 
-            for (Field field : configuration.getClass().getFields()) {
+        try {
 
-                if (help.parameter_type.toLowerCase().equals(field.getName().toLowerCase())) {
+            ObjectNode message;
 
-                    if (field.getType().getSimpleName().equals(Boolean.class.getSimpleName().toLowerCase())) {
+            String name = help.parameter_type.toLowerCase();
 
-                        // Jediná přístupná vyjímka je pro autoback - ten totiž je zároven v COnfig Json (DM_Board_Bootloader_DefaultConfig)
-                        // Ale zároveň je také přímo přístupný v databázi Tyriona
-                        if (help.parameter_type.equals("autobackup")) {
-                            this.backup_mode = help.boolean_value;
-                            // Update bude proveden v   this.update_bootloader_configuration
-                        }
+            Field field = configuration.getClass().getField(name);
+            Class<?> type = field.getType();
 
-                        field.setBoolean(configuration, help.boolean_value); //setting field value to 10 in object
-                        this.update_bootloader_configuration(configuration);
+            if (type.equals(Boolean.class)) {
 
-                        JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.boolean_value), 1000 * 5, 0, 2);
-                        return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, node);
-                    }
-
-                    if (field.getType().getSimpleName().toLowerCase().equals(String.class.getSimpleName().toLowerCase())) {
-
-                        field.set(configuration, help.string_value);
-                        this.update_bootloader_configuration(configuration);
-
-                        JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.string_value), 1000 * 5, 0, 2);
-                        return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, node);
-                    }
-
-                    if (field.getType().getSimpleName().toLowerCase().equals(Integer.class.getSimpleName().toLowerCase())) {
-
-                        try {
-
-                            field.set(configuration, help.integer_value);
-                            this.update_bootloader_configuration(configuration);
-
-                            JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), field.getName(), help.integer_value), 1000 * 5, 0, 2);
-                            return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, node);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
+                // Jediná přístupná vyjímka je pro autoback - ten totiž je zároven v COnfig Json (DM_Board_Bootloader_DefaultConfig)
+                // Ale zároveň je také přímo přístupný v databázi Tyriona
+                if (name.equals("autobackup")) {
+                    this.backup_mode = help.boolean_value;
+                    // Update bude proveden v this.update_bootloader_configuration
                 }
+
+                field.set(configuration, help.boolean_value);
+
+                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), name, help.boolean_value);
+
+            } else if (type.equals(String.class)) {
+
+                field.set(configuration, help.string_value);
+
+                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), name, help.string_value);
+
+            } else if (type.equals(Integer.class)) {
+
+                field.set(configuration, help.integer_value);
+
+                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), name, help.integer_value);
+            } else {
+                throw new NoSuchFieldException();
             }
 
-            throw  new IllegalArgumentException("Incoming Value " + help.parameter_type.toLowerCase() + " not recognized");
+            if (!configuration.pending.contains(name)) {
+                configuration.pending.add(name);
+            }
+
+            this.update_bootloader_configuration(configuration);
+
+            this.sendWithResponseAsync(new WS_Message(message, 0, 5000, 2), (response) -> {
+                WS_Message_Hardware_set_settings result = baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, response);
+
+                if (!result.status.equals("success")) {
+                    logger.internalServerError(new Exception("Got error response: " + response.toString()));
+                }
+            });
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            throw new IllegalArgumentException("Incoming Value " + help.parameter_type.toLowerCase() + " not recognized");
+        }
     }
 
     //-- ADD or Remove // Change Server --//
@@ -1773,7 +1823,7 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public WS_Message_Hardware_change_server device_relocate_server(String mqtt_host, String mqtt_port) {
         try {
-            JsonNode node = write_with_confirmation( new WS_Message_Hardware_change_server().make_request(mqtt_host, mqtt_port, Collections.singletonList(this.id)), 1000 * 5, 0, 2);
+            JsonNode node = write_with_confirmation(new WS_Message_Hardware_change_server().make_request(mqtt_host, mqtt_port, Collections.singletonList(this.id)), 1000 * 5, 0, 2);
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_change_server.class, node);
 
         } catch (Exception e) {
@@ -2201,60 +2251,74 @@ public class Model_Hardware extends TaggedModel {
 
          */
         DM_Board_Bootloader_DefaultConfig configuration = this.bootloader_core_configuration();
-        boolean change_register = false; // Pokud došlo ke změně
+        boolean changeSettings = false; // Pokud došlo ke změně
+        boolean changeConfig = false;
 
-        for (Field config_field : configuration.getClass().getFields()) {
+        try {
 
-            try {
-                Field incoming_report_right_filed = null;
+            for (Field configField : configuration.getClass().getFields()) {
 
-                for (Field incoming_filed : overview.getClass().getFields()) {
-                    if (config_field.getName().equals(incoming_filed.getName())) {
-                        incoming_report_right_filed = incoming_filed;
-                        break;
+                String configFieldName = configField.getName();
+
+                try {
+                    Field reportedField = overview.getClass().getField(configFieldName);
+
+                    Object configValue = configField.get(configuration);
+                    Object reportedValue = reportedField.get(overview);
+
+                    // If values are same do nothing
+                    if (configValue != reportedValue) {
+
+                        // If change was requested (is pending) update the hw setting, otherwise update database info
+                        if (configuration.pending.contains(configFieldName)) {
+                            Class type = reportedField.getType();
+
+                            ObjectNode message = null;
+
+                            if (type.equals(Boolean.class)) {
+
+                                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), configFieldName, (Boolean) configField.get(configuration));
+
+                            } else if (type.equals(String.class)) {
+
+                                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), configFieldName, (String) configField.get(configuration));
+
+                            } else if (type.equals(Integer.class)) {
+
+                                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), configFieldName, (Integer) configField.get(configuration));
+
+                            } else {
+                                throw new NoSuchFieldException();
+                            }
+
+                            changeSettings = true;
+                            changeConfig = true;
+                            this.write_with_confirmation(message, 5000, 0, 2);
+                            configuration.pending.remove(configFieldName);
+
+                        } else {
+                            configField.set(configuration, reportedValue);
+                            changeConfig = true;
+                        }
+                    } else if (configuration.pending.contains(configFieldName)) {
+                        configuration.pending.remove(configFieldName);
+                        changeConfig = true;
                     }
+
+                } catch (NoSuchFieldException e) {
+                    // Nothing
                 }
-
-                if (incoming_report_right_filed == null) {
-                    continue;
-                }
-
-                if (config_field.getType().getCanonicalName().equals(Boolean.class.getSimpleName().toLowerCase())) {
-
-                    if (config_field.getBoolean(configuration) != incoming_report_right_filed.getBoolean(overview)) {
-                        write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), config_field.getName(), config_field.getBoolean(configuration)), 1000 * 5, 0, 2);
-                        change_register = true;
-                    }
-
-                    continue;
-                }
-
-                if (config_field.getType().getCanonicalName().toLowerCase().equals(String.class.getSimpleName().toLowerCase())) {
-
-                    if (!config_field.get(configuration).toString().equals(incoming_report_right_filed.get(overview).toString())) {
-                        write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), config_field.getName(), config_field.get(configuration).toString()), 1000 * 5, 0, 2);
-                        change_register = true;
-                    }
-
-                    continue;
-                }
-
-                if (config_field.getType().getCanonicalName().toLowerCase().equals(Integer.class.getSimpleName().toLowerCase())) {
-
-                    if (config_field.getInt(configuration) != incoming_report_right_filed.getInt(overview)) {
-                        write_with_confirmation(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this), config_field.getName(), config_field.getInt(configuration)), 1000 * 5, 0, 2);
-                        change_register = true;
-                    }
-
-                    continue;
-                }
-            } catch (Exception e) {
-                logger.internalServerError(e);
-                return true;
             }
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
         }
 
-        return change_register;
+        if (changeConfig) {
+            this.update_bootloader_configuration(configuration);
+        }
+
+        return changeSettings;
     }
 
     /**

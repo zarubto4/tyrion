@@ -5,22 +5,26 @@ import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
 import java.beans.Transient;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DM_Board_Bootloader_DefaultConfig {
 
     public DM_Board_Bootloader_DefaultConfig() {}
 
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean autobackup;   // Default 0          // user configurable ( 0 or 1)
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean blreport;     // Default 0          // user configurable
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean wdenable;     // Default 1          // user configurable
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Boolean autobackup;   // Default 0          // user configurable ( 0 or 1)
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Boolean blreport;     // Default 0          // user configurable
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Boolean wdenable;     // Default 1          // user configurable
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String  netsource;    // Default ethernet   // user configurable ( 0 or 1)
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean webview;      // Default  1         // user configurable via Bootloader & Portal ( 0 or 1)
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Boolean webview;      // Default  1         // user configurable via Bootloader & Portal ( 0 or 1)
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Integer webport;      // Default  80        // user configurable via Bootloader & Portal ( 80 - 9999)
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Integer timeoffset;   // Default  0         // user configurable
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean timesync;     // Default  1         // user configurable
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean lowpanbr;     // Default  0         // user configurable
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Boolean timesync;     // Default  1         // user configurable
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Boolean lowpanbr;     // Default  0         // user configurable
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Integer autojump;     // Default  0         // user configurable
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Integer wdtime;       // Default 30         // user configurable
+
+    public List<String> pending = new ArrayList<>();
 
     @JsonIgnore @Transient
     public static DM_Board_Bootloader_DefaultConfig generateConfig() {

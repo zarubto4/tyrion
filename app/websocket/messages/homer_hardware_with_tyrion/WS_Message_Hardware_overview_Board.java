@@ -1,9 +1,7 @@
 package websocket.messages.homer_hardware_with_tyrion;
 
-import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
-import websocket.messages.common.abstract_class.WS_AbstractMessage;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -16,34 +14,30 @@ public class WS_Message_Hardware_overview_Board implements Constraints.Validatab
 
     @Constraints.Required public UUID uuid;
     @Constraints.Required public boolean online_status;
-                           public String mac;
+                          public String mac;
                           public List<UUID> hardware_group_ids;
 
 
-
-      @Valid public WS_Message_Hardware_overview_Board_Binaries binaries;
-
-      public String target;  // třeba Yoda G3
-                           public String alias; // "John 33" - can be null
-      public String ip;
-      public boolean console;
-      public boolean autobackup;                // Default 0                    // user configurable ( 0 or 1)
-      public boolean blreport;                  // Default 0                    // user configurable
-      public boolean wdenable;                  // Default 1                    // user configurable
-      public String  netsource;                 // Default ethernet   // user configurable ( 0 or 1)
-      public boolean webview;                   // Default  1                   // user configurable via Bootloader & Portal ( 0 or 1)
-      public Integer webport;                   // Default  80                  // user configurable via Bootloader & Portal ( 80 - 9999)
-      public Integer timeoffset;                // Default  0                   // user configurable
-      public boolean timesync;                  // Default  1                   // user configurable
-      public boolean lowpanbr;                  // Default  0                   // user configurable
-      public Integer autojump;                  // Default  0                   // user configurable
-      public Integer wdtime;             // Default 30                   // user configurable
+                          @Valid public WS_Message_Hardware_overview_Board_Binaries binaries;
+    public String target;  // třeba Yoda G3
+    public String alias; // "John 33" - can be null
+    public String ip;
+    public Boolean console;
+    public Boolean autobackup;                // Default 0                    // user configurable ( 0 or 1)
+    public Boolean blreport;                  // Default 0                    // user configurable
+    public Boolean wdenable;                  // Default 1                    // user configurable
+    public String  netsource;                 // Default ethernet   // user configurable ( 0 or 1)
+    public Boolean webview;                   // Default  1                   // user configurable via Bootloader & Portal ( 0 or 1)
+    public Integer webport;                   // Default  80                  // user configurable via Bootloader & Portal ( 80 - 9999)
+    public Integer timeoffset;                // Default  0                   // user configurable
+    public Boolean timesync;                  // Default  1                   // user configurable
+    public Boolean lowpanbr;                  // Default  0                   // user configurable
+    public Integer autojump;                  // Default  0                   // user configurable
+    public Integer wdtime;             // Default 30                   // user configurable
 
 
-      public String normal_mqtt_connection;       // ip addressa:port
-      public String backup_mqtt_connection;       // ip addressa:port
-
-
+    public String normal_mqtt_connection;       // ip addressa:port
+    public String backup_mqtt_connection;       // ip addressa:port
 
     // -- Kopírované parametry  z WS_AbstractMessage
 
@@ -59,15 +53,15 @@ public class WS_Message_Hardware_overview_Board implements Constraints.Validatab
     public List<ValidationError> validate() {
 
         List<ValidationError> errors = new ArrayList<>();
-        if(error_message != null && error_message.equals("ERROR_HARDWARE_COMMAND_OFFLINE_DEVICE")) {
+        if (error_message != null && error_message.equals("ERROR_HARDWARE_COMMAND_OFFLINE_DEVICE")) {
             System.out.println("WS_Message_Hardware_overview_Board: validate - > ERROR_HARDWARE_COMMAND_OFFLINE_DEVICE");
             return null;
         } else  {
 
-            if(ip == null) {
+            if (ip == null) {
                 errors.add(new ValidationError("ip","This field is required"));
             }
-            if(netsource == null) {
+            if (netsource == null) {
                 errors.add(new ValidationError("netsource","This field is required"));
             }
         }
