@@ -756,7 +756,8 @@ public class Model_Instance extends TaggedModel {
 
             logger.debug("cloud_verification_token:: WebView  Checking Token");
             logger.debug("cloud_verification_token:: Homer server: {}", homer.id);
-            logger.debug("cloud_verification_token:: WS_Message_WebView_token_verification", Json.toJson(help));
+            logger.debug("cloud_verification_token:: WS_Message_WebView_token_verification: {}", Json.toJson(help));
+            logger.debug("cloud_verification_token:: WebView Token: {}", help.token);
 
             Model_AuthorizationToken floatingPersonToken = Model_AuthorizationToken.find.query().where().eq("token", help.token).findOne();
 
@@ -775,14 +776,20 @@ public class Model_Instance extends TaggedModel {
             // Veřejný server
             if(server.server_type == HomerType.PUBLIC || server.server_type == HomerType.MAIN || server.server_type == HomerType.BACKUP) {
 
+                logger.debug("cloud_verification_token:: Server is public - try to find participants.person.id");
+
                 if (Model_Instance.find.query().where().eq("id", help.instance_id).eq("b_program.project.participants.person.id", floatingPersonToken.get_person_id()).findCount() > 0) {
+                    logger.warn("cloud_verification_token:: Yes - participants id found!");
                     homer.send(help.get_result(true));
                 } else {
+                    logger.warn("cloud_verification_token:: Nope - participants id not found!");
                     homer.send(help.get_result(false));
                 }
 
             // Provátní server
             }else {
+
+                logger.warn("cloud_verification_token:: Its a private Server!");
 
                 if(Model_Project.find.query().where().eq("servers.id", server.id).eq("participants.person.id", floatingPersonToken.get_person_id()).select("id").findOne() != null) {
                     logger.trace("validate_incoming_user_connection_to_hardware_logger:: Private Server Find fot this Person");

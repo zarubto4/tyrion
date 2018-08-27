@@ -1,10 +1,13 @@
 package controllers;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.ebean.*;
 import io.swagger.annotations.*;
 import models.*;
+import play.Environment;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -14,6 +17,7 @@ import utilities.emails.Email;
 import utilities.enums.Approval;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_B_Program_List;
@@ -33,16 +37,10 @@ public class Controller_Blocko extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-    private SchedulerController scheduler;
-
-    @Inject
-    public Controller_Blocko(_BaseFormFactory formFactory, SchedulerController scheduler) {
-        this.baseFormFactory = formFactory;
-        this.scheduler = scheduler;
+    @javax.inject.Inject
+    public Controller_Blocko(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
-
-// CONTROLLER CONTENT ##################################################################################################
 
 // B PROGRAM ###########################################################################################################
 
@@ -78,7 +76,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help  = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
@@ -155,7 +153,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_B_Program_Filter help  = baseFormFactory.formFromRequestWithValidation(Swagger_B_Program_Filter.class);
+            Swagger_B_Program_Filter help  = formFromRequestWithValidation(Swagger_B_Program_Filter.class);
 
             // Musí být splněna alespoň jedna podmínka, aby mohl být Junction aktivní. V opačném případě by totiž způsobil bychu
             // která vypadá nějak takto:  where t0.deleted = false and and .... KDE máme 2x end!!!!!
@@ -225,7 +223,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help  = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_BProgram b_program = Model_BProgram.getById(b_program_id);
@@ -276,7 +274,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help  = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help  = formFromRequestWithValidation(Swagger_Tags.class);
 
             Model_BProgram bProgram = Model_BProgram.getById(help.object_id);
 
@@ -321,7 +319,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help  = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help  = formFromRequestWithValidation(Swagger_Tags.class);
 
             Model_BProgram bProgram = Model_BProgram.getById(help.object_id);
 
@@ -399,7 +397,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_B_Program_Version_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_B_Program_Version_New.class);
+            Swagger_B_Program_Version_New help  = formFromRequestWithValidation(Swagger_B_Program_Version_New.class);
 
             // Program který budu ukládat do data Storage v Azure
             String file_content = help.program;
@@ -521,7 +519,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help  = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Získání objektu
             Model_BProgramVersion version = Model_BProgramVersion.getById(version_id);
@@ -606,7 +604,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Instance_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_New.class);
+            Swagger_Instance_New help  = formFromRequestWithValidation(Swagger_Instance_New.class);
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(help.project_id);
@@ -693,7 +691,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help  = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help  = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_Instance instance = Model_Instance.getById(instance_id);
@@ -740,7 +738,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
             Model_Instance instance = Model_Instance.getById(help.object_id);
@@ -785,7 +783,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
             Model_Instance instance = Model_Instance.getById(help.object_id);
@@ -886,7 +884,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_InstanceSnapshot_New help = baseFormFactory.formFromRequestWithValidation(Swagger_InstanceSnapshot_New.class);
+            Swagger_InstanceSnapshot_New help = formFromRequestWithValidation(Swagger_InstanceSnapshot_New.class);
 
             // Kontrola objektu
             Model_Instance instance = Model_Instance.getById(instance_id);
@@ -942,7 +940,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
@@ -1015,7 +1013,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_InstanceSnapshot_Deploy help = baseFormFactory.formFromRequestWithValidation(Swagger_InstanceSnapshot_Deploy.class);
+            Swagger_InstanceSnapshot_Deploy help = formFromRequestWithValidation(Swagger_InstanceSnapshot_Deploy.class);
 
             // Kontrola objektu: Verze B programu kterou budu nahrávat do cloudu
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(help.snapshot_id);
@@ -1113,7 +1111,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Instance_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_Filter.class);
+            Swagger_Instance_Filter help = formFromRequestWithValidation(Swagger_Instance_Filter.class);
 
 
             // Tvorba parametru dotazu
@@ -1175,7 +1173,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_InstanceSnapShotConfiguration help = baseFormFactory.formFromRequestWithValidation(Swagger_InstanceSnapShotConfiguration.class);
+            Swagger_InstanceSnapShotConfiguration help = formFromRequestWithValidation(Swagger_InstanceSnapShotConfiguration.class);
 
 
             // Hledám objekt
@@ -1230,7 +1228,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Instance_Token help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_Token.class);
+            Swagger_Instance_Token help = formFromRequestWithValidation(Swagger_Instance_Token.class);
 
             Model_Instance instance = Model_Instance.getById(instance_id);
 
@@ -1287,7 +1285,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Instance_Token_Edit help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_Token_Edit.class);
+            Swagger_Instance_Token_Edit help = formFromRequestWithValidation(Swagger_Instance_Token_Edit.class);
 
             Model_Instance instance = Model_Instance.getById(instance_id);
 
@@ -1396,7 +1394,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Instance_MESH help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_MESH.class);
+            Swagger_Instance_MESH help = formFromRequestWithValidation(Swagger_Instance_MESH.class);
 
             Model_Instance instance = Model_Instance.getById(instance_id);
 
@@ -1465,7 +1463,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Instance_MESH_Edit help = baseFormFactory.formFromRequestWithValidation(Swagger_Instance_MESH_Edit.class);
+            Swagger_Instance_MESH_Edit help = formFromRequestWithValidation(Swagger_Instance_MESH_Edit.class);
 
             Model_Instance instance = Model_Instance.getById(instance_id);
 
@@ -1580,7 +1578,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDesc_ProjectIdOptional help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDesc_ProjectIdOptional.class);
+            Swagger_NameAndDesc_ProjectIdOptional help = formFromRequestWithValidation(Swagger_NameAndDesc_ProjectIdOptional.class);
 
 
             Model_Project project = null;
@@ -1665,7 +1663,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Block_Copy help = baseFormFactory.formFromRequestWithValidation(Swagger_Block_Copy.class);
+            Swagger_Block_Copy help = formFromRequestWithValidation(Swagger_Block_Copy.class);
 
             // Vyhledám Objekt
             Model_Block blockOld = Model_Block.getById(help.block_id);
@@ -1732,7 +1730,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_Block block = Model_Block.getById(block_id);
@@ -1786,7 +1784,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
             Model_Block block = Model_Block.getById(help.object_id);
@@ -1831,7 +1829,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
             Model_Block block = Model_Block.getById(help.object_id);
@@ -1904,7 +1902,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Block_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Block_Filter.class);
+            Swagger_Block_Filter help = formFromRequestWithValidation(Swagger_Block_Filter.class);
 
             // Musí být splněna alespoň jedna podmínka, aby mohl být Junction aktivní. V opačném případě by totiž způsobil bychu
             // která vypadá nějak takto:  where t0.deleted = false and and .... KDE máme 2x end!!!!!
@@ -2144,7 +2142,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Community_Version_Publish_Response help = baseFormFactory.formFromRequestWithValidation(Swagger_Community_Version_Publish_Response.class);
+            Swagger_Community_Version_Publish_Response help = formFromRequestWithValidation(Swagger_Community_Version_Publish_Response.class);
 
             // Kontrola názvu
             if (help.version_name.equals("version_scheme")) return badRequest("This name is reserved for the system");
@@ -2262,7 +2260,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_BlockVersion_New help = baseFormFactory.formFromRequestWithValidation(Swagger_BlockVersion_New.class);
+            Swagger_BlockVersion_New help = formFromRequestWithValidation(Swagger_BlockVersion_New.class);
 
             // Kontrola názvu
             if (help.name.equals("version_scheme")) return badRequest("This name is reserved for the system");
@@ -2348,7 +2346,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola názvu
             if (help.name.equals("version_scheme")) return badRequest("This name is reserved for the system");
@@ -2517,7 +2515,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_BlockoObject_Approval help = baseFormFactory.formFromRequestWithValidation(Swagger_BlockoObject_Approval.class);
+            Swagger_BlockoObject_Approval help = formFromRequestWithValidation(Swagger_BlockoObject_Approval.class);
 
             // Kontrola objektu
             Model_BlockVersion version = Model_BlockVersion.getById(help.object_id);
@@ -2575,7 +2573,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_BlockoObject_Approve_withChanges help = baseFormFactory.formFromRequestWithValidation(Swagger_BlockoObject_Approve_withChanges.class);
+            Swagger_BlockoObject_Approve_withChanges help = formFromRequestWithValidation(Swagger_BlockoObject_Approve_withChanges.class);
 
             // Kontrola názvu
             if (help.version_name.equals("version_scheme")) return badRequest("This name is reserved for the system");

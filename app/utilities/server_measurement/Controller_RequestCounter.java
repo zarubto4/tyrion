@@ -1,14 +1,20 @@
 package utilities.server_measurement;
 
+import akka.actor.ActorSystem;
+import akka.stream.Materializer;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import controllers.Controller_Blocko;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
+import play.Environment;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
 import utilities.scheduler.SchedulerController;
 
 import java.util.HashMap;
@@ -24,14 +30,13 @@ public class Controller_RequestCounter extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-    private SchedulerController scheduler;
+// CONTROLLER CONFIGURATION ############################################################################################
 
-    @Inject
-    public Controller_RequestCounter(_BaseFormFactory formFactory, SchedulerController scheduler) {
-        this.baseFormFactory = formFactory;
-        this.scheduler = scheduler;
+    @javax.inject.Inject
+    public Controller_RequestCounter(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
+
 
     /**
      * Temporary memory of requests, every hour are all requests saved to DB.

@@ -355,14 +355,20 @@ public class Job_CheckBootloaderLibraries implements Job {
         // iterates over entries in the zip file
         while (entry != null) {
             String filePath = destDirectory + File.separator + entry.getName();
-            if (!entry.isDirectory()) {
-                // if the entry is a file, extracts it
-                extractFile(zipIn, filePath);
-            } else {
-                // if the entry is a directory, make the directory
-                File dir = new File(filePath);
-                dir.mkdir();
+
+            if(filePath.charAt(0) != '.') {
+
+                if (!entry.isDirectory()) {
+                    // if the entry is a file, extracts it
+
+                    extractFile(zipIn, filePath);
+                } else {
+                    // if the entry is a directory, make the directory
+                    File dir = new File(filePath);
+                    dir.mkdir();
+                }
             }
+
             zipIn.closeEntry();
             entry = zipIn.getNextEntry();
         }

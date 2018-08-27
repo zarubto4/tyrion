@@ -1,8 +1,11 @@
 package controllers;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.swagger.annotations.*;
 import models.*;
+import play.Environment;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -13,6 +16,8 @@ import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.financial.fakturoid.Fakturoid;
 import utilities.financial.goPay.GoPay;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Invoice_FullDetails;
 
@@ -29,12 +34,14 @@ public class Controller_Finance extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
+
     private _BaseFormFactory baseFormFactory;
     private Fakturoid fakturoid;
     private GoPay goPay;
 
-    @Inject public Controller_Finance(_BaseFormFactory formFactory, Fakturoid fakturoid, GoPay goPay) {
-        this.baseFormFactory = formFactory;
+    @javax.inject.Inject
+    public Controller_Finance(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, Fakturoid fakturoid, GoPay goPay) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
         this.fakturoid = fakturoid;
         this.goPay = goPay;
     }
@@ -100,7 +107,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Resend_Email help = baseFormFactory.formFromRequestWithValidation(Swagger_Resend_Email.class);
+            Swagger_Resend_Email help = formFromRequestWithValidation(Swagger_Resend_Email.class);
 
             // Kontrola objektu
             Model_Invoice invoice = Model_Invoice.getById(invoice_id);
@@ -322,7 +329,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Customer_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Customer_New.class);
+            Swagger_Customer_New help = formFromRequestWithValidation(Swagger_Customer_New.class);
 
             Model_Customer customer = new Model_Customer();
             
@@ -420,7 +427,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Customer_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Customer_New.class);
+            Swagger_Customer_New help = formFromRequestWithValidation(Swagger_Customer_New.class);
 
             Model_Customer customer = Model_Customer.getById(customer_id);
         
@@ -482,7 +489,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Customer_Employee help  = baseFormFactory.formFromRequestWithValidation(Swagger_Customer_Employee.class);
+            Swagger_Customer_Employee help  = formFromRequestWithValidation(Swagger_Customer_Employee.class);
 
             Model_Customer customer = Model_Customer.getById(help.customer_id);
          

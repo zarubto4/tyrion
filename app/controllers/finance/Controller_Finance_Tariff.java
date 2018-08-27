@@ -1,18 +1,23 @@
 package controllers.finance;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
 import io.swagger.annotations.*;
 import models.Model_Tariff;
 import models.Model_TariffExtension;
+import play.Environment;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_Tariff_New;
 
 import java.util.UUID;
@@ -27,12 +32,14 @@ public class Controller_Finance_Tariff extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-
     @Inject
-    public Controller_Finance_Tariff(_BaseFormFactory formFactory) {
-        this.baseFormFactory = formFactory;
+    public Controller_Finance_Tariff(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
+
+
+// CONTROLLER CONTENT ##################################################################################################
+
 
     @ApiOperation(value = "get Tariffs all",
             tags = {"Price & Invoice & Tariffs"},
@@ -96,7 +103,7 @@ public class Controller_Finance_Tariff extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tariff_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_Tariff_New.class);
+            Swagger_Tariff_New help  = formFromRequestWithValidation(Swagger_Tariff_New.class);
 
             if (Model_Tariff.find.query().where().eq("identifier", help.identifier).findOne() != null) return badRequest("Identifier must be unique!");
 
@@ -158,7 +165,7 @@ public class Controller_Finance_Tariff extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tariff_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_Tariff_New.class);
+            Swagger_Tariff_New help  = formFromRequestWithValidation(Swagger_Tariff_New.class);
 
             Model_Tariff tariff = Model_Tariff.getById(tariff_id);
 

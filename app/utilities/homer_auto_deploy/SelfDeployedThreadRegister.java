@@ -113,7 +113,6 @@ public class SelfDeployedThreadRegister extends Thread {
                         slack_echo += "Tyrion Server Type: " + Server.mode + ", Tyrion URL: " + Server.httpAddress + "\n";
                         Slack.post_error(slack_echo, Server.slack_webhook_url_channel_servers);
 
-
                         break thr1;
 
                     } else {

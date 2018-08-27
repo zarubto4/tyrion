@@ -1,13 +1,16 @@
 package controllers;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
+import play.Environment;
 import play.data.Form;
 import play.data.FormFactory;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -18,6 +21,8 @@ import utilities.enums.HardwareUpdateState;
 import utilities.enums.FirmwareType;
 import utilities.enums.UpdateType;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_ActualizationProcedureTask_List;
 import utilities.swagger.output.filter_results.Swagger_ActualizationProcedure_List;
@@ -39,11 +44,9 @@ public class Controller_Update extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-    
-    @Inject
-    public Controller_Update(_BaseFormFactory formFactory) {
-        this.baseFormFactory = formFactory;
+    @javax.inject.Inject
+    public Controller_Update(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
 
 // ACTUALIZATION PROCEDURE #############################################################################################
@@ -104,7 +107,7 @@ public class Controller_Update extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_ActualizationProcedure_Filter help  = baseFormFactory.formFromRequestWithValidation(Swagger_ActualizationProcedure_Filter.class);
+            Swagger_ActualizationProcedure_Filter help  = formFromRequestWithValidation(Swagger_ActualizationProcedure_Filter.class);
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_UpdateProcedure> query = Ebean.find(Model_UpdateProcedure.class);
@@ -189,7 +192,7 @@ public class Controller_Update extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_ActualizationProcedure_Make help  = baseFormFactory.formFromRequestWithValidation(Swagger_ActualizationProcedure_Make.class);
+            Swagger_ActualizationProcedure_Make help  = formFromRequestWithValidation(Swagger_ActualizationProcedure_Make.class);
 
             // Kontrola Firmware Type
             FirmwareType firmware_type = FirmwareType.getFirmwareType(help.firmware_type);
@@ -313,7 +316,7 @@ public class Controller_Update extends _BaseController {
             // Slouží jen pro Admin rozhraní Tyriona
 
             // Get and Validate Object
-            Swagger_Upload_BIN_to_HW_BASE64_FILE help = baseFormFactory.formFromRequestWithValidation(Swagger_Upload_BIN_to_HW_BASE64_FILE.class);
+            Swagger_Upload_BIN_to_HW_BASE64_FILE help = formFromRequestWithValidation(Swagger_Upload_BIN_to_HW_BASE64_FILE.class);
 
             final byte[] utf8Bytes = help.file.getBytes("UTF-8");
             System.out.println("hardwareType_uploadBin - update bin: size in bits: " + utf8Bytes.length); // prints "11"
@@ -423,7 +426,7 @@ public class Controller_Update extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_ActualizationProcedureTask_Filter help  = baseFormFactory.formFromRequestWithValidation(Swagger_ActualizationProcedureTask_Filter.class);
+            Swagger_ActualizationProcedureTask_Filter help  = formFromRequestWithValidation(Swagger_ActualizationProcedureTask_Filter.class);
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_HardwareUpdate> query = Ebean.find(Model_HardwareUpdate.class);

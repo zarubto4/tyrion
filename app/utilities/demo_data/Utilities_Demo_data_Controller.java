@@ -1,14 +1,20 @@
 package utilities.demo_data;
 
+import com.typesafe.config.Config;
 import controllers._BaseController;
+import controllers._BaseFormFactory;
 import io.swagger.annotations.Api;
 import models.*;
+import play.Environment;
+import play.libs.ws.WSClient;
 import play.mvc.Result;
 import utilities.enums.BusinessModel;
 import utilities.enums.ExtensionType;
 import utilities.enums.HomerType;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -20,6 +26,17 @@ public class Utilities_Demo_data_Controller extends _BaseController {
 // LOGGER ##############################################################################################################
 
     private static final Logger terminal_logger = new Logger(Utilities_Demo_data_Controller.class);
+
+
+
+// CONTROLLER CONFIGURATION ############################################################################################
+
+    @javax.inject.Inject
+    public Utilities_Demo_data_Controller(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
+    }
+
+// CONTROLLER CONTENT ##################################################################################################
 
     public Result test() {
         try {

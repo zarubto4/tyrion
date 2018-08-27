@@ -4,10 +4,13 @@ package utilities.financial.fakturoid;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
+import controllers._BaseController;
 import controllers._BaseFormFactory;
 import models.Model_PaymentDetails;
 import models.Model_Product;
 import models.Model_Invoice;
+import play.Environment;
 import play.data.Form;
 import play.data.FormFactory;
 import play.i18n.Lang;
@@ -24,6 +27,8 @@ import utilities.enums.PaymentMethod;
 import utilities.enums.PaymentStatus;
 import utilities.enums.PaymentWarning;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_Fakturoid_Callback;
 import utilities.swagger.input.Swagger_GitHubReleases_List;
 
@@ -36,19 +41,19 @@ import java.util.concurrent.CompletionStage;
  * This class is used to interact with Fakturoid or sending emails with invoices.
  * (Creating invoices and subjects or callbacks from Fakturoid.)
  */
-public class Fakturoid extends Controller {
+public class Fakturoid extends _BaseController {
 
-    // Logger
+// LOGGER ##############################################################################################################
+
     private static final Logger logger = new Logger(Fakturoid.class);
 
-    private _BaseFormFactory baseFormFactory;
-    private WSClient ws;
+// CONTROLLER CONFIGURATION ############################################################################################
 
-    @Inject
-    public Fakturoid(_BaseFormFactory formFactory, WSClient ws, Fakturoid_InvoiceCheck invoiceCheck) {
-        this.baseFormFactory = formFactory;
-        this.ws = ws;
+    @javax.inject.Inject
+    public Fakturoid(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, Fakturoid_InvoiceCheck invoiceCheck) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
+
 
 // PUBLIC CONTROLLERS METHODS ##########################################################################################
 
@@ -63,9 +68,9 @@ public class Fakturoid extends Controller {
         try {
 
             // Get and Validate Object
-            Swagger_Fakturoid_Callback help = baseFormFactory.formFromRequestWithValidation(Swagger_Fakturoid_Callback.class);
+            Swagger_Fakturoid_Callback help = formFromRequestWithValidation(Swagger_Fakturoid_Callback.class);
 
-            logger.warn("fakturoid_callback: Body: {}", request().body().asJson());
+            logger.warn("fakturoid_callback: Body: {}", getBodyAsJson());
 
             // Finding in DB
             Model_Invoice invoice = Model_Invoice.find.query().where().eq("proforma_id", help.invoice_id).findOne();
@@ -93,7 +98,7 @@ public class Fakturoid extends Controller {
                     break;
                 }
 
-                default: throw new Exception("Unknown invoice status. Callback payload: " + request().body().asJson().toString());
+                default: throw new Exception("Unknown invoice status. Callback payload: " + getBodyAsJson());
             }
 
             return ok();

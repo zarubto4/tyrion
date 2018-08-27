@@ -1,6 +1,7 @@
 package controllers;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.ExpressionList;
 import io.ebean.Junction;
@@ -8,7 +9,9 @@ import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
 import org.mindrot.jbcrypt.BCrypt;
+import play.Environment;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.*;
 import responses.*;
 import utilities.authentication.Authentication;
@@ -21,6 +24,8 @@ import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.Picture2Mb;
 import utilities.swagger.input.*;
 import utilities.swagger.output.*;
@@ -41,16 +46,13 @@ public class Controller_Hardware extends _BaseController {
 // LOGGER ##############################################################################################################
     
     private static final Logger logger = new Logger(Controller_Hardware.class);
-    
-///###################################################################################################################*/
 
-    private _BaseFormFactory baseFormFactory;
+// CONTROLLER CONFIGURATION ############################################################################################
 
-    @Inject
-    public Controller_Hardware(_BaseFormFactory formFactory) {
-        this.baseFormFactory = formFactory;
+    @javax.inject.Inject
+    public Controller_Hardware(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
-
 
 ///###################################################################################################################*/
 
@@ -84,7 +86,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Processor_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Processor_New.class);
+            Swagger_Processor_New help = formFromRequestWithValidation(Swagger_Processor_New.class);
 
             // Vytvářím objekt
             Model_Processor processor = new Model_Processor();
@@ -189,7 +191,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Processor_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Processor_New.class);
+            Swagger_Processor_New help = formFromRequestWithValidation(Swagger_Processor_New.class);
 
             // Kontroluji validitu
             Model_Processor processor = Model_Processor.getById(processor_id);
@@ -342,7 +344,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             //Vytvářím objekt
             Model_Producer producer = new Model_Producer();
@@ -390,7 +392,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_Producer producer = Model_Producer.getById(producer_id);
@@ -534,7 +536,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_HardwareType_New help = baseFormFactory.formFromRequestWithValidation(Swagger_HardwareType_New.class);
+            Swagger_HardwareType_New help = formFromRequestWithValidation(Swagger_HardwareType_New.class);
 
             // Kontrola objektu
             Model_Producer producer = Model_Producer.getById(help.producer_id);
@@ -614,7 +616,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_HardwareType_New help = baseFormFactory.formFromRequestWithValidation(Swagger_HardwareType_New.class);
+            Swagger_HardwareType_New help = formFromRequestWithValidation(Swagger_HardwareType_New.class);
 
             // Kontrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
@@ -770,7 +772,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_BASE64_FILE help = baseFormFactory.formFromRequestWithValidation(Swagger_BASE64_FILE.class);
+            Swagger_BASE64_FILE help = formFromRequestWithValidation(Swagger_BASE64_FILE.class);
 
             final byte[] utf8Bytes = help.file.getBytes("UTF-8");
             System.out.println("hardwareType_uploadPicture - update picture: size in bits: " + utf8Bytes.length); // prints "11"
@@ -851,7 +853,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_HardwareBatch_New help = baseFormFactory.formFromRequestWithValidation(Swagger_HardwareBatch_New.class);
+            Swagger_HardwareBatch_New help = formFromRequestWithValidation(Swagger_HardwareBatch_New.class);
 
             // Kontrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
@@ -954,7 +956,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_HardwareBatch_New help = baseFormFactory.formFromRequestWithValidation(Swagger_HardwareBatch_New.class);
+            Swagger_HardwareBatch_New help = formFromRequestWithValidation(Swagger_HardwareBatch_New.class);
 
             // Kontrola objektu
             Model_HardwareBatch batch = Model_HardwareBatch.getById(batch_id);
@@ -1022,7 +1024,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_BootLoader_New help = baseFormFactory.formFromRequestWithValidation(Swagger_BootLoader_New.class);
+            Swagger_BootLoader_New help = formFromRequestWithValidation(Swagger_BootLoader_New.class);
 
             // Kontrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
@@ -1076,7 +1078,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_BootLoader_New help = baseFormFactory.formFromRequestWithValidation(Swagger_BootLoader_New.class);
+            Swagger_BootLoader_New help = formFromRequestWithValidation(Swagger_BootLoader_New.class);
 
             // Kontrola objektu
             Model_BootLoader boot_loader = Model_BootLoader.getById(boot_loader_id);
@@ -1155,7 +1157,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_BASE64_FILE help = baseFormFactory.formFromRequestWithValidation(Swagger_BASE64_FILE.class);
+            Swagger_BASE64_FILE help = formFromRequestWithValidation(Swagger_BASE64_FILE.class);
 
             // Kontrola objektu
             Model_BootLoader boot_loader = Model_BootLoader.getById(boot_loader_id);
@@ -1286,7 +1288,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Board_Bootloader_Update help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_Bootloader_Update.class);
+            Swagger_Board_Bootloader_Update help = formFromRequestWithValidation(Swagger_Board_Bootloader_Update.class);
 
             List<Model_Hardware> boards = Model_Hardware.find.query().where().in("id", help.device_ids).findList();
             if (boards.isEmpty()) return badRequest("Hardware not found");
@@ -1375,7 +1377,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Board_New_Manual help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_New_Manual.class);
+            Swagger_Board_New_Manual help = formFromRequestWithValidation(Swagger_Board_New_Manual.class);
 
             // Kotrola objektu
             // TODO Kontrola vůči Globální autoritě!
@@ -1473,7 +1475,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Board_New_Garfield help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_New_Garfield.class);
+            Swagger_Board_New_Garfield help = formFromRequestWithValidation(Swagger_Board_New_Garfield.class);
 
             // Kotrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById(help.hardware_type_id);
@@ -1633,7 +1635,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kotrola objektu
             Model_Hardware hardware = Model_Hardware.getById(hardware_id);
@@ -1693,7 +1695,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Board_Developer_parameters help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_Developer_parameters.class);
+            Swagger_Board_Developer_parameters help = formFromRequestWithValidation(Swagger_Board_Developer_parameters.class);
 
             // Kotrola objektu
             Model_Hardware board = Model_Hardware.getById(hardware_id);
@@ -1817,7 +1819,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_DeployFirmware help = baseFormFactory.formFromRequestWithValidation(Swagger_DeployFirmware.class);
+            Swagger_DeployFirmware help = formFromRequestWithValidation(Swagger_DeployFirmware.class);
 
 
             List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
@@ -1902,7 +1904,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_HardwareBackupSettings help = baseFormFactory.formFromRequestWithValidation(Swagger_HardwareBackupSettings.class);
+            Swagger_HardwareBackupSettings help = formFromRequestWithValidation(Swagger_HardwareBackupSettings.class);
 
             if (help.hardware_backup_pairs.isEmpty()) return badRequest("List is Empty");
 
@@ -2035,7 +2037,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Board_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_Filter.class);
+            Swagger_Board_Filter help = formFromRequestWithValidation(Swagger_Board_Filter.class);
 
             // Musí být splněna alespoň jedna podmínka, aby mohl být Junction aktivní. V opačném případě by totiž způsobil bychu
             // která vypadá nějak takto:  where t0.deleted = false and and .... KDE máme 2x end!!!!!
@@ -2187,7 +2189,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_BASE64_FILE help = baseFormFactory.formFromRequestWithValidation(Swagger_BASE64_FILE.class);
+            Swagger_BASE64_FILE help = formFromRequestWithValidation(Swagger_BASE64_FILE.class);
 
             //Kontrola objektu
             Model_Hardware hardware = Model_Hardware.getById(hardware_id);
@@ -2285,7 +2287,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Board_Server_Redirect help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_Server_Redirect.class);
+            Swagger_Board_Server_Redirect help = formFromRequestWithValidation(Swagger_Board_Server_Redirect.class);
 
             logger.trace("hardware_redirect_to_server:: Příjem zprávy:: " + Json.toJson(help));
 
@@ -2347,7 +2349,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Board_Command help = baseFormFactory.formFromRequestWithValidation(Swagger_Board_Command.class);
+            Swagger_Board_Command help = formFromRequestWithValidation(Swagger_Board_Command.class);
 
             // Kontrola objektu
             Model_Hardware board = Model_Hardware.getById(help.hardware_id);
@@ -2612,7 +2614,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
             Model_Hardware hardware = Model_Hardware.getById(help.object_id);
@@ -2657,7 +2659,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola Objektu
             Model_Hardware hardware = Model_Hardware.getById(help.object_id);
@@ -2704,7 +2706,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDesc_ProjectIdRequired help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDesc_ProjectIdRequired.class);
+            Swagger_NameAndDesc_ProjectIdRequired help = formFromRequestWithValidation(Swagger_NameAndDesc_ProjectIdRequired.class);
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(help.project_id);
@@ -2758,7 +2760,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_HardwareGroup group = Model_HardwareGroup.getById(hardware_group_id);
@@ -2837,7 +2839,7 @@ public class Controller_Hardware extends _BaseController {
         try {
             
             // Get and Validate Object
-            Swagger_Hardware_Group_DeviceListEdit help = baseFormFactory.formFromRequestWithValidation(Swagger_Hardware_Group_DeviceListEdit.class);
+            Swagger_Hardware_Group_DeviceListEdit help = formFromRequestWithValidation(Swagger_Hardware_Group_DeviceListEdit.class);
 
             if (help.device_synchro != null) {
 
@@ -3009,7 +3011,7 @@ public class Controller_Hardware extends _BaseController {
     public Result hardwareGroup_get_filter(@ApiParam(value = "page_number is Integer. 1,2,3...n. For first call, use 1 (first page of list)", required = true)  int page_number) {
         try {
             // Get and Validate Object
-            Swagger_HardwareGroup_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_HardwareGroup_Filter.class);
+            Swagger_HardwareGroup_Filter help = formFromRequestWithValidation(Swagger_HardwareGroup_Filter.class);
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_HardwareGroup> query = Ebean.find(Model_HardwareGroup.class);

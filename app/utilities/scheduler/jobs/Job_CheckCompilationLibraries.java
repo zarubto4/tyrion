@@ -43,7 +43,7 @@ import java.util.zip.ZipOutputStream;
 /**
  * This job synchronizes compilation libraries from GitHub releases.
  */
-// Not now TODO @Scheduled("0 0/5 * 1/1 * ? *")
+@Scheduled("0 0/5 * 1/1 * ? *")
 public class Job_CheckCompilationLibraries implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -404,7 +404,7 @@ public class Job_CheckCompilationLibraries implements Job {
                     Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("compiler_target_name", json.targets.get(0)).eq("deleted", false).findOne();
 
                     if(hardwareType == null) {
-                        System.err.println("Example: ERROR "  + directory_with_example.getName() + " not found Model_HardwareType!");
+                        System.err.println("HW Libs Example: ERROR "  + directory_with_example.getName() + " not found Model_HardwareType!");
                         error_for_slack += "\n Example: *" + directory_with_example.getName() + "* - target " + json.targets + " is not valid.";
                         continue;
                     }

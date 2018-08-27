@@ -1,12 +1,15 @@
 package controllers.finance;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
 import io.swagger.annotations.*;
 import models.Model_Product;
 import models.Model_ProductExtension;
+import play.Environment;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -18,6 +21,8 @@ import utilities.financial.extensions.configurations.Configuration;
 import utilities.financial.fakturoid.Fakturoid;
 import utilities.financial.goPay.GoPay;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_ProductExtension_Edit;
 import utilities.swagger.input.Swagger_ProductExtension_New;
 
@@ -33,12 +38,12 @@ public class Controller_Finance_ProductExtension extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-
-    @Inject
-    public Controller_Finance_ProductExtension(_BaseFormFactory formFactory) {
-        this.baseFormFactory = formFactory;
+    @javax.inject.Inject
+    public Controller_Finance_ProductExtension(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
+
+// CONTROLLER CONTENT ##################################################################################################
 
     @ApiOperation(value = "create Product_Extension",
             tags = {"Price & Invoice & Tariffs"},
@@ -71,7 +76,7 @@ public class Controller_Finance_ProductExtension extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_ProductExtension_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_ProductExtension_New.class);
+            Swagger_ProductExtension_New help  = formFromRequestWithValidation(Swagger_ProductExtension_New.class);
 
             // Kontrola objektu
             Model_Product product = Model_Product.getById(product_id);
@@ -181,7 +186,7 @@ public class Controller_Finance_ProductExtension extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_ProductExtension_Edit help  = baseFormFactory.formFromRequestWithValidation(Swagger_ProductExtension_Edit.class);
+            Swagger_ProductExtension_Edit help  = formFromRequestWithValidation(Swagger_ProductExtension_Edit.class);
 
             // Kontrola objektu
             Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);

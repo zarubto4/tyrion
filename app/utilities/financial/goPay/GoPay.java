@@ -4,11 +4,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.typesafe.config.Config;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
 import models.Model_Product;
 import models.Model_Invoice;
 import models.Model_PaymentDetails;
+import play.Environment;
 import play.api.Play;
 import play.data.Form;
 import play.data.FormFactory;
@@ -26,6 +28,8 @@ import utilities.enums.RecurrenceCycle;
 import utilities.financial.fakturoid.Fakturoid;
 import utilities.financial.goPay.helps_objects.*;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_Fakturoid_Callback;
 import utilities.swagger.input.Swagger_Payment_Refund;
 
@@ -57,16 +61,16 @@ public class GoPay extends _BaseController {
      */
     private Date last_refresh;
 
-    private WSClient ws;
-    private _BaseFormFactory baseFormFactory;
     private Fakturoid fakturoid;
 
-    @Inject
-    public GoPay(WSClient ws, _BaseFormFactory formFactory, Fakturoid fakturoid) {
-        this.ws = ws;
-        this.baseFormFactory = formFactory;
+// CONTROLLER CONFIGURATION ############################################################################################
+
+    @javax.inject.Inject
+    public GoPay(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, Fakturoid fakturoid) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
         this.fakturoid = fakturoid;
     }
+
 
 // PUBLIC METHODS ######################################################################################################
 
@@ -144,6 +148,7 @@ public class GoPay extends _BaseController {
     public Model_Invoice singlePayment(String payment_description , Model_Product product, Model_Invoice invoice) {
 
         logger.debug("singlePayment: Creating new payment");
+
 
         GoPay_Payment payment = new GoPay_Payment();
         payment.setItems(invoice.invoice_items);
@@ -652,7 +657,7 @@ public class GoPay extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Payment_Refund help = baseFormFactory.formFromRequestWithValidation(Swagger_Payment_Refund.class);
+            Swagger_Payment_Refund help = formFromRequestWithValidation(Swagger_Payment_Refund.class);
 
             // Finding in DB
             Model_Invoice invoice = Model_Invoice.getById(invoice_id);

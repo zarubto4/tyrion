@@ -1,21 +1,26 @@
 package controllers;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.Expr;
 import io.swagger.annotations.*;
 import models.Model_Person;
 import models.Model_Permission;
 import models.Model_Role;
+import play.Environment;
 import play.data.Form;
 import play.data.FormFactory;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_System_Access;
 
@@ -32,10 +37,9 @@ public class Controller_Permission extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-
-    @Inject public Controller_Permission(_BaseFormFactory formFactory) {
-        this.baseFormFactory = formFactory;
+    @javax.inject.Inject
+    public Controller_Permission(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
 
 // #####################################################################################################################
@@ -160,7 +164,7 @@ public class Controller_Permission extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Permission_Edit help = baseFormFactory.formFromRequestWithValidation(Swagger_Permission_Edit.class);
+            Swagger_Permission_Edit help = formFromRequestWithValidation(Swagger_Permission_Edit.class);
 
             // Kontrola objektu
             Model_Permission permission = Model_Permission.getById(permission_id);
@@ -207,7 +211,7 @@ public class Controller_Permission extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Role_Add_Permission help = baseFormFactory.formFromRequestWithValidation(Swagger_Role_Add_Permission.class);
+            Swagger_Role_Add_Permission help = formFromRequestWithValidation(Swagger_Role_Add_Permission.class);
 
             // Kontrola objektu
             List<Model_Permission> personPermissions = Model_Permission.find.query().where().in("name", help.permissions).findList();
@@ -295,7 +299,7 @@ public class Controller_Permission extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_Role securityRole = new Model_Role();
@@ -370,7 +374,7 @@ public class Controller_Permission extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_Role role = Model_Role.getById(role_id);
@@ -442,7 +446,7 @@ public class Controller_Permission extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Invite_Person help = baseFormFactory.formFromRequestWithValidation(Swagger_Invite_Person.class);
+            Swagger_Invite_Person help = formFromRequestWithValidation(Swagger_Invite_Person.class);
 
             if (help.persons_mail.isEmpty()) {
                 return badRequest("Fill in some emails.");

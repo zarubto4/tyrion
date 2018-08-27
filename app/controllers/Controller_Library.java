@@ -1,15 +1,18 @@
 package controllers;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.ExpressionList;
 import io.ebean.Junction;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
+import play.Environment;
 import play.data.Form;
 import play.data.FormFactory;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -19,6 +22,8 @@ import utilities.emails.Email;
 import utilities.enums.Approval;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_C_Program_List;
 import utilities.swagger.output.filter_results.Swagger_Library_List;
@@ -36,10 +41,9 @@ public class Controller_Library extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-
-    @Inject public Controller_Library(_BaseFormFactory formFactory) {
-        this.baseFormFactory = formFactory;
+    @javax.inject.Inject
+    public Controller_Library(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
 
 // LIBRARY #############################################################################################################
@@ -75,7 +79,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Library_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Library_New.class);
+            Swagger_Library_New help = formFromRequestWithValidation(Swagger_Library_New.class);
 
             // Vytvářím objekt
             Model_Library library = new Model_Library();
@@ -140,7 +144,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Library_Copy help = baseFormFactory.formFromRequestWithValidation(Swagger_Library_Copy.class);
+            Swagger_Library_Copy help = formFromRequestWithValidation(Swagger_Library_Copy.class);
 
             // Vyhledám Objekt
             Model_Library library_old = Model_Library.getById(help.library_id);
@@ -245,7 +249,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Library_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Library_Filter.class);
+            Swagger_Library_Filter help = formFromRequestWithValidation(Swagger_Library_Filter.class);
 
             // Musí být splněna alespoň jedna podmínka, aby mohl být Junction aktivní. V opačném případě by totiž způsobil bychu
             // která vypadá nějak takto:  where t0.deleted = false and and .... KDE máme 2x end!!!!!
@@ -334,7 +338,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Library_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Library_New.class);
+            Swagger_Library_New help = formFromRequestWithValidation(Swagger_Library_New.class);
 
             // Vyhledání objektu
             Model_Library library = Model_Library.getById(library_id);
@@ -385,7 +389,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
             Model_Library library = Model_Library.getById(help.object_id);
@@ -429,7 +433,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
             Model_Library library = Model_Library.getById(help.object_id);
@@ -507,7 +511,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Library_Version_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Library_Version_New.class);
+            Swagger_Library_Version_New help = formFromRequestWithValidation(Swagger_Library_Version_New.class);
 
             // Ověření objektu
             Model_Library library = Model_Library.getById(library_id);
@@ -596,7 +600,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Ověření objektu
             Model_LibraryVersion version = Model_LibraryVersion.getById(version_id);
@@ -724,7 +728,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Community_Version_Publish_Response help = baseFormFactory.formFromRequestWithValidation(Swagger_Community_Version_Publish_Response.class);
+            Swagger_Community_Version_Publish_Response help = formFromRequestWithValidation(Swagger_Community_Version_Publish_Response.class);
 
             // Kontrola objektu
             Model_LibraryVersion version_old = Model_LibraryVersion.getById(help.version_id);

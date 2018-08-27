@@ -12,14 +12,17 @@ import models.Model_CompilationServer;
 import models.Model_HomerServer;
 import models.Model_Person;
 import org.ehcache.Cache;
+import play.Environment;
 import play.libs.F;
-import play.libs.Json;
 import play.libs.streams.ActorFlow;
+import play.libs.ws.WSClient;
 import play.mvc.*;
 import responses.Result_InternalServerError;
 import responses.Result_Unauthorized;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.output.Swagger_Websocket_Token;
 import websocket.interfaces.WS_Portal;
 import websocket.interfaces.WS_Compiler;
@@ -32,16 +35,28 @@ import javax.inject.Inject;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-import javax.inject.Named;
-
-import static akka.pattern.PatternsCS.ask;
-
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_WebSocket extends _BaseController {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
     private static final Logger logger = new Logger(Controller_WebSocket.class);
+
+// CONTROLLER CONFIGURATION ############################################################################################
+
+
+    private final ActorSystem actorSystem;
+    private final Materializer materializer;
+    private Config config;
+    private static List<String> list_of_portal_alowed_url_connection = null;
+
+
+    @Inject
+    public Controller_WebSocket(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, ActorSystem actorSystem, Materializer materializer) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
+        this.actorSystem = actorSystem;
+        this.materializer = materializer;
+    }
 
 /* STATIC --------------------------------------------------------------------------------------------------------------*/
 
@@ -85,26 +100,12 @@ public class Controller_WebSocket extends _BaseController {
         logger.info("close - all WebSockets closed");
     }
 
-    private final ActorSystem actorSystem;
-    private final Materializer materializer;
-    private Config config;
-    private static List<String> list_of_portal_alowed_url_connection = null;
-
-
-
-    @Inject
-    public Controller_WebSocket(ActorSystem actorSystem, Materializer materializer, Config config) {
-        this.actorSystem = actorSystem;
-        this.materializer = materializer;
-        this.config = config;
-    }
-
     /* PUBLIC API ----------------------------------------------------------------------------------------------------------*/
 
     @ApiOperation(value = "get Websocket Access Token",
             tags = {"Access", "WebSocket"},
-            notes = "For connection to websocket, you have to connect with temporary unique token. This Api return Token"+
-                    "with a maximum lifetime of 5 seconds. After the token is deactivated. After logging in, or the connection"+
+            notes = "For connection to websocket, you have to connect with temporary unique token. This Api return Token" +
+                    "with a maximum lifetime of 5 seconds. After the token is deactivated. After logging in, or the connection" +
                     "lost is token deactivated also. ",
             produces = "application/json",
             consumes = "text/plain",

@@ -1,11 +1,14 @@
 package controllers.finance;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
 import io.swagger.annotations.*;
 import models.Model_TariffExtension;
+import play.Environment;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -14,6 +17,8 @@ import utilities.authentication.Authentication;
 import utilities.enums.ExtensionType;
 import utilities.financial.extensions.configurations.Configuration;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_TariffExtension_Edit;
 import utilities.swagger.input.Swagger_TariffExtension_New;
 import utilities.swagger.output.Swagger_TariffExtension_Type;
@@ -32,12 +37,13 @@ public class Controller_Finance_TariffExtension extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-
     @Inject
-    public Controller_Finance_TariffExtension(_BaseFormFactory formFactory) {
-        this.baseFormFactory = formFactory;
+    public Controller_Finance_TariffExtension(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
+
+
+// CONTROLLER CONTENT ##################################################################################################
 
     @ApiOperation(value = "get Tariff Extensions all",
             tags = {"Price & Invoice & Tariffs"},
@@ -125,7 +131,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_TariffExtension_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_TariffExtension_New.class);
+            Swagger_TariffExtension_New help  = formFromRequestWithValidation(Swagger_TariffExtension_New.class);
 
             Model_TariffExtension extension = new Model_TariffExtension();
             extension.name = help.name;
@@ -192,7 +198,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_TariffExtension_Edit help  = baseFormFactory.formFromRequestWithValidation(Swagger_TariffExtension_Edit.class);
+            Swagger_TariffExtension_Edit help  = formFromRequestWithValidation(Swagger_TariffExtension_Edit.class);
 
             // Kontrola objektu
             Model_TariffExtension extension = Model_TariffExtension.getById(extension_id);

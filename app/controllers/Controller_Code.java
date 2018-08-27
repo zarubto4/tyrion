@@ -2,13 +2,16 @@ package controllers;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.ExpressionList;
 import io.ebean.Junction;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
+import play.Environment;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -17,6 +20,8 @@ import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.*;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Compilation_Build_Error;
 import utilities.swagger.output.Swagger_Compilation_Ok;
@@ -36,10 +41,9 @@ public class Controller_Code extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-
-    @Inject public Controller_Code(_BaseFormFactory formFactory) {
-        this.baseFormFactory = formFactory;
+    @javax.inject.Inject
+    public Controller_Code(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
 
 // CONTROLLER CONTENT ##################################################################################################
@@ -113,7 +117,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_C_Program_Version_Update help  = baseFormFactory.formFromRequestWithValidation(Swagger_C_Program_Version_Update.class);
+            Swagger_C_Program_Version_Update help  = formFromRequestWithValidation(Swagger_C_Program_Version_Update.class);
 
             // Ověření objektu
             Model_HardwareType hardwareType = Model_HardwareType.getById(help.hardware_type_id);
@@ -245,7 +249,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_C_Program_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_C_Program_New.class);
+            Swagger_C_Program_New help  = formFromRequestWithValidation(Swagger_C_Program_New.class);
 
             // Ověření Typu Desky
             Model_HardwareType hardwareType = Model_HardwareType.getById(help.hardware_type_id);
@@ -325,7 +329,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_C_Program_Copy help = baseFormFactory.formFromRequestWithValidation(Swagger_C_Program_Copy.class);
+            Swagger_C_Program_Copy help = formFromRequestWithValidation(Swagger_C_Program_Copy.class);
 
             // Vyhledám Objekt
             Model_CProgram c_program_old = Model_CProgram.getById(help.c_program_id);
@@ -427,7 +431,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_C_Program_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_C_Program_Filter.class);
+            Swagger_C_Program_Filter help = formFromRequestWithValidation(Swagger_C_Program_Filter.class);
 
 
             // Musí být splněna alespoň jedna podmínka, aby mohl být Junction aktivní. V opačném případě by totiž způsobil bychu
@@ -522,7 +526,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_CProgram c_program = Model_CProgram.getById(c_program_id);
@@ -574,7 +578,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
             Model_CProgram cProgram = Model_CProgram.getById(help.object_id);
@@ -619,7 +623,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
             Model_CProgram cProgram = Model_CProgram.getById(help.object_id);
@@ -701,7 +705,7 @@ public class Controller_Code extends _BaseController {
             System.out.println("c_program_version_create");
 
             // Get and Validate Object
-            Swagger_C_Program_Version_New help = baseFormFactory.formFromRequestWithValidation(Swagger_C_Program_Version_New.class);
+            Swagger_C_Program_Version_New help = formFromRequestWithValidation(Swagger_C_Program_Version_New.class);
 
             // Ověření objektu
             Model_CProgram c_program = Model_CProgram.getById(c_program_id);
@@ -775,7 +779,7 @@ public class Controller_Code extends _BaseController {
             System.out.println("c_program_version_working_copy");
 
             // Get and Validate Object
-            Swagger_C_Program_Version_Refresh help = baseFormFactory.formFromRequestWithValidation(Swagger_C_Program_Version_Refresh.class);
+            Swagger_C_Program_Version_Refresh help = formFromRequestWithValidation(Swagger_C_Program_Version_Refresh.class);
 
             System.out.println("Sem to ani nedošlo :(");
 
@@ -891,7 +895,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Ověření objektu
             Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
@@ -1015,7 +1019,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Community_Version_Publish_Response help = baseFormFactory.formFromRequestWithValidation(Swagger_Community_Version_Publish_Response.class);
+            Swagger_Community_Version_Publish_Response help = formFromRequestWithValidation(Swagger_Community_Version_Publish_Response.class);
 
             // Kontrola objektu
             Model_CProgramVersion version_old = Model_CProgramVersion.getById(help.version_id);

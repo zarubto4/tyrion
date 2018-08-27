@@ -1,5 +1,6 @@
 package controllers;
 
+import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -18,7 +19,9 @@ import org.bson.Document;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
+import play.Environment;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.Controller;
 import play.mvc.Result;
 
@@ -31,11 +34,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.output.Swagger_Hardware_Registration_Hash;
 
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-public class Controller_ZZZ_Tester extends Controller {
+public class Controller_ZZZ_Tester extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
@@ -43,8 +48,10 @@ public class Controller_ZZZ_Tester extends Controller {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    // Nothing
-    private Config config;
+    @Inject
+    public Controller_ZZZ_Tester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
+    }
 
 // CONTROLLER CONTENT ##################################################################################################
     @ApiOperation(value = "Hidden test Method", hidden = true)

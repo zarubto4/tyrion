@@ -1,34 +1,31 @@
 package controllers;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
+import play.Environment;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.enums.BoardRegistrationStatus;
-import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status_cdr;
 import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_GSM_label_Details;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_GSM_Date;
 import utilities.swagger.input.Swagger_GSM_Edit;
 import utilities.swagger.input.Swagger_GSM_Filter;
 import utilities.swagger.input.Swagger_GSM_Register;
 import utilities.swagger.output.Swagger_Entity_Registration_Status;
 import utilities.swagger.output.filter_results.Swagger_GSM_List;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.UUID;
 
 @Security.Authenticated(Authentication.class)
@@ -41,14 +38,10 @@ public class Controller_GSM extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-        @Inject
-        public static _BaseFormFactory baseFormFactory;
-
-        @Inject
-        public Controller_GSM(_BaseFormFactory formFactory) {
-            this.baseFormFactory = formFactory;
-        }
-
+    @Inject
+    public Controller_GSM(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
+    }
 
 ///###################################################################################################################*/
 
@@ -90,7 +83,7 @@ public class Controller_GSM extends _BaseController {
             // a to je velký problém. Proto při ukládání použijeme registration_hash což je UUID string.
 
             // Get and Validate Object
-            Swagger_GSM_Register help = baseFormFactory.formFromRequestWithValidation(Swagger_GSM_Register.class);
+            Swagger_GSM_Register help = formFromRequestWithValidation(Swagger_GSM_Register.class);
 
             Model_GSM gsm = Model_GSM.find.query().where().eq("registration_hash", help.registration_hash).findOne();
             Model_Project project = Model_Project.getById(help.project_id);
@@ -192,7 +185,7 @@ public class Controller_GSM extends _BaseController {
     public Result get_sim_by_filter(Integer page_number) {
         try {
             // Get and Validate Object
-            Swagger_GSM_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_GSM_Filter.class);
+            Swagger_GSM_Filter help = formFromRequestWithValidation(Swagger_GSM_Filter.class);
 
             // Tvorba parametru dotazu
             Query<Model_GSM> query = Ebean.find(Model_GSM.class);
@@ -369,7 +362,7 @@ public class Controller_GSM extends _BaseController {
     public Result edit_sim(UUID sim_id) {
         try {
 
-            Swagger_GSM_Edit help = baseFormFactory.formFromRequestWithValidation(Swagger_GSM_Edit.class);
+            Swagger_GSM_Edit help = formFromRequestWithValidation(Swagger_GSM_Edit.class);
 
             Model_GSM gsm = Model_GSM.getById(sim_id);
 
@@ -487,7 +480,7 @@ public class Controller_GSM extends _BaseController {
     public Result credit_usage(UUID sim_id) {
         try {
 
-            // Swagger_GSM_Date help = baseFormFactory.formFromRequestWithValidation(Swagger_GSM_Date.class);
+            // Swagger_GSM_Date help = formFromRequestWithValidation(Swagger_GSM_Date.class);
 
             DataSim_overview overview = Model_GSM.getById(sim_id).get_dataSim_overview();
 

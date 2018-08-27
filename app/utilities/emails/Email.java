@@ -1,5 +1,4 @@
 package utilities.emails;
-
 import com.microtripit.mandrillapp.lutung.MandrillApi;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessage;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessage.Recipient;
@@ -8,7 +7,7 @@ import com.microtripit.mandrillapp.lutung.view.MandrillMessage.MessageContent;
 import com.microtripit.mandrillapp.lutung.view.MandrillMessageStatus;
 import models.Model_Customer;
 import models.Model_Person;
-import play.Configuration;
+import utilities.Server;
 import utilities.logger.Logger;
 
 import java.util.ArrayList;
@@ -23,17 +22,16 @@ public class Email {
 
 /* VALUE  --------------------------------------------------------------------------------------------------------------*/
 
-
-    private MandrillApi mandrillApi = new MandrillApi(Configuration.root().getString("mandrillApiKey"));
+    private MandrillApi mandrillApi = new MandrillApi(Server.configuration.getString("mandrillApiKey"));
     private MandrillMessage message = new MandrillMessage();
     private List<MergeVar> globalMergeVars = new ArrayList<>();
 
     private StringBuilder emailContentHtml = new StringBuilder();
     private StringBuilder emailContentText = new StringBuilder();
 
-/* OPERATION ......-----------------------------------------------------------------------------------------------------*/
-    
-    public void sendBulk(List<String> emails, String subject) {
+/* OPERATION -----------------------------------------------------------------------------------------------------------*/
+
+    private void sendBulk(List<String> emails, String subject) {
 
         terminal_logger.info("send():: sending email");
 

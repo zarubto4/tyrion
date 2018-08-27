@@ -1,12 +1,15 @@
 package controllers.finance;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
 import io.ebean.Ebean;
 import io.swagger.annotations.*;
 import models.*;
+import play.Environment;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -18,6 +21,8 @@ import utilities.enums.PaymentMethod;
 import utilities.financial.fakturoid.Fakturoid;
 import utilities.financial.goPay.GoPay;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_NameAndDescription;
 import utilities.swagger.input.Swagger_PaymentDetails_New;
 import utilities.swagger.input.Swagger_Product_Credit;
@@ -38,16 +43,17 @@ public class Controller_Finance_Product extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
     private Fakturoid fakturoid;
     private GoPay goPay;
 
     @Inject
-    public Controller_Finance_Product(_BaseFormFactory formFactory, Fakturoid fakturoid, GoPay goPay) {
-        this.baseFormFactory = formFactory;
+    public Controller_Finance_Product(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, Fakturoid fakturoid, GoPay goPay) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
         this.fakturoid = fakturoid;
         this.goPay = goPay;
     }
+
+// CONTROLLER CONTENT ##################################################################################################
 
     @ApiOperation(value = "create Product",
             tags = {"Price & Invoice & Tariffs"},
@@ -86,7 +92,7 @@ public class Controller_Finance_Product extends _BaseController {
             logger.debug("product_create: Creating new product");
 
             // Get and Validate Object
-            Swagger_Product_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_Product_New.class);
+            Swagger_Product_New help  = formFromRequestWithValidation(Swagger_Product_New.class);
 
             // Kontrola Objektu
             Model_Tariff tariff = Model_Tariff.getById(help.tariff_id);
@@ -345,7 +351,7 @@ public class Controller_Finance_Product extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola Objektu
             Model_Product product = Model_Product.getById(product_id);
@@ -477,7 +483,7 @@ public class Controller_Finance_Product extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Product_Credit help  = baseFormFactory.formFromRequestWithValidation(Swagger_Product_Credit.class);
+            Swagger_Product_Credit help  = formFromRequestWithValidation(Swagger_Product_Credit.class);
 
             if (!(help.credit > 0)) return badRequest("Credit must be positive double number");
 
@@ -576,7 +582,7 @@ public class Controller_Finance_Product extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_PaymentDetails_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_PaymentDetails_New.class);
+            Swagger_PaymentDetails_New help  = formFromRequestWithValidation(Swagger_PaymentDetails_New.class);
 
             // Kontrola Objektu
             Model_Product product = Model_Product.getById(product_id);
@@ -654,7 +660,7 @@ public class Controller_Finance_Product extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_PaymentDetails_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_PaymentDetails_New.class);
+            Swagger_PaymentDetails_New help  = formFromRequestWithValidation(Swagger_PaymentDetails_New.class);
 
             // Kontrola Objektu
             Model_PaymentDetails payment_details = Model_PaymentDetails.getById(payment_details_id);

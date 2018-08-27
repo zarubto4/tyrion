@@ -9,6 +9,7 @@ import io.ebean.*;
 import io.swagger.annotations.*;
 import models.*;
 import org.omg.CORBA.ExceptionList;
+import play.Environment;
 import play.api.http.HttpEntity;
 import play.api.libs.ws.WSBodyWritables;
 import play.libs.Json;
@@ -32,7 +33,9 @@ import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.homer_auto_deploy.SelfDeployedThreadRegister;
 import utilities.homer_auto_deploy.models.common.Swagger_ServerRegistration_FormData;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
 import utilities.model.TaggedModel;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_HomerServer_List;
 
@@ -52,14 +55,10 @@ public class Controller_ExternalServer extends _BaseController {
 
 
 // CONTROLLER CONFIGURATION ############################################################################################
-    private WSClient ws;
-    private Config config;
-    private _BaseFormFactory baseFormFactory;
 
-    @Inject public Controller_ExternalServer(WSClient ws, Config config, _BaseFormFactory formFactory) {
-        this.ws = ws;
-        this.config = config;
-        this.baseFormFactory = formFactory;
+    @javax.inject.Inject
+    public Controller_ExternalServer(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
 
 
@@ -121,7 +120,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_HomerServer_New_Auto help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_New_Auto.class);
+            Swagger_HomerServer_New_Auto help = formFromRequestWithValidation(Swagger_HomerServer_New_Auto.class);
 
             // Vytvoření objektu
             Model_HomerServer server = new Model_HomerServer();
@@ -181,7 +180,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_HomerServer_New_Manually help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_New_Manually.class);
+            Swagger_HomerServer_New_Manually help = formFromRequestWithValidation(Swagger_HomerServer_New_Manually.class);
 
             // Vytvoření objektu
             Model_HomerServer server = new Model_HomerServer();
@@ -327,7 +326,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_HomerServer_New_Manually help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_New_Manually.class);
+            Swagger_HomerServer_New_Manually help = formFromRequestWithValidation(Swagger_HomerServer_New_Manually.class);
 
             // Kontrola objektu
             Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
@@ -383,7 +382,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_HomerServer_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_Filter.class);
+            Swagger_HomerServer_Filter help = formFromRequestWithValidation(Swagger_HomerServer_Filter.class);
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_HomerServer> query = Ebean.find(Model_HomerServer.class);
@@ -634,7 +633,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_CompilationServer_New help = baseFormFactory.formFromRequestWithValidation(Swagger_CompilationServer_New.class);
+            Swagger_CompilationServer_New help = formFromRequestWithValidation(Swagger_CompilationServer_New.class);
 
             // Vytvářím objekt
             Model_CompilationServer server = new Model_CompilationServer();
@@ -682,7 +681,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_CompilationServer_New help = baseFormFactory.formFromRequestWithValidation(Swagger_CompilationServer_New.class);
+            Swagger_CompilationServer_New help = formFromRequestWithValidation(Swagger_CompilationServer_New.class);
 
             // Zkontroluji validitu
             Model_CompilationServer server = Model_CompilationServer.getById(compilation_server_id);

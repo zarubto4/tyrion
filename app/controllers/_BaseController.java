@@ -1,10 +1,14 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.swagger.annotations.ApiModel;
 import models.Model_Person;
+import play.Environment;
 import play.data.Form;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -12,8 +16,10 @@ import responses.*;
 import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
+import utilities.logger.YouTrack;
 import utilities.model.BaseModel;
 import utilities.model.JsonSerializer;
+import utilities.scheduler.SchedulerController;
 import utilities.server_measurement.RequestLatency;
 import utilities.swagger.input.Swagger_Project_New;
 import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
@@ -38,7 +44,39 @@ public abstract class _BaseController {
 
     private static final Logger logger = new Logger(_BaseController.class);
 
+// COMMON CONSTRUCTOR ###################################################################################################
+
+    protected final _BaseFormFactory baseFormFactory;
+    protected final WSClient ws;
+    protected final Environment environment;
+    protected final YouTrack youTrack;
+    protected final Config config;
+    protected final SchedulerController scheduler;
+
+    @Inject
+    public _BaseController(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        this.environment = environment;
+        this.ws = ws;
+        this.baseFormFactory = formFactory;
+        this.youTrack = youTrack;
+        this.config = config;
+        this.scheduler = scheduler;
+    }
+
+
+
 // PERSON OPERATIONS ###################################################################################################
+
+    /**
+     * Shortcuts for automatic validation and parsing of incoming JSON to MODEL class
+     * @param clazz
+     * @param <T>
+     * @return
+     * @throws _Base_Result_Exception
+     */
+    public <T> T formFromRequestWithValidation(Class<T> clazz) throws _Base_Result_Exception {
+        return baseFormFactory.formFromRequestWithValidation(clazz);
+    }
 
     /**
      * Pulls up the current user from the request context.

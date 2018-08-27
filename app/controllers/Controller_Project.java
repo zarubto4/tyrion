@@ -2,9 +2,12 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.swagger.annotations.*;
 import models.*;
+import play.Environment;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -17,8 +20,10 @@ import utilities.enums.NetworkStatus;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_command_execute;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_uuid_converter_cleaner;
@@ -41,12 +46,11 @@ public class Controller_Project extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-
-    @Inject public Controller_Project(_BaseFormFactory formFactory) {
-        this.baseFormFactory = formFactory;
+    @javax.inject.Inject
+    public Controller_Project(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
-    
+
 // GENERAL PROJECT #######-##############################################################################################
 
     @ApiOperation(value = "create Project",
@@ -79,7 +83,7 @@ public class Controller_Project extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Project_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_Project_New.class);
+            Swagger_Project_New help  = formFromRequestWithValidation(Swagger_Project_New.class);
 
             // Kontrola objektu
             Model_Product product = Model_Product.getById(help.product_id);
@@ -235,7 +239,7 @@ public class Controller_Project extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
@@ -286,7 +290,7 @@ public class Controller_Project extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Invite_Person help = baseFormFactory.formFromRequestWithValidation(Swagger_Invite_Person.class);
+            Swagger_Invite_Person help = formFromRequestWithValidation(Swagger_Invite_Person.class);
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
@@ -414,7 +418,7 @@ public class Controller_Project extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Project_Participant_status help = baseFormFactory.formFromRequestWithValidation(Swagger_Project_Participant_status.class);
+            Swagger_Project_Participant_status help = formFromRequestWithValidation(Swagger_Project_Participant_status.class);
 
             // Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
@@ -469,7 +473,7 @@ public class Controller_Project extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Invite_Person help = baseFormFactory.formFromRequestWithValidation(Swagger_Invite_Person.class);
+            Swagger_Invite_Person help = formFromRequestWithValidation(Swagger_Invite_Person.class);
 
             //Kontrola objektu
             Model_Project project = Model_Project.getById(project_id);
@@ -552,7 +556,7 @@ public class Controller_Project extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             Model_Project project = Model_Project.getById(help.object_id);
 
@@ -597,7 +601,7 @@ public class Controller_Project extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola Objektu
             Model_Project project = Model_Project.getById(help.object_id);
@@ -645,7 +649,7 @@ public class Controller_Project extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Project_AddHardware help = baseFormFactory.formFromRequestWithValidation(Swagger_Project_AddHardware.class);
+            Swagger_Project_AddHardware help = formFromRequestWithValidation(Swagger_Project_AddHardware.class);
 
             logger.debug("registering new device with hash: {}", help.registration_hash);
 

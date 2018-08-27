@@ -1,9 +1,12 @@
 package controllers;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.swagger.annotations.*;
 import models.*;
+import play.Environment;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -14,6 +17,8 @@ import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.lablel_printer_service.printNodeModels.Printer;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_Garfield_Edit;
 import utilities.swagger.input.Swagger_Garfield_New;
 
@@ -29,15 +34,17 @@ public class Controller_Garfield extends _BaseController {
     private static final Logger logger = new Logger(Controller_Garfield.class);
 
 // CONTROLLER CONFIGURATION ############################################################################################
-    private _BaseFormFactory baseFormFactory;
 
-    @Inject public Controller_Garfield(_BaseFormFactory formFactory) {
-        this.baseFormFactory = formFactory;
+    @javax.inject.Inject
+    public Controller_Garfield(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
 
 // REST - API GARFIELD  #################################################################################################
 
-    @ApiOperation(value = "edit Garfield",
+
+    // TODO Tyrio-334
+    @ApiOperation(value = "edit and save Garfield",
             tags = {"Garfield"},
             notes = "edit Garfield",
             produces = "application/json",
@@ -66,7 +73,7 @@ public class Controller_Garfield extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Garfield_Edit help  = baseFormFactory.formFromRequestWithValidation(Swagger_Garfield_Edit.class);
+            Swagger_Garfield_Edit help  = formFromRequestWithValidation(Swagger_Garfield_Edit.class);
 
             // Kontrola objektu
             Model_Garfield garfield = Model_Garfield.getById(garfield_id);
@@ -117,7 +124,7 @@ public class Controller_Garfield extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Garfield_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_Garfield_New.class);
+            Swagger_Garfield_New help  = formFromRequestWithValidation(Swagger_Garfield_New.class);
 
             // Kontrola objektu
             Model_Garfield garfield = new Model_Garfield();
