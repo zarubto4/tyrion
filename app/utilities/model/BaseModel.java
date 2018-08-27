@@ -9,18 +9,22 @@ import controllers._BaseFormFactory;
 import io.ebean.Model;
 import io.ebean.annotation.SoftDelete;
 import io.swagger.annotations.ApiModelProperty;
+import models.Model_HomerServer;
 import org.ehcache.Cache;
 import play.libs.Json;
+import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.cache.Cached;
 import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.models_update_echo.EchoHandler;
+import websocket.interfaces.WS_Homer;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -28,8 +32,6 @@ import static java.util.stream.Collectors.toList;
 
 @MappedSuperclass
 public abstract class BaseModel  extends Model implements JsonSerializer {
-
-    @Inject public static _BaseFormFactory baseFormFactory; // Its Required to set this in Server.class Component
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
@@ -242,7 +244,44 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
     }
 
 
-/* COMMON METHODS ------------------------------------------------------------------------------------------------------*/
+    /**
+     * Shortcuts for automatic validation and parsing of incoming JSON to MODEL class
+     * @param clazz
+     * @param <T>
+     * @return
+     * @throws _Base_Result_Exception
+     */
+    @JsonIgnore
+    public static <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception {
+        return Server.baseFormFactory.formFromJsonWithValidation(clazz, jsonNode);
+    }
+
+    /**
+     * Binds Json data to this form - that is, handles form submission.
+     * Special Method with Response to Websocket
+     * @param clazz
+     * @param jsonNode
+     * @param <T>
+     * @return a copy of this form filled with the new data
+     */
+    public static  <T> T formFromJsonWithValidation(Model_HomerServer server, Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception, IOException {
+        return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
+    }
+
+    /**
+     * Binds Json data to this form - that is, handles form submission.
+     * Special Method with Response to Websocket
+     * @param clazz
+     * @param jsonNode
+     * @param <T>
+     * @return a copy of this form filled with the new data
+     */
+    public static  <T> T formFromJsonWithValidation(WS_Homer server, Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception, IOException {
+        return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
+    }
+
+
+    /* COMMON METHODS ------------------------------------------------------------------------------------------------------*/
 
     /**
      * Default save method - Permission is checked inside

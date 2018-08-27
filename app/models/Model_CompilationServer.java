@@ -170,7 +170,7 @@ public class Model_CompilationServer extends BaseModel {
             Model_CompilationServer server = Model_CompilationServer.getById( Controller_WebSocket.compilers.get(keys.get(new Random().nextInt(keys.size()))).id );
 
             ObjectNode compilation_request = server.write_with_confirmation(request, 5*1000, 0, 3);
-            WS_Message_Make_compilation compilation = baseFormFactory.formFromJsonWithValidation(WS_Message_Make_compilation.class, compilation_request);
+            WS_Message_Make_compilation compilation = formFromJsonWithValidation(WS_Message_Make_compilation.class, compilation_request);
 
             if (compilation.build_url != null) {
                 logger.trace("make_Compilation:: Build URL is not null: {} ", compilation.build_url);
@@ -192,7 +192,7 @@ public class Model_CompilationServer extends BaseModel {
 
             JsonNode json = write_with_confirmation(new WS_Message_Ping_compilation_server().make_request(),  1000 * 30, 0, 3);
 
-            return baseFormFactory.formFromJsonWithValidation(WS_Message_Ping_compilation_server.class, json);
+            return formFromJsonWithValidation(WS_Message_Ping_compilation_server.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);

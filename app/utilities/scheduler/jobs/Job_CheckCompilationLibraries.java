@@ -43,7 +43,7 @@ import java.util.zip.ZipOutputStream;
 /**
  * This job synchronizes compilation libraries from GitHub releases.
  */
-@Scheduled("0 0/5 * 1/1 * ? *")
+///@Scheduled("0 0/5 * 1/1 * ? *")
 public class Job_CheckCompilationLibraries implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

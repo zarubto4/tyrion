@@ -418,14 +418,14 @@ public class Model_Instance extends TaggedModel {
 
                     case WS_Message_Grid_token_verification.message_type: {
 
-                        WS_Message_Grid_token_verification help = baseFormFactory.formFromJsonWithValidation(WS_Message_Grid_token_verification.class, json);
+                        WS_Message_Grid_token_verification help = formFromJsonWithValidation(WS_Message_Grid_token_verification.class, json);
                         help.get_instance().cloud_verification_token_GRID(homer, help);
                         return;
                     }
 
                     case WS_Message_WebView_token_verification.messageType: {
 
-                        WS_Message_WebView_token_verification help = baseFormFactory.formFromJsonWithValidation(WS_Message_WebView_token_verification.class, json);
+                        WS_Message_WebView_token_verification help = formFromJsonWithValidation(WS_Message_WebView_token_verification.class, json);
                         help.get_instance().cloud_verification_token_WEBVIEW(homer, help);
                         return;
                     }
@@ -544,7 +544,7 @@ public class Model_Instance extends TaggedModel {
 
             JsonNode json = write_with_confirmation(new WS_Message_Instance_status().make_request(Collections.singletonList(id.toString())), 1000 * 3, 0, 2);
 
-           return baseFormFactory.formFromJsonWithValidation(WS_Message_Instance_status.class, json);
+           return formFromJsonWithValidation(WS_Message_Instance_status.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -558,7 +558,7 @@ public class Model_Instance extends TaggedModel {
         try {
 
             JsonNode json = this.write_with_confirmation(new WS_Message_Instance_set_hardware().make_request(hardwares), 1000*3, 0, 4);
-            return baseFormFactory.formFromJsonWithValidation(WS_Message_Instance_set_hardware.class, json);
+            return formFromJsonWithValidation(WS_Message_Instance_set_hardware.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -573,7 +573,7 @@ public class Model_Instance extends TaggedModel {
 
             JsonNode json = this.write_with_confirmation(new WS_Message_Instance_set_terminals().make_request(terminalIds), 1000*3, 0, 4);
 
-            return baseFormFactory.formFromJsonWithValidation(WS_Message_Instance_set_terminals.class, json);
+            return formFromJsonWithValidation(WS_Message_Instance_set_terminals.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -588,7 +588,7 @@ public class Model_Instance extends TaggedModel {
 
             ObjectNode json = this.write_with_confirmation( new WS_Message_Hardware_overview().make_request(this.getHardwareIds()), 1000*5, 0, 1);
 
-            return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_overview.class, json);
+            return formFromJsonWithValidation(WS_Message_Hardware_overview.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -787,7 +787,7 @@ public class Model_Instance extends TaggedModel {
                 }
 
             // Provátní server
-            }else {
+            } else {
 
                 logger.warn("cloud_verification_token:: Its a private Server!");
 

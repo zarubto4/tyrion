@@ -66,7 +66,7 @@ public class Model_LibraryVersion extends VersionModel {
         try {
 
             JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
-            return baseFormFactory.formFromJsonWithValidation(Swagger_Library_File_Load.class, json).files;
+            return formFromJsonWithValidation(Swagger_Library_File_Load.class, json).files;
 
 
         }catch (_Base_Result_Exception e){

@@ -123,7 +123,7 @@ public class Model_Tariff extends OrderedNamedModel {
             ObjectNode request_list = Json.newObject();
             request_list.set("labels", Json.parse(labels_json));
 
-            return baseFormFactory.formFromJsonWithValidation(Swagger_TariffLabelList.class, request_list).labels;
+            return formFromJsonWithValidation(Swagger_TariffLabelList.class, request_list).labels;
 
         } catch (_Base_Result_Exception e) {
             //nothing

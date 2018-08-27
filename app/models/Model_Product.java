@@ -239,7 +239,7 @@ public class Model_Product extends NamedModel {
 
             if (this.financial_history == null || this.financial_history.equals("")) return new History();
 
-            History help = baseFormFactory.formFromJsonWithValidation(History.class, Json.parse(this.financial_history));
+            History help = formFromJsonWithValidation(History.class, Json.parse(this.financial_history));
 
             // Sorting the list
             help.history = help.history.stream().sorted((element1, element2) -> element2.date.compareTo(element1.date)).collect(Collectors.toList());

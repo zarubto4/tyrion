@@ -361,7 +361,12 @@ public class Job_CheckBootloaderLibraries implements Job {
                 if (!entry.isDirectory()) {
                     // if the entry is a file, extracts it
 
-                    extractFile(zipIn, filePath);
+                    try {
+                        extractFile(zipIn, filePath);
+
+                    } catch (Exception e) {
+                        logger.error("unzip:error: name: {} filePath {} ", entry.getName(),  filePath);
+                    }
                 } else {
                     // if the entry is a directory, make the directory
                     File dir = new File(filePath);

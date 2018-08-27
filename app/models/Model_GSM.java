@@ -108,7 +108,7 @@ public class Model_GSM extends TaggedModel {
         try {
 
             if(json_history != null) {
-                DataSim_overview overview = baseFormFactory.formFromJsonWithValidation(DataSim_overview.class, Json.parse(this.json_history));
+                DataSim_overview overview = formFromJsonWithValidation(DataSim_overview.class, Json.parse(this.json_history));
                 return overview;
             }
 

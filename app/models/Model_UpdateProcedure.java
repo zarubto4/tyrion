@@ -68,8 +68,8 @@ public class Model_UpdateProcedure extends BaseModel {
         }catch (_Base_Result_Exception e){
             //nothing
             return null;
-        }catch (Exception e){
-            logger.internalServerError(e);
+        } catch (Exception e){
+            // logger.internalServerError(e);
             return null;
         }
     }
@@ -85,11 +85,11 @@ public class Model_UpdateProcedure extends BaseModel {
 
             return null;
 
-        }catch (_Base_Result_Exception e){
+        } catch (_Base_Result_Exception e){
             //nothing
             return null;
-        }catch (Exception e){
-            logger.internalServerError(e);
+        } catch (Exception e){
+            // logger.internalServerError(e);
             return null;
         }
     }
