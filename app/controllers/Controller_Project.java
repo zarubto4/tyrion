@@ -1,6 +1,5 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import io.swagger.annotations.*;
 import models.*;
@@ -12,7 +11,6 @@ import responses.*;
 import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
-import utilities.enums.BoardCommand;
 import utilities.enums.NetworkStatus;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
@@ -20,14 +18,12 @@ import utilities.logger.Logger;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.swagger.input.*;
-import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_command_execute;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_uuid_converter_cleaner;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Model_Hardware_Temporary_NotDominant_record;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
