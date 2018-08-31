@@ -1,51 +1,45 @@
 package utilities.financial.extensions.configurations;
 import controllers._BaseFormFactory;
-import play.data.Form;
-import play.i18n.Lang;
 import play.libs.Json;
 import utilities.Server;
 import utilities.enums.ExtensionType;
-import utilities.model.BaseModel;
 
 
-public interface Configuration {
+public interface Configuration{
 
-    /**
-     * _BaseFormFactory
-     */
 
-    static Object getConfiguration(ExtensionType type, String configuration) {
+    static Configuration getConfiguration(ExtensionType type, String configuration) {
         switch (type) {
 
-            case project:{
+            case PROJECT:{
                 return Server.injector.getInstance(_BaseFormFactory.class).formFromJsonWithValidation(Configuration_Project.class, Json.parse(configuration));
             }
 
-            case database:{
+            case DATABASE:{
                 return Server.injector.getInstance(_BaseFormFactory.class).formFromJsonWithValidation(Configuration_Database.class, Json.parse(configuration));
             }
 
-            case log:{
+            case LOG:{
                 return Server.injector.getInstance(_BaseFormFactory.class).formFromJsonWithValidation(Configuration_Log.class, Json.parse(configuration));
             }
 
-            case rest_api:{
+            case REST_API:{
                 return Server.injector.getInstance(_BaseFormFactory.class).formFromJsonWithValidation(Configuration_RestApi.class, Json.parse(configuration));
             }
 
-            case support:{
+            case SUPPORT:{
                 return Server.injector.getInstance(_BaseFormFactory.class).formFromJsonWithValidation(Configuration_Support.class, Json.parse(configuration));
             }
 
-            case instance:{
+            case INSTANCE:{
                 return Server.injector.getInstance(_BaseFormFactory.class).formFromJsonWithValidation(Configuration_Instance.class, Json.parse(configuration));
             }
 
-            case homer_server:{
+            case HOMER_SERVER:{
                 return Server.injector.getInstance(_BaseFormFactory.class).formFromJsonWithValidation(Configuration_HomerServer.class, Json.parse(configuration));
             }
 
-            case participant:{
+            case PARTICIPANT:{
                 return Server.injector.getInstance(_BaseFormFactory.class).formFromJsonWithValidation(Configuration_Participant.class, Json.parse(configuration));
             }
 

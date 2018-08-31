@@ -11,20 +11,23 @@ import java.util.List;
 
 @Constraints.Validate
 @ApiModel(description = "Json Model with List of Board ID",
-          value = "PaymentDetails_New")
-public class Swagger_PaymentDetails_New implements Constraints.Validatable<List<ValidationError>> {
+          value = "ContactUpdate")
+public class Swagger_Contact_Update implements Constraints.Validatable<List<ValidationError>> {
 
     @Constraints.Required
-    @Constraints.MinLength(value = 4, message = "The street must have at least 4 characters")
-    @ApiModelProperty(required = true, value =  "Required: always" + "The street must have at least 4 characters")
+    @Constraints.MinLength(value = 4, message = "The name must have at least 4 characters")
+    @ApiModelProperty(required = true, value =  "Required: always" + "The name must have at least 4 characters")
+    public String name;
+
+    @Constraints.Required
+    @ApiModelProperty(required = true, value =  "Required: always")
     public String street;
 
     @ApiModelProperty(required = true, value =  "Required: always" + "But The street_number can be empty")
     public String street_number;
 
     @Constraints.Required
-    @Constraints.MinLength(value = 4, message = "The city must have at least 4 characters")
-    @ApiModelProperty(required = true, value =  "Required: always" + "The city must have at least 4 characters")
+    @ApiModelProperty(required = true, value =  "Required: always")
     public String city;
 
     @Constraints.Required
@@ -51,7 +54,7 @@ public class Swagger_PaymentDetails_New implements Constraints.Validatable<List<
     public String company_vat_number;
 
 
-    @ApiModelProperty(required = false, value =  "Required: only if company_account = true" + "The company_name must have at least 4 characters")
+    @ApiModelProperty(required = false, value =  "Required: only if company_account = true" + "The name must have at least 4 characters")
     public String company_name;
 
 
@@ -71,10 +74,6 @@ public class Swagger_PaymentDetails_New implements Constraints.Validatable<List<
     @ApiModelProperty(required = true, value =  "Required: always. Email must be valid")
     public String invoice_email;
 
-    @Constraints.Required
-    @ApiModelProperty(required = true, value = "Payment method.")
-    public PaymentMethod method;
-
     @Override
     public List<ValidationError> validate() {
 
@@ -85,15 +84,12 @@ public class Swagger_PaymentDetails_New implements Constraints.Validatable<List<
                 errors.add(new ValidationError("registration_no","Required if company_account = true and vat_number = null."));
                 errors.add(new ValidationError("vat_number","Required if company_account = true and registration_no = null."));
             }
-            if (company_name == null) errors.add(new ValidationError("company_name","Required if company_account = true."));
+            if (company_name == null) errors.add(new ValidationError("name","Required if company_account = true."));
             if (company_authorized_email == null) errors.add(new ValidationError("company_authorized_email","Required if company_account = true."));
             if (company_authorized_phone == null) errors.add(new ValidationError("company_authorized_phone","Required if company_account = true."));
             if (company_web == null) errors.add(new ValidationError("company_web","Required if company_account = true."));
-            if (company_name == null) errors.add(new ValidationError("company_name","Required if company_account = true."));
+            if (company_name == null) errors.add(new ValidationError("name","Required if company_account = true."));
         }
-
-        if (method != PaymentMethod.CREDIT_CARD && method != PaymentMethod.BANK_TRANSFER)
-            errors.add(new ValidationError("method","Allowable values: 'CREDIT_CARD', 'BANK_TRANSFER'"));
 
         return errors.isEmpty() ? null : errors;
     }

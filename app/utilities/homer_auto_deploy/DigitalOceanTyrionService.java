@@ -1,6 +1,5 @@
 package utilities.homer_auto_deploy;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import com.myjeeva.digitalocean.DigitalOcean;
 import com.myjeeva.digitalocean.exception.DigitalOceanException;
@@ -19,14 +18,11 @@ import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.homer_auto_deploy.models.common.*;
 import utilities.homer_auto_deploy.models.service.Swagger_BlueOcean;
 import utilities.logger.Logger;
-import utilities.swagger.input.Swagger_B_Program_Filter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.UUID;
 
 import static java.lang.Math.abs;
 
@@ -150,7 +146,7 @@ public class DigitalOceanTyrionService {
             Model_Product product = homer_server.project.getProduct();
             tags.add("project_id_" + homer_server.project.id);
             tags.add("product_id_" + product.id);
-            tags.add("customer_id_" + product.customer.id);
+            tags.add("customer_id_" + product.owner.id);
         }
         tags.add(homer_server.server_type.name());
         tags.add(Server.mode.name());

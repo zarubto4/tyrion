@@ -15,7 +15,6 @@ import responses.*;
 import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
-import utilities.enums.BoardCommand;
 import utilities.enums.NetworkStatus;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
@@ -97,7 +96,7 @@ public class Controller_Project extends _BaseController {
             // Uložení objektu
             project.save();
 
-            for (Model_Employee employee : product.customer.getEmployees()) {
+            for (Model_Employee employee : product.owner.getEmployees()) {
 
                 Model_ProjectParticipant participant = new Model_ProjectParticipant();
                 participant.person = employee.get_person();

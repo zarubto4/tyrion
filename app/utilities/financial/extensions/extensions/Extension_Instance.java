@@ -1,48 +1,46 @@
 package utilities.financial.extensions.extensions;
 
-import play.Configuration;
-import utilities.Server;
+import models.Model_ProductExtension;
 import utilities.enums.ExtensionType;
+import utilities.financial.extensions.ExtensionInvoiceItem;
+import utilities.financial.extensions.configurations.Configuration;
 import utilities.financial.extensions.configurations.Configuration_Instance;
+import utilities.financial.extensions.consumptions.ResourceConsumption;
+import utilities.financial.extensions.consumptions.Consumption_Instance;
+
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 public class Extension_Instance implements Extension {
 
-    public static final ExtensionType enum_type = ExtensionType.instance;
-    public static final String name = Configuration.root().getString("Financial.extensions." + enum_type.name() + ".name");
-    public static final String description = Configuration.root().getString("Financial.extensions." + enum_type.name() + ".description");
+    public static final ExtensionType TYPE = ExtensionType.INSTANCE;
 
-    /*
-     !!!Important!!!
-     Final calculated price must be divided by Server.financial_spendDailyPeriod.
-      */
-    public Long getActualPrice(Object configuration) {
-
-        return getDailyPrice(configuration) / Server.financial_spendDailyPeriod;
-    }
-
-    public Long getDailyPrice(Object configuration) {
-
-        Configuration_Instance instance = ((Configuration_Instance) configuration);
-
-        return instance.price * instance.count;
-    }
-
-    public Long getConfigPrice(Object configuration) {
-
-        Configuration_Instance instance = ((Configuration_Instance) configuration);
-
-        return instance.price;
-    }
-
+    @Override
     public ExtensionType getType() {
-        return enum_type;
+        return TYPE;
     }
 
-    public String getName() {
-        return name;
+    @Override
+    public Consumption_Instance getConsumption(Model_ProductExtension extension, Date from, Date to) {
+        Consumption_Instance consumption = new Consumption_Instance();
+        return consumption;
     }
 
-    public String getDescription() {
-        return description;
+    @Override
+    public List<ExtensionInvoiceItem> getInvoiceItems(Configuration configuration, Collection<ResourceConsumption> consumptions) {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void activate(Model_ProductExtension extension) {
+
+    }
+
+    @Override
+    public void deactivate(Model_ProductExtension extension) {
+
     }
 }

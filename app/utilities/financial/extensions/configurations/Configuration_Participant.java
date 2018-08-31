@@ -2,7 +2,7 @@ package utilities.financial.extensions.configurations;
 
 import play.data.validation.Constraints;
 
-public class Configuration_Participant {
+public class Configuration_Participant implements Configuration {
 
     @Constraints.Required
     @Constraints.Min(0)

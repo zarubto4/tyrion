@@ -1,48 +1,46 @@
 package utilities.financial.extensions.extensions;
 
-import play.Configuration;
-import utilities.Server;
+import models.Model_ProductExtension;
 import utilities.enums.ExtensionType;
+import utilities.financial.extensions.ExtensionInvoiceItem;
+import utilities.financial.extensions.configurations.Configuration;
 import utilities.financial.extensions.configurations.Configuration_Participant;
+import utilities.financial.extensions.consumptions.ResourceConsumption;
+import utilities.financial.extensions.consumptions.Consumption_Participant;
+
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 public class Extension_Participant implements Extension {
 
-    public static final ExtensionType enum_type = ExtensionType.participant;
-    public static final String name = Configuration.root().getString("Financial.extensions." + enum_type.name() + ".name");
-    public static final String description = Configuration.root().getString("Financial.extensions." + enum_type.name() + ".description");
+    public static final ExtensionType TYPE = ExtensionType.PARTICIPANT;
 
-    /*
-     !!!Important!!!
-     Final calculated price must be divided by Server.financial_spendDailyPeriod.
-      */
-    public Long getActualPrice(Object configuration) {
-
-        return getDailyPrice(configuration) / Server.financial_spendDailyPeriod;
-    }
-
-    public Long getDailyPrice(Object configuration) {
-
-        Configuration_Participant participant = ((Configuration_Participant) configuration);
-
-        return participant.price * participant.count;
-    }
-
-    public Long getConfigPrice(Object configuration) {
-
-        Configuration_Participant participant = ((Configuration_Participant) configuration);
-
-        return participant.price;
-    }
-
+    @Override
     public ExtensionType getType() {
-        return enum_type;
+        return TYPE;
     }
 
-    public String getName() {
-        return name;
+    @Override
+    public Consumption_Participant getConsumption(Model_ProductExtension extension, Date from, Date to) {
+        Consumption_Participant consumption = new Consumption_Participant();
+        return consumption;
     }
 
-    public String getDescription() {
-        return description;
+    @Override
+    public List<ExtensionInvoiceItem> getInvoiceItems(Configuration configuration, Collection<ResourceConsumption> consumptions) {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void activate(Model_ProductExtension extension) {
+
+    }
+
+    @Override
+    public void deactivate(Model_ProductExtension extension) {
+
     }
 }

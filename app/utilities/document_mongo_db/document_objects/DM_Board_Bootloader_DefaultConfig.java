@@ -30,9 +30,9 @@ public class DM_Board_Bootloader_DefaultConfig {
     public static DM_Board_Bootloader_DefaultConfig generateConfig() {
 
         DM_Board_Bootloader_DefaultConfig configuration = new DM_Board_Bootloader_DefaultConfig();
-        configuration.autobackup = true;        // command: autobackup=0          (1/0)                          Funkce, která zajišťuje, že při nahrátí nové binárky se stará zálohuje. Tato hodnota je ynchronizovaná přímo s DB objektem v Model_Board
-        configuration.blreport = false;         // command: blreport=0            (1/0)                          Bootloader report; zap nebo vyp textu do konzole, který píše
-        configuration.wdenable = true;          // command: wdenable=0            (1/0)                          Watchdog enable; zap nebo vyp
+        configuration.autobackup = false;        // command: autobackup=0          (1/0)                          Funkce, která zajišťuje, že při nahrátí nové binárky se stará zálohuje. Tato hodnota je ynchronizovaná přímo s DB objektem v Model_Board
+        configuration.blreport = false;         // command: blreport=0             (1/0)                          Bootloader report; zap nebo vyp textu do konzole, který píše
+        configuration.wdenable = true;          // command: wdenable=0             (1/0)                          Watchdog enable; zap nebo vyp
         configuration.netsource = "ethernet";   // command: netsource=NETSOURCE_ETHERNET  (String)               Zdroj internetu pro zařízení
         configuration.webview = true;           // command: webview=1              (1/0)                         Zapnutí nebo vypnutí webového rozhraní
         configuration.webport = 80;             // command: webport=80             (počet sekund 32b)            Port na kterém běží stránka
