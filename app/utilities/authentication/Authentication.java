@@ -1,11 +1,12 @@
 package utilities.authentication;
 
 import controllers._BaseController;
+import models.Model_AuthorizationToken;
 import models.Model_Person;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 
 import java.util.Optional;
@@ -25,28 +26,31 @@ public class Authentication extends Security.Authenticator {
             if (header.isPresent()) {
                 UUID token = UUID.fromString(header.get());
 
-                Model_Person person = Model_Person.getByAuthToken(token);
-                if (person != null) {
-                    ctx.args.put("person", person); //.request()..withAttrs().addAttr(Attributes.PERSON, person);
-                    logger.trace("getUsername - authorization successful");
-                    return person.nick_name;
+                Model_AuthorizationToken authorizationToken = Model_AuthorizationToken.getByToken(token);
+                if (authorizationToken.isValid()) {
+                    Model_Person person = Model_Person.getByAuthToken(token);
+                    if (person != null) {
+                        ctx.args.put("person", person);
+                        logger.trace("getUsername - authorization successful");
+                        return person.nick_name;
+                    } else {
+                        logger.trace("getUsername - cannot find person by token");
+                    }
+                } else {
+                    logger.trace("getUsername - token is invalid");
                 }
 
-                logger.trace("getUsername - cannot find person by token");
             } else {
                 logger.info("getUsername - authorization header is missing");
             }
 
-            return null;
-        } catch (Exception error){
-            // Result_Error_NotFound
-            if(error.getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
-                logger.warn("getUsername:: Token not found - Its invalid connection - Response unauthorized required");
-                return null;
+        } catch (Exception e){
+            if (!(e instanceof _Base_Result_Exception)) {
+                logger.internalServerError(e);
             }
-
-            return null;
         }
+
+        return null;
     }
 
     @Override

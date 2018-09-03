@@ -30,8 +30,9 @@ public class Model_AuthorizationToken extends BaseModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                              @JsonIgnore                   public UUID token;
-       @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)  public Model_Person person;
+    public UUID token;
+
+    @JsonIgnore @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)  public Model_Person person;
 
     @ApiModelProperty(required = true, value = "Record, where user make login")  public PlatformAccess where_logged; // Záznam, kde došlo k přihlášení (Becki, Tyrion, Homer, Compilator
 
@@ -83,27 +84,27 @@ public class Model_AuthorizationToken extends BaseModel {
         return cache_person_id;
     }
 
-
-
     @JsonIgnore @Transient
     public boolean isValid() {
         try {
-            if (this.access_age.getTime() < new Date().getTime()) {
-
-                this.delete();
-                return false;
-
+            if (this.access_age != null) {
+                if (this.access_age.before(new Date())) {
+                    logger.trace("isValid - token is expired");
+                    this.delete();
+                } else {
+                    this.access_age = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(72));
+                    this.update();
+                    return true;
+                }
             } else {
-
-                this.access_age = new Date(new Date().getTime() + TimeUnit.HOURS.toMillis(24*3) + TimeUnit.MINUTES.toMillis(30));
-                this.update();
+                logger.trace("isValid - token is probably permanent");
                 return true;
-
             }
         } catch (Exception e) {
-            logger.error("isValid() :: Error:: ", e);
-            return false;
+            logger.internalServerError(e);
         }
+
+        return false;
     }
 
     @JsonIgnore
@@ -134,6 +135,7 @@ public class Model_AuthorizationToken extends BaseModel {
         }
 
         token.type_of_connection = typeOfConnection;
+        token.setDate();
         token.save();
 
         return token;
@@ -144,7 +146,6 @@ public class Model_AuthorizationToken extends BaseModel {
     @JsonIgnore @Override
     public void save() {
         this.token = UUID.randomUUID();
-        this.setDate();
         super.save();
     }
 
@@ -160,12 +161,13 @@ public class Model_AuthorizationToken extends BaseModel {
 
 
     @Override public void check_create_permission() throws _Base_Result_Exception {
-        throw new Result_Error_NotSupportedException();
+        if(_BaseController.person().has_permission(Permission.AuthorizationToken_create.name())) return;
+        if(get_person_id().equals(_BaseController.personId())) return;
+        throw new Result_Error_Unauthorized();
     }
     @Override public void check_read_permission()   throws _Base_Result_Exception {
        if(_BaseController.person().has_permission(Permission.AuthorizationToken_read.name())) return;
        if(get_person_id().equals( _BaseController.personId())) return;
-       throw new Result_Error_Unauthorized();
     }
     @Override public void check_update_permission() throws _Base_Result_Exception {
         throw new Result_Error_NotSupportedException();
@@ -176,7 +178,7 @@ public class Model_AuthorizationToken extends BaseModel {
         throw new Result_Error_Unauthorized();
     }
 
-    public enum Permission { AuthorizationToken_read, AuthorizationToken_delete }
+    public enum Permission { AuthorizationToken_create, AuthorizationToken_read, AuthorizationToken_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
@@ -191,12 +193,8 @@ public class Model_AuthorizationToken extends BaseModel {
     public static Cache<UUID, UUID> cache_token_name; // < TOKEN in UUID; UUID id of Model_AuthorizationToken>
 
     public static Model_AuthorizationToken getById(String id) throws _Base_Result_Exception {
-
-
-
         return getById(UUID.fromString(id));
     }
-
 
     public static Model_AuthorizationToken getById(UUID id) throws _Base_Result_Exception {
         Model_AuthorizationToken token = cache.get(id);
@@ -218,17 +216,15 @@ public class Model_AuthorizationToken extends BaseModel {
 
     public static Model_AuthorizationToken getByToken(UUID token) {
 
-        UUID model_authorizationToken = cache_token_name.get(token);
-        if (model_authorizationToken == null) {
+        UUID tokenValue = cache_token_name.get(token);
+        if (tokenValue == null) {
 
             Model_AuthorizationToken model = find.query().where().eq("token", token).select("id").findOne();
-            // If token not exist its Unauthorized access
-            if (token == null) throw new Result_Error_Unauthorized();
+            if (model == null) throw new Result_Error_NotFound(Model_AuthorizationToken.class);
 
             cache_token_name.put(token, model.id);
         }
-        return cache.get(cache_token_name.get(token));
-
+        return getById(cache_token_name.get(token));
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

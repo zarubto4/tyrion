@@ -172,9 +172,9 @@ public class Controller_Security extends _BaseController {
             token.where_logged  = PlatformAccess.BECKI_WEBSITE;
 
             // Zjistím kde je přihlášení (user-Agent je třeba "Safari v1.30" nebo "Chrome 12.43" atd..)
-            String[] userAgents = Http.Context.current().request().headers().get("User-Agent");
-            if ( userAgents != null && userAgents[0] != null) token.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
-            else  token.user_agent = "Unknown browser";
+            token.user_agent = Http.Context.current().request().getHeaders().get("User-Agent").orElse("Unknown browser");
+
+            token.setDate();
 
             // Ukládám do databáze
             token.save();
@@ -297,6 +297,42 @@ public class Controller_Security extends _BaseController {
         } catch (Exception e) {
             logger.internalServerError(e);
             return ok();
+        }
+    }
+
+    @ApiOperation(value = "add apikey",
+            tags = {"Access", "Person", "APP-Api"},
+            notes = "creates permanent api key",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",             response = Swagger_Login_Token.class),
+            @ApiResponse(code = 401, message = "Unauthorized",          response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result apikey() {
+        try {
+
+            Model_AuthorizationToken token = new Model_AuthorizationToken();
+            token.person = person();
+            token.where_logged  = PlatformAccess.BECKI_WEBSITE;
+
+            token.user_agent = "Various -> permanent token";
+
+            // Ukládám do databáze
+            token.save();
+
+            // Vytvářím objekt, který zasílám zpět frontendu
+            Swagger_Login_Token swagger_login_token = new Swagger_Login_Token();
+            swagger_login_token.auth_token = token.token;
+
+            return ok(swagger_login_token);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
         }
     }
 

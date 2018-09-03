@@ -29,6 +29,8 @@ GET       /websocket/access_token                                       controll
 POST      /login                                                        utilities.authentication.Controller_Security.login()
 POST      /logout                                                       utilities.authentication.Controller_Security.logout()
 
+POST      /apikey                                                       utilities.authentication.Controller_Security.apikey()
+
 GET       /login/facebook/*url                                          utilities.authentication.Controller_Security.facebook_oauth_get(url)
 GET       /login/github/*url                                            utilities.authentication.Controller_Security.github_oauth_get(url)
 
