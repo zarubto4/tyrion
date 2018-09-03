@@ -1,4 +1,7 @@
+
 # --- !Ups
+--- Preserves product and customer items in the database, but remove most of the details!!
+--- (At the time this evolution was applied to production database, they were no useful data here anyway.)
 
 alter table if exists product drop constraint if exists fk_product_customer_id;
 drop index if exists ix_product_customer_id;
@@ -6,7 +9,7 @@ drop index if exists ix_product_customer_id;
 alter table tariffextension add column consumption TEXT;
 
 alter table tariff rename column company_details_required to owner_details_required;
-alter table tariff drop column payment_method_required;
+alter table tariff drop column if exists payment_method_required;
 
 create table extensionfinancialevent (
   id                            uuid not null,
@@ -40,20 +43,47 @@ create table productevent (
   constraint pk_productevent primary key (id)
 );
 
-alter table if exists product drop constraint if exists fk_product_customer_id;
-drop index if exists ix_product_customer_id;
+create table payment_details (
+  id                            uuid not null,
+  created                       timestamptz,
+  updated                       timestamptz,
+  removed                       timestamptz,
+  payment_methods               varchar(255),
+  payment_method                varchar(13),
+  on_demand                     boolean default false not null,
+  monthly_limit                 numeric,
+  deleted                       boolean default false not null,
+  constraint ck_payment_details_payment_method check ( payment_method in ('INVOICE_BASED','CREDIT_CARD')),
+  constraint pk_payment_details primary key (id)
+);
+
 alter table product rename customer_id to owner_id;
 alter table product drop column if exists fakturoid_subject_id,
                     drop column if exists gopay_id,
-                    drop column on_demand,
+                    drop column if exists on_demand,
+                    drop column if exists method,
+                    drop column if exists financial_history,
+                    drop column if exists client_billing,
+                    drop column if exists client_billing_invoice_parameters,
                     add column integrator_client_id uuid,
-                    add column payment_details_id uuid not null,
-  drop constraint ck_product_method,
-  add constraint ck_product_method check ( method in ('INVOICE_BASED','CREDIT_CARD')),
+                    add column payment_details_id uuid,
   drop constraint ck_product_business_model,
-  add constraint ck_product_business_model check ( business_model in ('INTEGRATOR','INTEGRATION','SAAS','FEE')),
+  add constraint ck_product_business_model check ( business_model in ('ALPHA', 'INTEGRATOR','INTEGRATION','SAAS','FEE')),
   add constraint uq_product_integrator_client_id unique (integrator_client_id),
   add constraint uq_product_payment_details_id unique (payment_details_id);
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+--- insert empty payment_details to every row
+with ids as (
+    update product set payment_details_id = uuid_generate_v4() returning payment_details_id
+)
+insert into payment_details(
+    id, created, updated, removed, payment_methods, payment_method, on_demand, monthly_limit, deleted)
+    select payment_details_id, current_timestamp, current_timestamp, null, 'INVOICE_BASED|CREDIT_CARD', 'INVOICE_BASED', false, 0, false from ids;
+
+--- now payment_details can be not null
+alter table product alter column payment_details_id set not null;
 
 alter table invoice add column total_price_without_vat numeric,
                     add column total_price_with_vat numeric,
@@ -73,19 +103,7 @@ alter table invoiceitem alter column quantity type numeric,
 alter table if exists paymentdetails drop constraint if exists fk_paymentdetails_customer_id;
 alter table if exists paymentdetails drop constraint if exists fk_paymentdetails_productidpaymentdetails;
 drop table if exists paymentdetails;
-create table paymentdetails (
-  id                            uuid not null,
-  created                       timestamptz,
-  updated                       timestamptz,
-  removed                       timestamptz,
-  payment_methods               varchar(255),
-  payment_method                varchar(13),
-  on_demand                     boolean default false not null,
-  monthly_limit                 numeric,
-  deleted                       boolean default false not null,
-  constraint ck_paymentdetails_payment_method check ( payment_method in ('INVOICE_BASED','CREDIT_CARD')),
-  constraint pk_paymentdetails primary key (id)
-);
+
 
 create table contact (
   id                            uuid not null,
@@ -143,11 +161,12 @@ alter table product add constraint fk_product_integrator_client_id foreign key (
 
 alter table integratorclient add constraint fk_integratorclient_contact_id foreign key (contact_id) references contact (id) on delete restrict on update restrict;
 
-alter table product add constraint fk_product_payment_details_id foreign key (payment_details_id) references paymentdetails (id) on delete restrict on update restrict;
+alter table product add constraint fk_product_payment_details_id foreign key (payment_details_id) references payment_details (id) on delete restrict on update restrict;
 
 alter table customer add constraint fk_customer_contact_id foreign key (contact_id) references contact (id) on delete restrict on update restrict;
 
 # --- !Downs
+--- Works only for an empty database!
 
 alter table if exists extensionfinancialevent drop constraint if exists fk_extensionfinancialevent_product_extension_id;
 drop index if exists ix_extensionfinancialevent_product_extension_id;
@@ -178,9 +197,12 @@ alter table product rename owner_id to customer_id;
 alter table product add column fakturoid_subject_id varchar(255),
                     add column gopay_id bigint,
                     add column on_demand boolean default false not null,
+                    add column method varchar(13),
+                    add column financial_history TEXT,
+                    add column client_billing boolean default false not null,
+                    add column client_billing_invoice_parameters varchar(255),
                     drop column integrator_client_id,
                     drop column payment_details_id,
-  drop constraint ck_product_method,
   add constraint ck_product_method check ( method in ('CREDIT','BANK_TRANSFER','CREDIT_CARD','FREE')),
   drop constraint ck_product_business_model,
   add constraint ck_product_business_model check ( business_model in ('INTEGRATOR','INTEGRATION','SAAS','FEE','ALPHA','CAL'));
@@ -208,7 +230,7 @@ drop table if exists contact;
 
 drop table if exists integratorclient cascade;
 
-drop table if exists paymentdetails cascade;
+drop table if exists payment_details cascade;
 
 create table paymentdetails (
   id                            uuid not null,
@@ -246,3 +268,7 @@ alter table customer drop column contact_id,
 alter table paymentdetails add constraint fk_paymentdetails_customer_id foreign key (customer_id) references customer (id) on delete restrict on update restrict;
 
 alter table paymentdetails add constraint fk_paymentdetails_productidpaymentdetails foreign key (productidpaymentdetails) references product (id) on delete restrict on update restrict;
+
+alter table product add constraint fk_product_customer_id foreign key (customer_id) references customer (id) on delete restrict on update restrict;
+
+create index ix_product_customer_id on product (customer_id);

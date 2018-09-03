@@ -16,7 +16,7 @@ import java.util.*;
 
 @Entity
 @ApiModel(value = "PaymentDetails", description = "Details about product payment")
-@Table(name="PaymentDetails")
+@Table(name="Payment_Details")
 public class Model_PaymentDetails extends BaseModel {
 
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
