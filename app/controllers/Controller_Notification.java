@@ -91,7 +91,7 @@ public class Controller_Notification extends _BaseController {
   public Result notification_delete(UUID notification_id) {
     try {
 
-      Model_Notification notification = Model_Notification.getById(notification_id);
+      Model_Notification notification = Model_Notification.find.byId(notification_id);
 
       notification.delete();
       return ok();
@@ -214,7 +214,7 @@ public class Controller_Notification extends _BaseController {
           Swagger_Notification_Confirm help = formFromRequestWithValidation(Swagger_Notification_Confirm.class);
 
           // Kontrola objektu
-          Model_Notification notification = Model_Notification.getById(notification_id);
+          Model_Notification notification = Model_Notification.find.byId(notification_id);
 
           notification.check_confirm_permission();
 

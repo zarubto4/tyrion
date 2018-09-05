@@ -5,14 +5,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
 import io.ebean.Expr;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.cache.Cached;
 import utilities.enums.*;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -173,23 +171,23 @@ public class Model_UpdateProcedure extends BaseModel {
         System.out.println("Model_UpdateProcedure:: getUpdatesId:: Co jsem našel se  sort?:" + Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).order().asc("date_of_finish").select("id").findSingleAttributeList());
         System.out.println("Model_UpdateProcedure:: getUpdatesId:: Co jsem našel se  sort2?:" + Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).orderBy("date_of_finish").select("id").findSingleAttributeList());
 
-        if (cache().gets(Model_HardwareUpdate.class) == null) {
+        if (idCache().gets(Model_HardwareUpdate.class) == null) {
             System.out.println("Model_UpdateProcedure:: getUpdatesId cache je prázdná! Hledám");
             System.out.println("Model_UpdateProcedure:: Co ukládám do Cache Paměti:: " + Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).select("id").findSingleAttributeList());
 
-            cache().add( Model_HardwareUpdate.class, Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).select("id").findSingleAttributeList());
+            idCache().add( Model_HardwareUpdate.class, Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).select("id").findSingleAttributeList());
 
 
-            System.out.println("Model_UpdateProcedure:: co jsem uložit? " +  cache().gets(Model_HardwareUpdate.class));
+            System.out.println("Model_UpdateProcedure:: co jsem uložit? " +  idCache().gets(Model_HardwareUpdate.class));
         }
 
-        System.out.println("Model_UpdateProcedure:: co vracím? : " + cache().gets(Model_HardwareUpdate.class));
+        System.out.println("Model_UpdateProcedure:: co vracím? : " + idCache().gets(Model_HardwareUpdate.class));
 
-        if(cache().gets(Model_HardwareUpdate.class).isEmpty()) {
+        if(idCache().gets(Model_HardwareUpdate.class).isEmpty()) {
             System.out.println("Model_UpdateProcedure:: getUpdatesId:: žádný jsem nenašel v cache paěti ");
         }
 
-        return cache().gets(Model_HardwareUpdate.class) != null ?  cache().gets(Model_HardwareUpdate.class) : new ArrayList<>();
+        return idCache().gets(Model_HardwareUpdate.class) != null ?  idCache().gets(Model_HardwareUpdate.class) : new ArrayList<>();
     }
 
     @JsonIgnore @Transient public List<Model_HardwareUpdate> getUpdates() {
@@ -198,7 +196,7 @@ public class Model_UpdateProcedure extends BaseModel {
             List<Model_HardwareUpdate> list = new ArrayList<>();
 
             for (UUID id : getUpdatesId() ) {
-                list.add(Model_HardwareUpdate.getById(id));
+                list.add(Model_HardwareUpdate.find.byId(id));
             }
 
             return list;
@@ -212,17 +210,17 @@ public class Model_UpdateProcedure extends BaseModel {
     @JsonIgnore
     public UUID getInstanceSnapshotId() {
 
-        if (cache().get(Model_InstanceSnapshot.class) == null) {
-            cache().add(Model_InstanceSnapshot.class, (UUID) Model_InstanceSnapshot.find.query().where().eq("procedures.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_InstanceSnapshot.class) == null) {
+            idCache().add(Model_InstanceSnapshot.class, (UUID) Model_InstanceSnapshot.find.query().where().eq("procedures.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_InstanceSnapshot.class);
+        return idCache().get(Model_InstanceSnapshot.class);
     }
 
     @JsonIgnore
     public Model_InstanceSnapshot getInstanceSnapShot() {
         try {
-            return Model_InstanceSnapshot.getById(getInstanceSnapshotId());
+            return Model_InstanceSnapshot.find.byId(getInstanceSnapshotId());
         }catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -236,7 +234,7 @@ public class Model_UpdateProcedure extends BaseModel {
 
     @JsonIgnore @Transient
     public Model_Project get_project() throws _Base_Result_Exception  {
-        return  Model_Project.getById(get_project_id());
+        return  Model_Project.find.byId(get_project_id());
     }
 
 
@@ -372,7 +370,7 @@ public class Model_UpdateProcedure extends BaseModel {
                 .findList();
 
         for (Model_HardwareUpdate plan_not_cached : list) {
-            Model_HardwareUpdate plan = Model_HardwareUpdate.getById(plan_not_cached.id.toString());
+            Model_HardwareUpdate plan = Model_HardwareUpdate.find.byId(plan_not_cached.id);
             if (plan != null) {
                 plan.state = HardwareUpdateState.CANCELED;
                 plan.update();
@@ -406,16 +404,13 @@ public class Model_UpdateProcedure extends BaseModel {
         // Save Object
         super.save();
 
-        // Cache
-        cache.put(this.id, this);
-
         // Call notification about model update
         if (get_project_id() != null) {
             new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_UpdateProcedure.class, get_project_id(), this.id))).start();
         }
 
         if(instance != null) {
-            instance.cache().add(this.getClass(), this.id);
+            instance.idCache().add(this.getClass(), this.id);
             // Call notification about model update
             if (get_project_id() != null) {
                 new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Instance.class, get_project_id(), this.instance.get_instance_id()))).start();
@@ -441,9 +436,6 @@ public class Model_UpdateProcedure extends BaseModel {
 
         // Update Object
         super.update();
-
-        // Cache
-        cache.put(id, this);
 
         // Call notification about model update
         if (get_project_id() != null)
@@ -500,7 +492,7 @@ public class Model_UpdateProcedure extends BaseModel {
 
 
                 notification.setText(new Notification_Text().setText("Update under Instance "))
-                .setObject(Model_InstanceSnapshot.getById(getInstanceSnapshotId()).get_instance()); // TODO objekt notifikace
+                .setObject(Model_InstanceSnapshot.find.byId(getInstanceSnapshotId()).get_instance()); // TODO objekt notifikace
 
                 if (getUpdates().size() == 1) {
 
@@ -743,37 +735,13 @@ public class Model_UpdateProcedure extends BaseModel {
      *  která obsahuje HashMapu ID C
      */
     @JsonIgnore private HashMap<String, HardwareUpdateState> cProgram_updater_state = new HashMap<>();
-    
-    @CacheField(Model_UpdateProcedure.class)
-    @JsonIgnore public static Cache<UUID, Model_UpdateProcedure> cache;
 
     @JsonIgnore public void change_state(Model_HardwareUpdate plan, HardwareUpdateState state) {
         cProgram_updater_state.put(plan.id.toString(), state);
     }
 
-    public static Model_UpdateProcedure getById(String id) {
-        return getById(UUID.fromString(id));
-    }
-    
-    public static Model_UpdateProcedure getById(UUID id) {
-
-        Model_UpdateProcedure procedure = cache.get(id);
-
-        if (procedure == null) {
-
-            procedure = Model_UpdateProcedure.find.byId(id);
-            if (procedure == null)  throw new Result_Error_NotFound(Model_UpdateProcedure.class);
-
-            cache.put(id, procedure);
-        }
-        // Check Permission
-        if(procedure.its_person_operation()) {
-            procedure.check_read_permission();
-        }
-        return procedure;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_UpdateProcedure> find = new Finder<>(Model_UpdateProcedure.class);
+    @CacheFinderField(Model_UpdateProcedure.class)
+    public static CacheFinder<Model_UpdateProcedure> find = new CacheFinder<>(Model_UpdateProcedure.class);
 }

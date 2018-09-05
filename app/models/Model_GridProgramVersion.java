@@ -4,12 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import org.ehcache.Cache;
 import play.libs.Json;
-import utilities.cache.CacheField;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -73,18 +71,18 @@ public class Model_GridProgramVersion extends VersionModel {
     public UUID get_grid_program_id() throws _Base_Result_Exception {
 
 
-        if (cache().get(Model_GridProgram.class) == null) {
-            cache().add(Model_GridProgram.class, (UUID) Model_GridProgram.find.query().where().eq("versions.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_GridProgram.class) == null) {
+            idCache().add(Model_GridProgram.class, (UUID) Model_GridProgram.find.query().where().eq("versions.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_GridProgram.class);
+        return idCache().get(Model_GridProgram.class);
     }
 
     @JsonIgnore
     public Model_GridProgram get_grid_program() throws _Base_Result_Exception {
 
         try {
-            return Model_GridProgram.getById(get_grid_program_id());
+            return Model_GridProgram.find.byId(get_grid_program_id());
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -109,7 +107,7 @@ public class Model_GridProgramVersion extends VersionModel {
             }
         }).start();
 
-        program.cache().add(this.getClass(), id);
+        program.idCache().add(this.getClass(), id);
         program.sort_Model_Model_GridProgramVersion_ids();
     }
 
@@ -135,7 +133,7 @@ public class Model_GridProgramVersion extends VersionModel {
 
         // Remove from Cache
         try {
-            get_grid_program().cache().remove(this.getClass(), id);
+            get_grid_program().idCache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
@@ -223,29 +221,8 @@ public class Model_GridProgramVersion extends VersionModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(Model_GridProgramVersion.class)
-    public static Cache<UUID, Model_GridProgramVersion> cache;
-
-    public static Model_GridProgramVersion getById(UUID id) throws _Base_Result_Exception {
-
-        Model_GridProgramVersion version = cache.get(id);
-
-        if (version == null) {
-
-            version = find.byId(id);
-            if (version == null) throw new Result_Error_NotFound(Model_GridProgramVersion.class);
-
-            cache.put(id, version);
-        }
-        // Check Permission
-        if(version.its_person_operation()) {
-            version.check_read_permission();
-        }
-
-        return version;
-    }
-
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_GridProgramVersion> find = new Finder<>(Model_GridProgramVersion.class);
+    @CacheFinderField(Model_GridProgramVersion.class)
+    public static CacheFinder<Model_GridProgramVersion> find = new CacheFinder<>(Model_GridProgramVersion.class);
 }

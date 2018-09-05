@@ -26,7 +26,7 @@ public class Swagger_ActualizationProcedureTask_List extends _Swagger_Filter_Com
         List<UUID> ids =  query.setFirstRow((page_number - 1) * filter.count_on_page).setMaxRows(filter.count_on_page).findIds();
 
         for (UUID id : ids) {
-            Model_HardwareUpdate task = Model_HardwareUpdate.getById(id);
+            Model_HardwareUpdate task = Model_HardwareUpdate.find.byId(id);
             if (task == null) continue;
             this.content.add(task);
         }

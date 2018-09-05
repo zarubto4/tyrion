@@ -1,12 +1,10 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import org.ehcache.Cache;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.Approval;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.VersionModel;
@@ -44,17 +42,17 @@ public class Model_BlockVersion extends VersionModel {
     @JsonIgnore
     public UUID get_block_id() {
 
-        if (cache().get(Model_Block.class) == null) {
-            cache().add(Model_Block.class, (UUID) Model_Block.find.query().where().eq("versions.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_Block.class) == null) {
+            idCache().add(Model_Block.class, (UUID) Model_Block.find.query().where().eq("versions.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_Block.class);
+        return idCache().get(Model_Block.class);
     }
 
     @JsonIgnore
     public Model_Block get_block() {
         try {
-            return Model_Block.getById(get_block_id());
+            return Model_Block.find.byId(get_block_id());
         } catch (Exception e) {
             return null;
         }
@@ -71,7 +69,7 @@ public class Model_BlockVersion extends VersionModel {
         if(get_block() != null) {
             System.out.println("Add To Blocko by get_block()");
             get_block().getVersionsId();
-            get_block().cache().add(this.getClass(), id);
+            get_block().idCache().add(this.getClass(), id);
         }
 
         new Thread(() -> {
@@ -113,7 +111,7 @@ public class Model_BlockVersion extends VersionModel {
 
 
         if (get_block() != null) {
-            get_block().cache().remove(this.getClass(), id);
+            get_block().idCache().remove(this.getClass(), id);
         }
 
         return super.delete();
@@ -138,26 +136,6 @@ public class Model_BlockVersion extends VersionModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(Model_BlockVersion.class)
-    public static Cache<UUID, Model_BlockVersion> cache;
-
-    public static Model_BlockVersion getById(UUID id) throws _Base_Result_Exception {
-
-        Model_BlockVersion version = cache.get(id);
-        if (version == null) {
-
-            version = find.query().where().idEq(id).eq("deleted", false).findOne();
-            if (version == null) throw new Result_Error_NotFound(Model_Widget.class);
-
-            cache.put(id, version);
-        }
-        // Check Permission
-        if(version.its_person_operation()) {
-            version.check_read_permission();
-        }
-        return version;
-    }
-
     @JsonIgnore
     public static Model_BlockVersion get_scheme() {
         return find.query().where().eq("name", "version_scheme").findOne();
@@ -170,5 +148,6 @@ public class Model_BlockVersion extends VersionModel {
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_BlockVersion> find = new Finder<>(Model_BlockVersion.class);
+    @CacheFinderField(Model_BlockVersion.class)
+    public static CacheFinder<Model_BlockVersion> find = new CacheFinder<>(Model_BlockVersion.class);
 }

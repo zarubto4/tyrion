@@ -1,10 +1,7 @@
 package controllers;
 
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.ebean.Ebean;
-import io.ebean.ExpressionList;
-import io.ebean.Junction;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
@@ -124,7 +121,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             //Zkontroluji validitu
-            Model_Processor processor = Model_Processor.getById(processor_id);
+            Model_Processor processor = Model_Processor.find.byId(processor_id);
    
             // Vracím objekt
             return ok(processor);
@@ -194,7 +191,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_Processor_New help = formFromRequestWithValidation(Swagger_Processor_New.class);
 
             // Kontroluji validitu
-            Model_Processor processor = Model_Processor.getById(processor_id);
+            Model_Processor processor = Model_Processor.find.byId(processor_id);
 
             // Upravuji objekt
             processor.description    = help.description;
@@ -231,7 +228,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Kontroluji validitu
-            Model_Processor processor = Model_Processor.getById(processor_id);
+            Model_Processor processor = Model_Processor.find.byId(processor_id);
            
             if (processor.hardware_types.size() > 0) return badRequest("Processor is assigned to some type of board, so cannot be deleted");
 
@@ -265,7 +262,7 @@ public class Controller_Hardware extends _BaseController {
     public Result fileRecord_get_bootLoader(UUID bootloader_id) {
         try {
 
-            Model_BootLoader boot_loader = Model_BootLoader.getById(bootloader_id);
+            Model_BootLoader boot_loader = Model_BootLoader.find.byId(bootloader_id);
 
             // Swagger_File_Content - Zástupný dokumentační objekt
             Swagger_File_Content content = new Swagger_File_Content();
@@ -298,7 +295,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Kontrola validity objektu
-            Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
+            Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
 
             // Swagger_File_Content - Zástupný dokumentační objekt
             Swagger_File_Content content = new Swagger_File_Content();
@@ -395,7 +392,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_Producer producer = Model_Producer.getById(producer_id);
+            Model_Producer producer = Model_Producer.find.byId(producer_id);
           
             // Úprava objektu
             producer.name = help.name;
@@ -458,7 +455,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Producer producer = Model_Producer.getById(producer_id);
+            Model_Producer producer = Model_Producer.find.byId(producer_id);
 
             // Vrácneí objektu
             return ok(producer);
@@ -486,7 +483,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Producer producer = Model_Producer.getById(producer_id);
+            Model_Producer producer = Model_Producer.find.byId(producer_id);
             
             if (producer.hardware_types.size() > 0 || producer.blocks.size() > 0 || producer.widgets.size() > 0)
                 return badRequest("Producer is assigned to some objects, so cannot be deleted.");
@@ -539,10 +536,10 @@ public class Controller_Hardware extends _BaseController {
             Swagger_HardwareType_New help = formFromRequestWithValidation(Swagger_HardwareType_New.class);
 
             // Kontrola objektu
-            Model_Producer producer = Model_Producer.getById(help.producer_id);
+            Model_Producer producer = Model_Producer.find.byId(help.producer_id);
             
             // Kontrola objektu
-            Model_Processor processor = Model_Processor.getById(help.processor_id);
+            Model_Processor processor = Model_Processor.find.byId(help.processor_id);
           
 
             // Tvorba objektu
@@ -619,13 +616,13 @@ public class Controller_Hardware extends _BaseController {
             Swagger_HardwareType_New help = formFromRequestWithValidation(Swagger_HardwareType_New.class);
 
             // Kontrola objektu
-            Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
+            Model_HardwareType hardwareType = Model_HardwareType.find.byId(hardware_type_id);
         
             // Kontrola objektu
-            Model_Producer producer = Model_Producer.getById(help.producer_id);
+            Model_Producer producer = Model_Producer.find.byId(help.producer_id);
   
             // Kontrola objektu
-            Model_Processor processor = Model_Processor.getById(help.processor_id);
+            Model_Processor processor = Model_Processor.find.byId(help.processor_id);
         
 
             // Uprava objektu
@@ -666,7 +663,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
+            Model_HardwareType hardwareType = Model_HardwareType.find.byId(hardware_type_id);
             
             // Smazání objektu
             hardwareType.delete();
@@ -705,7 +702,7 @@ public class Controller_Hardware extends _BaseController {
             List<Model_HardwareType> hardwareTypes = new ArrayList<>();
 
             for (UUID id : hardwareTypes_not_cached) {
-                hardwareTypes.add(Model_HardwareType.getById(id));
+                hardwareTypes.add(Model_HardwareType.find.byId(id));
             }
 
             // Vrácení seznamu
@@ -734,7 +731,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Kontrola validity objektu
-            Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
+            Model_HardwareType hardwareType = Model_HardwareType.find.byId(hardware_type_id);
 
             // Vrácení validity objektu
             return ok(hardwareType);
@@ -779,7 +776,7 @@ public class Controller_Hardware extends _BaseController {
 
 
             // Kontrola objektu
-            Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
+            Model_HardwareType hardwareType = Model_HardwareType.find.byId(hardware_type_id);
 
             logger.debug("hardwareType_uploadPicture - update picture");
 
@@ -856,7 +853,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_HardwareBatch_New help = formFromRequestWithValidation(Swagger_HardwareBatch_New.class);
 
             // Kontrola objektu
-            Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
+            Model_HardwareType hardwareType = Model_HardwareType.find.byId(hardware_type_id);
            
             // Tvorba objektu
             Model_HardwareBatch batch = new Model_HardwareBatch();
@@ -1027,7 +1024,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_BootLoader_New help = formFromRequestWithValidation(Swagger_BootLoader_New.class);
 
             // Kontrola objektu
-            Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
+            Model_HardwareType hardwareType = Model_HardwareType.find.byId(hardware_type_id);
 
             String identifier = help.version_identifier.replaceAll("\\s+", "");
 
@@ -1081,7 +1078,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_BootLoader_New help = formFromRequestWithValidation(Swagger_BootLoader_New.class);
 
             // Kontrola objektu
-            Model_BootLoader boot_loader = Model_BootLoader.getById(boot_loader_id);
+            Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
 
             boot_loader.name = help.name;
             boot_loader.changing_note = help.changing_note;
@@ -1116,7 +1113,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_BootLoader boot_loader = Model_BootLoader.getById(boot_loader_id);
+            Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
 
             if (!boot_loader.hardware.isEmpty()) return badRequest("Bootloader is already used on some Board. Cannot be deleted.");
 
@@ -1160,7 +1157,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_BASE64_FILE help = formFromRequestWithValidation(Swagger_BASE64_FILE.class);
 
             // Kontrola objektu
-            Model_BootLoader boot_loader = Model_BootLoader.getById(boot_loader_id);
+            Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
             
             //  data:image/png;base64,
             String[] parts = help.file.split(",");
@@ -1218,7 +1215,7 @@ public class Controller_Hardware extends _BaseController {
     public Result bootLoader_markAsMain(UUID boot_loader_id) {
         try {
 
-            Model_BootLoader boot_loader = Model_BootLoader.getById(boot_loader_id);
+            Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
             if (boot_loader.file == null) return badRequest("Required bootloader object with file");
             if (boot_loader.getMainHardwareType() != null) return badRequest("Bootloader is Already Main");
 
@@ -1227,10 +1224,10 @@ public class Controller_Hardware extends _BaseController {
             Model_BootLoader old_main_not_cached = Model_BootLoader.find.query().where().eq("main_hardware_type.id", boot_loader.getHardwareTypeId()).select("id").findOne();
 
             if (old_main_not_cached != null) {
-                Model_BootLoader old_main = Model_BootLoader.getById(old_main_not_cached.id);
+                Model_BootLoader old_main = Model_BootLoader.find.byId(old_main_not_cached.id);
                 if (old_main != null) {
                     old_main.main_hardware_type = null;
-                    old_main.cache().removeAll(Model_HardwareType.Model_HardwareType_Main.class);
+                    old_main.idCache().removeAll(Model_HardwareType.Model_HardwareType_Main.class);
                     old_main.update();
                 }
             }
@@ -1241,14 +1238,11 @@ public class Controller_Hardware extends _BaseController {
             hardware_type.main_boot_loader = boot_loader;
             hardware_type.update();
 
-            hardware_type.cache().removeAll(Model_HardwareType.Model_HardwareType_Main.class);
-            hardware_type.cache().add(Model_HardwareType.Model_HardwareType_Main.class, boot_loader.id);
-
-
-            System.out.println("Model_HardwareType main bootloader id after: " +  hardware_type.cache().get(Model_HardwareType.Model_HardwareType_Main.class));
+            hardware_type.idCache().removeAll(Model_HardwareType.Model_HardwareType_Main.class);
+            hardware_type.idCache().add(Model_HardwareType.Model_HardwareType_Main.class, boot_loader.id);
 
             // Vymažu Device Cache
-            Model_Hardware.cache.clear();
+            Model_Hardware.find.getCache().clear();
 
             // Vracím Json
             return ok(boot_loader);
@@ -1304,7 +1298,7 @@ public class Controller_Hardware extends _BaseController {
 
                 if (help.bootloader_id != null) {
 
-                    pair.bootLoader = Model_BootLoader.getById(help.bootloader_id);
+                    pair.bootLoader = Model_BootLoader.find.byId(help.bootloader_id);
 
                 } else {
                     pair.bootLoader = Model_BootLoader.find.query().where().eq("main_hardware_type.hardware.id", hardware.id).findOne();
@@ -1384,7 +1378,7 @@ public class Controller_Hardware extends _BaseController {
             if (Model_Hardware.getByFullId(help.full_id) != null) return badRequest("Hardware is already registered");
 
             // Kotrola objektu
-            Model_HardwareType hardwareType = Model_HardwareType.getById( help.hardware_type_id);
+            Model_HardwareType hardwareType = Model_HardwareType.find.byId( help.hardware_type_id);
 
             // Kontorluji oprávnění
             hardwareType.check_register_new_device_permission();
@@ -1478,7 +1472,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_Board_New_Garfield help = formFromRequestWithValidation(Swagger_Board_New_Garfield.class);
 
             // Kotrola objektu
-            Model_HardwareType hardwareType = Model_HardwareType.getById(help.hardware_type_id);
+            Model_HardwareType hardwareType = Model_HardwareType.find.byId(help.hardware_type_id);
             
             // Kontorluji oprávnění
             hardwareType.check_register_new_device_permission();
@@ -1487,7 +1481,7 @@ public class Controller_Hardware extends _BaseController {
             Model_HardwareBatch batch = Model_HardwareBatch.getById(help.batch_id);
             
             // Kontrola Objektu
-            Model_Garfield garfield = Model_Garfield.getById(help.garfield_station_id);
+            Model_Garfield garfield = Model_Garfield.find.byId(help.garfield_station_id);
 
             // Odzkouším -zda už není registrovaný v centárlní autoritě!
             if (Model_HardwareRegistrationEntity.check_if_value_is_registered(help.full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
@@ -1638,7 +1632,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kotrola objektu
-            Model_Hardware hardware = Model_Hardware.getById(hardware_id);
+            Model_Hardware hardware = Model_Hardware.find.byId(hardware_id);
 
             String help_previouse_name = hardware.name;
             // Uprava desky
@@ -1698,7 +1692,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_Board_Developer_parameters help = formFromRequestWithValidation(Swagger_Board_Developer_parameters.class);
 
             // Kotrola objektu
-            Model_Hardware board = Model_Hardware.getById(hardware_id);
+            Model_Hardware board = Model_Hardware.find.byId(hardware_id);
 
             // Kontrola oprávnění
             board.check_update_permission();
@@ -1825,7 +1819,7 @@ public class Controller_Hardware extends _BaseController {
             List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
 
             // Ověření objektu
-            Model_CProgramVersion c_program_version = Model_CProgramVersion.getById(help.c_program_version_id);
+            Model_CProgramVersion c_program_version = Model_CProgramVersion.find.byId(help.c_program_version_id);
 
 
             for (UUID hardware_id : help.hardware_ids) {
@@ -1841,7 +1835,7 @@ public class Controller_Hardware extends _BaseController {
                 if (!c_program_version.compilation.status.name().equals(CompilationStatus.SUCCESS.name())) return badRequest("The program is not yet compiled & Restored");
 
                 // Kotrola objektu
-                Model_Hardware hardware = Model_Hardware.getById(hardware_id);
+                Model_Hardware hardware = Model_Hardware.find.byId(hardware_id);
 
                 WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
                 b_pair.hardware = hardware;
@@ -1914,7 +1908,7 @@ public class Controller_Hardware extends _BaseController {
             for (Swagger_HardwareBackupSettings.HardwareBackupPair hardware_backup_pair : help.hardware_backup_pairs) {
 
                 // Kotrola objektu
-                Model_Hardware board = Model_Hardware.getById(hardware_backup_pair.hardware_id);
+                Model_Hardware board = Model_Hardware.find.byId(hardware_backup_pair.hardware_id);
 
                 // Pokud je nastaven autobackup na true
                 if (hardware_backup_pair.backup_mode) {
@@ -1959,7 +1953,7 @@ public class Controller_Hardware extends _BaseController {
                     logger.debug("hardware_updateBackup - To FALSE:: Board Id: {} has dynamic Backup or already set static backup", hardware_backup_pair.hardware_id);
 
                     // Uprava desky na statický backup
-                    Model_CProgramVersion c_program_version = Model_CProgramVersion.getById(hardware_backup_pair.c_program_version_id);
+                    Model_CProgramVersion c_program_version = Model_CProgramVersion.find.byId(hardware_backup_pair.c_program_version_id);
 
                     //Zkontroluji validitu Verze zda sedí k C_Programu
                     if (c_program_version.compilation == null) return badRequest("Version is not version of C_Program - Missing compilation File");
@@ -2111,7 +2105,7 @@ public class Controller_Hardware extends _BaseController {
 
                 // Permissin check
                 for(UUID uuid_project: help.projects) {
-                    Model_Project.getById(uuid_project);
+                    Model_Project.find.byId(uuid_project);
                 }
 
                 query.where().in("project.id", help.projects);
@@ -2127,14 +2121,14 @@ public class Controller_Hardware extends _BaseController {
 
             if (help.instance_snapshots != null) {
                 for(UUID uuid_snapshot : help.instance_snapshots) {
-                    Model_InstanceSnapshot snaphshot = Model_InstanceSnapshot.getById(uuid_snapshot);
+                    Model_InstanceSnapshot snaphshot = Model_InstanceSnapshot.find.byId(uuid_snapshot);
                     query.where().in("id", snaphshot.getHardwareIds());
                 }
             }
 
             if (help.hardware_groups_id != null) {
                 for(UUID uuid_snapshot : help.hardware_groups_id) {
-                    Model_HardwareGroup.getById(uuid_snapshot);
+                    Model_HardwareGroup.find.byId(uuid_snapshot);
                 }
                 query.where().in("hardware_groups.id", help.hardware_groups_id);
             }
@@ -2192,7 +2186,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_BASE64_FILE help = formFromRequestWithValidation(Swagger_BASE64_FILE.class);
 
             //Kontrola objektu
-            Model_Hardware hardware = Model_Hardware.getById(hardware_id);
+            Model_Hardware hardware = Model_Hardware.find.byId(hardware_id);
 
             hardware.check_update_permission();
 
@@ -2241,7 +2235,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             //Kontrola objektu
-            Model_Hardware board = Model_Hardware.getById(hardware_id);
+            Model_Hardware board = Model_Hardware.find.byId(hardware_id);
             String mqtt_password_not_hashed = UUID.randomUUID().toString();
             String mqtt_username_not_hashed = UUID.randomUUID().toString();
 
@@ -2291,14 +2285,14 @@ public class Controller_Hardware extends _BaseController {
 
             logger.trace("hardware_redirect_to_server:: Příjem zprávy:: " + Json.toJson(help));
 
-            Model_Hardware board = Model_Hardware.getById(hardware_id);
+            Model_Hardware board = Model_Hardware.find.byId(hardware_id);
 
             // Jedná se o přesměrování na server v rámci stejné hierarchie - na server co mám v DB
             if (help.server_id != null) {
 
                 logger.trace("hardware_redirect_to_server:: Bude se přesměrovávat z databáze");
 
-                Model_HomerServer server = Model_HomerServer.getById(help.server_id);
+                Model_HomerServer server = Model_HomerServer.find.byId(help.server_id);
                 board.device_relocate_server(server);
 
             // Jedná se o server mimo náš svět - například z dev na stage, nebo z produkce na dev
@@ -2352,7 +2346,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_Board_Command help = formFromRequestWithValidation(Swagger_Board_Command.class);
 
             // Kontrola objektu
-            Model_Hardware board = Model_Hardware.getById(help.hardware_id);
+            Model_Hardware board = Model_Hardware.find.byId(help.hardware_id);
             if (help.command == null) {
                 throw new Result_Error_NotFound(BoardCommand.class);
             }
@@ -2382,7 +2376,7 @@ public class Controller_Hardware extends _BaseController {
     public Result hardware_removePicture(UUID hardware_id) {
         try {
 
-            Model_Hardware hardware = Model_Hardware.getById(hardware_id);
+            Model_Hardware hardware = Model_Hardware.find.byId(hardware_id);
 
             if (hardware.picture != null) {
                 hardware.picture.delete();
@@ -2415,12 +2409,12 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Kotrola objektu
-            Model_Hardware board = Model_Hardware.getById(hardware_id);
+            Model_Hardware board = Model_Hardware.find.byId(hardware_id);
 
             // Úprava stavu
             board.is_active = false;
 
-            board.cache().removeAll(Model_Project.class);
+            board.idCache().removeAll(Model_Project.class);
 
             // Uložení do databáze
             board.update();
@@ -2452,7 +2446,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Kotrola objektu
-            Model_Hardware board = Model_Hardware.getById(hardware_id);
+            Model_Hardware board = Model_Hardware.find.byId(hardware_id);
 
             // vrácení objektu
             return ok(board);
@@ -2493,7 +2487,7 @@ public class Controller_Hardware extends _BaseController {
             }
 
             // Kontrola projektu
-            Model_Project.getById(project_id);
+            Model_Project.find.byId(project_id);
 
             // Kotrola objektu
             Model_HardwareRegistrationEntity hardware = Model_HardwareRegistrationEntity.getbyFull_hash(registration_hash);
@@ -2540,7 +2534,7 @@ public class Controller_Hardware extends _BaseController {
 
             /* // TODO
             // Kontrola objektu
-            Model_Project project = Model_Project.getById(project_id);
+            Model_Project project = Model_Project.find.byId(project_id);
             if (project == null) return notFound("Project project_id not found");
 
             // Kontrola oprávnění
@@ -2572,7 +2566,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Hardware hardware = Model_Hardware.getById(hardware_id);
+            Model_Hardware hardware = Model_Hardware.find.byId(hardware_id);
 
             hardware.delete();
 
@@ -2617,7 +2611,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_Hardware hardware = Model_Hardware.getById(help.object_id);
+            Model_Hardware hardware = Model_Hardware.find.byId(help.object_id);
 
             // Add Tags
             hardware.addTags(help.tags);
@@ -2662,7 +2656,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola Objektu
-            Model_Hardware hardware = Model_Hardware.getById(help.object_id);
+            Model_Hardware hardware = Model_Hardware.find.byId(help.object_id);
 
             // Remove Tags
             hardware.removeTags(help.tags);
@@ -2709,7 +2703,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_NameAndDesc_ProjectIdRequired help = formFromRequestWithValidation(Swagger_NameAndDesc_ProjectIdRequired.class);
 
             // Kontrola objektu
-            Model_Project project = Model_Project.getById(help.project_id);
+            Model_Project project = Model_Project.find.byId(help.project_id);
 
             if (Model_HardwareGroup.find.query().where().eq("name", help.name).eq("project.id", project.id).findOne() != null) {
                 return badRequest("Group name must be a unique!");
@@ -2763,7 +2757,7 @@ public class Controller_Hardware extends _BaseController {
             Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_HardwareGroup group = Model_HardwareGroup.getById(hardware_group_id);
+            Model_HardwareGroup group = Model_HardwareGroup.find.byId(hardware_group_id);
 
             if (Model_HardwareGroup.find.query().where().eq("name", help.name).eq("project.id", group.get_project_id()).ne("id", group.id).findOne() != null) {
                 return badRequest("Group name must be a unique!");
@@ -2799,7 +2793,7 @@ public class Controller_Hardware extends _BaseController {
     public Result hardwareGroup_delete(UUID hardware_group_id) {
         try {
 
-            Model_HardwareGroup group = Model_HardwareGroup.getById(hardware_group_id);
+            Model_HardwareGroup group = Model_HardwareGroup.find.byId(hardware_group_id);
 
             group.delete();
 
@@ -2843,7 +2837,7 @@ public class Controller_Hardware extends _BaseController {
 
             if (help.device_synchro != null) {
 
-                Model_Hardware board = Model_Hardware.getById(help.device_synchro.hardware_id);
+                Model_Hardware board = Model_Hardware.find.byId(help.device_synchro.hardware_id);
                 
                 logger.debug("board_group_update_device_list - board: {}", board.id);
 
@@ -2865,18 +2859,18 @@ public class Controller_Hardware extends _BaseController {
                                 continue;
                             }
 
-                            Model_HardwareGroup group = Model_HardwareGroup.getById(board_group_id);
+                            Model_HardwareGroup group = Model_HardwareGroup.find.byId(board_group_id);
 
                             board.get_hardware_group_ids().add(group.id);
                             board.hardware_groups.add(group);
                             group.cache_group_size += 1;
 
-                            if (group.cache().get(Model_HardwareType.class) == null) {
-                                 group.cache().add(Model_HardwareType.class,  new ArrayList<>());
+                            if (group.idCache().get(Model_HardwareType.class) == null) {
+                                 group.idCache().add(Model_HardwareType.class,  new ArrayList<>());
                             }
 
-                            if(!group.cache().gets(Model_HardwareType.class).contains(board.getHardwareTypeCache_id())){
-                                    group.cache().add(Model_HardwareType.class, board.getHardwareTypeCache_id());
+                            if(!group.idCache().gets(Model_HardwareType.class).contains(board.getHardwareTypeCache_id())){
+                                    group.idCache().add(Model_HardwareType.class, board.getHardwareTypeCache_id());
                             }
 
                             board.get_hardware_group_ids();
@@ -2891,10 +2885,10 @@ public class Controller_Hardware extends _BaseController {
 
                     // NEní žádná, tak odstraním všechny
                     if(help.device_synchro.hardware_group_ids == null) {
-                        Model_HardwareGroup group = Model_HardwareGroup.getById(board_group_id);
+                        Model_HardwareGroup group = Model_HardwareGroup.find.byId(board_group_id);
                         board.hardware_groups.remove(group);
                         group.cache_group_size -= 1;
-                        group.cache().removeAll(Model_HardwareType.class);  // Clean cache
+                        group.idCache().removeAll(Model_HardwareType.class);  // Clean cache
                         it.remove();
                     }
 
@@ -2904,25 +2898,25 @@ public class Controller_Hardware extends _BaseController {
 
                             logger.debug("board_group_update_device_list - removing group {}", board_group_id);
 
-                            Model_HardwareGroup group = Model_HardwareGroup.getById(board_group_id);
+                            Model_HardwareGroup group = Model_HardwareGroup.find.byId(board_group_id);
 
                             board.hardware_groups.remove(group);
 
                             group.cache_group_size -= 1;
-                            group.cache().removeAll(Model_HardwareType.class);
+                            group.idCache().removeAll(Model_HardwareType.class);
                             it.remove();
                         }
                     }
                 }
 
                 board.set_hardware_groups_on_hardware(board.get_hardware_group_ids(),  Enum_type_of_command.SET);
-                board.cache().removeAll(Model_HardwareGroup.class);
+                board.idCache().removeAll(Model_HardwareGroup.class);
                 board.update();
             }
 
             if (help.group_synchro != null) {
 
-                Model_HardwareGroup group = Model_HardwareGroup.getById(help.group_synchro.group_id);
+                Model_HardwareGroup group = Model_HardwareGroup.find.byId(help.group_synchro.group_id);
                 group.check_update_permission();
 
                 // List of All HW ADDS
@@ -2941,21 +2935,21 @@ public class Controller_Hardware extends _BaseController {
                     // Remove from list
                     hw_ids_in_group.remove(board_id);
 
-                    Model_Hardware board = Model_Hardware.getById(board_id);
+                    Model_Hardware board = Model_Hardware.find.byId(board_id);
 
-                    board.cache().add(Model_HardwareGroup.class, group.id);
+                    board.idCache().add(Model_HardwareGroup.class, group.id);
                     board.hardware_groups.add(group);
                     board.update();
 
                     group.cache_group_size += 1;
-                    group.cache().add(Model_Hardware.class, board.id);
+                    group.idCache().add(Model_Hardware.class, board.id);
 
-                    if (group.cache().get(Model_HardwareType.class) == null) {
-                        group.cache().add(Model_HardwareType.class,  new ArrayList<>());
+                    if (group.idCache().get(Model_HardwareType.class) == null) {
+                        group.idCache().add(Model_HardwareType.class,  new ArrayList<>());
                     }
 
-                    if(!group.cache().gets(Model_HardwareType.class).contains(board.getHardwareTypeCache_id())){
-                        group.cache().add(Model_HardwareType.class, board.getHardwareTypeCache_id());
+                    if(!group.idCache().gets(Model_HardwareType.class).contains(board.getHardwareTypeCache_id())){
+                        group.idCache().add(Model_HardwareType.class, board.getHardwareTypeCache_id());
                     }
                 }
 
@@ -2964,13 +2958,13 @@ public class Controller_Hardware extends _BaseController {
 
                     System.out.println("Kontrola HW_ID: " + board_id);
 
-                    Model_Hardware board = Model_Hardware.getById(board_id);
-                    board.cache().remove(Model_HardwareGroup.class, group.id);
+                    Model_Hardware board = Model_Hardware.find.byId(board_id);
+                    board.idCache().remove(Model_HardwareGroup.class, group.id);
                     board.hardware_groups.remove(group);
                     board.update();
 
                     group.cache_group_size -= 1;
-                    group.cache().remove(Model_Hardware.class, board.id);
+                    group.idCache().remove(Model_Hardware.class, board.id);
                 }
             }
 
@@ -3021,7 +3015,7 @@ public class Controller_Hardware extends _BaseController {
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
 
-                Model_Project.getById(help.project_id);
+                Model_Project.find.byId(help.project_id);
                 query.where().eq("project.id", help.project_id);
             }
             if (help.project_id == null) {
@@ -3032,7 +3026,7 @@ public class Controller_Hardware extends _BaseController {
 
                 List<UUID> list_ids = new ArrayList<>();
                 for(UUID snapshost_ids : help.instance_snapshots) {
-                    list_ids.addAll( Model_InstanceSnapshot.getById(snapshost_ids).getHardwareGroupseIds());
+                    list_ids.addAll( Model_InstanceSnapshot.find.byId(snapshost_ids).getHardwareGroupseIds());
                 }
 
                 query.where().in("id", list_ids);
@@ -3069,7 +3063,7 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             // Kontrola validity objektu
-            Model_HardwareGroup group = Model_HardwareGroup.getById(group_id);
+            Model_HardwareGroup group = Model_HardwareGroup.find.byId(group_id);
 
             // Vrácení validity objektu
             return ok(group);

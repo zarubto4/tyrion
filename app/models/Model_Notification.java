@@ -372,7 +372,7 @@ public class Model_Notification extends BaseModel {
             // If the notification is about project invitation, id of the notification is saved to model invitation
             if ((!this.buttons().isEmpty()) && (this.buttons().get(0).action == NotificationAction.ACCEPT_PROJECT_INVITATION)) {
 
-                Model_Invitation invitation = Model_Invitation.getById(this.buttons().get(0).payload);
+                Model_Invitation invitation = Model_Invitation.find.byId(UUID.fromString(this.buttons().get(0).payload));
                 invitation.notification_id = this.id;
                 invitation.update();
             }
@@ -472,14 +472,10 @@ public class Model_Notification extends BaseModel {
 
     //!!!!! Do not implement Cache!!!
 
+    // TODO think about the mechanism of finder [AT]
     public static Model_Notification getById(UUID id) throws _Base_Result_Exception {
         Model_Notification notification = find.byId(id);
         if(notification == null)  throw new Result_Error_NotFound(Model_Notification.class);
-
-        // Check Permission
-        if(notification.its_person_operation()) {
-            notification.check_read_permission();
-        }
 
         // Check Permission
         if(notification.its_person_operation()) {

@@ -62,10 +62,10 @@ public class Controller_Permission extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
 
             // Kontrola objektu
-            Model_Permission personPermission = Model_Permission.getById(permission_id);
+            Model_Permission personPermission = Model_Permission.find.byId(permission_id);
 
             if (!person.permissions.contains(personPermission)) person.permissions.add(personPermission);
             person.update();
@@ -96,10 +96,10 @@ public class Controller_Permission extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
 
             // Kontrola objektu
-            Model_Permission personPermission = Model_Permission.getById(permission_id);
+            Model_Permission personPermission = Model_Permission.find.byId(permission_id);
 
             if (person.permissions.contains(personPermission)) person.permissions.remove(personPermission);
             person.update();
@@ -167,7 +167,7 @@ public class Controller_Permission extends _BaseController {
             Swagger_Permission_Edit help = formFromRequestWithValidation(Swagger_Permission_Edit.class);
 
             // Kontrola objektu
-            Model_Permission permission = Model_Permission.getById(permission_id);
+            Model_Permission permission = Model_Permission.find.byId(permission_id);
 
             permission.description = help.description;
             permission.update();
@@ -217,7 +217,7 @@ public class Controller_Permission extends _BaseController {
             List<Model_Permission> personPermissions = Model_Permission.find.query().where().in("name", help.permissions).findList();
 
             // Kontrola objektu
-            Model_Role securityRole = Model_Role.getById(role_id);
+            Model_Role securityRole = Model_Role.find.byId(role_id);
 
             for(Model_Permission permission : personPermissions) {
                 if (!securityRole.permissions.contains(permission)) {
@@ -252,10 +252,10 @@ public class Controller_Permission extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Permission personPermission = Model_Permission.getById(permission_id);
+            Model_Permission personPermission = Model_Permission.find.byId(permission_id);
 
             // Kontrola objektu
-            Model_Role securityRole = Model_Role.getById(role_id);
+            Model_Role securityRole = Model_Role.find.byId(role_id);
 
             if (securityRole.permissions.contains(personPermission)) securityRole.permissions.remove(personPermission);
 
@@ -334,7 +334,7 @@ public class Controller_Permission extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Role securityRole = Model_Role.getById(role_id);
+            Model_Role securityRole = Model_Role.find.byId(role_id);
 
             securityRole.delete();
 
@@ -377,7 +377,7 @@ public class Controller_Permission extends _BaseController {
             Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_Role role = Model_Role.getById(role_id);
+            Model_Role role = Model_Role.find.byId(role_id);
 
             role.name = help.name;
             role.description = help.description;
@@ -409,7 +409,7 @@ public class Controller_Permission extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Role role = Model_Role.getById(role_id);
+            Model_Role role = Model_Role.find.byId(role_id);
 
             return ok(role);
 
@@ -453,7 +453,7 @@ public class Controller_Permission extends _BaseController {
             }
 
             // Kontrola objektu
-            Model_Role securityRole = Model_Role.getById(role_id);
+            Model_Role securityRole = Model_Role.find.byId(role_id);
 
 
             List<Model_Person> persons = Model_Person.find.query().where().notExists(Ebean.find(Model_Role.class).where(Expr.in("persons.email", help.persons_mail))).in("email", help.persons_mail).findList();
@@ -498,10 +498,10 @@ public class Controller_Permission extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
 
             // Kontrola objektu
-            Model_Role securityRole = Model_Role.getById(role_id);
+            Model_Role securityRole = Model_Role.find.byId(role_id);
 
             if (person.roles.contains(securityRole)) person.roles.remove(securityRole);
             person.update();
@@ -557,7 +557,7 @@ public class Controller_Permission extends _BaseController {
     public Result system_access_get_everything(UUID person_id) {
         try {
 
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
 
             Swagger_System_Access system_access = new Swagger_System_Access();
             system_access.roles = person.roles;

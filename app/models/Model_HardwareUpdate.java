@@ -4,15 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
 import play.libs.Json;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -206,18 +204,18 @@ public class Model_HardwareUpdate extends BaseModel {
     public UUID getHardwareId() {
 
 
-        if (cache().get(Model_Hardware.class) == null) {
-            cache().add(Model_Hardware.class, (UUID) Model_Hardware.find.query().where().eq("updates.id", id).ne("deleted", true).select("id").findSingleAttribute());
+        if (idCache().get(Model_Hardware.class) == null) {
+            idCache().add(Model_Hardware.class, (UUID) Model_Hardware.find.query().where().eq("updates.id", id).ne("deleted", true).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_Hardware.class);
+        return idCache().get(Model_Hardware.class);
 
     }
 
     @JsonIgnore
     public Model_Hardware getHardware() {
         try {
-            return Model_Hardware.getById(getHardwareId());
+            return Model_Hardware.find.byId(getHardwareId());
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -227,17 +225,17 @@ public class Model_HardwareUpdate extends BaseModel {
     @JsonIgnore
     public UUID getActualizationProcedureId() {
 
-        if (cache().get(Model_UpdateProcedure.class) == null) {
-            cache().add(Model_UpdateProcedure.class, (UUID) Model_UpdateProcedure.find.query().where().eq("updates.id", id).ne("deleted", true).select("id").findSingleAttribute());
+        if (idCache().get(Model_UpdateProcedure.class) == null) {
+            idCache().add(Model_UpdateProcedure.class, (UUID) Model_UpdateProcedure.find.query().where().eq("updates.id", id).ne("deleted", true).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_UpdateProcedure.class);
+        return idCache().get(Model_UpdateProcedure.class);
     }
 
     @JsonIgnore
     public Model_UpdateProcedure getActualizationProcedure() {
         try {
-            return Model_UpdateProcedure.getById(getActualizationProcedureId());
+            return Model_UpdateProcedure.find.byId(getActualizationProcedureId());
         }catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -246,16 +244,16 @@ public class Model_HardwareUpdate extends BaseModel {
 
     @JsonIgnore
     public UUID getBootloaderId() {
-        if (cache().get(Model_BootLoader.class) == null) {
-            cache().add(Model_BootLoader.class, (UUID) Model_BootLoader.find.query().where().eq("updates.id", id).ne("deleted", true).select("id").findSingleAttribute());
+        if (idCache().get(Model_BootLoader.class) == null) {
+            idCache().add(Model_BootLoader.class, (UUID) Model_BootLoader.find.query().where().eq("updates.id", id).ne("deleted", true).select("id").findSingleAttribute());
         }
-        return cache().get(Model_BootLoader.class);
+        return idCache().get(Model_BootLoader.class);
     }
 
     @JsonIgnore
     public Model_BootLoader getBootloader() {
         try {
-            return Model_BootLoader.getById(getBootloaderId());
+            return Model_BootLoader.find.byId(getBootloaderId());
         }catch (Exception e) {
             // No Log Expeption!
             return null;
@@ -361,21 +359,19 @@ public class Model_HardwareUpdate extends BaseModel {
         if (this.state == null) this.state = HardwareUpdateState.NOT_YET_STARTED;
 
         // Set Cache parameter
-        cache().add(Model_Hardware.class, hardware.id);
+        idCache().add(Model_Hardware.class, hardware.id);
 
         // set Cache Parameter
         if (c_program_version_for_update != null) {
-            cache().add(Model_CProgramVersion.class, c_program_version_for_update.id);
+            idCache().add(Model_CProgramVersion.class, c_program_version_for_update.id);
         }
 
         // set Cache Parameter
         if (bootloader != null) {
-            cache().add(Model_BootLoader.class, bootloader.id);
+            idCache().add(Model_BootLoader.class, bootloader.id);
         }
 
         super.save();
-
-        cache.put(id, this);
     }
 
     @JsonIgnore @Override
@@ -404,9 +400,6 @@ public class Model_HardwareUpdate extends BaseModel {
             }
 
         }
-
-
-        cache.put(id, this);
     }
 
     @JsonIgnore @Override
@@ -439,7 +432,7 @@ public class Model_HardwareUpdate extends BaseModel {
                 return;
             }
 
-            Model_HardwareUpdate plan = Model_HardwareUpdate.getById(report.tracking_id);
+            Model_HardwareUpdate plan = Model_HardwareUpdate.find.byId(report.tracking_id);
             if (plan == null) {
                 logger.error("update_procedure_progress :: Plan is null Return null NullPointerException");
                 throw new NullPointerException("Plan id" + report.tracking_id + " not found!");
@@ -457,7 +450,7 @@ public class Model_HardwareUpdate extends BaseModel {
                 plan.error_code = report.error_code;
                 plan.error = report.error + report.error_message;
                 plan.update();
-                Model_UpdateProcedure.getById(report.tracking_group_id).change_state(plan, plan.state);
+                Model_UpdateProcedure.find.byId(report.tracking_group_id).change_state(plan, plan.state);
 
                 Model_Notification notification = new Model_Notification();
 
@@ -709,15 +702,15 @@ public class Model_HardwareUpdate extends BaseModel {
 
                                 logger.debug("update_procedure_progress: Na Hardwar jsem nastavil " + hardware.actual_c_program_version.name);
 
-                                hardware.cache().removeAll(Model_CProgram.class);
-                                hardware.cache().removeAll(Model_CProgramVersion.class);
+                                hardware.idCache().removeAll(Model_CProgram.class);
+                                hardware.idCache().removeAll(Model_CProgramVersion.class);
                                 logger.debug("update_procedure_progress: Udělal jsem clean ");
-                                logger.debug("update_procedure_progress: zkontroluji clean: " + hardware.cache().get(Model_CProgram.class));
-                                logger.debug("update_procedure_progress: zkontroluji clean: " + hardware.cache().get(Model_CProgramVersion.class));
+                                logger.debug("update_procedure_progress: zkontroluji clean: " + hardware.idCache().get(Model_CProgram.class));
+                                logger.debug("update_procedure_progress: zkontroluji clean: " + hardware.idCache().get(Model_CProgramVersion.class));
 
 
-                                hardware.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
-                                hardware.cache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
+                                hardware.idCache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
+                                hardware.idCache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
 
                                 logger.debug("update_procedure_progress: Před updatem Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
                                 logger.debug("update_procedure_progress: Před updatem Na Hardwaru je teď CProgram Verze " + hardware.get_actual_c_program_version().name + " id: " + hardware.get_actual_c_program_version().id);
@@ -726,8 +719,8 @@ public class Model_HardwareUpdate extends BaseModel {
 
                                 logger.debug("update_procedure_progress: ještě blbý check: " + hardware.actual_c_program_version.name);
 
-                                hardware.cache().add(Model_CProgram.class, hardware.actual_c_program_version.get_c_program().id);
-                                hardware.cache().add(Model_CProgramVersion.class, hardware.actual_c_program_version.id);
+                                hardware.idCache().add(Model_CProgram.class, hardware.actual_c_program_version.get_c_program().id);
+                                hardware.idCache().add(Model_CProgramVersion.class, hardware.actual_c_program_version.id);
 
                                 logger.debug("update_procedure_progress: PO updatu Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
                                 logger.debug("update_procedure_progress: PO updatu Na Hardwaru je teď CProgram Verze " + hardware.get_actual_c_program_version().name + " id: " + hardware.get_actual_c_program_version().id);
@@ -735,32 +728,32 @@ public class Model_HardwareUpdate extends BaseModel {
                             } else {
 
                                 logger.debug("update_procedure_progress: required by update: {} ", plan.binary_file.c_compilations_binary_file.firmware_build_id);
-                                hardware.cache().removeAll(Model_CProgram.class);
-                                hardware.cache().removeAll(Model_CProgramVersion.class);
+                                hardware.idCache().removeAll(Model_CProgram.class);
+                                hardware.idCache().removeAll(Model_CProgramVersion.class);
 
                                 // TODO nějak poznamenat na Hardwaru
                             }
 
                         } else if (plan.firmware_type == FirmwareType.BOOTLOADER) {
 
-                            hardware.cache().removeAll(Model_Hardware.Model_hardware_update_update_in_progress_bootloader.class);
-                            hardware.cache().removeAll(Model_BootLoader.class);
+                            hardware.idCache().removeAll(Model_Hardware.Model_hardware_update_update_in_progress_bootloader.class);
+                            hardware.idCache().removeAll(Model_BootLoader.class);
 
                             hardware.actual_boot_loader = plan.getBootloader();
                             hardware.update();
 
-                            hardware.cache().add(Model_BootLoader.class, plan.getBootloaderId());
+                            hardware.idCache().add(Model_BootLoader.class, plan.getBootloaderId());
 
 
                         } else if (plan.firmware_type == FirmwareType.BACKUP) {
 
                             hardware.actual_backup_c_program_version = plan.c_program_version_for_update;
 
-                            hardware.cache().removeAll(Model_CProgramFakeBackup.class);
-                            hardware.cache().removeAll(Model_CProgramVersionFakeBackup.class);
+                            hardware.idCache().removeAll(Model_CProgramFakeBackup.class);
+                            hardware.idCache().removeAll(Model_CProgramVersionFakeBackup.class);
 
-                            hardware.cache().add(Model_CProgramFakeBackup.class, plan.c_program_version_for_update.get_c_program().id);
-                            hardware.cache().add(Model_CProgramVersionFakeBackup.class, plan.c_program_version_for_update.id);
+                            hardware.idCache().add(Model_CProgramFakeBackup.class, plan.c_program_version_for_update.get_c_program().id);
+                            hardware.idCache().add(Model_CProgramVersionFakeBackup.class, plan.c_program_version_for_update.id);
                             hardware.update();
 
                             hardware.make_log_backup_arrise_change();
@@ -785,7 +778,7 @@ public class Model_HardwareUpdate extends BaseModel {
 
                         plan.state = HardwareUpdateState.WAITING_FOR_DEVICE;
                         plan.update();
-                        Model_UpdateProcedure.getById(report.tracking_group_id).change_state(plan, plan.state);
+                        Model_UpdateProcedure.find.byId(report.tracking_group_id).change_state(plan, plan.state);
 
                         return;
                     } catch (Exception e) {
@@ -803,7 +796,7 @@ public class Model_HardwareUpdate extends BaseModel {
                         plan.error = ErrorCode.NEW_VERSION_DOESNT_MATCH.error_message();
                         plan.date_of_finish = new Date();
                         plan.update();
-                        Model_UpdateProcedure.getById(report.tracking_group_id).change_state(plan, plan.state);
+                        Model_UpdateProcedure.find.byId(report.tracking_group_id).change_state(plan, plan.state);
 
                         return;
                     } catch (Exception e) {
@@ -844,12 +837,12 @@ public class Model_HardwareUpdate extends BaseModel {
 
                             if(hardware.get_actual_c_program_version_id() == null || !hardware.get_actual_c_program_version_id().equals(plan.c_program_version_for_update.id)) {
                                 hardware.actual_c_program_version = plan.c_program_version_for_update;
-                                hardware.cache().removeAll(Model_CProgram.class);
-                                hardware.cache().removeAll(Model_CProgramVersion.class);
+                                hardware.idCache().removeAll(Model_CProgram.class);
+                                hardware.idCache().removeAll(Model_CProgramVersion.class);
 
                                 if(plan.c_program_version_for_update != null) {
-                                    hardware.cache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
-                                    hardware.cache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
+                                    hardware.idCache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
+                                    hardware.idCache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
                                 } else if(plan.binary_file != null) {
                                     // TODO for file
                                 }
@@ -860,21 +853,21 @@ public class Model_HardwareUpdate extends BaseModel {
                         } else if (plan.firmware_type == FirmwareType.BOOTLOADER) {
 
                             hardware.actual_boot_loader = plan.getBootloader();
-                            hardware.cache().removeAll(Model_Hardware.Model_hardware_update_update_in_progress_bootloader.class);
-                            hardware.cache().removeAll(Model_BootLoader.class);
-                            hardware.cache().add(Model_BootLoader.class, plan.getBootloader().id);
+                            hardware.idCache().removeAll(Model_Hardware.Model_hardware_update_update_in_progress_bootloader.class);
+                            hardware.idCache().removeAll(Model_BootLoader.class);
+                            hardware.idCache().add(Model_BootLoader.class, plan.getBootloader().id);
                             hardware.update();
 
                         } else if (plan.firmware_type == FirmwareType.BACKUP) {
 
                             if (hardware.get_backup_c_program_version_id() == null || !hardware.get_backup_c_program_version_id().equals(plan.c_program_version_for_update.id)) {
 
-                                hardware.cache().removeAll(Model_CProgramFakeBackup.class);
-                                hardware.cache().removeAll(Model_CProgramVersionFakeBackup.class);
+                                hardware.idCache().removeAll(Model_CProgramFakeBackup.class);
+                                hardware.idCache().removeAll(Model_CProgramVersionFakeBackup.class);
 
                                 if(plan.c_program_version_for_update != null) {
-                                    hardware.cache().add(Model_CProgramFakeBackup.class, plan.c_program_version_for_update.get_c_program().id);
-                                    hardware.cache().add(Model_CProgramVersionFakeBackup.class, plan.c_program_version_for_update.id);
+                                    hardware.idCache().add(Model_CProgramFakeBackup.class, plan.c_program_version_for_update.get_c_program().id);
+                                    hardware.idCache().add(Model_CProgramVersionFakeBackup.class, plan.c_program_version_for_update.id);
                                 } else if(plan.binary_file != null) {
                                     // TODO for file
                                 }
@@ -969,33 +962,8 @@ public class Model_HardwareUpdate extends BaseModel {
     public enum Permission { UpdateProcedure_read, UpdateProcedure_edit }
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(Model_HardwareUpdate.class)
-    public static Cache<UUID, Model_HardwareUpdate> cache;
-
-    public static Model_HardwareUpdate getById(String id) {
-        return getById(UUID.fromString(id));
-    }
-
-    public static Model_HardwareUpdate getById(UUID id) {
-
-        Model_HardwareUpdate plan = cache.get(id);
-        if (plan == null) {
-
-            plan = find.byId(id);
-
-            if (plan == null) throw new Result_Error_NotFound(Model_HardwareUpdate.class);
-
-            cache.put(id, plan);
-        }
-        // Check Permission
-        if(plan.its_person_operation()) {
-            plan.check_read_permission();
-        }
-
-        return plan;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_HardwareUpdate> find = new Finder<>(Model_HardwareUpdate.class);
+    @CacheFinderField(Model_HardwareUpdate.class)
+    public static CacheFinder<Model_HardwareUpdate> find = new CacheFinder<>(Model_HardwareUpdate.class);
 }

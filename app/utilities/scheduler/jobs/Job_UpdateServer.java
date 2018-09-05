@@ -145,8 +145,8 @@ public class Job_UpdateServer implements Job {
                         break;
                     }
                     case "homer": {
-                        Model_HomerServer homerServer = Model_HomerServer.getById(""); // TODO [LEXA]
-                        if (homerServer == null) throw new NullPointerException("Cannot find the Homer Server in the DB.");
+                        // Model_HomerServer homerServer = Model_HomerServer.find.byId(""); // TODO [LEXA]
+                        // if (homerServer == null) throw new NullPointerException("Cannot find the Homer Server in the DB.");
 
                         // TODO do request
                         break;

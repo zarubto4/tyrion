@@ -2,17 +2,16 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import javax.persistence.*;
 import java.util.UUID;
-
 
 @Entity
 @ApiModel(value = "GridTerminal", description = "Model of GridTerminal")
@@ -83,19 +82,8 @@ public class Model_GridTerminal extends BaseModel {
     }
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_GridTerminal getById(UUID id) throws _Base_Result_Exception {
-
-        Model_GridTerminal terminal = find.byId(id);
-        if (terminal == null) throw new Result_Error_NotFound(Model_GridTerminal.class);
-
-        // Check Permission
-        if(terminal.its_person_operation()) {
-            terminal.check_read_permission();
-        }
-        return terminal;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_GridTerminal> find = new Finder<>(Model_GridTerminal.class);
+    @CacheFinderField(Model_GridTerminal.class)
+    public static CacheFinder<Model_GridTerminal> find = new CacheFinder<>(Model_GridTerminal.class);
 }

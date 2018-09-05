@@ -2,11 +2,12 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.cache.Cached;
 import utilities.enums.PlatformAccess;
 import utilities.errors.Exceptions.*;
@@ -66,11 +67,11 @@ public class Model_AuthorizationToken extends BaseModel {
     public Model_Person get_person() {
 
         if (cache_person_id == null) {
-            return Model_Person.getById(get_person_id());
+            return Model_Person.find.byId(get_person_id());
 
         }
 
-        return Model_Person.getById(cache_person_id);
+        return Model_Person.find.byId(cache_person_id);
     }
 
     @JsonIgnore @Transient
@@ -186,33 +187,8 @@ public class Model_AuthorizationToken extends BaseModel {
      * For this case, we have Model_AuthorizationToken objects in storage, but ID is not a TOKEN name!
      * So, thets why we have two cache storage one for Model, one for connection from Token to Model (M:N)!
      */
-    @CacheField(value = Model_AuthorizationToken.class, duration = CacheField.TwoDayCacheConstant, maxElements = 100000)
-    public static Cache<UUID, Model_AuthorizationToken> cache;
-
     @CacheField(value = UUID.class, duration = CacheField.TwoDayCacheConstant, maxElements = 100000, name = "Model_AuthorizationToken_Token<->UUID")
     public static Cache<UUID, UUID> cache_token_name; // < TOKEN in UUID; UUID id of Model_AuthorizationToken>
-
-    public static Model_AuthorizationToken getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
-    public static Model_AuthorizationToken getById(UUID id) throws _Base_Result_Exception {
-        Model_AuthorizationToken token = cache.get(id);
-        if (token == null) {
-
-            token = Model_AuthorizationToken.find.byId(id);
-            // If token not exist its Unauthorized access
-            if (token == null) throw new Result_Error_Unauthorized();
-
-            cache.put(id, token);
-        }
-        // Check Permission
-        if(token.its_person_operation()) {
-            token.check_read_permission();
-        }
-
-        return token;
-    }
 
     public static Model_AuthorizationToken getByToken(UUID token) {
 
@@ -224,10 +200,11 @@ public class Model_AuthorizationToken extends BaseModel {
 
             cache_token_name.put(token, model.id);
         }
-        return getById(cache_token_name.get(token));
+        return find.byId(cache_token_name.get(token));
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static final Finder<UUID, Model_AuthorizationToken> find = new Finder<>(Model_AuthorizationToken.class);
+    @CacheFinderField(Model_AuthorizationToken.class)
+    public static final CacheFinder<Model_AuthorizationToken> find = new CacheFinder<>(Model_AuthorizationToken.class);
 }

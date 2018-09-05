@@ -2,11 +2,9 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import org.ehcache.Cache;
-import utilities.cache.CacheField;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -41,17 +39,17 @@ public class Model_WidgetVersion extends VersionModel {
     @JsonIgnore
     public UUID get_grid_widget_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_Widget.class) == null) {
-            cache().add(Model_Widget.class, (UUID) Model_Widget.find.query().where().eq("versions.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_Widget.class) == null) {
+            idCache().add(Model_Widget.class, (UUID) Model_Widget.find.query().where().eq("versions.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_Widget.class);
+        return idCache().get(Model_Widget.class);
     }
 
     @JsonIgnore
     public Model_Widget get_grid_widget() throws _Base_Result_Exception {
         try {
-            return Model_Widget.getById(get_grid_widget_id());
+            return Model_Widget.find.byId(get_grid_widget_id());
         }catch (Exception e) {
             return null;
         }
@@ -72,7 +70,7 @@ public class Model_WidgetVersion extends VersionModel {
         // Add to Cache
         if (widget != null) {
             widget.get_versionsId();
-            widget.cache().add(this.getClass(), id);
+            widget.idCache().add(this.getClass(), id);
             widget.sort_Model_Model_GridProgramVersion_ids();
         }
 
@@ -113,7 +111,7 @@ public class Model_WidgetVersion extends VersionModel {
 
         // Remove from Cache Cache
         try {
-            get_grid_widget().cache().remove(this.getClass(), id);
+            get_grid_widget().idCache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
@@ -191,33 +189,8 @@ public class Model_WidgetVersion extends VersionModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_WidgetVersion.class)
-    public static Cache<UUID, Model_WidgetVersion> cache;
-
-
-    public static Model_WidgetVersion getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
-    public static Model_WidgetVersion getById(UUID id) throws _Base_Result_Exception {
-
-        Model_WidgetVersion grid_widget_version = cache.get(id);
-
-        if (grid_widget_version == null) {
-
-            grid_widget_version = Model_WidgetVersion.find.byId(id);
-            if (grid_widget_version == null) throw new Result_Error_NotFound(Model_WidgetVersion.class);
-
-            cache.put(id, grid_widget_version);
-        }
-        // Check Permission
-        if(grid_widget_version.its_person_operation()) {
-            grid_widget_version.check_read_permission();
-        }
-        return grid_widget_version;
-    }
-
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_WidgetVersion> find = new Finder<>(Model_WidgetVersion.class);
+    @CacheFinderField(Model_WidgetVersion.class)
+    public static CacheFinder<Model_WidgetVersion> find = new CacheFinder<>(Model_WidgetVersion.class);
 }

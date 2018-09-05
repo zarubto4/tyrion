@@ -3,10 +3,10 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.ParticipantStatus;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -49,18 +49,18 @@ public class Model_Employee extends BaseModel {
     @JsonIgnore
     public UUID get_person_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_Person.class) == null) {
-            cache().add(Model_Person.class, (UUID) Model_Person.find.query().where().eq("employees.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_Person.class) == null) {
+            idCache().add(Model_Person.class, (UUID) Model_Person.find.query().where().eq("employees.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_Person.class);
+        return idCache().get(Model_Person.class);
     }
 
     @Transient @JsonIgnore
     public Model_Person get_person() {
 
         try {
-            return Model_Person.getById(get_person_id());
+            return Model_Person.find.byId(get_person_id());
         } catch (Exception e) {
             return null;
 
@@ -105,21 +105,8 @@ public class Model_Employee extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Employee getById(UUID id) throws _Base_Result_Exception {
-
-        Model_Employee employee = find.byId(id);
-        if (employee == null) throw new Result_Error_NotFound(Model_Employee.class);
-
-        // Check Permission
-        if(employee.its_person_operation()) {
-            employee.check_read_permission();
-        }
-
-        return employee;
-
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Employee> find = new Finder<>(Model_Employee.class);
+    @CacheFinderField(Model_Employee.class)
+    public static CacheFinder<Model_Employee> find = new CacheFinder<>(Model_Employee.class);
 }

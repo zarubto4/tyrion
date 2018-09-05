@@ -25,7 +25,7 @@ public class Swagger_ActualizationProcedure_List extends _Swagger_Filter_Common 
         if (page_number < 1) page_number = 1;
 
         for (Model_UpdateProcedure procedure_not_cached : query.setFirstRow((page_number - 1) * filter.count_on_page).setMaxRows(filter.count_on_page).select("id").findList()) {
-            Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(procedure_not_cached.id);
+            Model_UpdateProcedure procedure = Model_UpdateProcedure.find.byId(procedure_not_cached.id);
             if (procedure == null) continue;
             this.content.add(procedure);
         }

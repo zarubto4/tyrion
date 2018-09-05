@@ -3,13 +3,11 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.cache.Cached;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -78,11 +76,11 @@ public class Model_HardwareGroup extends NamedModel {
     @JsonIgnore
     public List<UUID> get_HardwareTypesId() {
 
-        if (cache().gets(Model_HardwareType.class) == null) {
-            cache().add(Model_HardwareType.class,  Model_HardwareType.find.query().where().eq("hardware.hardware_groups.id", id).select("id").findSingleAttributeList());
+        if (idCache().gets(Model_HardwareType.class) == null) {
+            idCache().add(Model_HardwareType.class,  Model_HardwareType.find.query().where().eq("hardware.hardware_groups.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_HardwareType.class) != null ?  cache().gets(Model_HardwareType.class) : new ArrayList<>();
+        return idCache().gets(Model_HardwareType.class) != null ?  idCache().gets(Model_HardwareType.class) : new ArrayList<>();
     }
 
 
@@ -94,7 +92,7 @@ public class Model_HardwareGroup extends NamedModel {
             List<Model_HardwareType> hardwareTypes  = new ArrayList<>();
 
             for (UUID types : get_HardwareTypesId()) {
-                hardwareTypes.add(Model_HardwareType.getById(types));
+                hardwareTypes.add(Model_HardwareType.find.byId(types));
             }
 
             return hardwareTypes;
@@ -108,17 +106,17 @@ public class Model_HardwareGroup extends NamedModel {
     @JsonIgnore
     public UUID get_project_id()           {
 
-        if (cache().get(Model_Project.class) == null) {
-            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("hardware_groups.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_Project.class) == null) {
+            idCache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("hardware_groups.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_Project.class);
+        return idCache().get(Model_Project.class);
 
     }
 
     @JsonIgnore @Transient public Model_Project get_project() throws _Base_Result_Exception  {
         try {
-            return Model_Project.getById(get_project_id());
+            return Model_Project.find.byId(get_project_id());
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -128,11 +126,11 @@ public class Model_HardwareGroup extends NamedModel {
 
     @JsonIgnore
     public List<UUID> getHardwareIds() {
-        if (cache().gets(Model_Hardware.class) == null) {
-            cache().add(Model_Hardware.class, (UUID) Model_Hardware.find.query().where().eq("hardware_groups.id", id).select("id").findSingleAttribute());
+        if (idCache().gets(Model_Hardware.class) == null) {
+            idCache().add(Model_Hardware.class, (UUID) Model_Hardware.find.query().where().eq("hardware_groups.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().gets(Model_Hardware.class) != null ?  cache().gets(Model_Hardware.class) : new ArrayList<>();
+        return idCache().gets(Model_Hardware.class) != null ?  idCache().gets(Model_Hardware.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -143,7 +141,7 @@ public class Model_HardwareGroup extends NamedModel {
             List<Model_Hardware> hardwares = new ArrayList<>();
 
             for (UUID types : getHardwareIds()) {
-                hardwares.add(Model_Hardware.getById(types));
+                hardwares.add(Model_Hardware.find.byId(types));
             }
 
             return hardwares;
@@ -163,7 +161,7 @@ public class Model_HardwareGroup extends NamedModel {
 
         super.save();
 
-        project.cache().add(this.getClass(), id);
+        project.idCache().add(this.getClass(), id);
 
         //  if create something under project
         //  if (project != null ) new Thread(() -> Update_echo_handler.addToQueue(new WS_Message_Update_model_echo(Model_Project.class, project_id(), project_id()))).start();
@@ -180,7 +178,7 @@ public class Model_HardwareGroup extends NamedModel {
         super.delete();
 
         try {
-            get_project().cache().remove(this.getClass(), id);
+            get_project().idCache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
@@ -262,27 +260,8 @@ public class Model_HardwareGroup extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(Model_HardwareGroup.class)
-    public static Cache<UUID, Model_HardwareGroup> cache;
-
-    public static Model_HardwareGroup getById(UUID id) throws _Base_Result_Exception {
-
-        Model_HardwareGroup group = cache.get(id);
-        if (group == null) {
-
-            group = find.byId(id);
-            if (group == null) throw new Result_Error_NotFound(Model_Product.class);
-            cache.put(id, group);
-        }
-        // Check Permission
-        if(group.its_person_operation()) {
-            group.check_read_permission();
-        }
-
-        return group;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_HardwareGroup> find = new Finder<>(Model_HardwareGroup.class);
+    @CacheFinderField(Model_HardwareGroup.class)
+    public static CacheFinder<Model_HardwareGroup> find = new CacheFinder<>(Model_HardwareGroup.class);
 }

@@ -1,7 +1,6 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
@@ -11,7 +10,6 @@ import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
-import java.beans.Transient;
 import java.util.UUID;
 
 /**
@@ -130,11 +128,6 @@ public class _Model_ExampleModelName extends BaseModel {
     public enum Permission { ExampleModelName_create, ExampleModelName_read, ExampleModelName_update, ExampleModelName_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore
-    public static _Model_ExampleModelName getById(UUID id) {
-        return find.byId(id);
-    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

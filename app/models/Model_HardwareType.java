@@ -5,14 +5,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
 import utilities.Server;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.cache.Cached;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -24,7 +22,6 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 
 @Entity
 @ApiModel(value = "HardwareType", description = "Model of HardwareType")
@@ -228,9 +225,9 @@ public class Model_HardwareType extends NamedModel {
 
         // System.out.println("Kontrola Bootloaderů v Hardware Type: ");
 
-        if (cache().gets(Model_BootLoader.class) == null) {
+        if (idCache().gets(Model_BootLoader.class) == null) {
             // System.out.println("Bootloadery nemám, a tak je hledám");
-            cache().add(Model_BootLoader.class,  Model_BootLoader.find.query().where()
+            idCache().add(Model_BootLoader.class,  Model_BootLoader.find.query().where()
                     .eq("hardware_type.id", id)
                     .ne("deleted", true)
                     .order().desc("name")
@@ -240,7 +237,7 @@ public class Model_HardwareType extends NamedModel {
 
         // System.out.println("Seznam Nalezených Bootloaderů: " + cache().gets(Model_BootLoader.class));
 
-        return cache().gets(Model_BootLoader.class) != null ?  cache().gets(Model_BootLoader.class) : new ArrayList<>();
+        return idCache().gets(Model_BootLoader.class) != null ?  idCache().gets(Model_BootLoader.class) : new ArrayList<>();
 
     }
 
@@ -252,7 +249,7 @@ public class Model_HardwareType extends NamedModel {
 
             for (UUID id : get_bootloaders_id()) {
                 // System.out.println("get_bootloaders id: " + id);
-                list.add(Model_BootLoader.getById(id));
+                list.add(Model_BootLoader.find.byId(id));
             }
 
             return list;
@@ -265,18 +262,18 @@ public class Model_HardwareType extends NamedModel {
     @JsonIgnore
     public UUID get_producer_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_Producer.class) == null) {
-            cache().add(Model_Producer.class, (UUID) Model_Producer.find.query().where().eq("hardware_types.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_Producer.class) == null) {
+            idCache().add(Model_Producer.class, (UUID) Model_Producer.find.query().where().eq("hardware_types.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_Producer.class);
+        return idCache().get(Model_Producer.class);
     }
 
     @JsonIgnore
     public Model_Producer get_producer() {
 
         try {
-            return Model_Producer.getById(get_producer_id());
+            return Model_Producer.find.byId(get_producer_id());
         } catch (Exception e) {
             return null;
         }
@@ -285,18 +282,18 @@ public class Model_HardwareType extends NamedModel {
     @JsonIgnore
     public UUID get_processor_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_Processor.class) == null) {
-            cache().add(Model_Processor.class, (UUID) Model_Processor.find.query().where().eq("hardware_types.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_Processor.class) == null) {
+            idCache().add(Model_Processor.class, (UUID) Model_Processor.find.query().where().eq("hardware_types.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_Processor.class);
+        return idCache().get(Model_Processor.class);
     }
 
     @JsonIgnore
     public Model_Processor get_processor() {
 
         try {
-            return Model_Processor.getById(get_processor_id());
+            return Model_Processor.find.byId(get_processor_id());
         } catch (Exception e) {
             return null;
         }
@@ -305,17 +302,17 @@ public class Model_HardwareType extends NamedModel {
     @JsonIgnore
     public UUID get_main_test_c_program_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_CProgram_Test_FakeClass.class) == null) {
-            cache().add(Model_CProgram_Test_FakeClass.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_test.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
+        if (idCache().get(Model_CProgram_Test_FakeClass.class) == null) {
+            idCache().add(Model_CProgram_Test_FakeClass.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_test.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_CProgram_Test_FakeClass.class);
+        return idCache().get(Model_CProgram_Test_FakeClass.class);
     }
 
     @JsonIgnore
     public Model_CProgram get_main_test_c_program() {
         try {
-            return Model_CProgram.getById(get_main_test_c_program_id());
+            return Model_CProgram.find.byId(get_main_test_c_program_id());
         } catch (Exception e) {
             return null;
         }
@@ -324,16 +321,16 @@ public class Model_HardwareType extends NamedModel {
 
     @JsonIgnore
     public UUID get_main_boot_loader_id() throws _Base_Result_Exception {
-        if (cache().get(Model_HardwareType.Model_HardwareType_Main.class) == null) {
-            cache().add(Model_HardwareType.Model_HardwareType_Main.class, (UUID) Model_BootLoader.find.query().where().eq("main_hardware_type.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_HardwareType.Model_HardwareType_Main.class) == null) {
+            idCache().add(Model_HardwareType.Model_HardwareType_Main.class, (UUID) Model_BootLoader.find.query().where().eq("main_hardware_type.id", id).select("id").findSingleAttribute());
         }
-        return cache().get(Model_HardwareType.Model_HardwareType_Main.class);
+        return idCache().get(Model_HardwareType.Model_HardwareType_Main.class);
     }
 
     @JsonIgnore
     public Model_BootLoader get_main_boot_loader() throws _Base_Result_Exception {
         try {
-            return Model_BootLoader.getById(get_main_boot_loader_id());
+            return Model_BootLoader.find.byId(get_main_boot_loader_id());
         } catch (Exception e) {
             return null;
         }
@@ -342,18 +339,18 @@ public class Model_HardwareType extends NamedModel {
     @JsonIgnore
     public UUID get_main_c_program_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_CProgram.class) == null) {
-            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_default.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_CProgram.class) == null) {
+            idCache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_default.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_CProgram.class);
+        return idCache().get(Model_CProgram.class);
     }
 
     @JsonIgnore
     public Model_CProgram get_main_c_program() {
 
         try {
-            return Model_CProgram.getById(get_main_c_program_id());
+            return Model_CProgram.find.byId(get_main_c_program_id());
         } catch (Exception e) {
             return null;
         }
@@ -362,26 +359,6 @@ public class Model_HardwareType extends NamedModel {
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override public void update() {
-
-        logger.debug("update :: Update object value: {}",  this.id);
-
-        cache.put(id, this);
-        super.update();
-
-    }
-
-    @JsonIgnore @Override public boolean delete() {
-
-        logger.debug("update :: Delete object Id: {} ", this.id);
-
-        deleted = true;
-        cache.remove(id);
-        super.update();
-
-        return false;
-    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -476,32 +453,8 @@ public class Model_HardwareType extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(Model_HardwareType.class)
-    public static Cache<UUID, Model_HardwareType> cache;
-
-    public static Model_HardwareType getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-    
-    public static Model_HardwareType getById(UUID id) throws _Base_Result_Exception {
-
-        Model_HardwareType hardwareType = cache.get(id);
-        if (hardwareType == null) {
-
-            hardwareType = Model_HardwareType.find.byId(id);
-            if (hardwareType == null) throw new Result_Error_NotFound(Model_HardwareType.class);
-
-            cache.put(id, hardwareType);
-        }
-        // Check Permission
-        if(hardwareType.its_person_operation()) {
-            hardwareType.check_read_permission();
-        }
-
-        return hardwareType;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_HardwareType> find = new Finder<>(Model_HardwareType.class);
+    @CacheFinderField(Model_HardwareType.class)
+    public static CacheFinder<Model_HardwareType> find = new CacheFinder<>(Model_HardwareType.class);
 }

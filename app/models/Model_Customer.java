@@ -1,9 +1,9 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -12,7 +12,6 @@ import javax.persistence.*;
 import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @ApiModel(value = "Customer", description = "Model of Customer")
@@ -86,18 +85,8 @@ public class Model_Customer extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Customer getById(UUID id) throws _Base_Result_Exception {
-
-        Model_Customer customer = Model_Customer.find.byId(id);
-        if (customer == null) throw new Result_Error_NotFound(Model_Customer.class);
-        // Check Permission
-        if(customer.its_person_operation()) {
-            customer.check_read_permission();
-        }
-        return customer;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Customer> find = new Finder<>(Model_Customer.class);
+    @CacheFinderField(Model_Customer.class)
+    public static CacheFinder<Model_Customer> find = new CacheFinder<>(Model_Customer.class);
 }

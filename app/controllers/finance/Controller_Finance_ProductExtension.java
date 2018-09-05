@@ -79,7 +79,7 @@ public class Controller_Finance_ProductExtension extends _BaseController {
             Swagger_ProductExtension_New help  = formFromRequestWithValidation(Swagger_ProductExtension_New.class);
 
             // Kontrola objektu
-            Model_Product product = Model_Product.getById(product_id);
+            Model_Product product = Model_Product.find.byId(product_id);
 
             try {
                 ExtensionType type = ExtensionType.valueOf(help.extension_type);
@@ -126,7 +126,7 @@ public class Controller_Finance_ProductExtension extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
+            Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
 
             return ok(extension);
 
@@ -189,7 +189,7 @@ public class Controller_Finance_ProductExtension extends _BaseController {
             Swagger_ProductExtension_Edit help  = formFromRequestWithValidation(Swagger_ProductExtension_Edit.class);
 
             // Kontrola objektu
-            Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
+            Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
 
             extension.name = help.name;
             extension.description = help.description;
@@ -222,7 +222,7 @@ public class Controller_Finance_ProductExtension extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
+            Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
 
             // Check Permission
             extension.check_act_deactivate_permission();
@@ -257,7 +257,7 @@ public class Controller_Finance_ProductExtension extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
+            Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
 
             // Check Permission
             extension.check_act_deactivate_permission();
@@ -291,7 +291,7 @@ public class Controller_Finance_ProductExtension extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_ProductExtension extension = Model_ProductExtension.getById(extension_id);
+            Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
 
             extension.delete();
 

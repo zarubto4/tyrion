@@ -28,7 +28,7 @@ public class Swagger_Instance_List extends _Swagger_Filter_Common {
         List<UUID> uuids =  query.setFirstRow((page_number - 1) * filter.count_on_page).setMaxRows(filter.count_on_page).findIds();
 
         for (UUID uuid : uuids) {
-            this.content.add(Model_Instance.getById(uuid));
+            this.content.add(Model_Instance.find.byId(uuid));
         }
         this.total   = query.findCount();
         this.from   = (page_number - 1) * filter.count_on_page;

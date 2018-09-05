@@ -65,17 +65,17 @@ public class Model_Compilation extends BaseModel {
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     public UUID blob_id()throws _Base_Result_Exception {
-        if (cache().get(Model_Blob.class) == null) {
-            cache().add(Model_Blob.class, (UUID) Model_Blob.find.query().where().eq("version.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_Blob.class) == null) {
+            idCache().add(Model_Blob.class, (UUID) Model_Blob.find.query().where().eq("version.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_Blob.class);
+        return idCache().get(Model_Blob.class);
     }
 
     @JsonIgnore
     public Model_Blob blob()throws _Base_Result_Exception{
     try {
-        return Model_Blob.getById(blob_id());
+        return Model_Blob.find.byId(blob_id());
     } catch (Exception e) {
         logger.internalServerError(e);
         return null;
@@ -323,13 +323,7 @@ public class Model_Compilation extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Compilation getById(UUID id) {
-        return find.byId(id);
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Finder<UUID, Model_Compilation> find = new Finder<>(Model_Compilation.class);
-
-
 }

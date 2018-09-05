@@ -38,7 +38,7 @@ public class Swagger_Library_List extends _Swagger_Filter_Common{
 
 
         for (UUID uuid: uuids) {
-            this.content.add(Model_Library.getById(uuid));
+            this.content.add(Model_Library.find.byId(uuid));
         }
         this.total   = query.findCount();
         this.from   = (page_number - 1) * filter.count_on_page;

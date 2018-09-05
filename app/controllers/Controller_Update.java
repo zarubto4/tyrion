@@ -68,7 +68,7 @@ public class Controller_Update extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(actualization_procedure_id);
+            Model_UpdateProcedure procedure = Model_UpdateProcedure.find.byId(actualization_procedure_id);
 
             // Vrácení objektu
             return ok(procedure);
@@ -115,7 +115,7 @@ public class Controller_Update extends _BaseController {
 
             if (help.project_id != null) {
 
-                Model_Project.getById(help.project_id);
+                Model_Project.find.byId(help.project_id);
                 query.where().eq("project_id", help.project_id);
 
             }
@@ -148,11 +148,11 @@ public class Controller_Update extends _BaseController {
             @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
-    public Result canceled_procedure(@ApiParam(required = true) String procedure_id) {
+    public Result canceled_procedure(@ApiParam(required = true) UUID procedure_id) {
         try {
 
             // Kontrola objektu
-            Model_UpdateProcedure procedure = Model_UpdateProcedure.getById(procedure_id);
+            Model_UpdateProcedure procedure = Model_UpdateProcedure.find.byId(procedure_id);
 
             procedure.cancel_procedure();
 
@@ -199,7 +199,7 @@ public class Controller_Update extends _BaseController {
             if (firmware_type == null)  return notFound("firmware_type not found");
 
             // Kontrola Projektu
-            Model_Project project = Model_Project.getById(help.project_id);
+            Model_Project project = Model_Project.find.byId(help.project_id);
 
             // Kontrola
 
@@ -215,7 +215,7 @@ public class Controller_Update extends _BaseController {
                 }
             }
 
-            Model_HardwareGroup group = Model_HardwareGroup.getById(help.hardware_group_id);
+            Model_HardwareGroup group = Model_HardwareGroup.find.byId(help.hardware_group_id);
 
             Model_UpdateProcedure procedure = new Model_UpdateProcedure();
             procedure.type_of_update = UpdateType.MANUALLY_RELEASE_MANAGER;
@@ -231,12 +231,12 @@ public class Controller_Update extends _BaseController {
 
             for (Swagger_ActualizationProcedure_Make_HardwareType hardware_type_settings : help.hardware_type_settings) {
 
-                Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_settings.hardware_type_id);
+                Model_HardwareType hardwareType = Model_HardwareType.find.byId(hardware_type_settings.hardware_type_id);
 
                 Model_CProgramVersion c_program_version = null;
 
                 if (firmware_type == FirmwareType.FIRMWARE || firmware_type == FirmwareType.BACKUP) {
-                    c_program_version = Model_CProgramVersion.getById(hardware_type_settings.c_program_version_id);
+                    c_program_version = Model_CProgramVersion.find.byId(hardware_type_settings.c_program_version_id);
                     if(c_program_version.status() != CompilationStatus.SUCCESS) {
                         return badRequest("Selected Version is not succesfully compiled and restored. Its not possible to make a update procedure with it");
                     }
@@ -245,14 +245,14 @@ public class Controller_Update extends _BaseController {
                 Model_BootLoader bootLoader = null;
 
                 if (firmware_type == FirmwareType.BOOTLOADER) {
-                    bootLoader = Model_BootLoader.getById(hardware_type_settings.bootloader_id);
+                    bootLoader = Model_BootLoader.find.byId(hardware_type_settings.bootloader_id);
                     if (!bootLoader.getHardwareTypeId().equals(hardwareType.id)) badRequest("Invalid type of Bootloader for HardwareType");
                 }
 
                 List<UUID> uuid_ids = Model_Hardware.find.query().where().eq("hardware_groups.id", group.id).eq("hardware_type.id", hardwareType.id).select("id").findIds();
 
                 for (UUID uuid_id : uuid_ids) {
-                    Model_Hardware hardware = Model_Hardware.getById(uuid_id);
+                    Model_Hardware hardware = Model_Hardware.find.byId(uuid_id);
 
                     Model_HardwareUpdate plan = new Model_HardwareUpdate();
                     plan.hardware = hardware;
@@ -335,7 +335,7 @@ public class Controller_Update extends _BaseController {
 
             for (UUID hardware_id : help.hardware_ids) {
 
-                Model_Hardware hardware = Model_Hardware.getById(hardware_id);
+                Model_Hardware hardware = Model_Hardware.find.byId(hardware_id);
 
                 WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
                 b_pair.hardware = hardware;
@@ -386,7 +386,7 @@ public class Controller_Update extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_HardwareUpdate plan = Model_HardwareUpdate.getById(plan_id);
+            Model_HardwareUpdate plan = Model_HardwareUpdate.find.byId(plan_id);
 
             // Vrácení objektu
             return ok(plan);
@@ -445,7 +445,7 @@ public class Controller_Update extends _BaseController {
             if (!help.hardware_ids.isEmpty()) {
 
                 for (UUID hardware_id : help.hardware_ids) {
-                    Model_Hardware.getById(hardware_id);
+                    Model_Hardware.find.byId(hardware_id);
                 }
 
                 query.where().in("hardware.id", help.hardware_ids);
@@ -454,7 +454,7 @@ public class Controller_Update extends _BaseController {
             if (!help.instance_ids.isEmpty()) {
 
                 for (UUID instance_id : help.instance_ids) {
-                    Model_Instance.getById(instance_id);
+                    Model_Instance.find.byId(instance_id);
                 }
 
                 query.where().in("actualization_procedure.instance.instance.id", help.instance_ids);
@@ -463,7 +463,7 @@ public class Controller_Update extends _BaseController {
             if (!help.instance_snapshot_ids.isEmpty()) {
 
                 for (UUID instance_id : help.instance_snapshot_ids) {
-                    Model_InstanceSnapshot.getById(instance_id);
+                    Model_InstanceSnapshot.find.byId(instance_id);
                 }
 
                 query.where().in("actualization_procedure.instance.id", help.instance_ids);
@@ -472,7 +472,7 @@ public class Controller_Update extends _BaseController {
             if (!help.actualization_procedure_ids.isEmpty()) {
 
                 for (UUID procedure_id : help.actualization_procedure_ids) {
-                    Model_UpdateProcedure.getById(procedure_id);
+                    Model_UpdateProcedure.find.byId(procedure_id);
                 }
 
                 query.where().in("actualization_procedure.id", help.actualization_procedure_ids);

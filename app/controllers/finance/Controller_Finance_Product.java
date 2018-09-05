@@ -95,7 +95,7 @@ public class Controller_Finance_Product extends _BaseController {
             Swagger_Product_New help  = formFromRequestWithValidation(Swagger_Product_New.class);
 
             // Kontrola Objektu
-            Model_Tariff tariff = Model_Tariff.getById(help.tariff_id);
+            Model_Tariff tariff = Model_Tariff.find.byId(help.tariff_id);
 
             Model_Customer customer = null;
             Model_Person person = _BaseController.person();
@@ -104,7 +104,7 @@ public class Controller_Finance_Product extends _BaseController {
 
             if (help.customer_id != null) {
 
-                customer = Model_Customer.getById(help.customer_id);
+                customer = Model_Customer.find.byId(help.customer_id);
 
             } else {
 
@@ -312,7 +312,7 @@ public class Controller_Finance_Product extends _BaseController {
         try {
 
             // Kontrola Objektu
-            Model_Product product = Model_Product.getById(product_id);
+            Model_Product product = Model_Product.find.byId(product_id);
 
             // Vrácení seznamu
             return ok(product);
@@ -354,7 +354,7 @@ public class Controller_Finance_Product extends _BaseController {
             Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola Objektu
-            Model_Product product = Model_Product.getById(product_id);
+            Model_Product product = Model_Product.find.byId(product_id);
 
             // úpravy objektu
             product.name = help.name;
@@ -390,7 +390,7 @@ public class Controller_Finance_Product extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Product product = Model_Product.getById(product_id);
+            Model_Product product = Model_Product.find.byId(product_id);
 
             // Kontrola oprávnění
             product.check_act_deactivate_permission();
@@ -402,7 +402,7 @@ public class Controller_Finance_Product extends _BaseController {
             product.update();
 
             for(UUID id : product.get_projects_ids()){
-                Model_Project.cache.remove(id);
+                Model_Project.find.evict(id);
             }
 
             product.notificationDeactivation();
@@ -433,7 +433,7 @@ public class Controller_Finance_Product extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Product product = Model_Product.getById(product_id);
+            Model_Product product = Model_Product.find.byId(product_id);
 
             // Kontrola oprávnění
             product.check_act_deactivate_permission();
@@ -488,7 +488,7 @@ public class Controller_Finance_Product extends _BaseController {
             if (!(help.credit > 0)) return badRequest("Credit must be positive double number");
 
             // Find object
-            Model_Product product = Model_Product.getById(product_id);
+            Model_Product product = Model_Product.find.byId(product_id);
 
             Model_Invoice invoice = new Model_Invoice();
             invoice.product = product;
@@ -539,7 +539,7 @@ public class Controller_Finance_Product extends _BaseController {
             // URČENO POUZE PRO ADMINISTRÁTORY S OPRÁVNĚNÍM MAZAT!
 
             // Kontrola objektu
-            Model_Product product = Model_Product.getById(product_id);
+            Model_Product product = Model_Product.find.byId(product_id);
 
             // Trvalé odstranění produktu!
             product.delete();
@@ -585,7 +585,7 @@ public class Controller_Finance_Product extends _BaseController {
             Swagger_PaymentDetails_New help  = formFromRequestWithValidation(Swagger_PaymentDetails_New.class);
 
             // Kontrola Objektu
-            Model_Product product = Model_Product.getById(product_id);
+            Model_Product product = Model_Product.find.byId(product_id);
             if (product.payment_details != null) return badRequest("Product already has Payment Details");
 
 
@@ -663,7 +663,7 @@ public class Controller_Finance_Product extends _BaseController {
             Swagger_PaymentDetails_New help  = formFromRequestWithValidation(Swagger_PaymentDetails_New.class);
 
             // Kontrola Objektu
-            Model_PaymentDetails payment_details = Model_PaymentDetails.getById(payment_details_id);
+            Model_PaymentDetails payment_details = Model_PaymentDetails.find.byId(payment_details_id);
 
             payment_details.street          = help.street;
             payment_details.street_number   = help.street_number;
@@ -781,7 +781,7 @@ public class Controller_Finance_Product extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Product product = Model_Product.getById(product_id);
+            Model_Product product = Model_Product.find.byId(product_id);
 
             if (product.gopay_id == null) return badRequest("Product has on demand payments turned off.");
 

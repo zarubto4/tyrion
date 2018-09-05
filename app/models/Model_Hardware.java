@@ -7,10 +7,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClientException;
-import controllers.Controller_WebSocket;
 import controllers._BaseController;
 import io.ebean.Expr;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
@@ -18,6 +16,8 @@ import org.mindrot.jbcrypt.BCrypt;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.cache.Cached;
 import utilities.document_mongo_db.document_objects.*;
 import utilities.enums.*;
@@ -215,7 +215,7 @@ public class Model_Hardware extends TaggedModel {
         try {
 
 
-            if (cache().get(Model_hardware_update_update_in_progress_bootloader.class) == null) {
+            if (idCache().get(Model_hardware_update_update_in_progress_bootloader.class) == null) {
                 UUID update_id = (UUID) Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
                         .disjunction()
                         .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
@@ -230,14 +230,14 @@ public class Model_Hardware extends TaggedModel {
                         .setMaxRows(1)
                         .findSingleAttribute();
                 if (update_id != null) {
-                    System.out.println("Model_hardware_update_update_in_progress_bootloader Model_HardwareUpdate: state:: " + Model_HardwareUpdate.getById(update_id).state);
-                    cache().add(Model_hardware_update_update_in_progress_bootloader.class, Model_HardwareUpdate.getById(update_id).getBootloaderId());
+                    System.out.println("Model_hardware_update_update_in_progress_bootloader Model_HardwareUpdate: state:: " + Model_HardwareUpdate.find.byId(update_id).state);
+                    idCache().add(Model_hardware_update_update_in_progress_bootloader.class, Model_HardwareUpdate.find.byId(update_id).getBootloaderId());
                 }
             }
 
-            if (cache().get(Model_hardware_update_update_in_progress_bootloader.class) == null) return null;
+            if (idCache().get(Model_hardware_update_update_in_progress_bootloader.class) == null) return null;
 
-            return Model_BootLoader.getById(cache().get(Model_hardware_update_update_in_progress_bootloader.class));
+            return Model_BootLoader.find.byId(idCache().get(Model_hardware_update_update_in_progress_bootloader.class));
 
         } catch (_Base_Result_Exception e){
             //nothing
@@ -313,7 +313,7 @@ public class Model_Hardware extends TaggedModel {
             if (uuid == null) return null;
 
             // Dont Cache IT!!!!!!!!!!!!!!
-            Model_Project project = Model_Project.getById(uuid);
+            Model_Project project = Model_Project.find.byId(uuid);
             return new Swagger_Short_Reference(project.id, project.name, project.description);
 
         }catch (_Base_Result_Exception e){
@@ -423,7 +423,7 @@ public class Model_Hardware extends TaggedModel {
     public Model_HomerServer server() {
         try{
 
-            if (connected_server_id == null) return null; return Model_HomerServer.getById(connected_server_id);
+            if (connected_server_id == null) return null; return Model_HomerServer.find.byId(connected_server_id);
 
         } catch (_Base_Result_Exception e){
             //nothing
@@ -606,7 +606,7 @@ public class Model_Hardware extends TaggedModel {
             // nebo také né - proto se vrací stav Enum_Online_status - na to reaguje parameter latest_online(),
             // který následně vrací latest know online
 
-            if (Model_HomerServer.getById(connected_server_id).online_state() == NetworkStatus.ONLINE) {
+            if (Model_HomerServer.find.byId(connected_server_id).online_state() == NetworkStatus.ONLINE) {
 
                 if (cache_status.containsKey(id)) {
                     return cache_status.get(id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
@@ -660,15 +660,15 @@ public class Model_Hardware extends TaggedModel {
     public String picture_link() {
         try {
 
-            if ( this.cache().get(Model_Blob.class) == null) {
+            if ( this.idCache().get(Model_Blob.class) == null) {
                 Model_Blob fileRecord = Model_Blob.find.query().where().eq("hardware.id",id).select("id").findOne();
                 if (fileRecord != null) {
-                    this.cache().add(Model_Blob.class,  fileRecord.id);
+                    this.idCache().add(Model_Blob.class,  fileRecord.id);
                 }
             }
 
-            if (this.cache().get(Model_Blob.class) != null) {
-                Model_Blob record = Model_Blob.getById(this.cache().get(Model_Blob.class));
+            if (this.idCache().get(Model_Blob.class) != null) {
+                Model_Blob record = Model_Blob.find.byId(this.idCache().get(Model_Blob.class));
                 if (record != null) {
                     return record.getPublicDownloadLink(300);
                 }
@@ -688,20 +688,20 @@ public class Model_Hardware extends TaggedModel {
     /* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public Model_HomerServer get_connected_server() { return Model_HomerServer.getById(this.connected_server_id);}
+    public Model_HomerServer get_connected_server() { return Model_HomerServer.find.byId(this.connected_server_id);}
 
     @JsonIgnore
     public UUID get_producerId() {
-        if (cache().get(Model_Producer.class) == null) {
-            cache().add(Model_Producer.class, (UUID) Model_Producer.find.query().where().eq("hardware_types.hardware.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_Producer.class) == null) {
+            idCache().add(Model_Producer.class, (UUID) Model_Producer.find.query().where().eq("hardware_types.hardware.id", id).select("id").findSingleAttribute());
         }
-        return cache().get(Model_Producer.class);
+        return idCache().get(Model_Producer.class);
     }
 
     @JsonIgnore
     public Model_Producer get_producer(){
         try {
-            return Model_Producer.getById(get_producerId());
+            return Model_Producer.find.byId(get_producerId());
         } catch (Exception e) {
             return null;
         }
@@ -712,7 +712,7 @@ public class Model_Hardware extends TaggedModel {
         try {
 
             if(connected_instance_id != null) {
-                return Model_Instance.getById(connected_instance_id);
+                return Model_Instance.find.byId(connected_instance_id);
             }
 
             return null;
@@ -724,15 +724,15 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public UUID get_actual_c_program_id() {
 
-        if (cache().get(Model_CProgram.class) == null) {
+        if (idCache().get(Model_CProgram.class) == null) {
 
             UUID uuid = Model_CProgram.find.query().where().eq("versions.c_program_version_boards.id", id).select("id").findSingleAttribute();
             if(uuid == null) return null;
 
-            cache().add(Model_CProgram.class, uuid);
+            idCache().add(Model_CProgram.class, uuid);
         }
 
-        return cache().get(Model_CProgram.class);
+        return idCache().get(Model_CProgram.class);
     }
 
     @JsonIgnore
@@ -741,7 +741,7 @@ public class Model_Hardware extends TaggedModel {
 
             UUID id = get_actual_c_program_id();
             if(id == null) return null;
-            return Model_CProgram.getById(id);
+            return Model_CProgram.find.byId(id);
 
         }catch (Exception e) {
             return null;
@@ -752,13 +752,13 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public UUID get_actual_c_program_version_id(){
 
-        if (cache().get(Model_CProgramVersion.class) == null) {
+        if (idCache().get(Model_CProgramVersion.class) == null) {
             UUID uuid =  Model_CProgramVersion.find.query().where().eq("c_program_version_boards.id", id).select("id").findSingleAttribute();
             if(uuid == null) return null;
-            cache().add(Model_CProgramVersion.class, uuid);
+            idCache().add(Model_CProgramVersion.class, uuid);
         }
 
-        return cache().get(Model_CProgramVersion.class);
+        return idCache().get(Model_CProgramVersion.class);
     }
 
     @JsonIgnore
@@ -767,7 +767,7 @@ public class Model_Hardware extends TaggedModel {
             UUID id = get_actual_c_program_version_id();
 
             if(id == null) return null;
-            return Model_CProgramVersion.getById(id);
+            return Model_CProgramVersion.find.byId(id);
 
         }catch (Exception e) {
             return null;
@@ -777,21 +777,21 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public UUID get_actual_bootloader_id() {
 
-        if (cache().get(Model_BootLoader.class) == null) {
+        if (idCache().get(Model_BootLoader.class) == null) {
 
             UUID uuid =  Model_BootLoader.find.query().where().eq("hardware.id", id).select("id").findSingleAttribute();
             if(uuid == null) return null;
-            cache().add(Model_BootLoader.class, uuid);
+            idCache().add(Model_BootLoader.class, uuid);
         }
 
-        return cache().get(Model_BootLoader.class);
+        return idCache().get(Model_BootLoader.class);
     }
 
     @JsonIgnore
     public Model_BootLoader get_actual_bootloader(){
 
         try {
-            return Model_BootLoader.getById(get_actual_bootloader_id());
+            return Model_BootLoader.find.byId(get_actual_bootloader_id());
         }catch (Exception e) {
             return null;
         }
@@ -801,20 +801,20 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public UUID get_backup_c_program_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_CProgram.class) == null) {
+        if (idCache().get(Model_CProgram.class) == null) {
             UUID uuid = Model_CProgram.find.query().where().eq("versions.c_program_version_backup_boards.id", id).select("id").findSingleAttribute();
             if(uuid == null) return null;
-            cache().add(Model_CProgram.class, uuid);
+            idCache().add(Model_CProgram.class, uuid);
         }
 
-        return cache().get(Model_CProgram.class);
+        return idCache().get(Model_CProgram.class);
     }
 
     @JsonIgnore
     public Model_CProgram get_backup_c_program()throws _Base_Result_Exception {
 
         try {
-            return Model_CProgram.getById(get_backup_c_program_id());
+            return Model_CProgram.find.byId(get_backup_c_program_id());
         }catch (Exception e) {
             return null;
         }
@@ -824,21 +824,21 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public UUID get_backup_c_program_version_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_CProgramVersion.class) == null) {
+        if (idCache().get(Model_CProgramVersion.class) == null) {
 
             UUID uuid =  Model_CProgramVersion.find.query().where().eq("c_program_version_boards.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute();
             if(uuid == null) return null;
-            cache().add(Model_CProgramVersion.class, uuid);
+            idCache().add(Model_CProgramVersion.class, uuid);
         }
 
-        return cache().get(Model_CProgramVersion.class);
+        return idCache().get(Model_CProgramVersion.class);
     }
 
     @JsonIgnore
     public Model_CProgramVersion get_backup_c_program_version() {
 
         try {
-            return Model_CProgramVersion.getById(get_backup_c_program_version_id());
+            return Model_CProgramVersion.find.byId(get_backup_c_program_version_id());
         }catch (Exception e) {
             return null;
         }
@@ -848,16 +848,16 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public UUID getHardwareTypeCache_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_HardwareType.class) == null) {
-            cache().add(Model_HardwareType.class, (UUID) Model_HardwareType.find.query().where().eq("hardware.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_HardwareType.class) == null) {
+            idCache().add(Model_HardwareType.class, (UUID) Model_HardwareType.find.query().where().eq("hardware.id", id).select("id").findSingleAttribute());
         }
-        return cache().get(Model_HardwareType.class);
+        return idCache().get(Model_HardwareType.class);
     }
 
     @JsonIgnore
     public Model_HardwareType getHardwareTypeCache() throws _Base_Result_Exception {
         try {
-            return Model_HardwareType.getById(getHardwareTypeCache_id());
+            return Model_HardwareType.find.byId(getHardwareTypeCache_id());
         }catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -867,11 +867,11 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public UUID get_project_id()throws _Base_Result_Exception {
 
-        if (cache().get(Model_Project.class) == null) {
-            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("hardware.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_Project.class) == null) {
+            idCache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("hardware.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_Project.class);
+        return idCache().get(Model_Project.class);
 
     }
 
@@ -879,7 +879,7 @@ public class Model_Hardware extends TaggedModel {
     public Model_Project get_project() throws _Base_Result_Exception {
         try {
             if (get_project_id() != null) {
-                return Model_Project.getById(get_project_id());
+                return Model_Project.find.byId(get_project_id());
             } else {
                 return null;
             }
@@ -892,12 +892,12 @@ public class Model_Hardware extends TaggedModel {
     @JsonIgnore
     public List<UUID> get_hardware_group_ids() throws _Base_Result_Exception{
 
-        if (cache().gets(Model_HardwareGroup.class) == null) {
-            cache().add(Model_HardwareGroup.class,  Model_HardwareGroup.find.query().where().eq("hardware.id", id).select("id").findSingleAttributeList());
+        if (idCache().gets(Model_HardwareGroup.class) == null) {
+            idCache().add(Model_HardwareGroup.class,  Model_HardwareGroup.find.query().where().eq("hardware.id", id).select("id").findSingleAttributeList());
         }
 
 
-        return cache().gets(Model_HardwareGroup.class) != null ?  cache().gets(Model_HardwareGroup.class) : new ArrayList<>();
+        return idCache().gets(Model_HardwareGroup.class) != null ?  idCache().gets(Model_HardwareGroup.class) : new ArrayList<>();
 
     }
 
@@ -908,7 +908,7 @@ public class Model_Hardware extends TaggedModel {
             List<Model_HardwareGroup> groups  = new ArrayList<>();
 
             for (UUID group_id : get_hardware_group_ids()) {
-                groups.add(Model_HardwareGroup.getById(group_id));
+                groups.add(Model_HardwareGroup.find.byId(group_id));
             }
 
             return groups;
@@ -1056,7 +1056,7 @@ public class Model_Hardware extends TaggedModel {
 
             logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.uuid);
 
-            Model_Hardware device = Model_Hardware.getById(help.uuid);
+            Model_Hardware device = Model_Hardware.find.byId(help.uuid);
 
             if(device == null) {
                 if( cache_not_dominant_hardware.containsKey(help.full_id)) {
@@ -1115,7 +1115,7 @@ public class Model_Hardware extends TaggedModel {
                 return;
             }
 
-            Model_Hardware device = Model_Hardware.getById(help.uuid);
+            Model_Hardware device = Model_Hardware.find.byId(help.uuid);
 
             if (device == null) {
                 logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.uuid);
@@ -1161,7 +1161,7 @@ public class Model_Hardware extends TaggedModel {
 
             logger.debug("device_auto_backup_echo:: Device send Echo about making backup on device ID:: {} ", help.uuid);
 
-            Model_Hardware device = Model_Hardware.getById(help.uuid);
+            Model_Hardware device = Model_Hardware.find.byId(help.uuid);
 
             if (device == null) {
                 logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.uuid);
@@ -1183,7 +1183,7 @@ public class Model_Hardware extends TaggedModel {
 
             logger.debug("device_auto_backup_done_echo:: Device send Echo about backup done on device ID:: {} ", help.uuid);
 
-            Model_Hardware device = Model_Hardware.getById(help.uuid);
+            Model_Hardware device = Model_Hardware.find.byId(help.uuid);
 
             if (device == null) {
                 logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.uuid);
@@ -1215,7 +1215,7 @@ public class Model_Hardware extends TaggedModel {
 
                     cache_status.put(uuid, status.online_status);
                     // Odešlu echo pomocí websocketu do becki
-                    Model_Hardware device = getById(uuid);
+                    Model_Hardware device = find.byId(uuid);
                     WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, status.online_status, device.project().id);
 
                 } catch (IllegalArgumentException exception){
@@ -1455,7 +1455,7 @@ public class Model_Hardware extends TaggedModel {
 
             // Přejlad na FULL_ID
             if(request.uuid != null) {
-                Model_Hardware board = Model_Hardware.getById(request.uuid);
+                Model_Hardware board = Model_Hardware.find.byId(request.uuid);
 
                 if (board == null) {
                     logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found!");
@@ -1484,7 +1484,7 @@ public class Model_Hardware extends TaggedModel {
 
             for (UUID id : request.uuid_ids) {
 
-                Model_Hardware board =  Model_Hardware.getById(id);
+                Model_Hardware board =  Model_Hardware.find.byId(id);
                 if (board == null) {
                     homer.send(request.get_result(false));
                     return;
@@ -1522,7 +1522,7 @@ public class Model_Hardware extends TaggedModel {
     public static void device_settings_set(WS_Message_Hardware_set_settings settings) {
         if (settings.key != null) {
             if (settings.uuid != null) {
-                Model_Hardware hardware = Model_Hardware.getById(settings.uuid);
+                Model_Hardware hardware = Model_Hardware.find.byId(settings.uuid);
 
                 DM_Board_Bootloader_DefaultConfig configuration = hardware.bootloader_core_configuration();
 
@@ -1545,7 +1545,7 @@ public class Model_Hardware extends TaggedModel {
 
         if (this.connected_server_id != null) {
 
-            Model_HomerServer server = Model_HomerServer.getById(this.connected_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(this.connected_server_id);
             if (server != null) {
                 server.sendWithResponseAsync(message, consumer);
             } else {
@@ -1581,7 +1581,7 @@ public class Model_Hardware extends TaggedModel {
             return request;
         }
 
-        Model_HomerServer server = Model_HomerServer.getById(this.connected_server_id);
+        Model_HomerServer server = Model_HomerServer.find.byId(this.connected_server_id);
         if (server == null) {
 
             logger.internalServerError(new Exception("write_with_confirmation:: Hardware " + id + " has not exist server id " + this.connected_server_id + " and it wll be removed!"));
@@ -1611,7 +1611,7 @@ public class Model_Hardware extends TaggedModel {
             return;
         }
 
-        Model_HomerServer server = Model_HomerServer.getById(this.connected_server_id);
+        Model_HomerServer server = Model_HomerServer.find.byId(this.connected_server_id);
 
         if (server == null) {
 
@@ -1633,7 +1633,7 @@ public class Model_Hardware extends TaggedModel {
             return;
         }
 
-        Model_HomerServer server = Model_HomerServer.getById(this.connected_server_id);
+        Model_HomerServer server = Model_HomerServer.find.byId(this.connected_server_id);
 
         if (server == null) {
 
@@ -1943,8 +1943,8 @@ public class Model_Hardware extends TaggedModel {
                 return;
             }
 
-            if (Model_HomerServer.getById(plan.getHardware().connected_server_id).online_state() != NetworkStatus.ONLINE) {
-                logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", plan.getActualizationProcedureId() , plan.id, Model_HomerServer.getById(plan.getHardware().connected_server_id).name);
+            if (Model_HomerServer.find.byId(plan.getHardware().connected_server_id).online_state() != NetworkStatus.ONLINE) {
+                logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", plan.getActualizationProcedureId() , plan.id, Model_HomerServer.find.byId(plan.getHardware().connected_server_id).name);
                 plan.state = HardwareUpdateState.HOMER_SERVER_IS_OFFLINE;
                 plan.update();
                 return;
@@ -1953,7 +1953,7 @@ public class Model_Hardware extends TaggedModel {
             plan.state = HardwareUpdateState.IN_PROGRESS;
             plan.update();
 
-            Model_HomerServer.getById(plan.getHardware().connected_server_id).update_devices_firmware(Collections.singletonList(plan.get_brief_for_update_homer_server()));
+            Model_HomerServer.find.byId(plan.getHardware().connected_server_id).update_devices_firmware(Collections.singletonList(plan.get_brief_for_update_homer_server()));
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -2060,8 +2060,8 @@ public class Model_Hardware extends TaggedModel {
                     server_device_sort.put(plan.getHardware().connected_server_id, new ArrayList<>());
                 }
 
-                if (Model_HomerServer.getById(plan.getHardware().connected_server_id).online_state() != NetworkStatus.ONLINE) {
-                    logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id, Model_HomerServer.getById(plan.getHardware().connected_server_id).name);
+                if (Model_HomerServer.find.byId(plan.getHardware().connected_server_id).online_state() != NetworkStatus.ONLINE) {
+                    logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id, Model_HomerServer.find.byId(plan.getHardware().connected_server_id).name);
                     plan.state = HardwareUpdateState.HOMER_SERVER_IS_OFFLINE;
                     plan.update();
                     continue;
@@ -2094,7 +2094,7 @@ public class Model_Hardware extends TaggedModel {
                 tasks.add(plan.get_brief_for_update_homer_server());
             }
 
-            Model_HomerServer.getById(server_id).update_devices_firmware(tasks);
+            Model_HomerServer.find.byId(server_id).update_devices_firmware(tasks);
         }
     }
 
@@ -2400,8 +2400,8 @@ public class Model_Hardware extends TaggedModel {
                         logger.debug("check_firmware:: Device id: {} : verze se shodují - tím pádem je procedura dokončená a uzavírám", this.id);
                         this.actual_c_program_version = plan.c_program_version_for_update;
 
-                        this.cache().add(Model_CProgram.class,  this.actual_c_program_version.get_c_program().id);
-                        this.cache().add(Model_CProgramVersion.class,  this.actual_c_program_version.id);
+                        this.idCache().add(Model_CProgram.class,  this.actual_c_program_version.get_c_program().id);
+                        this.idCache().add(Model_CProgramVersion.class,  this.actual_c_program_version.id);
 
                         this.update();
 
@@ -2462,11 +2462,11 @@ public class Model_Hardware extends TaggedModel {
                         // Přemapovat hardware
                         actual_c_program_version = get_backup_c_program_version();
 
-                        this.cache().add(Model_CProgram.class, actual_c_program_version.id);                // C Program
-                        this.cache().add(Model_CProgramVersion.class, actual_c_program_version.id);
+                        this.idCache().add(Model_CProgram.class, actual_c_program_version.id);                // C Program
+                        this.idCache().add(Model_CProgramVersion.class, actual_c_program_version.id);
 
-                        this.cache().add(Model_CProgramFakeBackup.class, actual_c_program_version.id);      // Backup
-                        this.cache().add(Model_CProgramVersionFakeBackup.class, actual_c_program_version.id);
+                        this.idCache().add(Model_CProgramFakeBackup.class, actual_c_program_version.id);      // Backup
+                        this.idCache().add(Model_CProgramVersionFakeBackup.class, actual_c_program_version.id);
 
                         this.update();
 
@@ -2521,21 +2521,21 @@ public class Model_Hardware extends TaggedModel {
                     this.actual_c_program_version = getHardwareTypeCache().get_main_c_program().default_main_version;
 
                     // Clean Cache
-                    this.cache().removeAll(Model_CProgram.class);
-                    this.cache().removeAll(Model_CProgramVersion.class);
+                    this.idCache().removeAll(Model_CProgram.class);
+                    this.idCache().removeAll(Model_CProgramVersion.class);
 
-                    this.cache().add(Model_CProgram.class, getHardwareTypeCache().get_main_c_program().id);
-                    this.cache().add(Model_CProgramVersion.class, getHardwareTypeCache().get_main_c_program().default_main_version.id);
+                    this.idCache().add(Model_CProgram.class, getHardwareTypeCache().get_main_c_program().id);
+                    this.idCache().add(Model_CProgramVersion.class, getHardwareTypeCache().get_main_c_program().default_main_version.id);
 
                     // SET BACKUP
                     this.actual_backup_c_program_version = getHardwareTypeCache().get_main_c_program().default_main_version; // Udělám rovnou zálohu, protože taková by tam měla být
 
                     // Clean Cache
-                    this.cache().removeAll(Model_CProgramFakeBackup.class);
-                    this.cache().removeAll(Model_CProgramVersionFakeBackup.class);
+                    this.idCache().removeAll(Model_CProgramFakeBackup.class);
+                    this.idCache().removeAll(Model_CProgramVersionFakeBackup.class);
 
-                    this.cache().add(Model_CProgramFakeBackup.class, getHardwareTypeCache().get_main_c_program().id);
-                    this.cache().add(Model_CProgramVersionFakeBackup.class, getHardwareTypeCache().get_main_c_program().default_main_version.id);
+                    this.idCache().add(Model_CProgramFakeBackup.class, getHardwareTypeCache().get_main_c_program().id);
+                    this.idCache().add(Model_CProgramVersionFakeBackup.class, getHardwareTypeCache().get_main_c_program().default_main_version.id);
 
                     this.update();
                     return;
@@ -2595,7 +2595,7 @@ public class Model_Hardware extends TaggedModel {
                         Model_CProgramVersion version_not_cached = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findOne();
                         if (version_not_cached != null) {
 
-                            Model_CProgramVersion cached_version = Model_CProgramVersion.getById(version_not_cached.id);
+                            Model_CProgramVersion cached_version = Model_CProgramVersion.find.byId(version_not_cached.id);
 
                             logger.debug("check_backup:: Device id: {} Ještě nebyla přiřazena žádná Backup verze k HW v Tyrionovi - ale program se podařilo najít", this.id);
                             logger.debug("check_backup:: Device id: {} Actual Version ID of backup: {} build_id: {} ", this.id, this.actual_backup_c_program_version != null ? this.actual_backup_c_program_version.id : "'neni uloženo'", this.actual_backup_c_program_version != null ? this.actual_backup_c_program_version.compilation.firmware_build_id : " není uloženo ");
@@ -2608,7 +2608,7 @@ public class Model_Hardware extends TaggedModel {
 
                             if (cached_version != null) {
                                 this.actual_backup_c_program_version = cached_version;
-                                this.cache().add(Model_CProgramVersionFakeBackup.class, cached_version.get_c_program().id);
+                                this.idCache().add(Model_CProgramVersionFakeBackup.class, cached_version.get_c_program().id);
                                 this.update();
                             } else {
                                 logger.error("check_backup:: Device id: {} - critical bug - we found version_not_cached id {} but cached version is null!!!!", this.id, version_not_cached.id);
@@ -2639,11 +2639,11 @@ public class Model_Hardware extends TaggedModel {
 
                     if (version_not_cached != null) {
                         logger.debug("check_backup:: Ještě nebyla přiřazena žádná Backup verze k HW v Tyrionovi - ale program se podařilo najít");
-                        Model_CProgramVersion cached_version = Model_CProgramVersion.getById(version_not_cached.id);
+                        Model_CProgramVersion cached_version = Model_CProgramVersion.find.byId(version_not_cached.id);
 
                         this.actual_backup_c_program_version = cached_version;
-                        this.cache().add(Model_CProgramFakeBackup.class, cached_version.get_c_program().id);
-                        this.cache().add(Model_CProgramVersionFakeBackup.class, cached_version.id);
+                        this.idCache().add(Model_CProgramFakeBackup.class, cached_version.get_c_program().id);
+                        this.idCache().add(Model_CProgramVersionFakeBackup.class, cached_version.id);
                         this.update();
 
                     } else {
@@ -2793,7 +2793,7 @@ public class Model_Hardware extends TaggedModel {
                     plan.update();
 
                     this.actual_boot_loader = plan.getBootloader();
-                    this.cache().add(Model_BootLoader.class, plan.getBootloader().id);
+                    this.idCache().add(Model_BootLoader.class, plan.getBootloader().id);
                     //this.cache_actual_boot_loader_id = plan.getBootloader().id;
                     update();
 
@@ -3259,17 +3259,16 @@ public class Model_Hardware extends TaggedModel {
             // Fix Shit situations where we have mote device's with dominance!
             if(ids.size()>1){
                 for (int i = 1; i < ids.size(); i++) {
+
                     Model_Hardware hardware = Model_Hardware.find.byId(ids.get(i));
-                    if(hardware != null) {
-                        Model_Hardware.cache.remove(ids.get(i));
-                        hardware.dominant_entity = false;
-                        hardware.update();
-                    }
+                    hardware.dominant_entity = false;
+                    hardware.update();
+
                 }
             }
 
             if(!ids.isEmpty()) {
-                Model_Hardware hardware = getById(ids.get(0));
+                Model_Hardware hardware = find.byId(ids.get(0));
                 throw new Result_Error_Bad_request("Its not possible active this device, because its already activated in Project  " + hardware.get_project().name + ". Please, deactivate hardware in project first." );
             }
 
@@ -3309,9 +3308,6 @@ public class Model_Hardware extends TaggedModel {
         this.name = full_id;
 
         super.save();
-
-        //Cache Update
-        cache.put(this.id, this);
     }
 
     @Override
@@ -3319,9 +3315,6 @@ public class Model_Hardware extends TaggedModel {
 
         logger.debug("update - updating database, id: {}", this.id);
         logger.debug("update - updating database, actual synchronize to database is {} ", this.database_synchronize);
-
-        //Cache Update
-        cache.replace(this.id, this);
 
         if (get_project() != null) {
             if (get_project().id != null) {
@@ -3338,15 +3331,6 @@ public class Model_Hardware extends TaggedModel {
 
     @Override
     public boolean delete() {
-        try {
-
-            if (cache.containsKey(this.id))
-                cache.remove((this.id));
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-
         this.dominant_entity = false;
         return super.delete();
     }
@@ -3360,32 +3344,11 @@ public class Model_Hardware extends TaggedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_Hardware.class, maxElements = 100000)
-    public static Cache<UUID, Model_Hardware> cache;
-
     @CacheField(value = Boolean.class,  maxElements = 100000, duration = CacheField.DayCacheConstant, name = "Model_Hardware_Status")
     public static Cache<UUID, Boolean> cache_status;
 
     @CacheField(value = WS_Model_Hardware_Temporary_NotDominant_record.class, keyType = String.class,  maxElements = 100000, duration = CacheField.MonthCacheConstant, name = "Model_Hardware_NOT_DOMINANT_HARDWARE")
     public static Cache<String, WS_Model_Hardware_Temporary_NotDominant_record> cache_not_dominant_hardware;  // FULL_ID, HOMER_SERVER_ID
-
-    public static Model_Hardware getById(UUID id) throws _Base_Result_Exception {
-
-        Model_Hardware board = cache.get(id);
-        if (board == null) {
-
-            board = find.byId(id);
-            if (board == null) throw new Result_Error_NotFound(Model_Hardware.class);
-
-            cache.put(id, board);
-        }
-
-        // Check Permission
-        if(board.its_person_operation()) {
-            board.check_read_permission();
-        }
-        return board;
-    }
 
     /**
      * Specialní vyjímka - vždy vracíme Hardware podle full_id (číslo procesoru) kde
@@ -3402,7 +3365,7 @@ public class Model_Hardware extends TaggedModel {
         }
 
         logger.trace("getByFullId: {} Database ID {}", fullId, id.toString());
-        return getById(id);
+        return find.byId(id);
     }
 
     @JsonIgnore
@@ -3447,6 +3410,6 @@ public class Model_Hardware extends TaggedModel {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Hardware> find = new Finder<>(Model_Hardware.class);
-
+    @CacheFinderField(Model_Hardware.class)
+    public static CacheFinder<Model_Hardware> find = new CacheFinder<>(Model_Hardware.class);
 }

@@ -68,10 +68,6 @@ public class Model_ChangePropertyToken extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_ChangePropertyToken getById(UUID id) {
-        return find.byId(id);
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     public static Finder<UUID, Model_ChangePropertyToken> find = new Finder<>(Model_ChangePropertyToken.class);

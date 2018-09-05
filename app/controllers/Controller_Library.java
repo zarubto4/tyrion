@@ -88,13 +88,13 @@ public class Controller_Library extends _BaseController {
             library.publish_type = ProgramType.PRIVATE;
 
             if (help.project_id != null) {
-                Model_Project project = Model_Project.getById(help.project_id);
+                Model_Project project = Model_Project.find.byId(help.project_id);
                 library.project = project;
             }
 
             for (UUID hardware_type_id : help.hardware_type_ids) {
 
-                Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
+                Model_HardwareType hardwareType = Model_HardwareType.find.byId(hardware_type_id);
                 if (hardwareType != null) {
                     library.hardware_types.add(hardwareType);
                 }
@@ -147,10 +147,10 @@ public class Controller_Library extends _BaseController {
             Swagger_Library_Copy help = formFromRequestWithValidation(Swagger_Library_Copy.class);
 
             // Vyhledám Objekt
-            Model_Library library_old = Model_Library.getById(help.library_id);
+            Model_Library library_old = Model_Library.find.byId(help.library_id);
 
             // Vyhledám Objekt
-            Model_Project project = Model_Project.getById(help.project_id);
+            Model_Project project = Model_Project.find.byId(help.project_id);
 
             Model_Library library_new =  new Model_Library();
             library_new.name = help.name;
@@ -210,7 +210,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Library library = Model_Library.getById(library_id);
+            Model_Library library = Model_Library.find.byId(library_id);
 
             // Vrácneí objektu
             return ok(library);
@@ -271,7 +271,7 @@ public class Controller_Library extends _BaseController {
             }
 
             if (help.project_id != null) {
-                Model_Project.getById(help.project_id);
+                Model_Project.find.byId(help.project_id);
                 disjunction
                         .conjunction()
                         .eq("project.id", help.project_id)
@@ -341,7 +341,7 @@ public class Controller_Library extends _BaseController {
             Swagger_Library_New help = formFromRequestWithValidation(Swagger_Library_New.class);
 
             // Vyhledání objektu
-            Model_Library library = Model_Library.getById(library_id);
+            Model_Library library = Model_Library.find.byId(library_id);
 
             // Change values
             library.name = help.name;
@@ -392,7 +392,7 @@ public class Controller_Library extends _BaseController {
             Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_Library library = Model_Library.getById(help.object_id);
+            Model_Library library = Model_Library.find.byId(help.object_id);
 
             library.addTags(help.tags);
 
@@ -436,7 +436,7 @@ public class Controller_Library extends _BaseController {
             Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_Library library = Model_Library.getById(help.object_id);
+            Model_Library library = Model_Library.find.byId(help.object_id);
 
             library.removeTags(help.tags);
 
@@ -466,7 +466,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Library library = Model_Library.getById(library_id);
+            Model_Library library = Model_Library.find.byId(library_id);
 
             library.delete();
 
@@ -514,7 +514,7 @@ public class Controller_Library extends _BaseController {
             Swagger_Library_Version_New help = formFromRequestWithValidation(Swagger_Library_Version_New.class);
 
             // Ověření objektu
-            Model_Library library = Model_Library.getById(library_id);
+            Model_Library library = Model_Library.find.byId(library_id);
 
             // První nová Verze
             Model_LibraryVersion version = new Model_LibraryVersion();
@@ -560,7 +560,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Vyhledám Objekt
-            Model_LibraryVersion version = Model_LibraryVersion.getById(version_id);
+            Model_LibraryVersion version = Model_LibraryVersion.find.byId(version_id);
 
             // Vracím Objekt
             return ok(version);
@@ -603,7 +603,7 @@ public class Controller_Library extends _BaseController {
             Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Ověření objektu
-            Model_LibraryVersion version = Model_LibraryVersion.getById(version_id);
+            Model_LibraryVersion version = Model_LibraryVersion.find.byId(version_id);
 
             //Uprava objektu
             version.name = help.name;
@@ -638,7 +638,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Ověření objektu
-            Model_LibraryVersion version = Model_LibraryVersion.getById(version_id);
+            Model_LibraryVersion version = Model_LibraryVersion.find.byId(version_id);
 
             // Smažu zástupný objekt
             version.delete();
@@ -673,7 +673,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_LibraryVersion version = Model_LibraryVersion.getById(version_id);
+            Model_LibraryVersion version = Model_LibraryVersion.find.byId(version_id);
 
             if (Model_LibraryVersion.find.query().where().eq("approval_state", Approval.PENDING.name())
                     .eq("library.project.participants.person.id", _BaseController.personId())
@@ -731,7 +731,7 @@ public class Controller_Library extends _BaseController {
             Swagger_Community_Version_Publish_Response help = formFromRequestWithValidation(Swagger_Community_Version_Publish_Response.class);
 
             // Kontrola objektu
-            Model_LibraryVersion version_old = Model_LibraryVersion.getById(help.version_id);
+            Model_LibraryVersion version_old = Model_LibraryVersion.find.byId(help.version_id);
 
             // Kontrola objektu
             Model_Library library_old = version_old.library;
@@ -749,7 +749,7 @@ public class Controller_Library extends _BaseController {
                 version_old.update();
 
 
-                Model_Library library = Model_Library.getById(library_old.id); // TODO + "_public_copy");
+                Model_Library library = Model_Library.find.byId(library_old.id); // TODO + "_public_copy");
 
                 if (library == null) {
                     library = new Model_Library();

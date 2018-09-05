@@ -106,7 +106,7 @@ public class Controller_Security extends _BaseController {
 
             if (token_type == TokenType.INSTANCE_TOKEN) {
 
-                Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(help.token);
+                Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(help.token);
                 if (snapshot == null) return notFound("Token not found");
 
                 result.token = help.token;
@@ -183,7 +183,7 @@ public class Controller_Security extends _BaseController {
             Model_Person.token_cache.put(token.token, person.id);
 
             // Chache Update
-            Model_Person.getById(person.id);
+            Model_Person.find.byId(person.id);
 
 
             // Vytvářím objekt, který zasílám zpět frontendu

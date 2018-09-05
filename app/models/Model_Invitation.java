@@ -3,13 +3,11 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
 import play.data.validation.Constraints;
-import utilities.cache.CacheField;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -120,32 +118,8 @@ public class Model_Invitation extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_Invitation.class)
-    public static Cache<UUID, Model_Invitation> cache;
-
-    public static Model_Invitation getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
-    public static Model_Invitation getById(UUID id) throws _Base_Result_Exception {
-
-        Model_Invitation invitation = cache.get(id);
-        if (invitation == null) {
-
-            invitation = find.byId(id);
-            if (invitation == null)  throw new Result_Error_NotFound(Model_Invitation.class);
-
-            cache.put(id, invitation);
-        }
-        // Check Permission
-        if(invitation.its_person_operation()) {
-            invitation.check_read_permission();
-        }
-
-        return invitation;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Invitation> find = new Finder<>(Model_Invitation.class);
+    @CacheFinderField(Model_Invitation.class)
+    public static CacheFinder<Model_Invitation> find = new CacheFinder<>(Model_Invitation.class);
 }

@@ -92,7 +92,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
     })
     public Result tariffExtension_get(UUID extension_id) {
         try {
-            Model_TariffExtension extension = Model_TariffExtension.getById(extension_id);
+            Model_TariffExtension extension = Model_TariffExtension.find.byId(extension_id);
             return created(extension);
 
         } catch (Exception e) {
@@ -201,7 +201,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
             Swagger_TariffExtension_Edit help  = formFromRequestWithValidation(Swagger_TariffExtension_Edit.class);
 
             // Kontrola objektu
-            Model_TariffExtension extension = Model_TariffExtension.getById(extension_id);
+            Model_TariffExtension extension = Model_TariffExtension.find.byId(extension_id);
             if(extension == null) {
                 return notFound("Invalid extension id.");
             }
@@ -246,7 +246,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_TariffExtension extension = Model_TariffExtension.getById(extension_id);
+            Model_TariffExtension extension = Model_TariffExtension.find.byId(extension_id);
             if(extension == null) {
                 return notFound("Invalid extension id.");
             }
@@ -285,7 +285,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_TariffExtension extension = Model_TariffExtension.getById(extension_id);
+            Model_TariffExtension extension = Model_TariffExtension.find.byId(extension_id);
             if(extension == null) {
                 return notFound("Invalid extension id.");
             }
@@ -321,7 +321,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
     public Result tariffExtension_up(UUID extension_id) {
         try {
 
-            Model_TariffExtension tariffExtension =  Model_TariffExtension.getById(extension_id);
+            Model_TariffExtension tariffExtension =  Model_TariffExtension.find.byId(extension_id);
 
             tariffExtension.up();
 
@@ -349,7 +349,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
     public Result tariffExtension_down(UUID extension_id) {
         try {
 
-            Model_TariffExtension extension =  Model_TariffExtension.getById(extension_id);
+            Model_TariffExtension extension =  Model_TariffExtension.find.byId(extension_id);
 
             extension.down();
 
@@ -380,7 +380,7 @@ public class Controller_Finance_TariffExtension extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_TariffExtension extension = Model_TariffExtension.getById(extension_id);
+            Model_TariffExtension extension = Model_TariffExtension.find.byId(extension_id);
             if(extension == null) {
                 return notFound("Invalid extension id.");
             }

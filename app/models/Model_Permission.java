@@ -67,11 +67,7 @@ public class Model_Permission extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Permission getById(UUID id) {
-        return find.byId(id);
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static final Finder<UUID, Model_Permission> find = new Finder<>( Model_Permission.class);
+    public static final Finder<UUID, Model_Permission> find = new Finder<>(Model_Permission.class);
 }

@@ -36,7 +36,7 @@ public class Swagger_Block_List extends _Swagger_Filter_Common {
         }
 
         for (UUID id : uuids) {
-            Model_Block block = Model_Block.getById(id);
+            Model_Block block = Model_Block.find.byId(id);
             this.content.add(block);
         }
 

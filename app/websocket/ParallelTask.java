@@ -30,7 +30,7 @@ public class ParallelTask implements Callable<ObjectNode> {
         try {
 
 
-            Model_HomerServer server = Model_HomerServer.getById(this.server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(this.server_id);
 
             if (server == null) {
                throw new Exception("ParallelTask:: call server id" + this.server_id + " not exist");

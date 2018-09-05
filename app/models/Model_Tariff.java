@@ -5,15 +5,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
 import play.libs.Json;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.BusinessModel;
 import utilities.enums.PaymentMethod;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.extensions.extensions.Extension;
@@ -25,7 +23,6 @@ import utilities.swagger.input.Swagger_TariffLabelList;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Entity
@@ -223,28 +220,8 @@ public class Model_Tariff extends OrderedNamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_Tariff.class, duration = CacheField.DayCacheConstant)
-    @JsonIgnore public static Cache<UUID, Model_Tariff> cache;
-
-    public static Model_Tariff getById(UUID id) throws _Base_Result_Exception {
-
-        Model_Tariff tariff = cache.get(id);
-
-        if (tariff == null) {
-
-            tariff = Model_Tariff.find.byId(id);
-            if (tariff == null) throw new Result_Error_NotFound(Model_Tariff.class);
-
-            cache.put(id, tariff);
-        }
-        // Check Permission
-        if(tariff.its_person_operation()) {
-            tariff.check_read_permission();
-        }
-        return tariff;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Tariff> find = new Finder<>(Model_Tariff.class);
+    @CacheFinderField(Model_Tariff.class)
+    public static CacheFinder<Model_Tariff> find = new CacheFinder<>(Model_Tariff.class);
 }

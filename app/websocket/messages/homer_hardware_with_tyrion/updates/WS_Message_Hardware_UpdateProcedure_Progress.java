@@ -5,6 +5,7 @@ import play.data.validation.Constraints;
 import utilities.enums.Enum_HardwareHomerUpdate_state;
 import websocket.messages.common.abstract_class.WS_AbstractMessage_Instance;
 
+import java.util.UUID;
 
 public class WS_Message_Hardware_UpdateProcedure_Progress extends WS_AbstractMessage_Instance {
 
@@ -13,8 +14,8 @@ public class WS_Message_Hardware_UpdateProcedure_Progress extends WS_AbstractMes
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @Constraints.Required public String tracking_id   = null;
-    @Constraints.Required public String tracking_group_id = null;
+    @Constraints.Required public UUID tracking_id   = null;
+    @Constraints.Required public UUID tracking_group_id = null;
 
     @Constraints.Max(value = 100) @Constraints.Min(value = 0) public Integer percentage_progress;
 

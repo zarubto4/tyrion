@@ -76,7 +76,7 @@ public class Controller_Garfield extends _BaseController {
             Swagger_Garfield_Edit help  = formFromRequestWithValidation(Swagger_Garfield_Edit.class);
 
             // Kontrola objektu
-            Model_Garfield garfield = Model_Garfield.getById(garfield_id);
+            Model_Garfield garfield = Model_Garfield.find.byId(garfield_id);
 
             garfield.name = help.name;
             garfield.description = help.description;
@@ -165,7 +165,7 @@ public class Controller_Garfield extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Garfield garfield = Model_Garfield.getById(garfield_id);
+            Model_Garfield garfield = Model_Garfield.find.byId(garfield_id);
 
             // Odsranit objekt
             garfield.delete();
@@ -195,7 +195,7 @@ public class Controller_Garfield extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Garfield garfield = Model_Garfield.getById(garfield_id);
+            Model_Garfield garfield = Model_Garfield.find.byId(garfield_id);
 
             // Vrácení objektu
             return ok(garfield);
@@ -224,7 +224,7 @@ public class Controller_Garfield extends _BaseController {
 
 
             // Kotrola objektu
-            Model_Hardware hardware = Model_Hardware.getById(board_id);
+            Model_Hardware hardware = Model_Hardware.find.byId(board_id);
             Model_HardwareRegistrationEntity entity = Model_HardwareRegistrationEntity.getbyFull_id(hardware.full_id);
 
             Model_HardwareBatch batch = Model_HardwareBatch.getById(hardware.batch_id);
@@ -239,7 +239,7 @@ public class Controller_Garfield extends _BaseController {
             }
 
             // Kontrola objektu
-            Model_Garfield garfield = Model_Garfield.getById(garfields_id.get(0));
+            Model_Garfield garfield = Model_Garfield.find.byId(garfields_id.get(0));
 
             Printer_Api api = new Printer_Api();
 
@@ -318,7 +318,7 @@ public class Controller_Garfield extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Garfield garfield = Model_Garfield.getById(garfield_id);
+            Model_Garfield garfield = Model_Garfield.find.byId(garfield_id);
 
             if (!( garfield.print_label_id_1.equals(printer_id) || garfield.print_label_id_2.equals(printer_id) || garfield.print_sticker_id.equals(printer_id))) {
                 return forbidden();
@@ -352,7 +352,7 @@ public class Controller_Garfield extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Garfield garfield = Model_Garfield.getById(garfield_id);
+            Model_Garfield garfield = Model_Garfield.find.byId(garfield_id);
 
             if (garfield.print_label_id_1.equals(printer_id)) {
                 // TODO Lexa - odzkoušet a naimlementovat tiskárny P750W

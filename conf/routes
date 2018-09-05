@@ -334,7 +334,7 @@ DELETE    /compilation_server/:server_id                                controll
 PUT       /update_procedure/filter/:page_number                         controllers.Controller_Update.get_Actualization_Procedures_by_filter(page_number: Int)
 GET       /update_procedure/object/:procedure_id                        controllers.Controller_Update.get_Actualization_Procedure(procedure_id: java.util.UUID)
 POST      /update_procedure/make                                        controllers.Controller_Update.make_actualization_procedure()
-PUT       /update_procedure/cancel/:procedure_id                        controllers.Controller_Update.canceled_procedure(procedure_id)
+PUT       /update_procedure/cancel/:procedure_id                        controllers.Controller_Update.canceled_procedure(procedure_id: java.util.UUID)
 PUT       /update_procedure/bin/uploud                                  controllers.Controller_Update.uploadBinaryFileToBoard()
 
 #Task

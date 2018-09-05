@@ -43,7 +43,7 @@ public class Job_UploadBlockoToCloud implements Job {
 
                 if (record_id == null) throw new NullPointerException("Job was instantiated without record_id in the JobExecutionContext or the record_id is null for some reason.");
 
-                Model_InstanceSnapshot record = Model_InstanceSnapshot.getById(record_id);
+                Model_InstanceSnapshot record = Model_InstanceSnapshot.find.byId(record_id);
                 if (record == null) throw new NullPointerException("Cannot find the Instance Record in the DB.");
 
                 logger.trace("upload_blocko_thread: uploading the record");

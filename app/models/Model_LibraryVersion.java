@@ -4,13 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
 import play.libs.Json;
-import utilities.cache.CacheField;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -85,17 +83,17 @@ public class Model_LibraryVersion extends VersionModel {
     @JsonIgnore
     public UUID get_library_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_Library.class) == null) {
-            cache().add(Model_Library.class, (UUID) Model_Library.find.query().where().eq("versions.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_Library.class) == null) {
+            idCache().add(Model_Library.class, (UUID) Model_Library.find.query().where().eq("versions.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_Library.class);
+        return idCache().get(Model_Library.class);
     }
 
     @JsonIgnore
     public Model_Library get_library() throws _Base_Result_Exception {
         try {
-            return Model_Library.getById(get_library_id());
+            return Model_Library.find.byId(get_library_id());
         }catch (Exception e) {
             return null;
         }
@@ -113,9 +111,8 @@ public class Model_LibraryVersion extends VersionModel {
 
         // Add to Cache
         if(get_library() != null) {
-            System.out.println("Add To Library by get_library()");
             get_library().getVersionIds();
-            get_library().cache().add(this.getClass(), id);
+            get_library().idCache().add(this.getClass(), id);
         }
 
         new Thread(() -> {
@@ -152,7 +149,7 @@ public class Model_LibraryVersion extends VersionModel {
 
         // Remove from Cache
         try {
-            get_library().cache().remove(this.getClass(), id);
+            get_library().idCache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
@@ -241,33 +238,8 @@ public class Model_LibraryVersion extends VersionModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_LibraryVersion.class, duration = 600)
-    public static Cache<UUID, Model_LibraryVersion> cache;
-
-    public static Model_LibraryVersion getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
-    public static Model_LibraryVersion getById(UUID id) throws _Base_Result_Exception {
-
-        Model_LibraryVersion grid_widget_version = cache.get(id);
-
-        if (grid_widget_version == null) {
-
-            grid_widget_version = Model_LibraryVersion.find.byId(id);
-            if (grid_widget_version == null) throw new Result_Error_NotFound(Model_LibraryVersion.class);
-
-            cache.put(id, grid_widget_version);
-        }
-        // Check Permission
-        if(grid_widget_version.its_person_operation()) {
-            grid_widget_version.check_read_permission();
-        }
-
-        return grid_widget_version;
-    }
-
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_LibraryVersion> find = new Finder<>(Model_LibraryVersion.class);
+    @CacheFinderField(Model_LibraryVersion.class)
+    public static CacheFinder<Model_LibraryVersion> find = new CacheFinder<>(Model_LibraryVersion.class);
 }

@@ -1,7 +1,5 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.swagger.annotations.*;
 import models.*;
@@ -15,7 +13,6 @@ import responses.*;
 import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
-import utilities.enums.BoardCommand;
 import utilities.enums.NetworkStatus;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
@@ -25,14 +22,12 @@ import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
-import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_command_execute;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_uuid_converter_cleaner;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Model_Hardware_Temporary_NotDominant_record;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -86,7 +81,7 @@ public class Controller_Project extends _BaseController {
             Swagger_Project_New help  = formFromRequestWithValidation(Swagger_Project_New.class);
 
             // Kontrola objektu
-            Model_Product product = Model_Product.getById(help.product_id);
+            Model_Product product = Model_Product.find.byId(help.product_id);
 
             // Vytvoření objektu
             Model_Project project  = new Model_Project();
@@ -105,7 +100,7 @@ public class Controller_Project extends _BaseController {
                 participant.state = employee.state;
 
                 participant.save();
-                participant.person.cache().add(Model_Project.class, project.id);
+                participant.person.idCache().add(Model_Project.class, project.id);
             }
 
             project.refresh();
@@ -161,7 +156,7 @@ public class Controller_Project extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Project project = Model_Project.getById(project_id);
+            Model_Project project = Model_Project.find.byId(project_id);
 
             // Vraácení objektu
             return ok(project);
@@ -196,7 +191,7 @@ public class Controller_Project extends _BaseController {
     public Result project_delete(UUID project_id) {
         try {
             // Kontrola objektu
-            Model_Project project = Model_Project.getById(project_id);
+            Model_Project project = Model_Project.find.byId(project_id);
 
             // Smazání objektu
             project.delete();
@@ -242,7 +237,7 @@ public class Controller_Project extends _BaseController {
             Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_Project project = Model_Project.getById(project_id);
+            Model_Project project = Model_Project.find.byId(project_id);
 
             // Úprava objektu
             project.name = help.name;
@@ -293,7 +288,7 @@ public class Controller_Project extends _BaseController {
             Swagger_Invite_Person help = formFromRequestWithValidation(Swagger_Invite_Person.class);
 
             // Kontrola objektu
-            Model_Project project = Model_Project.getById(project_id);
+            Model_Project project = Model_Project.find.byId(project_id);
 
             // Kontrola oprávnění
             project.check_share_permission();
@@ -379,7 +374,7 @@ public class Controller_Project extends _BaseController {
             }
 
             // Uložení do DB
-            project.cache_refresh();
+            project.refresh();
 
             // Vrácení objektu
             return ok(project);
@@ -421,7 +416,7 @@ public class Controller_Project extends _BaseController {
             Swagger_Project_Participant_status help = formFromRequestWithValidation(Swagger_Project_Participant_status.class);
 
             // Kontrola objektu
-            Model_Project project = Model_Project.getById(project_id);
+            Model_Project project = Model_Project.find.byId(project_id);
 
             // Kontrola oprávnění
             project.admin_permission();
@@ -476,7 +471,7 @@ public class Controller_Project extends _BaseController {
             Swagger_Invite_Person help = formFromRequestWithValidation(Swagger_Invite_Person.class);
 
             //Kontrola objektu
-            Model_Project project = Model_Project.getById(project_id);
+            Model_Project project = Model_Project.find.byId(project_id);
 
             // Kontrola oprávnění
             project.check_share_permission();
@@ -558,7 +553,7 @@ public class Controller_Project extends _BaseController {
             // Get and Validate Object
             Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
-            Model_Project project = Model_Project.getById(help.object_id);
+            Model_Project project = Model_Project.find.byId(help.object_id);
 
             project.addTags(help.tags);
 
@@ -604,7 +599,7 @@ public class Controller_Project extends _BaseController {
             Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola Objektu
-            Model_Project project = Model_Project.getById(help.object_id);
+            Model_Project project = Model_Project.find.byId(help.object_id);
 
             // Odstranění Tagu
             project.removeTags(help.tags);
@@ -656,7 +651,7 @@ public class Controller_Project extends _BaseController {
             // First - We have to find object in central Hardware Registration Atuhority
             // Second Make a copy to local database for actual Hardware and if hardware is not active in any other project, automatically activated that
 
-            Model_Project project = Model_Project.getById(help.project_id);
+            Model_Project project = Model_Project.find.byId(help.project_id);
             project.check_update_permission();
 
             System.out.println("project_addHardware - check_update_permission done");
@@ -687,15 +682,15 @@ public class Controller_Project extends _BaseController {
 
                 for(UUID group_id : help.group_ids) {
 
-                    Model_HardwareGroup group = Model_HardwareGroup.getById(group_id);
+                    Model_HardwareGroup group = Model_HardwareGroup.find.byId(group_id);
                     group.check_update_permission();
 
                     group.getHardware().add(hardware);
 
                     hardware.hardware_groups.add(group);
 
-                    if(hardware.cache().get(Model_HardwareGroup.class) == null)  hardware.cache().add(Model_HardwareGroup.class,  new ArrayList<>()) ;
-                    hardware.cache().add(Model_HardwareGroup.class, (group.id));
+                    if(hardware.idCache().get(Model_HardwareGroup.class) == null)  hardware.idCache().add(Model_HardwareGroup.class,  new ArrayList<>()) ;
+                    hardware.idCache().add(Model_HardwareGroup.class, (group.id));
                 }
             }
 
@@ -716,7 +711,7 @@ public class Controller_Project extends _BaseController {
             hardware.update();
 
             // Set hardware as Dominant if is not dominant in another project
-            project.cache().add(Model_Hardware.class, hardware.id);
+            project.idCache().add(Model_Hardware.class, hardware.id);
 
 
             logger.warn("project_addHardware. Step 1 - is_online_get_from_cache");
@@ -733,7 +728,7 @@ public class Controller_Project extends _BaseController {
                     logger.warn("project_addHardware. Step 2 - Yes we have not dominant hardware record");
 
                     WS_Model_Hardware_Temporary_NotDominant_record record = Model_Hardware.cache_not_dominant_hardware.get(hardware.full_id);
-                    Model_HomerServer server = Model_HomerServer.getById(record.homer_server_id);
+                    Model_HomerServer server = Model_HomerServer.find.byId(record.homer_server_id);
 
                     // Remove if exist in not dominant record on public server
                     Model_Hardware.cache_not_dominant_hardware.remove(hardware.full_id);
@@ -790,7 +785,7 @@ public class Controller_Project extends _BaseController {
     public Result project_removeHardware(UUID id) {
         try {
 
-            Model_Hardware hardware = Model_Hardware.getById(id);
+            Model_Hardware hardware = Model_Hardware.find.byId(id);
 
             hardware.delete();
 
@@ -820,7 +815,7 @@ public class Controller_Project extends _BaseController {
     public Result project_deactiveHardware(UUID id) {
         try {
 
-            Model_Hardware hardware = Model_Hardware.getById(id);
+            Model_Hardware hardware = Model_Hardware.find.byId(id);
 
             hardware.check_deactivate_permission();
 
@@ -863,7 +858,7 @@ public class Controller_Project extends _BaseController {
     public Result project_activeHardware(UUID id) {
         try {
 
-            Model_Hardware hardware = Model_Hardware.getById(id);
+            Model_Hardware hardware = Model_Hardware.find.byId(id);
 
             hardware.check_activate_permission();
             hardware.dominant_entity = true;
@@ -882,7 +877,7 @@ public class Controller_Project extends _BaseController {
                 logger.warn("project_activeHardware. Step 2 - Yes we have not dominant hardware record");
 
                 WS_Model_Hardware_Temporary_NotDominant_record record = Model_Hardware.cache_not_dominant_hardware.get(hardware.full_id);
-                Model_HomerServer server = Model_HomerServer.getById(record.homer_server_id);
+                Model_HomerServer server = Model_HomerServer.find.byId(record.homer_server_id);
 
                 // Remove if exist in not dominant record on public server
                 Model_Hardware.cache_not_dominant_hardware.remove(hardware.full_id);

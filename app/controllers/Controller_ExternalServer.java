@@ -132,7 +132,7 @@ public class Controller_ExternalServer extends _BaseController {
                 server.server_type = HomerType.PUBLIC;
             }else {
                 server.server_type = HomerType.PRIVATE;
-                server.project =  Model_Project.getById(help.project_id);
+                server.project =  Model_Project.find.byId(help.project_id);
             }
 
             server.save();
@@ -202,7 +202,7 @@ public class Controller_ExternalServer extends _BaseController {
                 server.server_type = HomerType.PUBLIC;
             }else {
                 server.server_type = HomerType.PRIVATE;
-                server.project =  Model_Project.getById(help.project_id);;
+                server.project =  Model_Project.find.byId(help.project_id);;
             }
 
             // Uložení objektu
@@ -238,12 +238,12 @@ public class Controller_ExternalServer extends _BaseController {
     public Result homer_server_set_main_server(UUID homer_server_id) {
         try {
 
-            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
             if (server.server_type != HomerType.PUBLIC) return badRequest("Server must be in public group!");
 
             Model_HomerServer main_server_not_cached = Model_HomerServer.find.query().where().eq("server_type", HomerType.MAIN).select("id").findOne();
             if(main_server_not_cached != null) {
-                Model_HomerServer main_server = Model_HomerServer.getById(main_server_not_cached.id);
+                Model_HomerServer main_server = Model_HomerServer.find.byId(main_server_not_cached.id);
                 main_server.server_type = HomerType.PUBLIC;
                 main_server.update();
             }
@@ -276,12 +276,12 @@ public class Controller_ExternalServer extends _BaseController {
     public Result homer_server_set_backup_server(UUID homer_server_id) {
         try {
 
-            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
             if (server.server_type != HomerType.PUBLIC) return badRequest("Server must be in public group!");
 
             Model_HomerServer main_server_not_cached = Model_HomerServer.find.query().where().eq("server_type", HomerType.BACKUP).select("id").findOne();
             if(main_server_not_cached != null) {
-                Model_HomerServer main_server = Model_HomerServer.getById(main_server_not_cached.id);
+                Model_HomerServer main_server = Model_HomerServer.find.byId(main_server_not_cached.id);
                 main_server.server_type = HomerType.PUBLIC;
                 main_server.update();
             }
@@ -329,7 +329,7 @@ public class Controller_ExternalServer extends _BaseController {
             Swagger_HomerServer_New_Manually help = formFromRequestWithValidation(Swagger_HomerServer_New_Manually.class);
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
 
             // Úprava objektu
             server.name = help.name;
@@ -465,7 +465,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
 
             // Vrácení objektu
             return ok(server);
@@ -492,7 +492,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
 
             // Smzání objektu
             server.delete();
@@ -522,7 +522,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
 
             server.check_update_permission();
 
@@ -553,7 +553,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
 
             server.check_update_permission();
 
@@ -584,7 +584,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
 
             server.check_update_permission();
 
@@ -684,7 +684,7 @@ public class Controller_ExternalServer extends _BaseController {
             Swagger_CompilationServer_New help = formFromRequestWithValidation(Swagger_CompilationServer_New.class);
 
             // Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.getById(compilation_server_id);
+            Model_CompilationServer server = Model_CompilationServer.find.byId(compilation_server_id);
 
             // Upravím objekt
             server.personal_server_name = help.personal_server_name;
@@ -743,7 +743,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             //Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.getById(compilation_server_id);
+            Model_CompilationServer server = Model_CompilationServer.find.byId(compilation_server_id);
       
             // Vracím odpověď
             return ok(server);
@@ -772,7 +772,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             //Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.getById(compilation_server_id);
+            Model_CompilationServer server = Model_CompilationServer.find.byId(compilation_server_id);
 
             // Smažu objekt
             server.delete();
@@ -808,7 +808,7 @@ public class Controller_ExternalServer extends _BaseController {
             System.out.println("cloud_file_get_b_program_version");
 
             // Získám soubor
-            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
+            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(snapshot_id);
 
             System.out.println("OK 1");
 
@@ -860,7 +860,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Ověření objektu
-            Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
+            Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
 
             // Získám soubor
             Model_Compilation compilation = version.compilation;
@@ -902,7 +902,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Získám soubor
-            Model_Compilation compilation = Model_Compilation.getById(compilation_id);
+            Model_Compilation compilation = Model_Compilation.find.byId(compilation_id);
 
             if (compilation.status != CompilationStatus.SUCCESS) {
                 throw new Result_Error_NotFound(Model_Blob.class);
@@ -960,7 +960,7 @@ public class Controller_ExternalServer extends _BaseController {
             logger.trace("cloud_file_get_bootloader - download id: {}", bootloader_id);
 
             // Získám soubor
-            Model_BootLoader bootLoader = Model_BootLoader.getById(bootloader_id);
+            Model_BootLoader bootLoader = Model_BootLoader.find.byId(bootloader_id);
 
             logger.trace("cloud_file_get_bootloader - Bootloader: {}", bootLoader.version_identifier);
             logger.trace("cloud_file_get_bootloader - File Path: {}",  bootLoader.file.path);

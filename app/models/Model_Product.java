@@ -6,17 +6,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
 import play.data.Form;
 import play.libs.Json;
 import utilities.Server;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.cache.Cached;
 import utilities.enums.*;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.FinancialPermission;
@@ -446,7 +444,7 @@ public class Model_Product extends NamedModel {
         List<Model_Project>  projects = new ArrayList<>();
 
         for (UUID id : get_projects_ids()) {
-            projects.add(Model_Project.getById(id));
+            projects.add(Model_Project.find.byId(id));
         }
 
         return projects;
@@ -455,11 +453,11 @@ public class Model_Product extends NamedModel {
     @JsonIgnore
     public List<UUID> get_projects_ids() {
 
-        if (cache().gets(Model_Project.class) == null) {
-            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("product.id", id).select("id").findSingleAttribute());
+        if (idCache().gets(Model_Project.class) == null) {
+            idCache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("product.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().gets(Model_Project.class) != null ?  cache().gets(Model_Project.class) : new ArrayList<>();
+        return idCache().gets(Model_Project.class) != null ?  idCache().gets(Model_Project.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -773,45 +771,6 @@ public class Model_Product extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_Product.class)
-    public static Cache<UUID, Model_Product> cache;
-
-    public static Model_Product getById(UUID id) throws _Base_Result_Exception  {
-
-        Model_Product product = cache.get(id);
-
-        if (product == null) {
-            product = Model_Product.find.byId(id);
-            if (product == null) throw new Result_Error_NotFound(Model_Product.class);
-
-            cache.put(id, product);
-        }
-
-        // Check Permission
-
-        if(product.its_person_operation()) {
-            product.check_read_permission();
-        }
-
-        return product;
-    }
-
-    public static Model_Product getByIdWithoutPermission(UUID id) throws _Base_Result_Exception  {
-
-        Model_Product product = cache.get(id);
-
-        if (product == null) {
-
-            product = Model_Product.find.byId(id);
-            if (product == null) throw new Result_Error_NotFound(Model_Product.class);
-
-            cache.put(id, product);
-        }
-
-        return product;
-    }
-
-
     public static Model_Product getByInvoice(UUID invoice_id) throws _Base_Result_Exception  {
         return find.query().where().eq("invoices.id", invoice_id).findOne();
     }
@@ -826,5 +785,6 @@ public class Model_Product extends NamedModel {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Product> find = new Finder<>(Model_Product.class);
+    @CacheFinderField(Model_Product.class)
+    public static CacheFinder<Model_Product> find = new CacheFinder<>(Model_Product.class);
 }

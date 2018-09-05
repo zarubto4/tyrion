@@ -102,7 +102,7 @@ private static final Logger logger = new Logger(Model_InvoiceItem.class);
     public Model_Invoice get_invoice() throws _Base_Result_Exception {
 
         if (get_invoice_id() != null) {
-            return Model_Invoice.getById(cache_invoice_id);
+            return Model_Invoice.find.byId(cache_invoice_id);
         }
 
         return null;

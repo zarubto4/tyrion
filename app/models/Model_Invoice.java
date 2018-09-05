@@ -4,14 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
 import utilities.Server;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.*;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -21,7 +19,6 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @ApiModel( value = "Invoice", description = "Model of Invoice")
@@ -390,29 +387,8 @@ public class Model_Invoice extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_Invoice.class)
-    public static Cache<UUID, Model_Invoice> cache;
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Invoice getById(UUID id) throws _Base_Result_Exception {
-        Model_Invoice invoice = cache.get(id);
-
-        if (invoice == null) {
-
-            invoice = Model_Invoice.find.byId(id);
-            if (invoice == null) throw new Result_Error_NotFound(Model_Invoice.class);
-
-            cache.put(id, invoice);
-        }
-        // Check Permission
-        if(invoice.its_person_operation()) {
-            invoice.check_read_permission();
-        }
-        return invoice;
-    }
-
-
-    /* FINDER --------------------------------------------------------------------------------------------------------------*/
-
-    public static Finder<UUID, Model_Invoice> find = new Finder<>(Model_Invoice.class);
-
+    @CacheFinderField(Model_Invoice.class)
+    public static CacheFinder<Model_Invoice> find = new CacheFinder<>(Model_Invoice.class);
 }

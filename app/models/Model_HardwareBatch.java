@@ -27,7 +27,7 @@ import java.util.UUID;
 import static com.mongodb.client.model.Filters.eq;
 
 @ApiModel(description = "Model of Production Batch  ", value = "HardwareBatch")
-public class Model_HardwareBatch  extends MongoModel {
+public class Model_HardwareBatch extends MongoModel {
 
     /**
      * _BaseFormFactory

@@ -4,13 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers._BaseController;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
 import play.libs.Json;
-import utilities.cache.CacheField;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
@@ -87,17 +85,17 @@ public class Model_GSM extends TaggedModel {
     @JsonIgnore
     public UUID get_project_id() {
 
-        if (cache().get(Model_Project.class) == null) {
-            cache().add(Model_Project.class, Model_Project.find.query().where().eq("gsm.id", id).select("id").findSingleAttributeList());
+        if (idCache().get(Model_Project.class) == null) {
+            idCache().add(Model_Project.class, Model_Project.find.query().where().eq("gsm.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().get(Model_Project.class);
+        return idCache().get(Model_Project.class);
     }
 
     @JsonIgnore
     public Model_Project get_project() {
         try {
-            return Model_Project.getById(get_project_id());
+            return Model_Project.find.byId(get_project_id());
         } catch (Exception e) {
             return null;
         }
@@ -288,26 +286,6 @@ public class Model_GSM extends TaggedModel {
         this.total_traffic_threshold = -1L;
 
         super.save();
-        cache.put(id, this);
-    }
-
-    @JsonIgnore
-    @Override
-    public void update() {
-        logger.debug("update :: Update object Id: {}", this.id);
-        super.update();
-
-        cache.put(id, this);
-    }
-
-    @JsonIgnore
-    @Override
-    public boolean delete() {
-        logger.debug("delete: Delete object Id: {} ", this.id);
-        super.delete();
-
-        cache.remove(id);
-        return true;
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -425,32 +403,10 @@ public class Model_GSM extends TaggedModel {
 
     public enum Permission { GSM_create, GSM_read, GSM_update, GSM_edit, GSM_delete }
 
-    /* CACHE ---------------------------------------------------------------------------------------------------------------*/
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(Model_GSM.class)
-    public static Cache<UUID, Model_GSM> cache;
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-
-    @JsonIgnore
-    public static Model_GSM getById(UUID id) {
-        Model_GSM gsm = cache.get(id);
-        if (gsm == null) {
-
-            gsm = find.query().where().idEq(id).eq("deleted", false).findOne();
-            if (gsm == null) throw new Result_Error_NotFound(Model_Block.class);
-
-            cache.put(id, gsm);
-        }
-
-        // Check Permission
-        if(gsm.its_person_operation()) {
-            gsm.check_read_permission();
-        }
-        return gsm;
-    }
-
-    /* FINDER --------------------------------------------------------------------------------------------------------------*/
-
-    public static Finder<UUID, Model_GSM> find = new Finder<>(Model_GSM.class);
-
+    @CacheFinderField(Model_GSM.class)
+    public static CacheFinder<Model_GSM> find = new CacheFinder<>(Model_GSM.class);
 }

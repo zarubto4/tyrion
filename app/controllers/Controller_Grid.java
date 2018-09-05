@@ -85,7 +85,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_Project project = Model_Project.getById( project_id );
+            Model_Project project = Model_Project.find.byId( project_id );
 
             Model_GridProject gridProject = new Model_GridProject();
             gridProject.description = help.description;
@@ -120,7 +120,7 @@ public class Controller_Grid extends _BaseController {
     public Result gridProject_get(UUID grid_project_id) {
         try {
             // Kontrola objektu
-            Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
+            Model_GridProject gridProject = Model_GridProject.find.byId(grid_project_id);
 
             return ok(gridProject);
 
@@ -220,7 +220,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_NameAndDescription help  = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
+            Model_GridProject gridProject = Model_GridProject.find.byId(grid_project_id);
 
             gridProject.name = help.name;
             gridProject.description = help.description;
@@ -267,7 +267,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_GridProject gridProject = Model_GridProject.getById(help.object_id);
+            Model_GridProject gridProject = Model_GridProject.find.byId(help.object_id);
 
             gridProject.addTags(help.tags);
 
@@ -311,7 +311,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_GridProject gridProject = Model_GridProject.getById(help.object_id);
+            Model_GridProject gridProject = Model_GridProject.find.byId(help.object_id);
 
             gridProject.removeTags(help.tags);
 
@@ -347,7 +347,7 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
+            Model_GridProject gridProject = Model_GridProject.find.byId(grid_project_id);
             
             gridProject.delete();
 
@@ -376,7 +376,7 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_GridProject m_project = Model_GridProject.getById(grid_project_id);
+            Model_GridProject m_project = Model_GridProject.find.byId(grid_project_id);
             
             Swagger_M_Project_Interface m_project_interface = new Swagger_M_Project_Interface();
             m_project_interface.name = m_project.name;
@@ -438,7 +438,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_GridProject gridProject = Model_GridProject.getById(grid_project_id);
+            Model_GridProject gridProject = Model_GridProject.find.byId(grid_project_id);
 
             Model_GridProgram gridProgram = new Model_GridProgram();
             gridProgram.description         = help.description;
@@ -472,7 +472,7 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
+            Model_GridProgram gridProgram = Model_GridProgram.find.byId(grid_program_id);
 
             return ok(gridProgram);
             
@@ -514,7 +514,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_NameAndDescription help  = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
+            Model_GridProgram gridProgram = Model_GridProgram.find.byId(grid_program_id);
 
             if (gridProgram.get_grid_project() == null) return badRequest("You cannot change program on version");
 
@@ -562,7 +562,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_Tags help  = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_GridProgram gridProgram = Model_GridProgram.getById(help.object_id);
+            Model_GridProgram gridProgram = Model_GridProgram.find.byId(help.object_id);
 
             // Add Tags
             gridProgram.addTags(help.tags);
@@ -607,7 +607,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_Tags help  = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_GridProgram gridProgram = Model_GridProgram.getById(help.object_id);
+            Model_GridProgram gridProgram = Model_GridProgram.find.byId(help.object_id);
 
             // Remove Tags
             gridProgram.removeTags(help.tags);
@@ -638,7 +638,7 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
+            Model_GridProgram gridProgram = Model_GridProgram.find.byId(grid_program_id);
 
             gridProgram.delete();
 
@@ -684,7 +684,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_M_Program_Version_New help  = formFromRequestWithValidation(Swagger_M_Program_Version_New.class);
 
             // Kontrola objektu
-            Model_GridProgram gridProgram = Model_GridProgram.getById(grid_program_id);
+            Model_GridProgram gridProgram = Model_GridProgram.find.byId(grid_program_id);
             
             Model_GridProgramVersion version       = new Model_GridProgramVersion();
             version.name                = help.name;
@@ -725,7 +725,7 @@ public class Controller_Grid extends _BaseController {
     public Result gridProgramVersion_get(UUID version_id) {
         try {
             // Kontrola objektu
-            Model_GridProgramVersion version = Model_GridProgramVersion.getById(version_id);
+            Model_GridProgramVersion version = Model_GridProgramVersion.find.byId(version_id);
 
             // Vrácení objektu
             return ok(version);
@@ -767,7 +767,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_NameAndDescription help  = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_GridProgramVersion version = Model_GridProgramVersion.getById(version_id);
+            Model_GridProgramVersion version = Model_GridProgramVersion.find.byId(version_id);
 
             // Úprava objektu
             version.description = help.description;
@@ -802,7 +802,7 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Získání objektu
-            Model_GridProgramVersion version  = Model_GridProgramVersion.getById(version_id);
+            Model_GridProgramVersion version  = Model_GridProgramVersion.find.byId(version_id);
             
             // Smazání objektu
             version.delete();
@@ -839,7 +839,7 @@ public class Controller_Grid extends _BaseController {
             logger.trace("get_grid_byQR_Token_forMobile: Instance ID::  {}" , instance_id);
             logger.trace("get_grid_byQR_Token_forMobile: Grid Program ID:: {}" , grid_program_id);
 
-            Model_Instance instance = Model_Instance.getById(instance_id);
+            Model_Instance instance = Model_Instance.find.byId(instance_id);
 
             if(instance.current_snapshot() == null){
                 logger.debug("get_grid_byQR_Token_forMobile: Instance ID:: {} not running", instance_id);
@@ -887,7 +887,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_Grid_Terminal_Identf help  = formFromRequestWithValidation(Swagger_Grid_Terminal_Identf.class);
 
             // Kontrola objektu
-            Model_GridTerminal terminal = Model_GridTerminal.getById(terminal_id);
+            Model_GridTerminal terminal = Model_GridTerminal.find.byId(terminal_id);
 
             if (terminal == null) {
 
@@ -1019,7 +1019,7 @@ public class Controller_Grid extends _BaseController {
                     return badRequest("Widget with this name already exists, type a new one.");
                 }
             } else {
-                project = Model_Project.getById(help.project_id);
+                project = Model_Project.find.byId(help.project_id);
             }
 
             // Vytvoření objektu
@@ -1081,7 +1081,7 @@ public class Controller_Grid extends _BaseController {
     public Result widget_get(@ApiParam(value = "widget_id String path",   required = true) UUID grid_widget_id) {
         try {
             // Kontrola objektu
-            Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
+            Model_Widget gridWidget = Model_Widget.find.byId(grid_widget_id);
             if (gridWidget == null) return notFound("GridWidget widget_id not found");
 
             // Vrácení objektu
@@ -1140,7 +1140,7 @@ public class Controller_Grid extends _BaseController {
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
-                Model_Project.getById(help.project_id);
+                Model_Project.find.byId(help.project_id);
                 disjunction
                         .conjunction()
                             .eq("project.id", help.project_id)
@@ -1208,7 +1208,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_NameAndDesc_ProjectIdOptional help  = formFromRequestWithValidation(Swagger_NameAndDesc_ProjectIdOptional.class);
 
             // Kontrola objektu
-            Model_Widget widget = Model_Widget.getById(grid_widget_id);
+            Model_Widget widget = Model_Widget.find.byId(grid_widget_id);
 
             // Úprava objektu
             widget.description = help.description;
@@ -1260,7 +1260,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_Tags help  = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_Widget widget = Model_Widget.getById(help.object_id);
+            Model_Widget widget = Model_Widget.find.byId(help.object_id);
 
             // Add Tags
             widget.addTags(help.tags);
@@ -1305,7 +1305,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_Tags help  = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_Widget widget = Model_Widget.getById(help.object_id);
+            Model_Widget widget = Model_Widget.find.byId(help.object_id);
 
             // Remnove Tags
             widget.removeTags(help.tags);
@@ -1336,7 +1336,7 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
+            Model_Widget gridWidget = Model_Widget.find.byId(grid_widget_id);
 
             // Smazání objektu
             gridWidget.delete();
@@ -1383,10 +1383,10 @@ public class Controller_Grid extends _BaseController {
             Swagger_Grid_Widget_Copy help  = formFromRequestWithValidation(Swagger_Grid_Widget_Copy.class);
 
             // Kontrola objekt
-            Model_Widget grid_widget_old = Model_Widget.getById(help.widget_id);
+            Model_Widget grid_widget_old = Model_Widget.find.byId(help.widget_id);
 
             // Kontrola objekt
-            Model_Project project = Model_Project.getById(help.project_id);
+            Model_Project project = Model_Project.find.byId(help.project_id);
 
             // Zkontroluji oprávnění
             project.check_update_permission();
@@ -1442,7 +1442,7 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Kontrola objekt
-            Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
+            Model_Widget gridWidget = Model_Widget.find.byId(grid_widget_id);
 
             if (!gridWidget.active) return badRequest("Model_Widget is already deactivated");
             gridWidget.active = false;
@@ -1475,7 +1475,7 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Kontrola objekt
-            Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
+            Model_Widget gridWidget = Model_Widget.find.byId(grid_widget_id);
 
             if (gridWidget.active) return badRequest("Model_Widget is already activate");
             gridWidget.active = true;
@@ -1508,7 +1508,7 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Kontrola objekt
-            Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
+            Model_Widget gridWidget = Model_Widget.find.byId(grid_widget_id);
 
             // Shift Order Up
             gridWidget.up();
@@ -1538,7 +1538,7 @@ public class Controller_Grid extends _BaseController {
     public Result widget_order_down(@ApiParam(value = "widget_id String path",   required = true) UUID grid_widget_id) {
         try {
 
-            Model_Widget gridWidget =  Model_Widget.getById(grid_widget_id);
+            Model_Widget gridWidget =  Model_Widget.find.byId(grid_widget_id);
 
             // Shift Order down
             gridWidget.down();
@@ -1571,7 +1571,7 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_WidgetVersion version = Model_WidgetVersion.getById(grid_widget_version_id);
+            Model_WidgetVersion version = Model_WidgetVersion.find.byId(grid_widget_version_id);
 
             // Smazání objektu
             version.delete();
@@ -1609,7 +1609,7 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_WidgetVersion version = Model_WidgetVersion.getById(grid_widget_version_id);
+            Model_WidgetVersion version = Model_WidgetVersion.find.byId(grid_widget_version_id);
             if (version == null) return notFound("GridWidgetVersion grid_widget_version_id not found");
 
             if (!version.get_grid_widget_id().equals("00000000-0000-0000-0000-000000000001")) {
@@ -1618,7 +1618,7 @@ public class Controller_Grid extends _BaseController {
 
             Model_WidgetVersion old_version = Model_WidgetVersion.find.query().where().eq("publish_type", ProgramType.DEFAULT_VERSION.name()).select("id").findOne();
             if (old_version != null) {
-                old_version = Model_WidgetVersion.getById(old_version.id);
+                old_version = Model_WidgetVersion.find.byId(old_version.id);
                 old_version.publish_type = null;
                 old_version.update();
             }
@@ -1654,7 +1654,7 @@ public class Controller_Grid extends _BaseController {
         try {
             
             // Kontrola objektu
-            Model_WidgetVersion gridWidgetVersion = Model_WidgetVersion.getById(grid_widget_version_id);
+            Model_WidgetVersion gridWidgetVersion = Model_WidgetVersion.find.byId(grid_widget_version_id);
             
             if (Model_WidgetVersion.find.query().where().eq("approval_state", Approval.PENDING.name())
                     .eq("author_id", _BaseController.personId())
@@ -1716,7 +1716,7 @@ public class Controller_Grid extends _BaseController {
             if (help.name.equals("version_scheme")) return badRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
+            Model_Widget gridWidget = Model_Widget.find.byId(grid_widget_id);
 
             // Vytvoření objektu
             Model_WidgetVersion version = new Model_WidgetVersion();
@@ -1757,7 +1757,7 @@ public class Controller_Grid extends _BaseController {
         try {
             
             // Kontrola objektu
-            Model_WidgetVersion version = Model_WidgetVersion.getById(grid_widget_version_id);
+            Model_WidgetVersion version = Model_WidgetVersion.find.byId(grid_widget_version_id);
        
             // Vrácení objektu
             return ok(version);
@@ -1803,7 +1803,7 @@ public class Controller_Grid extends _BaseController {
             Swagger_NameAndDescription help  = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_WidgetVersion version = Model_WidgetVersion.getById(version_id);
+            Model_WidgetVersion version = Model_WidgetVersion.find.byId(version_id);
 
             // Kontrola oprávnění
             version.check_update_permission();
@@ -1852,7 +1852,7 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Widget gridWidget = Model_Widget.getById(grid_widget_id);
+            Model_Widget gridWidget = Model_Widget.find.byId(grid_widget_id);
 
             // Vrácení objektu
             return ok(gridWidget.versions);
@@ -1901,10 +1901,10 @@ public class Controller_Grid extends _BaseController {
             if (help.version_name.equals("version_scheme")) return badRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_WidgetVersion privateGridWidgetVersion = Model_WidgetVersion.getById(help.version_id);
+            Model_WidgetVersion privateGridWidgetVersion = Model_WidgetVersion.find.byId(help.version_id);
 
             // Kontrola nadřazeného objektu
-            Model_Widget widget_old = Model_Widget.getById(privateGridWidgetVersion.get_grid_widget_id());
+            Model_Widget widget_old = Model_Widget.find.byId(privateGridWidgetVersion.get_grid_widget_id());
 
             // Zkontroluji oprávnění
             if (!widget_old.community_publishing_permission()) {
@@ -1932,7 +1932,7 @@ public class Controller_Grid extends _BaseController {
                     widget.active = true;
                     widget.save();
                 } else {
-                    widget = Model_Widget.getById(widget_previous_id);
+                    widget = Model_Widget.find.byId(widget_previous_id);
                 }
 
                 // Vytvoření objektu

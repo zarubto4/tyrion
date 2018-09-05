@@ -2,11 +2,11 @@ package models;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import play.mvc.Http;
 import utilities.authentication.Attributes;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -17,7 +17,6 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.util.Optional;
-import java.util.UUID;
 
 import static controllers._BaseController.person;
 
@@ -185,23 +184,10 @@ public class Model_ServerError extends NamedModel {
 
     public enum Permission { ServerError_crate, ServerError_read, ServerError_update, ServerError_delete }
 
-
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-    
-    public static Model_ServerError getById(UUID id) throws _Base_Result_Exception {
-
-        Model_ServerError error = find.byId(id);
-        if(error == null)  throw new Result_Error_NotFound(Model_ServerError.class);
-
-        // Check Permission
-        if(error.its_person_operation()) {
-            error.check_read_permission();
-        }
-        return error;
-
-    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_ServerError> find = new Finder<>(Model_ServerError.class);
+    @CacheFinderField(Model_ServerError.class)
+    public static CacheFinder<Model_ServerError> find = new CacheFinder<>(Model_ServerError.class);
 }

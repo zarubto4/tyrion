@@ -79,7 +79,7 @@ public class Controller_Blocko extends _BaseController {
             Swagger_NameAndDescription help  = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_Project project = Model_Project.getById(project_id);
+            Model_Project project = Model_Project.find.byId(project_id);
 
             // Tvorba programu
             Model_BProgram bProgram        = new Model_BProgram();
@@ -117,7 +117,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_BProgram bProgram = Model_BProgram.getById(b_program_id);
+            Model_BProgram bProgram = Model_BProgram.find.byId(b_program_id);
 
             return ok(bProgram);
 
@@ -172,7 +172,7 @@ public class Controller_Blocko extends _BaseController {
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
-                Model_Project.getById(help.project_id);
+                Model_Project.find.byId(help.project_id);
                 disjunction
                         .conjunction()
                             .eq("project.id", help.project_id)
@@ -226,7 +226,7 @@ public class Controller_Blocko extends _BaseController {
             Swagger_NameAndDescription help  = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_BProgram b_program = Model_BProgram.getById(b_program_id);
+            Model_BProgram b_program = Model_BProgram.find.byId(b_program_id);
 
             // Úprava objektu
             b_program.description = help.description;
@@ -276,7 +276,7 @@ public class Controller_Blocko extends _BaseController {
             // Get and Validate Object
             Swagger_Tags help  = formFromRequestWithValidation(Swagger_Tags.class);
 
-            Model_BProgram bProgram = Model_BProgram.getById(help.object_id);
+            Model_BProgram bProgram = Model_BProgram.find.byId(help.object_id);
 
             bProgram.addTags(help.tags);
 
@@ -321,7 +321,7 @@ public class Controller_Blocko extends _BaseController {
             // Get and Validate Object
             Swagger_Tags help  = formFromRequestWithValidation(Swagger_Tags.class);
 
-            Model_BProgram bProgram = Model_BProgram.getById(help.object_id);
+            Model_BProgram bProgram = Model_BProgram.find.byId(help.object_id);
 
             bProgram.removeTags(help.tags);
 
@@ -351,7 +351,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_BProgram program = Model_BProgram.getById(b_program_id);
+            Model_BProgram program = Model_BProgram.find.byId(b_program_id);
 
             // Smazání objektu
             program.delete();
@@ -403,7 +403,7 @@ public class Controller_Blocko extends _BaseController {
             String file_content = help.program;
 
             // Ověření programu
-            Model_BProgram bProgram = Model_BProgram.getById(b_program_id);
+            Model_BProgram bProgram = Model_BProgram.find.byId(b_program_id);
 
             // První nová Verze
             Model_BProgramVersion version = new Model_BProgramVersion();
@@ -419,7 +419,7 @@ public class Controller_Blocko extends _BaseController {
 
                 for (Swagger_B_Program_Version_New.M_Project_SnapShot help_m_project_snap : help.m_project_snapshots) {
 
-                    Model_GridProject m_project = Model_GridProject.getById(help_m_project_snap.m_project_id);
+                    Model_GridProject m_project = Model_GridProject.find.byId(help_m_project_snap.m_project_id);
 
                     Model_BProgramVersionSnapGridProject snap = new Model_BProgramVersionSnapGridProject();
                     snap.grid_project = m_project;
@@ -439,7 +439,7 @@ public class Controller_Blocko extends _BaseController {
                             continue;
                         }
 
-                        Model_GridProgramVersion grid_version = Model_GridProgramVersion.getById(m_program_version_id);
+                        Model_GridProgramVersion grid_version = Model_GridProgramVersion.find.byId(m_program_version_id);
 
                         Model_BProgramVersionSnapGridProjectProgram snap_shot_parameter = new Model_BProgramVersionSnapGridProjectProgram();
                         snap_shot_parameter.grid_program_version = grid_version;
@@ -478,7 +478,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_BProgramVersion version = Model_BProgramVersion.getById(version_id);
+            Model_BProgramVersion version = Model_BProgramVersion.find.byId(version_id);
 
             // Vrácení objektu
             return ok(version);
@@ -522,7 +522,7 @@ public class Controller_Blocko extends _BaseController {
             Swagger_NameAndDescription help  = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Získání objektu
-            Model_BProgramVersion version = Model_BProgramVersion.getById(version_id);
+            Model_BProgramVersion version = Model_BProgramVersion.find.byId(version_id);
 
             version.name = help.name;
             version.description = help.description;
@@ -557,7 +557,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Získání objektu
-            Model_BProgramVersion version  = Model_BProgramVersion.getById(version_id);
+            Model_BProgramVersion version  = Model_BProgramVersion.find.byId(version_id);
 
             // Smazání objektu
             version.delete();
@@ -607,13 +607,13 @@ public class Controller_Blocko extends _BaseController {
             Swagger_Instance_New help  = formFromRequestWithValidation(Swagger_Instance_New.class);
 
             // Kontrola objektu
-            Model_Project project = Model_Project.getById(help.project_id);
-            Model_HomerServer main_server = Model_HomerServer.getById(help.main_server_id);
+            Model_Project project = Model_Project.find.byId(help.project_id);
+            Model_HomerServer main_server = Model_HomerServer.find.byId(help.main_server_id);
 
             Model_HomerServer backup_server = null;
-            if(help.backup_server_id != null) backup_server = Model_HomerServer.getById(help.backup_server_id);
+            if(help.backup_server_id != null) backup_server = Model_HomerServer.find.byId(help.backup_server_id);
 
-            Model_BProgram b_program = Model_BProgram.getById(help.b_program_id);
+            Model_BProgram b_program = Model_BProgram.find.byId(help.b_program_id);
 
             // Tvorba Objektu
             Model_Instance instance = new Model_Instance();
@@ -651,7 +651,7 @@ public class Controller_Blocko extends _BaseController {
     public Result instance_get(UUID instance_id) {
         try {
 
-            Model_Instance instance = Model_Instance.getById(instance_id);
+            Model_Instance instance = Model_Instance.find.byId(instance_id);
 
             return ok(instance);
 
@@ -694,7 +694,7 @@ public class Controller_Blocko extends _BaseController {
             Swagger_NameAndDescription help  = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_Instance instance = Model_Instance.getById(instance_id);
+            Model_Instance instance = Model_Instance.find.byId(instance_id);
 
             instance.name = help.name;
             instance.description = help.description;
@@ -741,7 +741,7 @@ public class Controller_Blocko extends _BaseController {
             Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_Instance instance = Model_Instance.getById(help.object_id);
+            Model_Instance instance = Model_Instance.find.byId(help.object_id);
 
             // Přidání Tagu
             instance.addTags(help.tags);
@@ -786,7 +786,7 @@ public class Controller_Blocko extends _BaseController {
             Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_Instance instance = Model_Instance.getById(help.object_id);
+            Model_Instance instance = Model_Instance.find.byId(help.object_id);
 
             // Odebrání Tagu
             instance.removeTags(help.tags);
@@ -815,7 +815,7 @@ public class Controller_Blocko extends _BaseController {
     public Result instance_delete(UUID instance_id) {
         try {
 
-            Model_Instance instance = Model_Instance.getById(instance_id);
+            Model_Instance instance = Model_Instance.find.byId(instance_id);
             instance.delete();
 
             return ok();
@@ -841,7 +841,7 @@ public class Controller_Blocko extends _BaseController {
     public Result instance_shutdown(UUID instance_id) {
         try {
 
-            Model_Instance instance = Model_Instance.getById(instance_id);
+            Model_Instance instance = Model_Instance.find.byId(instance_id);
 
             instance.stop();
 
@@ -887,9 +887,9 @@ public class Controller_Blocko extends _BaseController {
             Swagger_InstanceSnapshot_New help = formFromRequestWithValidation(Swagger_InstanceSnapshot_New.class);
 
             // Kontrola objektu
-            Model_Instance instance = Model_Instance.getById(instance_id);
+            Model_Instance instance = Model_Instance.find.byId(instance_id);
 
-            Model_BProgramVersion version = Model_BProgramVersion.getById(help.version_id);
+            Model_BProgramVersion version = Model_BProgramVersion.find.byId(help.version_id);
 
             Model_InstanceSnapshot snapshot = new Model_InstanceSnapshot();
             snapshot.name = help.name;
@@ -943,7 +943,7 @@ public class Controller_Blocko extends _BaseController {
             Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
+            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(snapshot_id);
 
             snapshot.name = help.name;
             snapshot.description = help.description;
@@ -972,7 +972,7 @@ public class Controller_Blocko extends _BaseController {
     public Result instanceSnapshot_get(UUID snapshot_id) {
         try {
 
-            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
+            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(snapshot_id);
 
             return ok(snapshot);
 
@@ -1016,7 +1016,7 @@ public class Controller_Blocko extends _BaseController {
             Swagger_InstanceSnapshot_Deploy help = formFromRequestWithValidation(Swagger_InstanceSnapshot_Deploy.class);
 
             // Kontrola objektu: Verze B programu kterou budu nahrávat do cloudu
-            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(help.snapshot_id);
+            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(help.snapshot_id);
 
             // If upload time is "future"
             if (help.upload_time != null && help.upload_time != 0L) {
@@ -1070,7 +1070,7 @@ public class Controller_Blocko extends _BaseController {
     public Result instanceSnapshot_delete(UUID snapshot_id) {
         try {
 
-            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
+            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(snapshot_id);
 
             snapshot.delete();
 
@@ -1177,7 +1177,7 @@ public class Controller_Blocko extends _BaseController {
 
 
             // Hledám objekt
-            Model_InstanceSnapshot snapshot_settings = Model_InstanceSnapshot.getById(snapshot_id);
+            Model_InstanceSnapshot snapshot_settings = Model_InstanceSnapshot.find.byId(snapshot_id);
 
             // Měním parameter
             snapshot_settings.json_additional_parameter = Json.toJson(help).toString();
@@ -1230,7 +1230,7 @@ public class Controller_Blocko extends _BaseController {
             // Get and Validate Object
             Swagger_Instance_Token help = formFromRequestWithValidation(Swagger_Instance_Token.class);
 
-            Model_Instance instance = Model_Instance.getById(instance_id);
+            Model_Instance instance = Model_Instance.find.byId(instance_id);
 
             Model_InstanceSnapshot current_snapshot = instance.current_snapshot();
 
@@ -1287,7 +1287,7 @@ public class Controller_Blocko extends _BaseController {
             // Get and Validate Object
             Swagger_Instance_Token_Edit help = formFromRequestWithValidation(Swagger_Instance_Token_Edit.class);
 
-            Model_Instance instance = Model_Instance.getById(instance_id);
+            Model_Instance instance = Model_Instance.find.byId(instance_id);
 
             Model_InstanceSnapshot current_snapshot = instance.current_snapshot();
 
@@ -1336,7 +1336,7 @@ public class Controller_Blocko extends _BaseController {
     public Result instance_remove_api_key(UUID instance_id, UUID token) {
         try {
 
-            Model_Instance instance = Model_Instance.getById(instance_id);
+            Model_Instance instance = Model_Instance.find.byId(instance_id);
 
             Model_InstanceSnapshot current_snapshot = instance.current_snapshot();
 
@@ -1396,7 +1396,7 @@ public class Controller_Blocko extends _BaseController {
             // Get and Validate Object
             Swagger_Instance_MESH help = formFromRequestWithValidation(Swagger_Instance_MESH.class);
 
-            Model_Instance instance = Model_Instance.getById(instance_id);
+            Model_Instance instance = Model_Instance.find.byId(instance_id);
 
             Model_InstanceSnapshot current_snapshot = instance.current_snapshot();
 
@@ -1465,7 +1465,7 @@ public class Controller_Blocko extends _BaseController {
             // Get and Validate Object
             Swagger_Instance_MESH_Edit help = formFromRequestWithValidation(Swagger_Instance_MESH_Edit.class);
 
-            Model_Instance instance = Model_Instance.getById(instance_id);
+            Model_Instance instance = Model_Instance.find.byId(instance_id);
 
             Model_InstanceSnapshot current_snapshot = instance.current_snapshot();
 
@@ -1514,7 +1514,7 @@ public class Controller_Blocko extends _BaseController {
     public Result instance_remove_mesh_network_key(UUID instance_id, String token) {
         try {
 
-            Model_Instance instance = Model_Instance.getById(instance_id);
+            Model_Instance instance = Model_Instance.find.byId(instance_id);
 
             Model_InstanceSnapshot current_snapshot = instance.current_snapshot();
 
@@ -1588,7 +1588,7 @@ public class Controller_Blocko extends _BaseController {
                     return badRequest("Block with this name already exists, type a new one.");
                 }
             } else {
-                project = Model_Project.getById(help.project_id);
+                project = Model_Project.find.byId(help.project_id);
             }
 
             // Vytvoření objektu
@@ -1666,10 +1666,10 @@ public class Controller_Blocko extends _BaseController {
             Swagger_Block_Copy help = formFromRequestWithValidation(Swagger_Block_Copy.class);
 
             // Vyhledám Objekt
-            Model_Block blockOld = Model_Block.getById(help.block_id);
+            Model_Block blockOld = Model_Block.find.byId(help.block_id);
         
             // Vyhledám Objekt
-            Model_Project project = Model_Project.getById(help.project_id);
+            Model_Project project = Model_Project.find.byId(help.project_id);
 
             Model_Block blockNew = new Model_Block();
             blockNew.name = help.name;
@@ -1733,7 +1733,7 @@ public class Controller_Blocko extends _BaseController {
             Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_Block block = Model_Block.getById(block_id);
+            Model_Block block = Model_Block.find.byId(block_id);
             
             // Úprava objektu
             block.description = help.description;
@@ -1787,7 +1787,7 @@ public class Controller_Blocko extends _BaseController {
             Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_Block block = Model_Block.getById(help.object_id);
+            Model_Block block = Model_Block.find.byId(help.object_id);
 
             // Add Tags
             block.addTags(help.tags);
@@ -1832,7 +1832,7 @@ public class Controller_Blocko extends _BaseController {
             Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_Block block = Model_Block.getById(help.object_id);
+            Model_Block block = Model_Block.find.byId(help.object_id);
 
             // Remove Tags
             block.removeTags(help.tags);
@@ -1862,7 +1862,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Block block = Model_Block.getById(block_id);
+            Model_Block block = Model_Block.find.byId(block_id);
          
             // Vrácení objektu
             return ok(block);
@@ -1921,7 +1921,7 @@ public class Controller_Blocko extends _BaseController {
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
-                Model_Project.getById(help.project_id);
+                Model_Project.find.byId(help.project_id);
                 disjunction
                         .conjunction()
                         .eq("project.id", help.project_id)
@@ -1976,7 +1976,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Block blockoBlock = Model_Block.getById(block_id);
+            Model_Block blockoBlock = Model_Block.find.byId(block_id);
        
             // Smazání objektu
             blockoBlock.delete();
@@ -2008,7 +2008,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Block block = Model_Block.getById(block_id);
+            Model_Block block = Model_Block.find.byId(block_id);
 
             // Shift order up
             block.up();
@@ -2038,7 +2038,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Block block =  Model_Block.getById(block_id);
+            Model_Block block =  Model_Block.find.byId(block_id);
 
             // Shift order down
             block.down();
@@ -2067,7 +2067,7 @@ public class Controller_Blocko extends _BaseController {
     public Result block_deactivate(UUID block_id) {
         try {
 
-            Model_Block block = Model_Block.getById(block_id);
+            Model_Block block = Model_Block.find.byId(block_id);
             if (!block.active) return badRequest("Block is already deactivated");
             
             block.active = false;
@@ -2098,7 +2098,7 @@ public class Controller_Blocko extends _BaseController {
     public Result block_activate(UUID block_id) {
         try {
 
-            Model_Block block = Model_Block.getById(block_id);
+            Model_Block block = Model_Block.find.byId(block_id);
 
             if (block.active) return badRequest("Block is already activated");
             block.active = true;
@@ -2148,7 +2148,7 @@ public class Controller_Blocko extends _BaseController {
             if (help.version_name.equals("version_scheme")) return badRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_BlockVersion private_block_version = Model_BlockVersion.getById(help.version_id);
+            Model_BlockVersion private_block_version = Model_BlockVersion.find.byId(help.version_id);
 
             // Kontrola nadřazeného objektu
             Model_Block block_old = private_block_version.get_block();
@@ -2178,7 +2178,7 @@ public class Controller_Blocko extends _BaseController {
                     block.active = true;
                     block.save();
                 } else {
-                    block = Model_Block.getById(block_previous_id);
+                    block = Model_Block.find.byId(block_previous_id);
                 }
 
                 // Vytvoření objektu
@@ -2266,7 +2266,7 @@ public class Controller_Blocko extends _BaseController {
             if (help.name.equals("version_scheme")) return badRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_Block block = Model_Block.getById(block_id);
+            Model_Block block = Model_Block.find.byId(block_id);
 
             // Vytvoření objektu
             Model_BlockVersion version = new Model_BlockVersion();
@@ -2305,7 +2305,7 @@ public class Controller_Blocko extends _BaseController {
         try {
             
             // Kontrola objektu
-            Model_BlockVersion version = Model_BlockVersion.getById(version_id);
+            Model_BlockVersion version = Model_BlockVersion.find.byId(version_id);
           
             // Vrácení objektu
             return ok(version);
@@ -2352,7 +2352,7 @@ public class Controller_Blocko extends _BaseController {
             if (help.name.equals("version_scheme")) return badRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_BlockVersion version = Model_BlockVersion.getById(version_id);
+            Model_BlockVersion version = Model_BlockVersion.find.byId(version_id);
   
             // Úprava objektu
             version.name = help.name;
@@ -2386,7 +2386,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_BlockVersion version = Model_BlockVersion.getById(version_id);
+            Model_BlockVersion version = Model_BlockVersion.find.byId(version_id);
 
             // Smazání objektu
             version.delete();
@@ -2417,7 +2417,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_BlockVersion version = Model_BlockVersion.getById(version_id);
+            Model_BlockVersion version = Model_BlockVersion.find.byId(version_id);
 
             if (Model_WidgetVersion.find.query().where().eq("approval_state", Approval.PENDING.name())
                     .eq("author_id", _BaseController.personId())
@@ -2461,7 +2461,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_BlockVersion version = Model_BlockVersion.getById(version_id);
+            Model_BlockVersion version = Model_BlockVersion.find.byId(version_id);
 
             if (!version.get_block_id().equals(UUID.fromString("00000000-0000-0000-0000-000000000001"))) {
                 return notFound("BlockVersion not from default program");
@@ -2469,7 +2469,7 @@ public class Controller_Blocko extends _BaseController {
 
             Model_BlockVersion old_version = Model_BlockVersion.find.query().where().eq("publish_type", ProgramType.DEFAULT_VERSION.name()).select("id").findOne();
             if (old_version != null) {
-                old_version = Model_BlockVersion.getById(old_version.id);
+                old_version = Model_BlockVersion.find.byId(old_version.id);
                 old_version.publish_type = null;
                 old_version.update();
             }
@@ -2518,7 +2518,7 @@ public class Controller_Blocko extends _BaseController {
             Swagger_BlockoObject_Approval help = formFromRequestWithValidation(Swagger_BlockoObject_Approval.class);
 
             // Kontrola objektu
-            Model_BlockVersion version = Model_BlockVersion.getById(help.object_id);
+            Model_BlockVersion version = Model_BlockVersion.find.byId(help.object_id);
           
             // Změna stavu schválení
             version.approval_state = Approval.DISAPPROVED;
@@ -2579,7 +2579,7 @@ public class Controller_Blocko extends _BaseController {
             if (help.version_name.equals("version_scheme")) return badRequest("This name is reserved for the system");
 
             // Kontrola objektu
-            Model_BlockVersion privateVersion = Model_BlockVersion.getById(help.object_id);
+            Model_BlockVersion privateVersion = Model_BlockVersion.find.byId(help.object_id);
 
             // Vytvoření objektu
             Model_Block block = new Model_Block();

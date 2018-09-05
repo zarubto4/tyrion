@@ -476,7 +476,7 @@ public class Fakturoid extends _BaseController {
     public boolean update_subject(Model_PaymentDetails details) {
         try {
 
-            Model_PaymentDetails old_details = Model_PaymentDetails.getById(details.id);
+            Model_PaymentDetails old_details = Model_PaymentDetails.find.byId(details.id);
 
             ObjectNode request = Json.newObject();
 

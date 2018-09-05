@@ -71,7 +71,7 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
 
                 if (!tasks.isEmpty()) {
 
-                    WS_Message_Hardware_UpdateProcedure_Command result = Model_HomerServer.getById(homer.id).update_devices_firmware(tasks);
+                    WS_Message_Hardware_UpdateProcedure_Command result = Model_HomerServer.find.byId(homer.id).update_devices_firmware(tasks);
                     if (result.status.equals("success")) {
                         // Nothing
                     } else {

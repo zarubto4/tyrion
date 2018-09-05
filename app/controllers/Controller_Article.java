@@ -132,7 +132,7 @@ public class Controller_Article extends _BaseController {
             Swagger_Article_CreateUpdate help  = formFromRequestWithValidation(Swagger_Article_CreateUpdate.class);
 
             // Kontrola objektu
-            Model_Article article = Model_Article.getById(article_id);
+            Model_Article article = Model_Article.find.byId(article_id);
 
             // Úprava objektu
             article.description         = help.description;
@@ -168,7 +168,7 @@ public class Controller_Article extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Article article = Model_Article.getById(article_id);
+            Model_Article article = Model_Article.find.byId(article_id);
 
             // Smazání objektu
             article.delete();

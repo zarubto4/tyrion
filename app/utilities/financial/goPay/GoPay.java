@@ -660,7 +660,7 @@ public class GoPay extends _BaseController {
             Swagger_Payment_Refund help = formFromRequestWithValidation(Swagger_Payment_Refund.class);
 
             // Finding in DB
-            Model_Invoice invoice = Model_Invoice.getById(invoice_id);
+            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
 
             invoice.getProduct().archiveEvent("Refund payment", "Request for refund for this reason: " + help.reason, null);
 

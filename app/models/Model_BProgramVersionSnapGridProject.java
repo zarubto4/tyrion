@@ -3,12 +3,10 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
-import utilities.cache.CacheField;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -73,18 +71,18 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
     @JsonIgnore
     public UUID get_grid_project_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_GridProject.class) == null) {
-            cache().add(Model_GridProject.class, (UUID) Model_GridProject.find.query().where().eq("snapshots.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_GridProject.class) == null) {
+            idCache().add(Model_GridProject.class, (UUID) Model_GridProject.find.query().where().eq("snapshots.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_GridProject.class);
+        return idCache().get(Model_GridProject.class);
 
     }
 
     @JsonIgnore
     public Model_GridProject get_grid_project() throws _Base_Result_Exception {
         try {
-            return Model_GridProject.getById(get_grid_project_id());
+            return Model_GridProject.find.byId(get_grid_project_id());
         }catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -93,11 +91,11 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
 
     @JsonIgnore
     public List<UUID> get_grid_program_ids() {
-        if (cache().gets(Model_BProgramVersionSnapGridProjectProgram.class) == null) {
-            cache().add(Model_BProgramVersionSnapGridProjectProgram.class,  Model_BProgramVersionSnapGridProjectProgram.find.query().where().ne("deleted", true).eq("grid_project_program_snapshot.id", id).select("id").findSingleAttributeList());
+        if (idCache().gets(Model_BProgramVersionSnapGridProjectProgram.class) == null) {
+            idCache().add(Model_BProgramVersionSnapGridProjectProgram.class,  Model_BProgramVersionSnapGridProjectProgram.find.query().where().ne("deleted", true).eq("grid_project_program_snapshot.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_BProgramVersionSnapGridProjectProgram.class) != null ?  cache().gets(Model_BProgramVersionSnapGridProjectProgram.class) : new ArrayList<>();
+        return idCache().gets(Model_BProgramVersionSnapGridProjectProgram.class) != null ?  idCache().gets(Model_BProgramVersionSnapGridProjectProgram.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -107,7 +105,7 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
             List<Model_BProgramVersionSnapGridProjectProgram> programs  = new ArrayList<>();
 
             for (UUID version_id : get_grid_program_ids()) {
-                programs.add(Model_BProgramVersionSnapGridProjectProgram.getById(version_id));
+                programs.add(Model_BProgramVersionSnapGridProjectProgram.find.byId(version_id));
             }
 
             return programs;
@@ -162,32 +160,8 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_BProgramVersionSnapGridProject.class, duration = CacheField.DayCacheConstant)
-    public static Cache<UUID, Model_BProgramVersionSnapGridProject> cache;
-
-    public static Model_BProgramVersionSnapGridProject getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
-    public static Model_BProgramVersionSnapGridProject getById(UUID id) throws _Base_Result_Exception {
-
-        Model_BProgramVersionSnapGridProject snapShot = cache.get(id);
-
-        if (snapShot == null) {
-
-            snapShot = Model_BProgramVersionSnapGridProject.find.byId(id);
-            if (snapShot == null) throw new Result_Error_NotFound(Model_BProgramVersionSnapGridProject.class);
-
-            cache.put(id, snapShot);
-        }
-        // Check Permission
-        if(snapShot.its_person_operation()) {
-            snapShot.check_read_permission();
-        }
-        return snapShot;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_BProgramVersionSnapGridProject> find = new Finder<>(Model_BProgramVersionSnapGridProject.class);
+    @CacheFinderField(Model_BProgramVersionSnapGridProject.class)
+    public static CacheFinder<Model_BProgramVersionSnapGridProject> find = new CacheFinder<>(Model_BProgramVersionSnapGridProject.class);
 }

@@ -232,7 +232,7 @@ public class Controller_WebSocket extends _BaseController {
                 }
 
 
-                Model_Person person = Model_Person.getById(user_token);
+                Model_Person person = Model_Person.find.byId(user_token);
 
                 if (sameOriginCheck(request)) {
 

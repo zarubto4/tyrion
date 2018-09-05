@@ -4,11 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.*;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import org.ehcache.Cache;
 import utilities.Server;
 import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -135,72 +136,17 @@ public class Model_Blob extends BaseModel {
 
     @JsonIgnore
     public static Model_Blob upload(String content, String name, String path) throws Exception {
-
-        logger.debug("upload - path: {}", path);
-
-        int slash = path.indexOf("/");
-
-        CloudBlobContainer container = Server.blobClient.getContainerReference(path.substring(0, slash)); // Get container reference for container name from path
-        CloudBlockBlob blob = container.getBlockBlobReference(path.substring(slash + 1) + "/" + name); // Path after container
-
-        InputStream is = new ByteArrayInputStream(content.getBytes());
-        blob.upload(is, -1);
-
-        Model_Blob fileRecord = new Model_Blob();
-        fileRecord.name = name;
-        fileRecord.path = path + "/" + name;
-        logger.trace("Azure save total path: " +  fileRecord.path);
-        fileRecord.save();
-
-        return fileRecord;
+        return upload(content.getBytes(), name, path);
     }
 
     @JsonIgnore
     public static Model_Blob upload(File file, String name, String path) throws Exception{
-
-        logger.debug("upload - path: {}", path);
-
-        int slash = path.indexOf("/");
-
-        CloudBlobContainer container = Server.blobClient.getContainerReference(path.substring(0, slash)); // Get container reference for container name from path
-        CloudBlockBlob blob = container.getBlockBlobReference(path.substring(slash + 1) + "/" + name); // Path after container
-
-        InputStream is = new FileInputStream(file);
-        blob.upload(is, -1);
-
-        Model_Blob fileRecord = new Model_Blob();
-        fileRecord.name = name;
-        fileRecord.path = path + "/" + name;
-        logger.trace("Azure save total path: " +  fileRecord.path);
-        fileRecord.save();
-
-        return fileRecord;
+        return upload(new FileInputStream(file), name, path);
     }
 
     @JsonIgnore
-    public static Model_Blob upload(byte[] file, String name, String path) throws Exception{
-
-        logger.debug("upload - path: {}", path);
-
-        int slash = path.indexOf("/");
-
-        CloudBlobContainer container = Server.blobClient.getContainerReference(path.substring(0, slash)); // Get container reference for container name from path
-        CloudBlockBlob blob = container.getBlockBlobReference(path.substring(slash + 1) + "/" + name); // Path after container
-
-        logger.trace("Azure save path: " + path );
-        logger.trace("Azure Container: " + blob.getName());
-
-        InputStream is = new ByteArrayInputStream(file);
-        blob.upload(is, -1);
-
-        Model_Blob fileRecord = new Model_Blob();
-        fileRecord.name = name;
-        fileRecord.path = path + "/" + name;
-
-        logger.trace("Azure save total path: " +  fileRecord.path);
-        fileRecord.save();
-
-        return fileRecord;
+    public static Model_Blob upload(byte[] file, String name, String path) throws Exception {
+        return upload(new ByteArrayInputStream(file), name, path);
     }
 
     @JsonIgnore
@@ -229,6 +175,32 @@ public class Model_Blob extends BaseModel {
         fileRecord.save();
 
         return fileRecord;
+    }
+
+    /**
+     * Core method for uploading files to blob server.
+     * @param inputStream from the file that is uploaded
+     * @param name of the file
+     * @param path to the file
+     * @return new Model_Blob reference
+     * @throws Exception when some error occur during upload
+     */
+    private static Model_Blob upload(InputStream inputStream, String name, String path) throws Exception {
+
+        int slash = path.indexOf("/");
+
+        CloudBlobContainer container = Server.blobClient.getContainerReference(path.substring(0, slash)); // Get container reference for container name from path
+        CloudBlockBlob blob = container.getBlockBlobReference(path.substring(slash + 1) + "/" + name); // Path after container
+
+        blob.upload(inputStream, -1);
+
+        Model_Blob modelBlob = new Model_Blob();
+        modelBlob.name = name;
+        modelBlob.path = path + "/" + name;
+        logger.trace("Azure save total path: " +  modelBlob.path);
+        modelBlob.save();
+
+        return modelBlob;
     }
 
     @JsonIgnore
@@ -367,7 +339,7 @@ public class Model_Blob extends BaseModel {
         id = Model_Person.find.query().where().eq("picture.id", this.id).select("id").findSingleAttribute();
 
         if(id != null) {
-            Model_Person.getById(id).check_update_permission();
+            Model_Person.find.byId(id).check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
@@ -375,7 +347,7 @@ public class Model_Blob extends BaseModel {
         id = Model_InstanceSnapshot.find.query().where().eq("program.id", this.id).select("id").findSingleAttribute();
 
         if(id != null) {
-            Model_InstanceSnapshot.getById(id).check_update_permission();
+            Model_InstanceSnapshot.find.byId(id).check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
@@ -383,7 +355,7 @@ public class Model_Blob extends BaseModel {
         id = Model_HardwareType.find.query().where().eq("picture.id", this.id).select("id").findSingleAttribute();
 
         if(id != null) {
-            Model_HardwareType.getById(id).check_update_permission();
+            Model_HardwareType.find.byId(id).check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
@@ -391,7 +363,7 @@ public class Model_Blob extends BaseModel {
         id = Model_Hardware.find.query().where().eq("picture.id", this.id).select("id").findSingleAttribute();
 
         if(id != null) {
-            Model_Hardware.getById(id).check_update_permission();
+            Model_Hardware.find.byId(id).check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
@@ -399,7 +371,7 @@ public class Model_Blob extends BaseModel {
         id = Model_Log.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
 
         if(id != null) {
-            Model_Log.getById(id).check_update_permission();
+            Model_Log.find.byId(id).check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
@@ -407,7 +379,7 @@ public class Model_Blob extends BaseModel {
         id = Model_BootLoader.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
 
         if(id != null) {
-            Model_BootLoader.getById(id).check_update_permission();
+            Model_BootLoader.find.byId(id).check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
@@ -415,7 +387,7 @@ public class Model_Blob extends BaseModel {
         id = Model_HardwareUpdate.find.query().where().eq("binary_file.id", this.id).select("id").findSingleAttribute();
 
         if(id != null) {
-            Model_HardwareUpdate.getById(id).check_update_permission();
+            Model_HardwareUpdate.find.byId(id).check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
@@ -423,7 +395,7 @@ public class Model_Blob extends BaseModel {
         id = Model_Compilation.find.query().where().eq("blob.id", this.id).select("id").findSingleAttribute();
 
         if(id != null) {
-            Model_Compilation.getById(id).check_update_permission();
+            Model_Compilation.find.byId(id).check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
@@ -431,7 +403,7 @@ public class Model_Blob extends BaseModel {
         id = Model_CProgramVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
 
         if(id != null) {
-            Model_CProgramVersion.getById(id).check_update_permission();
+            Model_CProgramVersion.find.byId(id).check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
@@ -439,7 +411,7 @@ public class Model_Blob extends BaseModel {
         id = Model_LibraryVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
 
         if(id != null) {
-            Model_LibraryVersion.getById(id).check_update_permission();
+            Model_LibraryVersion.find.byId(id).check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
@@ -447,7 +419,7 @@ public class Model_Blob extends BaseModel {
         id = Model_BProgramVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
 
         if(id != null) {
-            Model_BProgramVersion.getById(id).check_update_permission();
+            Model_BProgramVersion.find.byId(id).check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
@@ -455,7 +427,7 @@ public class Model_Blob extends BaseModel {
         id = Model_GridProgramVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
 
         if(id != null) {
-            Model_GridProgramVersion.getById(id).check_update_permission();
+            Model_GridProgramVersion.find.byId(id).check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
@@ -463,7 +435,7 @@ public class Model_Blob extends BaseModel {
         id = Model_WidgetVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
 
         if(id != null) {
-            Model_WidgetVersion.getById(id).check_update_permission();
+            Model_WidgetVersion.find.byId(id).check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
@@ -471,7 +443,7 @@ public class Model_Blob extends BaseModel {
         id = Model_BlockVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
 
         if(id != null) {
-            Model_BlockVersion.getById(id).check_update_permission();
+            Model_BlockVersion.find.byId(id).check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
             return;
         }
@@ -483,18 +455,13 @@ public class Model_Blob extends BaseModel {
 
     public enum Permission { Blob_create, Blob_read, Blob_update, Blob_edit, Blob_delete }
 
-    /* CACHE ---------------------------------------------------------------------------------------------------------------*/
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = String.class, duration = CacheField.HalfDayCacheConstant, maxElements = 500, automaticProlonging = false)
+    @CacheField(value = String.class, duration = CacheField.HalfDayCacheConstant, maxElements = 500, automaticProlonging = false, name = "Model_Blob_Link")
     public static Cache<UUID, String> cache_public_link;
-
-    public static Model_Blob getById(UUID id) throws _Base_Result_Exception  {
-
-        return Model_Blob.find.byId(id);
-
-    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Blob> find = new Finder<>(Model_Blob.class);
+    @CacheFinderField(Model_Blob.class)
+    public static CacheFinder<Model_Blob> find = new CacheFinder<>(Model_Blob.class);
 }

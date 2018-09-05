@@ -6,15 +6,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
 import play.libs.Json;
 import play.mvc.Http;
 import utilities.Server;
 import utilities.authentication.Authentication;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.*;
 import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
@@ -306,34 +305,34 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
     @JsonIgnore @Transient
     public Model_BProgramVersion get_b_program_version() throws _Base_Result_Exception {
-        return Model_BProgramVersion.getById(get_b_program_version_id());
+        return Model_BProgramVersion.find.byId(get_b_program_version_id());
     }
 
     @JsonIgnore @Transient
     public UUID get_b_program_version_id() throws _Base_Result_Exception {
 
-        if (cache().gets(Model_BProgramVersion.class) == null) {
+        if (idCache().gets(Model_BProgramVersion.class) == null) {
             Model_BProgramVersion version = Model_BProgramVersion.find.query().where().eq("instances.id", id).select("id").findOne();
             if (version == null) throw new Result_Error_NotFound(Model_BProgramVersion.class);
-            cache().add(Model_BProgramVersion.class, version.id);
+            idCache().add(Model_BProgramVersion.class, version.id);
         }
 
-        return cache().get(Model_BProgramVersion.class);
+        return idCache().get(Model_BProgramVersion.class);
     }
 
     @JsonIgnore @Transient
     public Model_Instance get_instance() throws _Base_Result_Exception  {
-        return Model_Instance.getById(get_instance_id());
+        return Model_Instance.find.byId(get_instance_id());
     }
 
     @JsonIgnore @Transient
     public UUID get_instance_id() throws _Base_Result_Exception {
 
-        if (cache().gets(Model_Instance.class) == null) {
-            cache().add(Model_Instance.class, (UUID) Model_Instance.find.query().where().eq("snapshots.id", id).select("id").findSingleAttribute());
+        if (idCache().gets(Model_Instance.class) == null) {
+            idCache().add(Model_Instance.class, (UUID) Model_Instance.find.query().where().eq("snapshots.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_Instance.class);
+        return idCache().get(Model_Instance.class);
     }
 
     @JsonIgnore @Transient
@@ -373,11 +372,11 @@ public class Model_InstanceSnapshot extends TaggedModel {
     @JsonIgnore @Transient
     public List<UUID> getUpdateProcedureIds() {
 
-        if (cache().gets(Model_UpdateProcedure.class) == null) {
-            cache().add(Model_UpdateProcedure.class, Model_UpdateProcedure.find.query().where().eq("instance.id", id).orderBy("created desc").select("id").findSingleAttributeList());
+        if (idCache().gets(Model_UpdateProcedure.class) == null) {
+            idCache().add(Model_UpdateProcedure.class, Model_UpdateProcedure.find.query().where().eq("instance.id", id).orderBy("created desc").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_UpdateProcedure.class) != null ?  cache().gets(Model_UpdateProcedure.class) : new ArrayList<>();
+        return idCache().gets(Model_UpdateProcedure.class) != null ?  idCache().gets(Model_UpdateProcedure.class) : new ArrayList<>();
     }
 
     @JsonIgnore @Transient
@@ -387,7 +386,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
             List<Model_UpdateProcedure> list = new ArrayList<>();
 
             for (UUID id : getUpdateProcedureIds()) {
-                list.add(Model_UpdateProcedure.getById(id));
+                list.add(Model_UpdateProcedure.find.byId(id));
             }
 
             return list;
@@ -518,7 +517,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
             for(UUID uuid: hardware_ids_required_by_instance) {
                 try {
 
-                    Model_Hardware hw = Model_Hardware.getById(uuid);
+                    Model_Hardware hw = Model_Hardware.find.byId(uuid);
 
                     WS_Message_Homer_Hardware_ID_UUID_Pair pair = new WS_Message_Homer_Hardware_ID_UUID_Pair();
                     pair.full_id = hw.full_id;
@@ -643,19 +642,19 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
             for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.program().interfaces) {
 
-                Model_CProgramVersion version = Model_CProgramVersion.getById(interface_hw.interface_id);
+                Model_CProgramVersion version = Model_CProgramVersion.find.byId(interface_hw.interface_id);
 
                 //IF Group
                 if(interface_hw.type.equals("group")) {
 
                     logger.trace("create_actualization_hardware_request:: interface_hw type: group ");
                     logger.trace("create_actualization_hardware_request:: interface_hw type: group:  " + interface_hw.target_id);
-                    Model_HardwareGroup group = Model_HardwareGroup.getById(interface_hw.target_id);
+                    Model_HardwareGroup group = Model_HardwareGroup.find.byId(interface_hw.target_id);
 
                     List<UUID> uuid_ids = Model_Hardware.find.query().where().eq("hardware_groups.id", group.id).select("id").findIds();
 
                     for (UUID uuid_id : uuid_ids) {
-                        Model_Hardware hardware = Model_Hardware.getById(uuid_id);
+                        Model_Hardware hardware = Model_Hardware.find.byId(uuid_id);
                         hardware.connected_instance_id = this.get_instance_id();
                         hardware.update();
 
@@ -683,7 +682,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
                     logger.trace("create_actualization_hardware_request:: interface_hw type: hardware:  " + interface_hw.target_id);
 
-                    Model_Hardware hardware = Model_Hardware.getById(interface_hw.target_id);
+                    Model_Hardware hardware = Model_Hardware.find.byId(interface_hw.target_id);
 
                     hardware.connected_instance_id = this.get_instance_id();
                     hardware.update();
@@ -717,7 +716,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
             procedure.save();
 
             // Add to cache
-            cache().add(Model_UpdateProcedure.class, procedure.id);
+            idCache().add(Model_UpdateProcedure.class, procedure.id);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -885,7 +884,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
             summary.grid_app_url = "wss://";
         }
 
-        summary.grid_app_url += Model_HomerServer.getById(get_instance().getServer_id()).get_Grid_APP_URL();
+        summary.grid_app_url += Model_HomerServer.find.byId(get_instance().getServer_id()).get_Grid_APP_URL();
         summary.grid_app_url += get_instance_id() + "/" ;
 
         switch (program.snapshot_settings) {
@@ -895,7 +894,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
                 // System.out.println("program.snapshot_settings - PUBLIC");
 
-                Model_GridProgramVersion version = Model_GridProgramVersion.getById(program.grid_program_version_id);
+                Model_GridProgramVersion version = Model_GridProgramVersion.find.byId(program.grid_program_version_id);
 
                 summary.grid_app_url += collection.grid_project_id + "/"  + program.grid_program_id + "/" + UUID.randomUUID();
                 summary.grid_program = version.file.get_fileRecord_from_Azure_inString();
@@ -949,7 +948,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 terminal.save();
 
                 summary.grid_app_url += collection.grid_project_id + "/"  + program.grid_program_id + "/" + terminal.terminal_token;
-                summary.grid_program = Model_GridProgramVersion.getById(program.grid_program_version_id).file.get_fileRecord_from_Azure_inString();
+                summary.grid_program = Model_GridProgramVersion.find.byId(program.grid_program_version_id).file.get_fileRecord_from_Azure_inString();
                 summary.grid_project_id = collection.grid_project_id;
                 summary.grid_program_id = program.grid_program_id;
                 summary.grid_program_version_id = program.grid_program_version_id;
@@ -1006,8 +1005,8 @@ public class Model_InstanceSnapshot extends TaggedModel {
             for (Widget_Parser widget_parser : program_parser.screens.main.get(0).widgets) {
 
                 Swagger_GridWidgetVersion_GridApp_source detail = new Swagger_GridWidgetVersion_GridApp_source();
-                detail.id          = widget_parser.type.version_id;
-                detail.logic_json = Model_WidgetVersion.getById(widget_parser.type.version_id).logic_json;
+                detail.id         = widget_parser.type.version_id;
+                detail.logic_json = Model_WidgetVersion.find.byId(widget_parser.type.version_id).logic_json;
 
                 list.add(detail);
             }
@@ -1052,7 +1051,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
         public Type_Parser() {}
 
-        @Valid public String version_id;
+        @Valid public UUID version_id;
     }
 
 /* JSON Override  Method -----------------------------------------------------------------------------------------*/
@@ -1062,14 +1061,12 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
         super.save();
 
-        this.cache().add(Model_Instance.class, this.get_instance_id());
-        cache.put(this.id, this);
+        this.idCache().add(Model_Instance.class, this.get_instance_id());
 
         // Add to Cache
         if(get_instance() != null) {
-            System.out.println("Add To Instance by get_instance()");
             get_instance().getSnapShotsIds();
-            get_instance().cache().add(this.getClass(), id);
+            get_instance().idCache().add(this.getClass(), id);
             get_instance().sort_Model_InstanceSnapshot_ids();
         }
 
@@ -1084,14 +1081,6 @@ public class Model_InstanceSnapshot extends TaggedModel {
     }
 
     @Override
-    public void update() {
-
-        logger.debug("update - updating in database, id: {}",  this.id);
-
-        super.update();
-    }
-
-    @Override
     public boolean delete() {
 
         logger.debug("delete - deleting from database, id: {} ", this.id);
@@ -1101,15 +1090,9 @@ public class Model_InstanceSnapshot extends TaggedModel {
             get_instance().stop();
         }
 
-        get_instance().cache().remove(this.getClass(), this.id);
+        get_instance().idCache().remove(this.getClass(), this.id);
 
-        if (cache.containsKey(this.id)) {
-            cache.remove(this.id);
-        }
-
-        super.delete();
-
-        return false;
+        return super.delete();
     }
 
 
@@ -1186,28 +1169,8 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(Model_InstanceSnapshot.class)
-    public static Cache<UUID, Model_InstanceSnapshot> cache;
-
-    public static Model_InstanceSnapshot getById(UUID id) throws _Base_Result_Exception {
-
-        Model_InstanceSnapshot snapshot = cache.get(id);
-        if (snapshot == null) {
-
-            snapshot = find.byId(id);
-            if (snapshot == null) throw new Result_Error_NotFound(Model_InstanceSnapshot.class);
-
-            cache.put(id, snapshot);
-        }
-        // Check Permission
-        if(snapshot.its_person_operation()) {
-            snapshot.check_read_permission();
-        }
-
-        return snapshot;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_InstanceSnapshot> find = new Finder<>(Model_InstanceSnapshot.class);
+    @CacheFinderField(Model_InstanceSnapshot.class)
+    public static CacheFinder<Model_InstanceSnapshot> find = new CacheFinder<>(Model_InstanceSnapshot.class);
 }

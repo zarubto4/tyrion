@@ -391,7 +391,7 @@ public class Controller_Person extends _BaseController {
     public  Result person_get(UUID person_id) {
         try {
 
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
             return ok(person);
 
         } catch (Exception e) {
@@ -417,7 +417,7 @@ public class Controller_Person extends _BaseController {
     public  Result person_delete(UUID person_id) {
         try {
 
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
 
             person.delete();
 
@@ -476,7 +476,7 @@ public class Controller_Person extends _BaseController {
     public Result person_activate(UUID person_id) {
         try {
 
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
 
             person.check_activation_permission();
 
@@ -511,7 +511,7 @@ public class Controller_Person extends _BaseController {
     public Result person_deactivate(UUID person_id) {
         try {
 
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
 
             person.check_activation_permission();
 
@@ -550,7 +550,7 @@ public class Controller_Person extends _BaseController {
     public Result person_validEmail(UUID person_id) {
         try {
 
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
 
             person.validated = true;
             person.update();
@@ -595,7 +595,7 @@ public class Controller_Person extends _BaseController {
             // Get and Validate Object
             Swagger_Person_Update help = formFromRequestWithValidation(Swagger_Person_Update.class);
 
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
 
             person.nick_name  = help.nick_name;
             person.first_name = help.first_name;
@@ -660,7 +660,7 @@ public class Controller_Person extends _BaseController {
     public  Result remove_Person_Connection(UUID connection_id) {
         try {
 
-            Model_AuthorizationToken token = Model_AuthorizationToken.getById(connection_id);
+            Model_AuthorizationToken token = Model_AuthorizationToken.find.byId(connection_id);
 
             token.delete();
 
@@ -916,7 +916,7 @@ public class Controller_Person extends _BaseController {
     })
     public Result person_authorizePropertyChange(UUID token) {
         try {
-            Model_ChangePropertyToken changePropertyToken = Model_ChangePropertyToken.getById(token);
+            Model_ChangePropertyToken changePropertyToken = Model_ChangePropertyToken.find.byId(token);
             if (changePropertyToken == null) return redirect(Server.becki_mainUrl + "/" + Server.becki_propertyChangeFailed);
 
             if (((new Date()).getTime() - changePropertyToken.created.getTime()) > 14400000 ) {
@@ -924,7 +924,7 @@ public class Controller_Person extends _BaseController {
                 return redirect(Server.becki_mainUrl + "/" + Server.becki_propertyChangeFailed);
             }
 
-            Model_Person person = Model_Person.getById(changePropertyToken.person.id);
+            Model_Person person = Model_Person.find.byId(changePropertyToken.person.id);
             if (person == null) return redirect(Server.becki_mainUrl + "/" +  Server.becki_propertyChangeFailed);
 
             switch (changePropertyToken.property) {

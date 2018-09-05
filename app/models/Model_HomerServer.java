@@ -8,13 +8,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.DocumentClientException;
 import controllers._BaseController;
 import controllers.Controller_WebSocket;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.Server;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.document_mongo_db.document_objects.DM_HomerServer_Connect;
 import utilities.document_mongo_db.document_objects.DM_HomerServer_Disconnect;
 import utilities.enums.HomerType;
@@ -23,7 +22,6 @@ import utilities.enums.NetworkStatus;
 import utilities.enums.ServerMode;
 import utilities.errors.ErrorCode;
 import utilities.errors.Exceptions.Result_Error_Bad_request;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
@@ -142,7 +140,7 @@ public class Model_HomerServer extends TaggedModel {
     public Boolean deployment_in_progress() {
         try {
 
-            if (cache().get(DigitalOceanThreadRegister.class) != null) {
+            if (idCache().get(DigitalOceanThreadRegister.class) != null) {
                return true;
             }
 
@@ -161,17 +159,17 @@ public class Model_HomerServer extends TaggedModel {
 
     @JsonIgnore @Transient public UUID get_project_id() throws _Base_Result_Exception  {
 
-        if (cache().get(Model_Project.class) == null) {
-            cache().add(Model_Project.class, Model_Project.find.query().where().eq("servers.id", id).select("id").findSingleAttributeList());
+        if (idCache().get(Model_Project.class) == null) {
+            idCache().add(Model_Project.class, Model_Project.find.query().where().eq("servers.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().get(Model_Project.class);
+        return idCache().get(Model_Project.class);
 
     }
 
     @JsonIgnore @Transient public Model_Project get_project() throws _Base_Result_Exception  {
         try {
-            return Model_Project.getById(get_project_id());
+            return Model_Project.find.byId(get_project_id());
         }catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -200,25 +198,6 @@ public class Model_HomerServer extends TaggedModel {
 
         // Save Object
         super.save();
-
-        //Cache Update
-        cache.put(this.id, this);
-    }
-
-    @JsonIgnore
-    @Override
-    public void update() {
-
-        logger.debug("update::Update object Id: {}",  this.id);
-
-        // Update Object
-        super.update();
-
-        //this.set_new_configuration_on_homer();
-
-        //Cache Update
-        cache.put(this.id, this);
-
     }
 
     @JsonIgnore
@@ -244,33 +223,33 @@ public class Model_HomerServer extends TaggedModel {
     public static Model_HomerServer get_destination_server() {
 
 
-        String server_id = null;
+        UUID server_id = null;
         Integer count = null;
 
         if (Server.mode == ServerMode.PRODUCTION) {
 
             logger.debug("get_destination_server:: Creating new instance in production mode on production server");
 
-            for (Object unique_identificator_help : Model_HomerServer.find.query().where().eq("server_type", HomerType.PUBLIC).findIds()) {
+            for (UUID unique_identificator_help : Model_HomerServer.find.query().where().eq("server_type", HomerType.PUBLIC).select("id").<UUID>findSingleAttributeList()) {
 
                 Integer actual_Server_count = Model_Instance.find.query().where().eq("server_main.id", server_id).findCount();
 
                 if (actual_Server_count == 0) {
-                    server_id = unique_identificator_help.toString();
+                    server_id = unique_identificator_help;
                     break;
                 } else if (server_id == null) {
 
-                    server_id = unique_identificator_help.toString();
+                    server_id = unique_identificator_help;
                     count = actual_Server_count;
 
                 } else if (actual_Server_count < count) {
-                    server_id = unique_identificator_help.toString();
+                    server_id = unique_identificator_help;
                     count = actual_Server_count;
                 }
             }
 
             logger.debug("get_destination_server:: Detination server is " + server_id);
-            return Model_HomerServer.getById(server_id);
+            return Model_HomerServer.find.byId(server_id);
 
         }
 
@@ -288,26 +267,26 @@ public class Model_HomerServer extends TaggedModel {
 
             } else {
 
-                for (Object unique_identificator_help : Model_HomerServer.find.query().where().eq("server_type", HomerType.PUBLIC).findIds()) {
+                for (UUID unique_identificator_help : Model_HomerServer.find.query().where().eq("server_type", HomerType.PUBLIC).select("id").<UUID>findSingleAttributeList()) {
 
                     Integer actual_Server_count = Model_Instance.find.query().where().eq("server_main.id", server_id).findCount();
 
                     if (actual_Server_count == 0) {
-                        server_id = unique_identificator_help.toString();
+                        server_id = unique_identificator_help;
                         break;
                     } else if (server_id == null) {
 
-                        server_id = unique_identificator_help.toString();
+                        server_id = unique_identificator_help;
                         count = actual_Server_count;
 
                     } else if (actual_Server_count < count) {
-                        server_id = unique_identificator_help.toString();
+                        server_id = unique_identificator_help;
                         count = actual_Server_count;
 
                     }
                 }
 
-                return Model_HomerServer.getById(server_id);
+                return Model_HomerServer.find.byId(server_id);
             }
         }
 
@@ -449,13 +428,13 @@ public class Model_HomerServer extends TaggedModel {
 
             logger.debug("approve_validation_for_homer_server:: message.hash_token {}", message.hash_token);
 
-            Model_HomerServer server = Model_HomerServer.getById(ws_homer.id);
+            Model_HomerServer server = Model_HomerServer.find.byId(ws_homer.id);
             logger.debug("approve_validation_for_homer_server:: Server ID {}, Server Name: {}", server.id, server.name);
             logger.debug("approve_validation_for_homer_server:: server.hash_token {}", server.hash_certificate);
 
             if (message.hash_token.equals(server.hash_certificate)) {
 
-                Model_HomerServer homer_server = Model_HomerServer.getById(ws_homer.id);
+                Model_HomerServer homer_server = Model_HomerServer.find.byId(ws_homer.id);
                 homer_server.make_log_connect();
 
                 ws_homer.verificationSuccess(message.message_id);
@@ -498,7 +477,7 @@ public class Model_HomerServer extends TaggedModel {
         try {
 
 
-            Model_HomerServer server = Model_HomerServer.getById(ws_homer.id);
+            Model_HomerServer server = Model_HomerServer.find.byId(ws_homer.id);
             if (server == null) {
                 logger.error("validate_incoming_user_connection_to_hardware_logger:: homer server is null");
                 return;
@@ -526,7 +505,7 @@ public class Model_HomerServer extends TaggedModel {
                 }
             }
 
-            Model_Person person = Model_Person.getById(Model_Person.token_cache.get(UUID.fromString(message.client_token)));
+            Model_Person person = Model_Person.find.byId(Model_Person.token_cache.get(UUID.fromString(message.client_token)));
 
             if(person == null) {
                 logger.warn("validate_incoming_user_connection_to_hardware_logger:: person is null!");
@@ -849,37 +828,12 @@ public class Model_HomerServer extends TaggedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_HomerServer.class, duration = 600)
-    public static Cache<UUID, Model_HomerServer> cache;
-
-    public static Model_HomerServer getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-    
-    public static Model_HomerServer getById(UUID id) throws _Base_Result_Exception  {
-
-        Model_HomerServer server = cache.get(id);
-        if (server == null) {
-
-            server = find.byId(id);
-            if (server == null) throw new Result_Error_NotFound(Model_HomerServer.class);
-
-            cache.put(id, server);
-        }
-        // Check Permission
-        if(server.its_person_operation()) {
-            server.check_read_permission();
-        }
-
-        return server;
-    }
-
     public static List<Model_HomerServer> get_all() {
-        return Model_HomerServer.find.all();
+        return find.all();
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_HomerServer> find = new Finder<>(Model_HomerServer.class);
-
+    @CacheFinderField(Model_HomerServer.class)
+    public static CacheFinder<Model_HomerServer> find = new CacheFinder<>(Model_HomerServer.class);
 }

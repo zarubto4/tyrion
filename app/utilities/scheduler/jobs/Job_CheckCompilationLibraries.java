@@ -119,7 +119,7 @@ public class Job_CheckCompilationLibraries implements Job {
 
                 for (UUID hwType_id : hardwareTypes_id) {
 
-                    Model_HardwareType hardwareType = Model_HardwareType.getById(hwType_id);
+                    Model_HardwareType hardwareType = Model_HardwareType.find.byId(hwType_id);
 
                     // Pokud není pole, vytvořím ho
                     if (hardwareType.cache_library_list == null) {

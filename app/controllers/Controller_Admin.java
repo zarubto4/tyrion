@@ -154,7 +154,7 @@ public class Controller_Admin extends _BaseController {
     public Result serverError_get(@ApiParam(value = "bug_id String path", required = true) UUID bug_id) {
         try {
 
-            Model_ServerError error = Model_ServerError.getById(bug_id);
+            Model_ServerError error = Model_ServerError.find.byId(bug_id);
 
             return ok(error);
 
@@ -198,7 +198,7 @@ public class Controller_Admin extends _BaseController {
             Swagger_Bug_Description help  = formFromRequestWithValidation(Swagger_Bug_Description.class);
 
             // Kontrola objektu
-            Model_ServerError error = Model_ServerError.getById(bug_id);
+            Model_ServerError error = Model_ServerError.find.byId(bug_id);
 
             error.description = help.description;
             error.update();
@@ -227,7 +227,7 @@ public class Controller_Admin extends _BaseController {
     public Result serverError_report(@ApiParam(value = "bug_id String path", required = true) UUID bug_id) {
         try {
 
-            Model_ServerError error = Model_ServerError.getById(bug_id);
+            Model_ServerError error = Model_ServerError.find.byId(bug_id);
 
             error.youtrack_url = youTrack.report(error);
             error.update();
@@ -256,7 +256,7 @@ public class Controller_Admin extends _BaseController {
     public Result serverError_delete(@ApiParam(value = "bug_id String path", required = true) UUID bug_id) {
         try {
 
-            Model_ServerError error = Model_ServerError.getById(bug_id);
+            Model_ServerError error = Model_ServerError.find.byId(bug_id);
             error.delete();
 
             return ok();

@@ -66,7 +66,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Invoice invoice = Model_Invoice.getById(invoice_id);
+            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
 
             Swagger_Invoice_FullDetails help = new Swagger_Invoice_FullDetails();
             help.invoice = invoice;
@@ -110,7 +110,7 @@ public class Controller_Finance extends _BaseController {
             Swagger_Resend_Email help = formFromRequestWithValidation(Swagger_Resend_Email.class);
 
             // Kontrola objektu
-            Model_Invoice invoice = Model_Invoice.getById(invoice_id);
+            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
 
             fakturoid.sendInvoiceEmail(invoice, help.email);
 
@@ -138,7 +138,7 @@ public class Controller_Finance extends _BaseController {
     public Result invoice_reimbursement(UUID invoice_id) {
         try {
 
-            Model_Invoice invoice = Model_Invoice.getById(invoice_id);
+            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
 
             if ( invoice.status.equals(PaymentStatus.PAID)) return badRequest("Invoice is already paid");
 
@@ -171,7 +171,7 @@ public class Controller_Finance extends _BaseController {
 
             if (!kind.equals("proforma") && !kind.equals("invoice")) return badRequest("kind should be 'proforma' or 'invoice'");
 
-            Model_Invoice invoice = Model_Invoice.getById(invoice_id);
+            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
 
 
             if (kind.equals("proforma") && invoice.proforma_pdf_url == null) return badRequest("Proforma PDF is unavailable");
@@ -203,7 +203,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Invoice invoice = Model_Invoice.getById(invoice_id);
+            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
 
             fakturoid.sendInvoiceReminderEmail(invoice,"You have pending unpaid invoice.");
 
@@ -231,7 +231,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Invoice invoice = Model_Invoice.getById(invoice_id);
+            Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
           
             // TODO - Chybí navázání na fakturoid - smazání faktury (nějaký proces?)
            
@@ -429,7 +429,7 @@ public class Controller_Finance extends _BaseController {
             // Get and Validate Object
             Swagger_Customer_New help = formFromRequestWithValidation(Swagger_Customer_New.class);
 
-            Model_Customer customer = Model_Customer.getById(customer_id);
+            Model_Customer customer = Model_Customer.find.byId(customer_id);
         
             Model_PaymentDetails details = customer.payment_details;
             details.street          = help.street;
@@ -491,7 +491,7 @@ public class Controller_Finance extends _BaseController {
             // Get and Validate Object
             Swagger_Customer_Employee help  = formFromRequestWithValidation(Swagger_Customer_Employee.class);
 
-            Model_Customer customer = Model_Customer.getById(help.customer_id);
+            Model_Customer customer = Model_Customer.find.byId(help.customer_id);
          
             for (Model_Person person : Model_Person.find.query().where().in("email", help.mails).findList()) {
 
@@ -530,7 +530,7 @@ public class Controller_Finance extends _BaseController {
     public Result customer_remove_employee(UUID employee_id) {
         try {
             
-            Model_Employee employee = Model_Employee.getById(employee_id);
+            Model_Employee employee = Model_Employee.find.byId(employee_id);
 
             employee.delete();
 
@@ -558,7 +558,7 @@ public class Controller_Finance extends _BaseController {
     public Result customer_delete_company(UUID customer_id) {
         try {
 
-            Model_Customer customer = Model_Customer.getById(customer_id);
+            Model_Customer customer = Model_Customer.find.byId(customer_id);
        
             customer.delete();
 

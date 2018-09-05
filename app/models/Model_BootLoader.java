@@ -4,15 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import org.ehcache.Cache;
 import utilities.Server;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
 import utilities.enums.NotificationType;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -65,8 +63,8 @@ public class /**/Model_BootLoader extends NamedModel {
     @JsonProperty public String  file_path() {
         try {
 
-            if (cache().get(Model_Blob.class) != null) {
-                String link = Model_Blob.cache_public_link.get(cache().get(Model_Blob.class));
+            if (idCache().get(Model_Blob.class) != null) {
+                String link = Model_Blob.cache_public_link.get(idCache().get(Model_Blob.class));
                 if (link != null) {
                     return link;
                 }
@@ -78,11 +76,11 @@ public class /**/Model_BootLoader extends NamedModel {
             }
 
             String total_link = file.cache_public_link();
-            cache().add(Model_Blob.class, file.id);
+            idCache().add(Model_Blob.class, file.id);
 
 
             logger.trace("path - total link: {}", total_link);
-            Model_Blob.cache_public_link.put(cache().get(Model_Blob.class), total_link);
+            Model_Blob.cache_public_link.put(idCache().get(Model_Blob.class), total_link);
 
             // Přesměruji na link
             return total_link;
@@ -100,17 +98,17 @@ public class /**/Model_BootLoader extends NamedModel {
 
     @JsonIgnore
     public UUID getHardwareTypeId() {
-        if (cache().get(Model_HardwareType.class) == null) {
-            cache().add(Model_HardwareType.class, (UUID) Model_HardwareType.find.query().where().eq("boot_loaders.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_HardwareType.class) == null) {
+            idCache().add(Model_HardwareType.class, (UUID) Model_HardwareType.find.query().where().eq("boot_loaders.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_HardwareType.class);
+        return idCache().get(Model_HardwareType.class);
     }
 
     @JsonIgnore
     public Model_HardwareType getHardwareType() {
         try {
-            return Model_HardwareType.getById(getHardwareTypeId());
+            return Model_HardwareType.find.byId(getHardwareTypeId());
         }catch (Exception e) {
             return null;
         }
@@ -121,21 +119,21 @@ public class /**/Model_BootLoader extends NamedModel {
 
         // System.out.println("getMainHardwareTypeId for bootloader " + this.name);
 
-        if (cache().get(Model_HardwareType.Model_HardwareType_Main.class) == null) { // Záměrně random! Protože potřebuji uložit stejný typ objektu do paměti dvakrát a rozpoznání je jen podle typu třídy
+        if (idCache().get(Model_HardwareType.Model_HardwareType_Main.class) == null) { // Záměrně random! Protože potřebuji uložit stejný typ objektu do paměti dvakrát a rozpoznání je jen podle typu třídy
 
             // System.out.println("getMainHardwareTypeId cache is null " + this.name);
 
             UUID main = (UUID) Model_HardwareType.find.query().where().eq("main_boot_loader.id", id).select("id").findSingleAttribute();
             if (main != null) {
                 logger.warn("getMainHardwareTypeId for bootloader {} is not null Model_HardwareType main ", main);
-                cache().add(Model_HardwareType.Model_HardwareType_Main.class, main);
+                idCache().add(Model_HardwareType.Model_HardwareType_Main.class, main);
             } else {
                 logger.warn("getMainHardwareTypeId for bootloader {} is null - but its probably ok", this.name);
             }
 
         }
 
-        return cache().get(Model_HardwareType.Model_HardwareType_Main.class);
+        return idCache().get(Model_HardwareType.Model_HardwareType_Main.class);
     }
 
     @JsonIgnore
@@ -145,7 +143,7 @@ public class /**/Model_BootLoader extends NamedModel {
             UUID id = getMainHardwareTypeId();
             logger.warn("getMainHardwareType for bootloader {} getMainHardwareTypeId: id {} ", this.name, id);
             if(id != null) {
-                return Model_HardwareType.getById(id);
+                return Model_HardwareType.find.byId(id);
             } else  {
                 return null;
             }
@@ -258,9 +256,8 @@ public class /**/Model_BootLoader extends NamedModel {
 
         if (getHardwareType() != null) {
             getHardwareType().boot_loaders();
-            getHardwareType().cache().add(this.getClass(), id);
+            getHardwareType().idCache().add(this.getClass(), id);
         }
-        cache.put(id, this);
     }
 
     @JsonIgnore @Override
@@ -275,10 +272,9 @@ public class /**/Model_BootLoader extends NamedModel {
         logger.debug("delete :: Delete object Id: {} ", this.id);
 
         if (getHardwareType() != null) {
-            getHardwareType().cache().remove(this.getClass(), id);
+            getHardwareType().idCache().remove(this.getClass(), id);
         }
 
-        cache.remove(id);
         return super.delete();
     }
 
@@ -333,28 +329,8 @@ public class /**/Model_BootLoader extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_BootLoader.class)
-    public static Cache<UUID, Model_BootLoader> cache;
-
-    public static Model_BootLoader getById(UUID id) throws _Base_Result_Exception {
-
-        Model_BootLoader bootloader = cache.get(id);
-        if (bootloader == null) {
-
-            bootloader = find.byId(id);
-            if (bootloader == null)  throw new Result_Error_NotFound(Model_BootLoader.class);
-
-            cache.put(id, bootloader);
-        }
-        // Check Permission
-        if(bootloader.its_person_operation()) {
-            bootloader.check_read_permission();
-        }
-
-        return bootloader;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_BootLoader> find = new Finder<>(Model_BootLoader.class);
+    @CacheFinderField(Model_BootLoader.class)
+    public static CacheFinder<Model_BootLoader> find = new CacheFinder<>(Model_BootLoader.class);
 }

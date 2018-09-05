@@ -167,7 +167,7 @@ public class Controller_Finance_Tariff extends _BaseController {
             // Get and Validate Object
             Swagger_Tariff_New help  = formFromRequestWithValidation(Swagger_Tariff_New.class);
 
-            Model_Tariff tariff = Model_Tariff.getById(tariff_id);
+            Model_Tariff tariff = Model_Tariff.find.byId(tariff_id);
 
             if (Model_Tariff.find.query().where().ne("id", tariff_id).eq("identifier", help.identifier).findOne() != null) {
                 return badRequest("Identifier must be unique!");
@@ -214,7 +214,7 @@ public class Controller_Finance_Tariff extends _BaseController {
     public Result tariff_deactivate(UUID tariff_id) {
         try {
 
-            Model_Tariff tariff = Model_Tariff.getById(tariff_id);
+            Model_Tariff tariff = Model_Tariff.find.byId(tariff_id);
 
             if (!tariff.active) return badRequest("Tariff is already deactivated");
             tariff.active = false;
@@ -245,7 +245,7 @@ public class Controller_Finance_Tariff extends _BaseController {
     public Result tariff_activate(UUID tariff_id) {
         try {
 
-            Model_Tariff tariff = Model_Tariff.getById(tariff_id);
+            Model_Tariff tariff = Model_Tariff.find.byId(tariff_id);
 
             if (tariff.active) return badRequest("Tariff is already activated");
 
@@ -277,7 +277,7 @@ public class Controller_Finance_Tariff extends _BaseController {
     public Result tariff_up(UUID tariff_id) {
         try {
 
-            Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
+            Model_Tariff tariff =  Model_Tariff.find.byId(tariff_id);
 
             tariff.up();
 
@@ -305,7 +305,7 @@ public class Controller_Finance_Tariff extends _BaseController {
     public Result tariff_down(UUID tariff_id) {
         try {
 
-            Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
+            Model_Tariff tariff =  Model_Tariff.find.byId(tariff_id);
 
             tariff.down();
 
@@ -333,7 +333,7 @@ public class Controller_Finance_Tariff extends _BaseController {
     public Result tariff_delete(UUID tariff_id) {
         try {
 
-            Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
+            Model_Tariff tariff =  Model_Tariff.find.byId(tariff_id);
 
             tariff.delete();
 
@@ -361,7 +361,7 @@ public class Controller_Finance_Tariff extends _BaseController {
     public Result tariff_get(UUID tariff_id) {
         try {
 
-            Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
+            Model_Tariff tariff =  Model_Tariff.find.byId(tariff_id);
             return ok(tariff);
 
         } catch (Exception e) {
@@ -385,12 +385,12 @@ public class Controller_Finance_Tariff extends _BaseController {
     })
     public Result tariff_add_extension_included(UUID tariff_id, UUID extension_id) {
         try {
-            Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
+            Model_Tariff tariff =  Model_Tariff.find.byId(tariff_id);
             if(tariff == null) {
                 return notFound("Invalid tariff id.");
             }
 
-            Model_TariffExtension extension =  Model_TariffExtension.getById(extension_id);
+            Model_TariffExtension extension =  Model_TariffExtension.find.byId(extension_id);
             if(extension == null) {
                 return notFound("Invalid extension id.");
             }
@@ -432,12 +432,12 @@ public class Controller_Finance_Tariff extends _BaseController {
     public Result tariff_add_extension_recommended(UUID tariff_id, UUID extension_id) {
         try {
 
-            Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
+            Model_Tariff tariff =  Model_Tariff.find.byId(tariff_id);
             if(tariff == null) {
                 return notFound("Invalid tariff id.");
             }
 
-            Model_TariffExtension extension =  Model_TariffExtension.getById(extension_id);
+            Model_TariffExtension extension =  Model_TariffExtension.find.byId(extension_id);
             if(extension == null) {
                 return notFound("Invalid extension id.");
             }
@@ -479,12 +479,12 @@ public class Controller_Finance_Tariff extends _BaseController {
     public Result tariff_remove_extension(UUID tariff_id, UUID extension_id) {
         try {
 
-            Model_Tariff tariff =  Model_Tariff.getById(tariff_id);
+            Model_Tariff tariff =  Model_Tariff.find.byId(tariff_id);
             if(tariff == null) {
                 return notFound("Invalid tariff id.");
             }
 
-            Model_TariffExtension extension =  Model_TariffExtension.getById(extension_id);
+            Model_TariffExtension extension =  Model_TariffExtension.find.byId(extension_id);
             if(extension == null) {
                 return notFound("Invalid extension id.");
             }

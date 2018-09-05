@@ -29,7 +29,7 @@ public class Swagger_GridProjectList extends _Swagger_Filter_Common {
         List<UUID> ids = query.setFirstRow((page_number - 1) * filter.count_on_page).setMaxRows(filter.count_on_page).findIds();
 
         for (UUID id : ids) {
-            this.content.add(Model_GridProject.getById(id));
+            this.content.add(Model_GridProject.find.byId(id));
         }
 
         this.total  = query.findCount();

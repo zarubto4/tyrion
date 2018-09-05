@@ -28,7 +28,7 @@ public class Swagger_C_Program_Version_Public_List extends _Swagger_Filter_Commo
         List<UUID> uuids =  query.setFirstRow((page_number - 1) * filter.count_on_page).setMaxRows(filter.count_on_page).findIds();
 
         for (UUID uuid : uuids) {
-            this.content.add(Model_CProgramVersion.getById(uuid));
+            this.content.add(Model_CProgramVersion.find.byId(uuid));
         }
 
         this.total = query.findCount();
