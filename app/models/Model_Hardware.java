@@ -669,9 +669,7 @@ public class Model_Hardware extends TaggedModel {
 
             if (this.idCache().get(Model_Blob.class) != null) {
                 Model_Blob record = Model_Blob.find.byId(this.idCache().get(Model_Blob.class));
-                if (record != null) {
-                    return record.getPublicDownloadLink(300);
-                }
+                return record.getPublicDownloadLink();
             }
 
             return null;
@@ -3249,7 +3247,7 @@ public class Model_Hardware extends TaggedModel {
 
             // Its not possible activate activated device!!!
             if(dominant_entity) {
-                throw new Result_Error_Bad_request("Its not possible active device, which is already activated");
+                throw new Result_Error_BadRequest("Its not possible active device, which is already activated");
             }
 
             // Its not possibkle ative device, if another copy of same device is active - user have to deactivate that first!
@@ -3269,7 +3267,7 @@ public class Model_Hardware extends TaggedModel {
 
             if(!ids.isEmpty()) {
                 Model_Hardware hardware = find.byId(ids.get(0));
-                throw new Result_Error_Bad_request("Its not possible active this device, because its already activated in Project  " + hardware.get_project().name + ". Please, deactivate hardware in project first." );
+                throw new Result_Error_BadRequest("Its not possible active this device, because its already activated in Project  " + hardware.get_project().name + ". Please, deactivate hardware in project first." );
             }
 
 

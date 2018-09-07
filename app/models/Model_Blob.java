@@ -1,7 +1,6 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.*;
 import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
@@ -18,8 +17,6 @@ import utilities.model.BaseModel;
 import javax.persistence.*;
 import java.beans.Transient;
 import java.io.*;
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
 import java.util.*;
 
 @Entity
@@ -58,23 +55,20 @@ public class Model_Blob extends BaseModel {
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-
     @JsonIgnore
     public String  get_file_path_for_direct_download() {
         return Server.azure_blob_Link + path;
     }
 
-
-    /*
-    * Ľink by šlo v rámci úspor cachovat. To jest uložit si pod ID objektu jeho link a dát mu platnost - pokud ho v cahce nenajdu
-    * vytvořím link, pokud ano z cache vracím.
-    * Teoreticky mužu mít variabliblní proměnou (vstup metody) do které dám v čas jak dluho se má v chache paměti / na jak dlouho se má vygenerovat link
-    * // 30 sekund nic mocMM
-    * */
-
     @JsonIgnore
-    public String getPublicDownloadLink(int second) {
+    public String getPublicDownloadLink() {
         try {
+
+            if (cache_public_link.containsKey(this.id)) {
+                return cache_public_link.get(this.id);
+            }
+
+            long start = System.currentTimeMillis();
 
             // Separace na Container a Blob
             int slash = path.indexOf("/");
@@ -86,47 +80,48 @@ public class Model_Blob extends BaseModel {
             // Create Policy
             Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
             cal.setTime(new Date());
-            cal.add(Calendar.SECOND, second);
+            cal.add(Calendar.HOUR, 32);
 
             SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
             policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
             policy.setSharedAccessExpiryTime(cal.getTime());
 
-
             String sas = blob.generateSharedAccessSignature(policy, null);
+
+            logger.info("getPublicDownloadLink - generating link took {} ms", System.currentTimeMillis() - start);
 
             String total_link = blob.getUri().toString() + "?" + sas;
 
-            // TODO Cache total_link
-            logger.trace("Direct download link:: {} ", total_link);
+            cache_public_link.put(this.id, total_link);
+
+            logger.trace("getPublicDownloadLink - link: {} ", total_link);
             return total_link;
 
         } catch (Exception e) {
-            e.printStackTrace();
-
             logger.internalServerError(e);
             return null;
         }
     }
 
     @JsonIgnore
-    public String get_fileRecord_from_Azure_inString() {
+    public String downloadString() {
         try {
+
+            if (cache_string_file.containsKey(this.id)) {
+                return cache_string_file.get(this.id);
+            }
 
             int slash = path.indexOf("/");
             String container_name = path.substring(0,slash);
             String real_file_path = path.substring(slash+1);
 
             CloudBlobContainer container = Server.blobClient.getContainerReference(container_name );
+            CloudBlockBlob blob = container.getBlockBlobReference(real_file_path);
+            String file = blob.downloadText();
 
-            CloudBlob blob = container.getBlockBlobReference(real_file_path );
+            cache_string_file.put(this.id, file);
 
-
-            InputStream input =  blob.openInputStream();
-            InputStreamReader inr = new InputStreamReader(input, "UTF-8");
-            String utf8str = org.apache.commons.io.IOUtils.toString(inr);
-
-            return utf8str;
+            return file;
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -259,6 +254,9 @@ public class Model_Blob extends BaseModel {
     public boolean delete() {
         try {
             logger.debug("delete - removing file from blob server, id: {}", this.id);
+
+            cache_public_link.remove(this.id);
+
             this.removeBlob();
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -269,49 +267,20 @@ public class Model_Blob extends BaseModel {
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
-    public String cache_public_link() throws StorageException, URISyntaxException, InvalidKeyException {
-
-        // Separace na Container a Blob
-        int slash = path.indexOf("/");
-        String container_name = path.substring(0, slash);
-        String real_file_path = path.substring(slash + 1);
-
-        CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
-
-        // Create Policy
-        Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-        cal.setTime(new Date());
-        cal.add(Calendar.HOUR, 24);
-
-        SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
-        policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
-        policy.setSharedAccessExpiryTime(cal.getTime());
-
-        String sas = blob.generateSharedAccessSignature(policy, null);
-
-        String total_link = blob.getUri().toString() + "?" + sas;
-
-        Model_Blob.cache_public_link.put(id, total_link);
-
-        return total_link;
-    }
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
-
 
     @JsonIgnore @Transient
     public static String get_path_for_bin() throws Exception {
 
         CloudBlobContainer container = Server.blobClient.getContainerReference("bin-files");
         return container.getName() + "/" + UUID.randomUUID().toString();
-
     }
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
 
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
         //true
@@ -332,7 +301,6 @@ public class Model_Blob extends BaseModel {
 
         if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + this.id)) _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + this.id);
         if (_BaseController.person().has_permission(Model_BProgram.Permission.BProgram_delete.name())) return;
-
 
         UUID id = null;
 
@@ -457,8 +425,11 @@ public class Model_Blob extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = String.class, duration = CacheField.HalfDayCacheConstant, maxElements = 500, automaticProlonging = false, name = "Model_Blob_Link")
+    @CacheField(value = String.class, duration = CacheField.DayCacheConstant, maxElements = 1000, automaticProlonging = false, name = "Model_Blob_Link")
     public static Cache<UUID, String> cache_public_link;
+
+    @CacheField(value = String.class, duration = CacheField.DayCacheConstant, maxElements = 500, name = "Model_Blob_File")
+    public static Cache<UUID, String> cache_string_file;
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

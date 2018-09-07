@@ -46,21 +46,17 @@ public class Model_BProgramVersion extends VersionModel {
 
     @JsonProperty
     public String program() {
-        // TODO Hodně náročné na stahování do Cahce - Nejlépe takový objekt na linky, že sám sebe zahodí po vypršení platnosti
-        // Myslím, že jsem ho někde programoval! Tom
         try {
 
             Model_Blob blob = Model_Blob.find.query().where().eq("b_program_version.id", id).eq("name", "blocko.json").findOne();
-            if (blob != null) return blob.get_fileRecord_from_Azure_inString();
-            return null;
+            return blob.getPublicDownloadLink();
 
         } catch (_Base_Result_Exception e) {
             // nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
         }
+        return null;
     }
     @JsonProperty @Transient public List<Model_BProgramVersionSnapGridProject> grid_project_snapshots() {
         try {

@@ -266,7 +266,7 @@ public class Controller_Hardware extends _BaseController {
 
             // Swagger_File_Content - Zástupný dokumentační objekt
             Swagger_File_Content content = new Swagger_File_Content();
-            content.file_in_base64 = boot_loader.file.get_fileRecord_from_Azure_inString();
+            content.file_in_base64 = boot_loader.file.downloadString();
 
             // Vracím content
             return ok(content);
@@ -299,7 +299,7 @@ public class Controller_Hardware extends _BaseController {
 
             // Swagger_File_Content - Zástupný dokumentační objekt
             Swagger_File_Content content = new Swagger_File_Content();
-            content.file_in_base64 = version.compilation.blob.get_fileRecord_from_Azure_inString();
+            content.file_in_base64 = version.compilation.blob.downloadString();
 
             // Vracím content
             return ok(content);

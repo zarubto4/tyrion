@@ -21,7 +21,7 @@ import utilities.enums.LogLevel;
 import utilities.enums.NetworkStatus;
 import utilities.enums.ServerMode;
 import utilities.errors.ErrorCode;
-import utilities.errors.Exceptions.Result_Error_Bad_request;
+import utilities.errors.Exceptions.Result_Error_BadRequest;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
@@ -739,7 +739,7 @@ public class Model_HomerServer extends TaggedModel {
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
         if(project != null && server_type != HomerType.PRIVATE){
-            throw new Result_Error_Bad_request("Server must be PRIVATE if its registered with Project");
+            throw new Result_Error_BadRequest("Server must be PRIVATE if its registered with Project");
         }
 
         if(project != null) {

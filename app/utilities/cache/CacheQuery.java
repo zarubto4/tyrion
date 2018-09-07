@@ -29,40 +29,45 @@ public class CacheQuery<T extends BaseModel> extends DefaultOrmQuery<T> {
     public T findOne() {
 
         Integer hash = this.hashCode();
+        String entityName = this.cacheFinder.getEntityType().getSimpleName();
 
-        logger.trace("findOne - calculated hash: {}", hash);
+        logger.trace("findOne - ({}) calculated hash: {}", entityName, hash);
 
         Cache<Integer, UUID> queryCache = this.cacheFinder.getQueryCache();
         Cache<UUID, T> cache = this.cacheFinder.getCache();
 
         if (queryCache.containsKey(hash)) {
 
-            logger.debug("findOne - found cached query");
+            logger.debug("findOne - ({}) found cached query", entityName);
 
             UUID key = queryCache.get(hash);
             if (cache.containsKey(key)) {
-                logger.debug("findOne - get cached record");
-                return cache.get(key);
+                logger.debug("findOne - ({}) get cached record", entityName);
+                return this.cacheFinder.retrieve(key);
             } else {
                 return this.cacheFinder.byId(key);
             }
         }
 
-        logger.debug("findOne - get from db");
+        logger.debug("findOne - ({}) get from db", entityName);
         T entity = super.findOne();
         if (entity == null) {
-            logger.trace("findOne - not found");
+            logger.trace("findOne - ({}) not found", entityName);
             throw new Result_Error_NotFound(this.cacheFinder.getEntityType());
         }
 
         queryCache.put(hash, entity.id);
 
         if (cache.containsKey(entity.id)) {
-            logger.debug("findOne - query not cached, but record itself was cached");
+            logger.debug("findOne - ({}) query not cached, but record itself was cached", entityName);
             return cache.get(entity.id);
         }
 
         cache.put(entity.id, entity);
+
+        if (entity.its_person_operation()) {
+            entity.check_read_permission();
+        }
 
         return entity;
     }

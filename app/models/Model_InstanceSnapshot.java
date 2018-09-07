@@ -273,19 +273,17 @@ public class Model_InstanceSnapshot extends TaggedModel {
     }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "only if snapshot is main")
-    public Swagger_InstanceSnapshot_JsonFile program() {
+    public String program() {
         try {
             if (program != null) {
-                return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapshot_JsonFile.class, Json.parse(program.get_fileRecord_from_Azure_inString()));
+                return program.getPublicDownloadLink();
             }
-            return null;
         } catch (_Base_Result_Exception e) {
             //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
         }
+        return null;
     }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "only if snapshot is main")
@@ -339,7 +337,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
     public List<UUID> getHardwareIds() throws _Base_Result_Exception {
         List<UUID> list = new ArrayList<>();
 
-        for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.program().interfaces) {
+        for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.getProgram().interfaces) {
 
             if (interface_hw.type.equals("hardware")) {
                 list.add(interface_hw.target_id);
@@ -353,7 +351,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
     public List<UUID> getHardwareGroupseIds() throws _Base_Result_Exception {
         List<UUID> list = new ArrayList<>();
 
-        for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.program().interfaces) {
+        for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.getProgram().interfaces) {
 
             if (interface_hw.type.equals("group")) {
                 list.add(interface_hw.target_id);
@@ -397,6 +395,21 @@ public class Model_InstanceSnapshot extends TaggedModel {
         }
     }
 
+    @JsonIgnore @Transient
+    public Swagger_InstanceSnapshot_JsonFile getProgram() {
+        try {
+            if (program != null) {
+                return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapshot_JsonFile.class, Json.parse(program.downloadString()));
+            }
+            return null;
+        } catch (_Base_Result_Exception e) {
+            //nothing
+            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 
 /* Actions --------------------------------------------------------------------------------------------------------*/
 
@@ -475,7 +488,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, get_instance_id(), true, instance.getProjectId());
 
                 // Only if there are hardware for update
-                if(program().interfaces.size() > 0) {
+                if(getProgram().interfaces.size() > 0) {
 
                     // Step 5
                     logger.trace("deploy - instance {}, step 5 - Override all previous update procedures in this snapshot ", get_instance_id());
@@ -494,7 +507,6 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
 
             }catch (Exception e) {
-                e.printStackTrace();
                 logger.internalServerError(e);
             }
 
@@ -611,7 +623,6 @@ public class Model_InstanceSnapshot extends TaggedModel {
             procedure.state = Enum_Update_group_procedure_state.CANCELED;
             procedure.date_of_finish = new Date();
             procedure.update();
-
         }
     }
 
@@ -633,14 +644,13 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 procedure.date_of_planing = new Date();
             }
 
+            logger.trace("create_actualization_hardware_request:: Check Interface: Size " + this.getProgram().interfaces.size());
 
-            logger.trace("create_actualization_hardware_request:: Check Interface: Size " + this.program().interfaces.size());
-
-            if (this.program().interfaces.size() == 0){
+            if (this.getProgram().interfaces.size() == 0){
                 logger.trace("create_actualization_hardware_request:: Interface list is EMPTY!");
             }
 
-            for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.program().interfaces) {
+            for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.getProgram().interfaces) {
 
                 Model_CProgramVersion version = Model_CProgramVersion.find.byId(interface_hw.interface_id);
 
@@ -724,7 +734,6 @@ public class Model_InstanceSnapshot extends TaggedModel {
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -828,7 +837,6 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
 /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
 
-
 /* Helper Class --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
@@ -841,25 +849,11 @@ public class Model_InstanceSnapshot extends TaggedModel {
         Swagger_InstanceSnapShotConfigurationFile collection = null;
         Swagger_InstanceSnapShotConfigurationProgram program = null;
 
-        // System.out.println("get_connection_summary:: ---------------------------");
-        // System.out.println(" - actual Settings:: ");
-        // System.out.println(Json.toJson(settings));
-        // System.out.println("Looking for grid_program_id:: {} " + grid_program_id);
+        for (Swagger_InstanceSnapShotConfigurationFile grids_collection : settings.grids_collections) {
 
-        // System.out.println("Start with For cycle");
-        for(Swagger_InstanceSnapShotConfigurationFile grids_collection : settings.grids_collections){
+            for (Swagger_InstanceSnapShotConfigurationProgram grids_program : grids_collection.grid_programs) {
 
-            // System.out.println("grids_collection grid_project_id:: " + grids_collection.grid_project_id);
-            // System.out.println("grids_collection grid_programs.size:: " + grids_collection.grid_programs.size());
-
-            for(Swagger_InstanceSnapShotConfigurationProgram grids_program : grids_collection.grid_programs){
-
-                // System.out.println("grids_collection grids_program grid_program_id:: " + grids_program.grid_program_id);
-                // System.out.println("grids_collection grids_program grid_program_version_id:: " + grids_program.grid_program_version_id);
-
-                if(grids_program.grid_program_id.equals( grid_program_id) || grids_program.grid_program_version_id.equals(grid_program_id) ){
-
-                    // System.out.println("grids_collection set collection and program ");
+                if (grids_program.grid_program_id.equals(grid_program_id) || grids_program.grid_program_version_id.equals(grid_program_id)) {
 
                     collection = grids_collection;
                     program = grids_program;
@@ -868,11 +862,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
             }
         }
 
-        // System.out.println(" IS Collection ok?? " + collection != null);
-        // System.out.println(" IS program ok?? " + program != null);
-
-
-        if(collection == null){
+        if (collection == null) {
             logger.error("SnapShotConfigurationFile is missing return null");
             throw new Result_Error_NotFound(Swagger_InstanceSnapShotConfigurationFile.class);
         }
@@ -891,22 +881,14 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
             case PUBLIC: {
 
-
-                // System.out.println("program.snapshot_settings - PUBLIC");
-
                 Model_GridProgramVersion version = Model_GridProgramVersion.find.byId(program.grid_program_version_id);
 
                 summary.grid_app_url += collection.grid_project_id + "/"  + program.grid_program_id + "/" + UUID.randomUUID();
-                summary.grid_program = version.file.get_fileRecord_from_Azure_inString();
+                summary.grid_program = version.file.downloadString();
                 summary.grid_project_id = collection.grid_project_id;
                 summary.grid_program_id = program.grid_program_id;
                 summary.grid_program_version_id = program.grid_program_version_id;
                 summary.instance_id = get_instance().id;
-
-                // System.out.println("get_connection_summary: Parsování začíná:");
-                // System.out.println("get_connection_summary: Model_GridProgramVersion: " + program.grid_program_version_id);
-                // System.out.println("get_connection_summary: Program Original: " + summary.grid_program);
-                // System.out.println("get_connection_summary: Program: " +  Json.parse(summary.grid_program));
 
                 JsonNode jsonNode = Json.parse(summary.grid_program);
                 JsonNode m_code = Json.parse(jsonNode.get("m_code").asText().replace("\\\"", "\""));
@@ -918,21 +900,14 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
             case PROJECT: {
 
-                 System.out.println("program.snapshot_settings - PROJECT");
-
                 // Check Token
                 String token = new Authentication().getUsername(context);
                 if (token == null) {
-                    System.out.println("Token se kterým se uživatel přihlašuje je prázdný - proto vracím zamítavou zprávu vyžadující login!");
                     throw new Result_Error_Unauthorized();
                 }
 
-                System.out.println("Token mám : " + token );
-
                 // Check Person By Token (who send request)
                 Model_Person person = _BaseController.person();
-
-                System.out.println("Person Mám: " + token );
 
                 //Chekc Permission
                 check_read_permission();
@@ -948,7 +923,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 terminal.save();
 
                 summary.grid_app_url += collection.grid_project_id + "/"  + program.grid_program_id + "/" + terminal.terminal_token;
-                summary.grid_program = Model_GridProgramVersion.find.byId(program.grid_program_version_id).file.get_fileRecord_from_Azure_inString();
+                summary.grid_program = Model_GridProgramVersion.find.byId(program.grid_program_version_id).file.downloadString();
                 summary.grid_project_id = collection.grid_project_id;
                 summary.grid_program_id = program.grid_program_id;
                 summary.grid_program_version_id = program.grid_program_version_id;

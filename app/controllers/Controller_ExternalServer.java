@@ -1,6 +1,5 @@
 package controllers;
 
-import com.google.inject.Inject;
 import com.microsoft.azure.storage.blob.CloudAppendBlob;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
@@ -8,17 +7,9 @@ import com.typesafe.config.Config;
 import io.ebean.*;
 import io.swagger.annotations.*;
 import models.*;
-import org.omg.CORBA.ExceptionList;
 import play.Environment;
-import play.api.http.HttpEntity;
-import play.api.libs.ws.WSBodyWritables;
-import play.libs.Json;
-import play.libs.ws.BodyReadable;
-import play.libs.ws.StandaloneWSResponse;
 import play.libs.ws.WSClient;
-import play.libs.ws.WSResponse;
 import play.mvc.BodyParser;
-import play.mvc.ResponseHeader;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
@@ -26,7 +17,6 @@ import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.authentication.AuthenticationHomer;
 import utilities.enums.CompilationStatus;
-import utilities.enums.HardwareUpdateState;
 import utilities.enums.HomerType;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.homer_auto_deploy.DigitalOceanTyrionService;
@@ -34,15 +24,10 @@ import utilities.homer_auto_deploy.SelfDeployedThreadRegister;
 import utilities.homer_auto_deploy.models.common.Swagger_ServerRegistration_FormData;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
-import utilities.model.TaggedModel;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_HomerServer_List;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.Temporal;
-import java.time.temporal.TemporalUnit;
 import java.util.*;
 
 
@@ -873,7 +858,7 @@ public class Controller_ExternalServer extends _BaseController {
                 throw new Result_Error_NotFound(Model_Blob.class);
             }
 
-            byte[] bytes = Model_Blob.get_decoded_binary_string_from_Base64(compilation.blob.get_fileRecord_from_Azure_inString());
+            byte[] bytes = Model_Blob.get_decoded_binary_string_from_Base64(compilation.blob.downloadString());
 
             // Vrátím soubor
             return file(bytes, "firmware.bin");

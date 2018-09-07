@@ -1,6 +1,5 @@
 package controllers;
 
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.ExpressionList;
@@ -9,8 +8,6 @@ import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
 import play.Environment;
-import play.data.Form;
-import play.data.FormFactory;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
@@ -25,7 +22,6 @@ import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
-import utilities.swagger.output.filter_results.Swagger_C_Program_List;
 import utilities.swagger.output.filter_results.Swagger_Library_List;
 
 import java.util.UUID;
@@ -177,7 +173,7 @@ public class Controller_Library extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version.file;
 
-                copy_object.file = Model_Blob.upload(fileRecord.get_fileRecord_from_Azure_inString(), "library.json" , library_new.get_path());
+                copy_object.file = Model_Blob.upload(fileRecord.downloadString(), "library.json" , library_new.get_path());
                 copy_object.update();
 
             }
@@ -776,7 +772,7 @@ public class Controller_Library extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version_old.file;
 
-                version.file = Model_Blob.upload(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , library.get_path());
+                version.file = Model_Blob.upload(fileRecord.downloadString(), "code.json" , library.get_path());
                 version.update();
 
                 // Admin to schválil bez dalších keců

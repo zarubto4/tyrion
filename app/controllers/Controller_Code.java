@@ -1,7 +1,6 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.ExpressionList;
@@ -27,7 +26,6 @@ import utilities.swagger.output.Swagger_Compilation_Build_Error;
 import utilities.swagger.output.Swagger_Compilation_Ok;
 import utilities.swagger.output.filter_results.Swagger_C_Program_List;
 import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
-import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
 import java.util.*;
 
@@ -134,7 +132,7 @@ public class Controller_Code extends _BaseController {
 
                     logger.trace("compile_C_Program_code:: Library contains files");
 
-                    Swagger_Library_File_Load lib_file = baseFormFactory.formFromJsonWithValidation(Swagger_Library_File_Load.class, Json.parse(lib_version.file.get_fileRecord_from_Azure_inString()));
+                    Swagger_Library_File_Load lib_file = baseFormFactory.formFromJsonWithValidation(Swagger_Library_File_Load.class, Json.parse(lib_version.file.downloadString()));
                     library_files.addAll(lib_file.files);
 
                 }
@@ -285,7 +283,7 @@ public class Controller_Code extends _BaseController {
                 version.save();
 
                 // Content se nahraje na Azure
-                version.file = Model_Blob.upload(hardwareType.get_main_c_program().default_main_version.file.get_fileRecord_from_Azure_inString(), "code.json", c_program.get_path());
+                version.file = Model_Blob.upload(hardwareType.get_main_c_program().default_main_version.file.downloadString(), "code.json", c_program.get_path());
                 version.update();
 
 
@@ -360,7 +358,7 @@ public class Controller_Code extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version.file;
 
-                copy_object.file = Model_Blob.upload(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program_new.get_path());
+                copy_object.file = Model_Blob.upload(fileRecord.downloadString(), "code.json" , c_program_new.get_path());
                 copy_object.update();
 
                 copy_object.compile_program_thread(version.compilation.firmware_version_lib);
@@ -1070,7 +1068,7 @@ public class Controller_Code extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version_old.file;
 
-                version.file = Model_Blob.upload(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program.get_path());
+                version.file = Model_Blob.upload(fileRecord.downloadString(), "code.json" , c_program.get_path());
                 version.update();
 
                 version.compile_program_thread(version_old.compilation.firmware_version_lib);

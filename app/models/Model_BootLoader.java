@@ -64,7 +64,7 @@ public class /**/Model_BootLoader extends NamedModel {
         try {
 
             if (idCache().get(Model_Blob.class) != null) {
-                String link = Model_Blob.cache_public_link.get(idCache().get(Model_Blob.class));
+                String link = Model_Blob.find.byId(idCache().get(Model_Blob.class)).getPublicDownloadLink();
                 if (link != null) {
                     return link;
                 }
@@ -75,12 +75,11 @@ public class /**/Model_BootLoader extends NamedModel {
                 return null;
             }
 
-            String total_link = file.cache_public_link();
+            String total_link = file.getPublicDownloadLink();
             idCache().add(Model_Blob.class, file.id);
 
 
             logger.trace("path - total link: {}", total_link);
-            Model_Blob.cache_public_link.put(idCache().get(Model_Blob.class), total_link);
 
             // Přesměruji na link
             return total_link;

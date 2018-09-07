@@ -1,7 +1,6 @@
 package utilities.cache;
 
 import io.ebean.Finder;
-import io.ebean.Query;
 import io.ebeaninternal.server.querydefn.DefaultOrmQuery;
 import org.ehcache.Cache;
 import utilities.errors.Exceptions.Result_Error_NotFound;
@@ -17,7 +16,7 @@ import java.util.UUID;
  * the record was cached or not. The caching is implemented only for single record queries.
  * @param <T> Type of the stored entity.
  */
-public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> {
+public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> implements ModelCache<T> {
 
     private static final Logger logger = new Logger(CacheFinder.class);
 
@@ -36,18 +35,9 @@ public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> {
     @NotNull
     public T byId(UUID id) {
 
-        if (cache == null) {
-            T entity = super.byId(id);
-            if (entity == null) {
-                throw new Result_Error_NotFound(this.entityType);
-            } else {
-                return entity;
-            }
-        }
-
         if (cache.containsKey(id)) {
             logger.debug("byId - ({}) id: {} get from cache", this.entityType.getSimpleName(), id);
-            return cache.get(id);
+            return this.retrieve(id);
         }
 
         logger.debug("byId - ({}) id: {} get from db", this.entityType.getSimpleName(), id);
@@ -56,6 +46,10 @@ public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> {
         if (entity == null) {
             logger.debug("byId - ({}) id: {} not found", this.entityType.getSimpleName(), id);
             throw new Result_Error_NotFound(this.entityType);
+        }
+
+        if (entity.its_person_operation()) {
+            entity.check_read_permission();
         }
 
         cache.put(id, entity);
@@ -90,12 +84,22 @@ public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> {
     }
 
     public void cache(UUID key, T value) {
-        logger.debug("cache - ({}) caching by key: {}", this.entityType.getSimpleName(), key);
+        logger.trace("cache - ({}) caching by key: {}", this.entityType.getSimpleName(), key);
         cache.put(key, value);
     }
 
+    public T retrieve(UUID key) {
+        logger.trace("retrieve - ({}) retrieving by key: {}", this.entityType.getSimpleName(), key);
+        T entity = cache.get(key);
+        if (entity != null && entity.its_person_operation()) {
+            entity.check_read_permission();
+        }
+        return entity;
+
+    }
+
     public void evict(UUID key) {
-        logger.debug("evict - ({}) removing by key: {}", this.entityType.getSimpleName(), key);
+        logger.trace("evict - ({}) removing by key: {}", this.entityType.getSimpleName(), key);
         cache.remove(key);
     }
 }

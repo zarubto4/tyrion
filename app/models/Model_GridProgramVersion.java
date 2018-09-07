@@ -49,7 +49,7 @@ public class Model_GridProgramVersion extends VersionModel {
 
             if (fileRecord != null) {
 
-                JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
+                JsonNode json = Json.parse(fileRecord.downloadString());
                return json.get("m_code").asText();
 
             }

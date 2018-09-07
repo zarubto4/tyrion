@@ -10,7 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.bson.Document;
 import play.data.validation.Constraints;
 import play.libs.Json;
-import utilities.errors.Exceptions.Result_Error_Bad_request;
+import utilities.errors.Exceptions.Result_Error_BadRequest;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions.Result_Error_Registration_Fail;
 import utilities.errors.Exceptions._Base_Result_Exception;
@@ -129,7 +129,7 @@ public class Model_HardwareRegistrationEntity extends MongoModel {
 
         } catch (Exception e){
             logger.internalServerError(e);
-            throw new Result_Error_Bad_request("Save To Mongo DB faild");
+            throw new Result_Error_BadRequest("Save To Mongo DB faild");
         }
     }
 
@@ -146,7 +146,7 @@ public class Model_HardwareRegistrationEntity extends MongoModel {
 
         } catch (Exception e){
             logger.internalServerError(e);
-            throw new Result_Error_Bad_request("Save To Mongo DB faild");
+            throw new Result_Error_BadRequest("Save To Mongo DB faild");
         }
     }
 

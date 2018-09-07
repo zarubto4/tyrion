@@ -527,8 +527,8 @@ public abstract class BaseModel extends Model implements JsonSerializer {
      */
     @JsonIgnore public boolean its_person_operation() {
         try {
-            return  _BaseController.isAuthenticated();
-        }catch (Exception e){
+            return _BaseController.isAuthenticated();
+        } catch (Exception e) {
             logger.internalServerError(e);
             return false;
         }
@@ -547,19 +547,17 @@ public abstract class BaseModel extends Model implements JsonSerializer {
             List<Field> fields = new ArrayList<>();
             getAllFields(fields, this.getClass(), 0);
 
+            for (Field field : fields) {
 
-            for(Field field : fields) {
-
-                if(field.getName().equals("author_id")) {
+                if (field.getName().equals("author_id")) {
                     if (field.get(this) == null) {
-                        field.set(this, _BaseController.person().id);
+                        field.set(this, _BaseController.personId());
                         return;
                     }
                 }
-
             }
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             logger.internalServerError(e);
         }
     }

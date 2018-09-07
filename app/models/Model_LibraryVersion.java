@@ -63,7 +63,7 @@ public class Model_LibraryVersion extends VersionModel {
     public List<Swagger_Library_Record> files(){
         try {
 
-            JsonNode json = Json.parse(file.get_fileRecord_from_Azure_inString());
+            JsonNode json = Json.parse(file.downloadString());
             return formFromJsonWithValidation(Swagger_Library_File_Load.class, json).files;
 
 

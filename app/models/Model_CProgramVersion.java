@@ -144,11 +144,9 @@ public class Model_CProgramVersion extends VersionModel {
 
             Swagger_C_Program_Version c_program_versions = new Swagger_C_Program_Version();
 
-            Model_Blob fileRecord = file;
+            if (file != null) {
 
-            if (fileRecord != null) {
-
-                JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
+                JsonNode json = Json.parse(file.downloadString());
 
                 Swagger_C_Program_Version_Refresh version_new = formFromJsonWithValidation(Swagger_C_Program_Version_Refresh.class, json);
 
@@ -348,7 +346,7 @@ public class Model_CProgramVersion extends VersionModel {
             }
 
             // Zpracování Json
-            JsonNode json = Json.parse(file_record.get_fileRecord_from_Azure_inString());
+            JsonNode json = Json.parse(file_record.downloadString());
 
             Swagger_C_Program_Version_Update code_file;
 
@@ -381,7 +379,7 @@ public class Model_CProgramVersion extends VersionModel {
 
                         logger.trace("compile_program_procedure:: Library contains files");
 
-                        JsonNode j = Json.parse(lib_version.file.get_fileRecord_from_Azure_inString());
+                        JsonNode j = Json.parse(lib_version.file.downloadString());
 
                         Swagger_Library_File_Load lib_file;
 
@@ -555,7 +553,7 @@ public class Model_CProgramVersion extends VersionModel {
             // Result_Error_NotFound
             if(error.getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
                 Result_Error_NotFound not_found = (Result_Error_NotFound) error.getCause();
-                return _BaseController.notFound(not_found.getClass_not_found());
+                return _BaseController.notFound(not_found.getEntity());
             }
             logger.internalServerError(error);
            return _BaseController.internalServerError(error);
