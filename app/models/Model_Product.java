@@ -520,7 +520,7 @@ public class Model_Product extends NamedModel {
         String productURL = Server.becki_mainUrl + "/financial/" + id;
         String fullMessage = message + "\nLink: " + productURL + " .";
         logger.debug(fullMessage);
-//        Slack.post(fullMessage); TODO uncomment line for production
+        Slack.post(fullMessage);
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/

@@ -433,16 +433,14 @@ public class FakturoidService extends _BaseController {
 
             logger.debug("sendInvoiceEmail: PDF with invoice was successfully downloaded from Fakturoid");
 
-            String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
-
             new Email()
                     .text("Dear customer,")
-                    .text("Please find an enclosed invoice for the services you ordered for " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] + ".")
+                    .text("Please find an enclosed invoice for the services you ordered.")
                     .text("State of the invoice: " + (invoice.status == InvoiceStatus.PAID ? "<b>PAID</b>" : "To be paid") +".")
                     .text("In case of questions, please contact our financial department.")
                     .text("Best regards, Byzance Team")
                     .attachmentPDF(invoice.invoice_number + ".pdf", body)
-                    .send(mail, "Invoice " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)]);
+                    .send(mail, "Invoice " + invoice.issued);
 
             logger.debug("sendInvoiceEmail: Email was successfully sent");
 
@@ -462,8 +460,6 @@ public class FakturoidService extends _BaseController {
 
             byte[] body = this.downloadPdfInvoice(invoice.proforma ? "proforma" : "invoice", invoice);
 
-            String[] monthNames_en = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
-
             Model_Product product = invoice.getProduct();
 
             new Email()
@@ -473,7 +469,7 @@ public class FakturoidService extends _BaseController {
                     .text("See the attached invoice.")
                     .text("Best regards, Byzance Team")
                     .attachmentPDF(invoice.invoice_number + ".pdf", body)
-                    .send(product.owner.contact.invoice_email, "Invoice for " + monthNames_en[Calendar.getInstance().get(Calendar.MONTH)] + " - Reminder");
+                    .send(product.owner.contact.invoice_email, "Invoice from " + invoice.issued + " - Reminder");
 
 
         } catch (Exception e) {

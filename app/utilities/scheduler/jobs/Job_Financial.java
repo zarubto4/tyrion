@@ -236,6 +236,11 @@ public class Job_Financial implements Job {
                         && ((notInvoicedPrice.doubleValue() - newSpending.doubleValue()) < product.credit.doubleValue() * 0.90))) {
                     product.notificationLowCredit(notInvoicedPrice);
                 }
+
+                // we still have credit to run, do not create invoice even if we have end of the month
+                if(notInvoicedPrice.doubleValue() <= product.credit.doubleValue()) {
+                    return;
+                }
             }
 
             // at the end of the month, we have to send user an invoice (if there are some unpaved events from the previous month)
