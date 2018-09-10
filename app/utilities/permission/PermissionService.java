@@ -1,5 +1,6 @@
 package utilities.permission;
 
+import com.google.inject.Singleton;
 import exceptions.ForbiddenException;
 import models.Model_Permission;
 import models.Model_Person;
@@ -11,9 +12,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class PermissionManager {
+@Singleton
+public class PermissionService {
 
-    private Cache<UUID, List<CachedPermission>> cache;
+    private Cache<UUID, List<CachedPermission>> cache; // TODO set cache somewhere
 
     public void check(Model_Person person, BaseModel model, Permission permission) throws ForbiddenException {
 
@@ -40,5 +42,19 @@ public class PermissionManager {
             Model_Permission modelPermission = Model_Permission.find.query().where().eq("person.id", person.id).eq("permission", permission).findOne();
 
         }
+    }
+
+    /**
+     * Grants the given person with the permission.
+     * @param person to be granted
+     * @param model to grant the permission for
+     * @param permission that is granted
+     */
+    public void grant(Model_Person person, BaseModel model, Permission permission) {
+        // TODO
+    }
+
+    public void revoke(Model_Person person, BaseModel model, Permission permission) {
+        // TODO
     }
 }
