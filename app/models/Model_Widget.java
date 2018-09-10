@@ -4,13 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -55,7 +53,7 @@ public class Model_Widget extends TaggedModel {
     public Model_Person author() throws _Base_Result_Exception {
         try {
             if (author_id != null) {
-                return Model_Person.getById(author_id);
+                return Model_Person.find.byId(author_id);
             }
 
             return null;
@@ -121,18 +119,18 @@ public class Model_Widget extends TaggedModel {
     @JsonIgnore
     public UUID getProjectId() throws _Base_Result_Exception {
 
-        if (cache().get(Model_Project.class) == null) {
-            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("widgets.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_Project.class) == null) {
+            idCache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("widgets.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_Project.class);
+        return idCache().get(Model_Project.class);
     }
 
     @JsonIgnore
     public Model_Project getProject() throws _Base_Result_Exception {
 
         try {
-            return Model_Project.getById(getProjectId());
+            return Model_Project.find.byId(getProjectId());
         }catch (Exception e) {
             return null;
         }
@@ -140,20 +138,20 @@ public class Model_Widget extends TaggedModel {
 
     @JsonIgnore
     public List<UUID> get_versionsId() {
-        if (cache().gets(Model_WidgetVersion.class) == null) {
-            cache().add(Model_WidgetVersion.class, Model_WidgetVersion.find.query().where().eq("widget.id", id).ne("deleted", true).select("id").findSingleAttributeList());
+        if (idCache().gets(Model_WidgetVersion.class) == null) {
+            idCache().add(Model_WidgetVersion.class, Model_WidgetVersion.find.query().where().eq("widget.id", id).ne("deleted", true).select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_WidgetVersion.class) != null ?  cache().gets(Model_WidgetVersion.class) : new ArrayList<>();
+        return idCache().gets(Model_WidgetVersion.class) != null ?  idCache().gets(Model_WidgetVersion.class) : new ArrayList<>();
     }
 
     @JsonIgnore
     public void sort_Model_Model_GridProgramVersion_ids() {
 
         List<Model_WidgetVersion> versions = get_versions();
-        this.cache().removeAll(Model_WidgetVersion.class);
+        this.idCache().removeAll(Model_WidgetVersion.class);
         versions.stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())
-                .forEach(o -> this.cache().add(Model_WidgetVersion.class, o.id));
+                .forEach(o -> this.idCache().add(Model_WidgetVersion.class, o.id));
 
     }
     @JsonIgnore
@@ -163,7 +161,7 @@ public class Model_Widget extends TaggedModel {
             List<Model_WidgetVersion> grid_versions  = new ArrayList<>();
 
             for (UUID version_id : get_versionsId()) {
-                grid_versions.add(Model_WidgetVersion.getById(version_id));
+                grid_versions.add(Model_WidgetVersion.find.byId(version_id));
             }
 
             return grid_versions;
@@ -177,22 +175,22 @@ public class Model_Widget extends TaggedModel {
 
     @JsonIgnore
     public Model_Person get_author() {
-        return Model_Person.getById(author_id);
+        return Model_Person.find.byId(author_id);
     }
 
     @JsonIgnore
     public UUID get_producerId() {
-        if (cache().get(Model_Producer.class) == null) {
-            cache().add(Model_Producer.class, (UUID) Model_Producer.find.query().where().eq("widgets.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_Producer.class) == null) {
+            idCache().add(Model_Producer.class, (UUID) Model_Producer.find.query().where().eq("widgets.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_Producer.class);
+        return idCache().get(Model_Producer.class);
     }
 
     @JsonIgnore
     public Model_Producer get_producer() {
         try {
-            return Model_Producer.getById(get_producerId());
+            return Model_Producer.find.byId(get_producerId());
         }catch (Exception e) {
             return null;
         }
@@ -214,7 +212,7 @@ public class Model_Widget extends TaggedModel {
         // Add to Cache
         if (project != null) {
             new Thread(() -> { EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, project.id, project.id)); }).start();
-            project.cache().add(this.getClass(), id);
+            project.idCache().add(this.getClass(), id);
         }
     }
 
@@ -249,7 +247,7 @@ public class Model_Widget extends TaggedModel {
         if(publish_type == ProgramType.PRIVATE) {
 
             try {
-                getProject().cache().remove(this.getClass(), id);
+                getProject().idCache().remove(this.getClass(), id);
             } catch (Exception e) {
                 // Nothing
             }
@@ -402,31 +400,12 @@ public class Model_Widget extends TaggedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(Model_Widget.class)
-    public static Cache<UUID, Model_Widget> cache;
-
-    public static Model_Widget getById(UUID id) throws _Base_Result_Exception {
-
-        Model_Widget grid_widget = cache.get(id);
-        if (grid_widget == null) {
-
-            grid_widget = Model_Widget.find.byId(id);
-            if (grid_widget == null) throw new Result_Error_NotFound(Model_Widget.class);
-
-            cache.put(id, grid_widget);
-        }
-        // Check Permission
-        if(grid_widget.its_person_operation()) {
-            grid_widget.check_read_permission();
-        }
-        return grid_widget;
-    }
-
     public static Model_Widget getPublicByName(String name) {
-        return find.query().where().isNull("type_of_widget.project").eq("name", name).findOne();
+        return find.query().where().isNull("project").eq("name", name).findOne();
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Widget> find = new Finder<>(Model_Widget.class);
+    @CacheFinderField(Model_Widget.class)
+    public static CacheFinder<Model_Widget> find = new CacheFinder<>(Model_Widget.class);
 }

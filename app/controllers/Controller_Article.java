@@ -1,6 +1,7 @@
 package controllers;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.ExpressionList;
 import io.ebean.Junction;
@@ -8,12 +9,15 @@ import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.Model_Article;
 import models.Model_BProgram;
+import play.Environment;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_Article_CreateUpdate;
 import utilities.swagger.input.Swagger_Article_Filter;
@@ -30,16 +34,12 @@ public class Controller_Article extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-    private SchedulerController scheduler;
-
-
-    @Inject
-    public Controller_Article(_BaseFormFactory formFactory, SchedulerController scheduler) {
-        this.baseFormFactory = formFactory;
-        this.scheduler = scheduler;
+    @javax.inject.Inject
+    public Controller_Article(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
 
+// CONTROLLER CONTENT ##################################################################################################
 
     @ApiOperation(value = "create Article",
             tags = {"B_ArticleProgram"},
@@ -73,7 +73,7 @@ public class Controller_Article extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Article_CreateUpdate help  = baseFormFactory.formFromRequestWithValidation(Swagger_Article_CreateUpdate.class);
+            Swagger_Article_CreateUpdate help  = formFromRequestWithValidation(Swagger_Article_CreateUpdate.class);
 
             // Kontrola objektu
 
@@ -129,10 +129,10 @@ public class Controller_Article extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Article_CreateUpdate help  = baseFormFactory.formFromRequestWithValidation(Swagger_Article_CreateUpdate.class);
+            Swagger_Article_CreateUpdate help  = formFromRequestWithValidation(Swagger_Article_CreateUpdate.class);
 
             // Kontrola objektu
-            Model_Article article = Model_Article.getById(article_id);
+            Model_Article article = Model_Article.find.byId(article_id);
 
             // Úprava objektu
             article.description         = help.description;
@@ -168,7 +168,7 @@ public class Controller_Article extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Article article = Model_Article.getById(article_id);
+            Model_Article article = Model_Article.find.byId(article_id);
 
             // Smazání objektu
             article.delete();
@@ -209,7 +209,7 @@ public class Controller_Article extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Article_Filter help  = baseFormFactory.formFromRequestWithValidation(Swagger_Article_Filter.class);
+            Swagger_Article_Filter help  = formFromRequestWithValidation(Swagger_Article_Filter.class);
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_Article> query = Ebean.find(Model_Article.class);

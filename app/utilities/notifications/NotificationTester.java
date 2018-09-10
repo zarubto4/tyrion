@@ -1,22 +1,27 @@
 package utilities.notifications;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
+import play.Environment;
 import play.data.Form;
 import play.data.FormFactory;
+import play.libs.ws.WSClient;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.authentication.Authentication;
 import utilities.enums.*;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Link;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_C_Program_Version_Update;
 import utilities.swagger.input.Swagger_Notification_Test;
 
@@ -35,9 +40,11 @@ public class NotificationTester extends _BaseController {
     @Inject
     public static _BaseFormFactory baseFormFactory;
 
-    @Inject
-    public NotificationTester(_BaseFormFactory formFactory) {
-        this.baseFormFactory = formFactory;
+// CONTROLLER CONFIGURATION ############################################################################################
+
+    @javax.inject.Inject
+    public NotificationTester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
 
 /*  VALUES -------------------------------------------------------------------------------------------------------------*/
@@ -165,7 +172,7 @@ public class NotificationTester extends _BaseController {
             terminal_logger.debug("test_notifications - test");
 
             // Get and Validate Object
-            Swagger_Notification_Test help  = baseFormFactory.formFromRequestWithValidation(Swagger_Notification_Test.class);
+            Swagger_Notification_Test help  = formFromRequestWithValidation(Swagger_Notification_Test.class);
 
 
             Model_Person person = Model_Person.getByEmail(help.mail);
@@ -287,8 +294,8 @@ public class NotificationTester extends _BaseController {
                         b_version = new Model_BProgramVersion();
                         b_version.name        = "Test notification b version";
                         b_version.description = "random text sd asds dasda";
-                        b_version.author_id              = person.id;
-                        b_version.b_program           = bProgram;
+                        b_version.author_id         = person.id;
+                        b_version.b_program         = bProgram;
                         version.publish_type        = ProgramType.PRIVATE;
                         b_version.save();
                         b_version.refresh();

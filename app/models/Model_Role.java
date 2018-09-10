@@ -2,9 +2,9 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -13,7 +13,6 @@ import utilities.model.NamedModel;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @ApiModel(value = "Role", description = "Model of Role")
@@ -77,29 +76,12 @@ public class Model_Role extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    // TODO Cache jako v ostatních cache objektech [MARTIN TODO]
-    // Kouknise jak se cachuje třeba BPRogram
-
-    public static Model_Role getById(UUID id) throws _Base_Result_Exception {
-
-
-        Model_Role role = Model_Role.find.byId(id);
-        if (role == null) {
-            throw new Result_Error_NotFound(Model_Product.class);
-        }
-        // Check Permission
-        if(role.its_person_operation()) {
-            role.check_read_permission();
-
-        }
-        return role;
-    }
-
     public static Model_Role getByName(String name) {
         return find.query().where().eq("name" , name).findOne();
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static final Finder<UUID, Model_Role> find = new Finder<>(Model_Role.class);
+    @CacheFinderField(Model_Role.class)
+    public static CacheFinder<Model_Role> find = new CacheFinder<>(Model_Role.class);
 }

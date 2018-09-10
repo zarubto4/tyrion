@@ -2,8 +2,9 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -12,7 +13,6 @@ import utilities.model.TaggedModel;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import java.util.UUID;
 
 @Entity
 @ApiModel(value = "Article", description = "Model of Article")
@@ -106,13 +106,8 @@ public class Model_Article extends TaggedModel {
 
     /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-
-    @JsonIgnore
-    public static Model_Article getById(UUID id) {
-        return find.byId(id);
-    }
-
     /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    private static Finder<UUID, Model_Article> find = new Finder<>(Model_Article.class);
+    @CacheFinderField(Model_Article.class)
+    public static CacheFinder<Model_Article> find = new CacheFinder<>(Model_Article.class);
 }

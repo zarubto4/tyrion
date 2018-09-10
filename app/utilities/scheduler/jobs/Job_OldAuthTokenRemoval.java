@@ -28,36 +28,37 @@ public class Job_OldAuthTokenRemoval implements Job {
 
         logger.info("execute: Executing Job_OldFloatingTokenRemoval");
 
-        if (!remove_floating_person_token_thread.isAlive()) remove_floating_person_token_thread.start();
+        if (!remove_token_thread.isAlive()) remove_token_thread.start();
     }
 
     /**
      * Thread finds tokens whose access_age is greater than now.
      */
-    private Thread remove_floating_person_token_thread = new Thread() {
+    private Thread remove_token_thread = new Thread() {
 
         @Override
         public void run() {
 
             try {
 
-                logger.debug("remove_floating_person_token_thread: concurrent thread started on {}", new Date());
+                logger.debug("remove_token_thread: concurrent thread started on {}", new Date());
 
                 while (true) {
 
                     List<Model_AuthorizationToken> tokens = Model_AuthorizationToken.find.query()
                             .where()
+                            .isNotNull("access_age")
                             .lt("access_age", new Date())
                             .order().asc("access_age")
                             .setMaxRows(100)
                             .findList();
 
                     if (tokens.isEmpty()) {
-                        logger.debug("remove_floating_person_token_thread: no tokens to remove");
+                        logger.debug("remove_token_thread: no tokens to remove");
                         break;
                     }
 
-                    logger.debug("remove_floating_person_token_thread: removing old tokens (100 per cycle)");
+                    logger.debug("remove_token_thread: removing old tokens (100 per cycle)");
 
                     tokens.forEach(Model_AuthorizationToken::delete);
                 }
@@ -66,7 +67,7 @@ public class Job_OldAuthTokenRemoval implements Job {
                 logger.internalServerError(e);
             }
 
-            logger.debug("remove_floating_person_token_thread: thread stopped on {}", new Date());
+            logger.debug("remove_token_thread: thread stopped on {}", new Date());
         }
     };
 }

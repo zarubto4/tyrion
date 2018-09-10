@@ -55,7 +55,7 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
             // Homer server má novější novou konfiguraci
             terminal_logger.debug("synchronize_configuration: Homer server {} has new configuration", homer_server.id);
 
-            Model_HomerServer homer = Model_HomerServer.getById(homer_server.id);
+            Model_HomerServer homer = Model_HomerServer.find.byId(homer_server.id);
 
             //homer.name = help.server_name;
             if (homer.mqtt_port != help.mqtt_port || homer.grid_port != help.grid_port || homer.web_view_port != help.web_view_port ||  homer.hardware_logger_port != help.hw_logger_port ||  homer.rest_api_port != help.rest_api_port) {

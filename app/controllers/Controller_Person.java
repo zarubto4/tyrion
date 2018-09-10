@@ -2,9 +2,11 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.intercom.api.User;
 import io.swagger.annotations.*;
 import models.*;
+import play.Environment;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
@@ -17,7 +19,9 @@ import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.NotificationAction;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
 import utilities.notifications.NotificationActionHandler;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Compilation_Ok;
 import utilities.swagger.output.Swagger_Entity_Validation_Out;
@@ -34,15 +38,14 @@ public class Controller_Person extends _BaseController {
 
     private static final Logger logger = new Logger(Controller_Person.class);
 
+
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-    private WSClient ws;
-
-    @Inject public Controller_Person(_BaseFormFactory formFactory, WSClient ws) {
-        this.baseFormFactory = formFactory;
-        this.ws = ws;
+    @javax.inject.Inject
+    public Controller_Person(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
+
 
 //######################################################################################################################
 
@@ -74,7 +77,7 @@ public class Controller_Person extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Person_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Person_New.class);
+            Swagger_Person_New help = formFromRequestWithValidation(Swagger_Person_New.class);
 
             if (Model_Person.find.query().where().eq("nick_name", help.nick_name).findOne() != null)
                 return badRequest("nick name is used");
@@ -204,7 +207,7 @@ public class Controller_Person extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_EmailRequired help = baseFormFactory.formFromRequestWithValidation(Swagger_EmailRequired.class);
+            Swagger_EmailRequired help = formFromRequestWithValidation(Swagger_EmailRequired.class);
 
             Model_Person person = Model_Person.getByEmail(help.email);
             if (person == null) return notFound("No such user is registered");
@@ -259,7 +262,7 @@ public class Controller_Person extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_EmailRequired help = baseFormFactory.formFromRequestWithValidation(Swagger_EmailRequired.class);
+            Swagger_EmailRequired help = formFromRequestWithValidation(Swagger_EmailRequired.class);
 
             String link;
 
@@ -328,7 +331,7 @@ public class Controller_Person extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Person_Password_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Person_Password_New.class);
+            Swagger_Person_Password_New help = formFromRequestWithValidation(Swagger_Person_Password_New.class);
 
             Model_Person person = Model_Person.getByEmail(help.email);
 
@@ -388,7 +391,7 @@ public class Controller_Person extends _BaseController {
     public  Result person_get(UUID person_id) {
         try {
 
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
             return ok(person);
 
         } catch (Exception e) {
@@ -414,7 +417,7 @@ public class Controller_Person extends _BaseController {
     public  Result person_delete(UUID person_id) {
         try {
 
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
 
             person.delete();
 
@@ -473,7 +476,7 @@ public class Controller_Person extends _BaseController {
     public Result person_activate(UUID person_id) {
         try {
 
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
 
             person.check_activation_permission();
 
@@ -508,7 +511,7 @@ public class Controller_Person extends _BaseController {
     public Result person_deactivate(UUID person_id) {
         try {
 
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
 
             person.check_activation_permission();
 
@@ -547,7 +550,7 @@ public class Controller_Person extends _BaseController {
     public Result person_validEmail(UUID person_id) {
         try {
 
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
 
             person.validated = true;
             person.update();
@@ -590,9 +593,9 @@ public class Controller_Person extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Person_Update help = baseFormFactory.formFromRequestWithValidation(Swagger_Person_Update.class);
+            Swagger_Person_Update help = formFromRequestWithValidation(Swagger_Person_Update.class);
 
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
 
             person.nick_name  = help.nick_name;
             person.first_name = help.first_name;
@@ -657,7 +660,7 @@ public class Controller_Person extends _BaseController {
     public  Result remove_Person_Connection(UUID connection_id) {
         try {
 
-            Model_AuthorizationToken token = Model_AuthorizationToken.getById(connection_id);
+            Model_AuthorizationToken token = Model_AuthorizationToken.find.byId(connection_id);
 
             token.delete();
 
@@ -692,7 +695,7 @@ public class Controller_Person extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Entity_Validation_In help = baseFormFactory.formFromRequestWithValidation(Swagger_Entity_Validation_In.class);
+            Swagger_Entity_Validation_In help = formFromRequestWithValidation(Swagger_Entity_Validation_In.class);
 
 
             Swagger_Entity_Validation_Out validation = new Swagger_Entity_Validation_Out();
@@ -809,7 +812,7 @@ public class Controller_Person extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Person_ChangeProperty help = baseFormFactory.formFromRequestWithValidation(Swagger_Person_ChangeProperty.class);
+            Swagger_Person_ChangeProperty help = formFromRequestWithValidation(Swagger_Person_ChangeProperty.class);
 
 
             Model_ChangePropertyToken property = Model_ChangePropertyToken.find.query().where().eq("person.id", _BaseController.personId()).findOne();
@@ -913,7 +916,7 @@ public class Controller_Person extends _BaseController {
     })
     public Result person_authorizePropertyChange(UUID token) {
         try {
-            Model_ChangePropertyToken changePropertyToken = Model_ChangePropertyToken.getById(token);
+            Model_ChangePropertyToken changePropertyToken = Model_ChangePropertyToken.find.byId(token);
             if (changePropertyToken == null) return redirect(Server.becki_mainUrl + "/" + Server.becki_propertyChangeFailed);
 
             if (((new Date()).getTime() - changePropertyToken.created.getTime()) > 14400000 ) {
@@ -921,7 +924,7 @@ public class Controller_Person extends _BaseController {
                 return redirect(Server.becki_mainUrl + "/" + Server.becki_propertyChangeFailed);
             }
 
-            Model_Person person = Model_Person.getById(changePropertyToken.person.id);
+            Model_Person person = Model_Person.find.byId(changePropertyToken.person.id);
             if (person == null) return redirect(Server.becki_mainUrl + "/" +  Server.becki_propertyChangeFailed);
 
             switch (changePropertyToken.property) {
@@ -1005,7 +1008,7 @@ public class Controller_Person extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_BASE64_FILE help = baseFormFactory.formFromRequestWithValidation(Swagger_BASE64_FILE.class);
+            Swagger_BASE64_FILE help = formFromRequestWithValidation(Swagger_BASE64_FILE.class);
 
             Model_Person person = person();
             if (person ==  null) {

@@ -32,7 +32,7 @@ public class Swagger_B_Program_List extends _Swagger_Filter_Common {
         List<UUID> ids =  query.setFirstRow((page_number - 1) * filter.count_on_page).setMaxRows(filter.count_on_page).findIds();
 
         for (UUID id : ids) {
-            Model_BProgram b_program = Model_BProgram.getById(id);
+            Model_BProgram b_program = Model_BProgram.find.byId(id);
             if (b_program == null) continue;
             this.content.add(b_program);
         }

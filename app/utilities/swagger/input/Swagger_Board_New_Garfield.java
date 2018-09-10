@@ -15,16 +15,22 @@ import java.util.UUID;
           value = "Board_New_Garfield")
 public class Swagger_Board_New_Garfield implements Constraints.Validatable<List<ValidationError>> {
 
-        @Constraints.Required @ApiModelProperty(value = "Required valid hardware_type_id", required = true)
+        @Constraints.Required
+        @ApiModelProperty(value = "Required valid hardware_type_id", required = true)
         public UUID hardware_type_id;
 
-        @Constraints.Required @ApiModelProperty(value = "Required valid batch_id", required = true)
+        @Constraints.Required
+        @ApiModelProperty(value = "Required valid batch_id", required = true)
         public UUID batch_id;
 
-        @Constraints.Required @ApiModelProperty(required = true) public UUID garfield_station_id;
+        @Constraints.Required
+        @ApiModelProperty(required = true)
+        public UUID garfield_station_id;
 
         @ApiModelProperty(value = "Must be unique!!!, The hardware_id must have 24 hexadecimal characters!", required = true)
-        @Constraints.Required  @Constraints.MinLength(value = 24) @Constraints.MaxLength(value = 24)
+        @Constraints.Required
+        @Constraints.MinLength(value = 24)
+        @Constraints.MaxLength(value = 24)
         public String full_id; // Processor ID
 
         @Override
@@ -35,11 +41,11 @@ public class Swagger_Board_New_Garfield implements Constraints.Validatable<List<
                 if (full_id != null) {
                         if (!full_id.matches("^[0-9A-F]+$")) {
 
-                                errors.add(new ValidationError("full_id","Full ID can contain only hex characters."));
+                                errors.add(new ValidationError("full_id", "Full ID can contain only hex characters."));
                         }
 
                         if (full_id.length() != 24) {
-                                errors.add(new ValidationError("full_id","Full ID must have 24 characters."));
+                                errors.add(new ValidationError("full_id", "Full ID must have 24 characters."));
                         }
                 }
 

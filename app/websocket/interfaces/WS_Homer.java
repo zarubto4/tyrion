@@ -55,7 +55,7 @@ public class WS_Homer extends WS_Interface {
     }
 
     public Model_HomerServer getModelHomerServer(){
-         return Model_HomerServer.getById(this.id);
+         return Model_HomerServer.find.byId(this.id);
     }
 
     @Override
@@ -114,7 +114,7 @@ public class WS_Homer extends WS_Interface {
         Controller_WebSocket.homers.remove(this.id);
 
         try {
-            Model_HomerServer.getById(this.id).is_disconnect();
+            Model_HomerServer.find.byId(this.id).is_disconnect();
         }catch (Exception e){
             // Nothing - Server is maybe removed - so getById made a NotFound Exception
         }

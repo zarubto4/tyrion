@@ -1,6 +1,5 @@
 package controllers;
 
-import com.google.inject.Inject;
 import com.microsoft.azure.storage.blob.CloudAppendBlob;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
@@ -8,16 +7,9 @@ import com.typesafe.config.Config;
 import io.ebean.*;
 import io.swagger.annotations.*;
 import models.*;
-import org.omg.CORBA.ExceptionList;
-import play.api.http.HttpEntity;
-import play.api.libs.ws.WSBodyWritables;
-import play.libs.Json;
-import play.libs.ws.BodyReadable;
-import play.libs.ws.StandaloneWSResponse;
+import play.Environment;
 import play.libs.ws.WSClient;
-import play.libs.ws.WSResponse;
 import play.mvc.BodyParser;
-import play.mvc.ResponseHeader;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
@@ -25,21 +17,17 @@ import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.authentication.AuthenticationHomer;
 import utilities.enums.CompilationStatus;
-import utilities.enums.HardwareUpdateState;
 import utilities.enums.HomerType;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.homer_auto_deploy.SelfDeployedThreadRegister;
 import utilities.homer_auto_deploy.models.common.Swagger_ServerRegistration_FormData;
 import utilities.logger.Logger;
-import utilities.model.TaggedModel;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_HomerServer_List;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.Temporal;
-import java.time.temporal.TemporalUnit;
 import java.util.*;
 
 
@@ -52,14 +40,10 @@ public class Controller_ExternalServer extends _BaseController {
 
 
 // CONTROLLER CONFIGURATION ############################################################################################
-    private WSClient ws;
-    private Config config;
-    private _BaseFormFactory baseFormFactory;
 
-    @Inject public Controller_ExternalServer(WSClient ws, Config config, _BaseFormFactory formFactory) {
-        this.ws = ws;
-        this.config = config;
-        this.baseFormFactory = formFactory;
+    @javax.inject.Inject
+    public Controller_ExternalServer(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
 
 
@@ -121,7 +105,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_HomerServer_New_Auto help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_New_Auto.class);
+            Swagger_HomerServer_New_Auto help = formFromRequestWithValidation(Swagger_HomerServer_New_Auto.class);
 
             // Vytvoření objektu
             Model_HomerServer server = new Model_HomerServer();
@@ -133,7 +117,7 @@ public class Controller_ExternalServer extends _BaseController {
                 server.server_type = HomerType.PUBLIC;
             }else {
                 server.server_type = HomerType.PRIVATE;
-                server.project =  Model_Project.getById(help.project_id);
+                server.project =  Model_Project.find.byId(help.project_id);
             }
 
             server.save();
@@ -181,7 +165,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_HomerServer_New_Manually help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_New_Manually.class);
+            Swagger_HomerServer_New_Manually help = formFromRequestWithValidation(Swagger_HomerServer_New_Manually.class);
 
             // Vytvoření objektu
             Model_HomerServer server = new Model_HomerServer();
@@ -203,7 +187,7 @@ public class Controller_ExternalServer extends _BaseController {
                 server.server_type = HomerType.PUBLIC;
             }else {
                 server.server_type = HomerType.PRIVATE;
-                server.project =  Model_Project.getById(help.project_id);;
+                server.project =  Model_Project.find.byId(help.project_id);;
             }
 
             // Uložení objektu
@@ -239,12 +223,12 @@ public class Controller_ExternalServer extends _BaseController {
     public Result homer_server_set_main_server(UUID homer_server_id) {
         try {
 
-            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
             if (server.server_type != HomerType.PUBLIC) return badRequest("Server must be in public group!");
 
             Model_HomerServer main_server_not_cached = Model_HomerServer.find.query().where().eq("server_type", HomerType.MAIN).select("id").findOne();
             if(main_server_not_cached != null) {
-                Model_HomerServer main_server = Model_HomerServer.getById(main_server_not_cached.id);
+                Model_HomerServer main_server = Model_HomerServer.find.byId(main_server_not_cached.id);
                 main_server.server_type = HomerType.PUBLIC;
                 main_server.update();
             }
@@ -277,12 +261,12 @@ public class Controller_ExternalServer extends _BaseController {
     public Result homer_server_set_backup_server(UUID homer_server_id) {
         try {
 
-            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
             if (server.server_type != HomerType.PUBLIC) return badRequest("Server must be in public group!");
 
             Model_HomerServer main_server_not_cached = Model_HomerServer.find.query().where().eq("server_type", HomerType.BACKUP).select("id").findOne();
             if(main_server_not_cached != null) {
-                Model_HomerServer main_server = Model_HomerServer.getById(main_server_not_cached.id);
+                Model_HomerServer main_server = Model_HomerServer.find.byId(main_server_not_cached.id);
                 main_server.server_type = HomerType.PUBLIC;
                 main_server.update();
             }
@@ -327,10 +311,10 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_HomerServer_New_Manually help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_New_Manually.class);
+            Swagger_HomerServer_New_Manually help = formFromRequestWithValidation(Swagger_HomerServer_New_Manually.class);
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
 
             // Úprava objektu
             server.name = help.name;
@@ -383,7 +367,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_HomerServer_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_HomerServer_Filter.class);
+            Swagger_HomerServer_Filter help = formFromRequestWithValidation(Swagger_HomerServer_Filter.class);
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_HomerServer> query = Ebean.find(Model_HomerServer.class);
@@ -466,7 +450,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
 
             // Vrácení objektu
             return ok(server);
@@ -493,7 +477,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
 
             // Smzání objektu
             server.delete();
@@ -523,7 +507,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
 
             server.check_update_permission();
 
@@ -554,7 +538,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
 
             server.check_update_permission();
 
@@ -585,7 +569,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.getById(homer_server_id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
 
             server.check_update_permission();
 
@@ -634,7 +618,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_CompilationServer_New help = baseFormFactory.formFromRequestWithValidation(Swagger_CompilationServer_New.class);
+            Swagger_CompilationServer_New help = formFromRequestWithValidation(Swagger_CompilationServer_New.class);
 
             // Vytvářím objekt
             Model_CompilationServer server = new Model_CompilationServer();
@@ -682,10 +666,10 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_CompilationServer_New help = baseFormFactory.formFromRequestWithValidation(Swagger_CompilationServer_New.class);
+            Swagger_CompilationServer_New help = formFromRequestWithValidation(Swagger_CompilationServer_New.class);
 
             // Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.getById(compilation_server_id);
+            Model_CompilationServer server = Model_CompilationServer.find.byId(compilation_server_id);
 
             // Upravím objekt
             server.personal_server_name = help.personal_server_name;
@@ -744,7 +728,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             //Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.getById(compilation_server_id);
+            Model_CompilationServer server = Model_CompilationServer.find.byId(compilation_server_id);
       
             // Vracím odpověď
             return ok(server);
@@ -773,7 +757,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             //Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.getById(compilation_server_id);
+            Model_CompilationServer server = Model_CompilationServer.find.byId(compilation_server_id);
 
             // Smažu objekt
             server.delete();
@@ -809,7 +793,7 @@ public class Controller_ExternalServer extends _BaseController {
             System.out.println("cloud_file_get_b_program_version");
 
             // Získám soubor
-            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(snapshot_id);
+            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(snapshot_id);
 
             System.out.println("OK 1");
 
@@ -861,7 +845,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Ověření objektu
-            Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
+            Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
 
             // Získám soubor
             Model_Compilation compilation = version.compilation;
@@ -874,7 +858,7 @@ public class Controller_ExternalServer extends _BaseController {
                 throw new Result_Error_NotFound(Model_Blob.class);
             }
 
-            byte[] bytes = Model_Blob.get_decoded_binary_string_from_Base64(compilation.blob.get_fileRecord_from_Azure_inString());
+            byte[] bytes = Model_Blob.get_decoded_binary_string_from_Base64(compilation.blob.downloadString());
 
             // Vrátím soubor
             return file(bytes, "firmware.bin");
@@ -903,7 +887,7 @@ public class Controller_ExternalServer extends _BaseController {
         try {
 
             // Získám soubor
-            Model_Compilation compilation = Model_Compilation.getById(compilation_id);
+            Model_Compilation compilation = Model_Compilation.find.byId(compilation_id);
 
             if (compilation.status != CompilationStatus.SUCCESS) {
                 throw new Result_Error_NotFound(Model_Blob.class);
@@ -961,7 +945,7 @@ public class Controller_ExternalServer extends _BaseController {
             logger.trace("cloud_file_get_bootloader - download id: {}", bootloader_id);
 
             // Získám soubor
-            Model_BootLoader bootLoader = Model_BootLoader.getById(bootloader_id);
+            Model_BootLoader bootLoader = Model_BootLoader.find.byId(bootloader_id);
 
             logger.trace("cloud_file_get_bootloader - Bootloader: {}", bootLoader.version_identifier);
             logger.trace("cloud_file_get_bootloader - File Path: {}",  bootLoader.file.path);

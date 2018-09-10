@@ -8,6 +8,7 @@ import models.Model_Garfield;
 import models.Model_HomerServer;
 import models.Model_Notification;
 import models.Model_Project;
+import utilities.Server;
 import utilities.logger.Logger;
 import websocket.messages.tyrion_with_becki.WS_Message_Subscribe_Notifications;
 import websocket.messages.tyrion_with_becki.WS_Message_UnSubscribe_Notifications;
@@ -23,8 +24,6 @@ public class WS_Portal {
     private static final Logger logger = new Logger(WS_Portal.class);
 
 /* STATIC  -------------------------------------------------------------------------------------------------------------*/
-
-@Inject public static _BaseFormFactory baseFormFactory; // Its Required to set this in Server.class Component
 
     public static final String CHANNEL = "becki";
     public UUID person_id;
@@ -133,7 +132,7 @@ public class WS_Portal {
         try {
 
             logger.trace("becki_subscribe_notification:: Content:: {}", json.toString());
-            WS_Message_Subscribe_Notifications subscribe_notifications = baseFormFactory.formFromJsonWithValidation(ws, WS_Message_Subscribe_Notifications.class, json);
+            WS_Message_Subscribe_Notifications subscribe_notifications = Server.baseFormFactory.formFromJsonWithValidation(ws, WS_Message_Subscribe_Notifications.class, json);
 
             logger.trace("becki_subscribe_notification:: Subscribe Token: {}", subscribe_notifications.single_connection_token);
             logger.trace("becki_subscribe_notification:: All In Map Token size: {}", this.all_person_connections.size());
@@ -153,7 +152,7 @@ public class WS_Portal {
         try{
 
             logger.trace("becki_unsubscribe_notification:: Content:: {}", json.toString());
-            WS_Message_UnSubscribe_Notifications un_subscribe_notifications = baseFormFactory.formFromJsonWithValidation(ws, WS_Message_UnSubscribe_Notifications.class, json);
+            WS_Message_UnSubscribe_Notifications un_subscribe_notifications = Server.baseFormFactory.formFromJsonWithValidation(ws, WS_Message_UnSubscribe_Notifications.class, json);
 
             logger.trace("becki_subscribe_notification:: UNSubscribe Token: {}", un_subscribe_notifications.single_connection_token);
 

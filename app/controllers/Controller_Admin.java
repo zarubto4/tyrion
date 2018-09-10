@@ -51,22 +51,11 @@ public class Controller_Admin extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-    private WSClient ws;
-    private Environment environment;
-    private YouTrack youTrack;
-    private Config config;
-    private SchedulerController scheduler;
-
-    @Inject
+    @javax.inject.Inject
     public Controller_Admin(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        this.environment = environment;
-        this.ws = ws;
-        this.baseFormFactory = formFactory;
-        this.youTrack = youTrack;
-        this.config = config;
-        this.scheduler = scheduler;
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
+
 
 // CONTROLLER CONTENT ##################################################################################################
 
@@ -165,7 +154,7 @@ public class Controller_Admin extends _BaseController {
     public Result serverError_get(@ApiParam(value = "bug_id String path", required = true) UUID bug_id) {
         try {
 
-            Model_ServerError error = Model_ServerError.getById(bug_id);
+            Model_ServerError error = Model_ServerError.find.byId(bug_id);
 
             return ok(error);
 
@@ -206,10 +195,10 @@ public class Controller_Admin extends _BaseController {
 
 
             // Get and Validate Object
-            Swagger_Bug_Description help  = baseFormFactory.formFromRequestWithValidation(Swagger_Bug_Description.class);
+            Swagger_Bug_Description help  = formFromRequestWithValidation(Swagger_Bug_Description.class);
 
             // Kontrola objektu
-            Model_ServerError error = Model_ServerError.getById(bug_id);
+            Model_ServerError error = Model_ServerError.find.byId(bug_id);
 
             error.description = help.description;
             error.update();
@@ -238,7 +227,7 @@ public class Controller_Admin extends _BaseController {
     public Result serverError_report(@ApiParam(value = "bug_id String path", required = true) UUID bug_id) {
         try {
 
-            Model_ServerError error = Model_ServerError.getById(bug_id);
+            Model_ServerError error = Model_ServerError.find.byId(bug_id);
 
             error.youtrack_url = youTrack.report(error);
             error.update();
@@ -267,7 +256,7 @@ public class Controller_Admin extends _BaseController {
     public Result serverError_delete(@ApiParam(value = "bug_id String path", required = true) UUID bug_id) {
         try {
 
-            Model_ServerError error = Model_ServerError.getById(bug_id);
+            Model_ServerError error = Model_ServerError.find.byId(bug_id);
             error.delete();
 
             return ok();
@@ -379,7 +368,7 @@ public class Controller_Admin extends _BaseController {
             }
 
             // Get and Validate Object
-            Swagger_ServerUpdate help  = baseFormFactory.formFromRequestWithValidation(Swagger_ServerUpdate.class);
+            Swagger_ServerUpdate help  = formFromRequestWithValidation(Swagger_ServerUpdate.class);
 
             logger.debug("server_scheduleUpdate - requesting releases");
 

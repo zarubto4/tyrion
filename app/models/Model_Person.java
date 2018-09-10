@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.intercom.api.NotFoundException;
 import io.intercom.api.User;
 import io.swagger.annotations.ApiModel;
@@ -15,6 +14,8 @@ import org.hibernate.validator.constraints.Email;
 import org.mindrot.jbcrypt.BCrypt;
 import utilities.Server;
 import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.NotificationAction;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
@@ -116,16 +117,16 @@ public class Model_Person extends BaseModel {
 
 
         // Chache Add Projects
-        if (cache().gets(Model_Project.class) == null) {
+        if (idCache().gets(Model_Project.class) == null) {
             // Získání seznamu
-            cache().add(Model_Project.class, Model_Project.find.query().where().eq("participants.person.id", id).select("id").findSingleAttributeList());
+            idCache().add(Model_Project.class, Model_Project.find.query().where().eq("participants.person.id", id).select("id").findSingleAttributeList());
         }
 
         List<Model_Project> projects = new ArrayList<>();
 
-        for (UUID project_id : cache().gets(Model_Project.class) ) {
+        for (UUID project_id : idCache().gets(Model_Project.class) ) {
             try {
-                Model_Project project = Model_Project.getById(project_id);
+                Model_Project project = Model_Project.find.byId(project_id);
                 projects.add(project);
             }catch (_Base_Result_Exception e){
                 // Nothing
@@ -290,40 +291,11 @@ public class Model_Person extends BaseModel {
 
     /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_Person.class, duration = 3600, maxElements = 200)
-    public static Cache<UUID, Model_Person> cache;
-
     @CacheField(value = UUID.class, duration = 3600, maxElements = 200, name = "Model_Person_Token")
     public static Cache<UUID, UUID> token_cache;
 
-    public static Model_Person getById(String id) throws _Base_Result_Exception {
-        return getById(UUID.fromString(id));
-    }
-
-    public static Model_Person getById(UUID id) throws _Base_Result_Exception {
-
-        Model_Person person = cache.get(id);
-        if (person == null) {
-
-            person = Model_Person.find.byId(id);
-            if (person == null) throw new Result_Error_NotFound(Model_Product.class);
-
-            for (Model_Permission permission : person.permissions) {
-                person.cache_permissions_keys.put(permission.name, true);
-            }
-
-            cache.put(id, person);
-        }
-        // Check Permission
-        if(person.its_person_operation()) {
-            person.check_read_permission();
-        }
-
-        return person;
-    }
-
     public static Model_Person getByEmail(String email) {
-        return  find.query().where().eq("email", email).findOne();
+        return find.query().where().eq("email", email).findOne();
     }
 
     public static Model_Person getByAuthToken(String token)  throws _Base_Result_Exception  {
@@ -340,19 +312,18 @@ public class Model_Person extends BaseModel {
                 throw new Result_Error_NotFound(Model_Person.class);
             }
 
-            cache.put(person.id, person);
+            // cache.put(person.id, person);
             token_cache.put(token, person.id);
 
             return person;
 
         } else {
-            return getById(id);
+            return find.byId(id);
         }
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    //public static Model_Person findByEmailAddressAndPassword(String emailAddress, String password) { return find.query().where().eq("email", emailAddress.toLowerCase()).eq("shaPassword", getSha512(password)).findOne();}
-
-    public static Finder<UUID, Model_Person> find = new Finder<>(Model_Person.class);
+    @CacheFinderField(Model_Person.class)
+    public static CacheFinder<Model_Person> find = new CacheFinder<>(Model_Person.class);
 }

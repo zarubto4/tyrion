@@ -4,13 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -69,18 +67,18 @@ public class Model_Library extends TaggedModel {
     @JsonIgnore
     public UUID getProjectId() {
 
-        if (cache().get(Model_Project.class) == null) {
-            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("libraries.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_Project.class) == null) {
+            idCache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("libraries.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_Project.class);
+        return idCache().get(Model_Project.class);
     }
 
     @JsonIgnore
     public Model_Project get_project() throws _Base_Result_Exception {
 
         try {
-            return Model_Project.getById(getProjectId());
+            return Model_Project.find.byId(getProjectId());
         }catch (Exception e) {
             return null;
         }
@@ -88,11 +86,11 @@ public class Model_Library extends TaggedModel {
 
     @JsonIgnore
     public List<UUID> getVersionIds() {
-        if (cache().gets(Model_LibraryVersion.class) == null) {
-            cache().add(Model_LibraryVersion.class, Model_LibraryVersion.find.query().where().eq("library.id", id).eq("deleted", false).order().desc("created").select("id").findSingleAttributeList());
+        if (idCache().gets(Model_LibraryVersion.class) == null) {
+            idCache().add(Model_LibraryVersion.class, Model_LibraryVersion.find.query().where().eq("library.id", id).eq("deleted", false).order().desc("created").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_LibraryVersion.class) != null ?  cache().gets(Model_LibraryVersion.class) : new ArrayList<>();
+        return idCache().gets(Model_LibraryVersion.class) != null ?  idCache().gets(Model_LibraryVersion.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -102,7 +100,7 @@ public class Model_Library extends TaggedModel {
             List<Model_LibraryVersion> versions  = new ArrayList<>();
 
             for (UUID version_id : getVersionIds()) {
-                versions.add(Model_LibraryVersion.getById(version_id));
+                versions.add(Model_LibraryVersion.find.byId(version_id));
             }
 
             return versions;
@@ -116,11 +114,11 @@ public class Model_Library extends TaggedModel {
 
     @JsonIgnore
     public List<UUID> getHardwareTypesId() {
-        if (cache().gets(Model_HardwareType.class) == null) {
-            cache().add(Model_HardwareType.class, Model_HardwareType.find.query().where().eq("libraries.id", id).eq("deleted", false).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        if (idCache().gets(Model_HardwareType.class) == null) {
+            idCache().add(Model_HardwareType.class, Model_HardwareType.find.query().where().eq("libraries.id", id).eq("deleted", false).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_HardwareType.class) != null ?  cache().gets(Model_HardwareType.class) : new ArrayList<>();
+        return idCache().gets(Model_HardwareType.class) != null ?  idCache().gets(Model_HardwareType.class) : new ArrayList<>();
     }
     @JsonIgnore
     public List<Model_HardwareType> getHardwareTypes() {
@@ -129,7 +127,7 @@ public class Model_Library extends TaggedModel {
             List<Model_HardwareType> hardwareTypes  = new ArrayList<>();
 
             for (UUID hardware_type_id : getHardwareTypesId()) {
-                hardwareTypes.add(Model_HardwareType.getById(hardware_type_id));
+                hardwareTypes.add(Model_HardwareType.find.byId(hardware_type_id));
             }
 
             return hardwareTypes;
@@ -149,10 +147,8 @@ public class Model_Library extends TaggedModel {
         super.save();
 
         if (project != null) {
-            project.cache().add(this.getClass(),id);
+            project.idCache().add(this.getClass(),id);
         }
-
-        cache.put(id, this);
     }
 
     @Override
@@ -173,7 +169,7 @@ public class Model_Library extends TaggedModel {
         super.delete();
 
         try{
-            get_project().cache().remove(this.getClass(),id);
+            get_project().idCache().remove(this.getClass(),id);
         }catch (_Base_Result_Exception exception){
             // Nothing
         }
@@ -286,27 +282,8 @@ public class Model_Library extends TaggedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_Library.class, duration = 600)
-    public static Cache<UUID, Model_Library> cache;
-
-    public static Model_Library getById(UUID id) throws _Base_Result_Exception {
-
-        Model_Library library = cache.get(id);
-        if (library == null) {
-
-            library = Model_Library.find.byId(id);
-            if (library == null) throw new Result_Error_NotFound(Model_Library.class);
-
-            cache.put(id, library);
-        }
-        // Check Permission
-        if(library.its_person_operation()) {
-            library.check_read_permission();
-        }
-        return library;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Library> find = new Finder<>(Model_Library.class);
+    @CacheFinderField(Model_Library.class)
+    public static CacheFinder<Model_Library> find = new CacheFinder<>(Model_Library.class);
 }

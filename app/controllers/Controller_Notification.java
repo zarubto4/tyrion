@@ -1,12 +1,15 @@
 package controllers;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.Model_Notification;
+import play.Environment;
 import play.data.Form;
 import play.data.FormFactory;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
@@ -14,7 +17,9 @@ import utilities.authentication.Authentication;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationState;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
 import utilities.notifications.NotificationActionHandler;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_Library_New;
 import utilities.swagger.input.Swagger_Notification_Confirm;
 import utilities.swagger.input.Swagger_Notification_Read;
@@ -32,12 +37,10 @@ public class Controller_Notification extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-
-    @Inject public Controller_Notification(_BaseFormFactory formFactory) {
-        this.baseFormFactory = formFactory;
+    @javax.inject.Inject
+    public Controller_Notification(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
-
 
 // PUBLIC CONTROLLER METHODS ###########################################################################################
 
@@ -88,7 +91,7 @@ public class Controller_Notification extends _BaseController {
   public Result notification_delete(UUID notification_id) {
     try {
 
-      Model_Notification notification = Model_Notification.getById(notification_id);
+      Model_Notification notification = Model_Notification.find.byId(notification_id);
 
       notification.delete();
       return ok();
@@ -127,7 +130,7 @@ public class Controller_Notification extends _BaseController {
     try {
 
         // Get and Validate Object
-        Swagger_Notification_Read help = baseFormFactory.formFromRequestWithValidation(Swagger_Notification_Read.class);
+        Swagger_Notification_Read help = formFromRequestWithValidation(Swagger_Notification_Read.class);
 
         List<Model_Notification> notifications = Model_Notification.find.query().where().idIn(help.notification_id).findList();
 
@@ -208,10 +211,10 @@ public class Controller_Notification extends _BaseController {
       try {
 
           // Get and Validate Object
-          Swagger_Notification_Confirm help = baseFormFactory.formFromRequestWithValidation(Swagger_Notification_Confirm.class);
+          Swagger_Notification_Confirm help = formFromRequestWithValidation(Swagger_Notification_Confirm.class);
 
           // Kontrola objektu
-          Model_Notification notification = Model_Notification.getById(notification_id);
+          Model_Notification notification = Model_Notification.find.byId(notification_id);
 
           notification.check_confirm_permission();
 

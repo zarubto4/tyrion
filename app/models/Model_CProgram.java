@@ -4,13 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -24,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 
 @Entity
 @ApiModel(value="C_Program", description="Object represented C_Program in database")
@@ -107,11 +104,11 @@ public class Model_CProgram extends TaggedModel {
 
         if(publish_type == ProgramType.PRIVATE) {
 
-            if (cache().get(Model_Project.class) == null) {
-                cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("c_programs.id", id).select("id").findSingleAttribute());
+            if (idCache().get(Model_Project.class) == null) {
+                idCache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("c_programs.id", id).select("id").findSingleAttribute());
             }
 
-            return cache().get(Model_Project.class);
+            return idCache().get(Model_Project.class);
 
         } else {
             return null;
@@ -120,7 +117,7 @@ public class Model_CProgram extends TaggedModel {
 
     @JsonIgnore @Transient public Model_Project getProject() throws _Base_Result_Exception {
         try {
-            return Model_Project.getById(getProjectId());
+            return Model_Project.find.byId(getProjectId());
         }catch (Exception e) {
             // Řízená chyba
             return null;
@@ -129,11 +126,11 @@ public class Model_CProgram extends TaggedModel {
 
     @JsonIgnore @Transient public List<UUID> getVersionsId() {
 
-        if (cache().gets(Model_CProgramVersion.class) == null) {
-            cache().add(Model_CProgramVersion.class, Model_CProgramVersion.find.query().where().eq("c_program.id", id).ne("deleted", true).order().desc("created").select("id").findSingleAttributeList());
+        if (idCache().gets(Model_CProgramVersion.class) == null) {
+            idCache().add(Model_CProgramVersion.class, Model_CProgramVersion.find.query().where().eq("c_program.id", id).ne("deleted", true).order().desc("created").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_CProgramVersion.class) != null ?  cache().gets(Model_CProgramVersion.class) : new ArrayList<>();
+        return idCache().gets(Model_CProgramVersion.class) != null ?  idCache().gets(Model_CProgramVersion.class) : new ArrayList<>();
     }
 
 
@@ -141,9 +138,9 @@ public class Model_CProgram extends TaggedModel {
     public void sort_Model_Model_CProgramVersion_ids() {
 
         List<Model_CProgramVersion> versions = getVersions();
-        this.cache().removeAll(Model_CProgramVersion.class);
+        this.idCache().removeAll(Model_CProgramVersion.class);
         versions.stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())
-                .forEach(o -> this.cache().add(Model_CProgramVersion.class, o.id));
+                .forEach(o -> this.idCache().add(Model_CProgramVersion.class, o.id));
 
     }
 
@@ -154,7 +151,7 @@ public class Model_CProgram extends TaggedModel {
             List<Model_CProgramVersion> list = new ArrayList<>();
 
             for (UUID id : getVersionsId()) {
-                list.add(Model_CProgramVersion.getById(id));
+                list.add(Model_CProgramVersion.find.byId(id));
             }
 
             return list;
@@ -167,17 +164,17 @@ public class Model_CProgram extends TaggedModel {
 
     @JsonIgnore @Transient public UUID getHardwareTypeId()     {
 
-        if (cache().get(Model_HardwareType.class) == null) {
-            cache().add(Model_HardwareType.class,  (UUID) Model_HardwareType.find.query().where().eq("c_programs.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_HardwareType.class) == null) {
+            idCache().add(Model_HardwareType.class,  (UUID) Model_HardwareType.find.query().where().eq("c_programs.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_HardwareType.class);
+        return idCache().get(Model_HardwareType.class);
 
     }
 
     @JsonIgnore @Transient public Model_HardwareType getHardwareType()     {
         try {
-            return Model_HardwareType.getById(getHardwareTypeId());
+            return Model_HardwareType.find.byId(getHardwareTypeId());
         }catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -196,8 +193,6 @@ public class Model_CProgram extends TaggedModel {
 
         // Call notification about project update
         if (project != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, project.id, project.id))).start();
-
-        cache.put(id, this);
     }
 
     @JsonIgnore @Override public void update() {
@@ -216,8 +211,6 @@ public class Model_CProgram extends TaggedModel {
         }
 
         super.update();
-
-        cache.put(id, this);
     }
 
     @JsonIgnore @Override public boolean delete() {
@@ -229,7 +222,7 @@ public class Model_CProgram extends TaggedModel {
         if(publish_type == ProgramType.PRIVATE) {
 
             try {
-                getProject().cache().remove(this.getClass(), id);
+                getProject().idCache().remove(this.getClass(), id);
             } catch (Exception e) {
                 // Nothing
             }
@@ -242,11 +235,9 @@ public class Model_CProgram extends TaggedModel {
                 }
             }).start();
         }
-
         
         return false;
     }
-
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -368,29 +359,10 @@ public class Model_CProgram extends TaggedModel {
     public enum Permission { CProgram_create, CProgram_read, CProgram_update, CProgram_delete, C_Program_community_publishing_permission }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-    
-    @CacheField(Model_CProgram.class)
-    public static Cache<UUID, Model_CProgram> cache;
-    
-    public static Model_CProgram getById(UUID id) throws _Base_Result_Exception  {
-        Model_CProgram c_program = cache.get(id);
-        if (c_program == null) {
-            c_program = find.byId(id);
-            if (c_program == null) throw new Result_Error_NotFound(Model_CProgram.class);
-
-            cache.put(id, c_program);
-        }
-
-        // Check Permission
-        if(c_program.its_person_operation()) {
-            c_program.check_read_permission();
-        }
-
-        return c_program;
-    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    
-    public static Finder<UUID, Model_CProgram> find = new Finder<>(Model_CProgram.class);
+
+    @CacheFinderField(Model_CProgram.class)
+    public static CacheFinder<Model_CProgram> find = new CacheFinder<>(Model_CProgram.class);
 }
 

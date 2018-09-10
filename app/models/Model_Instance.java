@@ -6,13 +6,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.errors.Exceptions.Result_Error_NotFound;
@@ -114,7 +115,7 @@ public class Model_Instance extends TaggedModel {
     public Model_InstanceSnapshot current_snapshot() throws _Base_Result_Exception  {
         try {
             if (this.current_snapshot_id != null) {
-                Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(this.current_snapshot_id);
+                Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(this.current_snapshot_id);
                 if (snapshot != null) {
                     return snapshot;
                 }
@@ -151,7 +152,7 @@ public class Model_Instance extends TaggedModel {
         // který následně vrací latest know online
         try {
 
-            if ((Model_HomerServer.getById(getServer_id()) != null) && Model_HomerServer.getById(getServer_id()).online_state() == NetworkStatus.ONLINE) {
+            if ((Model_HomerServer.find.byId(getServer_id()) != null) && Model_HomerServer.find.byId(getServer_id()).online_state() == NetworkStatus.ONLINE) {
 
                 if (cache_status.containsKey(id)) {
                     return cache_status.get(id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
@@ -197,9 +198,9 @@ public class Model_Instance extends TaggedModel {
             if (current_snapshot() != null) {
 
                 if (Server.mode == ServerMode.DEVELOPER) {
-                    return "ws://" + Model_HomerServer.getById(getServer_id()).server_url + ":" + Model_HomerServer.getById(getServer_id()).web_view_port + "/" + id + "/#token";
+                    return "ws://" + Model_HomerServer.find.byId(getServer_id()).server_url + ":" + Model_HomerServer.find.byId(getServer_id()).web_view_port + "/" + id + "/#token";
                 } else {
-                    return "wss://" + Model_HomerServer.getById(getServer_id()).server_url + ":" + Model_HomerServer.getById(getServer_id()).web_view_port + "/" + id + "/#token";
+                    return "wss://" + Model_HomerServer.find.byId(getServer_id()).server_url + ":" + Model_HomerServer.find.byId(getServer_id()).web_view_port + "/" + id + "/#token";
                 }
             }
             return null;
@@ -219,17 +220,17 @@ public class Model_Instance extends TaggedModel {
     @JsonIgnore
     public UUID getProjectId() {
 
-        if (cache().get(Model_Project.class) == null) {
-            cache().add(Model_Project.class, Model_Project.find.query().where().eq("instances.id", id).select("id").findSingleAttributeList());
+        if (idCache().get(Model_Project.class) == null) {
+            idCache().add(Model_Project.class, Model_Project.find.query().where().eq("instances.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().get(Model_Project.class);
+        return idCache().get(Model_Project.class);
     }
 
     @JsonIgnore
     public Model_Project getProject() {
         try {
-            return Model_Project.getById(getProjectId());
+            return Model_Project.find.byId(getProjectId());
         }catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -239,17 +240,17 @@ public class Model_Instance extends TaggedModel {
     @JsonIgnore
     public UUID get_b_program_id() throws _Base_Result_Exception {
 
-       if (cache().get(Model_BProgram.class) == null) {
-           cache().add(Model_BProgram.class, Model_BProgram.find.query().where().eq("instances.id", id).select("id").findSingleAttributeList());
+       if (idCache().get(Model_BProgram.class) == null) {
+           idCache().add(Model_BProgram.class, Model_BProgram.find.query().where().eq("instances.id", id).select("id").findSingleAttributeList());
        }
 
-       return cache().get(Model_BProgram.class);
+       return idCache().get(Model_BProgram.class);
     }
 
     @JsonIgnore
     public Model_BProgram get_BProgram() throws _Base_Result_Exception {
         try {
-            return Model_BProgram.getById(get_b_program_id());
+            return Model_BProgram.find.byId(get_b_program_id());
         }catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -265,18 +266,18 @@ public class Model_Instance extends TaggedModel {
     @JsonIgnore
     public UUID getServer_id() {
 
-        if (cache().get(Model_HomerServer.class) == null) {
-            cache().add(Model_HomerServer.class, Model_HomerServer.find.query().where().eq("instances.id", id).select("id").findSingleAttributeList());
+        if (idCache().get(Model_HomerServer.class) == null) {
+            idCache().add(Model_HomerServer.class, Model_HomerServer.find.query().where().eq("instances.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().get(Model_HomerServer.class);
+        return idCache().get(Model_HomerServer.class);
 
     }
 
     @JsonIgnore
     public Model_HomerServer getServer() {
 
-        return Model_HomerServer.getById(getServer_id());
+        return Model_HomerServer.find.byId(getServer_id());
 
     }
 
@@ -284,11 +285,11 @@ public class Model_Instance extends TaggedModel {
     @JsonIgnore
     public List<UUID> getSnapShotsIds() throws _Base_Result_Exception  {
 
-        if (cache().gets(Model_InstanceSnapshot.class) == null) {
-            cache().add(Model_InstanceSnapshot.class,  Model_InstanceSnapshot.find.query().where().ne("deleted", true).eq("instance.id", id).order().desc("created").select("id").findSingleAttributeList());
+        if (idCache().gets(Model_InstanceSnapshot.class) == null) {
+            idCache().add(Model_InstanceSnapshot.class,  Model_InstanceSnapshot.find.query().where().ne("deleted", true).eq("instance.id", id).order().desc("created").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_InstanceSnapshot.class) != null ?  cache().gets(Model_InstanceSnapshot.class) : new ArrayList<>();
+        return idCache().gets(Model_InstanceSnapshot.class) != null ?  idCache().gets(Model_InstanceSnapshot.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -299,7 +300,7 @@ public class Model_Instance extends TaggedModel {
 
             for (UUID id : getSnapShotsIds() ) {
                 try {
-                    list.add(Model_InstanceSnapshot.getById(id));
+                    list.add(Model_InstanceSnapshot.find.byId(id));
                 } catch (Exception e){
                     logger.error("getSnapShots: ID {} nenalezeno", id);
                 }
@@ -317,9 +318,9 @@ public class Model_Instance extends TaggedModel {
     public void sort_Model_InstanceSnapshot_ids() {
 
         List<Model_InstanceSnapshot> snapshots = getSnapShots();
-        this.cache().removeAll(Model_InstanceSnapshot.class);
+        this.idCache().removeAll(Model_InstanceSnapshot.class);
         snapshots.stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())
-                .forEach(o -> this.cache().add(Model_InstanceSnapshot.class, o.id));
+                .forEach(o -> this.idCache().add(Model_InstanceSnapshot.class, o.id));
 
     }
 
@@ -327,7 +328,7 @@ public class Model_Instance extends TaggedModel {
     @JsonIgnore
     public Model_HomerServer getHomerServer() {
         try {
-            return Model_HomerServer.getById(getServer_id());
+            return Model_HomerServer.find.byId(getServer_id());
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -344,13 +345,11 @@ public class Model_Instance extends TaggedModel {
 
         if (project != null) {
             try {
-                getProject().cache().add(this.getClass(), id);
+                getProject().idCache().add(this.getClass(), id);
             }catch (Exception e) {
                 // Nothing
             }
         }
-
-        cache.put(this.id, this);
     }
 
     @Override
@@ -364,12 +363,6 @@ public class Model_Instance extends TaggedModel {
             logger.warn("Sending Update for Instance ID: {}", this.id);
             new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Instance.class, getProject().id, this.id))).start();
         }
-
-        if (cache.containsKey(this.id)) {
-            cache.replace(this.id, this);
-        } else {
-            cache.put(this.id, this);
-        }
     }
     
     @Override
@@ -380,7 +373,7 @@ public class Model_Instance extends TaggedModel {
         super.delete();
 
         try {
-            getProject().cache().remove(this.getClass(), id);
+            getProject().idCache().remove(this.getClass(), id);
         } catch (Exception e) {
             // Nothing
         }
@@ -388,13 +381,9 @@ public class Model_Instance extends TaggedModel {
         // Its required to change all HW devices where this instance is registered in paramater connected_instance_id ( // Latest know Instance ID)
         List<UUID> hardware_for_change = Model_Hardware.find.query().where().eq("connected_instance_id", this.id).select("id").findSingleAttributeList();
         for(UUID hardware_id: hardware_for_change) {
-            Model_Hardware hw = Model_Hardware.getById(hardware_id);
+            Model_Hardware hw = Model_Hardware.find.byId(hardware_id);
             hw.connected_instance_id = null;
             hw.update();
-        }
-
-        if (cache.containsKey(this.id)) {
-            cache.remove(this.id);
         }
 
         return false;
@@ -418,14 +407,14 @@ public class Model_Instance extends TaggedModel {
 
                     case WS_Message_Grid_token_verification.message_type: {
 
-                        WS_Message_Grid_token_verification help = baseFormFactory.formFromJsonWithValidation(WS_Message_Grid_token_verification.class, json);
+                        WS_Message_Grid_token_verification help = formFromJsonWithValidation(WS_Message_Grid_token_verification.class, json);
                         help.get_instance().cloud_verification_token_GRID(homer, help);
                         return;
                     }
 
                     case WS_Message_WebView_token_verification.messageType: {
 
-                        WS_Message_WebView_token_verification help = baseFormFactory.formFromJsonWithValidation(WS_Message_WebView_token_verification.class, json);
+                        WS_Message_WebView_token_verification help = formFromJsonWithValidation(WS_Message_WebView_token_verification.class, json);
                         help.get_instance().cloud_verification_token_WEBVIEW(homer, help);
                         return;
                     }
@@ -480,7 +469,7 @@ public class Model_Instance extends TaggedModel {
             return request;
         }
 
-        Model_HomerServer server = Model_HomerServer.getById(this.getServer_id());
+        Model_HomerServer server = Model_HomerServer.find.byId(this.getServer_id());
         if (server == null) {
 
             logger.internalServerError(new Exception("write_with_confirmation:: Instance " + id + ". Server id " + this.getServer_id() + " not exist!"));
@@ -505,7 +494,7 @@ public class Model_Instance extends TaggedModel {
     @JsonIgnore
     private void write_without_confirmation(ObjectNode json) {
 
-        Model_HomerServer server = Model_HomerServer.getById(this.getServer_id());
+        Model_HomerServer server = Model_HomerServer.find.byId(this.getServer_id());
         if (server == null) {
 
             logger.internalServerError(new Exception("write_without_confirmation:: Instance " + id + " server not found"));
@@ -526,7 +515,7 @@ public class Model_Instance extends TaggedModel {
             return;
         }
 
-        Model_HomerServer server = Model_HomerServer.getById(this.getServer_id());
+        Model_HomerServer server = Model_HomerServer.find.byId(this.getServer_id());
 
         if (server == null) {
             logger.internalServerError(new Exception("write_without_confirmation:: Instance " + id + " server not found"));
@@ -544,7 +533,7 @@ public class Model_Instance extends TaggedModel {
 
             JsonNode json = write_with_confirmation(new WS_Message_Instance_status().make_request(Collections.singletonList(id.toString())), 1000 * 3, 0, 2);
 
-           return baseFormFactory.formFromJsonWithValidation(WS_Message_Instance_status.class, json);
+           return formFromJsonWithValidation(WS_Message_Instance_status.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -558,7 +547,7 @@ public class Model_Instance extends TaggedModel {
         try {
 
             JsonNode json = this.write_with_confirmation(new WS_Message_Instance_set_hardware().make_request(hardwares), 1000*3, 0, 4);
-            return baseFormFactory.formFromJsonWithValidation(WS_Message_Instance_set_hardware.class, json);
+            return formFromJsonWithValidation(WS_Message_Instance_set_hardware.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -573,7 +562,7 @@ public class Model_Instance extends TaggedModel {
 
             JsonNode json = this.write_with_confirmation(new WS_Message_Instance_set_terminals().make_request(terminalIds), 1000*3, 0, 4);
 
-            return baseFormFactory.formFromJsonWithValidation(WS_Message_Instance_set_terminals.class, json);
+            return formFromJsonWithValidation(WS_Message_Instance_set_terminals.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -588,7 +577,7 @@ public class Model_Instance extends TaggedModel {
 
             ObjectNode json = this.write_with_confirmation( new WS_Message_Hardware_overview().make_request(this.getHardwareIds()), 1000*5, 0, 1);
 
-            return baseFormFactory.formFromJsonWithValidation(WS_Message_Hardware_overview.class, json);
+            return formFromJsonWithValidation(WS_Message_Hardware_overview.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -615,7 +604,7 @@ public class Model_Instance extends TaggedModel {
             for(UUID hw_id : current_snapshot().getHardwareIds()) {
                 try {
 
-                    Model_Hardware hardware = Model_Hardware.getById(hw_id);
+                    Model_Hardware hardware = Model_Hardware.find.byId(hw_id);
                     hardware.connected_instance_id = null;
                     hardware.update();
 
@@ -626,7 +615,7 @@ public class Model_Instance extends TaggedModel {
             this.update();
         }
 
-        Model_HomerServer server = Model_HomerServer.getById(getServer_id());
+        Model_HomerServer server = Model_HomerServer.find.byId(getServer_id());
         if (server == null) {
             return;
         }
@@ -756,7 +745,8 @@ public class Model_Instance extends TaggedModel {
 
             logger.debug("cloud_verification_token:: WebView  Checking Token");
             logger.debug("cloud_verification_token:: Homer server: {}", homer.id);
-            logger.debug("cloud_verification_token:: WS_Message_WebView_token_verification", Json.toJson(help));
+            logger.debug("cloud_verification_token:: WS_Message_WebView_token_verification: {}", Json.toJson(help));
+            logger.debug("cloud_verification_token:: WebView Token: {}", help.token);
 
             Model_AuthorizationToken floatingPersonToken = Model_AuthorizationToken.find.query().where().eq("token", help.token).findOne();
 
@@ -770,19 +760,25 @@ public class Model_Instance extends TaggedModel {
 
 
             // Kontola operávnění ke konkrétní instanci??
-            Model_HomerServer server = Model_HomerServer.getById(homer.id);
+            Model_HomerServer server = Model_HomerServer.find.byId(homer.id);
 
             // Veřejný server
             if(server.server_type == HomerType.PUBLIC || server.server_type == HomerType.MAIN || server.server_type == HomerType.BACKUP) {
 
+                logger.debug("cloud_verification_token:: Server is public - try to find participants.person.id");
+
                 if (Model_Instance.find.query().where().eq("id", help.instance_id).eq("b_program.project.participants.person.id", floatingPersonToken.get_person_id()).findCount() > 0) {
+                    logger.warn("cloud_verification_token:: Yes - participants id found!");
                     homer.send(help.get_result(true));
                 } else {
+                    logger.warn("cloud_verification_token:: Nope - participants id not found!");
                     homer.send(help.get_result(false));
                 }
 
             // Provátní server
-            }else {
+            } else {
+
+                logger.warn("cloud_verification_token:: Its a private Server!");
 
                 if(Model_Project.find.query().where().eq("servers.id", server.id).eq("participants.person.id", floatingPersonToken.get_person_id()).select("id").findOne() != null) {
                     logger.trace("validate_incoming_user_connection_to_hardware_logger:: Private Server Find fot this Person");
@@ -891,35 +887,11 @@ public class Model_Instance extends TaggedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(Model_Instance.class)
-    public static Cache<UUID, Model_Instance> cache;
-
     @CacheField(value = Boolean.class, name = "Model_Instance_Status")
     public static Cache<UUID, Boolean> cache_status;
 
-
-    public static Model_Instance getById(UUID id) throws _Base_Result_Exception {
-
-        Model_Instance instance = cache.get(id);
-        if (instance == null) {
-
-            instance = Model_Instance.find.query().where().idEq(id).eq("deleted", false).findOne();
-            if (instance == null) {
-                logger.error("not found ID: {}", id);
-                throw new Result_Error_NotFound(Model_Instance.class);
-            }
-
-            cache.put(id, instance);
-        }
-        // Check Permission
-        if(instance.its_person_operation()) {
-            instance.check_read_permission();
-        }
-
-        return instance;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Instance> find = new Finder<>(Model_Instance.class);
+    @CacheFinderField(Model_Instance.class)
+    public static CacheFinder<Model_Instance> find = new CacheFinder<>(Model_Instance.class);
 }

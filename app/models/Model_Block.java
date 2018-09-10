@@ -4,13 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -111,11 +109,11 @@ public class Model_Block extends TaggedModel {
     @JsonIgnore
     public UUID get_project_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_Project.class) == null) {
-            cache().add(Model_Project.class, Model_Project.find.query().where().eq("blocks.id", id).select("id").findSingleAttributeList());
+        if (idCache().get(Model_Project.class) == null) {
+            idCache().add(Model_Project.class, Model_Project.find.query().where().eq("blocks.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().get(Model_Project.class);
+        return idCache().get(Model_Project.class);
 
     }
 
@@ -123,7 +121,7 @@ public class Model_Block extends TaggedModel {
     public Model_Project get_project() throws _Base_Result_Exception {
 
         try {
-            return Model_Project.getById(get_project_id());
+            return Model_Project.find.byId(get_project_id());
         }catch (Exception e) {
             return null;
         }
@@ -131,23 +129,23 @@ public class Model_Block extends TaggedModel {
 
     @JsonIgnore
     public List<UUID> getVersionsId() {
-        if (cache().gets(Model_BlockVersion.class) == null) {
-            cache().add(Model_BlockVersion.class, Model_BlockVersion.find.query().where().eq("block.id", id).eq("deleted", false).select("id").findSingleAttributeList());
+        if (idCache().gets(Model_BlockVersion.class) == null) {
+            idCache().add(Model_BlockVersion.class, Model_BlockVersion.find.query().where().eq("block.id", id).eq("deleted", false).select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_BlockVersion.class) != null ?  cache().gets(Model_BlockVersion.class) : new ArrayList<>();
+        return idCache().gets(Model_BlockVersion.class) != null ?  idCache().gets(Model_BlockVersion.class) : new ArrayList<>();
     }
     @JsonIgnore
     public List<Model_BlockVersion> getVersions() {
         try {
 
-            List<Model_BlockVersion> blocko_versions  = new ArrayList<>();
+            List<Model_BlockVersion> versions  = new ArrayList<>();
 
             for (UUID version_id : getVersionsId()) {
-                blocko_versions.add(Model_BlockVersion.getById(version_id));
+                versions.add(Model_BlockVersion.find.byId(version_id));
             }
 
-            return blocko_versions;
+            return versions;
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -159,18 +157,18 @@ public class Model_Block extends TaggedModel {
     @JsonIgnore
     public Model_Person get_author() {
         if(author_id != null) {
-            return Model_Person.getById(author_id);
+            return Model_Person.find.byId(author_id);
         } else return null;
     }
 
     @JsonIgnore
     public UUID get_producerId() {
 
-        if (cache().get(Model_Producer.class) == null) {
-            cache().add(Model_Producer.class, Model_Producer.find.query().where().eq("blocks.id", id).select("id").findSingleAttributeList());
+        if (idCache().get(Model_Producer.class) == null) {
+            idCache().add(Model_Producer.class, Model_Producer.find.query().where().eq("blocks.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().get(Model_Producer.class);
+        return idCache().get(Model_Producer.class);
 
     }
 
@@ -178,7 +176,7 @@ public class Model_Block extends TaggedModel {
     public Model_Producer get_producer() {
 
         try {
-            return Model_Producer.getById(get_producerId());
+            return Model_Producer.find.byId(get_producerId());
         }catch (Exception e) {
             return null;
         }
@@ -204,11 +202,11 @@ public class Model_Block extends TaggedModel {
 
         super.update();
 
-        if (cache.containsKey(this.id)) {
+        /*if (cache.containsKey(this.id)) {
             cache.replace(this.id, this);
         } else {
             cache.put(this.id, this);
-        }
+        }*/
 
         // Call notification about model update
         if(publish_type == ProgramType.PRIVATE) {
@@ -234,7 +232,7 @@ public class Model_Block extends TaggedModel {
 
             try {
 
-                get_project().cache().remove(this.getClass(), id);
+                get_project().idCache().remove(this.getClass(), id);
 
             } catch (Exception e) {
                 // Nothing
@@ -397,31 +395,12 @@ public class Model_Block extends TaggedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(Model_Block.class)
-    public static Cache<UUID, Model_Block> cache;
-
-    public static Model_Block getById(UUID id) throws _Base_Result_Exception {
-
-        Model_Block block = cache.get(id);
-        if (block == null) {
-
-            block = find.query().where().idEq(id).eq("deleted", false).findOne();
-            if (block == null) throw new Result_Error_NotFound(Model_Block.class);
-
-            cache.put(id, block);
-        }
-        // Check Permission
-        if(block.its_person_operation()) {
-            block.check_read_permission();
-        }
-        return block;
-    }
-
     public static Model_Block getPublicByName(String name) {
-        return find.query().where().isNull("type_of_block.project").eq("deleted", false).eq("name", name).findOne();
+        return find.query().where().isNull("project").eq("deleted", false).eq("name", name).findOne();
     }
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Block> find = new Finder<>(Model_Block.class);
+    @CacheFinderField(Model_Block.class)
+    public static CacheFinder<Model_Block> find = new CacheFinder<>(Model_Block.class);
 }

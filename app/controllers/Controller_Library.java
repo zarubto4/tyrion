@@ -1,15 +1,15 @@
 package controllers;
 
-import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.ExpressionList;
 import io.ebean.Junction;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
-import play.data.Form;
-import play.data.FormFactory;
+import play.Environment;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -19,8 +19,9 @@ import utilities.emails.Email;
 import utilities.enums.Approval;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
-import utilities.swagger.output.filter_results.Swagger_C_Program_List;
 import utilities.swagger.output.filter_results.Swagger_Library_List;
 
 import java.util.UUID;
@@ -36,10 +37,9 @@ public class Controller_Library extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-
-    @Inject public Controller_Library(_BaseFormFactory formFactory) {
-        this.baseFormFactory = formFactory;
+    @javax.inject.Inject
+    public Controller_Library(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
 
 // LIBRARY #############################################################################################################
@@ -75,7 +75,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Library_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Library_New.class);
+            Swagger_Library_New help = formFromRequestWithValidation(Swagger_Library_New.class);
 
             // Vytvářím objekt
             Model_Library library = new Model_Library();
@@ -84,13 +84,13 @@ public class Controller_Library extends _BaseController {
             library.publish_type = ProgramType.PRIVATE;
 
             if (help.project_id != null) {
-                Model_Project project = Model_Project.getById(help.project_id);
+                Model_Project project = Model_Project.find.byId(help.project_id);
                 library.project = project;
             }
 
             for (UUID hardware_type_id : help.hardware_type_ids) {
 
-                Model_HardwareType hardwareType = Model_HardwareType.getById(hardware_type_id);
+                Model_HardwareType hardwareType = Model_HardwareType.find.byId(hardware_type_id);
                 if (hardwareType != null) {
                     library.hardware_types.add(hardwareType);
                 }
@@ -140,13 +140,13 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Library_Copy help = baseFormFactory.formFromRequestWithValidation(Swagger_Library_Copy.class);
+            Swagger_Library_Copy help = formFromRequestWithValidation(Swagger_Library_Copy.class);
 
             // Vyhledám Objekt
-            Model_Library library_old = Model_Library.getById(help.library_id);
+            Model_Library library_old = Model_Library.find.byId(help.library_id);
 
             // Vyhledám Objekt
-            Model_Project project = Model_Project.getById(help.project_id);
+            Model_Project project = Model_Project.find.byId(help.project_id);
 
             Model_Library library_new =  new Model_Library();
             library_new.name = help.name;
@@ -173,7 +173,7 @@ public class Controller_Library extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version.file;
 
-                copy_object.file = Model_Blob.upload(fileRecord.get_fileRecord_from_Azure_inString(), "library.json" , library_new.get_path());
+                copy_object.file = Model_Blob.upload(fileRecord.downloadString(), "library.json" , library_new.get_path());
                 copy_object.update();
 
             }
@@ -206,7 +206,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Library library = Model_Library.getById(library_id);
+            Model_Library library = Model_Library.find.byId(library_id);
 
             // Vrácneí objektu
             return ok(library);
@@ -245,7 +245,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Library_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_Library_Filter.class);
+            Swagger_Library_Filter help = formFromRequestWithValidation(Swagger_Library_Filter.class);
 
             // Musí být splněna alespoň jedna podmínka, aby mohl být Junction aktivní. V opačném případě by totiž způsobil bychu
             // která vypadá nějak takto:  where t0.deleted = false and and .... KDE máme 2x end!!!!!
@@ -267,7 +267,7 @@ public class Controller_Library extends _BaseController {
             }
 
             if (help.project_id != null) {
-                Model_Project.getById(help.project_id);
+                Model_Project.find.byId(help.project_id);
                 disjunction
                         .conjunction()
                         .eq("project.id", help.project_id)
@@ -334,10 +334,10 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Library_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Library_New.class);
+            Swagger_Library_New help = formFromRequestWithValidation(Swagger_Library_New.class);
 
             // Vyhledání objektu
-            Model_Library library = Model_Library.getById(library_id);
+            Model_Library library = Model_Library.find.byId(library_id);
 
             // Change values
             library.name = help.name;
@@ -385,10 +385,10 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_Library library = Model_Library.getById(help.object_id);
+            Model_Library library = Model_Library.find.byId(help.object_id);
 
             library.addTags(help.tags);
 
@@ -429,10 +429,10 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_Library library = Model_Library.getById(help.object_id);
+            Model_Library library = Model_Library.find.byId(help.object_id);
 
             library.removeTags(help.tags);
 
@@ -462,7 +462,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Library library = Model_Library.getById(library_id);
+            Model_Library library = Model_Library.find.byId(library_id);
 
             library.delete();
 
@@ -507,10 +507,10 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Library_Version_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Library_Version_New.class);
+            Swagger_Library_Version_New help = formFromRequestWithValidation(Swagger_Library_Version_New.class);
 
             // Ověření objektu
-            Model_Library library = Model_Library.getById(library_id);
+            Model_Library library = Model_Library.find.byId(library_id);
 
             // První nová Verze
             Model_LibraryVersion version = new Model_LibraryVersion();
@@ -556,7 +556,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Vyhledám Objekt
-            Model_LibraryVersion version = Model_LibraryVersion.getById(version_id);
+            Model_LibraryVersion version = Model_LibraryVersion.find.byId(version_id);
 
             // Vracím Objekt
             return ok(version);
@@ -596,10 +596,10 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Ověření objektu
-            Model_LibraryVersion version = Model_LibraryVersion.getById(version_id);
+            Model_LibraryVersion version = Model_LibraryVersion.find.byId(version_id);
 
             //Uprava objektu
             version.name = help.name;
@@ -634,7 +634,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Ověření objektu
-            Model_LibraryVersion version = Model_LibraryVersion.getById(version_id);
+            Model_LibraryVersion version = Model_LibraryVersion.find.byId(version_id);
 
             // Smažu zástupný objekt
             version.delete();
@@ -669,7 +669,7 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_LibraryVersion version = Model_LibraryVersion.getById(version_id);
+            Model_LibraryVersion version = Model_LibraryVersion.find.byId(version_id);
 
             if (Model_LibraryVersion.find.query().where().eq("approval_state", Approval.PENDING.name())
                     .eq("library.project.participants.person.id", _BaseController.personId())
@@ -724,10 +724,10 @@ public class Controller_Library extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Community_Version_Publish_Response help = baseFormFactory.formFromRequestWithValidation(Swagger_Community_Version_Publish_Response.class);
+            Swagger_Community_Version_Publish_Response help = formFromRequestWithValidation(Swagger_Community_Version_Publish_Response.class);
 
             // Kontrola objektu
-            Model_LibraryVersion version_old = Model_LibraryVersion.getById(help.version_id);
+            Model_LibraryVersion version_old = Model_LibraryVersion.find.byId(help.version_id);
 
             // Kontrola objektu
             Model_Library library_old = version_old.library;
@@ -745,7 +745,7 @@ public class Controller_Library extends _BaseController {
                 version_old.update();
 
 
-                Model_Library library = Model_Library.getById(library_old.id); // TODO + "_public_copy");
+                Model_Library library = Model_Library.find.byId(library_old.id); // TODO + "_public_copy");
 
                 if (library == null) {
                     library = new Model_Library();
@@ -772,7 +772,7 @@ public class Controller_Library extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version_old.file;
 
-                version.file = Model_Blob.upload(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , library.get_path());
+                version.file = Model_Blob.upload(fileRecord.downloadString(), "code.json" , library.get_path());
                 version.update();
 
                 // Admin to schválil bez dalších keců
@@ -788,7 +788,7 @@ public class Controller_Library extends _BaseController {
                                 .divider()
                                 .text("We will publish it as soon as possible.")
                                 .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                                .send(version_old.get_library().get_project().getProduct().customer, "Publishing your Library" );
+                                .send(version_old.get_library().get_project().getProduct().owner, "Publishing your Library" );
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -810,7 +810,7 @@ public class Controller_Library extends _BaseController {
                                 .text("We will publish it as soon as possible. We also had to make some changes to your program or rename something.")
                                 .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                                 .text(Email.bold("Thanks!") + Email.newLine() + _BaseController.person().full_name())
-                                .send(version_old.get_library().get_project().getProduct().customer, "Publishing your program" );
+                                .send(version_old.get_library().get_project().getProduct().owner, "Publishing your program" );
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -835,7 +835,7 @@ public class Controller_Library extends _BaseController {
                                     "We are glad that you want to contribute to our public libraries. Here are some tips what to improve, so you can try it again.")
                             .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                             .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                            .send(version_old.get_library().get_project().getProduct().customer, "Publishing your program");
+                            .send(version_old.get_library().get_project().getProduct().owner, "Publishing your program");
 
                 } catch (Exception e) {
                     logger.internalServerError(e);

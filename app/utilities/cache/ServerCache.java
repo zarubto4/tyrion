@@ -2,12 +2,14 @@ package utilities.cache;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.Controller_WebSocket;
+import io.ebeaninternal.api.HashQuery;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.ehcache.expiry.Duration;
 import org.ehcache.expiry.Expirations;
+import org.ehcache.expiry.Expiry;
 import org.reflections.Reflections;
 import org.reflections.scanners.FieldAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
@@ -31,6 +33,7 @@ public class ServerCache {
      * Method for initialization of cache layer.
      * It finds every annotated cache fields in models and populate them.
      */
+    @SuppressWarnings("unchecked")
     public static void init() {
 
         logger.info("init - cache layer initiating");
@@ -60,21 +63,52 @@ public class ServerCache {
 
             try {
 
-                if(annotation.automaticProlonging()) {
-                    field.set(null, cacheManager.createCache(name,
-                            CacheConfigurationBuilder.newCacheConfigurationBuilder(annotation.keyType(), annotation.value(),
-                                    ResourcePoolsBuilder.heap(annotation.maxElements()))
-                                    .withExpiry(Expirations.timeToIdleExpiration(Duration.of(annotation.duration(), TimeUnit.SECONDS))).build()));
-                }else {
-                    field.set(null, cacheManager.createCache(name,
-                            CacheConfigurationBuilder.newCacheConfigurationBuilder(annotation.keyType(), annotation.value(),
-                                    ResourcePoolsBuilder.heap(annotation.maxElements()))
-                                    .withExpiry(Expirations.timeToLiveExpiration(Duration.of(annotation.duration(), TimeUnit.SECONDS))).build()));
-                }
+                Duration duration = Duration.of(annotation.duration(), TimeUnit.SECONDS);
+
+                field.set(null, cacheManager.createCache(name,
+                        CacheConfigurationBuilder.newCacheConfigurationBuilder(annotation.keyType(), annotation.value(),
+                                ResourcePoolsBuilder.heap(annotation.maxElements()))
+                                .withExpiry(annotation.automaticProlonging() ? Expirations.timeToIdleExpiration(duration) : Expirations.timeToLiveExpiration(duration)).build()));
 
             } catch (Exception e) {
                 logger.error("init - cache init failed:", e);
                 System.exit(1);
+            }
+        });
+
+        Set<Field> cacheFinders = reflections.getFieldsAnnotatedWith(CacheFinderField.class);
+
+        cacheFinders.forEach(field -> {
+
+            CacheFinderField annotation = field.getAnnotation(CacheFinderField.class);
+
+            String name = annotation.name();
+
+            if (name.equals("")) {
+                name = field.getDeclaringClass().getSimpleName();
+            }
+
+            logger.debug("init - setting cache: {}", name);
+
+            try {
+
+                Duration duration = Duration.of(annotation.duration(), TimeUnit.SECONDS);
+
+                CacheFinder cacheFinder = (CacheFinder) field.get(null);
+
+                cacheFinder.setCache(cacheManager.createCache(name,
+                        CacheConfigurationBuilder.newCacheConfigurationBuilder(annotation.keyType(), annotation.value(),
+                                ResourcePoolsBuilder.heap(annotation.maxElements()))
+                                .withExpiry(annotation.automaticProlonging() ? Expirations.timeToIdleExpiration(duration) : Expirations.timeToLiveExpiration(duration)).build()));
+
+                cacheFinder.setQueryCache(cacheManager.createCache(name + "_query",
+                        CacheConfigurationBuilder.newCacheConfigurationBuilder(Integer.class, UUID.class,
+                                ResourcePoolsBuilder.heap(annotation.maxElements()))
+                                .withExpiry(annotation.automaticProlonging() ? Expirations.timeToIdleExpiration(duration) : Expirations.timeToLiveExpiration(duration)).build()));
+
+
+            } catch (Exception e) {
+                logger.error("init - cache init failed:", e);
             }
         });
 

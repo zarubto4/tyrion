@@ -18,7 +18,7 @@ public class NotificationActionHandler {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger terminal_logger = new Logger(NotificationActionHandler.class);
+    private static final Logger logger = new Logger(NotificationActionHandler.class);
 
     /**
      * Decides how to handle the given action from notification confirmation.
@@ -28,7 +28,7 @@ public class NotificationActionHandler {
      */
     public static void perform(NotificationAction action, String payload) throws Exception{
 
-        terminal_logger.debug("perform: Performing new notification action {}", action.name());
+        logger.debug("perform: Performing new notification action {}", action.name());
 
         switch (action) {
 
@@ -50,20 +50,20 @@ public class NotificationActionHandler {
     private static void acceptProjectInvitation(String invitation_id) throws Exception{
 
         try {
-            Model_Invitation invitation = Model_Invitation.getById(invitation_id);
-            if (invitation == null)
+            Model_Invitation invitation = Model_Invitation.find.byId(UUID.fromString(invitation_id));
+            if (invitation == null) // TODO replace with not found exception
                 throw new IllegalArgumentException("Failed to add you to the project. Invitation no longer exists, it might have been drawn back.");
 
             UUID person_id = Model_Person.find.query().where().eq("email", invitation.email).select("id").findSingleAttribute();
             if (person_id == null) throw new Exception("Person does not exist.");
 
-            Model_Person person = Model_Person.getById(person_id);
+            Model_Person person = Model_Person.find.byId(person_id);
 
             Model_Project project_not_cached = invitation.project;
             if (project_not_cached == null)
                 throw new IllegalArgumentException("Failed to add you to the project. Project no longer exists.");
 
-            Model_Project project = Model_Project.getByIdWithoutPermission(project_not_cached.id);
+            Model_Project project = Model_Project.find.byId(project_not_cached.id);
 
             if (Model_ProjectParticipant.find.query().where().eq("person.id", person.id).eq("project.id", project.id).findOne() == null) {
 
@@ -76,17 +76,17 @@ public class NotificationActionHandler {
             }
 
             person.get_user_access_projects();
-            person.cache().add(Model_Project.class, project_not_cached.id);
+            person.idCache().add(Model_Project.class, project_not_cached.id);
             project.notification_project_invitation_accepted(person, invitation.owner);
 
             new Thread(() -> RefreshTouch_echo_handler.addToQueue(new WS_Message_RefreshTouch("ProjectsRefreshAfterInvite", person_id))).start();
             new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, project_not_cached.id, project_not_cached.id))).start();
 
             invitation.delete();
-            project.cache_refresh();
+            project.refresh();
 
         } catch (Exception e){
-            terminal_logger.internalServerError(e);
+            logger.internalServerError(e);
         }
     }
 
@@ -97,7 +97,7 @@ public class NotificationActionHandler {
     private static void rejectProjectInvitation(String invitation_id) throws Exception{
 
         // Kontroly objektů
-        Model_Invitation invitation = Model_Invitation.getById(invitation_id);
+        Model_Invitation invitation = Model_Invitation.find.byId(UUID.fromString(invitation_id));
         if (invitation == null) throw new IllegalArgumentException("Invitation no longer exists.");
 
         Model_Person person = Model_Person.getByEmail(invitation.email);

@@ -3,12 +3,10 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
-import utilities.cache.CacheField;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -58,11 +56,11 @@ public class Model_GridProject extends TaggedModel {
 
     @JsonIgnore
     public List<UUID> getGrid_programs_ids() {
-        if (cache().gets(Model_GridProgram.class) == null) {
-            cache().add(Model_GridProgram.class, Model_GridProgram.find.query().where().eq("deleted", false).eq("grid_project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        if (idCache().gets(Model_GridProgram.class) == null) {
+            idCache().add(Model_GridProgram.class, Model_GridProgram.find.query().where().eq("deleted", false).eq("grid_project.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_GridProgram.class) != null ?  cache().gets(Model_GridProgram.class) : new ArrayList<>();
+        return idCache().gets(Model_GridProgram.class) != null ?  idCache().gets(Model_GridProgram.class) : new ArrayList<>();
     }
 
     @JsonIgnore public List<Model_GridProgram> getGridPrograms() {
@@ -71,7 +69,7 @@ public class Model_GridProject extends TaggedModel {
             List<Model_GridProgram> gridPrograms  = new ArrayList<>();
 
             for (UUID version_id : getGrid_programs_ids()) {
-                gridPrograms.add(Model_GridProgram.getById(version_id));
+                gridPrograms.add(Model_GridProgram.find.byId(version_id));
             }
 
             return gridPrograms;
@@ -84,15 +82,15 @@ public class Model_GridProject extends TaggedModel {
 
     @JsonIgnore @Transient public UUID get_project_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_Project.class) == null) {
-            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("grid_projects.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_Project.class) == null) {
+            idCache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("grid_projects.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_Project.class);
+        return idCache().get(Model_Project.class);
     }
 
     @JsonIgnore @Transient public Model_Project get_project() throws _Base_Result_Exception  {
-        return  Model_Project.getById(get_project_id());
+        return  Model_Project.find.byId(get_project_id());
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -105,11 +103,8 @@ public class Model_GridProject extends TaggedModel {
 
         // If Object Contains Project - add id to cache
         if (project != null) {
-            project.cache().add(this.getClass(), id);
+            project.idCache().add(this.getClass(), id);
         }
-
-        // Add to General Cache
-        cache.put(id, this);
 
         // Inform All clients independently
         if (project != null ) new Thread(() -> {
@@ -119,7 +114,6 @@ public class Model_GridProject extends TaggedModel {
                 // Nothing
             }
         }).start();
-
     }
 
     @JsonIgnore @Override
@@ -136,7 +130,6 @@ public class Model_GridProject extends TaggedModel {
                 // Nothing
             }
         }).start();
-
     }
 
     @JsonIgnore @Override
@@ -145,10 +138,9 @@ public class Model_GridProject extends TaggedModel {
         logger.debug("update :: Delete object Id: {} ", this.id);
 
         super.delete();
-        cache.remove(id);
 
         try {
-            get_project().cache().remove(this.getClass(), id);
+            get_project().idCache().remove(this.getClass(), id);
         }catch (_Base_Result_Exception e){
             // Nothing
         }
@@ -244,29 +236,9 @@ public class Model_GridProject extends TaggedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(Model_GridProject.class)
-    public static Cache<UUID, Model_GridProject> cache;
-    
-    public static Model_GridProject getById(UUID id) throws _Base_Result_Exception {
-
-        Model_GridProject grid_project= cache.get(id);
-        if (grid_project == null) {
-
-            grid_project = Model_GridProject.find.byId(id);
-            if (grid_project == null) throw new Result_Error_NotFound(Model_GridProject.class);
-
-            cache.put(id, grid_project);
-        }
-        // Check Permission
-        if(grid_project.its_person_operation()) {
-            grid_project.check_read_permission();
-        }
-
-        return grid_project;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    
-    public static Finder<UUID, Model_GridProject> find = new Finder<>(Model_GridProject.class);
+
+    @CacheFinderField(Model_GridProject.class)
+    public static CacheFinder<Model_GridProject> find = new CacheFinder<>(Model_GridProject.class);
 }
 

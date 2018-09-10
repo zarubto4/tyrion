@@ -34,6 +34,8 @@ import websocket.interfaces.WS_Homer;
 import websocket.interfaces.WS_Portal;
 
 import javax.persistence.PersistenceException;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
@@ -45,6 +47,7 @@ public class Server {
 
     private static final Logger logger = new Logger(Server.class);
 
+    public static _BaseFormFactory baseFormFactory;
     public static Config configuration;
     public static Injector injector;
 
@@ -111,6 +114,14 @@ public class Server {
     public static String slack_webhook_url_channel_homer;
     public static String slack_webhook_url_channel_hardware;
 
+    public static int financial_quantity_scale = 2;
+    public static RoundingMode financial_quantity_rounding = RoundingMode.HALF_UP;
+
+    public static int financial_price_scale = 2;
+    public static RoundingMode financial_price_rounding = RoundingMode.HALF_UP;
+
+    public static int financial_tax_scale = 2;
+    public static RoundingMode financial_tax_rounding = RoundingMode.UP;
 
     /**
      * Loads all configurations and start all server components.
@@ -119,8 +130,9 @@ public class Server {
      * @throws Exception if error occurs when starting the server
      */
     public static void start(Config config, Injector injector) throws Exception {
-        configuration = config;
+        Server.configuration = config;
         Server.injector = injector;
+        Server.baseFormFactory = Server.injector.getInstance(_BaseFormFactory.class);
 
         Server.mode = configuration.getEnum(ServerMode.class,"server.mode");
 
@@ -465,12 +477,11 @@ public class Server {
      * Set BaseForm for Json Control
      */
     private static void setBaseForm() {
+
         WS_Homer.baseFormFactory                        = Server.injector.getInstance(_BaseFormFactory.class);
         Synchronize_Homer_Synchronize_Settings.baseFormFactory = Server.injector.getInstance(_BaseFormFactory.class);
         DigitalOceanThreadRegister.baseFormFactory      = Server.injector.getInstance(_BaseFormFactory.class);
         Model_HardwareBatch.baseFormFactory             = Server.injector.getInstance(_BaseFormFactory.class);
-        BaseModel.baseFormFactory                       = Server.injector.getInstance(_BaseFormFactory.class);
-        WS_Portal.baseFormFactory                       = Server.injector.getInstance(_BaseFormFactory.class);
         Model_HardwareRegistrationEntity.baseFormFactory= Server.injector.getInstance(_BaseFormFactory.class);
         Model_InstanceSnapshot.baseFormFactory          = Server.injector.getInstance(_BaseFormFactory.class);
         Controller_Things_Mobile.baseFormFactory   = Server.injector.getInstance(_BaseFormFactory.class);

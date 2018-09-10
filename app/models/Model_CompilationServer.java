@@ -8,19 +8,17 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.DocumentClientException;
 import controllers._BaseController;
 import controllers.Controller_WebSocket;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.Server;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.document_mongo_db.document_objects.DM_CompilationServer_Connect;
 import utilities.document_mongo_db.document_objects.DM_CompilationServer_Disconnect;
 import utilities.enums.CompilationStatus;
 import utilities.enums.NetworkStatus;
 import utilities.errors.ErrorCode;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.model.BaseModel;
@@ -38,7 +36,6 @@ import java.util.*;
 @ApiModel(description = "Model of CompilationServer",
           value = "Compilation_Server")
 public class Model_CompilationServer extends BaseModel {
-
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -167,10 +164,10 @@ public class Model_CompilationServer extends BaseModel {
 
             // Vyberu náhodný kompilační server
             List<UUID> keys = new ArrayList<>(Controller_WebSocket.compilers.keySet());
-            Model_CompilationServer server = Model_CompilationServer.getById( Controller_WebSocket.compilers.get(keys.get(new Random().nextInt(keys.size()))).id );
+            Model_CompilationServer server = Model_CompilationServer.find.byId(Controller_WebSocket.compilers.get(keys.get(new Random().nextInt(keys.size()))).id);
 
             ObjectNode compilation_request = server.write_with_confirmation(request, 5*1000, 0, 3);
-            WS_Message_Make_compilation compilation = baseFormFactory.formFromJsonWithValidation(WS_Message_Make_compilation.class, compilation_request);
+            WS_Message_Make_compilation compilation = formFromJsonWithValidation(WS_Message_Make_compilation.class, compilation_request);
 
             if (compilation.build_url != null) {
                 logger.trace("make_Compilation:: Build URL is not null: {} ", compilation.build_url);
@@ -192,7 +189,7 @@ public class Model_CompilationServer extends BaseModel {
 
             JsonNode json = write_with_confirmation(new WS_Message_Ping_compilation_server().make_request(),  1000 * 30, 0, 3);
 
-            return baseFormFactory.formFromJsonWithValidation(WS_Message_Ping_compilation_server.class, json);
+            return formFromJsonWithValidation(WS_Message_Ping_compilation_server.class, json);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -269,30 +266,9 @@ public class Model_CompilationServer extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_CompilationServer.class, duration = CacheField.DayCacheConstant)
-    @JsonIgnore public static Cache<UUID, Model_CompilationServer> cache;
-
-    public static Model_CompilationServer getById(UUID id) throws _Base_Result_Exception {
-
-        Model_CompilationServer server = cache.get(id);
-
-        if (server == null) {
-
-            server = find.byId(id);
-            if (server == null) throw new Result_Error_NotFound(Model_CompilationServer.class);
-
-            cache.put(id, server);
-        }
-        // Check Permission
-        if(server.its_person_operation()) {
-            server.check_read_permission();
-        }
-
-        return server;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_CompilationServer> find = new Finder<>(Model_CompilationServer.class);
+    @CacheFinderField(Model_CompilationServer.class)
+    public static CacheFinder<Model_CompilationServer> find = new CacheFinder<>(Model_CompilationServer.class);
 }
 

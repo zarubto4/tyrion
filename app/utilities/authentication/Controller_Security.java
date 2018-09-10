@@ -1,14 +1,16 @@
-package controllers;
+package utilities.authentication;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.scribejava.core.model.*;
-import com.github.scribejava.core.oauth.OAuth10aService;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
-import io.intercom.api.User;
+import controllers.Controller_WebSocket;
+import controllers._BaseController;
+import controllers._BaseFormFactory;
 import io.swagger.annotations.*;
 import models.*;
+import play.Environment;
 import play.data.DynamicForm;
 import play.libs.Json;
 import play.libs.ws.WSClient;
@@ -16,11 +18,11 @@ import play.libs.ws.WSResponse;
 import play.mvc.*;
 import responses.*;
 import utilities.Server;
-import utilities.authentication.Authentication;
-import utilities.authentication.Social;
 import utilities.enums.TokenType;
 import utilities.enums.PlatformAccess;
 import utilities.financial.FinancialPermission;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_EmailAndPassword;
 import utilities.swagger.input.Swagger_SocialNetwork_Login;
 import utilities.swagger.output.Swagger_Blocko_Token_validation_result;
@@ -31,7 +33,6 @@ import utilities.threads.Check_Online_Status_after_user_login;
 import utilities.logger.Logger;
 import utilities.swagger.input.Swagger_Blocko_Token_validation_request;
 import websocket.interfaces.WS_Portal;
-import com.github.scribejava.core.oauth.OAuthService;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -53,15 +54,9 @@ public class Controller_Security extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-    private WSClient ws;
-    private Config configuration;
-
     @Inject
-    public Controller_Security(_BaseFormFactory formFactory, WSClient ws, Config configuration) {
-        this.baseFormFactory = formFactory;
-        this.ws = ws;
-        this.configuration = configuration;
+    public Controller_Security(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
 
 // CLASIC LOGIN ########################################################################################################
@@ -94,7 +89,7 @@ public class Controller_Security extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Blocko_Token_validation_request help  = baseFormFactory.formFromRequestWithValidation(Swagger_Blocko_Token_validation_request.class);
+            Swagger_Blocko_Token_validation_request help  = formFromRequestWithValidation(Swagger_Blocko_Token_validation_request.class);
 
             TokenType token_type = TokenType.getType(help.type_of_token);
             if (token_type == null) return badRequest("Wrong type of token");
@@ -111,7 +106,7 @@ public class Controller_Security extends _BaseController {
 
             if (token_type == TokenType.INSTANCE_TOKEN) {
 
-                Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.getById(help.token);
+                Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(help.token);
                 if (snapshot == null) return notFound("Token not found");
 
                 result.token = help.token;
@@ -154,7 +149,7 @@ public class Controller_Security extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_EmailAndPassword help  = baseFormFactory.formFromRequestWithValidation(Swagger_EmailAndPassword.class);
+            Swagger_EmailAndPassword help  = formFromRequestWithValidation(Swagger_EmailAndPassword.class);
 
             // Ověření Person - Heslo a email
             Model_Person person = Model_Person.getByEmail(help.email);
@@ -177,9 +172,9 @@ public class Controller_Security extends _BaseController {
             token.where_logged  = PlatformAccess.BECKI_WEBSITE;
 
             // Zjistím kde je přihlášení (user-Agent je třeba "Safari v1.30" nebo "Chrome 12.43" atd..)
-            String[] userAgents = Http.Context.current().request().headers().get("User-Agent");
-            if ( userAgents != null && userAgents[0] != null) token.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
-            else  token.user_agent = "Unknown browser";
+            token.user_agent = Http.Context.current().request().getHeaders().get("User-Agent").orElse("Unknown browser");
+
+            token.setDate();
 
             // Ukládám do databáze
             token.save();
@@ -188,7 +183,7 @@ public class Controller_Security extends _BaseController {
             Model_Person.token_cache.put(token.token, person.id);
 
             // Chache Update
-            Model_Person.getById(person.id);
+            Model_Person.find.byId(person.id);
 
 
             // Vytvářím objekt, který zasílám zpět frontendu
@@ -236,7 +231,7 @@ public class Controller_Security extends _BaseController {
 
             // Create Hmac
             Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secret_key = new SecretKeySpec(configuration.getString("Intercom.hmacToken").getBytes(), "HmacSHA256");
+            SecretKeySpec secret_key = new SecretKeySpec(config.getString("Intercom.hmacToken").getBytes(), "HmacSHA256");
             sha256_HMAC.init(secret_key);
 
             byte[] hash = (sha256_HMAC.doFinal( person.id.toString().getBytes() ));
@@ -302,6 +297,42 @@ public class Controller_Security extends _BaseController {
         } catch (Exception e) {
             logger.internalServerError(e);
             return ok();
+        }
+    }
+
+    @ApiOperation(value = "add apikey",
+            tags = {"Access", "Person", "APP-Api"},
+            notes = "creates permanent api key",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",             response = Swagger_Login_Token.class),
+            @ApiResponse(code = 401, message = "Unauthorized",          response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result apikey() {
+        try {
+
+            Model_AuthorizationToken token = new Model_AuthorizationToken();
+            token.person = person();
+            token.where_logged  = PlatformAccess.BECKI_WEBSITE;
+
+            token.user_agent = "Various -> permanent token";
+
+            // Ukládám do databáze
+            token.save();
+
+            // Vytvářím objekt, který zasílám zpět frontendu
+            Swagger_Login_Token swagger_login_token = new Swagger_Login_Token();
+            swagger_login_token.auth_token = token.token;
+
+            return ok(swagger_login_token);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
         }
     }
 
@@ -657,7 +688,7 @@ public class Controller_Security extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_SocialNetwork_Login help  = baseFormFactory.formFromRequestWithValidation(Swagger_SocialNetwork_Login.class);
+            Swagger_SocialNetwork_Login help  = formFromRequestWithValidation(Swagger_SocialNetwork_Login.class);
 
             logger.debug("GitHub  request for login:: return link:: {}", help.redirect_url);
 
@@ -725,7 +756,7 @@ public class Controller_Security extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_SocialNetwork_Login help  = baseFormFactory.formFromRequestWithValidation(Swagger_SocialNetwork_Login.class);
+            Swagger_SocialNetwork_Login help  = formFromRequestWithValidation(Swagger_SocialNetwork_Login.class);
 
             logger.debug("Facebook request for login:: return link:: {}", help.redirect_url);
 

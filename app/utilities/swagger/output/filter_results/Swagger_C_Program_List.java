@@ -37,7 +37,7 @@ public class Swagger_C_Program_List extends _Swagger_Filter_Common {
         }
 
         for (UUID uuid : uuids) {
-            this.content.add(Model_CProgram.getById(uuid));
+            this.content.add(Model_CProgram.find.byId(uuid));
         }
 
         this.total   = query.findCount();

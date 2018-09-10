@@ -4,22 +4,25 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
+import utilities.Server;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.ExtensionType;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.extensions.configurations.Configuration;
+import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.financial.extensions.extensions.Extension;
 import utilities.logger.Logger;
 import utilities.model.OrderedNamedModel;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @ApiModel(value = "TariffExtension", description = "Model of TariffExtension")
@@ -35,6 +38,7 @@ public class Model_TariffExtension extends OrderedNamedModel {
 
           @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public ExtensionType type;
                            @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
+                           @Column(columnDefinition = "TEXT") @JsonIgnore public String consumption;
                          @JsonProperty @ApiModelProperty(required = true) public boolean active;
 
        @JoinTable(name = "tariff_extensions_included")
@@ -50,13 +54,13 @@ public class Model_TariffExtension extends OrderedNamedModel {
 
     /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
+    /**
+     * ONLY FOR FRONTEND! For calculations usegetPrice()
+     * @return
+     */
     @JsonProperty @ApiModelProperty(required = true) @Transient
-    public Double price() {
-        try {
-            return getDoubleDailyPrice();
-        } catch (Exception e) {
-            return null;
-        }
+    public double price() {
+        return getPrice().setScale(Server.financial_price_scale, Server.financial_price_rounding).doubleValue();
     }
 
     @JsonProperty  @ApiModelProperty(required = false, value = "Visible only for Administrator with Special Permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -77,24 +81,49 @@ public class Model_TariffExtension extends OrderedNamedModel {
         }
     }
 
+    @JsonProperty  @ApiModelProperty(required = false, value = "Visible only for Administrator with Special Permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String consumption() {
+        try {
+
+            check_update_permission();
+            if (consumption == null) {
+                throw new NullPointerException();
+            }
+            return Json.toJson(ResourceConsumption.getConsumption(type, consumption)).toString();
+
+        } catch (NullPointerException e) {
+            return "{\"error\":\"consumption is not set yet\"}";
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return "{\"error\":\"config file error, or required permission\"}";
+        }
+    }
+
     /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-        /**
-         * Method serves for information purposes only.
-         * Returned value is shown to users, because real price is Double USD * 1000.
-         * @return Real price in Double.
-         */
-        @JsonIgnore
-        public Double getDoubleDailyPrice() {
-            try {
-                Long price = Extension.getDailyPrice(type, configuration);
-                return (double) price;
-
-            } catch (Exception e) {
-                logger.internalServerError(e);
-                return 0d;
-            }
+    @JsonIgnore
+    public Extension createExtension() throws Exception {
+        Class<? extends Extension> extensionClass = type.getExtensionClass();
+        if(extensionClass == null) {
+            throw new IllegalStateException("No extension class.");
         }
+
+        return extensionClass.newInstance();
+    }
+
+    @JsonIgnore
+    public BigDecimal getPrice() {
+        try {
+            // not very nice, but since this class violates a lot of programming principles anyway, we let it be for this moment
+            // to be fixed one day
+            Extension extension = createExtension();
+            Configuration config = Configuration.getConfiguration(type, configuration);
+            ResourceConsumption consump = ResourceConsumption.getConsumption(type, consumption);
+            return extension.getPrice(config, consump);
+        } catch (Exception e) {
+            return BigDecimal.ZERO;
+        }
+    }
 
     /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
@@ -125,9 +154,6 @@ public class Model_TariffExtension extends OrderedNamedModel {
 
     /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_TariffExtension> find = new Finder<>(Model_TariffExtension.class);
-
-    public static Model_TariffExtension getById(UUID id) {
-        return find.query().where().idEq(id).eq("deleted", false).findOne();
-    }
+    @CacheFinderField(Model_TariffExtension.class)
+    public static CacheFinder<Model_TariffExtension> find = new CacheFinder<>(Model_TariffExtension.class);
 }

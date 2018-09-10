@@ -1,13 +1,12 @@
 package utilities.scheduler.jobs;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import controllers._BaseFormFactory;
-import models.Model_BProgramVersion;
-import models.Model_Blob;
-import models.Model_BootLoader;
-import models.Model_HardwareType;
+import io.ebean.Expr;
+import models.*;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -20,25 +19,31 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 import utilities.Server;
+import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
 import utilities.logger.Logger;
 import utilities.scheduler.Scheduled;
 import utilities.slack.Slack;
 import utilities.swagger.input.*;
 
+import java.io.*;
 import java.net.ConnectException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * This job synchronizes compilation libraries from GitHub releases.
  */
-@Scheduled("30 0/1 * * * ?")
+///@Scheduled("0 0/5 * 1/1 * ? *")
 public class Job_CheckCompilationLibraries implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -114,7 +119,7 @@ public class Job_CheckCompilationLibraries implements Job {
 
                 for (UUID hwType_id : hardwareTypes_id) {
 
-                    Model_HardwareType hardwareType = Model_HardwareType.getById(hwType_id);
+                    Model_HardwareType hardwareType = Model_HardwareType.find.byId(hwType_id);
 
                     // Pokud není pole, vytvořím ho
                     if (hardwareType.cache_library_list == null) {
@@ -137,6 +142,11 @@ public class Job_CheckCompilationLibraries implements Job {
                             if (library.tag_name.equals(release.tag_name)) {
                                 continue synchro_libraries;
                             }
+                        }
+
+                        if(release.assets.size() == 0) {
+                            logger.debug("check_version_thread: Tag version  {} not contains any assets", release.tag_name);
+                            continue;
                         }
 
                         List<String> obsolete_versions = config.getStringList("compilation_settings.obsolete_lib_version");
@@ -206,6 +216,8 @@ public class Job_CheckCompilationLibraries implements Job {
                         new_library.created_at = release.created_at;
                         new_library.published_at = release.published_at;
                         library_list_for_add.add(new_library);
+
+                        setAndCompileNewPublicPrograms(release);
                     }
 
                     hardwareType.cache_library_list.addAll(library_list_for_add);
@@ -237,46 +249,225 @@ public class Job_CheckCompilationLibraries implements Job {
         }
     };
 
-    private WSResponse download_file(String assets_url) {
+
+
+
+
+    public void setAndCompileNewPublicPrograms(Swagger_GitHubReleases release) {
         try {
 
-            WSResponse wsResponse = ws.url(assets_url)
-                    .addHeader("Authorization", "token 4d89903b259510a1257a67d396bd4aaf10cdde6a")
-                    .addHeader("Accept", "application/octet-stream")
-                    .setFollowRedirects(false)
-                    .get()
-                    .toCompletableFuture()
-                    .get();
+            System.out.println("setAndCompileNewPublicPrograms release: " + release.name + " Asset size:" + release.assets.size());
 
-            logger.trace("update_server_thread: Got file download url");
 
-            String url;
-
-            Optional<String> optional = wsResponse.getSingleHeader("location");
-            if (optional.isPresent()) {
-                url = optional.get();
-            } else {
-                return null;
+            if(release.assets.isEmpty()) {
+                System.out.println("setAndCompileNewPublicPrograms release: " + release.name + " not contains any assets!");
+                return;
             }
 
-            logger.trace("update_server_thread - url: {}", url);
+            System.out.println("setAndCompileNewPublicPrograms release: asset url: " + release.assets.get(0).url);
 
-            // Request for URL without query params
-            WSRequest request = ws.url(url.substring(0, url.indexOf("?")))
-                    .setRequestTimeout(Duration.ofMinutes(30));
+            String file_path = System.getProperty("user.dir") + "/files/" +  release.tag_name;
+            String file_name = file_path  + ".zip";
 
-            // Query params must be decoded and added one by one, because of bug in Play! (query was getting double encoded)
-            String[] pairs = url.substring(url.indexOf("?") + 1).split("&");
-            for (String pair : pairs) {
-                int idx = pair.indexOf("=");
-                request.addQueryParameter(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+            WSResponse ws_download_file = new Job_CheckBootloaderLibraries(this.ws, this.config, this.formFactory).download_file(release.assets.get(0).url);
+
+
+            if(ws_download_file == null) {
+                logger.error("check_version_thread:: download request is null");
+                return;
             }
 
-            return request.get().toCompletableFuture().get(30, TimeUnit.MINUTES);
+            if (ws_download_file.getStatus() != 200) {
+                logger.error("check_version_thread:: Download Bootloader [] unsuccessful", release.tag_name);
+                logger.error("reason", ws_download_file.getBody());
+                return;
+            }
+
+
+            byte[] bytes = ws_download_file.asByteArray();
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(bytes.length);
+            baos.write(bytes, 0, bytes.length);
+
+
+            // Remove before if exist
+            if(!new File(file_path).exists()) {
+                System.out.println("setAndCompileNewPublicPrograms file_path: " + file_path + " there is a file - it will be removed before");
+                new Job_CheckBootloaderLibraries(this.ws, this.config, this.formFactory).remove_file(file_path);
+                new Job_CheckBootloaderLibraries(this.ws, this.config, this.formFactory).remove_file(file_name);
+            }
+
+
+            try (OutputStream outputStream = new FileOutputStream(file_name)) {
+                baos.writeTo(outputStream);
+                System.out.println("setAndCompileNewPublicPrograms release: " + release.name + " successfully saved on local storage");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            System.out.println("setAndCompileNewPublicPrograms release: " + release.name + " try to unzip");
+
+            new Job_CheckBootloaderLibraries(this.ws, this.config, this.formFactory).unzip(file_name, file_path);
+
+
+
+            System.out.println("setAndCompileNewPublicPrograms release: try to find file examples" );
+
+            if(!new File(file_path + "/examples").exists()) {
+                // Slack.post_invalid_release(release);
+                System.err.println("setAndCompileNewPublicPrograms je to napíču examply chybí");
+
+                System.err.println("setAndCompileNewPublicPrograms Mažu:" + file_path);
+                new Job_CheckBootloaderLibraries(this.ws, this.config, this.formFactory).remove_file(file_path + "/");
+
+                System.err.println("setAndCompileNewPublicPrograms Mažu:" + file_name);
+                new Job_CheckBootloaderLibraries(this.ws, this.config, this.formFactory).remove_file(file_name);
+
+            }
+
+            System.out.println("setAndCompileNewPublicPrograms soubor obsahuje složku examples");
+
+            File[] directories = new File(file_path + "/examples").listFiles(File::isDirectory);
+
+
+            String error_for_slack = "";
+
+            for(File directory_with_example : directories) {
+
+                File readme = null;
+                File maincpp = null;
+                Swagger_GitHub_ExampleFile json = null;
+
+                for (final File fileEntry : directory_with_example.listFiles()) {
+
+                    if(fileEntry.getName().equals("main.cpp")) {
+                        maincpp = fileEntry;
+                    }
+
+                    if(fileEntry.getName().equals("readme.json")) {
+                        readme = fileEntry;
+                    }
+
+                }
+
+                if(maincpp == null || readme == null) {
+                    error_for_slack += "\n Example: *" + directory_with_example.getName() + "* not contains main.cpp or readme.json file! Fix it!";
+                } else {
+                    System.out.println("Example: " + directory_with_example.getName() + "is ok!");
+                }
+
+                Scanner scanner = new Scanner( readme, "UTF-8" );
+                String text = scanner.useDelimiter("\\A").next();
+                JsonNode jsonNode = Json.parse(text);
+
+                Scanner scanner_cprogram = new Scanner( maincpp, "UTF-8" );
+                String text_cprogram = scanner_cprogram.useDelimiter("\\A").next();
+
+                json = formFactory.formFromJsonWithValidation(Swagger_GitHub_ExampleFile.class, jsonNode);
+
+
+                if(json.name == null || json.name.equals("") ) {
+                    error_for_slack += "\n Example: *" + directory_with_example.getName() + "* - the name is not properly set!";
+                   continue;
+                }
+
+                if(json.description == null || json.description.equals("") || json.description.equals("This should be some long description of the example")) {
+                    error_for_slack += "\n Example: *" + directory_with_example.getName() + "* - the description is not properly set!";
+                   //TODO continue;
+                }
+
+                if(json.targets.isEmpty()) {
+                    error_for_slack += "\n Example: *" + directory_with_example.getName() + "* - targets is empty or not contain allowed values";
+                    continue;
+                }
+
+
+                Model_CProgram c_program = Model_CProgram.find.query().where()
+                        .eq("name", json.name)
+                        .eq("publish_type", ProgramType.PUBLIC)
+                        .disjunction()
+                            .add(Expr.eq("tags.value", "Byzance"))
+                            .add(Expr.eq("tags.value", "Example"))
+                        .eq("hardware_type.compiler_target_name", json.targets.get(0))
+                        .ne("deleted", true)
+                        .findOne();
+
+                if (c_program == null) {
+                    System.out.println("Example: "  + directory_with_example.getName() + " c_program s těmito parametry neexistuje - je nutné ho vytvořit");
+
+                    c_program = new Model_CProgram();
+                    c_program.name = json.name;
+                    c_program.description = json.description;
+                    c_program.publish_type = ProgramType.PUBLIC;
+
+                    Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("compiler_target_name", json.targets.get(0)).eq("deleted", false).findOne();
+
+                    if(hardwareType == null) {
+                        System.err.println("HW Libs Example: ERROR "  + directory_with_example.getName() + " not found Model_HardwareType!");
+                        error_for_slack += "\n Example: *" + directory_with_example.getName() + "* - target " + json.targets + " is not valid.";
+                        continue;
+                    }
+
+                    c_program.hardware_type = hardwareType;
+                    c_program.save();
+
+                    List<String> tags = new ArrayList<>();
+                    tags.add("Byzance");
+                    tags.add("Example");
+
+                    c_program.setTags(tags);
+                }
+
+
+                // Create First version
+                System.out.println("Example: "  + directory_with_example.getName() + " its time to create version");
+
+                Model_CProgramVersion version = Model_CProgramVersion.find.query().where().eq("c_program.id", c_program.id).eq("name", release.tag_name).findOne();
+
+                if(version != null) {
+                    System.out.println("Example: "  + directory_with_example.getName() + " version " + release.tag_name + " is already created");
+                    continue;
+                }
+
+                // Create Version
+                version = new Model_CProgramVersion();
+                version.name = release.tag_name;
+                version.c_program = c_program;
+                version.publish_type = ProgramType.PUBLIC;
+                version.save();
+
+                Swagger_C_Program_Version_New version_program = new Swagger_C_Program_Version_New();
+                version_program.main = text_cprogram;
+                version_program.library_compilation_version = release.tag_name;
+
+                // Content se nahraje na Azur
+                version.file = Model_Blob.upload(Json.toJson(version_program).toString(), "code.json", c_program.get_path());
+                version.update();
+
+                // Start with asynchronous ccompilation
+                version.compile_program_thread(release.tag_name);
+            }
+
+
+            if(error_for_slack.length() > 0) {
+                error_for_slack = "Toto je automatická zpráva kterou vygeneroval všemocný Tyrion Server. \n Podle GitHubu *" + release.author.login + "* vytvořil firmware release *" + release.tag_name + "* s následujícíma chybama:." + error_for_slack;
+                Slack.post_error(error_for_slack, Server.slack_webhook_url_channel_hardware);
+                return;
+            }
+
+
+            // Cleare after set
+            new Job_CheckBootloaderLibraries(this.ws, this.config, this.formFactory).remove_file(file_path);
+            new Job_CheckBootloaderLibraries(this.ws, this.config, this.formFactory).remove_file(file_name);
 
         } catch (Exception e) {
-            logger.error(e.getMessage());
-            return null;
+            logger.internalServerError(e);
         }
+
     }
+
+
+
 }
+

@@ -33,7 +33,7 @@ public class Swagger_GSM_List extends _Swagger_Filter_Common {
 
 
         for (UUID uuid: uuids) {
-            this.content.add(Model_GSM.getById(uuid));
+            this.content.add(Model_GSM.find.byId(uuid));
         }
         this.total   = query.findCount();
         this.from   = (page_number - 1) * filter.count_on_page;

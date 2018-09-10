@@ -53,7 +53,7 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
             if (!instances_for_removing.isEmpty()) {
 
                 logger.trace("Synchronize_Homer_Instance_after_connection:: run::  The number of instance_ids for removing from homer server:: {}" , instances_for_removing.size());
-                WS_Message_Homer_Instance_destroy remove_result  = Model_HomerServer.getById(homer.id).remove_instance(instances_for_removing);
+                WS_Message_Homer_Instance_destroy remove_result  = Model_HomerServer.find.byId(homer.id).remove_instance(instances_for_removing);
                 if (!remove_result.status.equals("success")) {
                     logger.internalServerError(new Exception("Blocko Server: Error while removing instances: " + remove_result.toString()));
                 }
@@ -65,7 +65,7 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
                 for (UUID instance_id : instances_for_add) {
                     try {
 
-                        Model_Instance.getById(instance_id).deploy();
+                        Model_Instance.find.byId(instance_id).deploy();
                         sleep(50);
 
                     } catch (Exception e) {
@@ -101,7 +101,7 @@ public class Synchronize_Homer_Instance_after_connection extends Thread {
     private List<UUID> actual_on_server() throws InterruptedException{
         try {
 
-            WS_Message_Homer_Instance_list list_instances = Model_HomerServer.getById(homer.id).get_homer_server_list_of_instance();
+            WS_Message_Homer_Instance_list list_instances = Model_HomerServer.find.byId(homer.id).get_homer_server_list_of_instance();
             return list_instances.instance_ids;
 
         } catch (Exception e) {

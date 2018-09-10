@@ -3,34 +3,34 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers._BaseController;
-import io.ebean.Finder;
+import io.ebean.Expr;
+import io.ebean.ExpressionList;
+import io.ebean.PagedList;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
-import play.data.Form;
-import play.libs.Json;
+import play.db.ebean.Transactional;
 import utilities.Server;
-import utilities.cache.CacheField;
-import utilities.cache.Cached;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
+import utilities.emails.Email;
 import utilities.enums.*;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.enums.Currency;
+import utilities.errors.Exceptions.Result_Error_BadRequest;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.FinancialPermission;
-import utilities.financial.history.History;
-import utilities.financial.history.HistoryEvent;
+import utilities.financial.extensions.ExtensionInvoiceItem;
+import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.slack.Slack;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
@@ -45,408 +45,364 @@ public class Model_Product extends NamedModel {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
 
-                                                   @Enumerated(EnumType.STRING) public PaymentMethod method;
                                        @JsonIgnore @Enumerated(EnumType.STRING) public BusinessModel business_model;
 
                                              @ApiModelProperty(required = true) public String subscription_id;
-                                                                    @JsonIgnore public String fakturoid_subject_id; // ID účtu ve fakturoidu
-                                                                    @JsonIgnore public Long gopay_id;
 
-                                             @ApiModelProperty(required = true) public boolean active;              // Jestli je projekt aktivní (může být zmražený, nebo třeba ještě neuhrazený platbou)
 
-                                                                    @JsonIgnore public boolean on_demand;           // Jestli je povoleno a zaregistrováno, že Tyrion muže žádat o provedení platby
+                                              /**
+                                               * Should never be set directly!! Use setActive() method after extension is created.
+                                               */
+                                             @ApiModelProperty(required = true) public boolean active;               // Jestli je projekt aktivní (může být zmražený, nebo třeba ještě neuhrazený platbou)
 
-                                                                    @JsonIgnore public Long credit;                 // Zbývající kredit pokud je typl platby per_credit - jako na Azure
+                                                                    @JsonIgnore public BigDecimal credit;            // Zbývající kredit, který klient dostane do začátku
 
-                                 @Column(columnDefinition = "TEXT") @JsonIgnore public String financial_history;
                                  @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
                                                                     @JsonIgnore public boolean removed_byinvoi_user; // může jenom administrátor
 
-                                                                                public boolean client_billing;                      // Zda bude fakturováno jinému zákazníkovi
-                                                                    @JsonIgnore public String  client_billing_invoice_parameters;   // Zde je konfigurace k fakturám, které se zasílají zákazníkovi
 
+                 @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER) public Model_Customer owner;
+                  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER) public Model_IntegratorClient integrator_client; // null pokud zákazník (owner) dělá projekt pro sebe
 
-                       @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER) public Model_Customer customer;               // Owner
-                       @OneToOne(mappedBy="product", cascade = CascadeType.ALL) public Model_PaymentDetails payment_details;        // Záměrně 1:1 aby bylo editovatelné separátně
+                  // informace o placení nezávislé na tom, jestli je zákazník integrátor nebo ne
+   @ApiModelProperty(required = true) @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER) public Model_PaymentDetails payment_details;
 
     @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_Project>          projects    = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_Invoice>          invoices    = new ArrayList<>();
-                @OneToMany(mappedBy="product", cascade = CascadeType.ALL)                           public List<Model_ProductExtension> extensions  = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy="product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_ProductExtension> extensions  = new ArrayList<>();
 
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Cached public List<UUID> cache_invoices_ids;
-    @JsonIgnore @Transient @Cached public List<UUID> cache_extensions_ids;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = true) @JsonProperty
-    public List<Model_Invoice> invoices() {
-        try{
-            if (this.invoices == null || this.invoices.isEmpty()) this.invoices =  Model_Invoice.find.query().where().eq("product.id", this.id).order().desc("created").findList();
-            return invoices;
-
-        }catch (_Base_Result_Exception e){
-            logger.internalServerError(e);
-            return null;
-
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty @ApiModelProperty(required = false)
-    public Double remaining_credit() {
-
-        if (this.business_model == BusinessModel.SAAS && this.method != PaymentMethod.FREE)
-            return ((double) this.credit);
-
-        return null;
+    public double remaining_credit() {
+        return credit
+                .setScale(Server.financial_price_scale, Server.financial_price_rounding)
+                .doubleValue();
     }
 
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public Long price() {
-
-        logger.debug("price: Beginning to count product price");
-
-        Long total = 0L;
-        for (Model_ProductExtension extension : this.extensions) {
-            Long price = extension.getActualPrice();
-
-            logger.trace("price: Returned value: {}", price);
-
-            if (price != null)
-                total += price;
+    @Transactional
+    public void setActive(boolean activeNew) throws Exception {
+        if(this.active == activeNew) {
+            throw new Result_Error_BadRequest("Extension is already " + (activeNew ? "activated" : "deactivated"));
         }
 
-        logger.debug("price: Summarized = {}", total);
+        if(activeNew) {
+            this.active = true;
+            update();
+            return;
+        }
 
-        return total;
-    }
+        List<Model_ProductExtension> activeExtensions =  getExtensions().stream()
+                .filter(extension -> extension.active)
+                .collect(Collectors.toList());
 
-    @JsonIgnore
-    public Model_Invoice pending_invoice() {
-
-        return Model_Invoice.find.query().where().eq("product.id", this.id).eq("status", PaymentStatus.PENDING).findOne();
-    }
-
-    @JsonIgnore
-    public Double double_credit() {
-        return ((double) this.credit);
-    }
-
-    @JsonIgnore
-    public void credit_upload(Long credit) {
-        try {
-
-            Long credit_before = this.credit;
-
+        boolean allDeactivated = true;
+        for(Model_ProductExtension extension : activeExtensions) {
             try {
-
-                logger.debug("credit_upload: {} credit", credit);
-
-                this.credit += credit;
-
-                if (!this.active && this.credit > 0) {
-
-                    this.active = true;
-                    this.notificationActivation();
-
-                } else if (!this.active && this.credit < 0) {
-
-                    this.notificationCreditInsufficient();
-                }
-
-                this.update();
-
+                extension.setActive(false);
             } catch (Exception e) {
-
-                logger.internalServerError(e);
-
-            } finally {
-
-                this.refresh();
-
-                if (this.credit - credit_before == credit) {
-
-                    this.archiveEvent("Credit Upload", ((double) credit) + " of credit was successfully added to this product", null);
-                    this.notificationCreditSuccess(credit);
-
-                } else {
-
-                    this.archiveEvent("Credit Upload", "Fail to add " + ((double) credit)  + " of credit to this product", null);
-                    this.notificationCreditFail(credit);
-                }
+                logger.error("Error while deactivating extension during deactivating product.", e);
+                allDeactivated = false;
             }
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
         }
+
+        if(allDeactivated) {
+            throw new Exception("Extension(s) of the product cannot be deactivated. Product still stays active!");
+        }
+
+        this.active = false;
+        update();
     }
 
     @JsonIgnore
-    public void credit_remove(Long credit) {
+    public int getExtensionCount() {
+        return Model_ProductExtension.find.query().where().eq("product.id", id).findCount();
+    }
+
+    @JsonIgnore
+    public List<Model_ProductExtension> getExtensions() {
         try {
 
-            Long credit_before = this.credit;
+            List<Model_ProductExtension> list = new ArrayList<>();
 
-            try {
-
-                logger.debug("credit_remove: {} credit", credit);
-
-                this.credit -= credit;
-
-                if (this.active && this.credit < 0) {
-
-                    this.active = false;
-                    this.notificationDeactivation();
-                }
-
-                this.update();
-
-            } catch (Exception e) {
-
-                logger.internalServerError(e);
-
-            } finally {
-
-                this.refresh();
-
-                if (credit_before - this.credit == credit) {
-
-                    this.archiveEvent("Credit Remove", ((double) credit) + " of credit was removed from this product", null);
-                    this.notificationCreditRemove(credit);
-
-                } else {
-
-                    this.archiveEvent("Credit Remove", "Fail to remove " + ((double) credit) + " of credit from this product", null);
-                }
+            for (UUID id : getExtensionIds() ) {
+                list.add(Model_ProductExtension.find.byId(id));
             }
+
+            return list;
 
         } catch (Exception e) {
             logger.internalServerError(e);
+            return new ArrayList<>();
         }
     }
 
     @JsonIgnore
-    public History getFinancialHistory() {
-        try {
+    public List<UUID> getExtensionIds() {
+       return Model_ProductExtension.find
+                .query()
+                .where().eq("product.id", id)
+                .ne("deleted", true)
+                .orderBy("UPPER(name) ASC")
+                .select("id")
+                .findSingleAttributeList();
+    }
 
-            if (this.financial_history == null || this.financial_history.equals("")) return new History();
+    /**
+     * Find all product extensions that were active during given period.
+     *
+     * @param from Start if the search period. (Included.)
+     * @param to End of the search period. (Excluded.)
+     * @return All products extension active at least for a part of given period.
+     */
+    @JsonIgnore
+    public Collection<Model_ProductExtension> getActiveExtensions(Date from, Date to) {
+        // get all extensions created before 'to' and not deleted before 'from'
+        Set<Model_ProductExtension> extensions = Model_ProductExtension.find.query()
+                .setIncludeSoftDeletes()
+                .where()
+                .eq("product.id", id)
+                .lt("created", to)
+                .or(Expr.eq("deleted", false), Expr.gt("removed", from))
+                .findSet();
 
-            History help = baseFormFactory.formFromJsonWithValidation(History.class, Json.parse(this.financial_history));
+        return extensions.stream().filter(e -> e.wasActive(from, to)).collect(Collectors.toSet());
+    }
 
-            // Sorting the list
-            help.history = help.history.stream().sorted((element1, element2) -> element2.date.compareTo(element1.date)).collect(Collectors.toList());
-            return help;
+    /**
+     * Creates new financial event(s) for all extensions of given product. Event(s) contain(s) particularly
+     * resource consumption and price. <br>
+     * Events are created for every day from the last saved event or first activation of the extension if there is no event.
+     * The unfinished day can be saved or not according to the parameter.
+     *
+     * @param saveToday False if we want to save only event(s) till last midnight, true if we want to save today as well.
+     * @return All newly created financial events in ascending order according to event period.
+     */
+    @JsonIgnore
+    public List<Model_ExtensionFinancialEvent> updateHistory(boolean saveToday) {
+        SortedSet<Model_ExtensionFinancialEvent> result = new TreeSet<>((o1, o2) -> o1.event_start.compareTo(o2.event_start));
 
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
+        for(Model_ProductExtension productExtension : extensions) {
+            List<Model_ExtensionFinancialEvent> extensionsEvents = productExtension.updateHistory(saveToday);
+            result.addAll(extensionsEvents);
         }
+
+        return new ArrayList<>(result);
+    }
+
+    /**
+     * Get all history events.
+     *
+     * @param page index of a page, starting from 0
+     * @param rows maximal number of rows on one page
+     * @param ascending
+     * @return All history events for the product.
+     */
+    @JsonIgnore
+    public PagedList<Model_ProductEvent> getProductEvents(int page, int rows, boolean ascending, ProductEventTypeReadPermission read_permission) {
+        ExpressionList<Model_ProductEvent> query = Model_ProductEvent.find.query()
+                .where()
+                .eq("product.id", id);
+
+        if(read_permission == ProductEventTypeReadPermission.USER) {
+            query.eq("read_permission", ProductEventTypeReadPermission.USER);
+        }
+
+        return (ascending ? query.orderBy("created ASC, event_type ASC") : query.orderBy("created DESC, event_type DESC"))
+                .setFirstRow((page) * rows)
+                .setMaxRows(rows)
+                .findPagedList();
+    }
+
+    /**
+     * Get all unpaid financial events for all extension of given product, ordered by event start.
+     *
+     * @param ascending
+     * @return Unpaid financial events in descending order according to event start.
+     */
+    @JsonIgnore
+    public List<Model_ExtensionFinancialEvent> getFinancialEventsNotInvoiced(boolean ascending) {
+        List<Model_ExtensionFinancialEvent> unpaid = Model_ExtensionFinancialEvent.find.query()
+                .where()
+                .eq("product_extension.product.id", id)
+                .isNull("invoice")
+                .orderBy("event_start " + (ascending ? "ASC" : "DESC"))
+                .findList();
+        return unpaid;
     }
 
     @JsonIgnore
-    public void archiveEvent(String event_name, String description, UUID invoice_id) {
-        try {
-
-            History history = getFinancialHistory();
-            if (history == null) return;
-
-            HistoryEvent event = new HistoryEvent();
-            event.event = event_name;
-            event.description = description;
-            event.invoice_id = invoice_id;
-            event.date = new Date().toString();
-
-            while (history.history.size() >= 100) {
-
-                history.history.remove(history.history.size() - 1);
-            }
-
-            history.history.add(event);
-
-            logger.debug("archiveEvent: {}", Json.toJson(event));
-
-            this.financial_history = Json.toJson(history).toString();
-            this.update();
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+    public Model_ExtensionFinancialEvent getFinancialEventFirstNotInvoiced() {
+        Model_ExtensionFinancialEvent unpaid = Model_ExtensionFinancialEvent.find.query()
+                .where()
+                .eq("product_extension.product.id", id)
+                .isNull("invoice")
+                .order().asc("event_start")
+                .setMaxRows(1)
+                .findOne();
+        return unpaid;
     }
 
     @JsonIgnore
-    public Double getLastSpending() {
-        try {
-
-            return ((double) getFinancialHistory().last_spending) ;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonIgnore
-    public Double getAverageSpending() {
-        try {
-
-            return ((double) getFinancialHistory().average_spending) ;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonIgnore
-    public Long getRemainingDays() {
-        try {
-
-            History history = getFinancialHistory();
-
-            if (history.average_spending == 0) return null;
-
-            return credit / history.average_spending;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonIgnore
-    public void credit_spend(Long credit) {
-
-        this.credit -= credit;
-
-        try {
-
-            History history = getFinancialHistory();
-            history.last_spending = credit;
-
-            history.average_spending = (history.average_spending * history.mean_coefficient + credit) / history.mean_coefficient++;
-
-            if (history.mean_coefficient > 30) history.mean_coefficient = 30L;
-
-            this.financial_history = Json.toJson(history).toString();
-
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
+    @Transactional
+    public Model_Invoice createInvoice(Date from, Date to) throws Exception {
+        if(owner.contact == null) {
+            throw new Exception("Cannot create invoice when owner contact information are not set!");
         }
 
-        this.update();
-    }
-
-    @JsonIgnore
-    public JsonNode setConfiguration() { // TODO
-
-        /*Form<?> form;
-
-        switch (business_model) {
-
-            case ALPHA:{
-                form = Form.form(Configuration_Alpha.class).bindFromRequest();
-                break;
-            }
-
-            case SAAS:{
-                form = Form.form(Configuration_Saas.class).bindFromRequest();
-                break;
-            }
-
-            case FEE:{
-                form = Form.form(Configuration_Fee.class).bindFromRequest();
-                break;
-            }
-
-            case CAL:{
-                form = Form.form(Configuration_Cal.class).bindFromRequest();
-                break;
-            }
-
-            case INTEGRATOR:{
-                form = Form.form(Configuration_Integrator.class).bindFromRequest();
-                break;
-            }
-
-            case INTEGRATION:{
-                form = Form.form(Configuration_Integration.class).bindFromRequest();
-                break;
-            }
-
-            default: form = Form.form(Configuration_Saas.class).bindFromRequest(); break;
+        if(!owner.contact.isValid()) {
+            throw new Exception("Cannot create invoice when owner contact is invalid!");
         }
 
-        if (form.hasErrors()) return form.errorsAsJson();
+        if(!payment_details.isValid()) {
+            throw new Exception("Cannot create invoice when payment details are not valid!");
+        }
 
-        this.configuration = Json.toJson(form.get()).toString();*/
-        return null;
+        Model_Invoice invoice = new Model_Invoice();
+        invoice.product = this;
+        invoice.created = new Date();
+        invoice.currency = Currency.USD;
+        invoice.method = payment_details.payment_method;
+        invoice.save();
+
+        List<ExtensionInvoiceItem> extensionInvoiceItems = createInvoiceItems(from, to, invoice);
+        for (ExtensionInvoiceItem item : extensionInvoiceItems) {
+            Model_InvoiceItem invoiceItem = new Model_InvoiceItem();
+            invoiceItem.invoice = invoice;
+            invoiceItem.name = item.getName();
+            invoiceItem.quantity = item.getQuantity().setScale(Server.financial_quantity_scale, Server.financial_quantity_rounding);
+            invoiceItem.unit_name = item.getUnitName();
+            invoiceItem.unit_price = item.getUnitPrice().setScale(Server.financial_price_scale, Server.financial_price_rounding);
+            invoiceItem.save();
+
+            invoice.invoice_items().add(invoiceItem);
+        }
+
+        BigDecimal unpaid = extensionInvoiceItems.stream()
+                .map(i -> i.getPriceTotal())
+                .reduce(BigDecimal::add)
+                .orElse(BigDecimal.ZERO);
+        if (credit.signum() > 0) {
+            BigDecimal paidFromCredit =  unpaid.min(credit);
+            unpaid = unpaid.subtract(paidFromCredit);
+
+            Model_InvoiceItem invoiceItemDiscount = new Model_InvoiceItem();
+            invoiceItemDiscount.invoice = invoice;
+            invoiceItemDiscount.name = "Free credit";
+            invoiceItemDiscount.quantity = BigDecimal.ONE;
+            invoiceItemDiscount.unit_name = "";
+            invoiceItemDiscount.unit_price = paidFromCredit.negate().setScale(Server.financial_price_scale, Server.financial_price_rounding);
+            invoiceItemDiscount.save();
+
+            credit = credit.subtract(paidFromCredit);
+        }
+
+        invoice.status = unpaid.compareTo(payment_details.getMonthlyLimit()) > 0 ?  InvoiceStatus.UNCONFIRMED : InvoiceStatus.UNFINISHED;
+        invoice.update();
+
+        invoice.saveEvent(invoice.created, ProductEventType.INVOICE_CREATED, "{status: " + invoice.status + "}");
+
+        if(invoice.status == InvoiceStatus.UNCONFIRMED) {
+            invoice.sendMessageToAdmin("New invoice created with spending greater than limit! Please check and confirm.");
+        }
+
+        return invoice;
     }
 
+    /**
+     * Calculate invoice items for given invoice (which has already product assign to it). <br />
+     *
+     * If price for any extension is calculated as 0, it is left out from invoice!!
+     * Financial events are however assign to this invoice. (To marked them as processed.)
+     *
+     * @param from
+     * @param to
+     * @param invoice
+     * @return
+     * @throws Exception
+     */
     @JsonIgnore
-    public Object getConfiguration() {
-        try {
+    public List<ExtensionInvoiceItem> createInvoiceItems(Date from, Date to, Model_Invoice invoice) throws Exception {
+        List<ExtensionInvoiceItem> items = new ArrayList<>();
 
-            Form<?> form;
+        Collection<Model_ProductExtension> activeExtensions = getActiveExtensions(from, to);
+        for (Model_ProductExtension extension : activeExtensions) {
+            List<Model_ExtensionFinancialEvent> extensionEvents = extension.getFinancialEventsNotInvoiced(true)
+                    .stream().filter(e -> e.event_end.before(to)).collect(Collectors.toList());
+            if(extensionEvents.isEmpty()) {
+                continue;
+            }
 
-            /*switch (business_model) { TODO
+            List<ResourceConsumption> consumptions = extensionEvents.stream()
+                    .map(event -> extension.getResourceConsumption(event.consumption))
+                    .collect(Collectors.toList());
 
-                case ALPHA:{
-                    form = Form.form(Configuration_Alpha.class).bind(Json.parse(configuration));
-                    break;
+            // calculate invoice items, leave all with price == 0
+            List<ExtensionInvoiceItem> invoiceItems = extension.createExtension()
+                    .getInvoiceItems(extension.getConfiguration(), consumptions)
+                    .stream()
+                    .filter(item -> item.getPriceTotal().compareTo(BigDecimal.ZERO) > 0)
+                    .collect(Collectors.toList());
+
+            items.addAll(invoiceItems);
+
+            if(invoice != null) {
+                for (Model_ExtensionFinancialEvent event : extensionEvents) {
+                    event.invoice = invoice;
+                    event.save();
                 }
-
-                case SAAS:{
-                    form = Form.form(Configuration_Saas.class).bind(Json.parse(configuration));
-                    break;
-                }
-
-                case FEE:{
-                    form = Form.form(Configuration_Fee.class).bind(Json.parse(configuration));
-                    break;
-                }
-
-                case CAL:{
-                    form = Form.form(Configuration_Cal.class).bind(Json.parse(configuration));
-                    break;
-                }
-
-                case INTEGRATOR:{
-                    form = Form.form(Configuration_Integrator.class).bind(Json.parse(configuration));
-                    break;
-                }
-
-                case INTEGRATION:{
-                    form = Form.form(Configuration_Integration.class).bind(Json.parse(configuration));
-                    break;
-                }
-
-                default: throw new Exception("Business model is unknown.");
             }
-
-            if (form.hasErrors()) throw new Exception("Error parsing product configuration. Errors: " + form.errorsAsJson());
-            return form.get();*/
-
-            return null;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
         }
+
+        return items;
+    }
+
+    @JsonIgnore
+    public List<Model_Invoice> getInvoices(boolean notReadyInvoices) {
+        ExpressionList<Model_Invoice> query = Model_Invoice.find.query()
+                .where()
+                .eq("product.id", this.id);
+
+        if (!notReadyInvoices) {
+            query = query.ne("status", InvoiceStatus.UNCONFIRMED)
+                    .ne("status", InvoiceStatus.UNFINISHED);
+        }
+
+        return query.orderBy("created DESC").findList();
+    }
+
+    @JsonIgnore
+    public Collection<Model_Invoice> getInvoices(InvoiceStatus status) {
+        return Model_Invoice.find.query()
+                .where()
+                .eq("product.id", id)
+                .eq("status", status)
+                .findSet();
+    }
+
+    @JsonIgnore
+    public Collection<Model_Invoice> getInvoicesToBePaid() {
+        return Model_Invoice.find.query()
+                .where()
+                .eq("product.id", id)
+                .or(Expr.eq("status", InvoiceStatus.PENDING),
+                    Expr.eq("status", InvoiceStatus.OVERDUE))
+                .findSet();
     }
 
     @JsonIgnore
     public List<Model_Project> get_projects() throws _Base_Result_Exception {
-
         List<Model_Project>  projects = new ArrayList<>();
 
         for (UUID id : get_projects_ids()) {
-            projects.add(Model_Project.getById(id));
+            projects.add(Model_Project.find.byId(id));
         }
 
         return projects;
@@ -454,21 +410,19 @@ public class Model_Product extends NamedModel {
 
     @JsonIgnore
     public List<UUID> get_projects_ids() {
-
-        if (cache().gets(Model_Project.class) == null) {
-            cache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("product.id", id).select("id").findSingleAttribute());
+        if (idCache().gets(Model_Project.class) == null) {
+            idCache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("product.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().gets(Model_Project.class) != null ?  cache().gets(Model_Project.class) : new ArrayList<>();
+        return idCache().gets(Model_Project.class) != null ?  idCache().gets(Model_Project.class) : new ArrayList<>();
     }
 
     @JsonIgnore
     public List<Model_Person> notificationReceivers() {
-
         List<Model_Person> receivers = new ArrayList<>();
         try {
 
-            this.customer.getEmployees().forEach(employee -> receivers.add(employee.get_person()));
+            this.owner.getEmployees().forEach(employee -> receivers.add(employee.get_person()));
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -479,25 +433,24 @@ public class Model_Product extends NamedModel {
 
     @JsonIgnore
     public boolean isBillingReady() {
-
-        if (payment_details == null) {
-
-            notificationPaymentNeeded("Fill in payment details, otherwise your product will be deactivated soon.");
-
-            return false;
-
-        } else {
-
-            if (fakturoid_subject_id == null) {
-
-                notificationPaymentNeeded("Payment details are probably invalid. Check provided info or contact support.");
-
-                return false;
-            }
-        }
-
-        return true;
+        return owner.contact != null && owner.contact.fakturoid_subject_id != null && payment_details != null;
     }
+
+/* EVENTS --------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public Model_ProductEvent saveEvent(Date time, ProductEventType eventType, String data) {
+        Model_ProductEvent historyEvent = new Model_ProductEvent();
+        historyEvent.product = this;
+        historyEvent.reference = null;
+        historyEvent.created = time;
+        historyEvent.event_type = eventType;
+        historyEvent.detail = data;
+        historyEvent.save();
+
+        return historyEvent;
+    }
+
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -523,7 +476,49 @@ public class Model_Product extends NamedModel {
         super.update();
     }
 
+    @JsonIgnore @Override public boolean delete() throws _Base_Result_Exception {
+        boolean allExtensionDeactivated = true;
+
+        List<Model_ProductExtension> activeExtensions = extensions.stream().filter(e -> e.active).collect(Collectors.toList());
+        for(Model_ProductExtension extension: activeExtensions) {
+            try {
+                extension.setActive(false);
+            }
+            catch (Exception e) {
+                allExtensionDeactivated = false;
+                logger.error("Extension cannot be deactivated!", e);
+            }
+        }
+
+        if(allExtensionDeactivated) {
+            logger.error("Cannot delete product. Some of its extensions cannot be deactivated.");
+            return false;
+        }
+
+        try {
+            if (!super.delete()) {
+                logger.error("Product cannot be deleted.");
+                return false;
+            }
+        }
+        catch (Exception e) {
+            logger.error("Product cannot be deleted.", e);
+            return false;
+        }
+
+        saveEvent(removed, ProductEventType.PRODUCT_DELETED, null);
+        return true;
+    }
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* MESSAGE FOR ADMIN  ---------------------------------------------------------------------------------------------------*/
+    public void sendMessageToAdmin(String message) {
+        String productURL = Server.becki_mainUrl + "/financial/" + id;
+        String fullMessage = message + "\nLink: " + productURL + " .";
+        logger.debug(fullMessage);
+        Slack.post(fullMessage);
+    }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -567,70 +562,15 @@ public class Model_Product extends NamedModel {
     }
 
     @JsonIgnore
-    public void notificationPaymentNeeded(String message) {
+    public void notificationLowCredit(BigDecimal notInvoicedCredit) {
         try {
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.HIGH)
-                    .setLevel(NotificationLevel.WARNING)
-                    .setText(new Notification_Text().setText("Payment is needed for your product "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(". " + message))
-                    .send(notificationReceivers());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore
-    private void notificationCreditSuccess(Long credit) {
-        try {
-
-            Double amount = ((double) credit) ;
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.NORMAL)
-                    .setLevel(NotificationLevel.SUCCESS)
-                    .setText(new Notification_Text().setText("Credit was uploaded. ").setBoldText())
-                    .setText(new Notification_Text().setText(" " + amount + " of credit was added to your product "))
-                    .setObject(this)
-                    .send(notificationReceivers());
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore
-    private void notificationCreditFail(Long credit) {
-        try {
-
-            Double amount = ((double) credit) ;
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.HIGH)
-                    .setLevel(NotificationLevel.ERROR)
-                    .setText(new Notification_Text().setText("Failed to upload credit. ").setBoldText())
-                    .setText(new Notification_Text().setText(" Adding" + amount + " of credit to your product "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" was unsuccessful."))
-                    .send(notificationReceivers());
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore
-    private void notificationCreditRemove(Long credit) {
-        try {
-
-            Double amount = ((double) credit);
+            BigDecimal remainingCredit = credit.subtract(notInvoicedCredit)
+                    .setScale(Server.financial_price_scale, Server.financial_price_rounding);
 
             new Model_Notification()
                     .setImportance(NotificationImportance.NORMAL)
                     .setLevel(NotificationLevel.INFO)
-                    .setText(new Notification_Text().setText("Credit was removed. ").setBoldText())
-                    .setText(new Notification_Text().setText(" " + amount + " of credit was removed from your product "))
+                    .setText(new Notification_Text().setText("Remaining credit: " + remainingCredit.toPlainString() + "."))
                     .setObject(this)
                     .send(notificationReceivers());
         } catch (Exception e) {
@@ -639,17 +579,24 @@ public class Model_Product extends NamedModel {
     }
 
     @JsonIgnore
-    public void notificationCreditInsufficient() {
+    public void notificationPaymentDetails() {
         try {
+            String text = null;
+            if (owner.contact == null) {
+                text = "Fill in payment details, otherwise your product will be deactivated soon.";
 
-            new Model_Notification()
-                    .setImportance(NotificationImportance.NORMAL)
-                    .setLevel(NotificationLevel.WARNING)
-                    .setText(new Notification_Text().setText("Amount of credit is insufficient. Your credit balance is " + this.credit + ". Credit must be positive, so your product "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" could be activated."))
-                    .send(notificationReceivers());
+            } else if (owner.contact.fakturoid_subject_id == null) {
+                text = "Payment details are probably invalid. Check provided info or contact support.";
+            }
 
+            if (text != null) {
+                new Model_Notification()
+                        .setImportance(NotificationImportance.HIGH)
+                        .setLevel(NotificationLevel.WARNING)
+                        .setText(new Notification_Text().setText(text).setBoldText())
+                        .setObject(this)
+                        .send(notificationReceivers());
+            }
         } catch (Exception e) {
             logger.internalServerError(e);
         }
@@ -683,39 +630,46 @@ public class Model_Product extends NamedModel {
         }
     }
 
+/* EMAILS --------------------------------------------------------------------------------------------------------------*/
     @JsonIgnore
-    public void notificationRefundPaymentSuccess(double amount) {
-        try {
+    public void emailDeactivation() {
+        Email email = new Email();
+        email.text("Dear customer,");
 
-            new Model_Notification()
-                    .setImportance(NotificationImportance.NORMAL)
-                    .setLevel(NotificationLevel.SUCCESS)
-                    .setText(new Notification_Text().setText("Refund payment of $" + amount + " for your product "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" was successfully refunded."))
-                    .send(notificationReceivers());
+        if(owner.contact == null) {
+            email.text("We are sorry to inform you, that you have run of ouf credit and no payment method is set.")
+                 .text("We had to deactivate your product. If you want to continue using your product, " +
+                       "please set the payment details and activate the product again.");
 
-        } catch (Exception e) {
-            logger.internalServerError(e);
         }
+        else if(invoices.stream().filter(invoice -> invoice.status == InvoiceStatus.OVERDUE).count() > 0) {
+            email.text("We are sorry to inform you, but you have an overdue invoice(s).")
+                 .text("We had to deactivate your product. If you want to continue using your product, " +
+                       "pay all the invoices and activate the product again.");
+        }
+        else {
+            email.text("We are sorry to inform you, but you product was deactivated.")
+                 .text("If you did not perform this action, please contact us for further information.");
+        }
+
+        email.text("Best regards, Byzance Team")
+             .send(owner, "Product deactivation" );
     }
 
     @JsonIgnore
-    public void notificationPaymentSuccess(double amount) {
-        try {
+    public void emailLowCredit(BigDecimal notInvoicedCredit) {
+        BigDecimal remainingCredit = credit.subtract(notInvoicedCredit)
+                .setScale(Server.financial_price_scale, Server.financial_price_rounding);
 
-            new Model_Notification()
-                    .setImportance(NotificationImportance.NORMAL)
-                    .setLevel(NotificationLevel.SUCCESS)
-                    .setText(new Notification_Text().setText("Payment $" + amount + " for your product "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" was successful."))
-                    .send(notificationReceivers());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+        new Email()
+                .text("Dear customer,")
+                .text("You have only " + remainingCredit.toPlainString() + " of your credit left.")
+                .text("Please set the payment details otherwise you product will be deactivated after you run out of the credit.")
+                .text("Best regards, Byzance Team")
+                .send(owner, "Missing payment method");
     }
+
+
 
 /* BlOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
@@ -748,12 +702,12 @@ public class Model_Product extends NamedModel {
     }
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Product_read.name())) return;
-        if(customer.isEmployee(_BaseController.person())) return;
+        if(owner.isEmployee(_BaseController.person())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception  {
         if(_BaseController.person().has_permission(Permission.Product_update.name())) return;
-        if(customer.isEmployee(_BaseController.person())) return;
+        if(owner.isEmployee(_BaseController.person())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception  {
@@ -762,69 +716,31 @@ public class Model_Product extends NamedModel {
     }
     @JsonIgnore @Transient public void check_act_deactivate_permission()  throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Product_act_deactivate.name())) return;
-        if(customer.isEmployee(_BaseController.person())) return;
+        if(owner.isEmployee(_BaseController.person())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient public void check_financial_permission(String action)  throws _Base_Result_Exception {
         FinancialPermission.check_permission(this, action);
     }
 
-    public enum Permission {Product_crete, Product_update, Product_read, Product_act_deactivate, Product_delete}
+    public enum Permission {Product_create, Product_update, Product_read, Product_act_deactivate, Product_delete}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    @CacheField(value = Model_Product.class)
-    public static Cache<UUID, Model_Product> cache;
-
-    public static Model_Product getById(UUID id) throws _Base_Result_Exception  {
-
-        Model_Product product = cache.get(id);
-
-        if (product == null) {
-            product = Model_Product.find.byId(id);
-            if (product == null) throw new Result_Error_NotFound(Model_Product.class);
-
-            cache.put(id, product);
-        }
-
-        // Check Permission
-
-        if(product.its_person_operation()) {
-            product.check_read_permission();
-        }
-
-        return product;
-    }
-
-    public static Model_Product getByIdWithoutPermission(UUID id) throws _Base_Result_Exception  {
-
-        Model_Product product = cache.get(id);
-
-        if (product == null) {
-
-            product = Model_Product.find.byId(id);
-            if (product == null) throw new Result_Error_NotFound(Model_Product.class);
-
-            cache.put(id, product);
-        }
-
-        return product;
-    }
-
 
     public static Model_Product getByInvoice(UUID invoice_id) throws _Base_Result_Exception  {
         return find.query().where().eq("invoices.id", invoice_id).findOne();
     }
 
     public static List<Model_Product> getByOwner(UUID owner_id) throws _Base_Result_Exception  {
-        return find.query().where().disjunction().eq("customer.employees.person.id", owner_id).findList();
+        return find.query().where().disjunction().eq("owner.employees.person.id", owner_id).findList();
     }
 
     public static List<Model_Product> getApplicableByOwner(UUID owner_id) throws _Base_Result_Exception {
-        return find.query().where().eq("active",true).eq("customer.employees.person.id", owner_id).select("id").select("name").findList();
+        return find.query().where().eq("active",true).eq("owner.employees.person.id", owner_id).select("id").select("name").findList();
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Product> find = new Finder<>(Model_Product.class);
+    @CacheFinderField(Model_Product.class)
+    public static CacheFinder<Model_Product> find = new CacheFinder<>(Model_Product.class);
 }

@@ -1,26 +1,5 @@
 package utilities.financial.goPay;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.inject.Inject;
-import models.Model_Invoice;
-import play.api.Play;
-import play.data.Form;
-import play.data.FormFactory;
-import play.libs.F;
-import play.libs.ws.WSClient;
-import play.libs.ws.WSResponse;
-import utilities.Server;
-import utilities.enums.PaymentStatus;
-import utilities.financial.fakturoid.Fakturoid;
-import utilities.financial.goPay.helps_objects.GoPay_Result;
-import utilities.logger.Logger;
-
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.CompletionStage;
-
 /**
  * Class is used to check GoPay payments when notification is received.
  */
@@ -164,13 +143,13 @@ public class GoPay_PaymentCheck {
 
                                 logger.debug("checkPayment: state - PAID");
 
-                                if (invoice.status != PaymentStatus.PAID) {
+                                if (invoice.status != InvoiceStatus.PAID) {
 
                                     if (!fakturoid.fakturoid_post("/invoices/" + invoice.proforma_id + "/fire.json?event=pay_proforma"))
                                         logger.internalServerError(new Exception("Error changing status to paid on Fakturoid. Inconsistent state."));
 
                                     invoice.getProduct().credit_upload(help.amount * 10);
-                                    invoice.status = PaymentStatus.PAID;
+                                    invoice.status = InvoiceStatus.PAID;
                                     invoice.paid = new Date();
                                     invoice.update();
 
@@ -195,7 +174,7 @@ public class GoPay_PaymentCheck {
                                 logger.debug("checkPayment: state - REFUNDED");
 
                                 invoice.getProduct().credit_remove(help.amount * 10);
-                                invoice.status = PaymentStatus.CANCELED;
+                                invoice.status = InvoiceStatus.CANCELED;
                                 invoice.update();
 
                                 invoice.getProduct().archiveEvent("Refund Payment", "GoPay payment number: " + invoice.gopay_id + " was successfully refunded", invoice.id);
@@ -224,7 +203,7 @@ public class GoPay_PaymentCheck {
 
                                 logger.debug("checkPayment: state - CANCELED");
 
-                                invoice.status = PaymentStatus.CANCELED;
+                                invoice.status = InvoiceStatus.CANCELED;
                                 invoice.gw_url = null;
                                 invoice.update();
 

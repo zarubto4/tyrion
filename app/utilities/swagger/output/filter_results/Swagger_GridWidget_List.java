@@ -33,7 +33,7 @@ public class Swagger_GridWidget_List extends _Swagger_Filter_Common {
         List<UUID> ids = query.setFirstRow((page_number - 1) * filter.count_on_page).setMaxRows(filter.count_on_page).select("id").findSingleAttributeList();
 
         for (UUID id : ids) {
-            this.content.add( Model_Widget.getById(id));
+            this.content.add( Model_Widget.find.byId(id));
         }
 
         this.total  = query.findCount();

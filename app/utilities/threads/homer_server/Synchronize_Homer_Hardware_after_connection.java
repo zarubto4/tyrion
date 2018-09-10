@@ -28,7 +28,7 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
     // Umožněno kontrolovat COmpilator i Homer server
     public Synchronize_Homer_Hardware_after_connection(WS_Homer homer) {
         this.homer = homer;
-        this.homer_server = Model_HomerServer.getById(homer.id);
+        this.homer_server = Model_HomerServer.find.byId(homer.id);
     }
 
 
@@ -100,7 +100,7 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                 /*
                 else if (!board.connected_server_id.equals(this.homer.id)) {
                     logger.debug("check_device_on_server:: Device: ID: {}  je na špatném serveru a tak ho relokuji!!", board.id);
-                    board.device_relocate_server(Model_HomerServer.getById(homer.id));
+                    board.device_relocate_server(Model_HomerServer.find.byId(homer.id));
                     continue;
                 } else {
                     logger.trace("check_device_on_server:: Device: ID: {}  je na správném serveru evidentně a tak ho jenom zkrontroluji", board.id);

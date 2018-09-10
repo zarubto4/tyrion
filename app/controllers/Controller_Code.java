@@ -1,14 +1,16 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.ExpressionList;
 import io.ebean.Junction;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
+import play.Environment;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -17,12 +19,13 @@ import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.*;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Compilation_Build_Error;
 import utilities.swagger.output.Swagger_Compilation_Ok;
 import utilities.swagger.output.filter_results.Swagger_C_Program_List;
 import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
-import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
 import java.util.*;
 
@@ -36,10 +39,9 @@ public class Controller_Code extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private _BaseFormFactory baseFormFactory;
-
-    @Inject public Controller_Code(_BaseFormFactory formFactory) {
-        this.baseFormFactory = formFactory;
+    @javax.inject.Inject
+    public Controller_Code(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
 
 // CONTROLLER CONTENT ##################################################################################################
@@ -67,7 +69,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Ověření objektu
-            Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
+            Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
 
             // Odpovím předchozí kompilací
             if (version.compilation != null) return ok(new Swagger_Compilation_Ok());
@@ -113,24 +115,24 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_C_Program_Version_Update help  = baseFormFactory.formFromRequestWithValidation(Swagger_C_Program_Version_Update.class);
+            Swagger_C_Program_Version_Update help  = formFromRequestWithValidation(Swagger_C_Program_Version_Update.class);
 
             // Ověření objektu
-            Model_HardwareType hardwareType = Model_HardwareType.getById(help.hardware_type_id);
+            Model_HardwareType hardwareType = Model_HardwareType.find.byId(help.hardware_type_id);
 
             if (!Model_CompilationServer.is_online()) return externalServerOffline("Compilation server is offline");
 
             List<Swagger_Library_Record> library_files = new ArrayList<>();
 
-            for (String lib_id : help.imported_libraries) {
+            for (UUID lib_id : help.imported_libraries) {
 
                 logger.trace("compile_C_Program_code:: Looking for library Version Id " + lib_id);
-                Model_LibraryVersion lib_version = Model_LibraryVersion.getById(lib_id);
+                Model_LibraryVersion lib_version = Model_LibraryVersion.find.byId(lib_id);
                 if (lib_version.file != null) {
 
                     logger.trace("compile_C_Program_code:: Library contains files");
 
-                    Swagger_Library_File_Load lib_file = baseFormFactory.formFromJsonWithValidation(Swagger_Library_File_Load.class, Json.parse(lib_version.file.get_fileRecord_from_Azure_inString()));
+                    Swagger_Library_File_Load lib_file = baseFormFactory.formFromJsonWithValidation(Swagger_Library_File_Load.class, Json.parse(lib_version.file.downloadString()));
                     library_files.addAll(lib_file.files);
 
                 }
@@ -173,7 +175,7 @@ public class Controller_Code extends _BaseController {
 
                     for(UUID hardware_id : help.hardware_ids) {
 
-                        Model_Hardware hardware = Model_Hardware.getById(hardware_id);
+                        Model_Hardware hardware = Model_Hardware.find.byId(hardware_id);
                         procedure.project_id = hardware.get_project_id();
 
                         Model_HardwareUpdate plan = new Model_HardwareUpdate();
@@ -245,10 +247,10 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_C_Program_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_C_Program_New.class);
+            Swagger_C_Program_New help  = formFromRequestWithValidation(Swagger_C_Program_New.class);
 
             // Ověření Typu Desky
-            Model_HardwareType hardwareType = Model_HardwareType.getById(help.hardware_type_id);
+            Model_HardwareType hardwareType = Model_HardwareType.find.byId(help.hardware_type_id);
 
             System.out.println("Model_HardwareType ok");
 
@@ -260,7 +262,7 @@ public class Controller_Code extends _BaseController {
             c_program.publish_type          = ProgramType.PRIVATE;
 
             if (help.project_id != null) {
-                c_program.project = Model_Project.getById(help.project_id);
+                c_program.project = Model_Project.find.byId(help.project_id);
             }
 
             // Uložení C++ Programu
@@ -281,14 +283,14 @@ public class Controller_Code extends _BaseController {
                 version.save();
 
                 // Content se nahraje na Azure
-                version.file = Model_Blob.upload(hardwareType.get_main_c_program().default_main_version.file.get_fileRecord_from_Azure_inString(), "code.json", c_program.get_path());
+                version.file = Model_Blob.upload(hardwareType.get_main_c_program().default_main_version.file.downloadString(), "code.json", c_program.get_path());
                 version.update();
 
 
                 version.compile_program_thread(hardwareType.get_main_c_program().default_main_version.compilation.firmware_version_lib);
             }
 
-            return created(Model_CProgram.getById(c_program.id));
+            return created(Model_CProgram.find.byId(c_program.id));
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -325,13 +327,13 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_C_Program_Copy help = baseFormFactory.formFromRequestWithValidation(Swagger_C_Program_Copy.class);
+            Swagger_C_Program_Copy help = formFromRequestWithValidation(Swagger_C_Program_Copy.class);
 
             // Vyhledám Objekt
-            Model_CProgram c_program_old = Model_CProgram.getById(help.c_program_id);
+            Model_CProgram c_program_old = Model_CProgram.find.byId(help.c_program_id);
 
             // Vyhledám Objekt
-            Model_Project project = Model_Project.getById(help.project_id);
+            Model_Project project = Model_Project.find.byId(help.project_id);
 
             Model_CProgram c_program_new =  new Model_CProgram();
             c_program_new.name = help.name;
@@ -356,7 +358,7 @@ public class Controller_Code extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version.file;
 
-                copy_object.file = Model_Blob.upload(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program_new.get_path());
+                copy_object.file = Model_Blob.upload(fileRecord.downloadString(), "code.json" , c_program_new.get_path());
                 copy_object.update();
 
                 copy_object.compile_program_thread(version.compilation.firmware_version_lib);
@@ -390,7 +392,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Vyhledám Objekt
-            Model_CProgram c_program = Model_CProgram.getById(c_program_id);
+            Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
 
             // Vracím Objekt
             return ok(c_program);
@@ -427,7 +429,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_C_Program_Filter help = baseFormFactory.formFromRequestWithValidation(Swagger_C_Program_Filter.class);
+            Swagger_C_Program_Filter help = formFromRequestWithValidation(Swagger_C_Program_Filter.class);
 
 
             // Musí být splněna alespoň jedna podmínka, aby mohl být Junction aktivní. V opačném případě by totiž způsobil bychu
@@ -453,7 +455,7 @@ public class Controller_Code extends _BaseController {
 
             // Pokud JSON obsahuje project_id filtruji podle projektu
             if (help.project_id != null) {
-                Model_Project.getById(help.project_id);
+                Model_Project.find.byId(help.project_id);
                 disjunction
                         .conjunction()
                             .eq("project.id", help.project_id)
@@ -522,10 +524,10 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
-            Model_CProgram c_program = Model_CProgram.getById(c_program_id);
+            Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
 
             // Úprava objektu
             c_program.name = help.name;
@@ -574,10 +576,10 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_CProgram cProgram = Model_CProgram.getById(help.object_id);
+            Model_CProgram cProgram = Model_CProgram.find.byId(help.object_id);
 
             // Add Tags
             cProgram.addTags(help.tags);
@@ -619,10 +621,10 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help = baseFormFactory.formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             // Kontrola objektu
-            Model_CProgram cProgram = Model_CProgram.getById(help.object_id);
+            Model_CProgram cProgram = Model_CProgram.find.byId(help.object_id);
 
             // Remove Tags
             cProgram.removeTags(help.tags);
@@ -653,7 +655,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Ověření objektu
-            Model_CProgram c_program = Model_CProgram.getById(c_program_id);
+            Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
 
             // Smazání objektu
             c_program.delete();
@@ -701,10 +703,10 @@ public class Controller_Code extends _BaseController {
             System.out.println("c_program_version_create");
 
             // Get and Validate Object
-            Swagger_C_Program_Version_New help = baseFormFactory.formFromRequestWithValidation(Swagger_C_Program_Version_New.class);
+            Swagger_C_Program_Version_New help = formFromRequestWithValidation(Swagger_C_Program_Version_New.class);
 
             // Ověření objektu
-            Model_CProgram c_program = Model_CProgram.getById(c_program_id);
+            Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
 
             // Zkontroluji oprávnění
             c_program.check_update_permission();
@@ -713,7 +715,7 @@ public class Controller_Code extends _BaseController {
 
             // If the is not working copy - make it
             if(working_copy_version_id != null) {
-                Model_CProgramVersion version = Model_CProgramVersion.getById(working_copy_version_id);
+                Model_CProgramVersion version = Model_CProgramVersion.find.byId(working_copy_version_id);
                 version.delete();
             }
 
@@ -775,7 +777,7 @@ public class Controller_Code extends _BaseController {
             System.out.println("c_program_version_working_copy");
 
             // Get and Validate Object
-            Swagger_C_Program_Version_Refresh help = baseFormFactory.formFromRequestWithValidation(Swagger_C_Program_Version_Refresh.class);
+            Swagger_C_Program_Version_Refresh help = formFromRequestWithValidation(Swagger_C_Program_Version_Refresh.class);
 
             System.out.println("Sem to ani nedošlo :(");
 
@@ -791,7 +793,7 @@ public class Controller_Code extends _BaseController {
 
 
                 // Ověření objektu
-                Model_CProgram c_program = Model_CProgram.getById(c_program_id);
+                Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
 
                 // Zkontroluji oprávnění
                 c_program.check_update_permission();
@@ -806,7 +808,7 @@ public class Controller_Code extends _BaseController {
 
             }else  {
 
-                version = Model_CProgramVersion.getById(version_id);
+                version = Model_CProgramVersion.find.byId(version_id);
 
                 if(version.file != null) {
                     version.file.delete();
@@ -851,7 +853,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Kontrola objekt
-            Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
+            Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
 
             // Vracím Objekt
             return ok(version);
@@ -891,10 +893,10 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Ověření objektu
-            Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
+            Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
 
             //Uprava objektu
             version.name        = help.name;
@@ -929,7 +931,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Ověření objektu
-            Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
+            Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
 
             // Smažu zástupný objekt
             version.delete();
@@ -962,7 +964,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
+            Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
 
             if (Model_CProgramVersion.find.query().where().eq("approval_state", Approval.PENDING.name())
                     .eq("author_id", _BaseController.personId())
@@ -1015,13 +1017,13 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Community_Version_Publish_Response help = baseFormFactory.formFromRequestWithValidation(Swagger_Community_Version_Publish_Response.class);
+            Swagger_Community_Version_Publish_Response help = formFromRequestWithValidation(Swagger_Community_Version_Publish_Response.class);
 
             // Kontrola objektu
-            Model_CProgramVersion version_old = Model_CProgramVersion.getById(help.version_id);
+            Model_CProgramVersion version_old = Model_CProgramVersion.find.byId(help.version_id);
 
             // Kontrola objektu
-            Model_CProgram c_program_old = Model_CProgram.getById(version_old.get_c_program().id);
+            Model_CProgram c_program_old = Model_CProgram.find.byId(version_old.get_c_program().id);
 
             // Zkontroluji oprávnění
             if (!c_program_old.community_publishing_permission()) {
@@ -1048,7 +1050,7 @@ public class Controller_Code extends _BaseController {
                     c_program.publish_type  = ProgramType.PUBLIC;
                     c_program.save();
                 }else {
-                    c_program = Model_CProgram.getById(c_program_previous_id);
+                    c_program = Model_CProgram.find.byId(c_program_previous_id);
                 }
 
                 Model_CProgramVersion version = new Model_CProgramVersion();
@@ -1066,7 +1068,7 @@ public class Controller_Code extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version_old.file;
 
-                version.file = Model_Blob.upload(fileRecord.get_fileRecord_from_Azure_inString(), "code.json" , c_program.get_path());
+                version.file = Model_Blob.upload(fileRecord.downloadString(), "code.json" , c_program.get_path());
                 version.update();
 
                 version.compile_program_thread(version_old.compilation.firmware_version_lib);
@@ -1084,7 +1086,7 @@ public class Controller_Code extends _BaseController {
                                 .divider()
                                 .text("We will publish it as soon as possible.")
                                 .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                                .send(version_old.get_c_program().getProject().getProduct().customer, "Publishing your program" );
+                                .send(version_old.get_c_program().getProject().getProduct().owner, "Publishing your program" );
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -1104,7 +1106,7 @@ public class Controller_Code extends _BaseController {
                                 .text("We will publish it as soon as possible. We also had to make some changes to your program or rename something.")
                                 .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                                 .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                                .send(version_old.get_c_program().getProject().getProduct().customer, "Publishing your program" );
+                                .send(version_old.get_c_program().getProject().getProduct().owner, "Publishing your program" );
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -1129,7 +1131,7 @@ public class Controller_Code extends _BaseController {
                                     "We are glad that you want to contribute to our public libraries. Here are some tips what to improve, so you can try it again.")
                             .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                             .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                            .send(version_old.get_c_program().getProject().getProduct().customer, "Publishing your program");
+                            .send(version_old.get_c_program().getProject().getProduct().owner, "Publishing your program");
 
                 } catch (Exception e) {
                     logger.internalServerError(e);
@@ -1161,7 +1163,7 @@ public class Controller_Code extends _BaseController {
     public Result c_program_markScheme(@ApiParam(value = "version_id", required = true) UUID version_id) {
         try {
 
-            Model_CProgramVersion version = Model_CProgramVersion.getById(version_id);
+            Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
 
             if (version.get_c_program().hardware_type_default == null && version.get_c_program().hardware_type_test == null) return badRequest("Version_object is not version of c_program or is not default firmware");
 
@@ -1169,7 +1171,7 @@ public class Controller_Code extends _BaseController {
             Model_CProgramVersion previous_main_version_not_cached = Model_CProgramVersion.find.query().where().eq("c_program.id", version.get_c_program().id).isNotNull("default_program").select("id").findOne();
             if (previous_main_version_not_cached != null) {
 
-                Model_CProgramVersion previous_main_version = Model_CProgramVersion.getById(previous_main_version_not_cached.id);
+                Model_CProgramVersion previous_main_version = Model_CProgramVersion.find.byId(previous_main_version_not_cached.id);
                 if (previous_main_version != null) {
                     previous_main_version.default_program = null;
                     version.get_c_program().default_main_version = null;

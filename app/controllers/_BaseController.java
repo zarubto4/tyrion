@@ -1,10 +1,13 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.swagger.annotations.ApiModel;
 import models.Model_Person;
-import play.data.Form;
+import play.Environment;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -12,18 +15,15 @@ import responses.*;
 import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
+import utilities.logger.YouTrack;
 import utilities.model.BaseModel;
 import utilities.model.JsonSerializer;
+import utilities.scheduler.SchedulerController;
 import utilities.server_measurement.RequestLatency;
-import utilities.swagger.input.Swagger_Project_New;
 import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
-import play.data.validation.ValidationError;
-import javax.validation.ValidationException;
+
 import java.io.File;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -38,7 +38,39 @@ public abstract class _BaseController {
 
     private static final Logger logger = new Logger(_BaseController.class);
 
+// COMMON CONSTRUCTOR ###################################################################################################
+
+    protected final _BaseFormFactory baseFormFactory;
+    protected final WSClient ws;
+    protected final Environment environment;
+    protected final YouTrack youTrack;
+    protected final Config config;
+    protected final SchedulerController scheduler;
+
+    @Inject
+    public _BaseController(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        this.environment = environment;
+        this.ws = ws;
+        this.baseFormFactory = formFactory;
+        this.youTrack = youTrack;
+        this.config = config;
+        this.scheduler = scheduler;
+    }
+
+
+
 // PERSON OPERATIONS ###################################################################################################
+
+    /**
+     * Shortcuts for automatic validation and parsing of incoming JSON to MODEL class
+     * @param clazz
+     * @param <T>
+     * @return
+     * @throws _Base_Result_Exception
+     */
+    public <T> T formFromRequestWithValidation(Class<T> clazz) throws _Base_Result_Exception {
+        return baseFormFactory.formFromRequestWithValidation(clazz);
+    }
 
     /**
      * Pulls up the current user from the request context.
@@ -283,35 +315,27 @@ public abstract class _BaseController {
     /**
      * Creates a not found result with message from Class where code try to find annotation for Swagger
      *
-     * @param class_type model what is missing
+     * @param cls model what is missing
      * @return 404 result with message
      */
-    public static Result notFound(Class class_type) {
+    public static Result notFound(Class cls) {
         try {
-            logger.error("notFound:: Call:: Class Name:: {}", class_type.getSimpleName());
+            logger.error("notFound - class: {}", cls.getSimpleName());
             // Get Swagger Name from Annotation and return ii with name and description
 
-            for (Annotation annotation : class_type.getAnnotations()) {
-                Class<? extends Annotation> type = annotation.annotationType();
-                if(type.getSimpleName().equals(ApiModel.class.getSimpleName())) {
-                    for (Method method : type.getDeclaredMethods()) {
-                        Object value = method.invoke(annotation, (Object[]) null);
-
-                        if(method.getName().equals("value")) {
-                            return Controller.notFound(Json.toJson(new Result_NotFound("Object  notFound. Probably from " + value + " model type.")));
-                        }
-                    }
-                }
+            if (cls.isAnnotationPresent(ApiModel.class)) {
+                ApiModel annotation = (ApiModel) cls.getAnnotation(ApiModel.class);
+                return Controller.notFound(Json.toJson(new Result_NotFound("Object " + annotation.value() + " not found.")));
             }
 
-
             // Return name of object if Anotations is missing
-            logger.error("Returning result notFound for incoming request, but class in constructor not contain ApiModel annotation");
-            return Controller.notFound(Json.toJson(new Result_NotFound("Not Found Object. Probably from " + class_type.getSimpleName().replace("Model_", "") + " model type.")));
+            logger.warn("Returning result notFound for incoming request, but given class does not have ApiModel annotation");
 
         } catch (Exception e){
-            return Controller.notFound(Json.toJson(new Result_NotFound("Not Found Object. Probably from " + class_type.getSimpleName().replace("Model_", "") + " model type.")));
+            logger.internalServerError(e);
         }
+
+        return Controller.notFound(Json.toJson(new Result_NotFound("Object " + cls.getSimpleName().replace("Model_", "").replace("Swagger_", "") + " not found.")));
     }
 
     /**
@@ -450,61 +474,36 @@ public abstract class _BaseController {
      * @return
      */
     public static Result controllerServerError(Throwable error) {
-        try{
+        try {
 
-            logger.error("controllerServerError:: Incoming Error: {} ", error.getClass().getSimpleName());
+            if (error instanceof Result_Error_BadRequest) {
 
-            // Result_Error_NotFound
-            if(error.getClass().getSimpleName().equals(_Base_Result_Exception.class.getSimpleName())){
-                logger.error("controllerServerError:: _Base_Result_Exception");
-                _Base_Result_Exception badRequest = (_Base_Result_Exception) error;
-                return badRequest(badRequest.getMessage());
-            }
+                return badRequest(error.getMessage());
 
-            // Result_Error_NotFound
-            if(error.getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
-                logger.error("controllerServerError:: Result_Error_NotFound");
-                Result_Error_NotFound not_found = (Result_Error_NotFound) error;
-                return notFound(not_found.getClass_not_found());
-            }
+            } else if (error instanceof Result_Error_InvalidBody) {
 
-            // Result_Error_InvalidBody
-            if(error.getClass().getSimpleName().equals(Result_Error_InvalidBody.class.getSimpleName())){
-                logger.error("controllerServerError:: Result_Error_InvalidBody");
-                Result_Error_InvalidBody invalid_body = (Result_Error_InvalidBody) error;
-                try {
-                    Result_InvalidBody invalidBody = new Result_InvalidBody(invalid_body.getForm_error());
-                    return badRequest(Json.toJson(invalidBody));
-                } catch (Exception e){
-                    logger.error("controllerServerError:: Fatal Error when controllerServerError try to get Form Error Json for response");
-                    return internalServerError(e);
-                }
-            }
+                return badRequest(Json.toJson(new Result_InvalidBody(((Result_Error_InvalidBody) error).getForm_error())));
 
-            // Result_Error_Unauthorized
-            if(error.getClass().getSimpleName().equals(Result_Error_Unauthorized.class.getSimpleName())){
-                logger.error("controllerServerError:: Result_Error_Unauthorized");
-                return unauthorized();
-            }
+            } else if (error instanceof Result_Error_NotFound) {
 
-            // Result_Error_PermissionDenied
-            if(error.getClass().getSimpleName().equals(Result_Error_PermissionDenied.class.getSimpleName())){
-                logger.error("controllerServerError:: Result_Error_PermissionDenied");
+                return notFound(((Result_Error_NotFound) error).getEntity());
+
+            } else if (error instanceof Result_Error_PermissionDenied) {
+
                 return forbidden();
+
+            } else if (error instanceof Result_Error_Unauthorized) {
+
+                return unauthorized();
+
+            } else if (error instanceof Result_Error_NotSupportedException) {
+
+                return badRequest(Json.toJson(new Result_UnsupportedException()));
             }
 
-            // Result_Error_NotSupportedException
-            if(error.getClass().getSimpleName().equals(Result_Error_NotSupportedException.class.getSimpleName())){
-                error.printStackTrace();
-                return badRequest( Json.toJson(new Result_UnsupportedException()));
-            }
-
-            logger.error("controllerServerError::There is unExcepted Kind of Error. Now - its Critical!");
             return internalServerError(error);
 
         } catch (Exception e) {
-            logger.error("controllerServerError:: Exception in Exception");
-            logger.error("controllerServerError:: Exception in Exception");
             return internalServerError(e);
         }
     }

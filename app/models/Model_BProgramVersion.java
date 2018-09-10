@@ -3,11 +3,9 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import org.ehcache.Cache;
-import utilities.cache.CacheField;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -48,21 +46,17 @@ public class Model_BProgramVersion extends VersionModel {
 
     @JsonProperty
     public String program() {
-        // TODO Hodně náročné na stahování do Cahce - Nejlépe takový objekt na linky, že sám sebe zahodí po vypršení platnosti
-        // Myslím, že jsem ho někde programoval! Tom
         try {
 
             Model_Blob blob = Model_Blob.find.query().where().eq("b_program_version.id", id).eq("name", "blocko.json").findOne();
-            if (blob != null) return blob.get_fileRecord_from_Azure_inString();
-            return null;
+            return blob.getPublicDownloadLink();
 
         } catch (_Base_Result_Exception e) {
             // nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
         }
+        return null;
     }
     @JsonProperty @Transient public List<Model_BProgramVersionSnapGridProject> grid_project_snapshots() {
         try {
@@ -81,11 +75,11 @@ public class Model_BProgramVersion extends VersionModel {
     @JsonIgnore
     public List<UUID> get_grid_snapshot_ids() throws _Base_Result_Exception {
 
-        if (cache().gets(Model_BProgramVersionSnapGridProject.class) == null) {
-            cache().add(Model_BProgramVersionSnapGridProject.class, Model_BProgramVersionSnapGridProject.find.query().where().eq("b_program_version.id", id).select("id").findSingleAttributeList());
+        if (idCache().gets(Model_BProgramVersionSnapGridProject.class) == null) {
+            idCache().add(Model_BProgramVersionSnapGridProject.class, Model_BProgramVersionSnapGridProject.find.query().where().eq("b_program_version.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_BProgramVersionSnapGridProject.class) != null ?  cache().gets(Model_BProgramVersionSnapGridProject.class) : new ArrayList<>();
+        return idCache().gets(Model_BProgramVersionSnapGridProject.class) != null ?  idCache().gets(Model_BProgramVersionSnapGridProject.class) : new ArrayList<>();
 
     }
 
@@ -96,7 +90,7 @@ public class Model_BProgramVersion extends VersionModel {
             List<Model_BProgramVersionSnapGridProject> list = new ArrayList<>();
 
             for (UUID id : get_grid_snapshot_ids()) {
-                list.add(Model_BProgramVersionSnapGridProject.getById(id));
+                list.add(Model_BProgramVersionSnapGridProject.find.byId(id));
             }
 
             return list;
@@ -112,18 +106,18 @@ public class Model_BProgramVersion extends VersionModel {
     @JsonIgnore
     public UUID get_b_program_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_Project.class) == null) {
-            cache().add(Model_Project.class, Model_BProgram.find.query().where().eq("versions.id", id).select("id").findSingleAttributeList());
+        if (idCache().get(Model_Project.class) == null) {
+            idCache().add(Model_Project.class, Model_BProgram.find.query().where().eq("versions.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().get(Model_Project.class);
+        return idCache().get(Model_Project.class);
 
     }
 
     @JsonIgnore
     public Model_BProgram get_b_program() throws _Base_Result_Exception {
         try {
-            return Model_BProgram.getById(get_b_program_id());
+            return Model_BProgram.find.byId(get_b_program_id());
         }catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -140,9 +134,6 @@ public class Model_BProgramVersion extends VersionModel {
 
         super.save();
 
-
-        System.out.println("Uložil jsem BProgram Verzi id: " + this.id);
-
         Model_BProgram program = get_b_program();
 
         new Thread(() -> {
@@ -152,7 +143,7 @@ public class Model_BProgramVersion extends VersionModel {
         // Add to Cache
         if (program != null) {
             program.getVersionsIds();
-            program.cache().add(this.getClass(), this.id);
+            program.idCache().add(this.getClass(), this.id);
             program.sort_Model_Model_BProgramVersion_ids();
         }
     }
@@ -180,7 +171,7 @@ public class Model_BProgramVersion extends VersionModel {
 
         // Remove from Cache
         try {
-            get_b_program().cache().remove(this.getClass(), id);
+            get_b_program().idCache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
@@ -264,28 +255,8 @@ public class Model_BProgramVersion extends VersionModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(Model_BProgramVersion.class)
-    public static Cache<UUID, Model_BProgramVersion> cache;
-
-    public static Model_BProgramVersion getById(UUID id) throws _Base_Result_Exception {
-
-        Model_BProgramVersion b_program_version = cache.get(id);
-
-        if (b_program_version == null) {
-
-            b_program_version = Model_BProgramVersion.find.byId(id);
-            if (b_program_version == null) throw new Result_Error_NotFound(Model_BProgramVersion.class);
-
-            cache.put(id, b_program_version);
-        }
-        // Check Permission
-        if(b_program_version.its_person_operation()) {
-            b_program_version.check_read_permission();
-        }
-        return b_program_version;
-    }
-
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_BProgramVersion> find = new Finder<>(Model_BProgramVersion.class);
+    @CacheFinderField(Model_BProgramVersion.class)
+    public static CacheFinder<Model_BProgramVersion> find = new CacheFinder<>(Model_BProgramVersion.class);
 }

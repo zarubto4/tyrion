@@ -17,13 +17,10 @@ import utilities.enums.NetworkStatus;
 import utilities.homer_auto_deploy.models.service.Swagger_BlueOcean;
 import utilities.logger.Logger;
 import utilities.slack.Slack;
-import utilities.threads.homer_server.Synchronize_Homer_Synchronize_Settings;
-import websocket.interfaces.WS_Homer;
 
 import java.time.Duration;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 public class DigitalOceanThreadRegister extends Thread {
 
@@ -49,7 +46,7 @@ public class DigitalOceanThreadRegister extends Thread {
         this.registration = registration;
 
         // Set Cache to Deploy state - we add random UUID as a mark that DigitalOceanThreadRegister is in progress
-        server.cache().add(DigitalOceanThreadRegister.class,  UUID.randomUUID());
+        server.idCache().add(DigitalOceanThreadRegister.class,  UUID.randomUUID());
     }
 
     @Override
@@ -86,7 +83,7 @@ public class DigitalOceanThreadRegister extends Thread {
                         DigitalOceanTyrionService.apiClient.createDomainRecord(domain.getName(), domainRecord);
 
 
-                        this.server = Model_HomerServer.getById(homer_server_id);
+                        this.server = Model_HomerServer.find.byId(homer_server_id);
                         server.server_url = homer_server_id + ".do.byzance.cz";
                         server.update();
 
@@ -135,7 +132,7 @@ public class DigitalOceanThreadRegister extends Thread {
 
                                             if (server.online_state() == NetworkStatus.ONLINE) {
                                                 logger.debug("crate_server::  Amazing -server deployed and running!");
-                                                server.cache().removeAll(DigitalOceanThreadRegister.class);
+                                                server.idCache().removeAll(DigitalOceanThreadRegister.class);
                                                 break thr1;
                                             }
 
@@ -154,8 +151,8 @@ public class DigitalOceanThreadRegister extends Thread {
                                     slack_echo += "Homer Serve ID: " + homer_server_id + ", Name:" + server.name + "\n";
                                     slack_echo += "Droplet rul: " + server.server_url + ", Api URL:" + server.server_url + ":" + server.rest_api_port + " <---\n";
                                     slack_echo += "Tyrion Server Type: " + Server.mode + ", Tyrion URL: " + Server.httpAddress + "\n";
-                                    Slack.post_error(slack_echo);
-                                    server.cache().removeAll(DigitalOceanThreadRegister.class);
+                                    Slack.post_error(slack_echo, Server.slack_webhook_url_channel_homer);
+                                    server.idCache().removeAll(DigitalOceanThreadRegister.class);
 
                                     break thr1;
                                 } else {
@@ -193,13 +190,13 @@ public class DigitalOceanThreadRegister extends Thread {
                 sleep(1000 * 10);
             }
 
-            server.cache().removeAll(DigitalOceanThreadRegister.class);
+            server.idCache().removeAll(DigitalOceanThreadRegister.class);
 
         }catch (Exception e){
             logger.error("synchronize_configuration: TimeoutException");
             server.deployment_in_progress = false;
             server.update();
-            server.cache().removeAll(DigitalOceanThreadRegister.class);
+            server.idCache().removeAll(DigitalOceanThreadRegister.class);
             logger.internalServerError(e);
         }
     }

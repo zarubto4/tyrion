@@ -1,9 +1,12 @@
 package controllers;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import io.swagger.annotations.*;
 import models.*;
+import play.Environment;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -14,6 +17,8 @@ import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.lablel_printer_service.printNodeModels.Printer;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_Garfield_Edit;
 import utilities.swagger.input.Swagger_Garfield_New;
 
@@ -29,15 +34,17 @@ public class Controller_Garfield extends _BaseController {
     private static final Logger logger = new Logger(Controller_Garfield.class);
 
 // CONTROLLER CONFIGURATION ############################################################################################
-    private _BaseFormFactory baseFormFactory;
 
-    @Inject public Controller_Garfield(_BaseFormFactory formFactory) {
-        this.baseFormFactory = formFactory;
+    @javax.inject.Inject
+    public Controller_Garfield(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
 
 // REST - API GARFIELD  #################################################################################################
 
-    @ApiOperation(value = "edit Garfield",
+
+    // TODO Tyrio-334
+    @ApiOperation(value = "edit and save Garfield",
             tags = {"Garfield"},
             notes = "edit Garfield",
             produces = "application/json",
@@ -66,10 +73,10 @@ public class Controller_Garfield extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Garfield_Edit help  = baseFormFactory.formFromRequestWithValidation(Swagger_Garfield_Edit.class);
+            Swagger_Garfield_Edit help  = formFromRequestWithValidation(Swagger_Garfield_Edit.class);
 
             // Kontrola objektu
-            Model_Garfield garfield = Model_Garfield.getById(garfield_id);
+            Model_Garfield garfield = Model_Garfield.find.byId(garfield_id);
 
             garfield.name = help.name;
             garfield.description = help.description;
@@ -117,7 +124,7 @@ public class Controller_Garfield extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Garfield_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_Garfield_New.class);
+            Swagger_Garfield_New help  = formFromRequestWithValidation(Swagger_Garfield_New.class);
 
             // Kontrola objektu
             Model_Garfield garfield = new Model_Garfield();
@@ -158,7 +165,7 @@ public class Controller_Garfield extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Garfield garfield = Model_Garfield.getById(garfield_id);
+            Model_Garfield garfield = Model_Garfield.find.byId(garfield_id);
 
             // Odsranit objekt
             garfield.delete();
@@ -188,7 +195,7 @@ public class Controller_Garfield extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Garfield garfield = Model_Garfield.getById(garfield_id);
+            Model_Garfield garfield = Model_Garfield.find.byId(garfield_id);
 
             // Vrácení objektu
             return ok(garfield);
@@ -217,7 +224,7 @@ public class Controller_Garfield extends _BaseController {
 
 
             // Kotrola objektu
-            Model_Hardware hardware = Model_Hardware.getById(board_id);
+            Model_Hardware hardware = Model_Hardware.find.byId(board_id);
             Model_HardwareRegistrationEntity entity = Model_HardwareRegistrationEntity.getbyFull_id(hardware.full_id);
 
             Model_HardwareBatch batch = Model_HardwareBatch.getById(hardware.batch_id);
@@ -232,7 +239,7 @@ public class Controller_Garfield extends _BaseController {
             }
 
             // Kontrola objektu
-            Model_Garfield garfield = Model_Garfield.getById(garfields_id.get(0));
+            Model_Garfield garfield = Model_Garfield.find.byId(garfields_id.get(0));
 
             Printer_Api api = new Printer_Api();
 
@@ -311,7 +318,7 @@ public class Controller_Garfield extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Garfield garfield = Model_Garfield.getById(garfield_id);
+            Model_Garfield garfield = Model_Garfield.find.byId(garfield_id);
 
             if (!( garfield.print_label_id_1.equals(printer_id) || garfield.print_label_id_2.equals(printer_id) || garfield.print_sticker_id.equals(printer_id))) {
                 return forbidden();
@@ -345,7 +352,7 @@ public class Controller_Garfield extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_Garfield garfield = Model_Garfield.getById(garfield_id);
+            Model_Garfield garfield = Model_Garfield.find.byId(garfield_id);
 
             if (garfield.print_label_id_1.equals(printer_id)) {
                 // TODO Lexa - odzkoušet a naimlementovat tiskárny P750W

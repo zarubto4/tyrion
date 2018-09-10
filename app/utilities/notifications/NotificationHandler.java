@@ -131,7 +131,7 @@ public class NotificationHandler {
                     // Pokud je notification_importance vyšší než "low" notifikaci uložím
                     if (notification.notification_importance != NotificationImportance.LOW && notification.id == null) {
 
-                        notification.person = Model_Person.getById(person_id); // Get Person Model from Cache
+                        notification.person = Model_Person.find.byId(person_id); // Get Person Model from Cache
                         notification.save_object();
 
                         message.put("id", notification.id.toString());

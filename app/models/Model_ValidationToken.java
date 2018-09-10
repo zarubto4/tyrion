@@ -75,10 +75,6 @@ public class Model_ValidationToken extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_ValidationToken getById(UUID id) {
-        return find.byId(id);
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
     public static Finder<UUID, Model_ValidationToken> find = new Finder<>(Model_ValidationToken.class);
 

@@ -4,14 +4,20 @@ import akka.stream.javadsl.Source;
 import akka.util.ByteString;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import play.Environment;
 import play.http.HttpEntity;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.ResponseHeader;
 import play.mvc.Result;
+import play.mvc.Security;
+import utilities.authentication.Authentication;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_GitHubReleases;
 import utilities.swagger.input.Swagger_GitHubReleases_Asset;
 
@@ -21,7 +27,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class Controller_UploadFiles extends Controller {
+@Api(value = "Not Documented API - InProgress or Stuck")
+// @Security.Authenticated(Authentication.class)
+public class Controller_UploadFiles extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
@@ -30,17 +38,10 @@ public class Controller_UploadFiles extends Controller {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private WSClient ws;
-    private Config config;
-    private _BaseFormFactory baseFormFactory;
-
-    @Inject
-    public Controller_UploadFiles(WSClient ws, Config config, _BaseFormFactory formFactory) {
-        this.ws = ws;
-        this.config = config;
-        this.baseFormFactory = formFactory;
+    @javax.inject.Inject
+    public Controller_UploadFiles(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
     }
-
 
 // UPLOUD FILES ########################################################################################################
 
@@ -127,7 +128,7 @@ public class Controller_UploadFiles extends Controller {
                 file_name = "homer_server_windows.exe";
             }
 
-            response().setHeader("Content-Disposition", "attachment; filename=" + file_name);
+            Controller.response().setHeader("Content-Disposition", "attachment; filename=" + file_name);
             return new Result(
                     new ResponseHeader(200, Collections.emptyMap()),
                     new HttpEntity.Streamed(source, Optional.empty(), Optional.of("application/octet-stream"))

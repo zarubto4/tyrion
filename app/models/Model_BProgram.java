@@ -3,11 +3,10 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import org.ehcache.Cache;
-import utilities.cache.CacheField;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -61,17 +60,17 @@ public class Model_BProgram extends TaggedModel {
     @JsonIgnore
     public UUID getProjectId() {
 
-        if (cache().get(Model_Project.class) == null) {
-            cache().add(Model_Project.class, Model_Project.find.query().where().eq("b_programs.id", id).select("id").findSingleAttributeList());
+        if (idCache().get(Model_Project.class) == null) {
+            idCache().add(Model_Project.class, Model_Project.find.query().where().eq("b_programs.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().get(Model_Project.class);
+        return idCache().get(Model_Project.class);
     }
 
     @JsonIgnore
     public Model_Project getProject() {
         try {
-            return Model_Project.getById(getProjectId());
+            return Model_Project.find.byId(getProjectId());
         }catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -81,19 +80,19 @@ public class Model_BProgram extends TaggedModel {
     @JsonIgnore
     public List<UUID> getVersionsIds() {
 
-        if (cache().gets(Model_BProgramVersion.class) == null) {
-            cache().add(Model_BProgramVersion.class,  Model_BProgramVersion.find.query().where().ne("deleted", true).eq("b_program.id", id).order().desc("created").select("id").findSingleAttributeList());
+        if (idCache().gets(Model_BProgramVersion.class) == null) {
+            idCache().add(Model_BProgramVersion.class,  Model_BProgramVersion.find.query().where().ne("deleted", true).eq("b_program.id", id).order().desc("created").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_BProgramVersion.class) != null ?  cache().gets(Model_BProgramVersion.class) : new ArrayList<>();
+        return idCache().gets(Model_BProgramVersion.class) != null ?  idCache().gets(Model_BProgramVersion.class) : new ArrayList<>();
     }
 
     @JsonIgnore
     public void sort_Model_Model_BProgramVersion_ids() {
         List<Model_BProgramVersion> versions = getVersions();
-        this.cache().removeAll(Model_BProgramVersion.class);
+        this.idCache().removeAll(Model_BProgramVersion.class);
         versions.stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())
-                .forEach(o -> this.cache().add(Model_BProgramVersion.class, o.id));
+                .forEach(o -> this.idCache().add(Model_BProgramVersion.class, o.id));
     }
 
 
@@ -104,7 +103,7 @@ public class Model_BProgram extends TaggedModel {
             List<Model_BProgramVersion> list = new ArrayList<>();
 
             for (UUID id : getVersionsIds() ) {
-                list.add(Model_BProgramVersion.getById(id));
+                list.add(Model_BProgramVersion.find.byId(id));
             }
 
             return list;
@@ -126,10 +125,8 @@ public class Model_BProgram extends TaggedModel {
         Model_Project project = getProject();
 
         if(project != null) {
-            project.cache().add(this.getClass(), this.id);
+            project.idCache().add(this.getClass(), this.id);
         }
-
-        cache.put(this.id, this);
 
         new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, project.id, project.id))).start();
     }
@@ -159,7 +156,7 @@ public class Model_BProgram extends TaggedModel {
 
         // Remove from Project Cache
         try {
-            getProject().cache().remove(this.getClass(), id);
+            getProject().idCache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
@@ -262,31 +259,8 @@ public class Model_BProgram extends TaggedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_BProgram.class)
-    public static Cache<UUID, Model_BProgram> cache;
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_BProgram getById(UUID id) throws _Base_Result_Exception {
-
-        Model_BProgram b_program = cache.get(id);
-        if (b_program == null) {
-
-            b_program = find.byId(id);
-            if (b_program == null) throw new Result_Error_NotFound(Model_BProgram.class);
-
-            cache.put(id, b_program);
-        }
-        // Check Permission
-        if(b_program.its_person_operation()) {
-            b_program.check_read_permission();
-        }
-
-        return b_program;
-    }
-
-
-    /* FINDER --------------------------------------------------------------------------------------------------------------*/
-     
-    public static Finder<UUID, Model_BProgram> find = new Finder<>(Model_BProgram.class);
-
+    @CacheFinderField(Model_BProgram.class)
+    public static CacheFinder<Model_BProgram> find = new CacheFinder<>(Model_BProgram.class);
 }
-

@@ -2,11 +2,9 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import org.ehcache.Cache;
-import utilities.cache.CacheField;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -15,7 +13,6 @@ import utilities.model.NamedModel;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @ApiModel(value = "Producer", description = "Model of Producer")
@@ -69,29 +66,8 @@ public class Model_Producer extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_Producer.class, duration = CacheField.DayCacheConstant)
-    public static Cache<UUID, Model_Producer> cache;
-
-    public static Model_Producer getById(UUID id) throws _Base_Result_Exception {
-
-        Model_Producer producer = cache.get(id);
-
-        if (producer == null) {
-
-            producer = Model_Producer.find.byId(id);
-            if (producer == null) throw new Result_Error_NotFound(Model_Producer.class);
-
-            cache.put(id, producer);
-        }
-
-        // Check Permission
-        if(producer.its_person_operation()) {
-            producer.check_read_permission();
-        }
-        return producer;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Producer> find = new Finder<>(Model_Producer.class);
+    @CacheFinderField(Model_Producer.class)
+    public static CacheFinder<Model_Producer> find = new CacheFinder<>(Model_Producer.class);
 }

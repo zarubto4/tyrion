@@ -2,11 +2,9 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import org.ehcache.Cache;
-import utilities.cache.CacheField;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -15,7 +13,6 @@ import utilities.model.NamedModel;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @ApiModel(description = "Model of Processor", value = "Processor")
@@ -71,28 +68,8 @@ public class Model_Processor extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_Processor.class, duration = CacheField.DayCacheConstant)
-    public static Cache<UUID, Model_Processor> cache;
-
-    public static Model_Processor getById(UUID id) throws _Base_Result_Exception {
-
-        Model_Processor processor = cache.get(id);
-
-        if (processor == null) {
-
-            processor = Model_Processor.find.byId(id);
-            if (processor == null) throw new Result_Error_NotFound(Model_Processor.class);
-
-            cache.put(id, processor);
-        }
-        // Check Permission
-        if(processor.its_person_operation()) {
-            processor.check_read_permission();
-        }
-        return processor;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Processor> find = new Finder<>(Model_Processor.class);
+    @CacheFinderField(Model_Processor.class)
+    public static CacheFinder<Model_Processor> find = new CacheFinder<>(Model_Processor.class);
 }

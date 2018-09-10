@@ -1,15 +1,22 @@
 package utilities.demo_data;
 
+import com.typesafe.config.Config;
 import controllers._BaseController;
+import controllers._BaseFormFactory;
 import io.swagger.annotations.Api;
 import models.*;
+import play.Environment;
+import play.libs.ws.WSClient;
 import play.mvc.Result;
 import utilities.enums.BusinessModel;
 import utilities.enums.ExtensionType;
 import utilities.enums.HomerType;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
+import utilities.logger.YouTrack;
+import utilities.scheduler.SchedulerController;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -20,6 +27,17 @@ public class Utilities_Demo_data_Controller extends _BaseController {
 // LOGGER ##############################################################################################################
 
     private static final Logger terminal_logger = new Logger(Utilities_Demo_data_Controller.class);
+
+
+
+// CONTROLLER CONFIGURATION ############################################################################################
+
+    @javax.inject.Inject
+    public Utilities_Demo_data_Controller(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+        super(environment, ws, formFactory, youTrack, config, scheduler);
+    }
+
+// CONTROLLER CONTENT ##################################################################################################
 
     public Result test() {
         try {
@@ -276,36 +294,39 @@ public class Utilities_Demo_data_Controller extends _BaseController {
             Model_TariffExtension extensions_1 = new Model_TariffExtension();
             extensions_1.name = "Extension 1";
             extensions_1.description = "description extension 1";
-            extensions_1.type = ExtensionType.project;
+            extensions_1.type = ExtensionType.DATABASE;
             extensions_1.active = true;
             extensions_1.deleted = false;
             extensions_1.color = "blue-madison";
-            extensions_1.configuration = "{\"price\":1000,\"count\":100}";
+            extensions_1.configuration = "{\"minutePrice\":0.001}";
+            extensions_1.consumption = "{\"minutes\": 86400}";
             extensions_1.save();
 
             Model_TariffExtension extensions_2 = new Model_TariffExtension();
             extensions_2.name = "Extension 2";
             extensions_2.description = "description extension 2";
-            extensions_2.type = ExtensionType.log;
+            extensions_2.type = ExtensionType.LOG;
             extensions_2.active = true;
             extensions_2.deleted = false;
             extensions_2.color = "blue-chambray";
-            extensions_2.configuration = "{\"price\":400,\"count\":2}";
+            extensions_2.configuration = "{\"price\":0.4,\"count\":2}";
+            extensions_2.consumption = "{}";
             extensions_2.save();
 
             // Alfa
             Model_Tariff tariff_1 = new Model_Tariff();
             tariff_1.order_position = 1;
             tariff_1.active = true;
-            tariff_1.business_model = BusinessModel.ALPHA;
+            tariff_1.business_model = BusinessModel.SAAS;
             tariff_1.name = "Alfa account";
             tariff_1.description = "Unlimited account for testing";
             tariff_1.identifier = "alpha";
+            tariff_1.credit_for_beginning = new BigDecimal(1000000);
 
             tariff_1.color = "blue";
-            tariff_1.credit_for_beginning = 0L;
+            tariff_1.credit_for_beginning = BigDecimal.ZERO;
 
-            tariff_1.company_details_required = false;
+            tariff_1.owner_details_required = false;
             tariff_1.payment_details_required = false;
 
             tariff_1.extensions_included.add(extensions_1);

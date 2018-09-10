@@ -1,6 +1,7 @@
 package utilities.enums;
 
 import io.ebean.annotation.EnumValue;
+import play.Configuration;
 import utilities.financial.extensions.extensions.*;
 import utilities.logger.Logger;
 
@@ -13,28 +14,28 @@ public enum ExtensionType {
     !!!
      */
 
-    @EnumValue("project")       project,
-    @EnumValue("log")           log,
-    @EnumValue("database")      database,
-    @EnumValue("rest_api")      rest_api,
-    @EnumValue("support")       support,
-    @EnumValue("instance")      instance,
-    @EnumValue("homer_server")  homer_server,
-    @EnumValue("participant")   participant;
+    @EnumValue("project")       PROJECT,
+    @EnumValue("log")           LOG,
+    @EnumValue("database")      DATABASE,
+    @EnumValue("rest_api")      REST_API,
+    @EnumValue("support")       SUPPORT,
+    @EnumValue("instance")      INSTANCE,
+    @EnumValue("homer_server")  HOMER_SERVER,
+    @EnumValue("participant")   PARTICIPANT;
 
     // All classes returned from this method (in package utilities.financial.extensions) must implement Extension interface.
     public Class<? extends Extension> getExtensionClass() {
         try {
 
             switch (this) {
-                case project:       return Extension_Project.class;
-                case log:           return Extension_Log.class;
-                case database:      return Extension_Database.class;
-                case rest_api:      return Extension_RestApi.class;
-                case support:       return Extension_Support.class;
-                case instance:      return Extension_Instance.class;
-                case homer_server:  return Extension_HomerServer.class;
-                case participant:   return Extension_Participant.class;
+                case PROJECT:       return Extension_Project.class;
+                case LOG:           return Extension_Log.class;
+                case DATABASE:      return Extension_Database.class;
+                case REST_API:      return Extension_RestApi.class;
+                case SUPPORT:       return Extension_Support.class;
+                case INSTANCE:      return Extension_Instance.class;
+                case HOMER_SERVER:  return Extension_HomerServer.class;
+                case PARTICIPANT:   return Extension_Participant.class;
                 default: throw new Exception("This Extension Type is unhandled. Probably forgotten to add it to the switch statement in getExtensionClass() method.");
             }
 
@@ -42,6 +43,14 @@ public enum ExtensionType {
             logger.internalServerError(e);
             return null;
         }
+    }
+
+    public String getTypeName() {
+        return Configuration.root().getString("Financial.extensions." + name().toLowerCase() + ".name");
+    }
+
+    public String getTypeDescription() {
+        return Configuration.root().getString("Financial.extensions." + name().toLowerCase() + ".description");
     }
 
     private static final Logger logger = new Logger(ExtensionType.class);

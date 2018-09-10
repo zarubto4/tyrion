@@ -8,18 +8,17 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.storage.StorageException;
 import controllers._BaseController;
 import controllers.Controller_WebSocket;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.io.FileExistsException;
-import org.ehcache.Cache;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import play.mvc.Result;
 import responses.*;
 import utilities.Server;
-import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.CompilationStatus;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
@@ -145,28 +144,28 @@ public class Model_CProgramVersion extends VersionModel {
 
             Swagger_C_Program_Version c_program_versions = new Swagger_C_Program_Version();
 
-            Model_Blob fileRecord = file;
+            if (file != null) {
 
-            if (fileRecord != null) {
+                JsonNode json = Json.parse(file.downloadString());
 
-                JsonNode json = Json.parse(fileRecord.get_fileRecord_from_Azure_inString());
-
-                Swagger_C_Program_Version_Refresh version_new = baseFormFactory.formFromJsonWithValidation(Swagger_C_Program_Version_Refresh.class, json);
+                Swagger_C_Program_Version_Refresh version_new = formFromJsonWithValidation(Swagger_C_Program_Version_Refresh.class, json);
 
                 c_program_versions.main = version_new.main;
                 c_program_versions.files = version_new.files;
 
-                for ( String imported_library_version_id : version_new.imported_libraries) {
+                for (UUID imported_library_version_id : version_new.imported_libraries) {
 
-                    Model_LibraryVersion library_version = Model_LibraryVersion.getById(imported_library_version_id);
+                    try {
+                        Model_LibraryVersion library_version = Model_LibraryVersion.find.byId(imported_library_version_id);
 
-                    if (library_version == null) continue;
+                        Swagger_Library_Library_Version_pair pair = new Swagger_Library_Library_Version_pair();
+                        pair.library         =  new Swagger_Short_Reference(library_version.library.id, library_version.library.name, library_version.library.description);
+                        pair.library_version = new Swagger_Short_Reference(library_version.id, library_version.name, library_version.description);
 
-                    Swagger_Library_Library_Version_pair pair = new Swagger_Library_Library_Version_pair();
-                    pair.library         =  new Swagger_Short_Reference(library_version.library.id, library_version.library.name, library_version.library.description);
-                    pair.library_version = new Swagger_Short_Reference(library_version.id, library_version.name, library_version.description);
-
-                    c_program_versions.imported_libraries.add(pair);
+                        c_program_versions.imported_libraries.add(pair);
+                    } catch (Result_Error_NotFound e) {
+                        // Nothing
+                    }
                 }
             } else {
                 logger.error("File Record is null!");
@@ -186,17 +185,17 @@ public class Model_CProgramVersion extends VersionModel {
     @JsonIgnore
     public UUID get_c_program_id() throws _Base_Result_Exception {
 
-        if (cache().get(Model_CProgram.class) == null) {
-            cache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("deleted", false).eq("versions.id", id).select("id").findSingleAttribute());
+        if (idCache().get(Model_CProgram.class) == null) {
+            idCache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("deleted", false).eq("versions.id", id).select("id").findSingleAttribute());
         }
 
-        return cache().get(Model_CProgram.class);
+        return idCache().get(Model_CProgram.class);
     }
 
     @JsonIgnore
     public Model_CProgram get_c_program() throws _Base_Result_Exception {
         UUID id = get_c_program_id();
-        return id != null ? Model_CProgram.getById(id) : null;
+        return id != null ? Model_CProgram.find.byId(id) : null;
     }
 
 
@@ -215,7 +214,7 @@ public class Model_CProgramVersion extends VersionModel {
         if(get_c_program() != null) {
             System.out.println("Add To CProgram by get_c_program()");
             program.getVersionsId();
-            program.cache().add(this.getClass(), id);
+            program.idCache().add(this.getClass(), id);
             program.sort_Model_Model_CProgramVersion_ids();
         }
 
@@ -253,7 +252,7 @@ public class Model_CProgramVersion extends VersionModel {
 
         // Add to Cache
         try {
-            get_c_program().cache().remove(this.getClass(), id);
+            get_c_program().idCache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
@@ -347,13 +346,13 @@ public class Model_CProgramVersion extends VersionModel {
             }
 
             // Zpracování Json
-            JsonNode json = Json.parse(file_record.get_fileRecord_from_Azure_inString());
+            JsonNode json = Json.parse(file_record.downloadString());
 
             Swagger_C_Program_Version_Update code_file;
 
             try {
 
-                code_file = baseFormFactory.formFromJsonWithValidation(Swagger_C_Program_Version_Update.class, json);
+                code_file = formFromJsonWithValidation(Swagger_C_Program_Version_Update.class, json);
 
             } catch (Exception e) {
                 logger.internalServerError(e);
@@ -364,12 +363,12 @@ public class Model_CProgramVersion extends VersionModel {
 
             List<Swagger_Library_Record> library_files = new ArrayList<>();
 
-            for (String lib_id : code_file.imported_libraries) {
+            for (UUID lib_id : code_file.imported_libraries) {
 
                 logger.trace("compile_C_Program_code:: Looking for library Version Id " + lib_id);
                 try {
 
-                    Model_LibraryVersion lib_version = Model_LibraryVersion.getById(lib_id);
+                    Model_LibraryVersion lib_version = Model_LibraryVersion.find.byId(lib_id);
 
                     if (lib_version.get_library() == null) {
                         logger.error("compile_C_Program_code:: library is null ");
@@ -380,13 +379,13 @@ public class Model_CProgramVersion extends VersionModel {
 
                         logger.trace("compile_program_procedure:: Library contains files");
 
-                        JsonNode j = Json.parse(lib_version.file.get_fileRecord_from_Azure_inString());
+                        JsonNode j = Json.parse(lib_version.file.downloadString());
 
                         Swagger_Library_File_Load lib_file;
 
                         try {
 
-                            lib_file = baseFormFactory.formFromJsonWithValidation(Swagger_Library_File_Load.class, j);
+                            lib_file = formFromJsonWithValidation(Swagger_Library_File_Load.class, j);
 
                         } catch (Exception e) {
                             logger.internalServerError(e);
@@ -554,7 +553,7 @@ public class Model_CProgramVersion extends VersionModel {
             // Result_Error_NotFound
             if(error.getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
                 Result_Error_NotFound not_found = (Result_Error_NotFound) error.getCause();
-                return _BaseController.notFound(not_found.getClass_not_found());
+                return _BaseController.notFound(not_found.getEntity());
             }
             logger.internalServerError(error);
            return _BaseController.internalServerError(error);
@@ -628,28 +627,8 @@ public class Model_CProgramVersion extends VersionModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_CProgramVersion.class, duration = 600)
-    public static Cache<UUID, Model_CProgramVersion> cache;
-
-    public static Model_CProgramVersion getById(UUID id) throws _Base_Result_Exception {
-
-        Model_CProgramVersion version = cache.get(id);
-
-        if (version == null) {
-
-            version = find.byId(id);
-            if (version == null) throw new Result_Error_NotFound(Model_CProgramVersion.class);
-
-            cache.put(id, version);
-        }
-        // Check Permission
-        if(version.its_person_operation()) {
-            version.check_read_permission();
-        }
-        return version;
-    }
-
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_CProgramVersion> find = new Finder<>(Model_CProgramVersion.class);
+    @CacheFinderField(Model_CProgramVersion.class)
+    public static CacheFinder<Model_CProgramVersion> find = new CacheFinder<>(Model_CProgramVersion.class);
 }

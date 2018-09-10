@@ -26,6 +26,7 @@ libraryDependencies ++= Seq(
   "io.minio" % "minio" % "0.2.4", // Minio BLOB storage library - azure-storag opensource alternative
   "com.fasterxml.jackson.dataformat" % "jackson-dataformat-xml" % "2.8.0", // XML to JSON support
   "org.mongodb" % "mongodb-driver" % "3.7.0-rc0",
+  "org.mockito" % "mockito-core" % "2.18.3" % Test,
   "org.apache.poi" % "poi" % "3.17", // Excel support for report P&G
   "org.apache.poi" % "poi-ooxml" % "3.17",
   evolutions,

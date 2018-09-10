@@ -46,7 +46,7 @@ public abstract class VersionModel extends NamedModel {
         try {
 
             if (author_id != null) {
-                return Model_Person.getById(author_id);
+                return Model_Person.find.byId(author_id);
             }
 
             return null;

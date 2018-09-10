@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -55,7 +55,7 @@ public class Model_Garfield  extends NamedModel {
     public Model_HardwareType hardware_type() {
         try {
 
-            if (hardware_type_id != null) return Model_HardwareType.getById(hardware_type_id);
+            if (hardware_type_id != null) return Model_HardwareType.find.byId(hardware_type_id);
             return null;
 
         } catch (_Base_Result_Exception e){
@@ -71,7 +71,7 @@ public class Model_Garfield  extends NamedModel {
     public Model_Producer producer() {
         try {
 
-            if (producer_id != null) return Model_Producer.getById(producer_id);
+            if (producer_id != null) return Model_Producer.find.byId(producer_id);
             return null;
 
         } catch (_Base_Result_Exception e){
@@ -160,21 +160,8 @@ public class Model_Garfield  extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Garfield getById(UUID id) throws _Base_Result_Exception {
-
-        Model_Garfield garfield = find.byId(id);
-        if (garfield == null) throw new Result_Error_NotFound(Model_Garfield.class);
-
-        // Check Permission
-        if(garfield.its_person_operation()) {
-            garfield.check_read_permission();
-        }
-
-        return garfield;
-
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Garfield> find = new Finder<>(Model_Garfield.class);
+    @CacheFinderField(Model_Garfield.class)
+    public static CacheFinder<Model_Garfield> find = new CacheFinder<>(Model_Garfield.class);
 }

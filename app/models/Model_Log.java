@@ -2,9 +2,9 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -14,7 +14,6 @@ import javax.persistence.Entity;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.beans.Transient;
-import java.util.UUID;
 
 @Entity
 @ApiModel(description = "Model of Log",
@@ -85,19 +84,8 @@ public class Model_Log extends NamedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Log getById(UUID id) throws _Base_Result_Exception {
-        Model_Log board = find.byId(id);
-        if (board == null) throw new Result_Error_NotFound(Model_Log.class);
-
-        // Check Permission
-        if(board.its_person_operation()) {
-            board.check_read_permission();
-        }
-
-        return board;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<UUID, Model_Log> find = new Finder<>(Model_Log.class);
 
+    @CacheFinderField(Model_Log.class)
+    public static CacheFinder<Model_Log> find = new CacheFinder<>(Model_Log.class);
 }

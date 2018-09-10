@@ -11,7 +11,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.bson.Document;
 import play.data.validation.Constraints;
 import play.libs.Json;
-import utilities.errors.Exceptions.Result_Error_Bad_request;
+import utilities.errors.Exceptions.Result_Error_BadRequest;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -27,7 +27,7 @@ import java.util.UUID;
 import static com.mongodb.client.model.Filters.eq;
 
 @ApiModel(description = "Model of Production Batch  ", value = "HardwareBatch")
-public class Model_HardwareBatch  extends MongoModel {
+public class Model_HardwareBatch extends MongoModel {
 
     /**
      * _BaseFormFactory
@@ -178,7 +178,7 @@ public class Model_HardwareBatch  extends MongoModel {
 
         } catch (Exception e){
             logger.internalServerError(e);
-            throw new Result_Error_Bad_request("Save To Mongo DB faild");
+            throw new Result_Error_BadRequest("Save To Mongo DB faild");
         }
     }
 
@@ -196,7 +196,7 @@ public class Model_HardwareBatch  extends MongoModel {
 
         } catch (Exception e){
             logger.internalServerError(e);
-            throw new Result_Error_Bad_request("Save To Mongo DB faild");
+            throw new Result_Error_BadRequest("Save To Mongo DB faild");
         }
     }
 

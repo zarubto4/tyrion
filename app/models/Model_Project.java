@@ -4,11 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
 import io.ebean.Expr;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.cache.IdsList;
 import utilities.enums.*;
 import utilities.errors.Exceptions.Result_Error_NotFound;
@@ -145,11 +146,11 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore
     public List<UUID> getHardwareIds() {
 
-        if (cache().gets(Model_Hardware.class) == null) {
-            cache().add(Model_Hardware.class, Model_Hardware.find.query().where().eq("project.id", id).ne("deleted", true).select("id").findSingleAttributeList());
+        if (idCache().gets(Model_Hardware.class) == null) {
+            idCache().add(Model_Hardware.class, Model_Hardware.find.query().where().eq("project.id", id).ne("deleted", true).select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_Hardware.class) != null ?  cache().gets(Model_Hardware.class) : new ArrayList<>();
+        return idCache().gets(Model_Hardware.class) != null ?  idCache().gets(Model_Hardware.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -159,7 +160,7 @@ public class Model_Project extends TaggedModel {
             List<Model_Hardware> list = new ArrayList<>();
 
             for (UUID id : getHardwareIds() ) {
-                list.add(Model_Hardware.getById(id));
+                list.add(Model_Hardware.find.byId(id));
             }
 
             return list;
@@ -173,11 +174,11 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore
     public List<UUID> getCProgramsIds() {
 
-        if (cache().gets(Model_CProgram.class) == null) {
-            cache().add(Model_CProgram.class, Model_CProgram.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        if (idCache().gets(Model_CProgram.class) == null) {
+            idCache().add(Model_CProgram.class, Model_CProgram.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_CProgram.class) != null ?  cache().gets(Model_CProgram.class) : new ArrayList<>();
+        return idCache().gets(Model_CProgram.class) != null ?  idCache().gets(Model_CProgram.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -187,7 +188,7 @@ public class Model_Project extends TaggedModel {
             List<Model_CProgram> list = new ArrayList<>();
 
             for (UUID id : getCProgramsIds() ) {
-                list.add(Model_CProgram.getById(id));
+                list.add(Model_CProgram.find.byId(id));
             }
 
             return list;
@@ -201,11 +202,11 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore
     public List<UUID> getLibrariesIds() {
 
-        if (cache().gets(Model_Library.class) == null) {
-            cache().add(Model_Library.class, Model_Library.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        if (idCache().gets(Model_Library.class) == null) {
+            idCache().add(Model_Library.class, Model_Library.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_Library.class) != null ?  cache().gets(Model_Library.class) : new ArrayList<>();
+        return idCache().gets(Model_Library.class) != null ?  idCache().gets(Model_Library.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -215,7 +216,7 @@ public class Model_Project extends TaggedModel {
             List<Model_Library> list = new ArrayList<>();
 
             for (UUID id : getLibrariesIds() ) {
-                list.add(Model_Library.getById(id));
+                list.add(Model_Library.find.byId(id));
             }
 
             return list;
@@ -229,11 +230,11 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore
     public List<UUID> getBProgramsIds() {
 
-        if (cache().gets(Model_BProgram.class) == null) {
-            cache().add(Model_BProgram.class, Model_BProgram.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        if (idCache().gets(Model_BProgram.class) == null) {
+            idCache().add(Model_BProgram.class, Model_BProgram.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_BProgram.class) != null ?  cache().gets(Model_BProgram.class) : new ArrayList<>();
+        return idCache().gets(Model_BProgram.class) != null ?  idCache().gets(Model_BProgram.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -243,7 +244,7 @@ public class Model_Project extends TaggedModel {
             List<Model_BProgram> list = new ArrayList<>();
 
             for (UUID id : getBProgramsIds() ) {
-                list.add(Model_BProgram.getById(id));
+                list.add(Model_BProgram.find.byId(id));
             }
 
             return list;
@@ -258,11 +259,11 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore
     public List<UUID> getGridProjectsIds() {
 
-        if (cache().gets(Model_GridProject.class) == null) {
-            cache().add(Model_GridProject.class, Model_GridProject.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        if (idCache().gets(Model_GridProject.class) == null) {
+            idCache().add(Model_GridProject.class, Model_GridProject.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_GridProject.class) != null ?  cache().gets(Model_GridProject.class) : new ArrayList<>();
+        return idCache().gets(Model_GridProject.class) != null ?  idCache().gets(Model_GridProject.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -272,7 +273,7 @@ public class Model_Project extends TaggedModel {
             List<Model_GridProject> list = new ArrayList<>();
 
             for (UUID id : getGridProjectsIds() ) {
-                list.add(Model_GridProject.getById(id));
+                list.add(Model_GridProject.find.byId(id));
             }
 
             return list;
@@ -286,11 +287,11 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore
     public List<UUID> getHardwareGroupsIds() {
 
-        if (cache().gets(Model_HardwareGroup.class) == null) {
-            cache().add(Model_HardwareGroup.class, Model_HardwareGroup.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        if (idCache().gets(Model_HardwareGroup.class) == null) {
+            idCache().add(Model_HardwareGroup.class, Model_HardwareGroup.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_HardwareGroup.class) != null ?  cache().gets(Model_HardwareGroup.class) : new ArrayList<>();
+        return idCache().gets(Model_HardwareGroup.class) != null ?  idCache().gets(Model_HardwareGroup.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -300,7 +301,7 @@ public class Model_Project extends TaggedModel {
             List<Model_HardwareGroup> list = new ArrayList<>();
 
             for (UUID id : getHardwareGroupsIds() ) {
-                list.add(Model_HardwareGroup.getById(id));
+                list.add(Model_HardwareGroup.find.byId(id));
             }
 
             return list;
@@ -314,11 +315,11 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore
     public List<UUID> getWidgetsIds() {
 
-        if (cache().gets(Model_Widget.class) == null) {
-            cache().add(Model_Widget.class, Model_Widget.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        if (idCache().gets(Model_Widget.class) == null) {
+            idCache().add(Model_Widget.class, Model_Widget.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_Widget.class) != null ?  cache().gets(Model_Widget.class) : new ArrayList<>();
+        return idCache().gets(Model_Widget.class) != null ?  idCache().gets(Model_Widget.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -328,7 +329,7 @@ public class Model_Project extends TaggedModel {
             List<Model_Widget> list = new ArrayList<>();
 
             for (UUID id : getWidgetsIds() ) {
-                list.add(Model_Widget.getById(id));
+                list.add(Model_Widget.find.byId(id));
             }
 
             return list;
@@ -342,11 +343,11 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore
     public List<UUID> getBlocksIds() {
 
-        if (cache().gets(Model_Block.class) == null) {
-            cache().add(Model_Block.class, Model_Block.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        if (idCache().gets(Model_Block.class) == null) {
+            idCache().add(Model_Block.class, Model_Block.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_Block.class) != null ?  cache().gets(Model_Block.class) : new ArrayList<>();
+        return idCache().gets(Model_Block.class) != null ?  idCache().gets(Model_Block.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -356,7 +357,7 @@ public class Model_Project extends TaggedModel {
             List<Model_Block> list = new ArrayList<>();
 
             for (UUID id : getBlocksIds() ) {
-                list.add(Model_Block.getById(id));
+                list.add(Model_Block.find.byId(id));
             }
 
             return list;
@@ -370,11 +371,11 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore
     public List<UUID> getHomerServerIds() {
 
-        if (cache().gets(Model_HomerServer.class) == null) {
-            cache().add(Model_HomerServer.class, Model_HomerServer.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        if (idCache().gets(Model_HomerServer.class) == null) {
+            idCache().add(Model_HomerServer.class, Model_HomerServer.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_HomerServer.class) != null ?  cache().gets(Model_HomerServer.class) : new ArrayList<>();
+        return idCache().gets(Model_HomerServer.class) != null ?  idCache().gets(Model_HomerServer.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -384,7 +385,7 @@ public class Model_Project extends TaggedModel {
             List<Model_HomerServer> list = new ArrayList<>();
 
             for (UUID id : getHomerServerIds() ) {
-                list.add(Model_HomerServer.getById(id));
+                list.add(Model_HomerServer.find.byId(id));
             }
 
             return list;
@@ -398,11 +399,11 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore
     public List<UUID> getInstancesIds() {
 
-        if (cache().gets(Model_Instance.class) == null) {
-            cache().add(Model_Instance.class, Model_Instance.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
+        if (idCache().gets(Model_Instance.class) == null) {
+            idCache().add(Model_Instance.class, Model_Instance.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
 
-        return cache().gets(Model_Instance.class) != null ?  cache().gets(Model_Instance.class) : new ArrayList<>();
+        return idCache().gets(Model_Instance.class) != null ?  idCache().gets(Model_Instance.class) : new ArrayList<>();
     }
 
     @JsonIgnore
@@ -412,7 +413,7 @@ public class Model_Project extends TaggedModel {
             List<Model_Instance> list = new ArrayList<>();
 
             for (UUID id : getInstancesIds() ) {
-                list.add(Model_Instance.getById(id));
+                list.add(Model_Instance.find.byId(id));
             }
 
             return list;
@@ -426,17 +427,17 @@ public class Model_Project extends TaggedModel {
     @JsonIgnore
     public UUID getProductId() {
 
-        if (cache().get(Model_Product.class) == null) {
-            cache().add(Model_Product.class, Model_Product.find.query().where().eq("projects.id", id).select("id").findSingleAttributeList());
+        if (idCache().get(Model_Product.class) == null) {
+            idCache().add(Model_Product.class, Model_Product.find.query().where().eq("projects.id", id).select("id").findSingleAttributeList());
         }
 
-        return cache().get(Model_Product.class);
+        return idCache().get(Model_Product.class);
     }
 
     @JsonIgnore
     public Model_Product getProduct() {
         try {
-            return Model_Product.getByIdWithoutPermission(getProductId());
+            return Model_Product.find.byId(getProductId());
 
         }catch (Exception e) {
             logger.internalServerError(e);
@@ -577,7 +578,7 @@ public class Model_Project extends TaggedModel {
                     if(homer_id == null) continue;
 
                     try {
-                        Model_HomerServer server = Model_HomerServer.getById(homer_id);
+                        Model_HomerServer server = Model_HomerServer.find.byId(homer_id);
                         if (server.online_state() == NetworkStatus.ONLINE) {
                             WS_Message_Hardware_online_status response = server.device_online_synchronization_ask(Model_Hardware.find.query().where().eq("project.id", id).eq("connected_server_id", homer_id).select("id").findSingleAttributeList());
                             if (response.status.equals("success")) {
@@ -646,41 +647,21 @@ public class Model_Project extends TaggedModel {
 
         super.save();
 
-        product.cache().add(this.getClass(), id);
-    }
-
-    @JsonIgnore @Override public void update() {
-
-        logger.debug("update - updating in database, id: {}",  this.id);
-
-        try {
-
-            if (cache.containsKey(this.id)) cache.replace(this.id, this);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-
-        super.update();
+        product.idCache().add(this.getClass(), id);
     }
 
     @JsonIgnore @Override public boolean delete() {
         logger.debug("delete - deleting from database, id: {} ", this.id);
 
-
-        System.out.println("Its time to log out hardware form project for delete: " + this.id);
         List<UUID> hardware_list = Model_Hardware.find.query().where()
                 .eq("project.id", this.id)
                 .eq("dominant_entity", true)
                 .select("id").findSingleAttributeList();
 
-        System.out.println("List of Hardware for Remove: " + hardware_list);
-
         for (UUID hardware_id : hardware_list) {
             try {
-                System.out.println("ID for Remove" + hardware_list);
 
-                Model_Hardware hardware = Model_Hardware.getById(hardware_id);
+                Model_Hardware hardware = Model_Hardware.find.byId(hardware_id);
 
                 hardware.dominant_entity = false;
                 hardware.update();
@@ -700,7 +681,7 @@ public class Model_Project extends TaggedModel {
         }
 
         super.delete();
-        getProduct().cache().remove(this.getClass(), id);
+        getProduct().idCache().remove(this.getClass(), id);
 
         return true;
     }
@@ -888,7 +869,7 @@ public class Model_Project extends TaggedModel {
 
                 idlist = new IdsList();
 
-                Model_Project project = getById(project_id);
+                Model_Project project = find.byId(project_id);
 
                 for (Model_ProjectParticipant participant : project.participants) {
 
@@ -911,44 +892,11 @@ public class Model_Project extends TaggedModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_Project.class)
-    public static Cache<UUID, Model_Project> cache ;
-
     @CacheField(value = IdsList.class, name = "Model_Project_Person_Ids")
     public static Cache<UUID, IdsList> token_cache;
 
-    public static Model_Project getById(UUID id) throws _Base_Result_Exception {
-
-        Model_Project project = getByIdWithoutPermission(id);
-
-        // Check Permission
-        if(project.its_person_operation()) {
-            project.check_read_permission();
-        }
-
-        return project;
-    }
-
-    public static Model_Project getByIdWithoutPermission(UUID id) throws _Base_Result_Exception {
-
-        Model_Project project = cache.get(id);
-        if (project == null) {
-            project = find.query().where().idEq(id).eq("deleted", false).findOne();
-            if (project == null) throw new Result_Error_NotFound(Model_Project.class);
-            cache.put(id, project);
-        }
-
-        return project;
-    }
-
-    public void cache_refresh() {
-        if (cache.containsKey(this.id)) {
-            this.refresh();
-            cache.replace(this.id, this);
-        }
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Project> find = new Finder<>(Model_Project.class);
+    @CacheFinderField(Model_Project.class)
+    public static CacheFinder<Model_Project> find = new CacheFinder<>(Model_Project.class);
 }

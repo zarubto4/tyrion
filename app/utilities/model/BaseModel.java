@@ -3,33 +3,33 @@ package utilities.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.inject.Inject;
 import controllers._BaseController;
-import controllers._BaseFormFactory;
 import io.ebean.Model;
 import io.ebean.annotation.SoftDelete;
 import io.swagger.annotations.ApiModelProperty;
+import models.Model_HomerServer;
 import org.ehcache.Cache;
 import play.libs.Json;
+import utilities.Server;
 import utilities.cache.CacheField;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.cache.Cached;
 import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.models_update_echo.EchoHandler;
+import websocket.interfaces.WS_Homer;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
 
-import static java.util.stream.Collectors.toList;
-
 @MappedSuperclass
-public abstract class BaseModel  extends Model implements JsonSerializer {
-
-    @Inject public static _BaseFormFactory baseFormFactory; // Its Required to set this in Server.class Component
+public abstract class BaseModel extends Model implements JsonSerializer {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
@@ -52,13 +52,12 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
     @JsonIgnore @SoftDelete
     public boolean deleted;
 
-
 /* GENERAL OBJECT CACHE ------------------------------------------------------------------------------------------------*/
     /**
      *
      */
    @JsonIgnore @Transient
-    public IDCache cache(){
+    public IDCache idCache(){
 
         if(idCache == null) {
             idCache = new IDCache();
@@ -242,7 +241,44 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
     }
 
 
-/* COMMON METHODS ------------------------------------------------------------------------------------------------------*/
+    /**
+     * Shortcuts for automatic validation and parsing of incoming JSON to MODEL class
+     * @param clazz
+     * @param <T>
+     * @return
+     * @throws _Base_Result_Exception
+     */
+    @JsonIgnore
+    public static <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception {
+        return Server.baseFormFactory.formFromJsonWithValidation(clazz, jsonNode);
+    }
+
+    /**
+     * Binds Json data to this form - that is, handles form submission.
+     * Special Method with Response to Websocket
+     * @param clazz
+     * @param jsonNode
+     * @param <T>
+     * @return a copy of this form filled with the new data
+     */
+    public static  <T> T formFromJsonWithValidation(Model_HomerServer server, Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception, IOException {
+        return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
+    }
+
+    /**
+     * Binds Json data to this form - that is, handles form submission.
+     * Special Method with Response to Websocket
+     * @param clazz
+     * @param jsonNode
+     * @param <T>
+     * @return a copy of this form filled with the new data
+     */
+    public static  <T> T formFromJsonWithValidation(WS_Homer server, Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception, IOException {
+        return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
+    }
+
+
+    /* COMMON METHODS ------------------------------------------------------------------------------------------------------*/
 
     /**
      * Default save method - Permission is checked inside
@@ -251,7 +287,7 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
     @Override
     public void save() throws _Base_Result_Exception {
 
-        logger.debug("save::Creating new Object");
+        logger.debug("save - saving new {}", this.getClass().getSimpleName());
 
         // Check Permission - only if user is logged!
         if(its_person_operation()) {
@@ -270,9 +306,9 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
 
         super.save();
 
-        new Thread(this::cacheCleaner).start(); // Caches the object
+        new Thread(this::cache).start(); // Caches the object
 
-        logger.trace("save - saved '{}' to DB, id: {}", this.getClass().getSimpleName(), this.id);
+        logger.trace("save - saved {} to DB, id: {}", this.getClass().getSimpleName(), this.id);
 
         // Send the echo update
         if (isNew) {
@@ -289,7 +325,7 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
     public void update() throws _Base_Result_Exception {
         try {
 
-            logger.debug("update::Update object Id: {}", this.id);
+            logger.debug("update - updating {}, id: {}", this.getClass().getSimpleName(), this.id);
 
             // Check Permission
             if (its_person_operation()) {
@@ -299,13 +335,12 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
 
             this.updated = new Date();
             super.update();
-            // this.cacheCleaner();
+            new Thread(this::cache).start();
 
         } catch (Result_Error_PermissionDenied e) {
             logger.warn("update::Unauthorized UPDATE operation, its required remove everything from Cache");
             throw new Result_Error_PermissionDenied();
         } catch (Exception e){
-            logger.error("update::Something is wrong!");
             logger.internalServerError(e);
             throw new Result_Error_PermissionDenied();
         }
@@ -317,7 +352,7 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
      */
     @Override
     public boolean delete() throws _Base_Result_Exception {
-        logger.debug("delete:: - deleting '{}' from DB, id: {}", this.getClass().getSimpleName(), this.id);
+        logger.debug("delete - soft deleting {}, id: {}", this.getClass().getSimpleName(), this.id);
 
         if(its_person_operation()) {
             check_delete_permission();
@@ -333,11 +368,17 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
 
     @Override
     public boolean deletePermanent() {
-        logger.debug("deletePermanent - permanently deleting '{}' from DB, id: {}", this.getClass().getSimpleName(), this.id);
+        logger.debug("deletePermanent - permanently deleting {}, id: {}", this.getClass().getSimpleName(), this.id);
 
         if(its_person_operation()) check_delete_permission();
 
         return super.deletePermanent();
+    }
+
+    @Override
+    public void refresh() {
+        super.refresh();
+        this.cache();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -348,9 +389,12 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
      * TODO measure performance impact LEVEL: HARD  TIME: LONGTERM
      */
     @SuppressWarnings("unchecked")
-    private void cacheCleaner() {
+    private void cache() {
         long start = System.currentTimeMillis();
         Class<? extends BaseModel> cls = this.getClass();
+
+        logger.trace("cache - finding cache finder for {}", cls.getSimpleName());
+
         for (Field field : cls.getDeclaredFields()) {
             if (field.isAnnotationPresent(CacheField.class)) {
                 try {
@@ -369,6 +413,19 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
                     logger.internalServerError(e);
                 }
             }
+
+            if (field.isAnnotationPresent(CacheFinderField.class) && field.getType().equals(CacheFinder.class)) {
+                try {
+
+                    logger.debug("cache - found cache finder field");
+
+                    CacheFinder<BaseModel> cacheFinder = (CacheFinder<BaseModel>) field.get(null);
+                    cacheFinder.cache(this.id, this);
+
+                } catch (Exception e) {
+                    logger.internalServerError(e);
+                }
+            }
         }
     }
 
@@ -382,6 +439,9 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
     private void evict() {
         long start = System.currentTimeMillis();
         Class<? extends BaseModel> cls = this.getClass();
+
+        logger.trace("evict - finding cache finder for {}", cls.getSimpleName());
+
         for (Field field : cls.getDeclaredFields()) {
             if (field.isAnnotationPresent(CacheField.class)) {
                 try {
@@ -392,6 +452,19 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
                         logger.trace("evict - finding cache took {} ms", System.currentTimeMillis() - start);
                         break;
                     }
+                } catch (Exception e) {
+                    logger.internalServerError(e);
+                }
+            }
+
+            if (field.isAnnotationPresent(CacheFinderField.class) && field.getType().equals(CacheFinder.class)) {
+                try {
+
+                    logger.debug("evict - found cache finder field");
+
+                    CacheFinder<?> cacheFinder = (CacheFinder<?>) field.get(null);
+                    cacheFinder.evict(this.id);
+
                 } catch (Exception e) {
                     logger.internalServerError(e);
                 }
@@ -455,8 +528,8 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
      */
     @JsonIgnore public boolean its_person_operation() {
         try {
-            return  _BaseController.isAuthenticated();
-        }catch (Exception e){
+            return _BaseController.isAuthenticated();
+        } catch (Exception e) {
             logger.internalServerError(e);
             return false;
         }
@@ -475,19 +548,17 @@ public abstract class BaseModel  extends Model implements JsonSerializer {
             List<Field> fields = new ArrayList<>();
             getAllFields(fields, this.getClass(), 0);
 
+            for (Field field : fields) {
 
-            for(Field field : fields) {
-
-                if(field.getName().equals("author_id")) {
+                if (field.getName().equals("author_id")) {
                     if (field.get(this) == null) {
-                        field.set(this, _BaseController.person().id);
+                        field.set(this, _BaseController.personId());
                         return;
                     }
                 }
-
             }
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             logger.internalServerError(e);
         }
     }
