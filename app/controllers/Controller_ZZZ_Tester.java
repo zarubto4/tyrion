@@ -11,9 +11,7 @@ import com.typesafe.config.Config;
 import io.intercom.api.User;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import models.Model_GSM;
-import models.Model_HardwareRegistrationEntity;
-import models.Model_Person;
+import models.*;
 import org.apache.poi.ss.usermodel.*;
 import org.bson.Document;
 import org.joda.time.DateTime;
@@ -25,11 +23,20 @@ import play.libs.ws.WSClient;
 import play.mvc.Controller;
 import play.mvc.Result;
 
+import utilities.enums.Currency;
+import utilities.enums.ExtensionType;
+import utilities.enums.InvoiceStatus;
+import utilities.enums.PaymentMethod;
+import utilities.enums.ProductEventType;
+import utilities.financial.extensions.ExtensionInvoiceItem;
+import utilities.financial.fakturoid.FakturoidService;
 import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.logger.Logger;
 
 import java.io.FileOutputStream;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -52,6 +59,9 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Controller_ZZZ_Tester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
         super(environment, ws, formFactory, youTrack, config, scheduler);
     }
+
+    @Inject
+    private FakturoidService fakturoid;
 
 // CONTROLLER CONTENT ##################################################################################################
     @ApiOperation(value = "Hidden test Method", hidden = true)
@@ -281,7 +291,142 @@ public class Controller_ZZZ_Tester extends _BaseController {
         }
     }
 
+    @ApiOperation(value = "Hidden test Method", hidden = true)
+    public Result test5(UUID product_id) {
+        try {
+            Model_Product product = Model_Product.getById(product_id);
+            if(product == null) {
+                badRequest("Wrong product id!");
+            }
 
+            if(product.owner.contact == null) {
+                badRequest("We need contact id!");
+            }
 
+            if(product.getExtensionIds().size() == 0) {
+                badRequest("We need an extension!");
+            }
 
+            ZonedDateTime projectCreatedZDT = ZonedDateTime.of(2018, 1, 1, 12, 33, 10, 0, ZoneId.of("UTC"));
+            Date projectCreated = Date.from(projectCreatedZDT.toInstant());
+
+            Model_ProductExtension productExtension = new Model_ProductExtension();
+            productExtension.product = product;
+            productExtension.created = projectCreated;
+            productExtension.name = "Extension for invoice";
+            productExtension.description = "Testing extension";
+            productExtension.color = "red";
+            productExtension.type = ExtensionType.DATABASE;
+            productExtension.configuration = "{\"minutePrice\":0.001}";
+            productExtension.save();
+
+            productExtension.setActive(true);
+
+            List<Model_ProductEvent> eventsExtension = Model_ProductEvent.find.query().where()
+                    .eq("product.id", product.id)
+                    .and()
+                    .eq("reference", productExtension.id)
+                    .findList();
+            for(Model_ProductEvent event: eventsExtension) {
+                if(event.event_type == ProductEventType.EXTENSION_CREATED) {
+                    event.created = projectCreated;
+                    event.update();
+                }
+
+                if(event.event_type == ProductEventType.EXTENSION_ACTIVATED) {
+                    event.created = Date.from(projectCreated.toInstant().plusMillis(100));
+                    event.update();
+                }
+            }
+
+            List<Model_ProductEvent> eventsProduct = Model_ProductEvent.find.query().where()
+                    .eq("product.id", product.id)
+                    .and()
+                    .eq("reference", null)
+                    .findList();
+            for(Model_ProductEvent event: eventsProduct) {
+                if(event.event_type == ProductEventType.PRODUCT_CREATED) {
+                    event.created = Date.from(projectCreated.toInstant().minusMillis(100));
+                    event.update();
+                }
+            }
+
+            Instant productCreatedFirstMidnight = LocalDateTime.ofInstant(projectCreated.toInstant(), ZoneId.of("UTC")).toLocalDate().plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC);
+            Instant from = projectCreated.toInstant();
+            Instant to = productCreatedFirstMidnight;
+            for(int i = 0; i < 20; i++) {
+                Model_ExtensionFinancialEvent financialEvent = new Model_ExtensionFinancialEvent();
+                financialEvent.product_extension = productExtension;
+                financialEvent.event_start = Date.from(from);
+                financialEvent.event_end = Date.from(to);
+                financialEvent.consumption = "{\"minutes\": "+ (((to.toEpochMilli() - from.toEpochMilli()) / 60000)) +"}";
+                financialEvent.save();
+
+                from = to;
+                to = from.plusSeconds(3600 * 24);
+            }
+
+            ZonedDateTime startOfNextMonth = projectCreatedZDT.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0).plusMonths(1);
+            Model_Invoice invoice = product.createInvoice(projectCreated, Date.from(startOfNextMonth.toInstant()));
+
+            boolean res = invoice.status == InvoiceStatus.UNCONFIRMED ? true : fakturoid.createAndUpdateProforma(invoice);
+
+            return ok(res + "");
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return badRequest();
+        }
+    }
+
+    @ApiOperation(value = "Hidden test Method", hidden = true)
+    public Result test6(UUID product_id) {
+        try {
+            Model_Product product = Model_Product.getById(product_id);
+            if(product == null) {
+                badRequest("Wrong product id!");
+            }
+
+            if(product.owner.contact == null) {
+                badRequest("We need contact id!");
+            }
+
+            Model_Invoice invoice = new Model_Invoice();
+            invoice.product = product;
+            invoice.created = new Date();
+            invoice.currency = Currency.USD;
+            invoice.method = PaymentMethod.INVOICE_BASED;
+            invoice.save();
+
+            List<ExtensionInvoiceItem> extensionInvoiceItems = new ArrayList<>();
+            extensionInvoiceItems.add(new ExtensionInvoiceItem("item1", new BigDecimal("10.111"), "u1", new BigDecimal("1.15")));
+            extensionInvoiceItems.add(new ExtensionInvoiceItem("item2", new BigDecimal("1000"), "u1", new BigDecimal("5.36")));
+            extensionInvoiceItems.add(new ExtensionInvoiceItem("item3", new BigDecimal("1.003"), "u1", new BigDecimal("10.11")));
+            extensionInvoiceItems.add(new ExtensionInvoiceItem("item4", new BigDecimal("1.888"), "u1", new BigDecimal("3.2")));
+            extensionInvoiceItems.add(new ExtensionInvoiceItem("item5", new BigDecimal("45646.65"), "u1", new BigDecimal("0.05")));
+            extensionInvoiceItems.add(new ExtensionInvoiceItem("item6", new BigDecimal("55"), "u1", new BigDecimal("3")));
+            extensionInvoiceItems.add(new ExtensionInvoiceItem("item7", new BigDecimal("1"), "u1", new BigDecimal("-100")));
+
+            for (ExtensionInvoiceItem item : extensionInvoiceItems) {
+                Model_InvoiceItem invoiceItem = new Model_InvoiceItem();
+                invoiceItem.invoice = invoice;
+                invoiceItem.name = item.getName();
+                invoiceItem.unit_name = item.getUnitName();
+                invoiceItem.quantity = item.getQuantity();
+                invoiceItem.unit_price = item.getUnitPrice();
+                invoiceItem.save();
+
+                invoice.invoice_items().add(invoiceItem);
+            }
+
+            invoice.status = InvoiceStatus.UNCONFIRMED ;
+            invoice.update();
+
+            invoice.saveEvent(invoice.created, ProductEventType.INVOICE_CREATED, "{status: " + invoice.status + "}");
+
+            return ok();
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return badRequest();
+        }
+    }
 }

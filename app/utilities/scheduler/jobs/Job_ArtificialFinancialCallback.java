@@ -1,24 +1,13 @@
 package utilities.scheduler.jobs;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
-import models.Model_Invoice;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import play.libs.F;
-import play.libs.Json;
 import play.libs.ws.WSClient;
-import play.libs.ws.WSResponse;
-import utilities.enums.PaymentStatus;
 import utilities.logger.Logger;
 import utilities.scheduler.Restrict;
 import utilities.scheduler.Scheduled;
-
-import java.time.Duration;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.CompletionStage;
 
 /**
  * This class is used to send artificial notification in developer mode.
@@ -52,55 +41,56 @@ public class Job_ArtificialFinancialCallback implements Job {
 
         @Override
         public void run() {
-            try {
-
-                logger.debug("callback_thread: concurrent thread started on {}", new Date());
-
-                List<Model_Invoice> invoices_for_gopay = Model_Invoice.find.query().where()
-                        .isNotNull("gopay_id")
-                        .eq("status", PaymentStatus.PENDING)
-                        .findList();
-
-                List<Model_Invoice> invoices_for_fakturoid = Model_Invoice.find.query().where()
-                        .isNull("gopay_id")
-                        .isNotNull("proforma_id")
-                        .eq("status", PaymentStatus.PENDING)
-                        .eq("proforma", true)
-                        .findList();
-
-                for (Model_Invoice invoice : invoices_for_gopay) {
-
-                    CompletionStage<WSResponse> responsePromise = ws.url("http://localhost:9000/go_pay/notification?id=" + invoice.gopay_id)
-                            .setRequestTimeout(Duration.ofSeconds(5))
-                            .get();
-
-                    WSResponse response = responsePromise.toCompletableFuture().get();
-
-                    logger.debug("callback_thread: Sending notification for payment: {} - response: {}", invoice.gopay_id, response.getStatus());
-                }
-
-                for (Model_Invoice invoice : invoices_for_fakturoid) {
-
-                    ObjectNode body = Json.newObject();
-                    body.put("invoice_id", invoice.proforma_id);
-                    body.put("number", invoice.invoice_number);
-                    body.put("status", "paid");
-                    body.put("total", ((double) invoice.total_price()) / 1000);
-                    body.put("event_name", "artificial_notification");
-
-                    CompletionStage<WSResponse> responsePromise = ws.url("http://localhost:9000/fakturoid/callback")
-                            .setRequestTimeout(Duration.ofSeconds(5))
-                            .post(body);
-
-                    WSResponse response = responsePromise.toCompletableFuture().get();
-
-                    logger.debug("callback_thread: Sending notification for invoice: {} - response: {}", invoice.proforma_id, response.getStatus());
-                }
-            } catch (Exception e) {
-                logger.internalServerError(e);
-            }
-
-            logger.debug("callback_thread: thread stopped on {}", new Date());
+// TODO
+//            try {
+//
+//                logger.debug("callback_thread: concurrent thread started on {}", new Date());
+//
+//                List<Model_Invoice> invoices_for_gopay = Model_Invoice.find.query().where()
+//                        .isNotNull("gopay_id")
+//                        .eq("status", InvoiceStatus.PENDING)
+//                        .findList();
+//
+//                List<Model_Invoice> invoices_for_fakturoid = Model_Invoice.find.query().where()
+//                        .isNull("gopay_id")
+//                        .isNotNull("proforma_id")
+//                        .eq("status", InvoiceStatus.PENDING)
+//                        .eq("proforma", true)
+//                        .findList();
+//
+//                for (Model_Invoice invoice : invoices_for_gopay) {
+//
+//                    CompletionStage<WSResponse> responsePromise = ws.url("http://localhost:9000/go_pay/notification?id=" + invoice.gopay_id)
+//                            .setRequestTimeout(Duration.ofSeconds(5))
+//                            .get();
+//
+//                    WSResponse response = responsePromise.toCompletableFuture().get();
+//
+//                    logger.debug("callback_thread: Sending notification for payment: {} - response: {}", invoice.gopay_id, response.getStatus());
+//                }
+//
+//                for (Model_Invoice invoice : invoices_for_fakturoid) {
+//
+//                    ObjectNode body = Json.newObject();
+//                    body.put("invoice_id", invoice.proforma_id);
+//                    body.put("number", invoice.invoice_number);
+//                    body.put("status", "paid");
+//                    body.put("total", invoice.total_price_with_vat);
+//                    body.put("event_name", "artificial_notification");
+//
+//                    CompletionStage<WSResponse> responsePromise = ws.url("http://localhost:9000/fakturoid/callback")
+//                            .setRequestTimeout(Duration.ofSeconds(5))
+//                            .post(body);
+//
+//                    WSResponse response = responsePromise.toCompletableFuture().get();
+//
+//                    logger.debug("callback_thread: Sending notification for invoice: {} - response: {}", invoice.proforma_id, response.getStatus());
+//                }
+//            } catch (Exception e) {
+//                logger.internalServerError(e);
+//            }
+//
+//            logger.debug("callback_thread: thread stopped on {}", new Date());
         }
     };
 }

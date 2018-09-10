@@ -10,23 +10,25 @@ import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
+import utilities.Server;
 import utilities.enums.BusinessModel;
 import utilities.enums.PaymentMethod;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
-import utilities.financial.extensions.extensions.Extension;
 import utilities.logger.Logger;
 import utilities.model.OrderedNamedModel;
 import utilities.swagger.input.Swagger_TariffLabel;
 import utilities.swagger.input.Swagger_TariffLabelList;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Entity
-@ApiModel(value = "Tariff", description = "Model of Tariff")
+@ApiModel("Tariff")
 @Table(name="Tariff")
 public class Model_Tariff extends OrderedNamedModel {
 
@@ -42,11 +44,10 @@ public class Model_Tariff extends OrderedNamedModel {
 
     @Enumerated(EnumType.STRING) @JsonIgnore public BusinessModel business_model;
 
-                            public boolean company_details_required;
+                            public boolean owner_details_required;
                             public boolean payment_details_required;
-                            public boolean payment_method_required;
 
-                @JsonIgnore public Long credit_for_beginning;  // Kredit, který se po zaregistrování připíše uživatelovi k dobru. (Náhrada Trial Verze)
+                @JsonIgnore public BigDecimal credit_for_beginning;  // Kredit, který se po zaregistrování připíše uživatelovi k dobru. (Náhrada Trial Verze)
 
                             public String color;
                             public String awesome_icon;
@@ -66,31 +67,23 @@ public class Model_Tariff extends OrderedNamedModel {
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonProperty public List<Pair> payment_methods() {
-
+    @JsonProperty public List<PaymentMethod> payment_methods() {
         try{
+            return  PaymentMethod.fromString(payment_methods);
 
-            List<Pair> methods = new ArrayList<>();
-
-            methods.add( new Pair( PaymentMethod.BANK_TRANSFER.name(), "Bank transfers") );
-            methods.add( new Pair( PaymentMethod.CREDIT_CARD.name()  , "Credit Card Payment"));
-
-        return methods;
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
-            return null;
+            logger.error("Cannot get payment methods", e);
         }
+
+        return Collections.emptyList();
     }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     @ApiModelProperty("Visible only for Administrator with Special Permission")
-    @Transient public Long credit_for_beginning() {
+    @Transient public Double credit_for_beginning() {
         try {
             this.check_update_permission();
-            return credit_for_beginning;
+            return credit_for_beginning.doubleValue();
         } catch (_Base_Result_Exception e){
             return null;
         }catch (Exception e){
@@ -156,18 +149,17 @@ public class Model_Tariff extends OrderedNamedModel {
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore
+    public final static String payment_methods = PaymentMethod.INVOICE_BASED + "|" + PaymentMethod.CREDIT_CARD; // TODO maybe editable one day
+
+    @JsonIgnore
     public Double total_per_month() {
         try {
-            Long total_price = 0L;
+            BigDecimal total = this.extensions_included.stream()
+                    .map(extension -> extension.getPrice())
+                    .reduce(BigDecimal::add)
+                    .get();
 
-            for (Model_TariffExtension extension : this.extensions_included) {
-                Long price = Extension.getDailyPrice(extension.type, extension.configuration);
-
-                if (price != null) {
-                    total_price += price;
-                }
-            }
-            return (double) total_price;
+            return total.setScale(Server.financial_price_scale, Server.financial_price_rounding).doubleValue();
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -176,21 +168,6 @@ public class Model_Tariff extends OrderedNamedModel {
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
-
-    public class Pair {
-
-        public Pair(String json_identifier, String user_description) {
-            this.json_identifier = json_identifier;
-            this.user_description = user_description;
-        }
-
-        @ApiModelProperty(required = true, readOnly = true)
-        public String json_identifier;
-
-        @ApiModelProperty(required = true, readOnly = true)
-        public String user_description;
-
-    }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 

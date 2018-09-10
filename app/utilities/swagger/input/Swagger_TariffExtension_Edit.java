@@ -14,4 +14,6 @@ public class Swagger_TariffExtension_Edit extends Swagger_NameAndDescription {
     @Constraints.Required @ApiModelProperty(required = true, value = "Json in String")
     public String config;
 
+    @Constraints.Required @ApiModelProperty(required = true, value = "Json in String")
+    public String consumption;
 }

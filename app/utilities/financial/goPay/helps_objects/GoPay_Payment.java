@@ -29,18 +29,18 @@ public class GoPay_Payment {
  // Pomocné metody -----------------------------------------------------------------------------------------------------
 
     public void setItems(List<Model_InvoiceItem> invoice_items) {
-
-        for (Model_InvoiceItem item :invoice_items) {
-            amount += item.unit_price / 10;
-
-            GoPay_Items go_item = new GoPay_Items();
-            go_item.name = item.name;
-            go_item.amount = item.unit_price / 10;
-       //     go_item.fee = (long) 0;
-       //     go_item.quantity = item.quantity;
-
-            items.add(go_item);
-        }
+//
+//        for (Model_InvoiceItem item :invoice_items) {
+//            amount += item.unit_price / 10;
+//
+//            GoPay_Items go_item = new GoPay_Items();
+//            go_item.name = item.name;
+//            go_item.amount = item.unit_price / 10;
+//       //     go_item.fee = (long) 0;
+//       //     go_item.quantity = item.quantity;
+//
+//            items.add(go_item);
+//        }
 
     }
 

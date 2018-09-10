@@ -10,15 +10,18 @@ import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.*;
+import utilities.enums.Currency;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.slack.Slack;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
 
 @Entity
 @ApiModel( value = "Invoice", description = "Model of Invoice")
@@ -31,37 +34,97 @@ public class Model_Invoice extends BaseModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                   @JsonIgnore  public Long   fakturoid_id;         // Id určené ze strany Fakturoid
-                                                   @JsonIgnore  public String fakturoid_pdf_url;    // Adresa ke stáhnutí faktury
-            @ApiModelProperty(required = true, readOnly = true) public String invoice_number;       // 2016-0001 - Generuje Fakturoid
+                                                   @JsonIgnore   public Long   fakturoid_id;         // Id určené ze strany Fakturoid
+                                                   @JsonIgnore   public String fakturoid_pdf_url;    // Adresa ke stáhnutí faktury
+            @ApiModelProperty(required = true, readOnly = true)  public String invoice_number;       // 2016-0001 - Generuje Fakturoid
 
-                                                   @JsonIgnore  public Long   gopay_id;             // 1213231123
-                                                   @JsonIgnore  public String gopay_order_number;   // ON-783837426-1469877748551
-                                                   @JsonIgnore  public String gw_url;
+                                                   @JsonIgnore   public BigDecimal total_price_without_vat;
+                                                   @JsonIgnore   public BigDecimal total_price_with_vat;
 
-                                                   @JsonIgnore  public boolean proforma;
+                                                   @JsonIgnore   public Long   gopay_id;             // 1213231123
+                                                   @JsonIgnore   public String gopay_order_number;   // ON-783837426-1469877748551
+                                                   @JsonIgnore   public String gw_url;
 
-                                                   @JsonIgnore  public Long   proforma_id;          // Id proformy ze které je faktura
-                                                   @JsonIgnore  public String proforma_pdf_url;
+                                                   @JsonIgnore   public boolean proforma;
+
+                                                   @JsonIgnore   public Long   proforma_id;          // Id proformy ze které je faktura
+                                                   @JsonIgnore   public String proforma_pdf_url;
+                                                                 public String public_html_url;
 
     @ApiModelProperty(required = false, readOnly = true,
             dataType = "integer", value = "UNIX time in ms",
-            example = "1466163478925")                          public Date paid;
+            example = "1466163478925")                           public Date issued;
+
+    @ApiModelProperty(required = false, readOnly = true,
+            dataType = "integer", value = "UNIX time in ms",
+            example = "1466163478925")                           public Date paid;
 
     @ApiModelProperty(required = true, readOnly = true,
             dataType = "integer", value = "UNIX time in ms",
-            example = "1466163478925")                          public Date overdue;
+            example = "1466163478925")                           public Date overdue;
 
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)              public Model_Product product;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)               public Model_Product product;
 
     @JsonIgnore @OneToMany(mappedBy="invoice",
-            cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_InvoiceItem> invoice_items = new ArrayList<>();
+            cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_InvoiceItem> invoice_items = new ArrayList<>();
 
-                    @JsonIgnore   @Enumerated(EnumType.STRING)  public PaymentStatus status;
-                    @JsonIgnore   @Enumerated(EnumType.STRING)  public PaymentMethod method;
-                    @JsonIgnore   @Enumerated(EnumType.STRING)  public PaymentWarning warning;
+ @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Currency currency;
+ @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public PaymentMethod method;
+
+                    @JsonIgnore   @Enumerated(EnumType.STRING)   public InvoiceStatus status;
+                    @JsonIgnore   @Enumerated(EnumType.STRING)   public PaymentWarning warning;
 
 /* JSON PROPERTY VALUES -----------------------------------------------------------------------------------------------*/
+
+    /**
+     * @return Price without VAT from Fakturoid. If it is not set, return null for customer (such invoice should not be displayed)
+     * or an estimate for user with update rights (may be needed for confirmation).
+     */
+    @JsonProperty
+    public Double total_price_without_vat() {
+        if (total_price_without_vat != null) {
+            return total_price_without_vat.doubleValue();
+        }
+
+        // those are only two states, where price should be empty
+        if(status != InvoiceStatus.UNCONFIRMED && status != InvoiceStatus.UNFINISHED) {
+            return null;
+        }
+
+        // Only user with update permission should be able to see invoices which are not
+        // synchronized with Facturoid nad without prices set from it - show the estimate.
+        try {
+            check_update_permission();
+            return getTotalPriceWithoutVatEstimate();
+        } catch (_Base_Result_Exception e){
+            return null;
+        }
+    }
+
+    /**
+     * @return Price without VAT from Fakturoid. If it is not set, return null for customer (such invoice should not be displayed)
+     * or an estimate for user with update rights (may be needed for confirmation).
+     */
+    @JsonProperty
+    public Double total_price_with_vat() {
+        if (total_price_with_vat != null) {
+            return total_price_with_vat.doubleValue();
+        }
+
+        // those are only two states, where price should be empty
+        if(status != InvoiceStatus.UNCONFIRMED && status != InvoiceStatus.UNFINISHED) {
+            return null;
+        }
+
+        // Only user with update permission should be able to see invoices which are not
+        // synchronized with Facturoid nad without prices set from it - show the estimate.
+        try {
+            check_update_permission();
+            return getTotalPriceWithVatEstimate();
+        } catch (_Base_Result_Exception e){
+            return null;
+        }
+    }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Visible only when the invoice is available")
     public String invoice_pdf_link()  {
@@ -92,7 +155,7 @@ public class Model_Invoice extends BaseModel {
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Visible only when the invoice is not paid")
     public boolean require_payment()  {
         try{
-            return status == PaymentStatus.PENDING || status == PaymentStatus.OVERDUE;
+            return status == InvoiceStatus.PENDING || status == InvoiceStatus.OVERDUE;
         } catch (_Base_Result_Exception e){
             //nothing
             return false;
@@ -105,7 +168,7 @@ public class Model_Invoice extends BaseModel {
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Visible only when the invoice is not paid")
     public String gw_url()  {
        try{
-        if (status == PaymentStatus.PENDING || status == PaymentStatus.OVERDUE) return this.gw_url;
+        if (status == InvoiceStatus.PENDING || status == InvoiceStatus.OVERDUE) return this.gw_url;
 
         return null;
        } catch (_Base_Result_Exception e){
@@ -125,30 +188,11 @@ public class Model_Invoice extends BaseModel {
                 case PENDING: return  "Invoice needs to be paid.";
                 case OVERDUE: return  "Invoice is overdue.";
                 case CANCELED: return  "Invoice is canceled.";
+                case UNCONFIRMED: return  "Invoice is waiting for conformation by admin.";
+                case UNFINISHED: return  "Invoice is waiting for registration in Fakturoid.";
                 default             : return  "Undefined state";
             }
 
-        }catch (_Base_Result_Exception e){
-            logger.internalServerError(e);
-            return null;
-
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public String payment_method() {
-        try {
-            switch (method) {
-                case BANK_TRANSFER:
-                    return "Bank transfer.";
-                case CREDIT_CARD:
-                    return "Credit Card Payment.";
-                default:
-                    return "Undefined state";
-            }
         }catch (_Base_Result_Exception e){
             logger.internalServerError(e);
             return null;
@@ -176,9 +220,41 @@ public class Model_Invoice extends BaseModel {
         }
     }
 
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public double price() {
-            return ((double) this.total_price());
+    @JsonProperty @ApiModelProperty(required = false, readOnly = true)
+    public boolean to_confirm() {
+        return status == InvoiceStatus.UNCONFIRMED;
+    }
+
+    @JsonProperty
+    public Date from() {
+        Model_ExtensionFinancialEvent fst =  Model_ExtensionFinancialEvent.find.query()
+                .where()
+                .eq("invoice.id", id)
+                .orderBy("event_start ASC")
+                .setMaxRows(1)
+                .findOne();
+        if(fst == null) {
+            logger.error("Cannot find oldest financial event for invoice {}.", id);
+            return null;
+        }
+
+        return fst.event_start;
+    }
+
+    @JsonProperty
+    public Date to() {
+        Model_ExtensionFinancialEvent last =  Model_ExtensionFinancialEvent.find.query()
+                .where()
+                .eq("invoice.id", id)
+                .orderBy("event_start DESC")
+                .setMaxRows(1)
+                .findOne();
+        if(last == null) {
+            logger.error("Cannot find oldest financial event for invoice {}.", id);
+            return null;
+        }
+
+        return last.event_end;
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
@@ -190,62 +266,97 @@ public class Model_Invoice extends BaseModel {
     }
 
     /**
-     * Method takes all extensions and converts them to invoice items.
-     * Prerequisite is an assigned product to the invoice.
+     * We takes the calculated price of an invoice from Fakturoid
+     * (Just to be sure and avoid some small rounding troubles.) <br /><br />
+     *
+     * Users should be able to see only invoices which are already in Fakturoid so price is prepared.
+     * This is for admins.
+     *
+     * @return price of the whole invoice without taxes
      */
     @JsonIgnore
-    public void setItems() {
-//
-//        Model_Product product = getProduct();
-//        if (product == null) throw new NullPointerException("Product is not set yet for this invoice.");
-//
-//        for (Model_ProductExtension extension : product.extensions) {
-//
-//            Model_InvoiceItem item = new Model_InvoiceItem();
-//            item.name = extension.name;
-//            item.unit_price = extension.getConfigPrice() * 30;
-//
-//            switch (extension.type) {
-//                case project: {
-//                    item.quantity = ((Configuration_Project) extension.getConfiguration()).count;
-//                    break;
-//                }
-//                case log: {
-//                    item.quantity = ((Configuration_Log) extension.getConfiguration()).count;
-//                    break;
-//                }
-//                case rest_api: {
-//                    item.quantity = ((Configuration_RestApi) extension.getConfiguration()).available_requests;
-//                    break;
-//                }
-//                case instance: {
-//                    item.quantity = ((Configuration_Instance) extension.getConfiguration()).count;
-//                    break;
-//                }
-//                case participant: {
-//                    item.quantity = ((Configuration_Participant) extension.getConfiguration()).count;
-//                    break;
-//                }
-//                default: item.quantity = 1L;
-//            }
-//
-//            item.unit_name = "Pcs";
-//            item.currency = Currency.USD;
-//
-//            invoice_items.add(item);
-//        }
+    public double  getTotalPriceWithoutVatEstimate() {
+        BigDecimal total = BigDecimal.ZERO;
+        for (Model_InvoiceItem  item : invoice_items) {
+            total = total.add(item.quantity.multiply(item.unit_price));
+        }
+        return total.setScale(Server.financial_price_scale, Server.financial_price_rounding).doubleValue();
+    }
+
+    /**
+     * We takes the calculated price of an invoice from Fakturoid
+     * (Just to be sure and avoid some small rounding troubles.) <br /><br />
+     *
+     * Users should be able to see only invoices which are already in Fakturoid so price is prepared.
+     * This is for admins.
+     *
+     * @return price of the whole invoice inc. taxes
+     */
+    @JsonIgnore
+    public double getTotalPriceWithVatEstimate() {
+        Map<Integer, BigDecimal> vatRatesPrices = new HashMap();
+
+        for (Model_InvoiceItem  item : invoice_items) {
+            BigDecimal total = vatRatesPrices.get(item.vat_rate);
+            if(total == null) {
+                total = BigDecimal.ZERO;
+            }
+            total = total.add(item.quantity.multiply(item.unit_price));
+            vatRatesPrices.put(item.vat_rate, total);
+        }
+
+        BigDecimal totalWithoutVat = BigDecimal.ZERO;
+        BigDecimal totalVat = BigDecimal.ZERO;
+        for(Map.Entry<Integer, BigDecimal> ratePriceItem: vatRatesPrices.entrySet()) {
+            BigDecimal withoutVat = ratePriceItem.getValue();
+            BigDecimal vat = withoutVat
+                    .multiply(new BigDecimal(ratePriceItem.getKey()))
+                    .divide(new BigDecimal(100));
+
+            totalWithoutVat = totalWithoutVat.add(withoutVat);
+            totalVat = totalVat.add(vat);
+        }
+
+        totalWithoutVat = totalWithoutVat.setScale(Server.financial_price_scale, Server.financial_price_rounding);
+        totalVat = totalVat.setScale(Server.financial_tax_scale, Server.financial_tax_rounding);
+
+        return totalWithoutVat.add(totalVat).doubleValue();
     }
 
     @JsonIgnore
-    public Long total_price() {
-        Long total_price = 0L;
-        for (Model_InvoiceItem  item : invoice_items) {
-            total_price += item.unit_price * item.quantity;
-        }
-        return total_price;
+    public boolean isIssued() {
+        return status != InvoiceStatus.UNCONFIRMED && status != InvoiceStatus.UNFINISHED;
+    }
+
+/* EVENTS --------------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public Model_ProductEvent saveEvent(Date time, ProductEventType eventType) {
+        return saveEvent(time, eventType, null);
+    }
+
+    @JsonIgnore
+    public Model_ProductEvent saveEvent(Date time, ProductEventType eventType, String data) {
+        Model_ProductEvent historyEvent = new Model_ProductEvent();
+        historyEvent.product = getProduct();
+        historyEvent.reference = this.id;
+        historyEvent.created = time;
+        historyEvent.event_type = eventType;
+        historyEvent.detail = data;
+        historyEvent.save();
+
+        return historyEvent;
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* MESSAGE FOR ADMIN  ---------------------------------------------------------------------------------------------------*/
+    public void sendMessageToAdmin(String message) {
+        String invoiceURL = Server.becki_mainUrl + "/financial/" + product.id + "/invoices/" + id;
+        String fullMessage = message + "\nLink: " + invoiceURL + " .";
+        logger.debug(fullMessage);
+//        Slack.post(fullMessage); TODO uncomment line for production
+    }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -308,25 +419,9 @@ public class Model_Invoice extends BaseModel {
     }
 
     @JsonIgnore
-    public void notificationPaymentIncomplete() {
+    public void notificationPaymentSuccess() {
         try {
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.HIGH)
-                    .setLevel(NotificationLevel.WARNING)
-                    .setText(new Notification_Text().setText("It seems, that you did not finish your payment for this invoice "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText("."))
-                    .send(this.getProduct().notificationReceivers());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore
-    public void notificationPaymentSuccess(double amount) {
-        try {
+            double amount = total_price_with_vat();
 
             new Model_Notification()
                     .setImportance(NotificationImportance.NORMAL)
@@ -334,23 +429,6 @@ public class Model_Invoice extends BaseModel {
                     .setText(new Notification_Text().setText("Payment $" + amount + " for invoice "))
                     .setObject(this)
                     .setText(new Notification_Text().setText(" was successful."))
-                    .send(this.getProduct().notificationReceivers());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore
-    public void notificationPaymentFail() {
-        try {
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.HIGH)
-                    .setLevel(NotificationLevel.ERROR)
-                    .setText(new Notification_Text().setText("Failed to receive your payment for this invoice "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" Check the payment or contact support."))
                     .send(this.getProduct().notificationReceivers());
 
         } catch (Exception e) {
@@ -366,20 +444,24 @@ public class Model_Invoice extends BaseModel {
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Invoice_create.name())) return;
-        product.customer.check_read_permission();
+        throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Invoice_read.name())) return;
-        getProduct().customer.check_read_permission();
+        if(!isIssued()) {
+            if(_BaseController.person().has_permission(Permission.Invoice_update.name())) return;
+            throw new Result_Error_PermissionDenied();
+        }
+
+        getProduct().owner.check_read_permission();
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Invoice_update.name())) return;
-        getProduct().customer.check_read_permission();
+        throw new Result_Error_PermissionDenied();
     }
-
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Invoice_delete.name())) return;
-        getProduct().customer.check_read_permission();
+        throw new Result_Error_PermissionDenied();
     }
 
 

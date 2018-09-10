@@ -33,7 +33,7 @@ public class FinancialPermission {
 
             case "project": {
 
-                List<Model_ProductExtension> filtered = product.extensions.stream().filter(extension -> extension.type == ExtensionType.project).collect(Collectors.toList());
+                List<Model_ProductExtension> filtered = product.extensions.stream().filter(extension -> extension.type == ExtensionType.PROJECT).collect(Collectors.toList());
 
                 int available = 0;
 
@@ -125,7 +125,7 @@ public class FinancialPermission {
 
         if (product != null) {
 
-            List<Model_ProductExtension> filtered = product.extensions.stream().filter(extension -> extension.type == ExtensionType.rest_api).collect(Collectors.toList());
+            List<Model_ProductExtension> filtered = product.extensions.stream().filter(extension -> extension.type == ExtensionType.REST_API).collect(Collectors.toList());
 
             terminal_logger.debug("checkRestApiRequest: filtered extensions");
 

@@ -333,6 +333,7 @@ public abstract class BaseModel extends Model implements JsonSerializer {
                 logger.debug("Permission is ok");
             }
 
+            this.updated = new Date();
             super.update();
             new Thread(this::cache).start();
 

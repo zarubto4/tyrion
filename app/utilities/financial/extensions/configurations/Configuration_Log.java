@@ -2,7 +2,9 @@ package utilities.financial.extensions.configurations;
 
 import play.data.validation.Constraints;
 
-public class Configuration_Log {
+import java.math.BigDecimal;
+
+public class Configuration_Log implements Configuration {
 
     @Constraints.Required
     @Constraints.Min(0)
@@ -10,5 +12,5 @@ public class Configuration_Log {
 
     @Constraints.Required
     @Constraints.Min(0)
-    public Long price;
+    public BigDecimal price;
 }

@@ -1,10 +1,13 @@
 package utilities.financial.extensions.configurations;
 
 import play.data.validation.Constraints;
+import play.db.Database;
 
-public class Configuration_Database {
+import java.math.BigDecimal;
+
+public class Configuration_Database implements Configuration {
 
     @Constraints.Required
     @Constraints.Min(0)
-    public Long price;
+    public BigDecimal minutePrice;
 }

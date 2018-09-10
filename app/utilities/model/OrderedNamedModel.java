@@ -2,6 +2,7 @@ package utilities.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
+import io.swagger.annotations.ApiModelProperty;
 import models.Model_ProductExtension;
 
 import javax.persistence.MappedSuperclass;
@@ -10,7 +11,7 @@ import java.util.UUID;
 
 @MappedSuperclass
 public abstract class OrderedNamedModel extends NamedModel {
-    public Integer order_position;
+    @ApiModelProperty(required = true) public Integer order_position;
 
     private final Finder<UUID, ? extends OrderedNamedModel>  finder;
 

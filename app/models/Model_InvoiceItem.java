@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.Server;
 import utilities.cache.Cached;
 import utilities.enums.Currency;
 import utilities.errors.Exceptions._Base_Result_Exception;
@@ -12,6 +13,9 @@ import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.UUID;
 
 @Entity
@@ -27,11 +31,9 @@ private static final Logger logger = new Logger(Model_InvoiceItem.class);
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                       public Model_Invoice invoice;    // TODO Cache jako v ostatních cache objektech [MARTIN TODO] - jestli to někde někdo blbě nevolá
 
                                                                          public String name; // Jméno položky
-                                                                         public Long   quantity; // Počet položek
-                                                                         public String unit_name; // Piece,
-                                                            @JsonIgnore  public Long unit_price; // Cena / Musí být public - zasílá se do fakturoidu
-
-    @Enumerated(EnumType.STRING)   @ApiModelProperty(required = true)    public Currency currency;
+                                                                         public BigDecimal   quantity; // Počet položek
+                                                                         public String unit_name; // Jednotka
+                                                                         public BigDecimal unit_price;  // Cena za položku
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -39,48 +41,16 @@ private static final Logger logger = new Logger(Model_InvoiceItem.class);
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient public String vat_rate() {
-        try {
+    @Transient public int vat_rate = 21;  // TODO je to hardcodované - Asi b bylo lepší to přenést na nějakou proměnou v Configu! LEVEL: HARD  TIME: LONGTERM
 
-
-            return vat.toString();
-
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true)
+    public double  total_price_without_vat() {
+        return (unit_price.multiply(quantity))
+                .setScale(Server.financial_price_scale, Server.financial_price_rounding)
+                .doubleValue();
     }
 
-    @JsonProperty @Transient public Double unit_price_without_vat() {
-        try {
-            return ((double) (unit_price - (unit_price * (vat / (100 + vat))))) / 1000;
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonProperty public Double unit_price() {
-        try {
-            return ((double) unit_price);
-
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
-    }
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
-
-    @Transient public Long vat = (long) 21000;  // TODO je to hardcodované - Asi b bylo lepší to přenést na nějakou proměnou v Configu! LEVEL: HARD  TIME: LONGTERM
 
     @JsonIgnore     // TODO Cache jako v ostatních cache objektech [MARTIN TODO]
     public UUID get_invoice_id() throws _Base_Result_Exception {

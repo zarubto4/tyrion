@@ -34,6 +34,8 @@ import websocket.interfaces.WS_Homer;
 import websocket.interfaces.WS_Portal;
 
 import javax.persistence.PersistenceException;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
@@ -112,6 +114,14 @@ public class Server {
     public static String slack_webhook_url_channel_homer;
     public static String slack_webhook_url_channel_hardware;
 
+    public static int financial_quantity_scale = 2;
+    public static RoundingMode financial_quantity_rounding = RoundingMode.HALF_UP;
+
+    public static int financial_price_scale = 2;
+    public static RoundingMode financial_price_rounding = RoundingMode.HALF_UP;
+
+    public static int financial_tax_scale = 2;
+    public static RoundingMode financial_tax_rounding = RoundingMode.UP;
 
     /**
      * Loads all configurations and start all server components.

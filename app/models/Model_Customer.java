@@ -1,9 +1,12 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
+import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -24,11 +27,9 @@ public class Model_Customer extends BaseModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                                        @JsonIgnore public String fakturoid_subject_id;
+         @OneToOne public Model_Contact contact;
 
-         @OneToOne(mappedBy = "customer",cascade = CascadeType.ALL) public Model_PaymentDetails payment_details;
-
-       @JsonIgnore @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL) public List<Model_Product>  products  = new ArrayList<>();
+       @JsonIgnore @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL) public List<Model_Product>  products  = new ArrayList<>();
                    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Employee> employees = new ArrayList<>();
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -69,19 +70,25 @@ public class Model_Customer extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    // TODO Oprávnění - Poměrně složité na řešení - odloženo na neurčito - Řešitel bude lexa - Financial je jeho.
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        //
-    }
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
         //
     }
+    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
+        if(_BaseController.person().has_permission(Model_Customer.Permission.Customer_read.name())) return;
+        if(isEmployee(_BaseController.person())) return;
+        throw new Result_Error_PermissionDenied();
+    }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        //
+        if(_BaseController.person().has_permission(Model_Customer.Permission.Customer_update.name())) return;
+        if(isEmployee(_BaseController.person())) return;
+        throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        //
+        if(_BaseController.person().has_permission(Model_Customer.Permission.Customer_delete.name())) return;
+        throw new Result_Error_PermissionDenied();
     }
+
+    public enum Permission { Customer_create, Customer_update, Customer_read, Customer_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

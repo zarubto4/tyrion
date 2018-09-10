@@ -1,48 +1,46 @@
 package utilities.financial.extensions.extensions;
 
-import play.Configuration;
-import utilities.Server;
+import models.Model_ProductExtension;
 import utilities.enums.ExtensionType;
+import utilities.financial.extensions.ExtensionInvoiceItem;
+import utilities.financial.extensions.configurations.Configuration;
 import utilities.financial.extensions.configurations.Configuration_RestApi;
+import utilities.financial.extensions.consumptions.ResourceConsumption;
+import utilities.financial.extensions.consumptions.Consumption_RestApi;
+
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 public class Extension_RestApi implements Extension {
 
-    public static final ExtensionType enum_type = ExtensionType.rest_api;
-    public static final String name = Configuration.root().getString("Financial.extensions." + enum_type.name() + ".name");
-    public static final String description = Configuration.root().getString("Financial.extensions." + enum_type.name() + ".description");
+    public static final ExtensionType TYPE = ExtensionType.REST_API;
 
-    /*
-     !!!Important!!!
-     Final calculated price must be divided by Server.financial_spendDailyPeriod.
-      */
-    public Long getActualPrice(Object configuration) {
-
-        return getDailyPrice(configuration) / Server.financial_spendDailyPeriod;
-    }
-
-    public Long getDailyPrice(Object configuration) {
-
-        Configuration_RestApi restApi = ((Configuration_RestApi) configuration);
-
-        return restApi.price * restApi.available_requests;
-    }
-
-    public Long getConfigPrice(Object configuration) {
-
-        Configuration_RestApi restApi = ((Configuration_RestApi) configuration);
-
-        return restApi.price;
-    }
+    @Override
     public ExtensionType getType() {
-        return enum_type;
+        return TYPE;
     }
 
-
-    public String getName() {
-        return name;
+    @Override
+    public Consumption_RestApi getConsumption(Model_ProductExtension extension, Date from, Date to) {
+        Consumption_RestApi consumption = new Consumption_RestApi();
+        return consumption;
     }
 
-    public String getDescription() {
-        return description;
+    @Override
+    public List<ExtensionInvoiceItem> getInvoiceItems(Configuration configuration, Collection<ResourceConsumption> consumptions) {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void activate(Model_ProductExtension extension) {
+
+    }
+
+    @Override
+    public void deactivate(Model_ProductExtension extension) {
+
     }
 }
