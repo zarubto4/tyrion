@@ -13,7 +13,7 @@ public class InvoiceService {
                 .where()
                 .eq("status", InvoiceStatus.PAID)
                 .and()
-                .isEmpty("fakturoid_id")
+                .isNull("fakturoid_id")
                 .findList();
     }
 
