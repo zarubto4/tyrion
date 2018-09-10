@@ -3,9 +3,10 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ebean.ExpressionList;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import utilities.Server;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.financial.extensions.extensions.Extension;
@@ -115,7 +116,8 @@ public class Model_ExtensionFinancialEvent extends BaseModel {
 
     /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_ExtensionFinancialEvent> find = new Finder<>(Model_ExtensionFinancialEvent.class);
+    @CacheFinderField(Model_ExtensionFinancialEvent.class)
+    public static CacheFinder<Model_ExtensionFinancialEvent> find = new CacheFinder<>(Model_ExtensionFinancialEvent.class);
 
     public static List<Model_ExtensionFinancialEvent> getFinancialEvents(UUID product_id, UUID invoice_id, UUID extension_id, Date from, Date to, boolean ascending) {
         ExpressionList<Model_ExtensionFinancialEvent> expressionList = Model_ExtensionFinancialEvent.find.query().where();

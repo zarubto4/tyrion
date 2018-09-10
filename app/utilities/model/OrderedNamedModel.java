@@ -3,7 +3,6 @@ package utilities.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModelProperty;
-import models.Model_ProductExtension;
 
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;

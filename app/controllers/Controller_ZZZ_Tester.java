@@ -294,7 +294,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
     @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test5(UUID product_id) {
         try {
-            Model_Product product = Model_Product.getById(product_id);
+            Model_Product product = Model_Product.find.byId(product_id);
             if(product == null) {
                 badRequest("Wrong product id!");
             }
@@ -381,7 +381,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
     @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test6(UUID product_id) {
         try {
-            Model_Product product = Model_Product.getById(product_id);
+            Model_Product product = Model_Product.find.byId(product_id);
             if(product == null) {
                 badRequest("Wrong product id!");
             }

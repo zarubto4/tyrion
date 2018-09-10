@@ -11,16 +11,13 @@ import io.ebean.PagedList;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.db.ebean.Transactional;
-import play.data.Form;
-import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.emails.Email;
 import utilities.enums.*;
 import utilities.enums.Currency;
-import utilities.errors.Exceptions.Result_Error_Bad_request;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.errors.Exceptions.Result_Error_BadRequest;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.FinancialPermission;
@@ -35,7 +32,6 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Entity
 @ApiModel(value = "Product", description = "Model of Product")
@@ -94,7 +90,7 @@ public class Model_Product extends NamedModel {
     @Transactional
     public void setActive(boolean activeNew) throws Exception {
         if(this.active == activeNew) {
-            throw new Result_Error_Bad_request("Extension is already " + (activeNew ? "activated" : "deactivated"));
+            throw new Result_Error_BadRequest("Extension is already " + (activeNew ? "activated" : "deactivated"));
         }
 
         if(activeNew) {
@@ -137,7 +133,7 @@ public class Model_Product extends NamedModel {
             List<Model_ProductExtension> list = new ArrayList<>();
 
             for (UUID id : getExtensionIds() ) {
-                list.add(Model_ProductExtension.getById(id));
+                list.add(Model_ProductExtension.find.byId(id));
             }
 
             return list;

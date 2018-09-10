@@ -7,14 +7,15 @@ import controllers._BaseController;
 import io.ebean.Expr;
 import io.ebean.ExpressionList;
 import io.ebean.Finder;
-import io.ebean.PagedList;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.db.ebean.Transactional;
 import play.libs.Json;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.ProductEventType;
 import utilities.enums.ExtensionType;
-import utilities.errors.Exceptions.Result_Error_Bad_request;
+import utilities.errors.Exceptions.Result_Error_BadRequest;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.extensions.configurations.*;
@@ -30,7 +31,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Entity
 @ApiModel(value = "ProductExtension", description = "Model of ProductExtension")
@@ -89,7 +89,7 @@ public class Model_ProductExtension extends OrderedNamedModel {
     public void save() {
         boolean newExtension = id == null;
         if (newExtension && active) {
-            throw new Result_Error_Bad_request("Cannot save a new product with active == true. Use setActive to activate product.");
+            throw new Result_Error_BadRequest("Cannot save a new product with active == true. Use setActive to activate product.");
         }
 
         super.save();
@@ -103,7 +103,7 @@ public class Model_ProductExtension extends OrderedNamedModel {
     @Transactional
     public void setActive(boolean activeNew) throws Exception {
         if(this.active == activeNew) {
-            throw new Result_Error_Bad_request("Extension is already " + (activeNew ? "activated" : "deactivated"));
+            throw new Result_Error_BadRequest("Extension is already " + (activeNew ? "activated" : "deactivated"));
         }
 
         try {
@@ -483,18 +483,12 @@ public class Model_ProductExtension extends OrderedNamedModel {
 
     public enum Permission { ProductExtension_create, ProductExtension_read, ProductExtension_update, ProductExtension_act_deactivate, ProductExtension_delete }
 
-
     /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
 
     /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_ProductExtension> find = new Finder<>(Model_ProductExtension.class);
-
-    public static Model_ProductExtension getById(UUID id) {
-        return Model_ProductExtension.find.query().where().idEq(id).eq("deleted", false).findOne();
-
-    }
+    @CacheFinderField(Model_ProductExtension.class)
+    public static CacheFinder<Model_ProductExtension> find = new CacheFinder<>(Model_ProductExtension.class);
 
     public static List<Model_ProductExtension> getByUser(UUID personId) {
         return Model_ProductExtension.find.query().where().eq("product.owner.employees.person.id", personId).eq("deleted", false).findList();

@@ -2,11 +2,11 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.ebean.Finder;
-import io.ebean.Model;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.ProductEventReferenceType;
 import utilities.enums.ProductEventType;
 import utilities.enums.ProductEventTypeReadPermission;
@@ -16,7 +16,6 @@ import utilities.model.BaseModel;
 
 import javax.persistence.*;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -69,17 +68,17 @@ public class Model_ProductEvent extends BaseModel {
         }
 
         if(event_type.getReferenceType() == ProductEventReferenceType.INVOICE) {
-            Model_Invoice invoice = Model_Invoice.getById(reference);
+            Model_Invoice invoice = Model_Invoice.find.byId(reference);
             if(invoice == null) {
                 return null;
             }
 
-            String invoiceNumber = Model_Invoice.getById(reference).invoice_number;
+            String invoiceNumber = Model_Invoice.find.byId(reference).invoice_number;
             return StringUtils.isEmpty(invoiceNumber) ? "proforma" : invoiceNumber;
         }
 
         if(event_type.getReferenceType() == ProductEventReferenceType.EXTENSION) {
-            Model_ProductExtension extension = Model_ProductExtension.getById(reference);
+            Model_ProductExtension extension = Model_ProductExtension.find.byId(reference);
             if(extension == null) {
                 return null;
             }
@@ -127,8 +126,8 @@ public class Model_ProductEvent extends BaseModel {
 
     /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-
     /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_ProductEvent> find = new Finder<>(Model_ProductEvent.class);
+    @CacheFinderField(Model_ProductEvent.class)
+    public static CacheFinder<Model_ProductEvent> find = new CacheFinder<>(Model_ProductEvent.class);
 }

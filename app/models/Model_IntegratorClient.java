@@ -1,16 +1,15 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
 import javax.persistence.*;
 import java.beans.Transient;
-import java.util.UUID;
 
 @Entity
 @ApiModel(value = "IntegratorClient", description = "Model of Client of an Integrator (Customer)")
@@ -62,18 +61,8 @@ public class Model_IntegratorClient extends BaseModel {
 
     /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_IntegratorClient getById(UUID id) throws _Base_Result_Exception {
-
-        Model_IntegratorClient client = Model_IntegratorClient.find.byId(id);
-        if (client == null) throw new Result_Error_NotFound(Model_IntegratorClient.class);
-        // Check Permission
-        if(client.its_person_operation()) {
-            client.check_read_permission();
-        }
-        return client;
-    }
-
     /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_IntegratorClient> find = new Finder<>(Model_IntegratorClient.class);
+    @CacheFinderField(Model_IntegratorClient.class)
+    public static CacheFinder<Model_IntegratorClient> find = new CacheFinder<>(Model_IntegratorClient.class);
 }

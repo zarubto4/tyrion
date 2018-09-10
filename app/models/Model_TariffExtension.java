@@ -4,11 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.Server;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.enums.ExtensionType;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
@@ -22,7 +23,6 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @ApiModel(value = "TariffExtension", description = "Model of TariffExtension")
@@ -154,9 +154,6 @@ public class Model_TariffExtension extends OrderedNamedModel {
 
     /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_TariffExtension> find = new Finder<>(Model_TariffExtension.class);
-
-    public static Model_TariffExtension getById(UUID id) {
-        return find.query().where().idEq(id).eq("deleted", false).findOne();
-    }
+    @CacheFinderField(Model_TariffExtension.class)
+    public static CacheFinder<Model_TariffExtension> find = new CacheFinder<>(Model_TariffExtension.class);
 }

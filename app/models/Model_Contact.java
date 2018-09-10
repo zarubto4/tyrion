@@ -4,20 +4,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
-import org.ehcache.Cache;
-import utilities.cache.CacheField;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
 import javax.persistence.*;
-import java.util.UUID;
 
 @Entity
 @ApiModel(description = "Model of Contact",
@@ -212,32 +209,8 @@ public class Model_Contact extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Model_Contact.class, duration = CacheField.DayCacheConstant)
-    public static Cache<UUID, Model_Contact> cache;
-
-    public static Model_Contact getById(UUID id) throws _Base_Result_Exception {
-
-        Model_Contact paymentDetails = cache.get(id);
-
-        if (paymentDetails == null) {
-
-            paymentDetails = Model_Contact.find.byId(id);
-            if (paymentDetails == null) throw new Result_Error_NotFound(Model_Contact.class);
-
-            cache.put(id, paymentDetails);
-        }
-        // Check Permission
-        if(paymentDetails.its_person_operation()) {
-            paymentDetails.check_read_permission();
-        }
-
-
-        return paymentDetails;
-    }
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Contact> find = new Finder<>(Model_Contact.class);
-
-
+    @CacheFinderField(Model_Contact.class)
+    public static CacheFinder<Model_Contact> find = new CacheFinder<>(Model_Contact.class);
 }

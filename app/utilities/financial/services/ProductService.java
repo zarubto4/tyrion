@@ -49,7 +49,7 @@ public class ProductService {
         logger.debug("product_create: Creating new product");
 
         // Kontrola Objektu
-        Model_Tariff tariff = Model_Tariff.getById(help.tariff_id);
+        Model_Tariff tariff = Model_Tariff.find.byId(help.tariff_id);
 
         Model_Customer customer = null;
         Model_Person person = _BaseController.person();
@@ -58,7 +58,7 @@ public class ProductService {
 
         // If we do not an owner id, new customer is created. Contact might be empty.
         if (help.owner_id != null) {
-            customer = Model_Customer.getById(help.owner_id);
+            customer = Model_Customer.find.byId(help.owner_id);
         } else {
             customer = new Model_Customer();
 
