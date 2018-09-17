@@ -1,6 +1,5 @@
 package controllers;
 
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.swagger.annotations.*;
@@ -22,6 +21,7 @@ import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.financial.goPay.GoPay;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Invoice_FullDetails;
@@ -50,8 +50,8 @@ public class Controller_Finance extends _BaseController {
 
     @javax.inject.Inject
     public Controller_Finance(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config,
-                              SchedulerController scheduler, FakturoidService fakturoid, ProductService productService, GoPay goPay) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+                              SchedulerController scheduler, FakturoidService fakturoid, ProductService productService, GoPay goPay, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
         this.fakturoid = fakturoid;
         this.goPay = goPay;
         this.productService = productService;

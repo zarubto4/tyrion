@@ -1,4 +1,4 @@
 package exceptions;
 
-public class ForbiddenException extends Exception {
+public class ForbiddenException extends BaseException {
 }

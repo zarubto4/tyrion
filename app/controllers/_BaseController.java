@@ -3,6 +3,8 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+import exceptions.ForbiddenException;
+import exceptions.NotSupportedException;
 import io.swagger.annotations.ApiModel;
 import models.Model_Person;
 import play.Environment;
@@ -17,7 +19,8 @@ import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 import utilities.logger.YouTrack;
 import utilities.model.BaseModel;
-import utilities.model.JsonSerializer;
+import utilities.model.JsonSerializable;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.server_measurement.RequestLatency;
 import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
@@ -46,18 +49,46 @@ public abstract class _BaseController {
     protected final YouTrack youTrack;
     protected final Config config;
     protected final SchedulerController scheduler;
+    protected final PermissionService permissionService;
 
     @Inject
-    public _BaseController(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+    public _BaseController(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
         this.environment = environment;
         this.ws = ws;
         this.baseFormFactory = formFactory;
         this.youTrack = youTrack;
         this.config = config;
         this.scheduler = scheduler;
+        this.permissionService = permissionService;
     }
 
+    public Result create(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.checkCreate(person(), model);
+        model.save();
+        return created(model);
+    }
 
+    public Result read(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.checkRead(person(), model);
+        return ok(model);
+    }
+
+    public Result update(BaseModel model) throws ForbiddenException, NotSupportedException {
+        try {
+            this.permissionService.checkUpdate(person(), model);
+        } catch (ForbiddenException e) {
+            model.refresh();
+            throw e;
+        }
+        model.update();
+        return ok(model);
+    }
+
+    public Result delete(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.checkDelete(person(), model);
+        model.delete();
+        return ok();
+    }
 
 // PERSON OPERATIONS ###################################################################################################
 
@@ -179,13 +210,16 @@ public abstract class _BaseController {
      * @param object of BaseModel to send
      * @return 201 result
      */
-    public static Result created(BaseModel object) {
+    public static Result created(JsonSerializable object) {
+        if (object instanceof BaseModel) {
+            Controller.ctx().args.put("entity", object);
+        }
         return Controller.created(object.json());
     }
 
-    public static Result created(_Swagger_Abstract_Default object) {
+    /*public static Result created(_Swagger_Abstract_Default object) {
         return Controller.created(object.json());
-    }
+    }*/
 // OK JSON! - 200 ######################################################################################################
 
     /**
@@ -197,7 +231,7 @@ public abstract class _BaseController {
         return Controller.ok(Json.toJson(new Result_Ok()));
     }
 
-    public static Result ok(List <? extends JsonSerializer> objects){
+    public static Result ok(List <? extends JsonSerializable> objects){
         check_latency();
         return Controller.ok(Json.toJson(objects)); // TODO tato metoda je nesystemová a list by neměl v tyrionovi být - Oprava TZ!
     }
@@ -217,7 +251,10 @@ public abstract class _BaseController {
      * @param object BaseModel serialized object
      * @return 200 result ok with json
      */
-    public static Result ok(BaseModel object) {
+    public static Result ok(JsonSerializable object) {
+        if (object instanceof BaseModel) {
+            Controller.ctx().args.put("entity", object);
+        }
         check_latency();
         return Controller.ok(object.json());
     }
@@ -228,10 +265,10 @@ public abstract class _BaseController {
      * @param object _Swagger_Abstract_Default serialized object
      * @return 200 result ok with json
      */
-    public static Result ok(_Swagger_Abstract_Default object) {
+    /*public static Result ok(_Swagger_Abstract_Default object) {
         check_latency();
         return Controller.ok(object.json());
-    }
+    }*/
 
 
     /**
@@ -489,6 +526,10 @@ public abstract class _BaseController {
                 return notFound(((Result_Error_NotFound) error).getEntity());
 
             } else if (error instanceof Result_Error_PermissionDenied) {
+
+                return forbidden();
+
+            } else if (error instanceof ForbiddenException) {
 
                 return forbidden();
 

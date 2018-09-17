@@ -1,11 +1,9 @@
 package controllers;
 
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.swagger.annotations.*;
 import models.*;
 import play.Environment;
-import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -18,6 +16,7 @@ import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.lablel_printer_service.printNodeModels.Printer;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_Garfield_Edit;
 import utilities.swagger.input.Swagger_Garfield_New;
@@ -36,8 +35,8 @@ public class Controller_Garfield extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Controller_Garfield(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_Garfield(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 // REST - API GARFIELD  #################################################################################################

@@ -24,12 +24,12 @@ import utilities.homer_auto_deploy.SelfDeployedThreadRegister;
 import utilities.homer_auto_deploy.models.common.Swagger_ServerRegistration_FormData;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_HomerServer_List;
 
 import java.util.*;
-
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_ExternalServer extends _BaseController {
@@ -42,8 +42,8 @@ public class Controller_ExternalServer extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Controller_ExternalServer(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_ExternalServer(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 

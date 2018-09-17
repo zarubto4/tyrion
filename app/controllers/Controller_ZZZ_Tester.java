@@ -18,9 +18,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
 import play.Environment;
-import play.libs.Json;
 import play.libs.ws.WSClient;
-import play.mvc.Controller;
 import play.mvc.Result;
 
 import utilities.enums.Currency;
@@ -30,7 +28,6 @@ import utilities.enums.PaymentMethod;
 import utilities.enums.ProductEventType;
 import utilities.financial.extensions.ExtensionInvoiceItem;
 import utilities.financial.fakturoid.FakturoidService;
-import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.logger.Logger;
 
 import java.io.FileOutputStream;
@@ -42,9 +39,8 @@ import java.util.*;
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
-import utilities.swagger.output.Swagger_Hardware_Registration_Hash;
-
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_ZZZ_Tester extends _BaseController {
@@ -56,8 +52,8 @@ public class Controller_ZZZ_Tester extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Controller_ZZZ_Tester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_ZZZ_Tester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
     @Inject

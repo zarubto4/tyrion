@@ -1,15 +1,14 @@
 package utilities.cache;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.inject.Singleton;
 import controllers.Controller_WebSocket;
-import io.ebeaninternal.api.HashQuery;
+import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.ehcache.expiry.Duration;
 import org.ehcache.expiry.Expirations;
-import org.ehcache.expiry.Expiry;
 import org.reflections.Reflections;
 import org.reflections.scanners.FieldAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
@@ -23,22 +22,25 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+@Singleton
 public class ServerCache {
 
     private static final Logger logger = new Logger(ServerCache.class);
 
-    public static CacheManager cacheManager;
+    private final CacheManager cacheManager;
+
+    public ServerCache() {
+        this.cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
+    }
 
     /**
      * Method for initialization of cache layer.
      * It finds every annotated cache fields in models and populate them.
      */
     @SuppressWarnings("unchecked")
-    public static void init() {
+    public void initialize() {
 
         logger.info("init - cache layer initiating");
-
-        cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
 
         long start = System.currentTimeMillis();
         Reflections reflections = new Reflections(new ConfigurationBuilder()
@@ -65,7 +67,7 @@ public class ServerCache {
 
                 Duration duration = Duration.of(annotation.duration(), TimeUnit.SECONDS);
 
-                field.set(null, cacheManager.createCache(name,
+                field.set(null, this.cacheManager.createCache(name,
                         CacheConfigurationBuilder.newCacheConfigurationBuilder(annotation.keyType(), annotation.value(),
                                 ResourcePoolsBuilder.heap(annotation.maxElements()))
                                 .withExpiry(annotation.automaticProlonging() ? Expirations.timeToIdleExpiration(duration) : Expirations.timeToLiveExpiration(duration)).build()));
@@ -96,12 +98,12 @@ public class ServerCache {
 
                 CacheFinder cacheFinder = (CacheFinder) field.get(null);
 
-                cacheFinder.setCache(cacheManager.createCache(name,
+                cacheFinder.setCache(this.cacheManager.createCache(name,
                         CacheConfigurationBuilder.newCacheConfigurationBuilder(annotation.keyType(), annotation.value(),
                                 ResourcePoolsBuilder.heap(annotation.maxElements()))
                                 .withExpiry(annotation.automaticProlonging() ? Expirations.timeToIdleExpiration(duration) : Expirations.timeToLiveExpiration(duration)).build()));
 
-                cacheFinder.setQueryCache(cacheManager.createCache(name + "_query",
+                cacheFinder.setQueryCache(this.cacheManager.createCache(name + "_query",
                         CacheConfigurationBuilder.newCacheConfigurationBuilder(Integer.class, UUID.class,
                                 ResourcePoolsBuilder.heap(annotation.maxElements()))
                                 .withExpiry(annotation.automaticProlonging() ? Expirations.timeToIdleExpiration(duration) : Expirations.timeToLiveExpiration(duration)).build()));
@@ -113,22 +115,32 @@ public class ServerCache {
         });
 
         // Sets token cache for web socket connections
-        Controller_WebSocket.tokenCache = cacheManager.createCache("WS_TokenCache",
+        Controller_WebSocket.tokenCache = this.cacheManager.createCache("WS_TokenCache",
                 CacheConfigurationBuilder.newCacheConfigurationBuilder(UUID.class, UUID.class,
                         ResourcePoolsBuilder.heap(1000))
                         .withExpiry(Expirations.timeToLiveExpiration(Duration.of(25, TimeUnit.SECONDS))).build());
 
         // Sets token cache for web socket connections
-        DigitalOceanTyrionService.tokenCache = cacheManager.createCache("Digital_Ocean_server_sizes",
+        DigitalOceanTyrionService.tokenCache = this.cacheManager.createCache("Digital_Ocean_server_sizes",
                 CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Swagger_ServerRegistration_FormData.class,
                         ResourcePoolsBuilder.heap(3))
                         .withExpiry(Expirations.timeToLiveExpiration(Duration.of(12, TimeUnit.HOURS))).build());
     }
 
+    public <K, V> Cache<K, V> getCache(String name, Class<K> keyType, Class<V> cachedType, long maxElements, long duration, boolean timeToIdle) {
+
+        Duration duration1 = Duration.of(duration, TimeUnit.SECONDS);
+
+        return this.cacheManager.createCache(name,
+                CacheConfigurationBuilder
+                        .newCacheConfigurationBuilder(keyType, cachedType, ResourcePoolsBuilder.heap(maxElements))
+                        .withExpiry(timeToIdle ? Expirations.timeToIdleExpiration(duration1) : Expirations.timeToLiveExpiration(duration1)).build());
+    }
+
     /**
      * Stops the cache
      */
-    public static void close() {
-        cacheManager.close();
+    public void close() {
+        this.cacheManager.close();
     }
 }

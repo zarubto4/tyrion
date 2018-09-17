@@ -1,6 +1,5 @@
 package controllers;
 
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.Expr;
@@ -9,9 +8,6 @@ import models.Model_Person;
 import models.Model_Permission;
 import models.Model_Role;
 import play.Environment;
-import play.data.Form;
-import play.data.FormFactory;
-import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -20,6 +16,7 @@ import responses.*;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_System_Access;
@@ -38,8 +35,8 @@ public class Controller_Permission extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Controller_Permission(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_Permission(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 // #####################################################################################################################
@@ -169,7 +166,6 @@ public class Controller_Permission extends _BaseController {
             // Kontrola objektu
             Model_Permission permission = Model_Permission.find.byId(permission_id);
 
-            permission.description = help.description;
             permission.update();
 
             return ok(permission);

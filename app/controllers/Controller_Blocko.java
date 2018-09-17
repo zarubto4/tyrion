@@ -1,6 +1,5 @@
 package controllers;
 
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.ebean.*;
 import io.swagger.annotations.*;
@@ -18,6 +17,7 @@ import utilities.enums.Approval;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_B_Program_List;
@@ -38,8 +38,8 @@ public class Controller_Blocko extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Controller_Blocko(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_Blocko(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 // B PROGRAM ###########################################################################################################
@@ -557,7 +557,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Získání objektu
-            Model_BProgramVersion version  = Model_BProgramVersion.find.byId(version_id);
+            Model_BProgramVersion version = Model_BProgramVersion.find.byId(version_id);
 
             // Smazání objektu
             version.delete();
@@ -1858,15 +1858,9 @@ public class Controller_Blocko extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result block_get( UUID block_id) {
+    public Result block_get(UUID block_id) {
         try {
-
-            // Kontrola objektu
-            Model_Block block = Model_Block.find.byId(block_id);
-         
-            // Vrácení objektu
-            return ok(block);
-
+            return read(Model_Block.find.byId(block_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }

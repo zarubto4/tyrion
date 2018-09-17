@@ -22,6 +22,7 @@ import utilities.enums.*;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.Picture2Mb;
 import utilities.swagger.input.*;
@@ -35,7 +36,6 @@ import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardw
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.*;
 
-
 @Api(value = "Not Documented API - InProgress or Stuck")  // Záměrně takto zapsané - Aby ve swaggru nezdokumentované API byly v jedné sekci
 @Security.Authenticated(Authentication.class)
 public class Controller_Hardware extends _BaseController {
@@ -47,8 +47,8 @@ public class Controller_Hardware extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Controller_Hardware(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_Hardware(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 ///###################################################################################################################*/

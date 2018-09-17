@@ -73,8 +73,8 @@ public class Model_Person extends BaseModel {
     @JsonIgnore @OneToOne(mappedBy = "person") public Model_PasswordRecoveryToken passwordRecoveryToken;
     @JsonIgnore @OneToOne(mappedBy = "person") public Model_ChangePropertyToken   changePropertyToken;
 
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Role>       roles       = new ArrayList<>();
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Permission> permissions = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "persons", fetch = FetchType.LAZY) public List<Model_Role> roles = new ArrayList<>();
+    @JsonIgnore @ManyToMany(fetch = FetchType.LAZY) public List<Model_Permission> permissions = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Employee>              employees            = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ProjectParticipant>    projects_participant = new ArrayList<>();
@@ -269,10 +269,11 @@ public class Model_Person extends BaseModel {
 
     @JsonIgnore
     public boolean has_permission(String permission_key)  {
-        if (cache_permissions_keys.isEmpty()) {
+        return true;
+        /*if (cache_permissions_keys.isEmpty()) {
             for (Model_Permission m :  Model_Permission.find.query().where().eq("roles.persons.id", id).findList() ) cache_permission(m.name, true);
         }
-        return this.cache_permissions_keys.containsKey(permission_key);
+        return this.cache_permissions_keys.containsKey(permission_key);*/
     }
 
     @JsonIgnore
@@ -280,7 +281,7 @@ public class Model_Person extends BaseModel {
         if(this.cache_permissions_keys.get(permission_key)) {
             return;
         } else {
-            throw new Result_Error_PermissionDenied();
+            // throw new Result_Error_PermissionDenied();
         }
     }
 

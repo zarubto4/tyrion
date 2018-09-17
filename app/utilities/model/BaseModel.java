@@ -29,7 +29,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 @MappedSuperclass
-public abstract class BaseModel extends Model implements JsonSerializer {
+public abstract class BaseModel extends Model implements JsonSerializable {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
@@ -238,6 +238,22 @@ public abstract class BaseModel extends Model implements JsonSerializer {
      */
     public String prettyPrint() {
         return this.getClass() + ":\n" + Json.prettyPrint(json());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if (obj instanceof BaseModel) {
+            BaseModel model = (BaseModel) obj;
+
+            if (this.id == null) {
+                return this == model;
+            } else {
+                return this.id.equals(model.id);
+            }
+        }
+
+        return false;
     }
 
 

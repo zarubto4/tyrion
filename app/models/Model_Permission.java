@@ -1,24 +1,25 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
+import utilities.cache.CacheFinder;
+import utilities.cache.CacheFinderField;
+import utilities.enums.EntityType;
 import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
-import utilities.model.NamedModel;
+import utilities.model.BaseModel;
+import utilities.permission.Action;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
-@ApiModel( value = "Permission", description = "Model of Permission")
+@ApiModel(value = "Permission", description = "Model of Permission")
 @Table(name="Permission")
-public class Model_Permission extends NamedModel {
+public class Model_Permission extends BaseModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -26,8 +27,11 @@ public class Model_Permission extends NamedModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "permissions") public List<Model_Person>  persons = new ArrayList<>();
-    @JsonIgnore @ManyToMany(cascade = CascadeType.ALL, mappedBy = "permissions") public List<Model_Role>    roles   = new ArrayList<>();
+    @Enumerated(EnumType.STRING) public Action action;
+    @Enumerated(EnumType.STRING) public EntityType entity_type;
+
+    @JsonIgnore @ManyToMany(mappedBy = "permissions") public List<Model_Person>  persons = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "permissions") public List<Model_Role>    roles   = new ArrayList<>();
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -56,18 +60,19 @@ public class Model_Permission extends NamedModel {
     }
 
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Permission_update.name())) return;
+        // if(_BaseController.person().has_permission(Permission.Permission_update.name())) return;
         throw new Result_Error_PermissionDenied();
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
         throw new Result_Error_NotSupportedException();
     }
 
-    public enum Permission { Permission_crate, Permission_edit_person_permission, Permission_update }
+    // public enum Permission { Permission_crate, Permission_edit_person_permission, Permission_update }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static final Finder<UUID, Model_Permission> find = new Finder<>(Model_Permission.class);
+    @CacheFinderField(Model_Permission.class)
+    public static final CacheFinder<Model_Permission> find = new CacheFinder<>(Model_Permission.class);
 }

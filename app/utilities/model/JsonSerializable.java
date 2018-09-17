@@ -2,7 +2,7 @@ package utilities.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public interface JsonSerializer {
+public interface JsonSerializable {
 
     JsonNode json();
 }

@@ -2,16 +2,20 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import controllers._BaseController;
+import io.ebean.Expr;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
+import utilities.enums.EntityType;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
+import utilities.permission.Action;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Entity
@@ -25,8 +29,10 @@ public class Model_Role extends NamedModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @ManyToMany(mappedBy = "roles",fetch = FetchType.LAZY) public List<Model_Person> persons = new ArrayList<>();
-    @ManyToMany() @OrderBy(value ="name") public List<Model_Permission> permissions = new ArrayList<>();
+    @ManyToOne public Model_Project project;
+
+    @ManyToMany(fetch = FetchType.LAZY) public List<Model_Person> persons = new ArrayList<>();
+    @ManyToMany public List<Model_Permission> permissions = new ArrayList<>();
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -78,6 +84,46 @@ public class Model_Role extends NamedModel {
 
     public static Model_Role getByName(String name) {
         return find.query().where().eq("name" , name).findOne();
+    }
+
+    public static Model_Role createProjectAdminRole() {
+
+        List<Model_Permission> permissions = Model_Permission.find.query()
+                .where()
+                .in("entity_type", EntityType.PROJECT, EntityType.FIRMWARE, EntityType.FIRMWARE_VERSION,
+                        EntityType.LIBRARY, EntityType.LIBRARY_VERSION, EntityType.WIDGET, EntityType.WIDGET_VERSION,
+                        EntityType.GRID_PROJECT, EntityType.GRID_PROGRAM, EntityType.GRID_PROGRAM_VERSION,
+                        EntityType.BLOCK, EntityType.BLOCK_VERSION, EntityType.BLOCKO_PROGRAM, EntityType.BLOCKO_PROGRAM_VERSION,
+                        EntityType.INSTANCE, EntityType.INSTANCE_SNAPSHOT
+                )
+                .findList();
+
+
+        Model_Role role = new Model_Role();
+        role.name = "Project Admin";
+        role.permissions.addAll(permissions);
+
+        return role;
+    }
+
+    public static Model_Role createProjectMemberRole() {
+
+        List<Model_Permission> permissions = Model_Permission.find.query()
+                .where()
+                .not(Expr.and(Expr.eq("entity_type", EntityType.PROJECT), Expr.in("action", Arrays.asList(Action.ACTIVATE, Action.INVITE))))
+                .in("entity_type", EntityType.PROJECT, EntityType.FIRMWARE, EntityType.FIRMWARE_VERSION,
+                        EntityType.LIBRARY, EntityType.LIBRARY_VERSION, EntityType.WIDGET, EntityType.WIDGET_VERSION,
+                        EntityType.GRID_PROJECT, EntityType.GRID_PROGRAM, EntityType.GRID_PROGRAM_VERSION,
+                        EntityType.BLOCK, EntityType.BLOCK_VERSION, EntityType.BLOCKO_PROGRAM, EntityType.BLOCKO_PROGRAM_VERSION,
+                        EntityType.INSTANCE, EntityType.INSTANCE_SNAPSHOT
+                )
+                .findList();
+
+        Model_Role role = new Model_Role();
+        role.name = "Project Member";
+        role.permissions.addAll(permissions);
+
+        return role;
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

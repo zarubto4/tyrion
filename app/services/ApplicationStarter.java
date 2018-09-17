@@ -10,6 +10,8 @@ import com.google.inject.Module;
 import com.typesafe.config.Config;
 import play.inject.ApplicationLifecycle;
 import utilities.Server;
+import utilities.cache.ServerCache;
+import utilities.logger.ServerLogger;
 import utilities.scheduler.SchedulerController;
 
 /**
@@ -33,18 +35,25 @@ public class ApplicationStarter {
     private final ApplicationLifecycle appLifecycle;
     private final Config configuration;
     private final Instant start;
-    private SchedulerController scheduler;
+    private final SchedulerController scheduler;
+    private final ServerCache cache;
 
     private final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("application");
 
     @Inject
-    public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector, SchedulerController scheduler) {
+    public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector, SchedulerController scheduler, ServerCache cache) {
 
         this.clock = clock;
         this.appLifecycle = appLifecycle;
         this.configuration = configuration;
         this.scheduler = scheduler;
+        this.cache = cache;
         try {
+
+            ServerLogger.init(configuration);
+
+            this.cache.initialize();
+
             Server.start(configuration, injector);
             this.scheduler.start();
         } catch (Exception e) {
@@ -61,6 +70,7 @@ public class ApplicationStarter {
         // be run when the application stops.
         appLifecycle.addStopHook(() -> {
             this.scheduler.stop();
+            this.cache.close();
             Server.stop();
             Instant stop = clock.instant();
             Long runningTime = stop.getEpochSecond() - start.getEpochSecond();

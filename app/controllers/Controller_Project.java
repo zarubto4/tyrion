@@ -20,6 +20,7 @@ import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_uuid_converter_cleaner;
@@ -42,8 +43,8 @@ public class Controller_Project extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Controller_Project(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_Project(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 // GENERAL PROJECT #######-##############################################################################################
@@ -78,13 +79,13 @@ public class Controller_Project extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Project_New help  = formFromRequestWithValidation(Swagger_Project_New.class);
+            Swagger_Project_New help = formFromRequestWithValidation(Swagger_Project_New.class);
 
             // Kontrola objektu
             Model_Product product = Model_Product.find.byId(help.product_id);
 
             // Vytvoření objektu
-            Model_Project project  = new Model_Project();
+            Model_Project project = new Model_Project();
             project.name        = help.name;
             project.description = help.description;
             project.product     = product;
@@ -133,7 +134,6 @@ public class Controller_Project extends _BaseController {
             return ok(person().get_user_access_projects());
 
         } catch (Exception e) {
-            e.printStackTrace();
             return controllerServerError(e);
         }
     }
@@ -154,17 +154,10 @@ public class Controller_Project extends _BaseController {
     })
     public Result project_get(UUID project_id) {
         try {
-
-            // Kontrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
-
-            // Vraácení objektu
-            return ok(project);
-
+            return read(Model_Project.find.byId(project_id));
          } catch (Exception e) {
             return controllerServerError(e);
         }
-
     }
 
     @ApiOperation(value = "delete Project",
@@ -190,15 +183,7 @@ public class Controller_Project extends _BaseController {
     })
     public Result project_delete(UUID project_id) {
         try {
-            // Kontrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
-
-            // Smazání objektu
-            project.delete();
-
-            // Vrácení potvrzení
-            return ok();
-
+            return delete(Model_Project.find.byId(project_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -243,11 +228,7 @@ public class Controller_Project extends _BaseController {
             project.name = help.name;
             project.description = help.description;
 
-            // Uložení do DB
-            project.update();
-
-            // Vrácení změny
-            return ok(project);
+            return update(project);
 
         } catch (Exception e) {
             return controllerServerError(e);

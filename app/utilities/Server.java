@@ -13,35 +13,32 @@ import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
-import utilities.cache.ServerCache;
 import utilities.document_mongo_db.DocumentDB;
 import utilities.document_mongo_db.MongoDB;
+import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.grid_support.utils.IP_Founder;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
-import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.logger.Logger;
-import utilities.logger.ServerLogger;
-import utilities.model.BaseModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.models_update_echo.RefreshTouch_echo_handler;
 import utilities.notifications.NotificationHandler;
-import utilities.scheduler.jobs.Job_CheckCompilationLibraries;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.threads.homer_server.Synchronize_Homer_Synchronize_Settings;
 import websocket.interfaces.WS_Homer;
-import websocket.interfaces.WS_Portal;
 
 import javax.persistence.PersistenceException;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class Server {
 
@@ -90,8 +87,6 @@ public class Server {
     public static String Facebook_url;
     public static String Facebook_apiKey;
 
-    public static Integer financial_spendDailyPeriod = 1;
-
     public static String Fakturoid_apiKey;
     public static String Fakturoid_url;
     public static String Fakturoid_user_agent;
@@ -136,13 +131,9 @@ public class Server {
 
         Server.mode = configuration.getEnum(ServerMode.class,"server.mode");
 
-        ServerLogger.init(config);
-
         setConstants();
 
         cleanUpdateMess();
-
-        ServerCache.init();
 
         try {
             setPermission();
@@ -164,7 +155,6 @@ public class Server {
      * Stops server components, that need to be properly shut down
      */
     public static void stop() {
-        ServerCache.close();
         Controller_WebSocket.close();
     }
 
@@ -304,38 +294,43 @@ public class Server {
     private static void setAdministrator() {
 
         // For Developing
-        Model_Role role = Model_Role.getByName("SuperAdmin");
-        List<Model_Permission> permissions = Model_Permission.find.all();
+        Model_Role role;
 
-        if(role == null) {
-            logger.warn("setAdministrator - RoleGroup SuperAdmin is missing - its required create it now. Total Permissions for registrations: {}", permissions.size());
+        try {
+            role = Model_Role.getByName("SuperAdmin");
+
+            logger.warn("setAdministrator - role SuperAdmin exists");
+
+        } catch (Result_Error_NotFound e) {
+
+            logger.warn("setAdministrator - SuperAdmin role was not found, creating it");
 
             role = new Model_Role();
-
-            if(role.permissions == null) role.permissions = new ArrayList<>();
-            role.permissions.addAll(permissions);
             role.name = "SuperAdmin";
-
-            logger.warn("setAdministrator - Save Role SuperAdmin now");
             role.save();
+        }
 
-        } else {
-            logger.warn("setAdministrator - RoleGroup SuperAdmin- already exist - Check all permissions");
-            for (Model_Permission permission : permissions) {
-                if (!role.permissions.contains(permission)) {
-                    role.permissions.add(permission);
-                }
-            }
+        logger.info("setAdministrator - updating permissions in the role");
+
+        List<UUID> permissionIds = role.permissions.stream().map(permission -> permission.id).collect(Collectors.toList());
+
+        List<Model_Permission> permissions = Model_Permission.find.query().where().notIn("id", permissionIds).findList();
+
+        if (!permissions.isEmpty()) {
+            role.permissions.addAll(permissions);
             role.update();
         }
 
-        Model_Person person = Model_Person.getByEmail("admin@byzance.cz");
+        Model_Person person;
 
-        if (person == null) {
+        try {
+            person = Model_Person.getByEmail("admin@byzance.cz");
 
-            logger.warn("setAdministrator - Creating first admin account: admin@byzance.cz, password: 123456789");
+            logger.warn("setAdministrator - admin is already created");
 
-            Model_Role role_super_admin = Model_Role.getByName("SuperAdmin");
+        } catch (Result_Error_NotFound e) {
+
+            logger.warn("setAdministrator - creating first admin account: admin@byzance.cz, password: 123456789");
 
             person = new Model_Person();
             person.first_name = "Admin";
@@ -344,29 +339,19 @@ public class Server {
             person.nick_name = "Syndibád";
             person.email = "admin@byzance.cz";
             person.setPassword("123456789");
-
-            if(person.roles == null){
-                logger.warn("setAdministrator - person.roles is null");
-                person.roles = new ArrayList<>();
-            }
-
-            person.roles.add(role_super_admin);
-
             person.save();
-
-        } else {
-
-            logger.warn("setAdministrator - admin is already created");
-
-            // updatuji oprávnění
-            List<Model_Permission> personPermissions = Model_Permission.find.all();
-
-            for (Model_Permission personPermission :  personPermissions) {
-                if(!person.permissions.contains(personPermission)) {
-                    person.permissions.add(personPermission);
-                }
-            }
         }
+
+        if (!role.persons.contains(person)) {
+            role.persons.add(person);
+            role.update();
+        }
+
+        /*for (Model_Permission permission :  permissions) {
+            if(!person.permissions.contains(permission)) {
+                person.permissions.add(permission);
+            }
+        }*/
     }
 
     /**
@@ -377,14 +362,14 @@ public class Server {
             logger.warn("setWidgetAndBlock - Creating Widget and Block with " + "0000000-0000-0000-0000-000000000001");
 
             if (Model_Widget.find.query().where().eq("id", UUID.fromString("00000000-0000-0000-0000-000000000001")).findCount() == 0) {
-                Model_Widget gridWidget = new Model_Widget();
-                gridWidget.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
-                gridWidget.description = "Default Widget";
-                gridWidget.name = "Default Widget";
-                gridWidget.project = null;
-                gridWidget.author_id = null;
-                gridWidget.publish_type = ProgramType.DEFAULT_MAIN;
-                gridWidget.save();
+                Model_Widget widget = new Model_Widget();
+                widget.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
+                widget.description = "Default Widget";
+                widget.name = "Default Widget";
+                widget.project = null;
+                widget.author_id = null;
+                widget.publish_type = ProgramType.DEFAULT_MAIN;
+                widget.save();
             } else {
                 logger.warn("Model_Widget Model_Widget already exist");
             }
@@ -412,8 +397,6 @@ public class Server {
      */
     private static void setPermission() {
 
-        List<String> permissions = new ArrayList<>();
-
         long start = System.currentTimeMillis();
 
         // Get classes in 'models' package
@@ -421,56 +404,49 @@ public class Server {
                 .setUrls(ClasspathHelper.forPackage("models"))
                 .setScanners(new SubTypesScanner()));
 
-        // Get classes that extends _BaseModel.class
-        Set<Class<? extends BaseModel>> classes = reflections.getSubTypesOf(BaseModel.class);
+        // Get classes that implements Permittable
+        Set<Class<? extends Permissible>> classes = reflections.getSubTypesOf(Permissible.class);
 
         logger.trace("setPermission - found {} classes", classes.size());
 
-        // Find inner enum called 'Permission'
+        List<Model_Permission> permissions = Model_Permission.find.all();
+
         classes.forEach(cls -> {
-            logger.trace("setPermission - scanning class: {}", cls.getSimpleName());
-            Class<?>[] innerClasses = cls.getDeclaredClasses();
-            for (Class<?> inner : innerClasses) {
-                try {
-                    if (inner.isEnum() && inner.getSimpleName().equals("Permission")) {
-                        // logger.trace("setPermission - found enum Permission in class: {}", cls.getSimpleName());
-                        Enum[] enums = (Enum[]) inner.getEnumConstants();
-                        for (Enum e : enums) {
-                            // logger.trace("setPermission - found permission: {}", e.name());
-                            permissions.add(e.name());
-                        }
+            try {
+                Permissible permittable = cls.newInstance();
+                EntityType entityType = permittable.getEntityType();
+                List<Action> actions = permittable.getSupportedActions();
+
+                actions.forEach(action -> {
+                    if (permissions.stream().noneMatch(p -> p.action == action && p.entity_type == entityType)) {
+                        Model_Permission permission = new Model_Permission();
+                        permission.entity_type = entityType;
+                        permission.action = action;
+                        permission.save();
                     }
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
+                });
+
+            } catch (Exception e) {
+                logger.internalServerError(e);
             }
         });
 
         logger.trace("setPermission - scanning for permissions took: {} ms", System.currentTimeMillis() - start);
 
-        List<Model_Permission> perms = Model_Permission.find.all();
+        // Set default project roles (temporary)
+        List<Model_Project> projects = Model_Project.find.query().where().isEmpty("roles").findList();
+        projects.forEach(project -> {
 
-        logger.trace("setPermission - get all permissions from database. Count: {}", perms.size());
+            List<Model_Person> persons = Model_Person.find.query().where().eq("projects_participant.project.id", project.id).findList();
+            Model_Role adminRole = Model_Role.createProjectAdminRole();
+            adminRole.project = project;
+            adminRole.persons.addAll(persons);
+            adminRole.save();
 
-        for (Model_Permission permission : perms) {
-            if (!permissions.contains(permission.name)) {
-                logger.info("setPermission - removing permission: {} from DB", permission.name);
-                permission.delete();
-            }
-        }
-        logger.trace("setPermission - time to save all, witch are not in database. Count of read by system {}", permissions.size());
-        for (String permission_name : permissions) {
-            // logger.trace("setPermission - Permission {} try to get from database", permission_name);
-            if (Model_Permission.find.query().where().eq("name", permission_name).findOne() == null) {
-                // logger.trace("setPermission - saving permission: {} to DB", permission_name);
-                Model_Permission permission = new Model_Permission();
-                permission.name = permission_name;
-                permission.description = "description";
-                permission.save();
-            } else {
-                // logger.trace("setPermission - Permission {} is already in database", permission_name);
-            }
-        }
+            Model_Role memberRole = Model_Role.createProjectMemberRole();
+            memberRole.project = project;
+            memberRole.save();
+        });
     }
 
     /**

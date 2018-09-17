@@ -19,8 +19,8 @@ import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_GSM_label_Details;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
-import utilities.swagger.input.Swagger_GSM_Date;
 import utilities.swagger.input.Swagger_GSM_Edit;
 import utilities.swagger.input.Swagger_GSM_Filter;
 import utilities.swagger.input.Swagger_GSM_Register;
@@ -39,8 +39,8 @@ public class Controller_GSM extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Controller_GSM(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_GSM(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 ///###################################################################################################################*/

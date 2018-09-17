@@ -24,6 +24,7 @@ import utilities.authentication.Authentication;
 import utilities.financial.fakturoid.FakturoidService;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_Fakturoid_Callback;
 import utilities.swagger.input.Swagger_Payment_Refund;
@@ -60,8 +61,8 @@ public class GoPay extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public GoPay(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, FakturoidService fakturoid) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public GoPay(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, FakturoidService fakturoid, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
         this.fakturoid = fakturoid;
     }
 

@@ -3,17 +3,11 @@ package controllers;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
-import io.ebean.Ebean;
 import io.swagger.annotations.*;
 import models.*;
-import org.quartz.JobKey;
 import org.quartz.Trigger;
-import org.quartz.impl.matchers.GroupMatcher;
 import play.Environment;
-import play.data.Form;
-import play.data.FormFactory;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
@@ -25,6 +19,7 @@ import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Report_Admin_Dashboard;
@@ -33,8 +28,6 @@ import utilities.update_server.GitHub_Asset;
 import utilities.update_server.GitHub_Release;
 import utilities.update_server.ServerUpdate;
 
-
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,8 +45,8 @@ public class Controller_Admin extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Controller_Admin(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_Admin(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 

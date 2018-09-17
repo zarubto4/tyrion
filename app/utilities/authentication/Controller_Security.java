@@ -22,6 +22,7 @@ import utilities.enums.TokenType;
 import utilities.enums.PlatformAccess;
 import utilities.financial.FinancialPermission;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_EmailAndPassword;
 import utilities.swagger.input.Swagger_SocialNetwork_Login;
@@ -55,8 +56,8 @@ public class Controller_Security extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Controller_Security(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_Security(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 // CLASIC LOGIN ########################################################################################################
@@ -246,7 +247,7 @@ public class Controller_Security extends _BaseController {
 
 
             List<String> permissions = new ArrayList<>();
-            for ( Model_Permission m :  Model_Permission.find.query().where().eq("roles.persons.id", person.id).findList() ) permissions.add(m.name);
+            // for ( Model_Permission m :  Model_Permission.find.query().where().eq("roles.persons.id", person.id).findList() ) permissions.add(m.name);
 
             result.permissions = permissions;
 

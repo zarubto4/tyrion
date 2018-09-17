@@ -3,7 +3,6 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Expr;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
@@ -21,20 +20,22 @@ import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.Action;
+import utilities.permission.Permissions;
+import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_ProjectStats;
 import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_online_status;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @ApiModel(value = "Project", description = "Model of Project")
 @Table(name="Project")
-public class Model_Project extends TaggedModel {
+@Permissions({ Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.INVITE, Action.ACTIVATE })
+public class Model_Project extends TaggedModel implements Permissible {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -44,19 +45,20 @@ public class Model_Project extends TaggedModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Product product;
 
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_BProgram>              b_programs      = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_CProgram>              c_programs      = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Library>               libraries       = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_GridProject>           grid_projects   = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Block>                 blocks          = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Widget>                widgets         = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Hardware>              hardware        = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareGroup>         hardware_groups = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Invitation>            invitations     = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_ProjectParticipant>    participants    = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Instance>              instances       = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HomerServer>           servers         = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_GSM>                   gsm             = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Role>                  roles           = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_BProgram>              b_programs      = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_CProgram>              c_programs      = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Library>               libraries       = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_GridProject>           grid_projects   = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Block>                 blocks          = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Widget>                widgets         = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Hardware>              hardware        = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareGroup>         hardware_groups = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Invitation>            invitations     = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_ProjectParticipant>    participants    = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Instance>              instances       = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HomerServer>           servers         = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_GSM>                   gsm             = new ArrayList<>();
 
     @JsonIgnore @Transient public Swagger_ProjectStats project_stats;
 
@@ -686,19 +688,27 @@ public class Model_Project extends TaggedModel {
         return true;
     }
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+    @Override
+    public EntityType getEntityType() {
+        return EntityType.PROJECT;
+    }
+
+    @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.ACTIVATE, Action.INVITE);
+    }
+
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception  {
-        if (_BaseController.person().has_permission(Permission.Project_read.name())) return;
+        /*if (_BaseController.person().has_permission(Permission.Project_read.name())) return;
         if(!product.active) throw new Result_Error_PermissionDenied();
-        product.check_create_permission();
+        product.check_create_permission();*/
     }
 
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
 
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        /*// Cache už Obsahuje Klíč a tak vracím hodnotu
         if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
             _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
             return;
@@ -713,11 +723,11 @@ public class Model_Project extends TaggedModel {
 
         // Přidávám do listu false a vracím false
         _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-        throw new Result_Error_PermissionDenied();
+        throw new Result_Error_PermissionDenied();*/
     }
 
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception   {
-        try {
+        /*try {
             // Cache už Obsahuje Klíč a tak vracím hodnotu
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
                 _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
@@ -737,12 +747,12 @@ public class Model_Project extends TaggedModel {
             // Přidávám do listu false a vracím false
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
             throw new Result_Error_PermissionDenied();
-        }
+        }*/
     }
 
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
 
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        /*// Cache už Obsahuje Klíč a tak vracím hodnotu
         if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
             _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
             return;
@@ -757,12 +767,12 @@ public class Model_Project extends TaggedModel {
 
         // Přidávám do listu false a vracím false
         _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-        throw new Result_Error_PermissionDenied();
+        throw new Result_Error_PermissionDenied();*/
     }
 
     @JsonIgnore @Transient public void check_share_permission ()throws _Base_Result_Exception {
 
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        /*// Cache už Obsahuje Klíč a tak vracím hodnotu
         if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_unshare_" + id)) {
             _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_unshare_" + id);
             return;
@@ -778,12 +788,12 @@ public class Model_Project extends TaggedModel {
 
         // Přidávám do listu false a vracím false
         _BaseController.person().cache_permission(this.getClass().getSimpleName() + "unshare_" + id, false);
-        throw new Result_Error_PermissionDenied();
+        throw new Result_Error_PermissionDenied();*/
     }
 
     @JsonIgnore @Transient public void admin_permission () throws _Base_Result_Exception {
 
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
+        /*// Cache už Obsahuje Klíč a tak vracím hodnotu
         if (_BaseController.person().has_permission("project_admin_permission_" + id)) if(!_BaseController.person().has_permission("project_admin_permission_"+ id)) throw new Result_Error_PermissionDenied();
         if (_BaseController.person().has_permission(Permission.Project_admin.name())) return;
 
@@ -795,7 +805,7 @@ public class Model_Project extends TaggedModel {
 
         // Přidávám do listu false a vracím false
         _BaseController.person().cache_permission("project_admin_permission_" + id, false);
-        throw new Result_Error_PermissionDenied();
+        throw new Result_Error_PermissionDenied();*/
     }
 
     @JsonIgnore @Transient public void financial_permission() throws _Base_Result_Exception {
@@ -804,7 +814,7 @@ public class Model_Project extends TaggedModel {
         // return this.product.financial_permission("project");
     }
 
-    public enum Permission { Project_create, Project_update, Project_read, Project_unshare , Project_share, Project_delete, Project_admin }
+    // public enum Permission { Project_create, Project_update, Project_read, Project_unshare , Project_share, Project_delete, Project_admin }
 
 /* NOTIFICATION ---------------------------------------------------------------------------------------------------------------*/
 

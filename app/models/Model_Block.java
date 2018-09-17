@@ -8,24 +8,29 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
+import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
 @ApiModel( value = "Block", description = "Model of Block")
 @Table(name="Block")
-public class Model_Block extends TaggedModel {
+public class Model_Block extends TaggedModel implements Permissible, UnderProject {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
@@ -118,11 +123,10 @@ public class Model_Block extends TaggedModel {
     }
 
     @JsonIgnore
-    public Model_Project get_project() throws _Base_Result_Exception {
-
+    public Model_Project getProject() throws _Base_Result_Exception {
         try {
-            return Model_Project.find.byId(get_project_id());
-        }catch (Exception e) {
+            return Model_Project.find.query().where().eq("blocks.id", id).findOne();
+        } catch (Exception e) {
             return null;
         }
     }
@@ -232,7 +236,7 @@ public class Model_Block extends TaggedModel {
 
             try {
 
-                get_project().idCache().remove(this.getClass(), id);
+                getProject().idCache().remove(this.getClass(), id);
 
             } catch (Exception e) {
                 // Nothing
@@ -304,12 +308,22 @@ public class Model_Block extends TaggedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+    @Override
+    public EntityType getEntityType() {
+        return EntityType.BLOCK;
+    }
+
+    @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.PUBLISH);
+    }
+
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Block_create.name())) return;
-        project.check_update_permission();
+        /*if(_BaseController.person().has_permission(Permission.Block_create.name())) return;
+        project.check_update_permission();*/
     }
     @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception   {
-        try {
+        /*try {
 
             if (publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN) return;
 
@@ -322,16 +336,16 @@ public class Model_Block extends TaggedModel {
 
 
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_read_permission();
+            this.getProject().check_read_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
 
         } catch (_Base_Result_Exception e) {
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
             throw new Result_Error_PermissionDenied();
-        }
+        }*/
     }
     @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        try {
+        /*try {
 
             // Cache už Obsahuje Klíč a tak vracím hodnotu
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
@@ -345,16 +359,16 @@ public class Model_Block extends TaggedModel {
             }
 
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_update_permission();
+            this.getProject().check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
 
         } catch (_Base_Result_Exception e) {
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
             throw new Result_Error_PermissionDenied();
-        }
+        }*/
     }
     @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception  {
-        try {
+        /*try {
 
             // Cache už Obsahuje Klíč a tak vracím hodnotu
             if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
@@ -367,17 +381,17 @@ public class Model_Block extends TaggedModel {
                 throw new Result_Error_PermissionDenied();
             }
             // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_update_permission();
+            this.getProject().check_update_permission();
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
 
         } catch (_Base_Result_Exception e) {
             _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
             throw new Result_Error_PermissionDenied();
-        }
+        }*/
     }
 
     @JsonProperty @ApiModelProperty("Visible only for Administrator with permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
-        try {
+        /*try {
             // Cache už Obsahuje Klíč a tak vracím hodnotu
             if (_BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) {
                 return true;
@@ -388,10 +402,11 @@ public class Model_Block extends TaggedModel {
         } catch (Exception e){
             logger.internalServerError(e);
             return null;
-        }
+        }*/
+        return true;
     }
 
-    public enum Permission { Block_create, Block_read, Block_edit, Block_update, Block_delete }
+    // public enum Permission { Block_create, Block_read, Block_edit, Block_update, Block_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
