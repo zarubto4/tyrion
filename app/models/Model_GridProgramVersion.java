@@ -8,22 +8,27 @@ import io.swagger.annotations.ApiModel;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
+import utilities.enums.EntityType;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
+import utilities.model.UnderProject;
 import utilities.model.VersionModel;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
 @ApiModel( value = "GridProgramVersion", description = "Model of GridProgramVersion")
 @Table(name="GridProgramVersion")
-public class Model_GridProgramVersion extends VersionModel {
+public class Model_GridProgramVersion extends VersionModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -67,6 +72,11 @@ public class Model_GridProgramVersion extends VersionModel {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    @Override
+    public Model_Project getProject() {
+        return this.get_grid_program().getProject();
+    }
+
     @JsonIgnore
     public UUID get_grid_program_id() throws _Base_Result_Exception {
 
@@ -80,13 +90,7 @@ public class Model_GridProgramVersion extends VersionModel {
 
     @JsonIgnore
     public Model_GridProgram get_grid_program() throws _Base_Result_Exception {
-
-        try {
-            return Model_GridProgram.find.byId(get_grid_program_id());
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return this.grid_program != null ? this.grid_program : Model_GridProgram.find.query().where().eq("versions.id", id).findOne();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -149,9 +153,6 @@ public class Model_GridProgramVersion extends VersionModel {
         return false;
     }
 
-/* Services --------------------------------------------------------------------------------------------------------*/
-
-
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
@@ -167,57 +168,15 @@ public class Model_GridProgramVersion extends VersionModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { grid_program.check_update_permission();} // You have to access grid_program directly, because get_grid_program() finds the grid_program by id of the version which is not yet created
-    @JsonIgnore @Override public void check_read_permission()   throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            get_grid_program().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Override public void check_update_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            get_grid_program().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Override public void check_delete_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-
-            get_grid_program().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @Override
+    public EntityType getEntityType() {
+        return EntityType.GRID_PROGRAM_VERSION;
     }
 
-    public enum Permission {} // Not Required here
+    @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

@@ -9,9 +9,11 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.typesafe.config.Config;
 import play.inject.ApplicationLifecycle;
+import play.libs.Json;
 import utilities.Server;
 import utilities.cache.ServerCache;
 import utilities.logger.ServerLogger;
+import utilities.permission.PermissionHandlerInstantiator;
 import utilities.scheduler.SchedulerController;
 
 /**
@@ -53,6 +55,9 @@ public class ApplicationStarter {
             ServerLogger.init(configuration);
 
             this.cache.initialize();
+
+            // For dependency injected serializer for permissions
+            Json.mapper().setHandlerInstantiator(injector.getInstance(PermissionHandlerInstantiator.class));
 
             Server.start(configuration, injector);
             this.scheduler.start();

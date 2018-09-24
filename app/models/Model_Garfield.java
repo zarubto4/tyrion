@@ -160,7 +160,7 @@ public class Model_Garfield extends NamedModel implements Permissible {
 
     @Override
     public List<Action> getSupportedActions() {
-        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.PUBLISH);
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/

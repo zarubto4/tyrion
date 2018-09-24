@@ -19,6 +19,8 @@ import utilities.cache.Cached;
 import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.JsonPermission;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
@@ -578,54 +580,11 @@ public abstract class BaseModel extends Model implements JsonSerializable {
 
 /* Permission Contents ----------------------------------------------------------------------------------------------------*/
 
-    @Transient
-    public boolean update_permission = false;
+    @JsonPermission @Transient
+    public boolean update_permission;
 
-    @Transient
-    public boolean delete_permission = false;
-
-
-    @ApiModelProperty(readOnly = true, value = "can be hidden", required = true)
-    @JsonProperty
-    public boolean update_permission(){
-        try{
-
-            if(!its_person_operation()) {
-               return true;
-            }
-
-            check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-            return true;
-        }catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            return false;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return false;
-        }
-    }
-
-    @ApiModelProperty(readOnly = true, value = "can be hidden", required = true)
-    @JsonProperty
-    public boolean delete_permission(){
-        try{
-
-            if(!its_person_operation()) {
-                return true;
-            }
-
-            check_delete_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-            return true;
-        }catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            return false;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return false;
-        }
-    }
+    @JsonPermission(Action.DELETE) @Transient
+    public boolean delete_permission;
 
 /* ABSTRACT METHODS ----------------------------------------------------------------------------------------------------*/
 

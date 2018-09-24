@@ -7,22 +7,27 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
+import utilities.enums.EntityType;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
 @ApiModel( value = "GridProject", description = "Model of GridProject")
 @Table(name="GridProject")
-public class Model_GridProject extends TaggedModel {
+public class Model_GridProject extends TaggedModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -89,8 +94,8 @@ public class Model_GridProject extends TaggedModel {
         return idCache().get(Model_Project.class);
     }
 
-    @JsonIgnore @Transient public Model_Project get_project() throws _Base_Result_Exception  {
-        return  Model_Project.find.byId(get_project_id());
+    @JsonIgnore @Transient public Model_Project getProject() throws _Base_Result_Exception  {
+        return Model_Project.find.query().where().eq("grid_projects.id", id).findOne();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -140,7 +145,7 @@ public class Model_GridProject extends TaggedModel {
         super.delete();
 
         try {
-            get_project().idCache().remove(this.getClass(), id);
+            getProject().idCache().remove(this.getClass(), id);
         }catch (_Base_Result_Exception e){
             // Nothing
         }
@@ -170,7 +175,7 @@ public class Model_GridProject extends TaggedModel {
 
         // FOR OLD already created objects is still using blob_link, but its @Deprecated
         if(blob_link != null) return blob_link;
-        return get_project().getPath() + "/grid-projects/" + this.id;
+        return getProject().getPath() + "/grid-projects/" + this.id;
     }
 
 
@@ -178,61 +183,15 @@ public class Model_GridProject extends TaggedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if (_BaseController.person().has_permission(Permission.GridProject_create.name())) return;
-        project.check_update_permission();
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (_BaseController.person().has_permission("grid_project_update_" + id)) _BaseController.person().valid_permission("grid_project_update_" + id);
-        if (_BaseController.person().has_permission(Permission.GridProject_update.name())) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_GridProject.find.query().where().eq("project.participants.person.id", _BaseController.personId()).eq("id", id).findCount() > 0) {
-            _BaseController.person().cache_permission("grid_project_update_" + id, true);
-            return;
-        }
-
-        // Přidávám do listu false a vracím false
-        _BaseController.person().cache_permission("grid_project_update_" + id, false);
-        throw new Result_Error_PermissionDenied();
-
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (_BaseController.person().has_permission("grid_project_read_" + id)) _BaseController.person().valid_permission("grid_project_read_" + id);
-        if (_BaseController.person().has_permission(Permission.GridProject_read.name())) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_GridProject.find.query().where().eq("project.participants.person.id", _BaseController.personId()).eq("id", id).findCount() > 0) {
-            _BaseController.person().cache_permission("grid_project_read_" + id, true);
-            return;
-        }
-
-        // Přidávám do listu false a vracím false
-        _BaseController.person().cache_permission("grid_project_read_" + id, false);
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission()  throws _Base_Result_Exception {
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (_BaseController.person().has_permission("grid_project_delete_" + id)) _BaseController.person().valid_permission("grid_project_delete_" + id);
-        if (_BaseController.person().has_permission(Permission.GridProject_delete.name())) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_GridProject.find.query().where().eq("project.participants.person.id", _BaseController.personId()).eq("id", id).findCount() > 0) {
-            _BaseController.person().cache_permission("grid_project_delete_" + id, true);
-            return;
-        }
-
-        // Přidávám do listu false a vracím false
-        _BaseController.person().cache_permission("grid_project_delete_" + id, false);
-        throw new Result_Error_PermissionDenied();
-
+    @Override
+    public EntityType getEntityType() {
+        return EntityType.GRID_PROJECT;
     }
 
-    public enum Permission { GridProject_create, GridProject_read, GridProject_update, GridProject_edit, GridProject_delete }
+    @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
