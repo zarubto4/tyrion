@@ -84,10 +84,7 @@ public class Controller_Garfield extends _BaseController {
             garfield.print_label_id_2 =  help.print_label_id_2;  // 24 mm
             garfield.print_sticker_id =  help.print_sticker_id; // 65 mm
 
-            garfield.update();
-
-            // Vrácení objektu
-            return ok(garfield);
+            return update(garfield);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -138,9 +135,7 @@ public class Controller_Garfield extends _BaseController {
             garfield.hardware_type_id = help.hardware_type_id;
             garfield.producer_id = help.producer_id;
 
-            garfield.save();
-
-            return ok(garfield);
+            return create(garfield);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -162,16 +157,7 @@ public class Controller_Garfield extends _BaseController {
     })
     public Result remove_Garfield(UUID garfield_id) {
         try {
-
-            // Kontrola objektu
-            Model_Garfield garfield = Model_Garfield.find.byId(garfield_id);
-
-            // Odsranit objekt
-            garfield.delete();
-
-            // Vrácení objektu
-            return ok();
-
+            return delete(Model_Garfield.find.byId(garfield_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -192,13 +178,7 @@ public class Controller_Garfield extends _BaseController {
     })
     public Result get_Garfield(UUID garfield_id) {
         try {
-
-            // Kontrola objektu
-            Model_Garfield garfield = Model_Garfield.find.byId(garfield_id);
-
-            // Vrácení objektu
-            return ok(garfield);
-
+            return read(Model_Garfield.find.byId(garfield_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -284,7 +264,8 @@ public class Controller_Garfield extends _BaseController {
     public Result get_Garfield_list() {
         try {
 
-            if (!person().has_permission(Model_Garfield.Permission.Garfield_read.name()))  return forbidden();
+            // TODO permissions
+            // if (!person().has_permission(Model_Garfield.Permission.Garfield_read.name()))  return forbidden();
 
             // Kontrola objektu
             List<Model_Garfield> garfield_s = Model_Garfield.find.query().where().orderBy("UPPER(name) ASC").findList();

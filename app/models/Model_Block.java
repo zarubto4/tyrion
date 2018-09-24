@@ -3,14 +3,12 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
@@ -124,11 +122,7 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
 
     @JsonIgnore
     public Model_Project getProject() throws _Base_Result_Exception {
-        try {
-            return Model_Project.find.query().where().eq("blocks.id", id).findOne();
-        } catch (Exception e) {
-            return null;
-        }
+        return this.project != null ? this.project : Model_Project.find.query().where().eq("blocks.id", id).findOne();
     }
 
     @JsonIgnore
@@ -181,7 +175,7 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
 
         try {
             return Model_Producer.find.byId(get_producerId());
-        }catch (Exception e) {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -191,10 +185,6 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
 
     @JsonIgnore @Override
     public void save() {
-
-        if(project != null) {
-            project.check_update_permission();
-        }
 
         super.save();
 
@@ -206,14 +196,8 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
 
         super.update();
 
-        /*if (cache.containsKey(this.id)) {
-            cache.replace(this.id, this);
-        } else {
-            cache.put(this.id, this);
-        }*/
-
         // Call notification about model update
-        if(publish_type == ProgramType.PRIVATE) {
+        if (publish_type == ProgramType.PRIVATE) {
             new Thread(() -> {
                 try {
                     EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, get_project_id(), this.id));
@@ -222,7 +206,6 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
                 }
             }).start();
         }
-
     }
 
     @JsonIgnore @Override
@@ -232,7 +215,7 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
         super.delete();
 
         // Remove from Project Cache
-        if(publish_type == ProgramType.PRIVATE) {
+        if (publish_type == ProgramType.PRIVATE) {
 
             try {
 
@@ -302,10 +285,6 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
-    // Floating shared documentation for Swagger
-    @JsonIgnore @Transient public static final String read_permission_docs   = "read: If user can read TypeOfBlock, than can read all BlockoBlocks from list of TypeOfBlock ( You get ids of list of BlockoBlocks in object \"BlockoBlocks\" in json)  - Or you need static/dynamic permission key";
-    @JsonIgnore @Transient public static final String create_permission_docs = "create: If user have TypeOfBlock.update_permission = true, you can create new BlockoBlocks on this TypeOfBlock - Or you need static/dynamic permission key if user want create BlockoBlock in public TypeOfBlock";
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @Override
@@ -316,78 +295,6 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
     @Override
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.PUBLISH);
-    }
-
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        /*if(_BaseController.person().has_permission(Permission.Block_create.name())) return;
-        project.check_update_permission();*/
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception   {
-        /*try {
-
-            if (publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN) return;
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-            }
-
-            if (_BaseController.person().has_permission(Permission.Block_read.name())) return;
-
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.getProject().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }*/
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        /*try {
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-            }
-
-            if (_BaseController.person().has_permission(Permission.Block_update.name())) return;
-
-            if(publish_type == ProgramType.PUBLIC) {
-                throw new Result_Error_PermissionDenied();
-            }
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            this.getProject().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }*/
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception  {
-        /*try {
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-            if (_BaseController.person().has_permission(Permission.Block_delete.name())) return;
-
-            if(publish_type == ProgramType.PUBLIC) {
-                throw new Result_Error_PermissionDenied();
-            }
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.getProject().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }*/
     }
 
     @JsonProperty @ApiModelProperty("Visible only for Administrator with permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {

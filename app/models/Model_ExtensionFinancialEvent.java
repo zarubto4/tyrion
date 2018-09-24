@@ -25,11 +25,11 @@ import java.util.UUID;
 @Table(name="ExtensionFinancialEvent")
 public class Model_ExtensionFinancialEvent extends BaseModel {
 
-    /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
     private static final Logger logger = new Logger(Model_ExtensionFinancialEvent.class);
 
-    /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                         @ManyToOne public Model_ProductExtension product_extension;
 
@@ -41,9 +41,7 @@ public class Model_ExtensionFinancialEvent extends BaseModel {
 
                 @ManyToOne                         public Model_Invoice invoice;
 
-    /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
-
-
+/* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
     /**
      * FOR FRONTEND, NOT CALCULATIONS! For calculations, use getPrice() method.
@@ -62,7 +60,7 @@ public class Model_ExtensionFinancialEvent extends BaseModel {
         return getConsumption().toReadableString();
     }
 
-    /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public BigDecimal getPrice() {
@@ -92,29 +90,19 @@ public class Model_ExtensionFinancialEvent extends BaseModel {
                      .get();
     }
 
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
-    /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-    /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-    /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    @Transient @Override public void check_create_permission() throws _Base_Result_Exception { }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { }
-
-    public enum Permission {} // Not Required here
-
-    /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-
-    /* FINDER -------------------------------------------------------------------------------------------------------------*/
+/* FINDER -------------------------------------------------------------------------------------------------------------*/
 
     @CacheFinderField(Model_ExtensionFinancialEvent.class)
     public static CacheFinder<Model_ExtensionFinancialEvent> find = new CacheFinder<>(Model_ExtensionFinancialEvent.class);

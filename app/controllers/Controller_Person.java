@@ -1021,35 +1021,34 @@ public class Controller_Person extends _BaseController {
 
             // Pokud tu byl nějaký soubor - smažu ho - prázdný soubor je příkaz ke smazání
             if (help.file == null || help.file.equals("")) {
-                Model_Blob fileRecord = person.picture;
+                Model_Blob blob = person.picture;
                 person.picture = null;
                 person.alternative_picture_link = "";
                 person.update();
-                fileRecord.refresh();
-                fileRecord.delete();
+                blob.refresh();
+                blob.delete();
 
                 return ok();
             }
 
-            //  data:image/png;base64,
             //  data:image/png;base64,
             String[] parts = help.file.split(",");
             String[] type = parts[0].split(":");
             String[] content_type = type[1].split(";");
             String dataType = content_type[0].split("/")[1];
 
-            logger.debug("bootLoader_uploadFile:: Cont Type:" + content_type[0] + ":::");
-            logger.debug("bootLoader_uploadFile:: Data Type:" + dataType + ":::");
-            logger.debug("bootLoader_uploadFile:: Data: " + parts[1].substring(0, 10) + "......");
+            logger.debug("person_uploadPicture - Cont Type:" + content_type[0] + ":::");
+            logger.debug("person_uploadPicture - Data Type:" + dataType + ":::");
+            logger.debug("person_uploadPicture - Data: " + parts[1].substring(0, 10) + "......");
 
             // Odebrání předchozího obrázku
             if (person.picture != null) {
-                logger.debug("person_uploadPicture:: Removing previous picture");
-                Model_Blob fileRecord = person.picture;
+                logger.debug("person_uploadPicture - Removing previous picture");
+                Model_Blob blob = person.picture;
                 person.picture = null;
                 person.alternative_picture_link = "";
                 person.update();
-                fileRecord.delete();
+                blob.delete();
             }
 
             // Pokud link není, vygeneruje se nový, unikátní
@@ -1067,16 +1066,14 @@ public class Controller_Person extends _BaseController {
                 person.update();
             }
 
-
             String file_name =  UUID.randomUUID().toString() + ".jpg";
             String file_path =  person.get_Container().getName() + "/" +file_name;
 
-            logger.debug("person_uploadPicture::  File Name " + file_name );
-            logger.debug("person_uploadPicture::  File Path " + file_path );
+            logger.debug("person_uploadPicture - File Name " + file_name );
+            logger.debug("person_uploadPicture - File Path " + file_path );
 
             person.picture = Model_Blob.upload( parts[1], content_type[0], file_name, file_path);
             person.update();
-
 
             return ok("Picture successfully uploaded");
         } catch (Exception e) {
@@ -1103,12 +1100,12 @@ public class Controller_Person extends _BaseController {
 
             Model_Person person = person();
 
-            if (!(person.picture == null)) {
-                Model_Blob fileRecord = person.picture;
+            if (person.picture != null) {
+                Model_Blob blob = person.picture;
                 person.picture = null;
                 person.alternative_picture_link = null;
                 person.update();
-                fileRecord.delete();
+                blob.delete();
             } else {
                 return badRequest("There is no picture to remove.");
             }
@@ -1119,8 +1116,4 @@ public class Controller_Person extends _BaseController {
             return controllerServerError(e);
         }
     }
-
-
-//######################################################################################################################
-
 }

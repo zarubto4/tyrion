@@ -84,6 +84,8 @@ public class Controller_Article extends _BaseController {
             article.name                  = help.name;
             article.mark_down_text        = help.mark_down_text;
 
+            this.permissionService.checkCreate(person(), article);
+
             // Uložení objektu
             article.save();
 
@@ -139,11 +141,7 @@ public class Controller_Article extends _BaseController {
             article.name                = help.name;
             article.mark_down_text      = help.mark_down_text;
 
-            // Uložení objektu
-            article.update();
-
-            // Vrácení objektu
-            return ok(article);
+            return update(article);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -166,16 +164,7 @@ public class Controller_Article extends _BaseController {
     })
     public Result article_delete(UUID article_id) {
         try {
-
-            // Kontrola objektu
-            Model_Article article = Model_Article.find.byId(article_id);
-
-            // Smazání objektu
-            article.delete();
-
-            // Vrácení potvrzení
-            return ok();
-
+            return delete(Model_Article.find.byId(article_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }

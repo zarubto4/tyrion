@@ -101,7 +101,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
         try {
 
             Model_BProgramVersion b_program_version = get_b_program_version();
-            return new Swagger_Short_Reference(b_program_version.get_b_program().id, b_program_version.get_b_program().name, b_program_version.get_b_program().description);
+            return new Swagger_Short_Reference(b_program_version.getBProgram().id, b_program_version.getBProgram().name, b_program_version.getBProgram().description);
 
         } catch (_Base_Result_Exception e) {
             //nothing
@@ -769,10 +769,10 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     .setImportance(NotificationImportance.LOW)
                     .setLevel(NotificationLevel.INFO)
                     .setText( new Notification_Text().setText("Server started creating new Blocko Instance of Blocko Version "))
-                    .setText( new Notification_Text().setText(this.get_b_program_version().get_b_program().name).setBoldText())
+                    .setText( new Notification_Text().setText(this.get_b_program_version().getBProgram().name).setBoldText())
                     .setObject(this.get_b_program_version())
                     .setText( new Notification_Text().setText(" from Blocko program "))
-                    .setObject(this.get_b_program_version().get_b_program())
+                    .setObject(this.get_b_program_version().getBProgram())
                     .send(person);
 
         } catch (Exception e) {
@@ -789,7 +789,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     .setText(new Notification_Text().setText("Server successfully created the instance of Blocko Version "))
                     .setObject(this.get_b_program_version())
                     .setText(new Notification_Text().setText(" from Blocko program "))
-                    .setObject(this.get_b_program_version().get_b_program())
+                    .setObject(this.get_b_program_version().getBProgram())
                     .send(person);
 
         } catch (Exception e) {
@@ -806,12 +806,12 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     .setText( new Notification_Text().setText("Server did not upload instance to cloud on Blocko Version "))
                     .setText( new Notification_Text().setText(this.get_b_program_version().name ).setBoldText())
                     .setText( new Notification_Text().setText(" from Blocko program "))
-                    .setText( new Notification_Text().setText(this.get_b_program_version().get_b_program().name).setBoldText())
+                    .setText( new Notification_Text().setText(this.get_b_program_version().getBProgram().name).setBoldText())
                     .setText( new Notification_Text().setText(" for reason: ").setBoldText() )
                     .setText( new Notification_Text().setText(reason + " ").setBoldText())
                     .setObject(this.get_b_program_version())
                     .setText( new Notification_Text().setText(" from Blocko program "))
-                    .setObject(this.get_b_program_version().get_b_program())
+                    .setObject(this.get_b_program_version().getBProgram())
                     .setText( new Notification_Text().setText(". Server will try to do that as soon as possible."))
                     .send(person);
 

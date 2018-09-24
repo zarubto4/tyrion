@@ -323,6 +323,8 @@ public class Controller_Security extends _BaseController {
 
             token.user_agent = "Various -> permanent token";
 
+            this.permissionService.checkCreate(person(), token);
+
             // Ukládám do databáze
             token.save();
 

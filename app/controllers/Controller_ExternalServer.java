@@ -625,11 +625,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.personal_server_name = help.personal_server_name;
             server.server_url = help.server_url;
 
-            // Ukládám objekt
-            server.save();
-
-            // Vracím objekt
-            return created(server);
+            return create(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -674,11 +670,7 @@ public class Controller_ExternalServer extends _BaseController {
             // Upravím objekt
             server.personal_server_name = help.personal_server_name;
 
-            // Uložím objekt
-            server.update();
-
-            // Vrátím objekt
-            return ok(server);
+            return update(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -700,10 +692,7 @@ public class Controller_ExternalServer extends _BaseController {
     @Security.Authenticated(Authentication.class)
     public Result compilation_server_get_all() {
         try {
-
-            // Vracím Objekty
             return ok(Model_CompilationServer.find.all());
-
         } catch (Exception e) {
            return controllerServerError(e);
         }
@@ -726,13 +715,7 @@ public class Controller_ExternalServer extends _BaseController {
     @Security.Authenticated(Authentication.class)
     public Result compilation_server_get(UUID compilation_server_id) {
         try {
-
-            //Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.find.byId(compilation_server_id);
-      
-            // Vracím odpověď
-            return ok(server);
-
+            return ok(Model_CompilationServer.find.byId(compilation_server_id));
         } catch (Exception e) {
            return controllerServerError(e);
         }
@@ -755,16 +738,7 @@ public class Controller_ExternalServer extends _BaseController {
     @Security.Authenticated(Authentication.class)
     public Result compilation_server_delete(UUID compilation_server_id) {
         try {
-
-            //Zkontroluji validitu
-            Model_CompilationServer server = Model_CompilationServer.find.byId(compilation_server_id);
-
-            // Smažu objekt
-            server.delete();
-
-            // Vracím odpověď
-            return ok();
-
+            return delete(Model_CompilationServer.find.byId(compilation_server_id));
         } catch (Exception e) {
            return controllerServerError(e);
         }
@@ -790,12 +764,8 @@ public class Controller_ExternalServer extends _BaseController {
     public Result cloud_file_get_b_program_version(UUID snapshot_id) {
         try {
 
-            System.out.println("cloud_file_get_b_program_version");
-
             // Získám soubor
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(snapshot_id);
-
-            System.out.println("OK 1");
 
             // Separace na Container a Blob
             int slash = snapshot.program.path.indexOf("/");

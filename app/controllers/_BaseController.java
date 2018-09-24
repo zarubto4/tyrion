@@ -90,6 +90,22 @@ public abstract class _BaseController {
         return ok();
     }
 
+    public void checkCreatePermission(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.checkCreate(person(), model);
+    }
+
+    public void checkReadPermission(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.checkRead(person(), model);
+    }
+
+    public void checkUpdatePermission(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.checkUpdate(person(), model);
+    }
+
+    public void checkDeletePermission(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.checkDelete(person(), model);
+    }
+
 // PERSON OPERATIONS ###################################################################################################
 
     /**
@@ -211,9 +227,6 @@ public abstract class _BaseController {
      * @return 201 result
      */
     public static Result created(JsonSerializable object) {
-        if (object instanceof BaseModel) {
-            Controller.ctx().args.put("entity", object);
-        }
         return Controller.created(object.json());
     }
 
@@ -252,9 +265,6 @@ public abstract class _BaseController {
      * @return 200 result ok with json
      */
     public static Result ok(JsonSerializable object) {
-        if (object instanceof BaseModel) {
-            Controller.ctx().args.put("entity", object);
-        }
         check_latency();
         return Controller.ok(object.json());
     }

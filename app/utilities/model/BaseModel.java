@@ -3,6 +3,7 @@ package utilities.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers._BaseController;
 import io.ebean.Model;
 import io.ebean.annotation.SoftDelete;
@@ -206,7 +207,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
      * Converts this model to JSON
      * @return JSON representation of this model
      */
-    public JsonNode json() {
+    public ObjectNode json() {
 
         /*
 
@@ -220,14 +221,14 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         return cache().get_cached_json();
         */
 
-        return Json.toJson(this);
+        return (ObjectNode) Json.toJson(this);
 
     }
 
     /**
      * Converts this model to JSON and than stringify
      * @return string from JSON representation
-     *
+     */
     public String string() {
         return json().toString();
     }
@@ -293,7 +294,6 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
     }
 
-
     /* COMMON METHODS ------------------------------------------------------------------------------------------------------*/
 
     /**
@@ -306,8 +306,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         logger.debug("save - saving new {}", this.getClass().getSimpleName());
 
         // Check Permission - only if user is logged!
-        if(its_person_operation()) {
-            check_create_permission();
+        if (its_person_operation()) {
             save_author();
         }
 
@@ -343,12 +342,6 @@ public abstract class BaseModel extends Model implements JsonSerializable {
 
             logger.debug("update - updating {}, id: {}", this.getClass().getSimpleName(), this.id);
 
-            // Check Permission
-            if (its_person_operation()) {
-                check_update_permission();
-                logger.debug("Permission is ok");
-            }
-
             this.updated = new Date();
             super.update();
             new Thread(this::cache).start();
@@ -370,10 +363,6 @@ public abstract class BaseModel extends Model implements JsonSerializable {
     public boolean delete() throws _Base_Result_Exception {
         logger.debug("delete - soft deleting {}, id: {}", this.getClass().getSimpleName(), this.id);
 
-        if(its_person_operation()) {
-            check_delete_permission();
-        }
-
         super.delete();
 
         new Thread(this::evict).start(); // Evict the object from cache
@@ -385,9 +374,6 @@ public abstract class BaseModel extends Model implements JsonSerializable {
     @Override
     public boolean deletePermanent() {
         logger.debug("deletePermanent - permanently deleting {}, id: {}", this.getClass().getSimpleName(), this.id);
-
-        if(its_person_operation()) check_delete_permission();
-
         return super.deletePermanent();
     }
 
@@ -592,6 +578,12 @@ public abstract class BaseModel extends Model implements JsonSerializable {
 
 /* Permission Contents ----------------------------------------------------------------------------------------------------*/
 
+    @Transient
+    public boolean update_permission = false;
+
+    @Transient
+    public boolean delete_permission = false;
+
 
     @ApiModelProperty(readOnly = true, value = "can be hidden", required = true)
     @JsonProperty
@@ -642,10 +634,10 @@ public abstract class BaseModel extends Model implements JsonSerializable {
      * You can used this one, or Override this
      *
      */
-    @JsonIgnore public abstract void check_create_permission() throws _Base_Result_Exception;
-    @JsonIgnore public abstract void check_read_permission()   throws _Base_Result_Exception;
-    @JsonIgnore public abstract void check_update_permission() throws _Base_Result_Exception;
-    @JsonIgnore public abstract void check_delete_permission() throws _Base_Result_Exception;
+    @JsonIgnore public void check_create_permission() throws _Base_Result_Exception {};
+    @JsonIgnore public void check_read_permission()   throws _Base_Result_Exception {};
+    @JsonIgnore public void check_update_permission() throws _Base_Result_Exception {};
+    @JsonIgnore public void check_delete_permission() throws _Base_Result_Exception {};
 
 }
 

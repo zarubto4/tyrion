@@ -750,26 +750,6 @@ public class Model_Project extends TaggedModel implements Permissible {
         }*/
     }
 
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-
-        /*// Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-            _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-            return;
-        }
-        if (_BaseController.person().has_permission(Permission.Project_delete.name())) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_ProjectParticipant.find.query().where().eq("project.id", id).eq("person.id", _BaseController.personId()).eq("state", ParticipantStatus.OWNER).findCount() > 0) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-            return;
-        }
-
-        // Přidávám do listu false a vracím false
-        _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-        throw new Result_Error_PermissionDenied();*/
-    }
-
     @JsonIgnore @Transient public void check_share_permission ()throws _Base_Result_Exception {
 
         /*// Cache už Obsahuje Klíč a tak vracím hodnotu

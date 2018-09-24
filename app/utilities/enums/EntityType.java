@@ -4,6 +4,10 @@ import io.ebean.annotation.EnumValue;
 
 public enum EntityType {
 
+    @EnumValue("ARTICLE")                   ARTICLE,
+    @EnumValue("AUTHORIZATION_TOKEN")       AUTHORIZATION_TOKEN,
+    @EnumValue("BOOTLOADER")                BOOTLOADER,
+    @EnumValue("GARFIELD")                  GARFIELD,
     @EnumValue("PERSON")                    PERSON,
     @EnumValue("PRODUCT")                   PRODUCT,
     @EnumValue("PROJECT")                   PROJECT,

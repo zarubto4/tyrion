@@ -253,16 +253,7 @@ public class Model_CompilationServer extends BaseModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override  @Transient public void check_create_permission() throws _Base_Result_Exception { if(!_BaseController.person().has_permission(Permission.CompilationServer_create.name())) throw new Result_Error_PermissionDenied();}
-    @JsonIgnore @Override  @Transient public void check_read_permission()   throws _Base_Result_Exception {}
-    @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception { if(!_BaseController.person().has_permission(Permission.CompilationServer_update.name())) throw new Result_Error_PermissionDenied();}
-    @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception { if(!_BaseController.person().has_permission(Permission.CompilationServer_delete.name())) throw new Result_Error_PermissionDenied();}
-
-    public enum Permission { CompilationServer_create, CompilationServer_update, CompilationServer_edit, CompilationServer_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

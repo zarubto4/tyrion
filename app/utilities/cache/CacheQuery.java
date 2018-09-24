@@ -43,7 +43,7 @@ public class CacheQuery<T extends BaseModel> extends DefaultOrmQuery<T> {
             UUID key = queryCache.get(hash);
             if (cache.containsKey(key)) {
                 logger.debug("findOne - ({}) get cached record", entityName);
-                return this.cacheFinder.retrieve(key);
+                return cache.get(key);
             } else {
                 return this.cacheFinder.byId(key);
             }
@@ -64,10 +64,6 @@ public class CacheQuery<T extends BaseModel> extends DefaultOrmQuery<T> {
         }
 
         cache.put(entity.id, entity);
-
-        if (entity.its_person_operation()) {
-            entity.check_read_permission();
-        }
 
         return entity;
     }

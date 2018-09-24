@@ -70,6 +70,8 @@ public class Model_Customer extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+    // TODO rework permissions
+
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
         //
     }

@@ -80,6 +80,8 @@ public class Model_Employee extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+    // TODO rework permissions
+
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Employee_crate.name())) return;
         if(person.id.equals(_BaseController.person().id)) return;

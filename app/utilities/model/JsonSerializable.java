@@ -1,8 +1,8 @@
 package utilities.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public interface JsonSerializable {
 
-    JsonNode json();
+    ObjectNode json();
 }

@@ -118,13 +118,6 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
-    public void save() {
-
-        logger.trace("save :: Model_BProgramVersionSnapGridProject Creating new Object");
-        super.save();
-
-    }
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -134,29 +127,6 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override @Transient public void check_create_permission() throws _Base_Result_Exception  {
-        if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProject_create.name())) return;
-        grid_project.check_update_permission();
-    }
-
-    @JsonIgnore @Override  @Transient public void check_read_permission() throws _Base_Result_Exception  {
-        if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProject_read.name())) return;
-        get_grid_project().check_update_permission();
-    }
-
-    @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProject_update.name())) return;
-        get_grid_project().check_update_permission();
-    }
-
-    @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProject_delete.name())) return;
-        get_grid_project().check_update_permission();
-    }
-
-    public enum Permission { BProgramVersionSnapGridProject_create, BProgramVersionSnapGridProject_update, BProgramVersionSnapGridProject_read, BProgramVersionSnapGridProject_delete }
-
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

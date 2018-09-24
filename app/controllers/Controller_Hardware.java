@@ -1036,11 +1036,8 @@ public class Controller_Hardware extends _BaseController {
             boot_loader.description = help.description;
             boot_loader.version_identifier = identifier;
             boot_loader.hardware_type = hardwareType;
-            
-            boot_loader.save();
 
-            // Vracím seznam
-            return ok(boot_loader);
+            return create(boot_loader);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1085,9 +1082,7 @@ public class Controller_Hardware extends _BaseController {
             boot_loader.description = help.description;
             boot_loader.version_identifier = help.version_identifier;
 
-            boot_loader.update();
-
-            return ok(boot_loader);
+            return update(boot_loader);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1117,9 +1112,7 @@ public class Controller_Hardware extends _BaseController {
 
             if (!boot_loader.hardware.isEmpty()) return badRequest("Bootloader is already used on some Board. Cannot be deleted.");
 
-            boot_loader.delete();
-
-            return ok(boot_loader);
+            return delete(boot_loader);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1158,6 +1151,8 @@ public class Controller_Hardware extends _BaseController {
 
             // Kontrola objektu
             Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
+
+            this.permissionService.checkUpdate(person(), boot_loader);
             
             //  data:image/png;base64,
             String[] parts = help.file.split(",");
@@ -1216,6 +1211,9 @@ public class Controller_Hardware extends _BaseController {
         try {
 
             Model_BootLoader boot_loader = Model_BootLoader.find.byId(boot_loader_id);
+
+            this.permissionService.checkUpdate(person(), boot_loader);
+
             if (boot_loader.file == null) return badRequest("Required bootloader object with file");
             if (boot_loader.getMainHardwareType() != null) return badRequest("Bootloader is Already Main");
 
@@ -1291,7 +1289,7 @@ public class Controller_Hardware extends _BaseController {
 
             for (Model_Hardware hardware : boards) {
 
-                hardware.check_read_permission();
+                this.permissionService.checkUpdate(person(), hardware);
 
                 WS_Help_Hardware_Pair pair = new WS_Help_Hardware_Pair();
                 pair.hardware = hardware;
@@ -1327,8 +1325,6 @@ public class Controller_Hardware extends _BaseController {
                 logger.error("bootLoader_manualUpdate hardware_for_update is Empty");
             }
 
-
-            // Vracím Json
             return ok();
 
         } catch (Exception e) {

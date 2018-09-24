@@ -496,7 +496,7 @@ public class Model_HomerServer extends TaggedModel {
                 }
 
                 try {
-                    model_token.get_person();
+                    model_token.getPerson();
                     Model_Person.token_cache.put(UUID.fromString(message.client_token), model_token.get_person_id());
                 } catch (Exception e){
                     logger.error("getUsername:: Model_FloatingPersonToken not contains Person!");

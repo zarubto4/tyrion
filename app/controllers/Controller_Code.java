@@ -20,6 +20,7 @@ import utilities.emails.Email;
 import utilities.enums.*;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.Action;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
@@ -248,12 +249,10 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_C_Program_New help  = formFromRequestWithValidation(Swagger_C_Program_New.class);
+            Swagger_C_Program_New help = formFromRequestWithValidation(Swagger_C_Program_New.class);
 
             // Ověření Typu Desky
             Model_HardwareType hardwareType = Model_HardwareType.find.byId(help.hardware_type_id);
-
-            System.out.println("Model_HardwareType ok");
 
             // Tvorba programu
             Model_CProgram c_program        = new Model_CProgram();
@@ -265,6 +264,8 @@ public class Controller_Code extends _BaseController {
             if (help.project_id != null) {
                 c_program.project = Model_Project.find.byId(help.project_id);
             }
+
+            this.checkCreatePermission(c_program);
 
             // Uložení C++ Programu
             c_program.save();
@@ -343,6 +344,8 @@ public class Controller_Code extends _BaseController {
             c_program_new.publish_type  = ProgramType.PRIVATE;
             c_program_new.project = project;
 
+            this.checkCreatePermission(c_program_new);
+
             c_program_new.save();
 
             for (Model_CProgramVersion version : c_program_old.getVersions()) {
@@ -394,6 +397,10 @@ public class Controller_Code extends _BaseController {
 
             // Vyhledám Objekt
             Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
+
+            if (c_program.publish_type == ProgramType.PRIVATE) {
+                this.checkReadPermission(c_program);
+            }
 
             // Vracím Objekt
             return ok(c_program);
@@ -481,11 +488,10 @@ public class Controller_Code extends _BaseController {
 
             disjunction.endJunction();
 
-
-
+            // TODO permissions
 
             // Vyvoření odchozího JSON
-            Swagger_C_Program_List result = new Swagger_C_Program_List(query,page_number,help);
+            Swagger_C_Program_List result = new Swagger_C_Program_List(query, page_number, help);
 
             // Vrácení výsledku
             return ok(result);
@@ -529,6 +535,8 @@ public class Controller_Code extends _BaseController {
 
             // Kontrola objektu
             Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
+
+            this.checkUpdatePermission(c_program);
 
             // Úprava objektu
             c_program.name = help.name;
@@ -582,6 +590,8 @@ public class Controller_Code extends _BaseController {
             // Kontrola objektu
             Model_CProgram cProgram = Model_CProgram.find.byId(help.object_id);
 
+            this.checkUpdatePermission(cProgram);
+
             // Add Tags
             cProgram.addTags(help.tags);
 
@@ -627,6 +637,8 @@ public class Controller_Code extends _BaseController {
             // Kontrola objektu
             Model_CProgram cProgram = Model_CProgram.find.byId(help.object_id);
 
+            this.checkUpdatePermission(cProgram);
+
             // Remove Tags
             cProgram.removeTags(help.tags);
 
@@ -654,16 +666,7 @@ public class Controller_Code extends _BaseController {
     })
     public Result c_program_delete(UUID c_program_id) {
         try {
-
-            // Ověření objektu
-            Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
-
-            // Smazání objektu
-            c_program.delete();
-
-            // Vrácení potvrzení
-            return ok();
-
+            return delete(Model_CProgram.find.byId(c_program_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -700,17 +703,13 @@ public class Controller_Code extends _BaseController {
     public Result c_program_version_create(@ApiParam(value = "version_id String query", required = true)  UUID c_program_id) {
         try {
 
-
-            System.out.println("c_program_version_create");
-
             // Get and Validate Object
             Swagger_C_Program_Version_New help = formFromRequestWithValidation(Swagger_C_Program_Version_New.class);
 
             // Ověření objektu
             Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
 
-            // Zkontroluji oprávnění
-            c_program.check_update_permission();
+            this.checkUpdatePermission(c_program);
 
             UUID working_copy_version_id = Model_CProgramVersion.find.query().where().eq("c_program.id", c_program_id).ne("deleted", true).eq("working_copy", true).select("id").findSingleAttribute();
 
@@ -775,12 +774,8 @@ public class Controller_Code extends _BaseController {
     public Result c_program_version_working_copy(@ApiParam(value = "version_id String query", required = true)  UUID c_program_id) {
         try {
 
-            System.out.println("c_program_version_working_copy");
-
             // Get and Validate Object
             Swagger_C_Program_Version_Refresh help = formFromRequestWithValidation(Swagger_C_Program_Version_Refresh.class);
-
-            System.out.println("Sem to ani nedošlo :(");
 
             // Find Last working copy
             UUID version_id = Model_CProgramVersion.find.query().where().eq("c_program.id", c_program_id).ne("deleted", true).eq("working_copy", true).select("id").findSingleAttribute();
@@ -788,16 +783,12 @@ public class Controller_Code extends _BaseController {
             Model_CProgramVersion version = null;
 
             // If the is not working copy - make it
-            if(version_id == null) {
-
-                System.out.println("Verze Neexistuje a tak jí vytvořím");
-
+            if (version_id == null) {
 
                 // Ověření objektu
                 Model_CProgram c_program = Model_CProgram.find.byId(c_program_id);
 
-                // Zkontroluji oprávnění
-                c_program.check_update_permission();
+                this.checkUpdatePermission(c_program);
 
                 version = new Model_CProgramVersion();
                 version.name            = "Working Copy";
@@ -807,17 +798,14 @@ public class Controller_Code extends _BaseController {
                 version.working_copy    = true;
                 version.save();
 
-            }else  {
+            } else {
 
                 version = Model_CProgramVersion.find.byId(version_id);
 
-                if(version.file != null) {
+                if (version.file != null) {
                     version.file.delete();
                 }
             }
-
-
-            System.out.println("Vytvářím Soubor");
 
             // Content se nahraje na Azure
             version.file = Model_Blob.upload(Json.toJson(help).toString(), "code.json" , Model_Blob.get_path_for_bin());
@@ -830,7 +818,6 @@ public class Controller_Code extends _BaseController {
             return created(version);
 
         } catch (Exception e) {
-            e.printStackTrace();
             return controllerServerError(e);
         }
     }
@@ -852,13 +839,7 @@ public class Controller_Code extends _BaseController {
     })
     public Result c_program_version_get(@ApiParam(value = "version_id String query", required = true)  UUID version_id) {
         try {
-
-            // Kontrola objekt
-            Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
-
-            // Vracím Objekt
-            return ok(version);
-
+            return read(Model_CProgramVersion.find.byId(version_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -903,11 +884,7 @@ public class Controller_Code extends _BaseController {
             version.name        = help.name;
             version.description = help.description;
 
-            // Uložení změn
-            version.update();
-
-            // Vrácení objektu
-            return ok(version);
+            return update(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -930,16 +907,7 @@ public class Controller_Code extends _BaseController {
     })
     public Result c_program_version_delete(@ApiParam(value = "version_id String query",   required = true)  UUID version_id) {
         try {
-
-            // Ověření objektu
-            Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
-
-            // Smažu zástupný objekt
-            version.delete();
-
-            // Vracím potvrzení o smazání
-            return ok();
-
+            return delete(Model_CProgramVersion.find.byId(version_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -967,6 +935,8 @@ public class Controller_Code extends _BaseController {
             // Kontrola objektu
             Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
 
+            this.permissionService.check(person(), version, Action.PUBLISH);
+
             if (Model_CProgramVersion.find.query().where().eq("approval_state", Approval.PENDING.name())
                     .eq("author_id", _BaseController.personId())
                     .findList().size() > 3) {
@@ -974,7 +944,7 @@ public class Controller_Code extends _BaseController {
                 return badRequest("You can publish only 3 programs. Wait until the previous ones approved by the administrator. Thanks.");
             }
 
-            if (version.approval_state != null)  return badRequest("You cannot publish same program twice!");
+            if (version.approval_state != null) return badRequest("You cannot publish same program twice!");
 
             // Úprava objektu
             version.approval_state = Approval.PENDING;
@@ -1026,10 +996,11 @@ public class Controller_Code extends _BaseController {
             // Kontrola objektu
             Model_CProgram c_program_old = Model_CProgram.find.byId(version_old.get_c_program().id);
 
+            // TODO permissions
             // Zkontroluji oprávnění
-            if (!c_program_old.community_publishing_permission()) {
+            /*if (!c_program_old.community_publishing_permission()) {
                 return forbidden();
-            }
+            }*/
 
             if (help.decision) {
 

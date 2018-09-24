@@ -2,26 +2,29 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.enums.EntityType;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
+import utilities.model.UnderProject;
 import utilities.model.VersionModel;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
 @ApiModel( value = "BProgramVersion", description = "Model of BProgram Version")
 @Table(name="BProgramVersion")
-public class Model_BProgramVersion extends VersionModel {
+public class Model_BProgramVersion extends VersionModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -115,15 +118,14 @@ public class Model_BProgramVersion extends VersionModel {
     }
 
     @JsonIgnore
-    public Model_BProgram get_b_program() throws _Base_Result_Exception {
-        try {
-            return Model_BProgram.find.byId(get_b_program_id());
-        }catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+    public Model_BProgram getBProgram() throws _Base_Result_Exception {
+        return Model_BProgram.find.query().where().eq("versions.id", id).findOne();
     }
 
+    @Override
+    public Model_Project getProject() {
+        return this.b_program != null ? this.b_program.getProject() : this.getBProgram().getProject();
+    }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -134,7 +136,7 @@ public class Model_BProgramVersion extends VersionModel {
 
         super.save();
 
-        Model_BProgram program = get_b_program();
+        Model_BProgram program = getBProgram();
 
         new Thread(() -> {
             EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, program.getProjectId(), program.id));
@@ -156,7 +158,7 @@ public class Model_BProgramVersion extends VersionModel {
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, get_b_program().getProjectId(), get_b_program_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, getBProgram().getProjectId(), get_b_program_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -171,14 +173,14 @@ public class Model_BProgramVersion extends VersionModel {
 
         // Remove from Cache
         try {
-            get_b_program().idCache().remove(this.getClass(), id);
+            getBProgram().idCache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, get_b_program().getProjectId(), get_b_program_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, getBProgram().getProjectId(), get_b_program_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -189,69 +191,25 @@ public class Model_BProgramVersion extends VersionModel {
         return false;
     }
 
-/* Services --------------------------------------------------------------------------------------------------------*/
-
-
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public String get_path() {
-        return get_b_program().get_path() + "/version/" + this.id;
+        return getBProgram().get_path() + "/version/" + this.id;
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { b_program.check_update_permission();} // You have to access b_program directly, because get_b_program() finds the b_program by id of the version which is not yet created
-    @JsonIgnore @Override public void check_read_permission()   throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            get_b_program().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Override public void check_update_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            get_b_program().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Override public void check_delete_permission() throws _Base_Result_Exception {
-        try {
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-
-            get_b_program().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @Override
+    public EntityType getEntityType() {
+        return EntityType.BLOCKO_PROGRAM_VERSION;
     }
 
-    public enum Permission {} // Not Required here
+    @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

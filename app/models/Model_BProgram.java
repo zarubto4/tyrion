@@ -2,20 +2,23 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.enums.EntityType;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -23,7 +26,7 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel(value = "BProgram", description = "Model of BProgram")
 @Table(name="BProgram")
-public class Model_BProgram extends TaggedModel {
+public class Model_BProgram extends TaggedModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -40,9 +43,7 @@ public class Model_BProgram extends TaggedModel {
     @JsonProperty
     public List<Model_BProgramVersion> program_versions() {
         try {
-
             return getVersions();
-
         } catch(_Base_Result_Exception e){
             //nothing
             return null;
@@ -51,9 +52,6 @@ public class Model_BProgram extends TaggedModel {
             return new ArrayList<>();
         }
     }
-
-/* GET Variable short type of objects ----------------------------------------------------------------------------------*/
-
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -69,12 +67,7 @@ public class Model_BProgram extends TaggedModel {
 
     @JsonIgnore
     public Model_Project getProject() {
-        try {
-            return Model_Project.find.byId(getProjectId());
-        }catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return this.project != null ? this.project : Model_Project.find.query().where().eq("b_programs.id", id).findOne();
     }
 
     @JsonIgnore
@@ -182,80 +175,15 @@ public class Model_BProgram extends TaggedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override @Transient
-    public void check_create_permission() throws _Base_Result_Exception {
-        if (_BaseController.person().has_permission(Permission.BProgram_create.name())) return;
-        project.check_update_permission();
+    @Override
+    public EntityType getEntityType() {
+        return EntityType.BLOCKO_PROGRAM;
     }
 
-    @JsonIgnore @Override @Transient
-    public void check_update_permission() throws _Base_Result_Exception {
-        try {
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            if (_BaseController.person().has_permission(Permission.BProgram_update.name())) return;
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            this.getProject().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
-
-    @JsonIgnore @Override @Transient
-    public void check_read_permission() throws _Base_Result_Exception  {
-        try {
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            if (_BaseController.person().has_permission(Permission.BProgram_read.name())) return;
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            this.getProject().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-
-    }
-
-    @JsonIgnore @Override @Transient
-    public void check_delete_permission() throws _Base_Result_Exception {
-        try {
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-
-            if (_BaseController.person().has_permission(Permission.BProgram_delete.name())) return;
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            this.getProject().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-     }
-
-     // Statické univerzální klíče
-    public enum Permission { BProgram_create, BProgram_read, BProgram_update, BProgram_edit, BProgram_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

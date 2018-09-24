@@ -265,7 +265,7 @@ public class Model_Notification extends BaseModel {
                 element.id = version.id;
                 element.text = version.name;
                 element.program_id = version.get_b_program_id();
-                element.project_id = version.get_b_program().getProjectId();
+                element.project_id = version.getBProgram().getProjectId();
                 break;
             }
             case "GridProgramVersion" : {

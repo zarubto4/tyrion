@@ -2,7 +2,6 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
@@ -65,7 +64,6 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
         }
     }
 
-
 /* JSON IGNORE  ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
@@ -116,31 +114,7 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
 
 /* Helper Class --------------------------------------------------------------------------------------------------------*/
 
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override @Transient public void check_create_permission() throws _Base_Result_Exception  {
-        if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProjectProgram_create.name())) return;
-        grid_project_program_snapshot.check_update_permission();
-    }
-
-    @JsonIgnore @Override  @Transient public void check_read_permission() throws _Base_Result_Exception  {
-        if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProjectProgram_read.name())) return;
-        get_b_program_grid_version().check_update_permission();
-
-    }
-
-    @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProjectProgram_update.name())) return;
-        get_b_program_grid_version().check_update_permission();
-    }
-
-    @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProjectProgram_delete.name())) return;
-        get_b_program_grid_version().check_update_permission();
-    }
-
-    public enum Permission { BProgramVersionSnapGridProjectProgram_create, BProgramVersionSnapGridProjectProgram_update, BProgramVersionSnapGridProjectProgram_read, BProgramVersionSnapGridProjectProgram_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

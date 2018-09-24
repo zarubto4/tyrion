@@ -7,6 +7,7 @@ import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
+import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
@@ -32,24 +33,20 @@ public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> implements
     }
 
     @Override
-    @NotNull
+    @Nonnull
     public T byId(UUID id) {
 
         if (cache.containsKey(id)) {
             logger.debug("byId - ({}) id: {} get from cache", this.entityType.getSimpleName(), id);
-            return this.retrieve(id);
+            return this.cache.get(id);
         }
 
         logger.debug("byId - ({}) id: {} get from db", this.entityType.getSimpleName(), id);
-        T entity = super.byId(id);
+        T entity = this.query().where().idEq(id).findOne();
 
         if (entity == null) {
             logger.debug("byId - ({}) id: {} not found", this.entityType.getSimpleName(), id);
             throw new Result_Error_NotFound(this.entityType);
-        }
-
-        if (entity.its_person_operation()) {
-            entity.check_read_permission();
         }
 
         cache.put(id, entity);
@@ -60,7 +57,9 @@ public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> implements
     @Override
     public CacheQuery<T> query() {
         DefaultOrmQuery<T> query = (DefaultOrmQuery<T>) super.query();
-        return new CacheQuery<>(this, query.getBeanDescriptor(), db(), query.getExpressionFactory());
+        CacheQuery<T> cacheQuery = new CacheQuery<>(this, query.getBeanDescriptor(), db(), query.getExpressionFactory());
+        cacheQuery.setDisableLazyLoading(true);
+        return cacheQuery;
     }
 
     public void setCache(Cache<UUID, T> cache) {
@@ -86,16 +85,6 @@ public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> implements
     public void cache(UUID key, T value) {
         logger.trace("cache - ({}) caching by key: {}", this.entityType.getSimpleName(), key);
         cache.put(key, value);
-    }
-
-    public T retrieve(UUID key) {
-        logger.trace("retrieve - ({}) retrieving by key: {}", this.entityType.getSimpleName(), key);
-        T entity = cache.get(key);
-        if (entity != null && entity.its_person_operation()) {
-            entity.check_read_permission();
-        }
-        return entity;
-
     }
 
     public void evict(UUID key) {

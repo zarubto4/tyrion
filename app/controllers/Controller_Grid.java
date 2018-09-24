@@ -1389,8 +1389,7 @@ public class Controller_Grid extends _BaseController {
             // Kontrola objekt
             Model_Project project = Model_Project.find.byId(help.project_id);
 
-            // Zkontroluji oprávnění
-            project.check_update_permission();
+            this.permissionService.checkUpdate(person(), project);
 
             Model_Widget grid_widget_new =  new Model_Widget();
             grid_widget_new.name = help.name;

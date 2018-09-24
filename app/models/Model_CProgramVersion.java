@@ -20,12 +20,16 @@ import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.CompilationStatus;
+import utilities.enums.EntityType;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
+import utilities.model.UnderProject;
 import utilities.model.VersionModel;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_C_Program_Version;
 import utilities.swagger.output.Swagger_Short_Reference;
@@ -35,16 +39,13 @@ import websocket.messages.tyrion_with_becki.WSM_Echo;
 import javax.persistence.*;
 import java.net.ConnectException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletionStage;
 
 @Entity
 @ApiModel( value = "CProgramVersion", description = "Model of CProgramVersion")
 @Table(name="CProgramVersion")
-public class Model_CProgramVersion extends VersionModel {
+public class Model_CProgramVersion extends VersionModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -196,6 +197,11 @@ public class Model_CProgramVersion extends VersionModel {
     public Model_CProgram get_c_program() throws _Base_Result_Exception {
         UUID id = get_c_program_id();
         return id != null ? Model_CProgram.find.byId(id) : null;
+    }
+
+    @Override
+    public Model_Project getProject() {
+        return this.c_program != null ? this.c_program.getProject() : this.get_c_program().getProject();
     }
 
 
@@ -574,56 +580,15 @@ public class Model_CProgramVersion extends VersionModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { c_program.check_update_permission();}
-    @JsonIgnore @Override public void check_read_permission()   throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            get_c_program().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Override public void check_update_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            get_c_program().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Override public void check_delete_permission() throws _Base_Result_Exception {
-        try {
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-
-            get_c_program().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @Override
+    public EntityType getEntityType() {
+        return EntityType.FIRMWARE_VERSION;
     }
 
-    public enum Permission {} // Not Required here
+    @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.PUBLISH);
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

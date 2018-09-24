@@ -73,14 +73,14 @@ public class Model_Compilation extends BaseModel {
     }
 
     @JsonIgnore
-    public Model_Blob blob()throws _Base_Result_Exception{
-    try {
-        return Model_Blob.find.byId(blob_id());
-    } catch (Exception e) {
-        logger.internalServerError(e);
-        return null;
+    public Model_Blob blob()throws _Base_Result_Exception {
+        try {
+            return Model_Blob.find.byId(blob_id());
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
-}
 
     @JsonProperty
     public String file_path() {
@@ -193,7 +193,6 @@ public class Model_Compilation extends BaseModel {
             }).start();
         }
 
-
         super.update();
     }
 
@@ -202,7 +201,6 @@ public class Model_Compilation extends BaseModel {
         logger.internalServerError(new Exception("This object is not legitimate to remove."));
         return false;
     }
-
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -315,11 +313,6 @@ public class Model_Compilation extends BaseModel {
     @JsonIgnore @Transient public final static String virtual_input_output_docu = "dsafsdfsdf"; // TODO https://youtrack.byzance.cz/youtrack/issue/TYRION-304
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { }
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

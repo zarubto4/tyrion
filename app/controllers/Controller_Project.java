@@ -633,9 +633,7 @@ public class Controller_Project extends _BaseController {
             // Second Make a copy to local database for actual Hardware and if hardware is not active in any other project, automatically activated that
 
             Model_Project project = Model_Project.find.byId(help.project_id);
-            project.check_update_permission();
-
-            System.out.println("project_addHardware - check_update_permission done");
+            this.permissionService.checkUpdate(person(), project);
 
             Model_HardwareRegistrationEntity registration_authority = Model_HardwareRegistrationEntity.getbyFull_hash(help.registration_hash);
 
@@ -698,7 +696,7 @@ public class Controller_Project extends _BaseController {
             logger.warn("project_addHardware. Step 1 - is_online_get_from_cache");
 
             // Person - where we send notification
-            Model_Person person = this.person();
+            Model_Person person = person();
 
             // Try to find hardware by full_id
             logger.warn("project_addHardware. Step 2 - Try to find in cache of not dominant hardware");

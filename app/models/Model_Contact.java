@@ -151,6 +151,8 @@ public class Model_Contact extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+    // TODO rework permissions
+
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
         // no limit
     }
