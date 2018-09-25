@@ -2,13 +2,11 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
@@ -200,4 +198,3 @@ public class Model_GridProject extends TaggedModel implements Permissible, Under
     @CacheFinderField(Model_GridProject.class)
     public static CacheFinder<Model_GridProject> find = new CacheFinder<>(Model_GridProject.class);
 }
-

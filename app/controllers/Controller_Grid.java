@@ -93,6 +93,8 @@ public class Controller_Grid extends _BaseController {
             gridProject.name = help.name;
             gridProject.project = project;
 
+            this.checkCreatePermission(gridProject);
+
             gridProject.save();
 
             gridProject.setTags(help.tags);
@@ -120,11 +122,7 @@ public class Controller_Grid extends _BaseController {
     @Security.Authenticated(Authentication.class)
     public Result gridProject_get(UUID grid_project_id) {
         try {
-            // Kontrola objektu
-            Model_GridProject gridProject = Model_GridProject.find.byId(grid_project_id);
-
-            return ok(gridProject);
-
+            return read(Model_GridProject.find.byId(grid_project_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -178,6 +176,7 @@ public class Controller_Grid extends _BaseController {
                 query.where().isNull("project.id");
             }
 
+            // TODO permissions
 
             Swagger_GridProjectList result = new Swagger_GridProjectList(query, page_number, help);
 
@@ -226,10 +225,8 @@ public class Controller_Grid extends _BaseController {
             gridProject.name = help.name;
             gridProject.description = help.description;
             gridProject.setTags(help.tags);
-
-            gridProject.update();
             
-            return ok(gridProject);
+            return update(gridProject);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -269,6 +266,8 @@ public class Controller_Grid extends _BaseController {
 
             // Kontrola objektu
             Model_GridProject gridProject = Model_GridProject.find.byId(help.object_id);
+
+            this.checkUpdatePermission(gridProject);
 
             gridProject.addTags(help.tags);
 
@@ -314,6 +313,8 @@ public class Controller_Grid extends _BaseController {
             // Kontrola objektu
             Model_GridProject gridProject = Model_GridProject.find.byId(help.object_id);
 
+            this.checkUpdatePermission(gridProject);
+
             gridProject.removeTags(help.tags);
 
             // Vrácení objektu
@@ -346,14 +347,7 @@ public class Controller_Grid extends _BaseController {
     @Security.Authenticated(Authentication.class)
     public Result gridProject_delete(UUID grid_project_id) {
         try {
-
-            // Kontrola objektu
-            Model_GridProject gridProject = Model_GridProject.find.byId(grid_project_id);
-            
-            gridProject.delete();
-
-            return ok();
-
+            return delete(Model_GridProject.find.byId(grid_project_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -377,14 +371,16 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Kontrola objektu
-            Model_GridProject m_project = Model_GridProject.find.byId(grid_project_id);
+            Model_GridProject gridProject = Model_GridProject.find.byId(grid_project_id);
+
+            this.checkReadPermission(gridProject);
             
             Swagger_M_Project_Interface m_project_interface = new Swagger_M_Project_Interface();
-            m_project_interface.name = m_project.name;
-            m_project_interface.description = m_project.description;
-            m_project_interface.id = m_project.id;
+            m_project_interface.name = gridProject.name;
+            m_project_interface.description = gridProject.description;
+            m_project_interface.id = gridProject.id;
 
-            for (Model_GridProgram m_program : m_project.getGridPrograms()) {
+            for (Model_GridProgram m_program : gridProject.getGridPrograms()) {
 
                 Swagger_M_Program_Interface m_program_interface = new Swagger_M_Program_Interface();
                 m_program_interface.description = m_program.description;
@@ -446,10 +442,8 @@ public class Controller_Grid extends _BaseController {
             gridProgram.name                = help.name;
             gridProgram.grid_project        = gridProject;
             gridProgram.setTags(help.tags);
-            
-            gridProgram.save();
 
-            return created(gridProgram);
+            return create(gridProgram);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -469,14 +463,9 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result gridProgram_get( UUID grid_program_id) {
+    public Result gridProgram_get(UUID grid_program_id) {
         try {
-
-            // Kontrola objektu
-            Model_GridProgram gridProgram = Model_GridProgram.find.byId(grid_program_id);
-
-            return ok(gridProgram);
-            
+            return read(Model_GridProgram.find.byId(grid_program_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -523,9 +512,7 @@ public class Controller_Grid extends _BaseController {
             gridProgram.name        = help.name;
             gridProgram.setTags(help.tags);
 
-            gridProgram.update();
-
-            return ok(gridProgram);
+            return update(gridProgram);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -564,6 +551,8 @@ public class Controller_Grid extends _BaseController {
 
             // Kontrola objektu
             Model_GridProgram gridProgram = Model_GridProgram.find.byId(help.object_id);
+
+            this.checkUpdatePermission(gridProgram);
 
             // Add Tags
             gridProgram.addTags(help.tags);
@@ -610,6 +599,8 @@ public class Controller_Grid extends _BaseController {
             // Kontrola objektu
             Model_GridProgram gridProgram = Model_GridProgram.find.byId(help.object_id);
 
+            this.checkUpdatePermission(gridProgram);
+
             // Remove Tags
             gridProgram.removeTags(help.tags);
 
@@ -637,14 +628,7 @@ public class Controller_Grid extends _BaseController {
     @Security.Authenticated(Authentication.class)
     public Result gridProgram_delete(UUID grid_program_id) {
         try {
-
-            // Kontrola objektu
-            Model_GridProgram gridProgram = Model_GridProgram.find.byId(grid_program_id);
-
-            gridProgram.delete();
-
-            return ok();
-
+            return delete(Model_GridProgram.find.byId(grid_program_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -694,6 +678,8 @@ public class Controller_Grid extends _BaseController {
             version.public_access       = help.public_access;
             version.m_program_virtual_input_output =  help.virtual_input_output;
 
+            this.checkCreatePermission(version);
+
             version.save();
 
             ObjectNode content = Json.newObject();
@@ -702,7 +688,7 @@ public class Controller_Grid extends _BaseController {
             version.file = Model_Blob.upload(content.toString(), "grid_program.json" , gridProgram.get_path());
             version.update();
 
-            return created(gridProgram);
+            return created(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -725,12 +711,7 @@ public class Controller_Grid extends _BaseController {
     @Security.Authenticated(Authentication.class)
     public Result gridProgramVersion_get(UUID version_id) {
         try {
-            // Kontrola objektu
-            Model_GridProgramVersion version = Model_GridProgramVersion.find.byId(version_id);
-
-            // Vrácení objektu
-            return ok(version);
-
+            return read(Model_GridProgramVersion.find.byId(version_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -765,7 +746,7 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help  = formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_GridProgramVersion version = Model_GridProgramVersion.find.byId(version_id);
@@ -774,10 +755,7 @@ public class Controller_Grid extends _BaseController {
             version.description = help.description;
             version.name        = help.name;
 
-            // Update
-            version.update();
-
-            return ok(version);
+            return update(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -801,16 +779,7 @@ public class Controller_Grid extends _BaseController {
     @BodyParser.Of(BodyParser.Empty.class)
     public Result gridProgramVersion_delete(UUID version_id) {
         try {
-
-            // Získání objektu
-            Model_GridProgramVersion version  = Model_GridProgramVersion.find.byId(version_id);
-            
-            // Smazání objektu
-            version.delete();
-
-            // Vrácení potvrzení
-            return ok();
-
+            return delete(Model_GridProgramVersion.find.byId(version_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
